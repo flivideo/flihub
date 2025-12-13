@@ -1,0 +1,436 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import type {
+  Config,
+  RenameRequest,
+  RenameResponse,
+  SuggestedNaming,
+  ProjectInfo,
+  RecordingFile,
+  ProjectStats,
+  ProjectPriority,
+  ProjectStageOverride,
+  FinalMediaResponse,
+  ChaptersResponse,
+  ChapterVerifyRequest,
+  ChapterVerifyResponse,
+  ChapterOverride,
+  SetChapterOverrideRequest,
+  SetChapterOverrideResponse,
+  TranscriptSyncResponse,
+} from '../../../shared/types'
+import { QUERY_KEYS } from '../constants/queryKeys'
+import { API_URL } from '../config'
+
+// Fetch helper
+async function fetchApi<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...options,
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Request failed' }))
+    throw new Error(error.error || 'Request failed')
+  }
+
+  return response.json()
+}
+
+// Config queries
+export function useConfig() {
+  return useQuery({
+    queryKey: QUERY_KEYS.config,
+    queryFn: () => fetchApi<Config>('/api/config'),
+  })
+}
+
+export function useUpdateConfig() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (config: Partial<Config>) =>
+      fetchApi<Config>('/api/config', {
+        method: 'POST',
+        body: JSON.stringify(config),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.config })
+    },
+  })
+}
+
+// Rename mutation
+export function useRename() {
+  return useMutation({
+    mutationFn: (request: RenameRequest) =>
+      fetchApi<RenameResponse>('/api/rename', {
+        method: 'POST',
+        body: JSON.stringify(request),
+      }),
+  })
+}
+
+// FR-5: Trash file mutation (moves to -trash/ directory)
+export function useTrashFile() {
+  return useMutation({
+    mutationFn: (path: string) =>
+      fetchApi<{ success: boolean; trashPath?: string; error?: string }>('/api/trash', {
+        method: 'POST',
+        body: JSON.stringify({ path }),
+      }),
+  })
+}
+
+// FR-4: Get suggested naming based on existing files in target directory
+export function useSuggestedNaming() {
+  return useQuery({
+    queryKey: QUERY_KEYS.suggestedNaming,
+    queryFn: () => fetchApi<SuggestedNaming>('/api/suggested-naming'),
+  })
+}
+
+// FR-4: Refetch suggested naming (call after config changes)
+export function useRefetchSuggestedNaming() {
+  const queryClient = useQueryClient()
+  return () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.suggestedNaming })
+}
+
+// FR-10: Get available projects
+export function useProjects() {
+  return useQuery({
+    queryKey: QUERY_KEYS.projects,
+    queryFn: () => fetchApi<{ projects: ProjectInfo[]; error?: string }>('/api/projects'),
+  })
+}
+
+// FR-12: Create a new project
+export function useCreateProject() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (code: string) =>
+      fetchApi<{ success: boolean; project?: ProjectInfo; error?: string }>('/api/projects', {
+        method: 'POST',
+        body: JSON.stringify({ code }),
+      }),
+    onSuccess: () => {
+      // Bug fix: ProjectsPanel uses useProjectStats, not useProjects
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+    },
+  })
+}
+
+// FR-14: Get recordings in target directory
+export function useRecordings() {
+  return useQuery({
+    queryKey: QUERY_KEYS.recordings,
+    queryFn: () => fetchApi<{ recordings: RecordingFile[]; error?: string }>('/api/recordings'),
+  })
+}
+
+// FR-15: Move file(s) to -safe folder
+interface SafeResponse {
+  success: boolean
+  moved?: string[]
+  count?: number
+  errors?: string[]
+  error?: string
+}
+
+export function useMoveToSafe() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (request: { files?: string[]; chapter?: string }) =>
+      fetchApi<SafeResponse>('/api/recordings/safe', {
+        method: 'POST',
+        body: JSON.stringify(request),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
+    },
+  })
+}
+
+// FR-15: Restore file(s) from -safe folder
+interface RestoreResponse {
+  success: boolean
+  restored?: string[]
+  count?: number
+  errors?: string[]
+  error?: string
+}
+
+export function useRestoreFromSafe() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (files: string[]) =>
+      fetchApi<RestoreResponse>('/api/recordings/restore', {
+        method: 'POST',
+        body: JSON.stringify({ files }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
+    },
+  })
+}
+
+// FR-47: Rename chapter label (all files in a chapter)
+interface RenameChapterResponse {
+  success: boolean
+  renamedFiles: string[]
+  error?: string
+}
+
+export function useRenameChapter() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ chapter, currentLabel, newLabel }: { chapter: string; currentLabel: string; newLabel: string }) =>
+      fetchApi<RenameChapterResponse>('/api/recordings/rename-chapter', {
+        method: 'POST',
+        body: JSON.stringify({ chapter, currentLabel, newLabel }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
+    },
+  })
+}
+
+// FR-32: Get extended project stats
+export function useProjectStats() {
+  return useQuery({
+    queryKey: QUERY_KEYS.projectStats,
+    queryFn: () => fetchApi<{ projects: ProjectStats[]; error?: string }>('/api/projects/stats'),
+  })
+}
+
+// FR-32: Update project priority
+export function useUpdateProjectPriority() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ code, priority }: { code: string; priority: ProjectPriority }) =>
+      fetchApi<{ success: boolean; code: string; priority: ProjectPriority }>(`/api/projects/${code}/priority`, {
+        method: 'PUT',
+        body: JSON.stringify({ priority }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+    },
+  })
+}
+
+// FR-32: Update project stage (manual override)
+export function useUpdateProjectStage() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ code, stage }: { code: string; stage: ProjectStageOverride }) =>
+      fetchApi<{ success: boolean; code: string; stage: ProjectStageOverride }>(`/api/projects/${code}/stage`, {
+        method: 'PUT',
+        body: JSON.stringify({ stage }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+    },
+  })
+}
+
+// FR-30 Enhancement: Queue all untranscribed videos
+interface QueueAllResponse {
+  success: boolean
+  scope: 'project' | 'chapter'
+  chapter: string | null
+  queued: string[]
+  skipped: string[]
+  queuedCount: number
+  skippedCount: number
+  error?: string
+}
+
+export function useTranscribeAll() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ scope, chapter }: { scope: 'project' | 'chapter'; chapter?: string }) =>
+      fetchApi<QueueAllResponse>('/api/transcriptions/queue-all', {
+        method: 'POST',
+        body: JSON.stringify({ scope, chapter }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transcriptions })
+    },
+  })
+}
+
+// FR-33: Get final media info for a project
+export function useFinalMedia(code: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.finalMedia(code || ''),
+    queryFn: () => fetchApi<FinalMediaResponse>(`/api/projects/${code}/final`),
+    enabled: !!code,  // Only fetch when code is provided
+  })
+}
+
+// FR-34: Get chapter timestamps for a project
+export function useChapters(code: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.chapters(code || ''),
+    queryFn: () => fetchApi<ChaptersResponse>(`/api/projects/${code}/chapters`),
+    enabled: !!code,  // Only fetch when code is provided
+  })
+}
+
+// FR-34 Enhancement: Verify chapter with LLM
+export function useVerifyChapter(code: string | null) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (request: ChapterVerifyRequest) =>
+      fetchApi<ChapterVerifyResponse>(`/api/projects/${code}/chapters/verify`, {
+        method: 'POST',
+        body: JSON.stringify(request),
+      }),
+    onSuccess: () => {
+      // Optionally invalidate chapters to refresh after verification
+      if (code) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapters(code) })
+      }
+    },
+  })
+}
+
+// FR-34 Enhancement: Get chapter overrides for a project
+export function useChapterOverrides(code: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.chapterOverrides(code || ''),
+    queryFn: () => fetchApi<{ success: boolean; overrides: ChapterOverride[] }>(`/api/projects/${code}/chapters/overrides`),
+    enabled: !!code,
+  })
+}
+
+// FR-34 Enhancement: Set a chapter override
+export function useSetChapterOverride(code: string | null) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (request: SetChapterOverrideRequest) =>
+      fetchApi<SetChapterOverrideResponse>(`/api/projects/${code}/chapters/override`, {
+        method: 'POST',
+        body: JSON.stringify(request),
+      }),
+    onSuccess: () => {
+      if (code) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapterOverrides(code) })
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapters(code) })
+      }
+    },
+  })
+}
+
+// FR-34 Enhancement: Remove a chapter override
+export function useRemoveChapterOverride(code: string | null) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ chapter, name }: { chapter: number; name: string }) =>
+      fetchApi<{ success: boolean }>(`/api/projects/${code}/chapters/override/${chapter}/${encodeURIComponent(name)}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      if (code) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapterOverrides(code) })
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapters(code) })
+      }
+    },
+  })
+}
+
+// FR-48: Get detailed transcript sync status for a project
+export function useTranscriptSync(code: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.transcriptSync(code || ''),
+    queryFn: () => fetchApi<TranscriptSyncResponse>(`/api/projects/${code}/transcript-sync`),
+    enabled: !!code,
+  })
+}
+
+// FR-48: Queue transcription for a specific video
+export function useQueueTranscription() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (videoPath: string) =>
+      fetchApi<{ success: boolean; job: unknown }>('/api/transcriptions/queue', {
+        method: 'POST',
+        body: JSON.stringify({ videoPath }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transcriptions })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+    },
+  })
+}
+
+// FR-48: Delete orphaned transcript
+// Accepts optional projectCode to delete from a specific project (for Projects panel use)
+export function useDeleteTranscript() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ filename, projectCode }: { filename: string; projectCode?: string }) => {
+      const url = projectCode
+        ? `/api/transcriptions/transcript/${encodeURIComponent(filename)}?project=${encodeURIComponent(projectCode)}`
+        : `/api/transcriptions/transcript/${encodeURIComponent(filename)}`
+      return fetchApi<{ success: boolean; filename: string; deleted: boolean }>(url, {
+        method: 'DELETE',
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+    },
+  })
+}
+
+// FR-50: Get recent renames for undo functionality
+interface RecentRename {
+  id: string
+  originalName: string
+  newName: string
+  timestamp: number
+  age: number
+}
+
+export function useRecentRenames() {
+  return useQuery({
+    queryKey: QUERY_KEYS.recentRenames,
+    queryFn: () => fetchApi<{ renames: RecentRename[] }>('/api/recordings/recent-renames'),
+    refetchInterval: 30000,  // Refresh every 30 seconds to update ages
+  })
+}
+
+// FR-50: Undo a recent rename
+export function useUndoRename() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchApi<{ success: boolean; originalPath?: string; originalName?: string; error?: string }>('/api/recordings/undo-rename', {
+        method: 'POST',
+        body: JSON.stringify({ id }),
+      }),
+    onSuccess: () => {
+      // Invalidate recent renames list and recordings
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recentRenames })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.suggestedNaming })
+    },
+  })
+}
