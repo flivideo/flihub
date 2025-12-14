@@ -193,6 +193,7 @@ export interface ServerToClientEvents {
     'assets:assigned-changed': () => void;
     'recordings:changed': () => void;
     'projects:changed': () => void;
+    'inbox:changed': () => void;
     'transcription:queued': (job: {
         jobId: string;
         videoPath: string;
@@ -246,6 +247,13 @@ export interface TranscriptionStatusResponse {
 export interface TranscriptContentResponse {
     filename: string;
     content: string;
+}
+export interface FileContentResponse {
+    success: boolean;
+    filename: string;
+    content: string;
+    mimeType: string;
+    error?: string;
 }
 export type FinalMediaLocation = 'final' | 's3-staging' | 'root';
 export interface FinalVideoInfo {

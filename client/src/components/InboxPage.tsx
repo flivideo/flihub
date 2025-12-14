@@ -1,14 +1,32 @@
 /**
  * FR-59: Inbox Tab
+ * FR-64: Inbox File Viewer
  *
  * Displays inbox subfolders (raw, dataset, presentation) with file counts.
  * Uses chapter-row separator pattern from RecordingsView.
+ * Clicking on .md, .json, .html files opens a viewer modal.
  */
 
-import { useConfig, useInbox, type InboxSubfolder, type InboxFile } from '../hooks/useApi'
+import { useState } from 'react'
+import { useConfig, useInbox, useInboxFileContent, useOpenInboxFile, type InboxSubfolder, type InboxFile } from '../hooks/useApi'
 import { useInboxSocket } from '../hooks/useSocket'
-import { OpenFolderButton, LoadingSpinner, ErrorMessage } from './shared'
+import { OpenFolderButton, LoadingSpinner, ErrorMessage, FileViewerModal } from './shared'
 import { formatFileSize } from '../utils/formatting'
+import { toast } from 'sonner'
+
+// File extensions that can be viewed in the modal
+const VIEWABLE_EXTENSIONS = ['.md', '.json', '.html', '.txt', '.css', '.js', '.ts', '.yaml', '.yml', '.xml']
+
+// Check if a file is viewable
+function isViewableFile(filename: string): boolean {
+  const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'))
+  return VIEWABLE_EXTENSIONS.includes(ext)
+}
+
+// Check if a file is HTML (for external open button)
+function isHtmlFile(filename: string): boolean {
+  return filename.toLowerCase().endsWith('.html')
+}
 
 // Calculate total size of files in a subfolder
 function calculateTotalSize(files: InboxFile[]): number {
@@ -21,14 +39,64 @@ function formatDate(isoString: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+// Selected file state type
+interface SelectedFile {
+  subfolder: string
+  filename: string
+}
+
 export function InboxPage() {
   const { data: config } = useConfig()
   const projectCode = config?.projectDirectory?.split('/').pop() || null
+
+  // FR-64: Track selected file for viewing
+  const [selectedFile, setSelectedFile] = useState<SelectedFile | null>(null)
 
   // FR-59: Subscribe to inbox changes for live updates
   useInboxSocket(projectCode)
 
   const { data: inboxData, isLoading, error } = useInbox(projectCode)
+
+  // FR-64: Fetch file content when a file is selected
+  const {
+    data: fileContent,
+    isLoading: isFileLoading,
+    error: fileError,
+  } = useInboxFileContent(projectCode, selectedFile?.subfolder || null, selectedFile?.filename || null)
+
+  // FR-64: Open file in browser mutation
+  const openInboxFile = useOpenInboxFile()
+
+  // FR-64: Handle open in browser for HTML files (from modal or row button)
+  const handleOpenExternal = (subfolder?: string, filename?: string) => {
+    const sub = subfolder || selectedFile?.subfolder
+    const file = filename || selectedFile?.filename
+    if (!sub || !file) return
+
+    openInboxFile.mutate(
+      { subfolder: sub, filename: file },
+      {
+        onSuccess: () => {
+          toast.success('Opened in browser')
+        },
+        onError: (err) => {
+          toast.error(err instanceof Error ? err.message : 'Failed to open file')
+        },
+      }
+    )
+  }
+
+  // FR-64: Handle file click
+  const handleFileClick = (subfolder: string, file: InboxFile) => {
+    if (isViewableFile(file.filename)) {
+      setSelectedFile({ subfolder, filename: file.filename })
+    }
+  }
+
+  // FR-64: Close modal
+  const handleCloseModal = () => {
+    setSelectedFile(null)
+  }
 
   if (!projectCode) {
     return (
@@ -76,7 +144,12 @@ export function InboxPage() {
       {/* Subfolder groups with separator pattern */}
       <div className="space-y-6">
         {subfolders.map((subfolder) => (
-          <SubfolderGroup key={subfolder.name} subfolder={subfolder} />
+          <SubfolderGroup
+            key={subfolder.name}
+            subfolder={subfolder}
+            onFileClick={handleFileClick}
+            onOpenExternal={handleOpenExternal}
+          />
         ))}
       </div>
 
@@ -89,12 +162,33 @@ export function InboxPage() {
           </p>
         </div>
       )}
+
+      {/* FR-64: File viewer modal */}
+      {selectedFile && (
+        <FileViewerModal
+          title={selectedFile.filename}
+          content={fileContent?.content || null}
+          isLoading={isFileLoading}
+          error={fileError}
+          onClose={handleCloseModal}
+          onOpenExternal={isHtmlFile(selectedFile.filename) ? () => handleOpenExternal() : undefined}
+          folderKey="inbox"
+        />
+      )}
     </div>
   )
 }
 
 // Individual subfolder group with separator and file list
-function SubfolderGroup({ subfolder }: { subfolder: InboxSubfolder }) {
+function SubfolderGroup({
+  subfolder,
+  onFileClick,
+  onOpenExternal,
+}: {
+  subfolder: InboxSubfolder
+  onFileClick: (subfolder: string, file: InboxFile) => void
+  onOpenExternal: (subfolder: string, filename: string) => void
+}) {
   const isEmpty = subfolder.fileCount === 0
   const totalSize = calculateTotalSize(subfolder.files)
 
@@ -120,20 +214,42 @@ function SubfolderGroup({ subfolder }: { subfolder: InboxSubfolder }) {
       {/* File list - indented under the separator */}
       {!isEmpty && (
         <div className="space-y-1 ml-4">
-          {subfolder.files.map((file) => (
-            <div
-              key={file.filename}
-              className="flex items-center justify-between px-4 py-2 rounded-lg border bg-gray-50 border-gray-200"
-            >
-              <span className="font-mono text-sm text-gray-700 truncate max-w-md">
-                {file.filename}
-              </span>
-              <div className="flex items-center gap-6 text-sm text-gray-400">
-                <span>{formatFileSize(file.size)}</span>
-                <span className="w-16 text-right">{formatDate(file.modifiedAt)}</span>
+          {subfolder.files.map((file) => {
+            const viewable = isViewableFile(file.filename)
+            const isHtml = isHtmlFile(file.filename)
+            return (
+              <div
+                key={file.filename}
+                className={`flex items-center justify-between px-4 py-2 rounded-lg border bg-gray-50 border-gray-200 ${
+                  viewable ? 'cursor-pointer hover:bg-gray-100 hover:border-gray-300' : ''
+                }`}
+                onClick={() => onFileClick(subfolder.name, file)}
+              >
+                <span className={`font-mono text-sm truncate max-w-md ${viewable ? 'text-blue-600' : 'text-gray-700'}`}>
+                  {file.filename}
+                </span>
+                <div className="flex items-center gap-4 text-sm text-gray-400">
+                  <span>{formatFileSize(file.size)}</span>
+                  <span className="w-16 text-right">{formatDate(file.modifiedAt)}</span>
+                  {/* Open in browser button for HTML files */}
+                  {isHtml && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onOpenExternal(subfolder.name, file.filename)
+                      }}
+                      className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded transition-colors"
+                      title="Open in browser"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

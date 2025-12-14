@@ -17,6 +17,7 @@ import type {
   SetChapterOverrideRequest,
   SetChapterOverrideResponse,
   TranscriptSyncResponse,
+  FileContentResponse,
 } from '../../../shared/types'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { API_URL } from '../config'
@@ -481,5 +482,31 @@ export function useWriteToInbox(code: string | null) {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inbox(code) })
       }
     },
+  })
+}
+
+// FR-64: Get inbox file content for viewing
+export function useInboxFileContent(
+  code: string | null,
+  subfolder: string | null,
+  filename: string | null
+) {
+  return useQuery<FileContentResponse>({
+    queryKey: QUERY_KEYS.inboxFile(code || '', subfolder || '', filename || ''),
+    queryFn: () => fetchApi<FileContentResponse>(
+      `/api/query/projects/${code}/inbox/${encodeURIComponent(subfolder || '')}/${encodeURIComponent(filename || '')}`
+    ),
+    enabled: !!code && !!subfolder && !!filename,
+  })
+}
+
+// FR-64: Open inbox file in external application (browser for HTML)
+export function useOpenInboxFile() {
+  return useMutation({
+    mutationFn: ({ subfolder, filename }: { subfolder: string; filename: string }) =>
+      fetchApi<{ success: boolean; path: string }>('/api/system/open-file', {
+        method: 'POST',
+        body: JSON.stringify({ subfolder, filename }),
+      }),
   })
 }

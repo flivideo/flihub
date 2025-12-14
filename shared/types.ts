@@ -291,6 +291,15 @@ export interface TranscriptContentResponse {
   content: string;
 }
 
+// FR-64: Generic file content response (for inbox file viewer)
+export interface FileContentResponse {
+  success: boolean;
+  filename: string;
+  content: string;
+  mimeType: string;
+  error?: string;
+}
+
 // FR-33: Final video and SRT detection
 export type FinalMediaLocation = 'final' | 's3-staging' | 'root';
 

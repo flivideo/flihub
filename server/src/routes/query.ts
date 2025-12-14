@@ -53,6 +53,8 @@ const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 
 interface QueryProjectSummary {
   code: string;
+  brand: string;  // FR-61: Brand derived from v-appydave -> appydave
+  path: string;   // FR-61: Full project path
   stage: ProjectStage;
   priority: ProjectPriority;
   stats: {
@@ -191,6 +193,51 @@ export function createQueryRoutes(getConfig: () => Config): Router {
   });
 
   // ============================================
+  // FR-61: GET /api/query/projects/resolve - Resolve partial project code
+  // ============================================
+  router.get('/projects/resolve', async (req: Request, res: Response) => {
+    const { q } = req.query;
+
+    if (!q || typeof q !== 'string') {
+      res.status(400).json({ success: false, error: 'Query parameter "q" is required' });
+      return;
+    }
+
+    try {
+      const folders = await getProjectFolders();
+      const projectsDir = expandPath(PROJECTS_ROOT);
+
+      // Find projects matching the prefix
+      const matches = folders.filter(code => code.startsWith(q)).sort();
+
+      if (matches.length === 0) {
+        res.status(404).json({ success: false, error: `No project found matching: ${q}` });
+        return;
+      }
+
+      // Return first match (alphabetically)
+      const code = matches[0];
+      const projectPath = path.join(projectsDir, code);
+
+      // FR-61: Extract brand from parent directory name (v-appydave -> appydave)
+      const brandDir = projectsDir.split('/').pop() || '';
+      const brand = brandDir.startsWith('v-') ? brandDir.slice(2) : brandDir;
+
+      res.json({
+        success: true,
+        project: {
+          code,
+          brand,
+          path: projectPath,
+        },
+      });
+    } catch (error) {
+      console.error('Error resolving project:', error);
+      res.status(500).json({ success: false, error: 'Failed to resolve project' });
+    }
+  });
+
+  // ============================================
   // 1. GET /api/query/projects - List projects
   // ============================================
   router.get('/projects', async (req: Request, res: Response) => {
@@ -241,8 +288,14 @@ export function createQueryRoutes(getConfig: () => Config): Router {
         const storedPriority = config.projectPriorities?.[code];
         const priority: ProjectPriority = storedPriority === 'pinned' ? 'pinned' : 'normal';
 
+        // FR-61: Extract brand from parent directory name (v-appydave -> appydave)
+        const brandDir = projectsDir.split('/').pop() || '';
+        const brand = brandDir.startsWith('v-') ? brandDir.slice(2) : brandDir;
+
         projects.push({
           code,
+          brand,
+          path: projectPath,
           stage: projectStage,
           priority,
           stats: {
@@ -1215,6 +1268,83 @@ export function createQueryRoutes(getConfig: () => Config): Router {
     } catch (error) {
       console.error('Error listing inbox:', error);
       res.status(500).json({ success: false, error: 'Failed to list inbox' });
+    }
+  });
+
+  // ============================================
+  // 9. GET /api/query/projects/:code/inbox/:subfolder/:filename - FR-64
+  // Read inbox file content
+  // ============================================
+  router.get('/projects/:code/inbox/:subfolder/:filename', async (req: Request, res: Response) => {
+    const { code, subfolder, filename } = req.params;
+    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectPath = path.join(projectsDir, code);
+
+    try {
+      // Security: Validate no path traversal in subfolder or filename
+      if (subfolder.includes('..') || subfolder.includes('/') || subfolder.includes('\\')) {
+        res.status(400).json({ success: false, error: 'Invalid subfolder' });
+        return;
+      }
+      if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+        res.status(400).json({ success: false, error: 'Invalid filename' });
+        return;
+      }
+
+      if (!await fs.pathExists(projectPath)) {
+        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+        return;
+      }
+
+      const paths = getProjectPaths(projectPath);
+
+      // Handle (root) subfolder - files directly in inbox/
+      let filePath: string;
+      if (subfolder === '(root)') {
+        filePath = path.join(paths.inbox, filename);
+      } else {
+        filePath = path.join(paths.inbox, subfolder, filename);
+      }
+
+      if (!await fs.pathExists(filePath)) {
+        res.status(404).json({ success: false, error: `File not found: ${filename}` });
+        return;
+      }
+
+      // Determine MIME type based on extension
+      const ext = path.extname(filename).toLowerCase();
+      const mimeTypes: Record<string, string> = {
+        '.md': 'text/markdown',
+        '.json': 'application/json',
+        '.html': 'text/html',
+        '.txt': 'text/plain',
+        '.css': 'text/css',
+        '.js': 'text/javascript',
+        '.ts': 'text/typescript',
+        '.yaml': 'text/yaml',
+        '.yml': 'text/yaml',
+        '.xml': 'text/xml',
+      };
+      const mimeType = mimeTypes[ext] || 'text/plain';
+
+      // Only allow text-based files
+      const allowedExtensions = ['.md', '.json', '.html', '.txt', '.css', '.js', '.ts', '.yaml', '.yml', '.xml'];
+      if (!allowedExtensions.includes(ext)) {
+        res.status(400).json({ success: false, error: `File type not supported for viewing: ${ext}` });
+        return;
+      }
+
+      const content = await fs.readFile(filePath, 'utf-8');
+
+      res.json({
+        success: true,
+        filename,
+        content,
+        mimeType,
+      });
+    } catch (error) {
+      console.error('Error reading inbox file:', error);
+      res.status(500).json({ success: false, error: 'Failed to read file' });
     }
   });
 

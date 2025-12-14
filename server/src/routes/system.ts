@@ -136,5 +136,67 @@ export function createSystemRoutes(config: Config): Router {
     });
   });
 
+  /**
+   * POST /api/system/open-file
+   *
+   * Opens a file in its default application (macOS only).
+   * Used for opening HTML files from inbox in the browser.
+   *
+   * Request body:
+   *   { subfolder: string, filename: string }
+   *
+   * Response:
+   *   Success: { success: true, path: string }
+   *   Error: { success: false, error: string }
+   *
+   * Security: Only accepts subfolder + filename, resolves path from project inbox.
+   * Validates no path traversal characters.
+   */
+  router.post('/open-file', async (req: Request, res: Response) => {
+    const { subfolder, filename } = req.body as { subfolder: string; filename: string };
+
+    if (!subfolder || !filename) {
+      res.status(400).json({ success: false, error: 'Subfolder and filename are required' });
+      return;
+    }
+
+    // Security: Validate no path traversal
+    if (subfolder.includes('..') || subfolder.includes('/') || subfolder.includes('\\')) {
+      res.status(400).json({ success: false, error: 'Invalid subfolder' });
+      return;
+    }
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      res.status(400).json({ success: false, error: 'Invalid filename' });
+      return;
+    }
+
+    const paths = getProjectPaths(expandPath(config.projectDirectory));
+
+    // Handle (root) subfolder - files directly in inbox/
+    let filePath: string;
+    if (subfolder === '(root)') {
+      filePath = path.join(paths.inbox, filename);
+    } else {
+      filePath = path.join(paths.inbox, subfolder, filename);
+    }
+
+    // Check file exists
+    if (!await fs.pathExists(filePath)) {
+      res.status(404).json({ success: false, error: `File does not exist: ${filename}` });
+      return;
+    }
+
+    // macOS: open in default app
+    exec(`open "${filePath}"`, (error) => {
+      if (error) {
+        console.error('Failed to open file:', error);
+        res.status(500).json({ success: false, error: 'Failed to open file' });
+        return;
+      }
+      console.log(`Opened file: ${filePath}`);
+      res.json({ success: true, path: filePath });
+    });
+  });
+
   return router;
 }

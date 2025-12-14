@@ -39,4 +39,6 @@ export const QUERY_KEYS = {
   recentRenames: ['recent-renames'] as const,
   // FR-59: Inbox management
   inbox: (code: string) => ['inbox', code] as const,
+  // FR-64: Inbox file content
+  inboxFile: (code: string, subfolder: string, filename: string) => ['inbox-file', code, subfolder, filename] as const,
 } as const
