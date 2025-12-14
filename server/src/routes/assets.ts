@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import type { Config, ImageInfo, ImageAsset, AssignImageRequest, AssignImageResponse, NextImageOrderResponse, PromptAsset, SavePromptRequest, SavePromptResponse, LoadPromptResponse } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
+import { readFileSafe } from '../utils/filesystem.js';
 import {
   NAMING_RULES,
   parseImageFilename,
@@ -131,16 +132,9 @@ export function createAssetRoutes(config: Config): Router {
         const parsedPrompt = parsePromptFilename(entry.name);
         if (parsedPrompt) {
           // Read full content for Shift+Hover preview, and first ~50 chars for inline display
-          let content = '';
-          let contentPreview = '';
-          try {
-            content = await fs.readFile(filePath, 'utf-8');
-            contentPreview = content.slice(0, 50).replace(/\n/g, ' ');
-            if (content.length > 50) contentPreview += '...';
-          } catch {
-            content = '';
-            contentPreview = '';
-          }
+          const content = (await readFileSafe(filePath)) ?? '';
+          let contentPreview = content.slice(0, 50).replace(/\n/g, ' ');
+          if (content.length > 50) contentPreview += '...';
 
           prompts.push({
             ...parsedPrompt,

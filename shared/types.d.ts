@@ -395,3 +395,150 @@ export interface ChapterGenerationProgress {
     outputFile?: string;
     error?: string;
 }
+export interface QueryProjectSummary {
+    code: string;
+    brand: string;
+    path: string;
+    stage: ProjectStage;
+    priority: ProjectPriority;
+    stats: {
+        recordings: number;
+        chapters: number;
+        transcriptPercent: number;
+        images: number;
+        thumbs: number;
+    };
+    lastModified: string | null;
+}
+export interface QueryProjectDetail {
+    code: string;
+    path: string;
+    stage: ProjectStage;
+    priority: ProjectPriority;
+    stats: {
+        recordings: number;
+        safe: number;
+        chapters: number;
+        transcripts: {
+            matched: number;
+            missing: number;
+            orphaned: number;
+        };
+        images: number;
+        thumbs: number;
+        totalDuration: number | null;
+    };
+    finalMedia: {
+        video?: {
+            filename: string;
+            size: number;
+        };
+        srt?: {
+            filename: string;
+        };
+    } | null;
+    createdAt: string | null;
+    lastModified: string | null;
+}
+export interface QueryRecording {
+    filename: string;
+    chapter: string;
+    sequence: string;
+    name: string;
+    tags: string[];
+    folder: 'recordings' | 'safe';
+    size: number;
+    duration: number | null;
+    hasTranscript: boolean;
+}
+export interface QueryTranscript {
+    filename: string;
+    chapter: string;
+    sequence: string;
+    name: string;
+    size: number;
+    preview?: string;
+    content?: string;
+}
+export interface QueryChapter {
+    chapter: number;
+    name: string;
+    displayName: string;
+    timestamp: string | null;
+    timestampSeconds: number | null;
+    recordingCount: number;
+    hasTranscript: boolean;
+}
+export interface QueryImage {
+    filename: string;
+    chapter: string;
+    sequence: string;
+    imageOrder: string;
+    variant: string | null;
+    label: string;
+    size: number;
+}
+export interface SafeResponse {
+    success: boolean;
+    moved?: string[];
+    count?: number;
+    errors?: string[];
+    error?: string;
+}
+export interface RestoreResponse {
+    success: boolean;
+    restored?: string[];
+    count?: number;
+    errors?: string[];
+    error?: string;
+}
+export interface RenameChapterResponse {
+    success: boolean;
+    renamedFiles: string[];
+    error?: string;
+}
+export interface QueueAllResponse {
+    success: boolean;
+    scope: 'project' | 'chapter';
+    chapter: string | null;
+    queued: string[];
+    skipped: string[];
+    queuedCount: number;
+    skippedCount: number;
+    error?: string;
+}
+export interface RecentRename {
+    id: string;
+    originalName: string;
+    newName: string;
+    timestamp: number;
+    age: number;
+}
+export interface InboxFile {
+    filename: string;
+    size: number;
+    modifiedAt: string;
+}
+export interface InboxSubfolder {
+    name: string;
+    path: string;
+    fileCount: number;
+    files: InboxFile[];
+}
+export interface InboxResponse {
+    success: boolean;
+    inbox: {
+        totalFiles: number;
+        subfolders: InboxSubfolder[];
+    };
+}
+export interface ChapterRecordingStatusResponse {
+    isGenerating: boolean;
+    chapters: Array<{
+        chapter: string;
+        label: string;
+        segmentCount: number;
+        totalDuration: number;
+    }>;
+    existing: string[];
+}

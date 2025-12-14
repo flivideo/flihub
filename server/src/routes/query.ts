@@ -36,6 +36,14 @@ import type {
   ProjectStage,
   RecordingFile,
   ImageAsset,
+  QueryProjectSummary,
+  QueryProjectDetail,
+  QueryRecording,
+  QueryTranscript,
+  QueryChapter,
+  QueryImage,
+  InboxFile,
+  InboxSubfolder,
 } from '../../../shared/types.js';
 import {
   formatProjectsReport,
@@ -46,96 +54,10 @@ import {
   formatImagesReport,
   formatExportReport,
 } from '../utils/reporters.js';
+import { readDirSafe, readDirEntriesSafe, statSafe, readFileSafe } from '../utils/filesystem.js';
+import { sendServerError, sendNotFound, sendBadRequest } from '../utils/responses.js';
 
 const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
-// ============================================
-// TYPES for Query API Responses
-// ============================================
-
-interface QueryProjectSummary {
-  code: string;
-  brand: string;  // FR-61: Brand derived from v-appydave -> appydave
-  path: string;   // FR-61: Full project path
-  stage: ProjectStage;
-  priority: ProjectPriority;
-  stats: {
-    recordings: number;
-    chapters: number;
-    transcriptPercent: number;
-    images: number;
-    thumbs: number;
-  };
-  lastModified: string | null;
-}
-
-interface QueryProjectDetail {
-  code: string;
-  path: string;
-  stage: ProjectStage;
-  priority: ProjectPriority;
-  stats: {
-    recordings: number;
-    safe: number;
-    chapters: number;
-    transcripts: {
-      matched: number;
-      missing: number;
-      orphaned: number;
-    };
-    images: number;
-    thumbs: number;
-    totalDuration: number | null;
-  };
-  finalMedia: {
-    video?: { filename: string; size: number };
-    srt?: { filename: string };
-  } | null;
-  createdAt: string | null;
-  lastModified: string | null;
-}
-
-interface QueryRecording {
-  filename: string;
-  chapter: string;
-  sequence: string;
-  name: string;
-  tags: string[];
-  folder: 'recordings' | 'safe';
-  size: number;
-  duration: number | null;
-  hasTranscript: boolean;
-}
-
-interface QueryTranscript {
-  filename: string;
-  chapter: string;
-  sequence: string;
-  name: string;
-  size: number;
-  preview?: string;
-  content?: string;
-}
-
-interface QueryChapter {
-  chapter: number;
-  name: string;
-  displayName: string;
-  timestamp: string | null;
-  timestampSeconds: number | null;
-  recordingCount: number;
-  hasTranscript: boolean;
-}
-
-interface QueryImage {
-  filename: string;
-  chapter: string;
-  sequence: string;
-  imageOrder: string;
-  variant: string | null;
-  label: string;
-  size: number;
-}
 
 // ============================================
 // HELPER FUNCTIONS
@@ -430,16 +352,13 @@ export function createQueryRoutes(getConfig: () => Config): Router {
       const recordings: QueryRecording[] = [];
 
       // Get transcript filenames for hasTranscript check
+      // NFR-67: Using readDirSafe - returns [] for missing dir, throws on real errors
       const transcriptSet = new Set<string>();
-      try {
-        const transcriptFiles = await fs.readdir(paths.transcripts);
-        for (const f of transcriptFiles) {
-          if (f.endsWith('.txt') && !f.endsWith('-chapter.txt')) {
-            transcriptSet.add(f.replace('.txt', ''));
-          }
+      const transcriptFiles = await readDirSafe(paths.transcripts);
+      for (const f of transcriptFiles) {
+        if (f.endsWith('.txt') && !f.endsWith('-chapter.txt')) {
+          transcriptSet.add(f.replace('.txt', ''));
         }
-      } catch {
-        // No transcripts directory
       }
 
       // Scan recordings and safe folders
@@ -448,38 +367,37 @@ export function createQueryRoutes(getConfig: () => Config): Router {
         { dir: paths.safe, folder: 'safe' },
       ];
 
+      // NFR-67: Using readDirSafe - returns [] for missing dir
       for (const { dir, folder } of folders) {
-        try {
-          const files = await fs.readdir(dir);
-          for (const filename of files) {
-            if (!filename.endsWith('.mov')) continue;
+        const files = await readDirSafe(dir);
+        for (const filename of files) {
+          if (!filename.endsWith('.mov')) continue;
 
-            const parsed = parseRecordingFilename(filename);
-            if (!parsed) continue;
+          const parsed = parseRecordingFilename(filename);
+          if (!parsed) continue;
 
-            const filePath = path.join(dir, filename);
-            const stat = await fs.stat(filePath);
-            const baseName = filename.replace('.mov', '');
+          const filePath = path.join(dir, filename);
+          const stat = await statSafe(filePath);
+          if (!stat) continue; // File was deleted between readdir and stat
 
-            // NFR-65: Extract tags from name using shared utility
-            const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
+          const baseName = filename.replace('.mov', '');
 
-            const recording: QueryRecording = {
-              filename,
-              chapter: parsed.chapter,
-              sequence: parsed.sequence || '0',
-              name: cleanName,
-              tags,
-              folder,
-              size: stat.size,
-              duration: null, // Would require ffprobe
-              hasTranscript: transcriptSet.has(baseName),
-            };
+          // NFR-65: Extract tags from name using shared utility
+          const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
 
-            recordings.push(recording);
-          }
-        } catch {
-          // Directory doesn't exist
+          const recording: QueryRecording = {
+            filename,
+            chapter: parsed.chapter,
+            sequence: parsed.sequence || '0',
+            name: cleanName,
+            tags,
+            folder,
+            size: stat.size,
+            duration: null, // Would require ffprobe
+            hasTranscript: transcriptSet.has(baseName),
+          };
+
+          recordings.push(recording);
         }
       }
 
@@ -567,19 +485,16 @@ export function createQueryRoutes(getConfig: () => Config): Router {
         };
 
         // Read content if requested
+        // NFR-67: Using readFileSafe - returns null for missing file
         if (includeContent) {
-          try {
-            transcript.content = await fs.readFile(filePath, 'utf-8');
-          } catch {
-            transcript.content = '';
-          }
+          transcript.content = await readFileSafe(filePath) ?? '';
         } else {
           // Preview: first ~100 chars
-          try {
-            const content = await fs.readFile(filePath, 'utf-8');
+          const content = await readFileSafe(filePath);
+          if (content) {
             transcript.preview = content.slice(0, 100).replace(/\n/g, ' ').trim();
             if (content.length > 100) transcript.preview += '...';
-          } catch {
+          } else {
             transcript.preview = '';
           }
         }
@@ -685,33 +600,27 @@ export function createQueryRoutes(getConfig: () => Config): Router {
       const chapterRecordings = new Map<string, number>();
       const chapterHasTranscript = new Map<string, boolean>();
 
+      // NFR-67: Using readDirSafe - returns [] for missing dir
       for (const dir of [paths.recordings, paths.safe]) {
-        try {
-          const files = await fs.readdir(dir);
-          for (const file of files) {
-            const match = file.match(/^(\d{2})-/);
-            if (match) {
-              const chapter = match[1];
-              chapterRecordings.set(chapter, (chapterRecordings.get(chapter) || 0) + 1);
-            }
+        const files = await readDirSafe(dir);
+        for (const file of files) {
+          const match = file.match(/^(\d{2})-/);
+          if (match) {
+            const chapter = match[1];
+            chapterRecordings.set(chapter, (chapterRecordings.get(chapter) || 0) + 1);
           }
-        } catch {
-          // Directory doesn't exist
         }
       }
 
       // Check transcript existence per chapter
-      try {
-        const transcriptFiles = await fs.readdir(paths.transcripts);
-        for (const file of transcriptFiles) {
-          if (!file.endsWith('.txt') || file.endsWith('-chapter.txt')) continue;
-          const match = file.match(/^(\d{2})-/);
-          if (match) {
-            chapterHasTranscript.set(match[1], true);
-          }
+      // NFR-67: Using readDirSafe
+      const transcriptFiles = await readDirSafe(paths.transcripts);
+      for (const file of transcriptFiles) {
+        if (!file.endsWith('.txt') || file.endsWith('-chapter.txt')) continue;
+        const match = file.match(/^(\d{2})-/);
+        if (match) {
+          chapterHasTranscript.set(match[1], true);
         }
-      } catch {
-        // No transcripts
       }
 
       // Try to extract chapters with timestamps from SRT
@@ -732,8 +641,9 @@ export function createQueryRoutes(getConfig: () => Config): Router {
             }));
           }
         }
-      } catch {
-        // No SRT or extraction failed
+      } catch (err) {
+        // SRT extraction failed - log but continue with recording-based chapters
+        console.warn('Chapter extraction failed:', err);
       }
 
       // If no SRT-based chapters, generate from recordings
@@ -900,20 +810,17 @@ export function createQueryRoutes(getConfig: () => Config): Router {
       }
 
       // Get recordings
+      // NFR-67: Using readDirSafe for safe directory reading
       if (includeSections.includes('recordings')) {
         const paths = getProjectPaths(projectPath);
         const recordings: QueryRecording[] = [];
 
         const transcriptSet = new Set<string>();
-        try {
-          const transcriptFiles = await fs.readdir(paths.transcripts);
-          for (const f of transcriptFiles) {
-            if (f.endsWith('.txt') && !f.endsWith('-chapter.txt')) {
-              transcriptSet.add(f.replace('.txt', ''));
-            }
+        const transcriptFiles = await readDirSafe(paths.transcripts);
+        for (const f of transcriptFiles) {
+          if (f.endsWith('.txt') && !f.endsWith('-chapter.txt')) {
+            transcriptSet.add(f.replace('.txt', ''));
           }
-        } catch {
-          // No transcripts
         }
 
         const folders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
@@ -922,42 +829,32 @@ export function createQueryRoutes(getConfig: () => Config): Router {
         ];
 
         for (const { dir, folder } of folders) {
-          try {
-            const files = await fs.readdir(dir);
-            for (const filename of files) {
-              if (!filename.endsWith('.mov')) continue;
-              const parsed = parseRecordingFilename(filename);
-              if (!parsed) continue;
+          const files = await readDirSafe(dir);
+          for (const filename of files) {
+            if (!filename.endsWith('.mov')) continue;
+            const parsed = parseRecordingFilename(filename);
+            if (!parsed) continue;
 
-              const filePath = path.join(dir, filename);
-              const stat = await fs.stat(filePath);
-              const baseName = filename.replace('.mov', '');
+            const filePath = path.join(dir, filename);
+            const stat = await statSafe(filePath);
+            if (!stat) continue; // File deleted between readdir and stat
 
-              const nameParts = (parsed.name || '').split('-');
-              const tags: string[] = [];
-              const nameWords: string[] = [];
-              for (const part of nameParts) {
-                if (/^[A-Z]+$/.test(part)) {
-                  tags.push(part);
-                } else {
-                  nameWords.push(part);
-                }
-              }
+            const baseName = filename.replace('.mov', '');
 
-              recordings.push({
-                filename,
-                chapter: parsed.chapter,
-                sequence: parsed.sequence || '0',
-                name: nameWords.join('-'),
-                tags,
-                folder,
-                size: stat.size,
-                duration: null,
-                hasTranscript: transcriptSet.has(baseName),
-              });
-            }
-          } catch {
-            // Directory doesn't exist
+            // NFR-65: Use extractTagsFromName utility
+            const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
+
+            recordings.push({
+              filename,
+              chapter: parsed.chapter,
+              sequence: parsed.sequence || '0',
+              name: cleanName,
+              tags,
+              folder,
+              size: stat.size,
+              duration: null,
+              hasTranscript: transcriptSet.has(baseName),
+            });
           }
         }
 
@@ -971,36 +868,34 @@ export function createQueryRoutes(getConfig: () => Config): Router {
       }
 
       // Get transcripts (with content for export)
+      // NFR-67: Using readDirSafe and readFileSafe
       if (includeSections.includes('transcripts')) {
         const paths = getProjectPaths(projectPath);
         const transcripts: QueryTranscript[] = [];
 
-        try {
-          const files = await fs.readdir(paths.transcripts);
-          for (const filename of files) {
-            if (!filename.endsWith('.txt') || filename.endsWith('-chapter.txt')) continue;
+        const files = await readDirSafe(paths.transcripts);
+        for (const filename of files) {
+          if (!filename.endsWith('.txt') || filename.endsWith('-chapter.txt')) continue;
 
-            const parsed = parseRecordingFilename(filename.replace('.txt', '.mov'));
-            if (!parsed) continue;
+          const parsed = parseRecordingFilename(filename.replace('.txt', '.mov'));
+          if (!parsed) continue;
 
-            const filePath = path.join(paths.transcripts, filename);
-            const stat = await fs.stat(filePath);
-            const content = await fs.readFile(filePath, 'utf-8');
+          const filePath = path.join(paths.transcripts, filename);
+          const stat = await statSafe(filePath);
+          if (!stat) continue;
+          const content = await readFileSafe(filePath) ?? '';
 
-            const nameParts = (parsed.name || '').split('-');
-            const nameWords = nameParts.filter(part => !/^[A-Z]+$/.test(part));
+          // NFR-65: Use extractTagsFromName utility
+          const { name: cleanName } = extractTagsFromName(parsed.name || '');
 
-            transcripts.push({
-              filename,
-              chapter: parsed.chapter,
-              sequence: parsed.sequence || '0',
-              name: nameWords.join('-'),
-              size: stat.size,
-              content,
-            });
-          }
-        } catch {
-          // No transcripts directory
+          transcripts.push({
+            filename,
+            chapter: parsed.chapter,
+            sequence: parsed.sequence || '0',
+            name: cleanName,
+            size: stat.size,
+            content,
+          });
         }
 
         transcripts.sort((a, b) => {
@@ -1013,37 +908,30 @@ export function createQueryRoutes(getConfig: () => Config): Router {
       }
 
       // Get chapters
+      // NFR-67: Using readDirSafe
       if (includeSections.includes('chapters')) {
         const paths = getProjectPaths(projectPath);
         const chapterRecordings = new Map<string, number>();
         const chapterHasTranscript = new Map<string, boolean>();
 
         for (const dir of [paths.recordings, paths.safe]) {
-          try {
-            const files = await fs.readdir(dir);
-            for (const file of files) {
-              const match = file.match(/^(\d{2})-/);
-              if (match) {
-                const chapter = match[1];
-                chapterRecordings.set(chapter, (chapterRecordings.get(chapter) || 0) + 1);
-              }
+          const files = await readDirSafe(dir);
+          for (const file of files) {
+            const match = file.match(/^(\d{2})-/);
+            if (match) {
+              const chapter = match[1];
+              chapterRecordings.set(chapter, (chapterRecordings.get(chapter) || 0) + 1);
             }
-          } catch {
-            // Directory doesn't exist
           }
         }
 
-        try {
-          const transcriptFiles = await fs.readdir(paths.transcripts);
-          for (const file of transcriptFiles) {
-            if (!file.endsWith('.txt') || file.endsWith('-chapter.txt')) continue;
-            const match = file.match(/^(\d{2})-/);
-            if (match) {
-              chapterHasTranscript.set(match[1], true);
-            }
+        const transcriptFiles = await readDirSafe(paths.transcripts);
+        for (const file of transcriptFiles) {
+          if (!file.endsWith('.txt') || file.endsWith('-chapter.txt')) continue;
+          const match = file.match(/^(\d{2})-/);
+          if (match) {
+            chapterHasTranscript.set(match[1], true);
           }
-        } catch {
-          // No transcripts
         }
 
         let chapters: QueryChapter[] = [];
@@ -1063,8 +951,9 @@ export function createQueryRoutes(getConfig: () => Config): Router {
               }));
             }
           }
-        } catch {
-          // No SRT
+        } catch (err) {
+          // SRT extraction failed
+          console.warn('Chapter extraction failed:', err);
         }
 
         if (chapters.length === 0) {
@@ -1086,31 +975,29 @@ export function createQueryRoutes(getConfig: () => Config): Router {
       }
 
       // Get images
+      // NFR-67: Using readDirSafe and statSafe
       if (includeSections.includes('images')) {
         const paths = getProjectPaths(projectPath);
         const images: QueryImage[] = [];
 
-        try {
-          const files = await fs.readdir(paths.images);
-          for (const filename of files) {
-            const parsed = parseImageFilename(filename);
-            if (!parsed) continue;
+        const files = await readDirSafe(paths.images);
+        for (const filename of files) {
+          const parsed = parseImageFilename(filename);
+          if (!parsed) continue;
 
-            const filePath = path.join(paths.images, filename);
-            const stat = await fs.stat(filePath);
+          const filePath = path.join(paths.images, filename);
+          const stat = await statSafe(filePath);
+          if (!stat) continue;
 
-            images.push({
-              filename,
-              chapter: parsed.chapter,
-              sequence: parsed.sequence,
-              imageOrder: parsed.imageOrder,
-              variant: parsed.variant,
-              label: parsed.label,
-              size: stat.size,
-            });
-          }
-        } catch {
-          // No images directory
+          images.push({
+            filename,
+            chapter: parsed.chapter,
+            sequence: parsed.sequence,
+            imageOrder: parsed.imageOrder,
+            variant: parsed.variant,
+            label: parsed.label,
+            size: stat.size,
+          });
         }
 
         images.sort(compareImageAssets);
@@ -1146,106 +1033,90 @@ export function createQueryRoutes(getConfig: () => Config): Router {
 
       const paths = getProjectPaths(projectPath);
 
-      interface InboxFile {
-        filename: string;
-        size: number;
-        modifiedAt: string;
-      }
-
-      interface InboxSubfolder {
-        name: string;
-        path: string;
-        fileCount: number;
-        files: InboxFile[];
-      }
-
+      // NFR-66: Using shared InboxFile and InboxSubfolder types
       const result: InboxSubfolder[] = [];
 
       // Scan inbox directory for actual subfolders (dynamic, not hardcoded)
       if (await fs.pathExists(paths.inbox)) {
-        try {
-          const entries = await fs.readdir(paths.inbox, { withFileTypes: true });
+        const entries = await readDirEntriesSafe(paths.inbox);
 
-          // First, check for root-level files (files directly in inbox/)
-          const rootFiles = entries.filter(e => e.isFile() && !e.name.startsWith('.'));
-          if (rootFiles.length > 0) {
-            const rootResult: InboxSubfolder = {
-              name: '(root)',
-              path: paths.inbox,
-              fileCount: 0,
-              files: [],
-            };
+        // First, check for root-level files (files directly in inbox/)
+        const rootFiles = entries.filter(e => e.isFile() && !e.name.startsWith('.'));
+        if (rootFiles.length > 0) {
+          const rootResult: InboxSubfolder = {
+            name: '(root)',
+            path: paths.inbox,
+            fileCount: 0,
+            files: [],
+          };
 
-            for (const file of rootFiles) {
-              const filePath = path.join(paths.inbox, file.name);
-              const stat = await fs.stat(filePath);
+          for (const file of rootFiles) {
+            const filePath = path.join(paths.inbox, file.name);
+            const stat = await statSafe(filePath);
+            if (stat) {
               rootResult.files.push({
                 filename: file.name,
                 size: stat.size,
                 modifiedAt: stat.mtime.toISOString(),
               });
             }
-            rootResult.fileCount = rootResult.files.length;
-            // Sort files alphabetically
-            rootResult.files.sort((a, b) => a.filename.localeCompare(b.filename));
-            result.push(rootResult);
           }
+          rootResult.fileCount = rootResult.files.length;
+          // Sort files alphabetically
+          rootResult.files.sort((a, b) => a.filename.localeCompare(b.filename));
+          result.push(rootResult);
+        }
 
-          // Then scan subfolders
-          const subfolderNames = entries
-            .filter(e => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('-'))
-            .map(e => e.name);
+        // Then scan subfolders
+        const subfolderNames = entries
+          .filter(e => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('-'))
+          .map(e => e.name);
 
-          // Preferred sort order: raw, dataset, presentation first, then alphabetical
-          const preferredOrder = ['raw', 'dataset', 'presentation'];
-          subfolderNames.sort((a, b) => {
-            const aIndex = preferredOrder.indexOf(a);
-            const bIndex = preferredOrder.indexOf(b);
-            // Both in preferred list - sort by preferred order
-            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-            // Only a in preferred list - a comes first
-            if (aIndex !== -1) return -1;
-            // Only b in preferred list - b comes first
-            if (bIndex !== -1) return 1;
-            // Neither in preferred list - alphabetical
-            return a.localeCompare(b);
-          });
+        // Preferred sort order: raw, dataset, presentation first, then alphabetical
+        const preferredOrder = ['raw', 'dataset', 'presentation'];
+        subfolderNames.sort((a, b) => {
+          const aIndex = preferredOrder.indexOf(a);
+          const bIndex = preferredOrder.indexOf(b);
+          // Both in preferred list - sort by preferred order
+          if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+          // Only a in preferred list - a comes first
+          if (aIndex !== -1) return -1;
+          // Only b in preferred list - b comes first
+          if (bIndex !== -1) return 1;
+          // Neither in preferred list - alphabetical
+          return a.localeCompare(b);
+        });
 
-          for (const name of subfolderNames) {
-            const subfolderPath = path.join(paths.inbox, name);
-            const folderResult: InboxSubfolder = {
-              name,
-              path: subfolderPath,
-              fileCount: 0,
-              files: [],
-            };
+        for (const name of subfolderNames) {
+          const subfolderPath = path.join(paths.inbox, name);
+          const folderResult: InboxSubfolder = {
+            name,
+            path: subfolderPath,
+            fileCount: 0,
+            files: [],
+          };
 
-            try {
-              const fileEntries = await fs.readdir(subfolderPath, { withFileTypes: true });
-              const files = fileEntries.filter(e => e.isFile() && !e.name.startsWith('.'));
-              folderResult.fileCount = files.length;
+          const fileEntries = await readDirEntriesSafe(subfolderPath);
+          const files = fileEntries.filter(e => e.isFile() && !e.name.startsWith('.'));
 
-              // Get file details
-              for (const file of files) {
-                const filePath = path.join(subfolderPath, file.name);
-                const stat = await fs.stat(filePath);
-                folderResult.files.push({
-                  filename: file.name,
-                  size: stat.size,
-                  modifiedAt: stat.mtime.toISOString(),
-                });
-              }
-
-              // Sort files alphabetically
-              folderResult.files.sort((a, b) => a.filename.localeCompare(b.filename));
-            } catch {
-              // Error reading subfolder
+          // Get file details
+          for (const file of files) {
+            const filePath = path.join(subfolderPath, file.name);
+            const stat = await statSafe(filePath);
+            if (stat) {
+              folderResult.files.push({
+                filename: file.name,
+                size: stat.size,
+                modifiedAt: stat.mtime.toISOString(),
+              });
             }
-
-            result.push(folderResult);
           }
-        } catch {
-          // Error reading inbox directory
+          folderResult.fileCount = folderResult.files.length;
+
+          // Sort files alphabetically
+          folderResult.files.sort((a, b) => a.filename.localeCompare(b.filename));
+
+          result.push(folderResult);
         }
       }
 

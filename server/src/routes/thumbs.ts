@@ -35,7 +35,9 @@ function zipContainsImages(zipPath: string): { hasImages: boolean; imageCount: n
       imageCount: imageNames.length,
       imageNames,
     };
-  } catch {
+  } catch (err) {
+    // ZIP parsing error - log but return empty result
+    console.warn(`Failed to parse ZIP file ${zipPath}:`, err);
     return { hasImages: false, imageCount: 0, imageNames: [] };
   }
 }

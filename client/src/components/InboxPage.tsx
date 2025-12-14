@@ -8,7 +8,8 @@
  */
 
 import { useState } from 'react'
-import { useConfig, useInbox, useInboxFileContent, useOpenInboxFile, type InboxSubfolder, type InboxFile } from '../hooks/useApi'
+import { useConfig, useInbox, useInboxFileContent, useOpenInboxFile } from '../hooks/useApi'
+import type { InboxSubfolder, InboxFile } from '../../../shared/types'
 import { useInboxSocket } from '../hooks/useSocket'
 import { OpenFolderButton, LoadingSpinner, ErrorMessage, FileViewerModal } from './shared'
 import { formatFileSize } from '../utils/formatting'

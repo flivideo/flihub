@@ -463,3 +463,183 @@ export interface ChapterGenerationProgress {
   outputFile?: string;
   error?: string;
 }
+
+// ============================================
+// NFR-66: Consolidated Query API Response Types
+// ============================================
+
+// Query API: Project summary (list view)
+export interface QueryProjectSummary {
+  code: string;
+  brand: string;  // FR-61: Brand derived from v-appydave -> appydave
+  path: string;   // FR-61: Full project path
+  stage: ProjectStage;
+  priority: ProjectPriority;
+  stats: {
+    recordings: number;
+    chapters: number;
+    transcriptPercent: number;
+    images: number;
+    thumbs: number;
+  };
+  lastModified: string | null;
+}
+
+// Query API: Project detail (single project view)
+export interface QueryProjectDetail {
+  code: string;
+  path: string;
+  stage: ProjectStage;
+  priority: ProjectPriority;
+  stats: {
+    recordings: number;
+    safe: number;
+    chapters: number;
+    transcripts: {
+      matched: number;
+      missing: number;
+      orphaned: number;
+    };
+    images: number;
+    thumbs: number;
+    totalDuration: number | null;
+  };
+  finalMedia: {
+    video?: { filename: string; size: number };
+    srt?: { filename: string };
+  } | null;
+  createdAt: string | null;
+  lastModified: string | null;
+}
+
+// Query API: Recording info
+export interface QueryRecording {
+  filename: string;
+  chapter: string;
+  sequence: string;
+  name: string;
+  tags: string[];
+  folder: 'recordings' | 'safe';
+  size: number;
+  duration: number | null;
+  hasTranscript: boolean;
+}
+
+// Query API: Transcript info
+export interface QueryTranscript {
+  filename: string;
+  chapter: string;
+  sequence: string;
+  name: string;
+  size: number;
+  preview?: string;
+  content?: string;
+}
+
+// Query API: Chapter info
+export interface QueryChapter {
+  chapter: number;
+  name: string;
+  displayName: string;
+  timestamp: string | null;
+  timestampSeconds: number | null;
+  recordingCount: number;
+  hasTranscript: boolean;
+}
+
+// Query API: Image info
+export interface QueryImage {
+  filename: string;
+  chapter: string;
+  sequence: string;
+  imageOrder: string;
+  variant: string | null;
+  label: string;
+  size: number;
+}
+
+// ============================================
+// NFR-66: Consolidated Client Response Types
+// ============================================
+
+// FR-15: Move to safe response
+export interface SafeResponse {
+  success: boolean;
+  moved?: string[];
+  count?: number;
+  errors?: string[];
+  error?: string;
+}
+
+// FR-15: Restore from safe response
+export interface RestoreResponse {
+  success: boolean;
+  restored?: string[];
+  count?: number;
+  errors?: string[];
+  error?: string;
+}
+
+// FR-47: Rename chapter response
+export interface RenameChapterResponse {
+  success: boolean;
+  renamedFiles: string[];
+  error?: string;
+}
+
+// FR-30: Queue all transcriptions response
+export interface QueueAllResponse {
+  success: boolean;
+  scope: 'project' | 'chapter';
+  chapter: string | null;
+  queued: string[];
+  skipped: string[];
+  queuedCount: number;
+  skippedCount: number;
+  error?: string;
+}
+
+// FR-50: Recent rename info for undo
+export interface RecentRename {
+  id: string;
+  originalName: string;
+  newName: string;
+  timestamp: number;
+  age: number;
+}
+
+// FR-59: Inbox file info
+export interface InboxFile {
+  filename: string;
+  size: number;
+  modifiedAt: string;
+}
+
+// FR-59: Inbox subfolder info
+export interface InboxSubfolder {
+  name: string;
+  path: string;
+  fileCount: number;
+  files: InboxFile[];
+}
+
+// FR-59: Inbox response
+export interface InboxResponse {
+  success: boolean;
+  inbox: {
+    totalFiles: number;
+    subfolders: InboxSubfolder[];
+  };
+}
+
+// FR-58: Chapter recording status response
+export interface ChapterRecordingStatusResponse {
+  isGenerating: boolean;
+  chapters: Array<{
+    chapter: string;
+    label: string;
+    segmentCount: number;
+    totalDuration: number;
+  }>;
+  existing: string[];
+}

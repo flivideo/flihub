@@ -21,6 +21,15 @@ import type {
   ChapterRecordingConfig,
   ChapterRecordingRequest,
   ChapterRecordingResponse,
+  SafeResponse,
+  RestoreResponse,
+  RenameChapterResponse,
+  QueueAllResponse,
+  RecentRename,
+  InboxFile,
+  InboxSubfolder,
+  InboxResponse,
+  ChapterRecordingStatusResponse,
 } from '../../../shared/types'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { API_URL } from '../config'
@@ -137,15 +146,7 @@ export function useRecordings() {
   })
 }
 
-// FR-15: Move file(s) to -safe folder
-interface SafeResponse {
-  success: boolean
-  moved?: string[]
-  count?: number
-  errors?: string[]
-  error?: string
-}
-
+// FR-15: Move file(s) to -safe folder (NFR-66: using shared SafeResponse type)
 export function useMoveToSafe() {
   const queryClient = useQueryClient()
 
@@ -161,15 +162,7 @@ export function useMoveToSafe() {
   })
 }
 
-// FR-15: Restore file(s) from -safe folder
-interface RestoreResponse {
-  success: boolean
-  restored?: string[]
-  count?: number
-  errors?: string[]
-  error?: string
-}
-
+// FR-15: Restore file(s) from -safe folder (NFR-66: using shared RestoreResponse type)
 export function useRestoreFromSafe() {
   const queryClient = useQueryClient()
 
@@ -185,13 +178,7 @@ export function useRestoreFromSafe() {
   })
 }
 
-// FR-47: Rename chapter label (all files in a chapter)
-interface RenameChapterResponse {
-  success: boolean
-  renamedFiles: string[]
-  error?: string
-}
-
+// FR-47: Rename chapter label (NFR-66: using shared RenameChapterResponse type)
 export function useRenameChapter() {
   const queryClient = useQueryClient()
 
@@ -247,18 +234,7 @@ export function useUpdateProjectStage() {
   })
 }
 
-// FR-30 Enhancement: Queue all untranscribed videos
-interface QueueAllResponse {
-  success: boolean
-  scope: 'project' | 'chapter'
-  chapter: string | null
-  queued: string[]
-  skipped: string[]
-  queuedCount: number
-  skippedCount: number
-  error?: string
-}
-
+// FR-30 Enhancement: Queue all untranscribed videos (NFR-66: using shared QueueAllResponse type)
 export function useTranscribeAll() {
   const queryClient = useQueryClient()
 
@@ -403,15 +379,7 @@ export function useDeleteTranscript() {
   })
 }
 
-// FR-50: Get recent renames for undo functionality
-interface RecentRename {
-  id: string
-  originalName: string
-  newName: string
-  timestamp: number
-  age: number
-}
-
+// FR-50: Get recent renames for undo functionality (NFR-66: using shared RecentRename type)
 export function useRecentRenames() {
   return useQuery({
     queryKey: QUERY_KEYS.recentRenames,
@@ -439,29 +407,7 @@ export function useUndoRename() {
   })
 }
 
-// FR-59: Inbox management types
-export interface InboxFile {
-  filename: string
-  size: number
-  modifiedAt: string
-}
-
-export interface InboxSubfolder {
-  name: string
-  path: string
-  fileCount: number
-  files: InboxFile[]
-}
-
-export interface InboxResponse {
-  success: boolean
-  inbox: {
-    totalFiles: number
-    subfolders: InboxSubfolder[]
-  }
-}
-
-// FR-59: Get inbox contents for a project
+// FR-59: Get inbox contents for a project (NFR-66: using shared Inbox* types)
 export function useInbox(code: string | null) {
   return useQuery({
     queryKey: QUERY_KEYS.inbox(code || ''),
@@ -514,19 +460,7 @@ export function useOpenInboxFile() {
   })
 }
 
-// FR-58: Chapter Recording Status Response
-interface ChapterRecordingStatusResponse {
-  isGenerating: boolean
-  chapters: Array<{
-    chapter: string
-    label: string
-    segmentCount: number
-    totalDuration: number
-  }>
-  existing: string[]
-}
-
-// FR-58: Get chapter recording configuration
+// FR-58: Get chapter recording configuration (NFR-66: using shared ChapterRecordingStatusResponse type)
 export function useChapterRecordingConfig() {
   return useQuery({
     queryKey: QUERY_KEYS.chapterRecordingConfig,

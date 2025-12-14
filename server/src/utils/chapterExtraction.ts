@@ -16,6 +16,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import { glob } from 'glob'
 import { getProjectPaths } from '../../../shared/paths.js'
+import { statSafe, readFileSafe } from './filesystem.js'
 import type { ChapterMatch, ChaptersResponse, ChapterMatchStatus, ChapterMatchCandidate } from '../../../shared/types.js'
 // Phase 3: Text similarity algorithms for better matching
 // Using Trigram, SorensenDice (Dice coefficient), and Jaro for combined scoring
@@ -152,12 +153,8 @@ async function getChaptersFromTranscripts(transcriptsDir: string): Promise<Chapt
     const filePath = path.join(transcriptsDir, file)
 
     // Check if file has content (skip empty files)
-    try {
-      const stat = await fs.stat(filePath)
-      if (stat.size === 0) continue  // Skip empty files
-    } catch {
-      continue  // Skip files we can't stat
-    }
+    const stat = await statSafe(filePath)
+    if (!stat || stat.size === 0) continue  // Skip missing or empty files
 
     // Key is chapter + name (e.g., "16:create-custom-agent")
     const key = `${chapter}:${name}`
@@ -585,10 +582,8 @@ export async function extractChapters(
   // First pass: find matches for all chapters
   for (const info of chapterInfos) {
     // Read transcript for this chapter entry
-    let transcriptText = ''
-    try {
-      transcriptText = await fs.readFile(info.transcriptPath, 'utf-8')
-    } catch {
+    const transcriptText = await readFileSafe(info.transcriptPath)
+    if (!transcriptText) {
       // Can't read transcript, mark as not found
       results.push({
         chapter: info.chapter,

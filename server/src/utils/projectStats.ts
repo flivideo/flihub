@@ -154,7 +154,8 @@ export async function getProjectStatsRaw(
       } else {
         result.finalMedia = null;
       }
-    } catch {
+    } catch (err) {
+      console.warn(`Failed to detect final media for ${code}:`, err);
       result.finalMedia = null;
     }
   }

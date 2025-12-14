@@ -12,6 +12,7 @@ import { extractChapters } from '../utils/chapterExtraction.js';
 import { verifyChapterWithLLM } from '../utils/llmVerification.js';
 import { getProjectStatsRaw } from '../utils/projectStats.js';
 import { getProjectPaths } from '../../../shared/paths.js';
+import { readDirSafe } from '../utils/filesystem.js';
 import type {
   Config,
   ProjectStats,
@@ -196,26 +197,17 @@ export function createProjectRoutes(
     // Get all .mov files (base names without extension)
     const recordingFiles: string[] = [];
     for (const dir of [recordingsDir, safeDir]) {
-      try {
-        const files = await fs.readdir(dir);
-        recordingFiles.push(
-          ...files.filter(f => f.endsWith('.mov')).map(f => f.replace('.mov', ''))
-        );
-      } catch {
-        // Directory doesn't exist
-      }
+      const files = await readDirSafe(dir);
+      recordingFiles.push(
+        ...files.filter(f => f.endsWith('.mov')).map(f => f.replace('.mov', ''))
+      );
     }
 
     // Get all .txt files (base names, exclude *-chapter.txt)
-    let transcriptFiles: string[] = [];
-    try {
-      const files = await fs.readdir(transcriptsDir);
-      transcriptFiles = files
-        .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
-        .map(f => f.replace('.txt', ''));
-    } catch {
-      // Directory doesn't exist
-    }
+    const transcriptDirFiles = await readDirSafe(transcriptsDir);
+    const transcriptFiles = transcriptDirFiles
+      .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+      .map(f => f.replace('.txt', ''));
 
     const recordingSet = new Set(recordingFiles);
     const transcriptSet = new Set(transcriptFiles);

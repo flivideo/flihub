@@ -3,46 +3,38 @@
  *
  * Shared helpers for scanning directories, counting files, and getting project metadata.
  * Extracted from duplicated code in query.ts and projects.ts.
+ *
+ * NFR-67: Uses readDirSafe for consistent error handling - ENOENT returns empty,
+ * real errors (permissions) are thrown.
  */
 
 import path from 'path';
 import fs from 'fs-extra';
 import type { TranscriptSyncStatus } from '../../../shared/types.js';
+import { readDirSafe, statSafe } from './filesystem.js';
 
 /**
  * Count .mov files in a directory
  */
 export async function countMovFiles(dir: string): Promise<number> {
-  try {
-    const files = await fs.readdir(dir);
-    return files.filter(f => f.endsWith('.mov')).length;
-  } catch {
-    return 0;
-  }
+  const files = await readDirSafe(dir);
+  return files.filter(f => f.endsWith('.mov')).length;
 }
 
 /**
  * Count .txt files in a directory (excludes *-chapter.txt combined files)
  */
 export async function countTxtFiles(dir: string): Promise<number> {
-  try {
-    const files = await fs.readdir(dir);
-    return files.filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt')).length;
-  } catch {
-    return 0;
-  }
+  const files = await readDirSafe(dir);
+  return files.filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt')).length;
 }
 
 /**
  * Count files with specific extensions in a directory
  */
 export async function countFiles(dir: string, extensions: string[]): Promise<number> {
-  try {
-    const files = await fs.readdir(dir);
-    return files.filter(f => extensions.some(ext => f.toLowerCase().endsWith(ext))).length;
-  } catch {
-    return 0;
-  }
+  const files = await readDirSafe(dir);
+  return files.filter(f => extensions.some(ext => f.toLowerCase().endsWith(ext))).length;
 }
 
 /**
@@ -52,14 +44,10 @@ export async function countUniqueChapters(recordingsDir: string, safeDir: string
   const chapters = new Set<string>();
 
   for (const dir of [recordingsDir, safeDir]) {
-    try {
-      const files = await fs.readdir(dir);
-      for (const file of files) {
-        const match = file.match(/^(\d{2})-/);
-        if (match) chapters.add(match[1]);
-      }
-    } catch {
-      // Directory doesn't exist
+    const files = await readDirSafe(dir);
+    for (const file of files) {
+      const match = file.match(/^(\d{2})-/);
+      if (match) chapters.add(match[1]);
     }
   }
 
@@ -78,26 +66,17 @@ export async function getTranscriptSyncStatus(
   // Get all .mov files (base names without extension)
   const recordingFiles: string[] = [];
   for (const dir of [recordingsDir, safeDir]) {
-    try {
-      const files = await fs.readdir(dir);
-      recordingFiles.push(
-        ...files.filter(f => f.endsWith('.mov')).map(f => f.replace('.mov', ''))
-      );
-    } catch {
-      // Directory doesn't exist
-    }
+    const files = await readDirSafe(dir);
+    recordingFiles.push(
+      ...files.filter(f => f.endsWith('.mov')).map(f => f.replace('.mov', ''))
+    );
   }
 
   // Get all .txt files (base names, exclude *-chapter.txt)
-  let transcriptFiles: string[] = [];
-  try {
-    const files = await fs.readdir(transcriptsDir);
-    transcriptFiles = files
-      .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
-      .map(f => f.replace('.txt', ''));
-  } catch {
-    // Directory doesn't exist
-  }
+  const transcriptDirFiles = await readDirSafe(transcriptsDir);
+  const transcriptFiles = transcriptDirFiles
+    .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+    .map(f => f.replace('.txt', ''));
 
   const recordingSet = new Set(recordingFiles);
   const transcriptSet = new Set(transcriptFiles);
@@ -122,60 +101,48 @@ export interface ProjectTimestamps {
  * Scans subdirectories to find the most recently modified file
  */
 export async function getProjectTimestamps(projectPath: string): Promise<ProjectTimestamps> {
-  try {
-    const stat = await fs.stat(projectPath);
-    const createdAt = stat.birthtime.toISOString();
-
-    // Find most recent file across all subdirs
-    let latestTime = 0;
-    const subdirs = ['recordings', 'recordings/-safe', 'recording-transcripts', 'assets/images', 'assets/thumbs'];
-
-    for (const subdir of subdirs) {
-      try {
-        const dir = path.join(projectPath, subdir);
-        const files = await fs.readdir(dir);
-        for (const file of files) {
-          const fileStat = await fs.stat(path.join(dir, file));
-          if (fileStat.mtimeMs > latestTime) {
-            latestTime = fileStat.mtimeMs;
-          }
-        }
-      } catch {
-        // Directory doesn't exist
-      }
-    }
-
-    return {
-      createdAt,
-      lastModified: latestTime > 0 ? new Date(latestTime).toISOString() : null,
-    };
-  } catch {
+  const projectStat = await statSafe(projectPath);
+  if (!projectStat) {
     return { createdAt: null, lastModified: null };
   }
+
+  const createdAt = projectStat.birthtime.toISOString();
+
+  // Find most recent file across all subdirs
+  let latestTime = 0;
+  const subdirs = ['recordings', 'recordings/-safe', 'recording-transcripts', 'assets/images', 'assets/thumbs'];
+
+  for (const subdir of subdirs) {
+    const dir = path.join(projectPath, subdir);
+    const files = await readDirSafe(dir);
+    for (const file of files) {
+      const fileStat = await statSafe(path.join(dir, file));
+      if (fileStat && fileStat.mtimeMs > latestTime) {
+        latestTime = fileStat.mtimeMs;
+      }
+    }
+  }
+
+  return {
+    createdAt,
+    lastModified: latestTime > 0 ? new Date(latestTime).toISOString() : null,
+  };
 }
 
 /**
  * List .mov files in a directory
  */
 export async function listMovFiles(dir: string): Promise<string[]> {
-  try {
-    const files = await fs.readdir(dir);
-    return files.filter(f => f.endsWith('.mov'));
-  } catch {
-    return [];
-  }
+  const files = await readDirSafe(dir);
+  return files.filter(f => f.endsWith('.mov'));
 }
 
 /**
  * List .txt transcript files in a directory (excludes *-chapter.txt combined files)
  */
 export async function listTranscriptFiles(dir: string): Promise<string[]> {
-  try {
-    const files = await fs.readdir(dir);
-    return files.filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'));
-  } catch {
-    return [];
-  }
+  const files = await readDirSafe(dir);
+  return files.filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'));
 }
 
 /**
@@ -183,12 +150,8 @@ export async function listTranscriptFiles(dir: string): Promise<string[]> {
  * Filters .txt files, excludes *-chapter.txt combined files
  */
 export async function getTranscriptBasenames(dir: string): Promise<string[]> {
-  try {
-    const files = await fs.readdir(dir);
-    return files
-      .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
-      .map(f => f.replace('.txt', ''));
-  } catch {
-    return [];
-  }
+  const files = await readDirSafe(dir);
+  return files
+    .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+    .map(f => f.replace('.txt', ''));
 }
