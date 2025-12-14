@@ -166,6 +166,22 @@ export class WatcherManager {
   }
 
   /**
+   * FR-59: Start inbox watcher (inbox/ folder and all subfolders)
+   */
+  startInboxWatcher(projectDir: string): void {
+    const paths = getProjectPaths(expandPath(projectDir));
+    this.startWatcher({
+      name: 'inbox',
+      pattern: paths.inbox,
+      event: 'inbox:changed',
+      debounceMs: 300,
+      depth: 2,  // Watch inbox/ and one level of subfolders
+      ignored: /(^|[\/\\])\../,
+      watchEvents: ['add', 'unlink', 'addDir', 'unlinkDir'],
+    });
+  }
+
+  /**
    * Update watchers based on config changes
    */
   updateFromConfig(oldConfig: Config | null, newConfig: Config): void {
@@ -174,6 +190,7 @@ export class WatcherManager {
       this.startAssignedImagesWatcher(newConfig.projectDirectory);
       this.startRecordingsWatcher(newConfig.projectDirectory);
       this.startProjectsWatcher(newConfig.projectDirectory);
+      this.startInboxWatcher(newConfig.projectDirectory);  // FR-59
     }
 
     // Restart incoming images watcher if source directory changed
@@ -191,6 +208,7 @@ export class WatcherManager {
     this.startAssignedImagesWatcher(config.projectDirectory);
     this.startRecordingsWatcher(config.projectDirectory);
     this.startProjectsWatcher(config.projectDirectory);
+    this.startInboxWatcher(config.projectDirectory);  // FR-59
   }
 
   /**

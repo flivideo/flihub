@@ -16,6 +16,10 @@ export interface ProjectPaths {
     transcripts: string;
     final: string;
     s3Staging: string;
+    inbox: string;
+    inboxRaw: string;
+    inboxDataset: string;
+    inboxPresentation: string;
 }
 /**
  * Get all project-related paths from the project directory

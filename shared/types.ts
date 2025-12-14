@@ -240,6 +240,7 @@ export interface ServerToClientEvents {
   'assets:assigned-changed': () => void;  // Image assigned/deleted in assets/images
   'recordings:changed': () => void;       // Recording renamed/moved/deleted
   'projects:changed': () => void;         // Project folder changed
+  'inbox:changed': () => void;            // FR-59: Inbox file added/removed
   // FR-30: Transcription events
   'transcription:queued': (job: { jobId: string; videoPath: string; position: number }) => void;
   'transcription:started': (job: { jobId: string; videoPath: string }) => void;

@@ -2,6 +2,7 @@
 // FR-33: Final video and SRT detection
 // FR-34: Chapter timestamp extraction
 // FR-34 Enhancement: LLM-based chapter verification
+// FR-59: Inbox management
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
@@ -10,6 +11,7 @@ import { detectFinalMedia } from '../utils/finalMedia.js';
 import { extractChapters } from '../utils/chapterExtraction.js';
 import { verifyChapterWithLLM } from '../utils/llmVerification.js';
 import { getProjectStatsRaw } from '../utils/projectStats.js';
+import { getProjectPaths } from '../../../shared/paths.js';
 import type {
   Config,
   ProjectStats,
@@ -456,6 +458,71 @@ export function createProjectRoutes(
     } catch (error) {
       console.error(`Error removing override for ${code}:`, error);
       res.status(500).json({ success: false, error: 'Failed to remove override' });
+    }
+  });
+
+  // FR-59: POST /api/projects/:code/inbox/write - Write file to inbox subfolder
+  router.post('/:code/inbox/write', async (req: Request, res: Response) => {
+    const { code } = req.params;
+    const { subfolder, filename, content } = req.body;
+
+    // Validate subfolder
+    const validSubfolders = ['raw', 'dataset', 'presentation'];
+    if (!validSubfolders.includes(subfolder)) {
+      res.status(400).json({
+        success: false,
+        error: `Invalid subfolder. Use one of: ${validSubfolders.join(', ')}`,
+      });
+      return;
+    }
+
+    if (!filename || typeof filename !== 'string') {
+      res.status(400).json({ success: false, error: 'Filename is required' });
+      return;
+    }
+
+    if (content === undefined) {
+      res.status(400).json({ success: false, error: 'Content is required' });
+      return;
+    }
+
+    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectPath = path.join(projectsDir, code);
+
+    // Verify project exists
+    if (!await fs.pathExists(projectPath)) {
+      res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      return;
+    }
+
+    const paths = getProjectPaths(projectPath);
+
+    // Get the target folder
+    const subfolderPaths: Record<string, string> = {
+      raw: paths.inboxRaw,
+      dataset: paths.inboxDataset,
+      presentation: paths.inboxPresentation,
+    };
+    const targetDir = subfolderPaths[subfolder];
+
+    try {
+      // Ensure directory exists
+      await fs.ensureDir(targetDir);
+
+      // Write file
+      const filePath = path.join(targetDir, filename);
+      await fs.writeFile(filePath, content, 'utf-8');
+
+      console.log(`[FR-59] Wrote file to inbox: ${code}/inbox/${subfolder}/${filename}`);
+      res.json({
+        success: true,
+        path: filePath,
+        subfolder,
+        filename,
+      });
+    } catch (error) {
+      console.error(`Error writing to inbox for ${code}:`, error);
+      res.status(500).json({ success: false, error: 'Failed to write file to inbox' });
     }
   });
 

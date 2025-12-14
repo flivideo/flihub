@@ -434,3 +434,52 @@ export function useUndoRename() {
     },
   })
 }
+
+// FR-59: Inbox management types
+export interface InboxFile {
+  filename: string
+  size: number
+  modifiedAt: string
+}
+
+export interface InboxSubfolder {
+  name: string
+  path: string
+  fileCount: number
+  files: InboxFile[]
+}
+
+export interface InboxResponse {
+  success: boolean
+  inbox: {
+    totalFiles: number
+    subfolders: InboxSubfolder[]
+  }
+}
+
+// FR-59: Get inbox contents for a project
+export function useInbox(code: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.inbox(code || ''),
+    queryFn: () => fetchApi<InboxResponse>(`/api/query/projects/${code}/inbox`),
+    enabled: !!code,
+  })
+}
+
+// FR-59: Write file to inbox
+export function useWriteToInbox(code: string | null) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ subfolder, filename, content }: { subfolder: string; filename: string; content: string }) =>
+      fetchApi<{ success: boolean; path: string; subfolder: string; filename: string }>(`/api/projects/${code}/inbox/write`, {
+        method: 'POST',
+        body: JSON.stringify({ subfolder, filename, content }),
+      }),
+    onSuccess: () => {
+      if (code) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inbox(code) })
+      }
+    },
+  })
+}

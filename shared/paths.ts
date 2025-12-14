@@ -19,6 +19,11 @@ export interface ProjectPaths {
   transcripts: string   // recording-transcripts/ (FR-30) - raw transcripts, not final edited transcript
   final: string         // final/ (FR-33) - final video and SRT after all editing
   s3Staging: string     // s3-staging/ (FR-33) - DAM exchange point with editor
+  // FR-59: Inbox folders for unlabeled incoming content
+  inbox: string         // inbox/
+  inboxRaw: string      // inbox/raw/
+  inboxDataset: string  // inbox/dataset/
+  inboxPresentation: string  // inbox/presentation/
 }
 
 /**
@@ -37,6 +42,11 @@ export function getProjectPaths(projectDirectory: string): ProjectPaths {
     transcripts: path.join(projectDirectory, 'recording-transcripts'),
     final: path.join(projectDirectory, 'final'),
     s3Staging: path.join(projectDirectory, 's3-staging'),
+    // FR-59: Inbox folders
+    inbox: path.join(projectDirectory, 'inbox'),
+    inboxRaw: path.join(projectDirectory, 'inbox', 'raw'),
+    inboxDataset: path.join(projectDirectory, 'inbox', 'dataset'),
+    inboxPresentation: path.join(projectDirectory, 'inbox', 'presentation'),
   }
 }
 

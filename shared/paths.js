@@ -22,6 +22,11 @@ export function getProjectPaths(projectDirectory) {
         transcripts: path.join(projectDirectory, 'recording-transcripts'),
         final: path.join(projectDirectory, 'final'),
         s3Staging: path.join(projectDirectory, 's3-staging'),
+        // FR-59: Inbox folders
+        inbox: path.join(projectDirectory, 'inbox'),
+        inboxRaw: path.join(projectDirectory, 'inbox', 'raw'),
+        inboxDataset: path.join(projectDirectory, 'inbox', 'dataset'),
+        inboxPresentation: path.join(projectDirectory, 'inbox', 'presentation'),
     };
 }
 /**

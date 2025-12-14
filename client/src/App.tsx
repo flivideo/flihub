@@ -14,13 +14,14 @@ import { RecordingsView } from './components/RecordingsView'
 import { AssetsPage } from './components/AssetsPage'
 import { ThumbsPage } from './components/ThumbsPage'
 import { TranscriptionsPage } from './components/TranscriptionsPage'
+import { InboxPage } from './components/InboxPage'
 import { ConnectionIndicator } from './components/ConnectionIndicator'
 import { OpenFolderButton } from './components/shared'
 import type { FileInfo } from '../../shared/types'
 
-type ViewTab = 'incoming' | 'recordings' | 'transcriptions' | 'assets' | 'thumbs' | 'projects' | 'config'
+type ViewTab = 'incoming' | 'recordings' | 'inbox' | 'transcriptions' | 'assets' | 'thumbs' | 'projects' | 'config'
 
-const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'transcriptions', 'assets', 'thumbs', 'projects', 'config']
+const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'inbox', 'transcriptions', 'assets', 'thumbs', 'projects', 'config']
 
 // Get initial tab from URL hash
 function getTabFromHash(): ViewTab {
@@ -392,6 +393,16 @@ function App() {
               Recordings
             </button>
             <button
+              onClick={() => changeTab('inbox')}
+              className={`text-sm transition-colors ${
+                activeTab === 'inbox'
+                  ? 'text-blue-600 font-medium'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Inbox
+            </button>
+            <button
               onClick={() => changeTab('transcriptions')}
               className={`text-sm transition-colors ${
                 activeTab === 'transcriptions'
@@ -539,6 +550,13 @@ function App() {
               <OpenFolderButton folder="safe" label="Safe" />
             </div>
             <RecordingsView />
+          </section>
+        )}
+
+        {/* Inbox Tab - FR-59 */}
+        {activeTab === 'inbox' && (
+          <section>
+            <InboxPage />
           </section>
         )}
 

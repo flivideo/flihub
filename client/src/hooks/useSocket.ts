@@ -182,3 +182,25 @@ export function useProjectsSocket() {
     }
   }, [queryClient])
 }
+
+// FR-59: Hook for inbox socket events - invalidates React Query cache
+export function useInboxSocket(projectCode: string | null) {
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    if (!projectCode) return
+
+    const socket = getSocket()
+
+    const handleInboxChanged = () => {
+      console.log('Socket: inbox:changed - invalidating cache')
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inbox(projectCode) })
+    }
+
+    socket.on('inbox:changed', handleInboxChanged)
+
+    return () => {
+      socket.off('inbox:changed', handleInboxChanged)
+    }
+  }, [queryClient, projectCode])
+}

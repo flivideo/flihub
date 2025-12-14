@@ -1084,5 +1084,139 @@ export function createQueryRoutes(getConfig: () => Config): Router {
     }
   });
 
+  // ============================================
+  // 8. GET /api/query/projects/:code/inbox - FR-59
+  // ============================================
+  router.get('/projects/:code/inbox', async (req: Request, res: Response) => {
+    const { code } = req.params;
+    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectPath = path.join(projectsDir, code);
+
+    try {
+      if (!await fs.pathExists(projectPath)) {
+        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+        return;
+      }
+
+      const paths = getProjectPaths(projectPath);
+
+      interface InboxFile {
+        filename: string;
+        size: number;
+        modifiedAt: string;
+      }
+
+      interface InboxSubfolder {
+        name: string;
+        path: string;
+        fileCount: number;
+        files: InboxFile[];
+      }
+
+      const result: InboxSubfolder[] = [];
+
+      // Scan inbox directory for actual subfolders (dynamic, not hardcoded)
+      if (await fs.pathExists(paths.inbox)) {
+        try {
+          const entries = await fs.readdir(paths.inbox, { withFileTypes: true });
+
+          // First, check for root-level files (files directly in inbox/)
+          const rootFiles = entries.filter(e => e.isFile() && !e.name.startsWith('.'));
+          if (rootFiles.length > 0) {
+            const rootResult: InboxSubfolder = {
+              name: '(root)',
+              path: paths.inbox,
+              fileCount: 0,
+              files: [],
+            };
+
+            for (const file of rootFiles) {
+              const filePath = path.join(paths.inbox, file.name);
+              const stat = await fs.stat(filePath);
+              rootResult.files.push({
+                filename: file.name,
+                size: stat.size,
+                modifiedAt: stat.mtime.toISOString(),
+              });
+            }
+            rootResult.fileCount = rootResult.files.length;
+            // Sort files alphabetically
+            rootResult.files.sort((a, b) => a.filename.localeCompare(b.filename));
+            result.push(rootResult);
+          }
+
+          // Then scan subfolders
+          const subfolderNames = entries
+            .filter(e => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('-'))
+            .map(e => e.name);
+
+          // Preferred sort order: raw, dataset, presentation first, then alphabetical
+          const preferredOrder = ['raw', 'dataset', 'presentation'];
+          subfolderNames.sort((a, b) => {
+            const aIndex = preferredOrder.indexOf(a);
+            const bIndex = preferredOrder.indexOf(b);
+            // Both in preferred list - sort by preferred order
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            // Only a in preferred list - a comes first
+            if (aIndex !== -1) return -1;
+            // Only b in preferred list - b comes first
+            if (bIndex !== -1) return 1;
+            // Neither in preferred list - alphabetical
+            return a.localeCompare(b);
+          });
+
+          for (const name of subfolderNames) {
+            const subfolderPath = path.join(paths.inbox, name);
+            const folderResult: InboxSubfolder = {
+              name,
+              path: subfolderPath,
+              fileCount: 0,
+              files: [],
+            };
+
+            try {
+              const fileEntries = await fs.readdir(subfolderPath, { withFileTypes: true });
+              const files = fileEntries.filter(e => e.isFile() && !e.name.startsWith('.'));
+              folderResult.fileCount = files.length;
+
+              // Get file details
+              for (const file of files) {
+                const filePath = path.join(subfolderPath, file.name);
+                const stat = await fs.stat(filePath);
+                folderResult.files.push({
+                  filename: file.name,
+                  size: stat.size,
+                  modifiedAt: stat.mtime.toISOString(),
+                });
+              }
+
+              // Sort files alphabetically
+              folderResult.files.sort((a, b) => a.filename.localeCompare(b.filename));
+            } catch {
+              // Error reading subfolder
+            }
+
+            result.push(folderResult);
+          }
+        } catch {
+          // Error reading inbox directory
+        }
+      }
+
+      const totalFiles = result.reduce((sum, f) => sum + f.fileCount, 0);
+
+      res.json({
+        success: true,
+        inbox: {
+          totalFiles,
+          subfolders: result,
+        },
+      });
+    } catch (error) {
+      console.error('Error listing inbox:', error);
+      res.status(500).json({ success: false, error: 'Failed to list inbox' });
+    }
+  });
+
   return router;
 }

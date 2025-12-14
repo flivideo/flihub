@@ -50,7 +50,7 @@ import type { Config } from '../../../shared/types.js';
  * Valid folder keys that can be opened.
  * This whitelist prevents arbitrary path execution.
  */
-type FolderKey = 'ecamm' | 'downloads' | 'recordings' | 'safe' | 'trash' | 'images' | 'thumbs' | 'transcripts' | 'project' | 'final' | 's3Staging';
+type FolderKey = 'ecamm' | 'downloads' | 'recordings' | 'safe' | 'trash' | 'images' | 'thumbs' | 'transcripts' | 'project' | 'final' | 's3Staging' | 'inbox';
 
 export function createSystemRoutes(config: Config): Router {
   const router = Router();
@@ -92,6 +92,7 @@ export function createSystemRoutes(config: Config): Router {
       project: paths.project,
       final: paths.final,
       s3Staging: paths.s3Staging,
+      inbox: paths.inbox,  // FR-59
     };
 
     const folderPath = folderMap[folder];
@@ -116,6 +117,22 @@ export function createSystemRoutes(config: Config): Router {
       }
       console.log(`Opened folder: ${folderPath}`);
       res.json({ success: true, path: folderPath });
+    });
+  });
+
+  /**
+   * GET /api/system/health
+   *
+   * Simple health check endpoint to verify FliHub is running.
+   * Returns server status and current project info.
+   */
+  router.get('/health', (_req: Request, res: Response) => {
+    res.json({
+      success: true,
+      status: 'ok',
+      server: 'FliHub',
+      port: 5101,
+      project: config.projectDirectory?.split('/').pop() || null,
     });
   });
 

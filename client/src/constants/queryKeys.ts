@@ -37,4 +37,6 @@ export const QUERY_KEYS = {
   transcriptSync: (code: string) => ['transcript-sync', code] as const,
   // FR-50: Recent renames for undo
   recentRenames: ['recent-renames'] as const,
+  // FR-59: Inbox management
+  inbox: (code: string) => ['inbox', code] as const,
 } as const
