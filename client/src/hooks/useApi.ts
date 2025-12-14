@@ -18,6 +18,9 @@ import type {
   SetChapterOverrideResponse,
   TranscriptSyncResponse,
   FileContentResponse,
+  ChapterRecordingConfig,
+  ChapterRecordingRequest,
+  ChapterRecordingResponse,
 } from '../../../shared/types'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { API_URL } from '../config'
@@ -508,5 +511,66 @@ export function useOpenInboxFile() {
         method: 'POST',
         body: JSON.stringify({ subfolder, filename }),
       }),
+  })
+}
+
+// FR-58: Chapter Recording Status Response
+interface ChapterRecordingStatusResponse {
+  isGenerating: boolean
+  chapters: Array<{
+    chapter: string
+    label: string
+    segmentCount: number
+    totalDuration: number
+  }>
+  existing: string[]
+}
+
+// FR-58: Get chapter recording configuration
+export function useChapterRecordingConfig() {
+  return useQuery({
+    queryKey: QUERY_KEYS.chapterRecordingConfig,
+    queryFn: () => fetchApi<{ success: boolean; config: ChapterRecordingConfig }>('/api/chapters/config'),
+  })
+}
+
+// FR-58: Update chapter recording configuration
+export function useUpdateChapterRecordingConfig() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (config: Partial<ChapterRecordingConfig>) =>
+      fetchApi<{ success: boolean }>('/api/chapters/config', {
+        method: 'PUT',
+        body: JSON.stringify(config),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapterRecordingConfig })
+    },
+  })
+}
+
+// FR-58: Get chapter recording status (chapters available, existing recordings)
+export function useChapterRecordingStatus() {
+  return useQuery({
+    queryKey: QUERY_KEYS.chapterRecordingStatus,
+    queryFn: () => fetchApi<ChapterRecordingStatusResponse>('/api/chapters/status'),
+    refetchInterval: 5000,  // Poll during generation
+  })
+}
+
+// FR-58: Generate chapter recordings
+export function useGenerateChapterRecordings() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (request: ChapterRecordingRequest) =>
+      fetchApi<ChapterRecordingResponse>('/api/chapters/generate', {
+        method: 'POST',
+        body: JSON.stringify(request),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapterRecordingStatus })
+    },
   })
 }

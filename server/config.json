@@ -1,6 +1,6 @@
 {
   "watchDirectory": "~/ecamm",
-  "projectDirectory": "/Users/davidcruwys/dev/video-projects/v-appydave/b64-bmad-claude-sdk",
+  "projectDirectory": "/Users/davidcruwys/dev/video-projects/v-appydave/b86-claudemas-01-jump",
   "availableTags": [
     "CTA",
     "SKOOL"
@@ -35,6 +35,7 @@
     "b77-vibe-marketing-info-page-5-minutes": "pinned",
     "b76-vibe-code-auto-chapters-opus-4.5": "pinned",
     "b74-claude-token-usage-tips": "pinned",
-    "b81-dam-command-line": "pinned"
+    "b81-dam-command-line": "pinned",
+    "b86-claudemas-01-jump": "pinned"
   }
 }

@@ -1,13 +1,14 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useRecordings, useMoveToSafe, useRestoreFromSafe, useTranscribeAll } from '../hooks/useApi'
-import { useRecordingsSocket } from '../hooks/useSocket'
+import { useRecordings, useMoveToSafe, useRestoreFromSafe, useTranscribeAll, useGenerateChapterRecordings } from '../hooks/useApi'
+import { useRecordingsSocket, useChapterRecordingSocket } from '../hooks/useSocket'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { TranscriptModal } from './TranscriptModal'
 import { VideoTranscriptModal } from './VideoTranscriptModal'
 import { RenameLabelModal } from './RenameLabelModal'
 import { ChapterPanel } from './ChapterPanel'
+import { ChapterRecordingModal } from './ChapterRecordingModal'
 import type { RecordingFile, TranscriptionStatusResponse } from '../../../shared/types'
 import { formatFileSize, formatDuration, formatChapterTitle, formatTimestamp } from '../utils/formatting'
 import { LoadingSpinner, ErrorMessage } from './shared'
@@ -257,6 +258,7 @@ export function RecordingsView() {
   const moveToSafe = useMoveToSafe()
   const restoreFromSafe = useRestoreFromSafe()
   const transcribeAll = useTranscribeAll()
+  const generateChapter = useGenerateChapterRecordings()
   const [showSafe, setShowSafe] = useState(true)
   const [viewingTranscript, setViewingTranscript] = useState<string | null>(null)
   // FR-47: State for editing chapter label
@@ -269,12 +271,18 @@ export function RecordingsView() {
   // FR-55: State for video transcript modal
   const [showVideoTranscript, setShowVideoTranscript] = useState(false)
 
+  // FR-58: State for chapter recording modal
+  const [showChapterRecording, setShowChapterRecording] = useState(false)
+
   // FR-56: Refs and state for chapter navigation panel
   const chapterRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const [currentChapter, setCurrentChapter] = useState<string | null>(null)
 
   // NFR-5: Subscribe to real-time recordings changes via socket
   useRecordingsSocket()
+
+  // FR-58: Listen for chapter recording completion events
+  useChapterRecordingSocket()
 
   // Handle moving a single file to safe
   const handleMoveToSafe = (filename: string) => {
@@ -559,6 +567,14 @@ export function RecordingsView() {
         >
           📄 Transcript
         </button>
+        <span className="text-gray-300">|</span>
+        <button
+          onClick={() => setShowChapterRecording(true)}
+          className="text-purple-600 hover:text-purple-700"
+          title="Create chapter preview recordings"
+        >
+          🎬 Chapter Recordings
+        </button>
       </div>
 
       {/* Recordings list */}
@@ -747,6 +763,13 @@ export function RecordingsView() {
       {showVideoTranscript && (
         <VideoTranscriptModal
           onClose={() => setShowVideoTranscript(false)}
+        />
+      )}
+
+      {/* FR-58: Chapter Recording Modal */}
+      {showChapterRecording && (
+        <ChapterRecordingModal
+          onClose={() => setShowChapterRecording(false)}
         />
       )}
 

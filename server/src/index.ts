@@ -14,6 +14,7 @@ import { createSystemRoutes } from './routes/system.js';
 import { createTranscriptionRoutes } from './routes/transcriptions.js';
 import { createProjectRoutes } from './routes/projects.js';
 import { createQueryRoutes } from './routes/query.js';
+import { createChapterRoutes } from './routes/chapters.js';
 import { migrateTargetToProject } from '../../shared/paths.js';
 import { WatcherManager } from './WatcherManager.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -219,6 +220,17 @@ app.use('/api/projects', projectRoutes);
 const queryRoutes = createQueryRoutes(() => currentConfig);
 app.use('/api/query', queryRoutes);
 
+// FR-58: Setup chapter recording routes
+const chapterRoutes = createChapterRoutes(
+  () => currentConfig,
+  (config: Config) => {
+    Object.assign(currentConfig, config);
+    saveConfig(currentConfig);
+  },
+  io
+);
+app.use('/api/chapters', chapterRoutes);
+
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);
 
@@ -257,8 +269,15 @@ process.on('SIGINT', () => {
   if (watcher) watcher.close();
   // NFR-6: Close all watchers via WatcherManager
   watcherManager.closeAll();
+  // Close all socket connections
+  io.close();
   httpServer.close(() => {
     console.log('Server closed');
     process.exit(0);
   });
+  // Force exit after 2 seconds if something hangs
+  setTimeout(() => {
+    console.log('Force exit');
+    process.exit(0);
+  }, 2000);
 });

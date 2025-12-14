@@ -24,6 +24,7 @@ export interface Config {
   imageSourceDirectory: string; // FR-17: Source for incoming images (default: ~/Downloads)
   projectPriorities?: Record<string, 'pinned'>; // FR-32: Pinned projects (absent = normal)
   projectStages?: Record<string, 'recording' | 'editing' | 'done'>; // FR-32: Manual stage overrides (absent = auto-detect)
+  chapterRecordings?: ChapterRecordingConfig;  // FR-58: Chapter recording settings
 }
 
 export interface RenameRequest {
@@ -241,6 +242,10 @@ export interface ServerToClientEvents {
   'recordings:changed': () => void;       // Recording renamed/moved/deleted
   'projects:changed': () => void;         // Project folder changed
   'inbox:changed': () => void;            // FR-59: Inbox file added/removed
+  // FR-58: Chapter recording events
+  'chapters:generating': (data: { chapter: string; total: number; current: number }) => void;
+  'chapters:generated': (data: { chapter: string; outputFile: string }) => void;
+  'chapters:complete': (data: { generated: string[]; errors?: string[] }) => void;
   // FR-30: Transcription events
   'transcription:queued': (job: { jobId: string; videoPath: string; position: number }) => void;
   'transcription:started': (job: { jobId: string; videoPath: string }) => void;
@@ -426,5 +431,35 @@ export interface SetChapterOverrideRequest {
 export interface SetChapterOverrideResponse {
   success: boolean;
   override: ChapterOverride;
+  error?: string;
+}
+
+// FR-58: Chapter Recording Configuration
+export interface ChapterRecordingConfig {
+  slideDuration: number;  // Seconds to show title slide (e.g., 1.0)
+  resolution: '720p' | '1080p';  // Output resolution
+  autoGenerate: boolean;  // Auto-generate on new chapter
+}
+
+// FR-58: Chapter Recording Request
+export interface ChapterRecordingRequest {
+  chapter?: string;        // Specific chapter to generate, or all if omitted
+  slideDuration?: number;  // Override config slide duration
+  resolution?: string;     // Override config resolution
+}
+
+// FR-58: Chapter Recording Response
+export interface ChapterRecordingResponse {
+  success: boolean;
+  generated: string[];     // List of generated files
+  errors?: string[];
+  error?: string;
+}
+
+// FR-58: Generated chapter info for progress updates
+export interface ChapterGenerationProgress {
+  chapter: string;
+  status: 'pending' | 'generating' | 'complete' | 'error';
+  outputFile?: string;
   error?: string;
 }

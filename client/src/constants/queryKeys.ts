@@ -41,4 +41,7 @@ export const QUERY_KEYS = {
   inbox: (code: string) => ['inbox', code] as const,
   // FR-64: Inbox file content
   inboxFile: (code: string, subfolder: string, filename: string) => ['inbox-file', code, subfolder, filename] as const,
+  // FR-58: Chapter recording management
+  chapterRecordingConfig: ['chapter-recording-config'] as const,
+  chapterRecordingStatus: ['chapter-recording-status'] as const,
 } as const

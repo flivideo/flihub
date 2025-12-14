@@ -12,6 +12,7 @@ export interface ProjectPaths {
   project: string       // Project root (e.g., ~/dev/video-projects/v-appydave/b64-project)
   recordings: string    // recordings/
   safe: string          // recordings/-safe/
+  chapters: string      // recordings/-chapters/ (FR-58) - combined chapter preview videos
   trash: string         // -trash/
   assets: string        // assets/
   images: string        // assets/images/
@@ -35,6 +36,7 @@ export function getProjectPaths(projectDirectory: string): ProjectPaths {
     project: projectDirectory,
     recordings: path.join(projectDirectory, 'recordings'),
     safe: path.join(projectDirectory, 'recordings', '-safe'),
+    chapters: path.join(projectDirectory, 'recordings', '-chapters'),  // FR-58
     trash: path.join(projectDirectory, '-trash'),
     assets: path.join(projectDirectory, 'assets'),
     images: path.join(projectDirectory, 'assets', 'images'),

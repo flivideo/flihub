@@ -9,6 +9,7 @@ export interface ProjectPaths {
     project: string;
     recordings: string;
     safe: string;
+    chapters: string;
     trash: string;
     assets: string;
     images: string;

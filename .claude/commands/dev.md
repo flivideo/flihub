@@ -28,7 +28,7 @@ npm run dev -w server   # Server only
 
 ## Documentation
 
-All requirements and specs live in: `/Users/davidcruwys/dev/ad/flivideo/docs/recording-namer/`
+All requirements and specs live in: `/Users/davidcruwys/dev/ad/flivideo/fli-brief/docs/flihub/`
 
 - `backlog.md` - FR/NFR requirements with status
 - `implementation-notes.md` - Decisions and learnings
@@ -64,7 +64,7 @@ You may also receive:
 ### Step 1: Understand the Requirement
 
 If given an FR/NFR number:
-- Read the spec from `docs/recording-namer/backlog.md`
+- Read the spec from `/Users/davidcruwys/dev/ad/flivideo/fli-brief/docs/flihub/backlog.md`
 - Read any linked spec files
 
 If given inline instructions:

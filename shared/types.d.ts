@@ -19,6 +19,7 @@ export interface Config {
     imageSourceDirectory: string;
     projectPriorities?: Record<string, 'pinned'>;
     projectStages?: Record<string, 'recording' | 'editing' | 'done'>;
+    chapterRecordings?: ChapterRecordingConfig;
 }
 export interface RenameRequest {
     originalPath: string;
@@ -194,6 +195,19 @@ export interface ServerToClientEvents {
     'recordings:changed': () => void;
     'projects:changed': () => void;
     'inbox:changed': () => void;
+    'chapters:generating': (data: {
+        chapter: string;
+        total: number;
+        current: number;
+    }) => void;
+    'chapters:generated': (data: {
+        chapter: string;
+        outputFile: string;
+    }) => void;
+    'chapters:complete': (data: {
+        generated: string[];
+        errors?: string[];
+    }) => void;
     'transcription:queued': (job: {
         jobId: string;
         videoPath: string;
@@ -357,5 +371,27 @@ export interface SetChapterOverrideRequest {
 export interface SetChapterOverrideResponse {
     success: boolean;
     override: ChapterOverride;
+    error?: string;
+}
+export interface ChapterRecordingConfig {
+    slideDuration: number;
+    resolution: '720p' | '1080p';
+    autoGenerate: boolean;
+}
+export interface ChapterRecordingRequest {
+    chapter?: string;
+    slideDuration?: number;
+    resolution?: string;
+}
+export interface ChapterRecordingResponse {
+    success: boolean;
+    generated: string[];
+    errors?: string[];
+    error?: string;
+}
+export interface ChapterGenerationProgress {
+    chapter: string;
+    status: 'pending' | 'generating' | 'complete' | 'error';
+    outputFile?: string;
     error?: string;
 }

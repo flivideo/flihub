@@ -1,19 +1,19 @@
 # Quick Status
 
-Provide a quick status summary of the Recording Namer project without exploring the codebase.
+Provide a quick status summary of the FliHub project without exploring the codebase.
 
 ## Instructions
 
 Read the following files and provide a concise summary:
 
-1. **Read** `docs/recording-namer/backlog.md` (just the requirements table at the top)
-2. **Read** `docs/recording-namer/changelog.md` (just the Quick Summary section)
-3. **Read** `docs/recording-namer/brainstorming-notes.md` (just the Promoted to Requirements section)
+1. **Read** `/Users/davidcruwys/dev/ad/flivideo/fli-brief/docs/flihub/backlog.md` (just the requirements table at the top)
+2. **Read** `/Users/davidcruwys/dev/ad/flivideo/fli-brief/docs/flihub/changelog.md` (just the Quick Summary section)
+3. **Read** `/Users/davidcruwys/dev/ad/flivideo/fli-brief/docs/flihub/brainstorming-notes.md` (just the Promoted to Requirements section)
 
 ## Output Format
 
 ```
-## Recording Namer Status
+## FliHub Status
 
 ### Recently Completed
 - [List last 3-5 completed FRs from changelog]

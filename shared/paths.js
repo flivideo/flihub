@@ -15,6 +15,7 @@ export function getProjectPaths(projectDirectory) {
         project: projectDirectory,
         recordings: path.join(projectDirectory, 'recordings'),
         safe: path.join(projectDirectory, 'recordings', '-safe'),
+        chapters: path.join(projectDirectory, 'recordings', '-chapters'), // FR-58
         trash: path.join(projectDirectory, '-trash'),
         assets: path.join(projectDirectory, 'assets'),
         images: path.join(projectDirectory, 'assets', 'images'),

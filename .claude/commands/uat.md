@@ -8,7 +8,7 @@ Verify that implemented features work correctly from an **end-user perspective**
 
 ## Documentation Location
 
-All UAT plans and results live in: `/Users/davidcruwys/dev/ad/flivideo/docs/recording-namer/uat/`
+All UAT plans and results live in: `/Users/davidcruwys/dev/ad/flivideo/fli-brief/docs/flihub/uat/`
 
 ### File Naming
 
@@ -34,13 +34,13 @@ You receive:
 
 ### Step 1: Read the Spec
 
-- Find the requirement in `docs/recording-namer/backlog.md`
+- Find the requirement in `/Users/davidcruwys/dev/ad/flivideo/fli-brief/docs/flihub/backlog.md`
 - Read any linked spec files
 - Identify all acceptance criteria
 
 ### Step 2: Create or Update UAT File
 
-Create `docs/recording-namer/uat/FR-{number}-{feature-name}.md` using this template:
+Create `/Users/davidcruwys/dev/ad/flivideo/fli-brief/docs/flihub/uat/FR-{number}-{feature-name}.md` using this template:
 
 ```markdown
 # UAT: FR-{number} - {Feature Name}

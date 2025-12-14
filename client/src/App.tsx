@@ -15,13 +15,14 @@ import { AssetsPage } from './components/AssetsPage'
 import { ThumbsPage } from './components/ThumbsPage'
 import { TranscriptionsPage } from './components/TranscriptionsPage'
 import { InboxPage } from './components/InboxPage'
+import { MockupsPage } from './components/MockupsPage'
 import { ConnectionIndicator } from './components/ConnectionIndicator'
 import { OpenFolderButton } from './components/shared'
 import type { FileInfo } from '../../shared/types'
 
-type ViewTab = 'incoming' | 'recordings' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config'
+type ViewTab = 'incoming' | 'recordings' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config' | 'mockups'
 
-const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'transcriptions', 'inbox', 'assets', 'thumbs', 'projects', 'config']
+const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'transcriptions', 'inbox', 'assets', 'thumbs', 'projects', 'config', 'mockups']
 
 // Get initial tab from URL hash
 function getTabFromHash(): ViewTab {
@@ -459,6 +460,16 @@ function App() {
             >
               Projects
             </button>
+            <button
+              onClick={() => changeTab('mockups')}
+              className={`text-sm transition-colors ${
+                activeTab === 'mockups'
+                  ? 'text-purple-600 font-medium'
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              Mockups
+            </button>
           </nav>
         </div>
       </header>
@@ -612,6 +623,13 @@ function App() {
           <section>
             <h2 className="text-lg font-medium text-gray-700 mb-4">Configuration</h2>
             <ConfigPanel />
+          </section>
+        )}
+
+        {/* Mockups Tab - UI concept exploration */}
+        {activeTab === 'mockups' && (
+          <section>
+            <MockupsPage />
           </section>
         )}
 
