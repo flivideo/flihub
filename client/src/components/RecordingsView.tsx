@@ -10,6 +10,7 @@ import { RenameLabelModal } from './RenameLabelModal'
 import { ChapterPanel } from './ChapterPanel'
 import { ChapterRecordingModal } from './ChapterRecordingModal'
 import type { RecordingFile, TranscriptionStatusResponse } from '../../../shared/types'
+import { extractTagsFromName } from '../../../shared/naming'
 import { formatFileSize, formatDuration, formatChapterTitle, formatTimestamp } from '../utils/formatting'
 import { LoadingSpinner, ErrorMessage } from './shared'
 import { API_URL } from '../config'
@@ -34,11 +35,9 @@ function getChapterDisplayName(files: RecordingFile[]): string {
   const firstFile = files.find(f => f.sequence === '1') || files[0]
   if (!firstFile) return ''
 
-  // The name field already has the kebab-case name portion
-  // Strip uppercase tags (fully uppercase words)
-  const nameParts = firstFile.name.split('-')
-  const filteredParts = nameParts.filter(word => word !== word.toUpperCase() || word === '')
-  return filteredParts.join('-')
+  // NFR-65: Use shared utility to strip tags from name
+  const { name } = extractTagsFromName(firstFile.name)
+  return name
 }
 
 // FR-35: Group recordings by chapter NUMBER only (not number + name)

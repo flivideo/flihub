@@ -177,3 +177,18 @@ export async function listTranscriptFiles(dir: string): Promise<string[]> {
     return [];
   }
 }
+
+/**
+ * NFR-65: Get transcript basenames (without .txt extension)
+ * Filters .txt files, excludes *-chapter.txt combined files
+ */
+export async function getTranscriptBasenames(dir: string): Promise<string[]> {
+  try {
+    const files = await fs.readdir(dir);
+    return files
+      .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+      .map(f => f.replace('.txt', ''));
+  } catch {
+    return [];
+  }
+}

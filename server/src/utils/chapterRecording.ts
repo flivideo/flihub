@@ -9,6 +9,7 @@ import { exec, spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs-extra';
 import { getVideoDuration } from './videoDuration.js';
+import { extractTagsFromName } from '../../../shared/naming.js';
 
 // Resolution presets
 const RESOLUTIONS = {
@@ -268,24 +269,13 @@ export function parseRecordingFilename(filename: string): {
 
   const [, chapter, sequence, rest] = match;
 
-  // Split the rest by '-' to separate name from tags
-  const parts = rest.split('-');
-  const tags: string[] = [];
-  const nameParts: string[] = [];
-
-  for (const part of parts) {
-    // Uppercase-only parts are tags
-    if (/^[A-Z]+$/.test(part)) {
-      tags.push(part);
-    } else {
-      nameParts.push(part);
-    }
-  }
+  // NFR-65: Extract tags from name using shared utility
+  const { name, tags } = extractTagsFromName(rest);
 
   return {
     chapter,
     sequence: parseInt(sequence, 10),
-    name: nameParts.join('-'),
+    name,
     tags,
   };
 }

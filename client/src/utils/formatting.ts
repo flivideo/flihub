@@ -1,3 +1,5 @@
+import { extractTagsFromName } from '../../../shared/naming'
+
 /**
  * NFR-10: Format file size for display
  * Handles B, KB, MB, and GB with appropriate precision
@@ -83,12 +85,12 @@ export function formatDuration(
 export function formatChapterTitle(name: string): string {
   if (!name) return ''
 
-  // Split by dash, filter out uppercase-only words (tags)
-  const parts = name.split('-')
-  const filtered = parts.filter(word => word !== word.toUpperCase() || word === '')
+  // NFR-65: Use shared utility to strip tags from name
+  const { name: cleanName } = extractTagsFromName(name)
 
   // Convert to Title Case
-  return filtered
+  return cleanName
+    .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ')
 }

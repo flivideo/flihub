@@ -20,6 +20,7 @@ import {
   countFiles,
   getProjectTimestamps,
   getTranscriptSyncStatus,
+  getTranscriptBasenames,
 } from '../utils/scanning.js';
 import { getProjectStatsRaw } from '../utils/projectStats.js';
 import { getProjectPaths } from '../../../shared/paths.js';
@@ -27,6 +28,7 @@ import {
   parseRecordingFilename,
   parseImageFilename,
   compareImageAssets,
+  extractTagsFromName,
 } from '../../../shared/naming.js';
 import type {
   Config,
@@ -459,23 +461,14 @@ export function createQueryRoutes(getConfig: () => Config): Router {
             const stat = await fs.stat(filePath);
             const baseName = filename.replace('.mov', '');
 
-            // Extract tags from name (uppercase segments at end)
-            const nameParts = (parsed.name || '').split('-');
-            const tags: string[] = [];
-            const nameWords: string[] = [];
-            for (const part of nameParts) {
-              if (/^[A-Z]+$/.test(part)) {
-                tags.push(part);
-              } else {
-                nameWords.push(part);
-              }
-            }
+            // NFR-65: Extract tags from name using shared utility
+            const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
 
             const recording: QueryRecording = {
               filename,
               chapter: parsed.chapter,
               sequence: parsed.sequence || '0',
-              name: nameWords.join('-'),
+              name: cleanName,
               tags,
               folder,
               size: stat.size,

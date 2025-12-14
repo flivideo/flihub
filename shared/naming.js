@@ -126,6 +126,36 @@ function stripTrailingTags(parts) {
     return result;
 }
 /**
+ * NFR-65: Extract uppercase tags from a kebab-case name
+ * Tags are words that are entirely uppercase letters (A-Z), like CTA, TECHSTACK, API
+ *
+ * @param name - kebab-case name (e.g., "intro-demo-CTA-SKOOL")
+ * @returns Object with clean name and extracted tags
+ *
+ * @example
+ * extractTagsFromName("intro-demo-CTA")
+ * // { name: "intro-demo", tags: ["CTA"] }
+ *
+ * extractTagsFromName("setup-bmad-TECHSTACK-API")
+ * // { name: "setup-bmad", tags: ["TECHSTACK", "API"] }
+ */
+export function extractTagsFromName(name) {
+    if (!name)
+        return { name: '', tags: [] };
+    const parts = name.split('-');
+    const tags = [];
+    const nameParts = [];
+    for (const part of parts) {
+        if (/^[A-Z]+$/.test(part)) {
+            tags.push(part);
+        }
+        else {
+            nameParts.push(part);
+        }
+    }
+    return { name: nameParts.join('-'), tags };
+}
+/**
  * Parse a recording filename into its components
  * Format: {chapter}-{sequence}-{name}-{tags}.mov or {chapter}-{name}.mov
  * Examples: 10-5-intro.mov, 10-10-john-product-manager-CTA.mov, 1-1-demo.mov (lenient)

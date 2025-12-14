@@ -82,6 +82,24 @@ export interface ParseOptions {
     lenient?: boolean;
 }
 /**
+ * NFR-65: Extract uppercase tags from a kebab-case name
+ * Tags are words that are entirely uppercase letters (A-Z), like CTA, TECHSTACK, API
+ *
+ * @param name - kebab-case name (e.g., "intro-demo-CTA-SKOOL")
+ * @returns Object with clean name and extracted tags
+ *
+ * @example
+ * extractTagsFromName("intro-demo-CTA")
+ * // { name: "intro-demo", tags: ["CTA"] }
+ *
+ * extractTagsFromName("setup-bmad-TECHSTACK-API")
+ * // { name: "setup-bmad", tags: ["TECHSTACK", "API"] }
+ */
+export declare function extractTagsFromName(name: string): {
+    name: string;
+    tags: string[];
+};
+/**
  * Parse a recording filename into its components
  * Format: {chapter}-{sequence}-{name}-{tags}.mov or {chapter}-{name}.mov
  * Examples: 10-5-intro.mov, 10-10-john-product-manager-CTA.mov, 1-1-demo.mov (lenient)
