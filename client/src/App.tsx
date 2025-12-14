@@ -19,9 +19,9 @@ import { ConnectionIndicator } from './components/ConnectionIndicator'
 import { OpenFolderButton } from './components/shared'
 import type { FileInfo } from '../../shared/types'
 
-type ViewTab = 'incoming' | 'recordings' | 'inbox' | 'transcriptions' | 'assets' | 'thumbs' | 'projects' | 'config'
+type ViewTab = 'incoming' | 'recordings' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config'
 
-const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'inbox', 'transcriptions', 'assets', 'thumbs', 'projects', 'config']
+const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'transcriptions', 'inbox', 'assets', 'thumbs', 'projects', 'config']
 
 // Get initial tab from URL hash
 function getTabFromHash(): ViewTab {
@@ -273,7 +273,7 @@ function App() {
           {/* Top row: Title › Project name ▾ ... ⚙ */}
           <div className="py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-xl font-semibold text-gray-900 flex-shrink-0">Recording Namer</h1>
+              <h1 className="text-xl font-semibold text-gray-900 flex-shrink-0">FliHub</h1>
               {config?.projectDirectory && (
                 <>
                   <span className="text-gray-400 flex-shrink-0">›</span>
@@ -296,6 +296,23 @@ function App() {
                       title="Copy project code for calendar"
                     >
                       📋
+                    </button>
+                    {/* FR-63: Copy full project path */}
+                    <button
+                      onClick={async () => {
+                        if (config?.projectDirectory) {
+                          try {
+                            await navigator.clipboard.writeText(config.projectDirectory)
+                            toast.success('Path copied')
+                          } catch {
+                            toast.error('Failed to copy')
+                          }
+                        }
+                      }}
+                      className="p-1 text-gray-600 bg-gray-200 hover:bg-gray-300 rounded transition-colors flex-shrink-0"
+                      title="Copy project path"
+                    >
+                      &gt;_
                     </button>
 
                     {/* FR-43: Dropdown menu */}
@@ -393,16 +410,6 @@ function App() {
               Recordings
             </button>
             <button
-              onClick={() => changeTab('inbox')}
-              className={`text-sm transition-colors ${
-                activeTab === 'inbox'
-                  ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Inbox
-            </button>
-            <button
               onClick={() => changeTab('transcriptions')}
               className={`text-sm transition-colors ${
                 activeTab === 'transcriptions'
@@ -411,6 +418,16 @@ function App() {
               }`}
             >
               Transcripts
+            </button>
+            <button
+              onClick={() => changeTab('inbox')}
+              className={`text-sm transition-colors ${
+                activeTab === 'inbox'
+                  ? 'text-blue-600 font-medium'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Inbox
             </button>
             <button
               onClick={() => changeTab('assets')}
@@ -553,17 +570,17 @@ function App() {
           </section>
         )}
 
-        {/* Inbox Tab - FR-59 */}
-        {activeTab === 'inbox' && (
-          <section>
-            <InboxPage />
-          </section>
-        )}
-
         {/* Transcriptions Tab */}
         {activeTab === 'transcriptions' && (
           <section>
             <TranscriptionsPage />
+          </section>
+        )}
+
+        {/* Inbox Tab - FR-59 */}
+        {activeTab === 'inbox' && (
+          <section>
+            <InboxPage />
           </section>
         )}
 
