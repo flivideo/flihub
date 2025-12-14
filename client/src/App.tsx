@@ -16,13 +16,16 @@ import { ThumbsPage } from './components/ThumbsPage'
 import { TranscriptionsPage } from './components/TranscriptionsPage'
 import { InboxPage } from './components/InboxPage'
 import { MockupsPage } from './components/MockupsPage'
+import { WatchPage } from './components/WatchPage'
 import { ConnectionIndicator } from './components/ConnectionIndicator'
 import { OpenFolderButton } from './components/shared'
+import { HeaderDropdown } from './components/HeaderDropdown'
+import { useOpenFolder } from './hooks/useOpenFolder'
 import type { FileInfo } from '../../shared/types'
 
-type ViewTab = 'incoming' | 'recordings' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config' | 'mockups'
+type ViewTab = 'incoming' | 'recordings' | 'watch' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config' | 'mockups'
 
-const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'transcriptions', 'inbox', 'assets', 'thumbs', 'projects', 'config', 'mockups']
+const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'watch', 'transcriptions', 'inbox', 'assets', 'thumbs', 'projects', 'config', 'mockups']
 
 // Get initial tab from URL hash
 function getTabFromHash(): ViewTab {
@@ -84,6 +87,9 @@ function App() {
   // FR-50: Recent renames for undo functionality
   const { data: recentRenames, refetch: refetchRecentRenames } = useRecentRenames()
   const undoRenameMutation = useUndoRename()
+
+  // FR-69: Open project folder in Finder
+  const { mutate: openFolder } = useOpenFolder()
 
   // FR-4: Get suggested naming based on existing files
   const { data: suggestedNaming } = useSuggestedNaming()
@@ -290,31 +296,37 @@ function App() {
                         <span className="text-gray-400 flex-shrink-0">▾</span>
                       )}
                     </button>
-                    {/* FR-51: Copy button for calendar */}
-                    <button
-                      onClick={handleCopyCalendar}
-                      className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
-                      title="Copy project code for calendar"
-                    >
-                      📋
-                    </button>
-                    {/* FR-63: Copy full project path */}
-                    <button
-                      onClick={async () => {
-                        if (config?.projectDirectory) {
-                          try {
-                            await navigator.clipboard.writeText(config.projectDirectory)
-                            toast.success('Path copied')
-                          } catch {
-                            toast.error('Failed to copy')
-                          }
-                        }
-                      }}
-                      className="p-1 text-gray-600 bg-gray-200 hover:bg-gray-300 rounded transition-colors flex-shrink-0"
-                      title="Copy project path"
-                    >
-                      &gt;_
-                    </button>
+                    {/* FR-69: Project Actions dropdown */}
+                    <HeaderDropdown
+                      trigger={<span className="text-lg font-medium">···</span>}
+                      items={[
+                        {
+                          label: 'Copy for calendar',
+                          icon: '📋',
+                          onClick: handleCopyCalendar,
+                        },
+                        {
+                          label: 'Copy full path',
+                          icon: <span className="text-xs font-mono">&gt;_</span>,
+                          onClick: async () => {
+                            if (config?.projectDirectory) {
+                              try {
+                                await navigator.clipboard.writeText(config.projectDirectory)
+                                toast.success('Path copied')
+                              } catch {
+                                toast.error('Failed to copy')
+                              }
+                            }
+                          },
+                        },
+                        {
+                          label: 'Open in Finder',
+                          icon: '📂',
+                          onClick: () => openFolder('project'),
+                          dividerBefore: true,
+                        },
+                      ]}
+                    />
 
                     {/* FR-43: Dropdown menu */}
                     {showProjectDropdown && (
@@ -367,23 +379,31 @@ function App() {
                 </>
               )}
             </div>
-            <button
-              onClick={() => changeTab('config')}
-              className={`p-2 rounded transition-colors flex-shrink-0 ${
-                activeTab === 'config'
-                  ? 'text-blue-600 bg-blue-50'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-              }`}
-              title="Configuration"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
+            {/* FR-69: Settings dropdown */}
+            <HeaderDropdown
+              trigger={
+                <svg className={`w-5 h-5 ${activeTab === 'config' || activeTab === 'mockups' ? 'text-blue-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              }
+              align="right"
+              items={[
+                {
+                  label: 'Configuration',
+                  icon: <span className="text-gray-600">⚙️</span>,
+                  onClick: () => changeTab('config'),
+                },
+                {
+                  label: 'Mockups',
+                  icon: <span className="text-purple-500">🎨</span>,
+                  onClick: () => changeTab('mockups'),
+                },
+              ]}
+            />
           </div>
 
-          {/* Bottom row: Navigation (Config removed) */}
+          {/* Bottom row: Navigation (FR-69: Config and Mockups moved to Settings dropdown) */}
           <nav className="flex gap-4 pb-3 border-t border-gray-100 pt-2">
             <button
               onClick={() => changeTab('incoming')}
@@ -409,6 +429,16 @@ function App() {
               }`}
             >
               Recordings
+            </button>
+            <button
+              onClick={() => changeTab('watch')}
+              className={`text-sm transition-colors ${
+                activeTab === 'watch'
+                  ? 'text-blue-600 font-medium'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Watch
             </button>
             <button
               onClick={() => changeTab('transcriptions')}
@@ -459,16 +489,6 @@ function App() {
               }`}
             >
               Projects
-            </button>
-            <button
-              onClick={() => changeTab('mockups')}
-              className={`text-sm transition-colors ${
-                activeTab === 'mockups'
-                  ? 'text-purple-600 font-medium'
-                  : 'text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              Mockups
             </button>
           </nav>
         </div>
@@ -578,6 +598,13 @@ function App() {
               <OpenFolderButton folder="safe" label="Safe" />
             </div>
             <RecordingsView />
+          </section>
+        )}
+
+        {/* FR-70: Watch Tab - Video playback */}
+        {activeTab === 'watch' && (
+          <section>
+            <WatchPage />
           </section>
         )}
 

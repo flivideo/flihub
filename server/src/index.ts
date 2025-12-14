@@ -13,8 +13,9 @@ import { createThumbRoutes } from './routes/thumbs.js';
 import { createSystemRoutes } from './routes/system.js';
 import { createTranscriptionRoutes } from './routes/transcriptions.js';
 import { createProjectRoutes } from './routes/projects.js';
-import { createQueryRoutes } from './routes/query.js';
+import { createQueryRoutes } from './routes/query/index.js';
 import { createChapterRoutes } from './routes/chapters.js';
+import { createVideoRoutes } from './routes/video.js';
 import { migrateTargetToProject } from '../../shared/paths.js';
 import { WatcherManager } from './WatcherManager.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -230,6 +231,10 @@ const chapterRoutes = createChapterRoutes(
   io
 );
 app.use('/api/chapters', chapterRoutes);
+
+// FR-70: Setup video streaming routes
+const videoRoutes = createVideoRoutes(() => currentConfig);
+app.use('/api/video', videoRoutes);
 
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);
