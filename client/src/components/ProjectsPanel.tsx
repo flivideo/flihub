@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { toast } from 'sonner'
 import { useProjectStats, useUpdateProjectPriority, useUpdateProjectStage, useConfig, useUpdateConfig, useRefetchSuggestedNaming, useCreateProject, useFinalMedia } from '../hooks/useApi'
 import { useProjectsSocket } from '../hooks/useSocket'
+import { useOpenFolder, type FolderKey } from '../hooks/useOpenFolder'
 import { LoadingSpinner, ErrorMessage, PageContainer } from './shared'
 import { ProjectStatsPopup } from './ProjectStatsPopup'
 import { formatFileSize } from '../utils/formatting'
@@ -119,7 +120,7 @@ function FinalMediaCell({ code }: { code: string }) {
   )
 }
 
-// FR-82: Indicator cell with rich tooltip - Inbox
+// FR-82: Indicator cell with rich tooltip - Inbox (navigates to tab)
 function InboxIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
   const [showTooltip, setShowTooltip] = useState(false)
 
@@ -137,13 +138,14 @@ function InboxIndicator({ project, onClick }: { project: ProjectStats; onClick: 
         <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
           <div className="font-medium">Inbox</div>
           <div className="text-gray-300">{project.inboxCount} {project.inboxCount === 1 ? 'item' : 'items'}</div>
+          <div className="text-gray-500 text-[10px] mt-1">Click to view in app</div>
         </div>
       )}
     </button>
   )
 }
 
-// FR-82: Indicator cell with rich tooltip - Assets
+// FR-82: Indicator cell with rich tooltip - Assets (navigates to tab)
 function AssetsIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
   const [showTooltip, setShowTooltip] = useState(false)
 
@@ -161,21 +163,22 @@ function AssetsIndicator({ project, onClick }: { project: ProjectStats; onClick:
         <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
           <div className="font-medium">Assets</div>
           <div className="text-gray-300">{project.imageCount} {project.imageCount === 1 ? 'image' : 'images'}</div>
+          <div className="text-gray-500 text-[10px] mt-1">Click to view in app</div>
         </div>
       )}
     </button>
   )
 }
 
-// FR-82: Indicator cell with rich tooltip - Chapters
-function ChaptersIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
+// FR-82: Indicator cell with rich tooltip - Chapter Videos (in -chapters folder)
+function ChaptersIndicator({ project, onOpenFolder }: { project: ProjectStats; onOpenFolder: () => void }) {
   const [showTooltip, setShowTooltip] = useState(false)
 
   if (!project.hasChapters) return null
 
   return (
     <button
-      onClick={onClick}
+      onClick={onOpenFolder}
       className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
@@ -184,7 +187,8 @@ function ChaptersIndicator({ project, onClick }: { project: ProjectStats; onClic
       {showTooltip && (
         <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
           <div className="font-medium">Chapter Videos</div>
-          <div className="text-gray-300">{project.chapterVideoCount} {project.chapterVideoCount === 1 ? 'video' : 'videos'}</div>
+          <div className="text-gray-300">{project.chapterVideoCount} {project.chapterVideoCount === 1 ? 'video' : 'videos'} in -chapters/</div>
+          <div className="text-gray-500 text-[10px] mt-1">Click to open folder</div>
         </div>
       )}
     </button>
@@ -281,6 +285,7 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   const createProject = useCreateProject()
   const updatePriority = useUpdateProjectPriority()
   const updateStage = useUpdateProjectStage()
+  const { mutate: openFolder } = useOpenFolder()
 
   // NFR-5: Subscribe to real-time project changes via socket
   useProjectsSocket()
@@ -413,6 +418,7 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                 <th className="pb-2 font-medium text-center w-20" title="Content">📥 🖼 🎬</th>
                 <th className="pb-2 font-medium text-right w-10" title="Chapters">Ch</th>
                 <th className="pb-2 font-medium text-right w-12" title="Total Files">Files</th>
+                <th className="pb-2 font-medium text-right w-12" title="Shadow Files">👻</th>
                 <th className="pb-2 font-medium text-right w-10" title="Transcript %">📄</th>
                 <th className="pb-2 font-medium text-center w-8" title="Final Video">✅</th>
                 <th className="pb-2 font-medium w-8"></th>
@@ -484,22 +490,58 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                         />
                         <ChaptersIndicator
                           project={project}
-                          onClick={() => {
-                            handleSelectProject(project.path, project.code)
-                            onNavigateToTab?.('recordings')
-                          }}
+                          onOpenFolder={() => openFolder({ folder: 'chapters', projectCode: project.code })}
                         />
                       </div>
                     </td>
 
-                    {/* Chapters */}
-                    <td className="py-2 text-right text-gray-600">
-                      {project.chapterCount > 0 ? project.chapterCount : '-'}
+                    {/* Ch - unique chapter groups, clickable to open -chapters folder if videos exist */}
+                    <td className="py-2 text-right">
+                      {project.chapterCount > 0 ? (
+                        project.chapterVideoCount > 0 ? (
+                          <button
+                            onClick={() => openFolder({ folder: 'chapters', projectCode: project.code })}
+                            className="text-gray-600 hover:text-blue-600 hover:underline cursor-pointer"
+                            title="Open -chapters folder"
+                          >
+                            {project.chapterCount}
+                          </button>
+                        ) : (
+                          <span className="text-gray-600">{project.chapterCount}</span>
+                        )
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
 
-                    {/* Total Files */}
-                    <td className="py-2 text-right text-gray-600">
-                      {project.totalFiles > 0 ? project.totalFiles : '-'}
+                    {/* Total Files - clickable to open recordings folder */}
+                    <td className="py-2 text-right">
+                      {project.totalFiles > 0 ? (
+                        <button
+                          onClick={() => openFolder({ folder: 'recordings', projectCode: project.code })}
+                          className="text-gray-600 hover:text-blue-600 hover:underline cursor-pointer"
+                          title="Open recordings folder"
+                        >
+                          {project.totalFiles}
+                        </button>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+
+                    {/* FR-83: Shadow Files - clickable to open shadows folder */}
+                    <td className="py-2 text-right">
+                      {project.shadowCount > 0 ? (
+                        <button
+                          onClick={() => openFolder({ folder: 'shadows', projectCode: project.code })}
+                          className="text-gray-600 hover:text-blue-600 hover:underline cursor-pointer"
+                          title="Open recording-shadows folder"
+                        >
+                          {project.shadowCount}
+                        </button>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </td>
 
                     {/* FR-48: Transcript % with sync status */}

@@ -64,6 +64,8 @@ export function createProjectRoutes(
       hasChapters: raw.hasChapters,
       inboxCount: raw.inboxCount,
       chapterVideoCount: raw.chapterVideoCount,
+      // FR-83: Shadow recordings
+      shadowCount: raw.shadowCount,
     };
   }
 

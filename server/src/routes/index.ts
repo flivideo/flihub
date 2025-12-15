@@ -5,6 +5,7 @@ import type { FileInfo, Config, RenameRequest, RenameResponse, SuggestedNaming, 
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
+import { createShadowFile, moveShadowFile, renameShadowFile, deleteShadowFile } from '../utils/shadowFiles.js';
 import {
   NAMING_RULES,
   parseRecordingFilename,
@@ -198,6 +199,12 @@ export function createRoutes(
       if (queueTranscription) {
         queueTranscription(newPath);
       }
+
+      // FR-83: Auto-generate shadow file for collaborators
+      const shadowDir = path.join(paths.project, 'recording-shadows');
+      createShadowFile(newPath, shadowDir).catch(err => {
+        console.warn('Failed to create shadow file:', err);
+      });
 
       res.json({
         success: true,
@@ -506,6 +513,14 @@ export function createRoutes(
       // Move file back to original location with original name
       await fs.move(rename.newPath, rename.originalPath);
 
+      // FR-83: Delete shadow file since recording is being moved back to watch directory
+      const paths = getProjectPaths(expandPath(config.projectDirectory));
+      const shadowDir = path.join(paths.project, 'recording-shadows');
+      const baseName = rename.newName.replace(/\.mov$/i, '');
+      deleteShadowFile(baseName, shadowDir).catch(err => {
+        console.warn(`Failed to delete shadow for undone rename:`, err);
+      });
+
       // Remove from tracking
       recentRenames.splice(renameIndex, 1);
 
@@ -628,6 +643,10 @@ export function createRoutes(
       const moved: string[] = [];
       const errors: string[] = [];
 
+      // FR-83: Shadow directories for sync
+      const shadowDir = path.join(paths.project, 'recording-shadows');
+      const shadowSafeDir = path.join(paths.project, 'recording-shadows', '-safe');
+
       for (const filename of filesToMove) {
         const sourcePath = path.join(paths.recordings, filename);
         const destPath = path.join(paths.safe, filename);
@@ -637,6 +656,12 @@ export function createRoutes(
             await fs.move(sourcePath, destPath, { overwrite: true });
             moved.push(filename);
             console.log(`Moved to safe: ${filename}`);
+
+            // FR-83: Also move shadow file if it exists
+            const baseName = filename.replace(/\.mov$/i, '');
+            moveShadowFile(baseName, shadowDir, shadowSafeDir).catch(err => {
+              console.warn(`Failed to move shadow for ${filename}:`, err);
+            });
           } else {
             errors.push(`File not found: ${filename}`);
           }
@@ -673,6 +698,10 @@ export function createRoutes(
     try {
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
+      // FR-83: Shadow directories for sync
+      const shadowDir = path.join(paths.project, 'recording-shadows');
+      const shadowSafeDir = path.join(paths.project, 'recording-shadows', '-safe');
+
       const restored: string[] = [];
       const errors: string[] = [];
 
@@ -691,6 +720,12 @@ export function createRoutes(
             await fs.move(sourcePath, destPath);
             restored.push(filename);
             console.log(`Restored from safe: ${filename}`);
+
+            // FR-83: Also restore shadow file if it exists
+            const baseName = filename.replace(/\.mov$/i, '');
+            moveShadowFile(baseName, shadowSafeDir, shadowDir).catch(err => {
+              console.warn(`Failed to restore shadow for ${filename}:`, err);
+            });
           } else {
             errors.push(`File not found in safe: ${filename}`);
           }
@@ -831,12 +866,27 @@ export function createRoutes(
         }
       }
 
+      // FR-83: Shadow directories for sync
+      const shadowDir = path.join(paths.project, 'recording-shadows');
+      const shadowSafeDir = path.join(paths.project, 'recording-shadows', '-safe');
+
       // Perform all renames
       const renamedFiles: string[] = [];
       for (const { oldPath, newPath } of filesToRename) {
         await fs.rename(oldPath, newPath);
         renamedFiles.push(path.basename(newPath));
         console.log(`Renamed: ${path.basename(oldPath)} -> ${path.basename(newPath)}`);
+
+        // FR-83: Also rename shadow file if this is a .mov file
+        const oldFilename = path.basename(oldPath);
+        if (oldFilename.endsWith('.mov')) {
+          const oldBaseName = oldFilename.replace('.mov', '');
+          const newBaseName = path.basename(newPath).replace('.mov', '');
+
+          // Try to rename in both shadow directories (one will succeed if shadow exists)
+          renameShadowFile(oldBaseName, newBaseName, shadowDir).catch(() => {});
+          renameShadowFile(oldBaseName, newBaseName, shadowSafeDir).catch(() => {});
+        }
       }
 
       res.json({

@@ -434,6 +434,7 @@ export function createTranscriptionRoutes(
   });
 
   // FR-30 Enhancement: POST /api/transcriptions/queue-all - Queue transcription for all videos
+  // FR-83: Also supports shadow files (.mp4) when real recordings don't exist
   router.post('/queue-all', async (req: Request, res: Response) => {
     const { scope, chapter } = req.body;
 
@@ -448,29 +449,64 @@ export function createTranscriptionRoutes(
     }
 
     const config = getConfig();
-    const projectPaths = getProjectPaths(expandPath(config.projectDirectory));
+    const projectPath = expandPath(config.projectDirectory);
+    const projectPaths = getProjectPaths(projectPath);
 
     try {
-      // Get all video files from recordings/ and recordings/-safe/
-      const videoFiles: string[] = [];
-      const dirs = [projectPaths.recordings, projectPaths.safe];
+      // FR-83: Build unified map of videos (real takes precedence over shadow)
+      // Key: baseName, Value: { path, isShadow }
+      const videoMap = new Map<string, { path: string; isShadow: boolean }>();
 
-      for (const dir of dirs) {
+      // First, add shadow files (will be overwritten by real files)
+      const shadowDirs = [
+        { dir: path.join(projectPath, 'recording-shadows'), folder: 'recordings' },
+        { dir: path.join(projectPath, 'recording-shadows', '-safe'), folder: 'safe' },
+      ];
+
+      for (const { dir } of shadowDirs) {
         if (fs.existsSync(dir)) {
           const files = await fs.readdir(dir);
           for (const file of files) {
-            if (file.endsWith('.mov')) {
-              // Filter by chapter if scope is 'chapter'
-              if (scope === 'chapter') {
-                // Match files like "07-1-intro.mov"
-                const match = file.match(/^(\d{2})-/);
-                if (!match || match[1] !== chapter) continue;
-              }
-              videoFiles.push(path.join(dir, file));
+            if (!file.match(/\.mp4$/i)) continue;
+
+            const baseName = file.replace(/\.mp4$/i, '');
+
+            // Filter by chapter if scope is 'chapter'
+            if (scope === 'chapter') {
+              const match = baseName.match(/^(\d{2})-/);
+              if (!match || match[1] !== chapter) continue;
             }
+
+            videoMap.set(baseName, { path: path.join(dir, file), isShadow: true });
           }
         }
       }
+
+      // Then, add real recordings (overwrite shadows)
+      const realDirs = [projectPaths.recordings, projectPaths.safe];
+
+      for (const dir of realDirs) {
+        if (fs.existsSync(dir)) {
+          const files = await fs.readdir(dir);
+          for (const file of files) {
+            if (!file.endsWith('.mov')) continue;
+
+            const baseName = file.replace('.mov', '');
+
+            // Filter by chapter if scope is 'chapter'
+            if (scope === 'chapter') {
+              const match = baseName.match(/^(\d{2})-/);
+              if (!match || match[1] !== chapter) continue;
+            }
+
+            // Real file overwrites shadow
+            videoMap.set(baseName, { path: path.join(dir, file), isShadow: false });
+          }
+        }
+      }
+
+      // Convert map to array of paths
+      const videoFiles = Array.from(videoMap.values()).map(v => v.path);
 
       // Queue transcription for each file that doesn't have a transcript
       const queued: string[] = [];

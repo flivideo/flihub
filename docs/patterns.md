@@ -205,3 +205,55 @@ const newName = buildImageFilename('10', '5', '1', 'a', 'demo', '.png');
 // Sorting
 items.sort(compareChapterSequence);
 ```
+
+## 9. ProjectsPanel UX Pattern
+
+The ProjectsPanel table uses consistent interaction patterns for each element type:
+
+### Element Types
+
+| Type | Behavior | Visual Cue |
+|------|----------|------------|
+| **Indicators** | Show only when content exists, click navigates to tab | Emoji only, no number |
+| **Indicators (folder)** | Show only when content exists, click opens folder | Emoji only, no number |
+| **Count columns** | Show count, click opens folder | Number, hover underline |
+| **Status displays** | Show status, hover for tooltip (read-only) | Text/emoji, cursor-help |
+| **Toggles** | Click cycles through states | Badge/icon |
+
+### Implementation Reference
+
+| Element | Type | Click Action |
+|---------|------|--------------|
+| 📥 Inbox | Indicator | Switch project + navigate to Inbox tab |
+| 🖼 Assets | Indicator | Switch project + navigate to Assets tab |
+| 🎬 Chapters | Indicator (folder) | Opens -chapters folder |
+| Ch column | Count column | Opens -chapters folder (if videos exist) |
+| Files column | Count column | Opens recordings folder |
+| 👻 Shadows | Count column | Opens recording-shadows folder |
+| 📄 Transcript % | Status display | Tooltip shows sync stats |
+| ✅ Final | Status display | Tooltip shows video/srt status |
+
+### Open Folder Hook
+
+Use `useOpenFolder()` for consistent folder opening:
+
+```typescript
+import { useOpenFolder } from '../hooks/useOpenFolder';
+
+const { mutate: openFolder } = useOpenFolder();
+
+// Current project
+openFolder('recordings');
+
+// Specific project
+openFolder({ folder: 'recordings', projectCode: 'b72' });
+openFolder({ folder: 'shadows', projectCode: project.code });
+```
+
+**Supported folder keys:**
+- `recordings`, `safe`, `trash` - Recording folders
+- `shadows` - Shadow recordings (`recording-shadows/`)
+- `chapters` - Chapter recordings (`-chapters/`)
+- `images`, `thumbs`, `inbox` - Asset folders
+- `transcripts`, `final` - Output folders
+- `ecamm`, `downloads`, `project` - System folders

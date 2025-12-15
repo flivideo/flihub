@@ -50,7 +50,9 @@ import type { Config } from '../../../shared/types.js';
  * Valid folder keys that can be opened.
  * This whitelist prevents arbitrary path execution.
  */
-type FolderKey = 'ecamm' | 'downloads' | 'recordings' | 'safe' | 'trash' | 'images' | 'thumbs' | 'transcripts' | 'project' | 'final' | 's3Staging' | 'inbox';
+type FolderKey = 'ecamm' | 'downloads' | 'recordings' | 'safe' | 'trash' | 'images' | 'thumbs' | 'transcripts' | 'project' | 'final' | 's3Staging' | 'inbox' | 'shadows' | 'chapters';
+
+const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 
 export function createSystemRoutes(config: Config): Router {
   const router = Router();
@@ -61,7 +63,7 @@ export function createSystemRoutes(config: Config): Router {
    * Opens a predefined folder in Finder (macOS only).
    *
    * Request body:
-   *   { folder: FolderKey }
+   *   { folder: FolderKey, projectCode?: string }
    *
    * Response:
    *   Success: { success: true, path: string }
@@ -69,16 +71,33 @@ export function createSystemRoutes(config: Config): Router {
    *
    * Security: Only accepts predefined folder keys, not arbitrary paths.
    * The actual path is resolved from config or derived via getProjectPaths().
+   *
+   * If projectCode is provided, opens folder for that specific project.
+   * Otherwise uses the current project from config.
    */
   router.post('/open-folder', async (req: Request, res: Response) => {
-    const { folder } = req.body as { folder: FolderKey };
+    const { folder, projectCode } = req.body as { folder: FolderKey; projectCode?: string };
 
     if (!folder) {
       res.status(400).json({ success: false, error: 'Folder key is required' });
       return;
     }
 
-    const paths = getProjectPaths(expandPath(config.projectDirectory));
+    // Determine project path - use projectCode if provided, else current project
+    let projectPath: string;
+    if (projectCode) {
+      // Validate projectCode doesn't contain path traversal
+      if (projectCode.includes('..') || projectCode.includes('/') || projectCode.includes('\\')) {
+        res.status(400).json({ success: false, error: 'Invalid project code' });
+        return;
+      }
+      const projectsDir = expandPath(PROJECTS_ROOT);
+      projectPath = path.join(projectsDir, projectCode);
+    } else {
+      projectPath = expandPath(config.projectDirectory);
+    }
+
+    const paths = getProjectPaths(projectPath);
 
     const folderMap: Record<FolderKey, string> = {
       ecamm: expandPath(config.watchDirectory),
@@ -92,7 +111,9 @@ export function createSystemRoutes(config: Config): Router {
       project: paths.project,
       final: paths.final,
       s3Staging: paths.s3Staging,
-      inbox: paths.inbox,  // FR-59
+      inbox: paths.inbox,
+      shadows: path.join(projectPath, 'recording-shadows'),
+      chapters: path.join(paths.recordings, '-chapters'),
     };
 
     const folderPath = folderMap[folder];

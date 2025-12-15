@@ -16,6 +16,7 @@ import { createProjectRoutes } from './routes/projects.js';
 import { createQueryRoutes } from './routes/query/index.js';
 import { createChapterRoutes } from './routes/chapters.js';
 import { createVideoRoutes } from './routes/video.js';
+import { createShadowsRouter } from './routes/shadows.js';
 import { migrateTargetToProject } from '../../shared/paths.js';
 import { WatcherManager } from './WatcherManager.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -235,6 +236,10 @@ app.use('/api/chapters', chapterRoutes);
 // FR-70: Setup video streaming routes
 const videoRoutes = createVideoRoutes(() => currentConfig);
 app.use('/api/video', videoRoutes);
+
+// FR-83: Setup shadow recording routes
+const shadowRoutes = createShadowsRouter(() => currentConfig);
+app.use('/api/shadows', shadowRoutes);
 
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);

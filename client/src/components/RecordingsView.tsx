@@ -663,56 +663,94 @@ export function RecordingsView() {
 
               {/* Files in this chapter */}
               <div className="space-y-1">
-                {group.files.map((file) => (
-                  <div
-                    key={file.path}
-                    className={`flex items-center justify-between px-4 py-2 rounded-lg border ${
-                      file.folder === 'safe'
-                        ? 'bg-green-50 border-green-200 text-gray-500'
-                        : 'bg-blue-50 border-blue-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={`font-mono text-sm ${file.folder === 'safe' ? 'text-gray-500' : 'text-gray-700'}`}>
-                        {file.filename}
-                      </span>
-                      {file.tags.length > 0 && (
-                        <span className="text-xs text-gray-500">
-                          [{file.tags.join(', ')}]
-                        </span>
-                      )}
-                    </div>
+                {group.files.map((file) => {
+                  // FR-83: Determine recording status
+                  const isShadow = 'isShadow' in file && file.isShadow
+                  const hasShadow = 'hasShadow' in file && file.hasShadow
 
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
-                      <span className="font-mono">{formatDuration(file.duration)}</span>
-                      <span>{formatFileSize(file.size)}</span>
-                      <span>{formatTimestamp(file.timestamp)}</span>
-                      <TranscriptionBadge
-                        filename={file.filename}
-                        filePath={file.path}
-                        onViewTranscript={setViewingTranscript}
-                      />
-                      {/* Action button */}
-                      {file.folder === 'safe' ? (
-                        <button
-                          onClick={() => handleRestore(file.filename)}
-                          disabled={restoreFromSafe.isPending}
-                          className="text-xs text-green-600 hover:text-green-700 px-2 py-0.5 hover:bg-green-100 rounded transition-colors disabled:opacity-50"
-                        >
-                          ← Restore
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleMoveToSafe(file.filename)}
-                          disabled={moveToSafe.isPending}
-                          className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-100 rounded transition-colors disabled:opacity-50"
-                        >
-                          → Safe
-                        </button>
-                      )}
+                  // FR-83: Determine row styling based on folder and shadow status
+                  let rowClasses: string
+                  let textClasses: string
+
+                  if (isShadow) {
+                    // Shadow-only file: purple tint for collaborator mode
+                    rowClasses = 'bg-purple-50 border-purple-200'
+                    textClasses = 'text-purple-700'
+                  } else if (file.folder === 'safe') {
+                    rowClasses = 'bg-green-50 border-green-200 text-gray-500'
+                    textClasses = 'text-gray-500'
+                  } else {
+                    rowClasses = 'bg-blue-50 border-blue-200'
+                    textClasses = 'text-gray-700'
+                  }
+
+                  // FR-83: Status indicator based on real/shadow state
+                  // 📹 = Real recording | 👻 = Shadow only | 📹👻 = Real + Shadow
+                  let statusIcon: string
+                  let statusTitle: string
+                  if (isShadow) {
+                    statusIcon = '👻'
+                    statusTitle = 'Shadow only - video not available locally (collaborator mode)'
+                  } else if (hasShadow) {
+                    statusIcon = '📹👻'
+                    statusTitle = 'Real recording with shadow (synced for collaborators)'
+                  } else {
+                    statusIcon = '📹'
+                    statusTitle = 'Real recording (no shadow yet)'
+                  }
+
+                  return (
+                    <div
+                      key={file.path}
+                      className={`flex items-center justify-between px-4 py-2 rounded-lg border ${rowClasses}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* FR-83: Recording status indicator */}
+                        <span className="text-sm" title={statusTitle}>{statusIcon}</span>
+                        <span className={`font-mono text-sm ${textClasses}`}>
+                          {file.filename}
+                        </span>
+                        {file.tags.length > 0 && (
+                          <span className="text-xs text-gray-500">
+                            [{file.tags.join(', ')}]
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                        <span className="font-mono">{formatDuration(file.duration)}</span>
+                        <span>{formatFileSize(file.size)}</span>
+                        <span>{formatTimestamp(file.timestamp)}</span>
+                        {/* FR-83: Transcription works for both real and shadow files (video shadows have audio) */}
+                        <TranscriptionBadge
+                          filename={file.filename}
+                          filePath={file.path}
+                          onViewTranscript={setViewingTranscript}
+                        />
+                        {/* Action buttons - disabled for shadow-only files */}
+                        {isShadow ? (
+                          <span className="text-xs text-gray-300 px-2 py-0.5" title="Move/Safe actions unavailable for shadow files">-</span>
+                        ) : file.folder === 'safe' ? (
+                          <button
+                            onClick={() => handleRestore(file.filename)}
+                            disabled={restoreFromSafe.isPending}
+                            className="text-xs text-green-600 hover:text-green-700 px-2 py-0.5 hover:bg-green-100 rounded transition-colors disabled:opacity-50"
+                          >
+                            ← Restore
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleMoveToSafe(file.filename)}
+                            disabled={moveToSafe.isPending}
+                            className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-100 rounded transition-colors disabled:opacity-50"
+                          >
+                            → Safe
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )

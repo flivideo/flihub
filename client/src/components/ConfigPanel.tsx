@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
-import { useConfig, useUpdateConfig, useRefetchSuggestedNaming, useChapterRecordingConfig, useUpdateChapterRecordingConfig } from '../hooks/useApi'
+import { useConfig, useUpdateConfig, useRefetchSuggestedNaming, useChapterRecordingConfig, useUpdateChapterRecordingConfig, useShadowStatus, useGenerateShadows, useGenerateAllShadows } from '../hooks/useApi'
 import { collapsePath } from '../utils/formatting'
 import { OpenFolderButton, LoadingSpinner, PageContainer } from './shared'
 
@@ -19,6 +19,11 @@ export function ConfigPanel() {
   // FR-76: Chapter recording config
   const { data: chapterConfig, isLoading: chapterConfigLoading } = useChapterRecordingConfig()
   const updateChapterConfig = useUpdateChapterRecordingConfig()
+
+  // FR-83: Shadow recording management
+  const { data: shadowStatus, isLoading: shadowStatusLoading, refetch: refetchShadowStatus } = useShadowStatus()
+  const generateShadows = useGenerateShadows()
+  const generateAllShadows = useGenerateAllShadows()
 
   const [watchDirectory, setWatchDirectory] = useState('')
   // NFR-6: Renamed from targetDirectory to projectDirectory
@@ -100,9 +105,37 @@ export function ConfigPanel() {
 
       // FR-4: Refetch suggested naming when project directory changes
       refetchSuggestedNaming()
+      // FR-83: Refetch shadow status when watch/project directory changes
+      refetchShadowStatus()
       toast.success('Configuration saved')
     } catch (error) {
       toast.error('Failed to save configuration')
+    }
+  }
+
+  // FR-83: Generate shadows for current project
+  const handleGenerateShadows = async () => {
+    try {
+      const result = await generateShadows.mutateAsync()
+      if (result.success) {
+        toast.success(`Created ${result.created} shadow files${result.skipped > 0 ? ` (${result.skipped} skipped)` : ''}`)
+        refetchShadowStatus()
+      }
+    } catch (error) {
+      toast.error('Failed to generate shadow files')
+    }
+  }
+
+  // FR-83: Generate shadows for all projects
+  const handleGenerateAllShadows = async () => {
+    try {
+      const result = await generateAllShadows.mutateAsync()
+      if (result.success) {
+        toast.success(`Created ${result.created} shadow files across ${result.projects} projects`)
+        refetchShadowStatus()
+      }
+    } catch (error) {
+      toast.error('Failed to generate shadow files')
     }
   }
 
@@ -274,6 +307,75 @@ export function ConfigPanel() {
                 Auto-generate when creating new chapter
               </span>
             </label>
+          </div>
+        </div>
+
+        {/* FR-83: Shadow Recordings Section */}
+        <div className="border-t pt-4 mt-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">
+            Shadow Recordings
+          </h3>
+          <p className="text-xs text-gray-500 mb-3">
+            Shadow files allow collaborators to see project structure without the actual video files.
+          </p>
+
+          {/* Watch Directory Status */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            {shadowStatus?.watchDirectory ? (
+              shadowStatus.watchDirectory.exists ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500">🟢</span>
+                  <span className="text-sm text-gray-700">
+                    Watching: <code className="text-xs bg-gray-200 px-1 rounded">{collapsePath(shadowStatus.watchDirectory.path)}</code>
+                  </span>
+                </div>
+              ) : shadowStatus.watchDirectory.configured ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-yellow-500">🟡</span>
+                  <span className="text-sm text-gray-700">
+                    Path not found: <code className="text-xs bg-gray-200 px-1 rounded">{collapsePath(shadowStatus.watchDirectory.path)}</code>
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-red-500">🔴</span>
+                  <span className="text-sm text-gray-700">Not configured - Ecamm files will not be detected</span>
+                </div>
+              )
+            ) : shadowStatusLoading ? (
+              <span className="text-sm text-gray-400">Loading status...</span>
+            ) : (
+              <span className="text-sm text-gray-400">Unable to load status</span>
+            )}
+          </div>
+
+          {/* Current Project Status */}
+          {shadowStatus?.currentProject && (
+            <div className="mb-4 text-sm text-gray-600">
+              Current project: <span className="font-medium">{shadowStatus.currentProject.recordings}</span> recordings,{' '}
+              <span className="font-medium">{shadowStatus.currentProject.shadows}</span> shadows
+              {shadowStatus.currentProject.missing > 0 && (
+                <span className="text-amber-600"> ({shadowStatus.currentProject.missing} missing)</span>
+              )}
+            </div>
+          )}
+
+          {/* Generate Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={handleGenerateShadows}
+              disabled={generateShadows.isPending || generateAllShadows.isPending}
+              className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {generateShadows.isPending ? 'Generating...' : 'Generate Shadows'}
+            </button>
+            <button
+              onClick={handleGenerateAllShadows}
+              disabled={generateShadows.isPending || generateAllShadows.isPending}
+              className="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {generateAllShadows.isPending ? 'Generating...' : 'Generate All Projects'}
+            </button>
           </div>
         </div>
 

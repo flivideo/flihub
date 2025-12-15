@@ -122,7 +122,19 @@ function groupByChapterWithTiming(recordings: RecordingFile[]): ChapterGroup[] {
 }
 
 // Build video URL for a recording
-function getVideoUrl(projectCode: string, filename: string, folder: 'recordings' | '-chapters' = 'recordings'): string {
+// FR-83: Support shadow videos with different folder and .mp4 extension
+function getVideoUrl(
+  projectCode: string,
+  filename: string,
+  folder: 'recordings' | '-chapters' = 'recordings',
+  options?: { isShadow?: boolean; shadowFolder?: 'recordings' | 'safe' }
+): string {
+  if (options?.isShadow) {
+    // Shadow videos are .mp4 in recording-shadows/ folder
+    const shadowFilename = filename.replace(/\.mov$/i, '.mp4')
+    const shadowFolder = options.shadowFolder === 'safe' ? 'recording-shadows-safe' : 'recording-shadows'
+    return `${API_URL}/api/video/${projectCode}/${shadowFolder}/${shadowFilename}`
+  }
   return `${API_URL}/api/video/${projectCode}/${folder}/${filename}`
 }
 
@@ -135,6 +147,7 @@ interface VideoMeta {
   chapterLabel?: string  // FR-77: For chapter videos, the label (e.g., "intro")
   segmentName?: string   // For segment videos, the full name without extension (e.g., "01-1-intro")
   chapterFiles?: RecordingFile[]  // For chapter videos, all segments in the chapter
+  isShadow?: boolean     // FR-83: True if playing 240p preview video
 }
 
 export function WatchPage() {
@@ -307,14 +320,21 @@ export function WatchPage() {
   }, [currentVideo, projectCode, allSegments])
 
   // Play a specific recording (segment)
+  // FR-83: Shadow files play from recording-shadows/ folder as .mp4
   const playRecording = useCallback((file: RecordingFile) => {
     if (!projectCode) return
-    const url = getVideoUrl(projectCode, file.filename)
+    const isShadow = 'isShadow' in file && file.isShadow
+    const shadowFolder = file.folder === 'safe' ? 'safe' : 'recordings'
+    const url = getVideoUrl(projectCode, file.filename, 'recordings', {
+      isShadow,
+      shadowFolder,
+    })
     const segmentName = file.filename.replace(/\.mov$/, '')
     setCurrentVideo({
       url,
       title: file.filename,
       segmentName,
+      isShadow,
     })
   }, [projectCode])
 
@@ -364,36 +384,43 @@ export function WatchPage() {
       {/* FR-71: Size-responsive container */}
       <div className={SIZE_CLASSES[videoSize]}>
         {/* Full-width Video Player */}
-        <div className="bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
+        <div className="bg-black rounded-lg overflow-hidden relative" style={{ aspectRatio: '16/9' }}>
+          {/* FR-83: Shadow indicator badge */}
+          {currentVideo?.isShadow && (
+            <div className="absolute top-3 left-3 z-10 bg-black/70 text-yellow-400 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+              <span>👻</span>
+              <span>240p Preview</span>
+            </div>
+          )}
           {currentVideo ? (
             <video
-              ref={videoRef}
-              src={currentVideo.url}
-              controls
-              className="w-full h-full object-contain"
-              onLoadedMetadata={() => {
-                // FR-71: Apply saved playback speed when video loads
-                if (videoRef.current) {
-                  videoRef.current.playbackRate = playbackSpeed
-                  // Auto-start playback when autoplay is enabled
-                  if (autoplay) {
-                    videoRef.current.play()
+                ref={videoRef}
+                src={currentVideo.url}
+                controls
+                className="w-full h-full object-contain"
+                onLoadedMetadata={() => {
+                  // FR-71: Apply saved playback speed when video loads
+                  if (videoRef.current) {
+                    videoRef.current.playbackRate = playbackSpeed
+                    // Auto-start playback when autoplay is enabled
+                    if (autoplay) {
+                      videoRef.current.play()
+                    }
                   }
-                }
-              }}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-              onError={(e) => {
-                console.error('Video error:', e)
-              }}
-              onEnded={() => {
-                setIsPlaying(false)
-                if (autonext) {
-                  playNextSegment()
-                }
-              }}
-            />
+                }}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                onError={(e) => {
+                  console.error('Video error:', e)
+                }}
+                onEnded={() => {
+                  setIsPlaying(false)
+                  if (autonext) {
+                    playNextSegment()
+                  }
+                }}
+              />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500">
               <div className="text-center p-8">
@@ -431,6 +458,11 @@ export function WatchPage() {
                 {currentVideo.isChapter && (
                   <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
                     Chapter Recording
+                  </span>
+                )}
+                {currentVideo.isShadow && (
+                  <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded flex items-center gap-1">
+                    <span>👻</span> Shadow
                   </span>
                 )}
               </>
@@ -571,6 +603,27 @@ export function WatchPage() {
             <div className="flex-1 overflow-y-auto py-1">
               {hoveredChapter?.files.map((file) => {
                 const isPlaying = currentVideo?.url.includes(file.filename) && !currentVideo?.isChapter
+                // FR-83: Recording status
+                const isShadow = 'isShadow' in file && file.isShadow
+                const hasShadow = 'hasShadow' in file && file.hasShadow
+
+                // FR-83: Status indicator - 📹 = Real | 👻 = Shadow only | 📹👻 = Real + Shadow
+                let statusIcon: string
+                let statusTitle: string
+                if (isPlaying) {
+                  statusIcon = '▶'
+                  statusTitle = 'Now playing'
+                } else if (isShadow) {
+                  statusIcon = '👻'
+                  statusTitle = 'Shadow only (collaborator mode)'
+                } else if (hasShadow) {
+                  statusIcon = '📹👻'
+                  statusTitle = 'Real + Shadow'
+                } else {
+                  statusIcon = '📹'
+                  statusTitle = 'Real recording (no shadow)'
+                }
+
                 return (
                   <button
                     key={file.path}
@@ -578,11 +631,14 @@ export function WatchPage() {
                     className={`w-full text-left px-4 py-2 flex items-center gap-2 transition-colors ${
                       isPlaying
                         ? 'bg-blue-50 text-blue-700 border-l-2 border-blue-500'
-                        : 'hover:bg-gray-50 text-gray-600 border-l-2 border-transparent'
+                        : isShadow
+                          ? 'hover:bg-purple-50 text-purple-600 border-l-2 border-transparent'
+                          : 'hover:bg-gray-50 text-gray-600 border-l-2 border-transparent'
                     }`}
+                    title={statusTitle}
                   >
-                    <span className={`text-xs ${isPlaying ? 'text-blue-500' : 'text-gray-300'}`}>
-                      {isPlaying ? '▶' : '○'}
+                    <span className={`text-xs ${isPlaying ? 'text-blue-500' : isShadow ? 'text-purple-400' : 'text-gray-400'}`}>
+                      {statusIcon}
                     </span>
                     <span className={`flex-1 font-mono text-xs truncate ${
                       isPlaying ? 'font-medium' : ''

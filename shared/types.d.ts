@@ -90,6 +90,7 @@ export interface ProjectStats {
     hasChapters: boolean;
     inboxCount: number;
     chapterVideoCount: number;
+    shadowCount: number;
 }
 export interface RecordingFile {
     filename: string;
@@ -102,6 +103,32 @@ export interface RecordingFile {
     name: string;
     tags: string[];
     folder: 'recordings' | 'safe';
+    isShadow?: boolean;
+}
+export interface ShadowStatusResponse {
+    currentProject: {
+        recordings: number;
+        shadows: number;
+        missing: number;
+    };
+    watchDirectory: {
+        configured: boolean;
+        exists: boolean;
+        path: string;
+    };
+}
+export interface ShadowGenerateResponse {
+    success: boolean;
+    created: number;
+    skipped: number;
+    errors?: string[];
+}
+export interface ShadowGenerateAllResponse {
+    success: boolean;
+    projects: number;
+    created: number;
+    skipped: number;
+    errors?: string[];
 }
 export interface ImageInfo {
     path: string;
@@ -463,6 +490,7 @@ export interface QueryRecording {
     size: number;
     duration: number | null;
     hasTranscript: boolean;
+    isShadow?: boolean;
 }
 export interface QueryTranscript {
     filename: string;

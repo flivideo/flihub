@@ -1,8 +1,15 @@
 /**
  * FR-70: Video Streaming Routes
+ * FR-83: Shadow video support
  *
  * Endpoints:
- * - GET /video/:projectCode/*filepath - Stream video file with Range support
+ * - GET /video/:projectCode/:folder/:filename - Stream video file with Range support
+ *
+ * Folders:
+ * - recordings: Real video recordings
+ * - -chapters: Generated chapter videos
+ * - recording-shadows: 240p preview videos (FR-83)
+ * - recording-shadows-safe: 240p previews from safe folder (FR-83)
  */
 
 import { Router, Request, Response } from 'express';
@@ -43,8 +50,8 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       return;
     }
 
-    // Only allow 'recordings' and '-chapters' folders
-    const allowedFolders = ['recordings', '-chapters'];
+    // FR-83: Allow recordings, chapters, and shadow folders
+    const allowedFolders = ['recordings', '-chapters', 'recording-shadows', 'recording-shadows-safe'];
     if (!allowedFolders.includes(folder)) {
       res.status(400).json({ success: false, error: 'Invalid folder' });
       return;
@@ -53,8 +60,16 @@ export function createVideoRoutes(getConfig: () => Config): Router {
     try {
       // Build full path to video file
       // Note: -chapters is inside recordings/ folder
+      // FR-83: recording-shadows-safe maps to recording-shadows/-safe
       const projectsDir = expandPath(PROJECTS_ROOT);
-      const actualFolder = folder === '-chapters' ? 'recordings/-chapters' : folder;
+      let actualFolder: string;
+      if (folder === '-chapters') {
+        actualFolder = 'recordings/-chapters';
+      } else if (folder === 'recording-shadows-safe') {
+        actualFolder = 'recording-shadows/-safe';
+      } else {
+        actualFolder = folder;
+      }
       const videoPath = path.join(projectsDir, projectCode, actualFolder, filename);
 
       // Verify file exists

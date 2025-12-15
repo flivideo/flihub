@@ -30,6 +30,9 @@ import type {
   InboxSubfolder,
   InboxResponse,
   ChapterRecordingStatusResponse,
+  ShadowStatusResponse,
+  ShadowGenerateResponse,
+  ShadowGenerateAllResponse,
 } from '../../../shared/types'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { API_URL } from '../config'
@@ -507,6 +510,46 @@ export function useGenerateChapterRecordings() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapterRecordingStatus })
+    },
+  })
+}
+
+// FR-83: Get shadow recording status
+export function useShadowStatus() {
+  return useQuery({
+    queryKey: QUERY_KEYS.shadowStatus,
+    queryFn: () => fetchApi<ShadowStatusResponse>('/api/shadows/status'),
+  })
+}
+
+// FR-83: Generate shadow files for current project
+export function useGenerateShadows() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () =>
+      fetchApi<ShadowGenerateResponse>('/api/shadows/generate', {
+        method: 'POST',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.shadowStatus })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
+    },
+  })
+}
+
+// FR-83: Generate shadow files for all projects
+export function useGenerateAllShadows() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () =>
+      fetchApi<ShadowGenerateAllResponse>('/api/shadows/generate-all', {
+        method: 'POST',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.shadowStatus })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
     },
   })
 }

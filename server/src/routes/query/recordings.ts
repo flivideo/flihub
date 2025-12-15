@@ -2,6 +2,9 @@
  * NFR-68: Query Routes - Recordings
  *
  * Endpoint: GET / (mounted at /projects/:code/recordings)
+ *
+ * FR-83: Unified scanning - merges real recordings with shadow video files.
+ * Real files take precedence over shadows. Shadows are 240p preview videos.
  */
 
 import { Router, Request, Response } from 'express';
@@ -12,9 +15,18 @@ import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseRecordingFilename, extractTagsFromName } from '../../../../shared/naming.js';
 import { readDirSafe, statSafe } from '../../utils/filesystem.js';
 import { formatRecordingsReport } from '../../utils/reporters.js';
+import { getVideoDuration } from '../../utils/shadowFiles.js';
 import type { Config, QueryRecording } from '../../../../shared/types.js';
 
 const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
+
+// FR-83: Extended recording with shadow support
+// isShadow: true = shadow-only (no real recording)
+// hasShadow: true = real recording has a corresponding shadow
+interface UnifiedRecording extends QueryRecording {
+  isShadow?: boolean;
+  hasShadow?: boolean;
+}
 
 export function createRecordingsRoutes(getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
@@ -35,10 +47,18 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
       }
 
       const paths = getProjectPaths(projectPath);
-      const recordings: QueryRecording[] = [];
+
+      // FR-83: Shadow directories
+      const shadowDir = path.join(projectPath, 'recording-shadows');
+      const shadowSafeDir = path.join(projectPath, 'recording-shadows', '-safe');
+
+      // Build unified map: baseName -> recording (real takes precedence)
+      const unifiedMap = new Map<string, UnifiedRecording>();
+
+      // FR-83: Track which baseNames have shadow files
+      const shadowSet = new Map<string, { size: number; duration: number | null }>();
 
       // Get transcript filenames for hasTranscript check
-      // NFR-67: Using readDirSafe - returns [] for missing dir, throws on real errors
       const transcriptSet = new Set<string>();
       const transcriptFiles = await readDirSafe(paths.transcripts);
       for (const f of transcriptFiles) {
@@ -47,13 +67,60 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         }
       }
 
-      // Scan recordings and safe folders
+      // FR-83: First, scan shadow video files to build shadowSet
+      // Then add shadow-only entries (will be overwritten by real files)
+      const shadowFolders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
+        { dir: shadowDir, folder: 'recordings' },
+        { dir: shadowSafeDir, folder: 'safe' },
+      ];
+
+      for (const { dir, folder } of shadowFolders) {
+        const files = await readDirSafe(dir);
+        for (const filename of files) {
+          if (!filename.match(/\.mp4$/i)) continue;
+
+          const shadowPath = path.join(dir, filename);
+          const stat = await statSafe(shadowPath);
+          if (!stat) continue;
+
+          // Shadow filename matches original baseName (e.g., 01-1-intro.mp4)
+          const baseName = filename.replace(/\.mp4$/i, '');
+          const parsed = parseRecordingFilename(filename);
+          if (!parsed) continue;
+
+          // Get duration from shadow video
+          const duration = await getVideoDuration(shadowPath);
+
+          // Track that this baseName has a shadow
+          shadowSet.set(`${folder}:${baseName}`, { size: stat.size, duration });
+
+          const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
+
+          // Add as shadow-only entry (may be overwritten by real file)
+          const recording: UnifiedRecording = {
+            filename: `${baseName}.mov`,  // Report as .mov for consistency
+            chapter: parsed.chapter,
+            sequence: parsed.sequence || '0',
+            name: cleanName,
+            tags,
+            folder,
+            size: stat.size,
+            duration: duration,
+            hasTranscript: transcriptSet.has(baseName),
+            isShadow: true,
+            hasShadow: true,  // Shadow-only files obviously have shadow
+          };
+
+          unifiedMap.set(`${folder}:${baseName}`, recording);
+        }
+      }
+
+      // Scan real recordings and safe folders (overwrites shadows)
       const folders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
         { dir: paths.recordings, folder: 'recordings' },
         { dir: paths.safe, folder: 'safe' },
       ];
 
-      // NFR-67: Using readDirSafe - returns [] for missing dir
       for (const { dir, folder } of folders) {
         const files = await readDirSafe(dir);
         for (const filename of files) {
@@ -64,14 +131,17 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
 
           const filePath = path.join(dir, filename);
           const stat = await statSafe(filePath);
-          if (!stat) continue; // File was deleted between readdir and stat
+          if (!stat) continue;
 
           const baseName = filename.replace('.mov', '');
-
-          // NFR-65: Extract tags from name using shared utility
           const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
 
-          const recording: QueryRecording = {
+          // Check if this real recording has a corresponding shadow
+          const shadowKey = `${folder}:${baseName}`;
+          const shadowInfo = shadowSet.get(shadowKey);
+          const hasShadow = !!shadowInfo;
+
+          const recording: UnifiedRecording = {
             filename,
             chapter: parsed.chapter,
             sequence: parsed.sequence || '0',
@@ -79,13 +149,19 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
             tags,
             folder,
             size: stat.size,
-            duration: null, // Would require ffprobe
+            duration: shadowInfo?.duration ?? null, // Use shadow duration if available
             hasTranscript: transcriptSet.has(baseName),
+            isShadow: false,
+            hasShadow,
           };
 
-          recordings.push(recording);
+          // Real file overwrites shadow
+          unifiedMap.set(shadowKey, recording);
         }
       }
+
+      // Convert map to array
+      const recordings = Array.from(unifiedMap.values());
 
       // Sort by chapter, sequence
       recordings.sort((a, b) => {

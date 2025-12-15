@@ -15,6 +15,7 @@ import {
   getProjectIndicators,
 } from './scanning.js';
 import { detectFinalMedia } from './finalMedia.js';
+import { getShadowCounts } from './shadowFiles.js';
 import type {
   Config,
   ProjectPriority,
@@ -78,6 +79,9 @@ export interface ProjectStatsRaw {
   inboxCount: number;
   chapterVideoCount: number;
 
+  // FR-83: Shadow recordings
+  shadowCount: number;
+
   // Final media (optional, only if requested)
   finalMedia?: {
     video?: { filename: string; size: number };
@@ -133,6 +137,11 @@ export async function getProjectStatsRaw(
   // FR-80: Get content indicators
   const indicators = await getProjectIndicators(projectPath);
 
+  // FR-83: Get shadow counts
+  const shadowDir = path.join(projectPath, 'recording-shadows');
+  const shadowSafeDir = path.join(projectPath, 'recording-shadows', '-safe');
+  const shadowCounts = await getShadowCounts(recordingsDir, safeDir, shadowDir, shadowSafeDir);
+
   // FR-80: Determine stage (check for manual override first)
   // Use projectStageOverrides (new) or fall back to legacy projectStages
   const manualStage = config.projectStageOverrides?.[code] ||
@@ -173,6 +182,7 @@ export async function getProjectStatsRaw(
     hasChapters: indicators.hasChapters,
     inboxCount: indicators.inboxCount,
     chapterVideoCount: indicators.chapterVideoCount,
+    shadowCount: shadowCounts.shadows,
   };
 
   // Optionally include final media

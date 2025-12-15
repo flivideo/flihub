@@ -158,6 +158,9 @@ export interface ProjectStats {
   hasChapters: boolean;          // Has .mov files in recordings/-chapters/
   inboxCount: number;            // FR-82: File count in inbox/ (for tooltip)
   chapterVideoCount: number;     // FR-82: .mov count in recordings/-chapters/ (for tooltip)
+
+  // FR-83: Shadow recordings
+  shadowCount: number;           // Shadow files in recording-shadows/
 }
 
 // FR-14: Recording file info for asset view
@@ -172,6 +175,37 @@ export interface RecordingFile {
   name: string;           // Parsed from filename (e.g., "intro")
   tags: string[];         // Parsed from filename
   folder: 'recordings' | 'safe';  // Which folder it's in
+  isShadow?: boolean;     // FR-83: True if shadow-only (no real recording)
+  hasShadow?: boolean;    // FR-83: True if this recording has a shadow file
+}
+
+// FR-83: Shadow generation API responses
+export interface ShadowStatusResponse {
+  currentProject: {
+    recordings: number;
+    shadows: number;
+    missing: number;
+  };
+  watchDirectory: {
+    configured: boolean;
+    exists: boolean;
+    path: string;
+  };
+}
+
+export interface ShadowGenerateResponse {
+  success: boolean;
+  created: number;
+  skipped: number;
+  errors?: string[];
+}
+
+export interface ShadowGenerateAllResponse {
+  success: boolean;
+  projects: number;
+  created: number;
+  skipped: number;
+  errors?: string[];
 }
 
 // FR-17: Image info for incoming images from Downloads
@@ -572,6 +606,8 @@ export interface QueryRecording {
   size: number;
   duration: number | null;
   hasTranscript: boolean;
+  isShadow?: boolean;   // FR-83: True if shadow-only (no real recording)
+  hasShadow?: boolean;  // FR-83: True if this recording has a shadow file
 }
 
 // Query API: Transcript info
