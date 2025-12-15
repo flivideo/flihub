@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useRenameChapter } from '../hooks/useApi'
+import { toKebabCase } from '../utils/formatting'
 
 interface FileToRename {
   filename: string
@@ -17,17 +18,6 @@ interface ChapterInfo {
 interface RenameLabelModalProps {
   chapterInfo: ChapterInfo
   onClose: () => void
-}
-
-// Convert text to kebab-case
-function toKebabCase(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
 }
 
 export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps) {

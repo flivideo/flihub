@@ -5,7 +5,7 @@ import { ClipboardPasteModal } from './ClipboardPasteModal'
 import { useConfig, useSuggestedNaming, useRecordings } from '../hooks/useApi'
 import { useShiftHover } from '../hooks/useShiftHover'
 import { useAssetsSocket } from '../hooks/useSocket'
-import { formatFileSize, collapsePath, formatTime } from '../utils/formatting'
+import { formatFileSize, collapsePath, formatTime, toKebabCase } from '../utils/formatting'
 import { OpenFolderButton } from './shared'
 import { validateLabel, buildImageFilename } from '../../../shared/naming'
 import { ImagePreviewOverlay } from './ImagePreviewOverlay'
@@ -47,17 +47,6 @@ interface AssignmentState {
   sequence: string
   variant: VariantOption
   label: string
-}
-
-// FR-39: Convert text to kebab-case
-function toKebabCase(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')  // Remove invalid chars (keep spaces and existing dashes)
-    .replace(/\s+/g, '-')          // Replace spaces with dashes
-    .replace(/-+/g, '-')           // Collapse multiple dashes
-    .replace(/^-|-$/g, '')         // Trim leading/trailing dashes
 }
 
 // Build preview filename using shared utility

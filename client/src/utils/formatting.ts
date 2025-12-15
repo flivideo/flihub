@@ -28,6 +28,22 @@ export function collapsePath(path: string): string {
 }
 
 /**
+ * NFR-79: Convert text to kebab-case for labels and filenames
+ * Handles spaces, removes invalid characters, collapses multiple dashes
+ * @param text Input text (may contain spaces, mixed case, special chars)
+ * @returns kebab-case string (e.g., "My Label!" -> "my-label")
+ */
+export function toKebabCase(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')  // Remove invalid chars (keep spaces and existing dashes)
+    .replace(/\s+/g, '-')          // Replace spaces with dashes
+    .replace(/-+/g, '-')           // Collapse multiple dashes
+    .replace(/^-|-$/g, '')         // Trim leading/trailing dashes
+}
+
+/**
  * FR-41: Time format styles
  * - smart: Current behavior, adds 's' suffix for values under 60 (e.g., 18s, 2:34, 1:02:34)
  * - youtube: Always MM:SS or H:MM:SS, zero-padded, for chapter timestamps (e.g., 00:18, 02:34, 1:02:34)
