@@ -25,8 +25,6 @@ export const QUERY_KEYS = {
   chapterStatus: (chapter: string) => ['chapter-status', chapter] as const,
   // FR-55: Combined video transcript
   combinedTranscript: ['combined-transcript'] as const,
-  // FR-32: Project stats management
-  projectStats: ['project-stats'] as const,
   // FR-33: Final media detection
   finalMedia: (code: string) => ['final-media', code] as const,
   // FR-34: Chapter timestamp extraction

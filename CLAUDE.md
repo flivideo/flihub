@@ -2,16 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
-## Current Focus (2025-12-05)
+## Current Focus (2025-12-15)
 
-**Sprint:** Video playback + transcription UI
+**Sprint:** Shadow system completion + Watch page polish
 
 | Priority | Item | Status |
 |----------|------|--------|
-| 1 | FR-45: In-app video playback | Pending |
-| 2 | FR-52: Transcription progress bar | Pending |
+| 1 | FR-88: Shadow Fallback in Recordings UI | Bug - blocks shadow system |
+| 2 | FR-71: Watch Page Enhancements | Feature |
+| 3 | FR-54: Naming Template Bugs | Bug Fix (4 items) |
 
-**Recently Completed:** FR-36 through FR-51 (16 features)
+**Recently Completed:** FR-72 through FR-87, NFR-79, NFR-85 (shadow system, transcript sync, chapter SRT)
 
 **Quick Reference:**
 - `/progress` - Get quick project status
@@ -105,11 +106,20 @@ npm run build -w client  # Build client: tsc -b && vite build
 **Project Directory Structure**:
 ```
 project-root/
-├── recordings/    # Named video recordings
-├── safe/          # Protected recordings
+├── recordings/           # Named video recordings (.mov/.mp4)
+│   ├── -safe/            # Protected recordings
+│   └── -chapters/        # Generated chapter videos (FR-58)
+├── recording-shadows/    # Low-res video shadows for collaborators (FR-83)
+├── recording-transcripts/# Whisper transcripts (.txt + .srt)
+├── inbox/                # Incoming content staging (FR-59)
+│   ├── raw/              # Dumps, notes, links
+│   ├── dataset/          # Structured data
+│   └── presentation/     # HTML visual assets
 ├── assets/
-│   └── images/    # Assigned image assets
-└── thumbs/        # YouTube thumbnails
+│   ├── images/           # Assigned image assets + prompts
+│   └── thumbs/           # YouTube thumbnails
+├── final/                # Final edited video + SRT
+└── s3-staging/           # Files shared with editor via S3
 ```
 
 **Configuration** (`server/config.json`):

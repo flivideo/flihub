@@ -231,3 +231,29 @@ export function useChapterRecordingSocket() {
     }
   }, [queryClient])
 }
+
+// NFR-85: Hook for transcript socket events - invalidates React Query cache
+// Fixes stale transcript % in ProjectsPanel
+export function useTranscriptsSocket() {
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    const socket = getSocket()
+
+    const handleTranscriptsChanged = () => {
+      console.log('Socket: transcripts:changed - invalidating cache')
+      // Invalidate recordings (hasTranscript flag)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
+      // Invalidate project stats (transcript % in ProjectsPanel)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
+      // Invalidate transcriptions tab data
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transcriptions })
+    }
+
+    socket.on('transcripts:changed', handleTranscriptsChanged)
+
+    return () => {
+      socket.off('transcripts:changed', handleTranscriptsChanged)
+    }
+  }, [queryClient])
+}

@@ -664,9 +664,8 @@ export function RecordingsView() {
               {/* Files in this chapter */}
               <div className="space-y-1">
                 {group.files.map((file) => {
-                  // FR-83: Determine recording status
+                  // FR-88: Check if shadow-only file
                   const isShadow = 'isShadow' in file && file.isShadow
-                  const hasShadow = 'hasShadow' in file && file.hasShadow
 
                   // FR-83: Determine row styling based on folder and shadow status
                   let rowClasses: string
@@ -684,29 +683,16 @@ export function RecordingsView() {
                     textClasses = 'text-gray-700'
                   }
 
-                  // FR-83: Status indicator based on real/shadow state
-                  // 📹 = Real recording | 👻 = Shadow only | 📹👻 = Real + Shadow
-                  let statusIcon: string
-                  let statusTitle: string
-                  if (isShadow) {
-                    statusIcon = '👻'
-                    statusTitle = 'Shadow only - video not available locally (collaborator mode)'
-                  } else if (hasShadow) {
-                    statusIcon = '📹👻'
-                    statusTitle = 'Real recording with shadow (synced for collaborators)'
-                  } else {
-                    statusIcon = '📹'
-                    statusTitle = 'Real recording (no shadow yet)'
-                  }
-
                   return (
                     <div
                       key={file.path}
                       className={`flex items-center justify-between px-4 py-2 rounded-lg border ${rowClasses}`}
                     >
                       <div className="flex items-center gap-3">
-                        {/* FR-83: Recording status indicator */}
-                        <span className="text-sm" title={statusTitle}>{statusIcon}</span>
+                        {/* FR-88: Only show ghost icon for shadow-only files */}
+                        {isShadow && (
+                          <span className="text-sm" title="Shadow only - video not available locally">👻</span>
+                        )}
                         <span className={`font-mono text-sm ${textClasses}`}>
                           {file.filename}
                         </span>

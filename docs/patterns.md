@@ -220,18 +220,36 @@ The ProjectsPanel table uses consistent interaction patterns for each element ty
 | **Status displays** | Show status, hover for tooltip (read-only) | Text/emoji, cursor-help |
 | **Toggles** | Click cycles through states | Badge/icon |
 
-### Implementation Reference
+### Full UX Matrix
 
-| Element | Type | Click Action |
-|---------|------|--------------|
-| 📥 Inbox | Indicator | Switch project + navigate to Inbox tab |
-| 🖼 Assets | Indicator | Switch project + navigate to Assets tab |
-| 🎬 Chapters | Indicator (folder) | Opens -chapters folder |
-| Ch column | Count column | Opens -chapters folder (if videos exist) |
-| Files column | Count column | Opens recordings folder |
-| 👻 Shadows | Count column | Opens recording-shadows folder |
-| 📄 Transcript % | Status display | Tooltip shows sync stats |
-| ✅ Final | Status display | Tooltip shows video/srt status |
+| Element | Type | Click Behavior | Tooltip |
+|---------|------|----------------|---------|
+| 📌 Priority | Toggle | Pin/unpin project | Shows current state |
+| Project Code | Navigation | Switch to project | - |
+| Stage | Toggle | Click: next, Shift+Click: prev | Shows description |
+| 📥 Inbox | Indicator | Switch project + navigate to Inbox tab | "Click to view in app" |
+| 🖼 Assets | Indicator | Switch project + navigate to Assets tab | "Click to view in app" |
+| 🎬 Chapters | Indicator (folder) | Opens -chapters folder | "Click to open folder" |
+| Ch column | Folder link | Opens -chapters folder | Only clickable if videos exist |
+| Files column | Folder link | Opens recordings folder | "Open recordings folder" |
+| 👻 Shadows column | Folder link | Opens recording-shadows folder | "Open recording-shadows folder" |
+| 📄 Transcript % | Status | Not clickable | Shows sync stats |
+| ✅ Final Video | Status | Not clickable | Shows video/srt status |
+| ⓘ Info | Popup | Shows project stats popup | "View project stats" |
+
+### Design Rationale
+
+**Why distinguish "indicators" vs "count columns"?**
+- **Indicators** (📥, 🖼, 🎬) are presence markers - they show something exists
+- **Count columns** show quantities and always open the underlying folder
+
+Indicators can have varied behaviors (navigate to tab vs open folder) based on whether there's an in-app view for that content.
+
+**Why does Ch column have two clickable elements?**
+- **Ch column number** - Opens -chapters folder (same as Files/Shadows pattern)
+- **🎬 indicator** - Also opens -chapters folder (presence marker pattern)
+
+This is intentional redundancy. Both follow their respective patterns and happen to do the same thing.
 
 ### Open Folder Hook
 

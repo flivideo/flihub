@@ -186,6 +186,36 @@ export class WatcherManager {
   }
 
   /**
+   * NFR-85: Start transcripts watcher (recording-transcripts/ folder)
+   * Fixes stale transcript % in ProjectsPanel
+   */
+  startTranscriptsWatcher(projectDir: string): void {
+    const paths = getProjectPaths(expandPath(projectDir));
+    this.startWatcher({
+      name: 'transcripts',
+      pattern: paths.transcripts,
+      event: 'transcripts:changed',
+      debounceMs: 300,
+      watchEvents: ['add', 'unlink', 'change'],
+    });
+  }
+
+  /**
+   * NFR-85: Start thumbs watcher (assets/thumbs/ folder)
+   * Catches direct file operations, not just ZIP imports
+   */
+  startThumbsWatcher(projectDir: string): void {
+    const paths = getProjectPaths(expandPath(projectDir));
+    this.startWatcher({
+      name: 'thumbs',
+      pattern: paths.thumbs,
+      event: 'thumbs:changed',
+      debounceMs: 300,
+      watchEvents: ['add', 'unlink', 'change'],
+    });
+  }
+
+  /**
    * Update watchers based on config changes
    */
   updateFromConfig(oldConfig: Config | null, newConfig: Config): void {
@@ -195,6 +225,8 @@ export class WatcherManager {
       this.startRecordingsWatcher(newConfig.projectDirectory);
       this.startProjectsWatcher(newConfig.projectDirectory);
       this.startInboxWatcher(newConfig.projectDirectory);  // FR-59
+      this.startTranscriptsWatcher(newConfig.projectDirectory);  // NFR-85
+      this.startThumbsWatcher(newConfig.projectDirectory);  // NFR-85
     }
 
     // Restart incoming images watcher if source directory changed
@@ -213,6 +245,8 @@ export class WatcherManager {
     this.startRecordingsWatcher(config.projectDirectory);
     this.startProjectsWatcher(config.projectDirectory);
     this.startInboxWatcher(config.projectDirectory);  // FR-59
+    this.startTranscriptsWatcher(config.projectDirectory);  // NFR-85
+    this.startThumbsWatcher(config.projectDirectory);  // NFR-85
   }
 
   /**

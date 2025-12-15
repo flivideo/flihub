@@ -104,6 +104,7 @@ export interface RecordingFile {
     tags: string[];
     folder: 'recordings' | 'safe';
     isShadow?: boolean;
+    hasShadow?: boolean;
 }
 export interface ShadowStatusResponse {
     currentProject: {
@@ -230,6 +231,7 @@ export interface ServerToClientEvents {
     'recordings:changed': () => void;
     'projects:changed': () => void;
     'inbox:changed': () => void;
+    'transcripts:changed': () => void;
     'chapters:generating': (data: {
         chapter: string;
         total: number;
@@ -491,6 +493,7 @@ export interface QueryRecording {
     duration: number | null;
     hasTranscript: boolean;
     isShadow?: boolean;
+    hasShadow?: boolean;
 }
 export interface QueryTranscript {
     filename: string;

@@ -116,14 +116,6 @@ export function useRefetchSuggestedNaming() {
   return () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.suggestedNaming })
 }
 
-// FR-10: Get available projects
-export function useProjects() {
-  return useQuery({
-    queryKey: QUERY_KEYS.projects,
-    queryFn: () => fetchApi<{ projects: ProjectInfo[]; error?: string }>('/api/projects'),
-  })
-}
-
 // FR-12: Create a new project
 export function useCreateProject() {
   const queryClient = useQueryClient()
@@ -135,8 +127,7 @@ export function useCreateProject() {
         body: JSON.stringify({ code }),
       }),
     onSuccess: () => {
-      // Bug fix: ProjectsPanel uses useProjectStats, not useProjects
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
     },
   })
 }
@@ -197,10 +188,10 @@ export function useRenameChapter() {
   })
 }
 
-// FR-32: Get extended project stats
-export function useProjectStats() {
+// FR-32: Get project list with stats (file counts, transcript %, etc.)
+export function useProjects() {
   return useQuery({
-    queryKey: QUERY_KEYS.projectStats,
+    queryKey: QUERY_KEYS.projects,
     queryFn: () => fetchApi<{ projects: ProjectStats[]; error?: string }>('/api/projects/stats'),
   })
 }
@@ -216,7 +207,7 @@ export function useUpdateProjectPriority() {
         body: JSON.stringify({ priority }),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
     },
   })
 }
@@ -232,7 +223,7 @@ export function useUpdateProjectStage() {
         body: JSON.stringify({ stage }),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
     },
   })
 }
@@ -357,7 +348,7 @@ export function useQueueTranscription() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transcriptions })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
     },
   })
 }
@@ -377,7 +368,7 @@ export function useDeleteTranscript() {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
     },
   })
 }

@@ -320,6 +320,7 @@ export interface ServerToClientEvents {
   'recordings:changed': () => void;       // Recording renamed/moved/deleted
   'projects:changed': () => void;         // Project folder changed
   'inbox:changed': () => void;            // FR-59: Inbox file added/removed
+  'transcripts:changed': () => void;      // NFR-85: Transcript added/removed/changed
   // FR-58: Chapter recording events
   'chapters:generating': (data: { chapter: string; total: number; current: number }) => void;
   'chapters:generated': (data: { chapter: string; outputFile: string; srtFile?: string }) => void;  // FR-76: srtFile added

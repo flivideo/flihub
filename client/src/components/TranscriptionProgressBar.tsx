@@ -1,7 +1,7 @@
 // FR-52: Transcription Progress Bar
 // Shows project-wide transcription status at a glance
 
-import { useConfig, useProjectStats } from '../hooks/useApi'
+import { useConfig, useProjects } from '../hooks/useApi'
 import type { TranscriptionsResponse } from '../../../shared/types'
 
 interface TranscriptionProgressBarProps {
@@ -10,10 +10,10 @@ interface TranscriptionProgressBarProps {
 
 export function TranscriptionProgressBar({ transcriptionData }: TranscriptionProgressBarProps) {
   const { data: config } = useConfig()
-  const { data: statsData } = useProjectStats()
+  const { data: projectsData } = useProjects()
 
   // Find current project stats
-  const currentProject = statsData?.projects?.find(p => {
+  const currentProject = projectsData?.projects?.find(p => {
     if (!config?.projectDirectory) return false
     return config.projectDirectory === p.path ||
            config.projectDirectory === `${p.path}/`

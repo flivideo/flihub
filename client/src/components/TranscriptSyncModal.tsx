@@ -29,7 +29,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
       await queueTranscription.mutateAsync(videoPath)
       toast.success(`Queued: ${filename}`)
       refetch()
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
     } catch (error) {
       // Try the safe folder
       try {
@@ -37,7 +37,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
         await queueTranscription.mutateAsync(safePath)
         toast.success(`Queued: ${filename}`)
         refetch()
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
       } catch {
         toast.error(`Failed to queue: ${filename}`)
       }
@@ -57,7 +57,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
       await deleteTranscript.mutateAsync({ filename, projectCode })
       toast.success(`Deleted: ${filename}.txt`)
       refetch()
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
     } catch {
       toast.error(`Failed to delete: ${filename}`)
     } finally {

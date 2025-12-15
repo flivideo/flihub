@@ -40,7 +40,7 @@ export function TranscriptionsPage() {
       // Also invalidate recordings to update status badges
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
       // FR-52: Invalidate project stats to update progress bar
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectStats })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
     }
 
     const handleError = () => {

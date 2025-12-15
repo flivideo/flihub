@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { useProjectStats, useUpdateProjectPriority, useUpdateProjectStage, useConfig, useUpdateConfig, useRefetchSuggestedNaming, useCreateProject, useFinalMedia } from '../hooks/useApi'
-import { useProjectsSocket } from '../hooks/useSocket'
-import { useOpenFolder, type FolderKey } from '../hooks/useOpenFolder'
+import { useProjects, useUpdateProjectPriority, useUpdateProjectStage, useConfig, useUpdateConfig, useRefetchSuggestedNaming, useCreateProject, useFinalMedia } from '../hooks/useApi'
+import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket'
+import { QUERY_KEYS } from '../constants/queryKeys'
+import { useOpenFolder } from '../hooks/useOpenFolder'
 import { LoadingSpinner, ErrorMessage, PageContainer } from './shared'
 import { ProjectStatsPopup } from './ProjectStatsPopup'
 import { formatFileSize } from '../utils/formatting'
@@ -278,7 +280,8 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   const [newProjectCode, setNewProjectCode] = useState('')
   const [statsPopupProject, setStatsPopupProject] = useState<ProjectStats | null>(null)
 
-  const { data, isLoading, error } = useProjectStats()
+  const queryClient = useQueryClient()
+  const { data, isLoading, error } = useProjects()
   const { data: config } = useConfig()
   const updateConfig = useUpdateConfig()
   const refetchSuggestedNaming = useRefetchSuggestedNaming()
@@ -289,6 +292,8 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
 
   // NFR-5: Subscribe to real-time project changes via socket
   useProjectsSocket()
+  // NFR-85: Subscribe to transcript changes (updates transcript % in table)
+  useTranscriptsSocket()
 
   // FR-11: Switch to a project by updating project directory
   const handleSelectProject = async (projectPath: string, projectCode: string) => {
@@ -398,6 +403,15 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
             ({projects.length} projects)
           </span>
         </h3>
+        <button
+          onClick={() => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
+          }}
+          className="px-2 py-1 text-sm text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded cursor-pointer transition-colors"
+          title="Refresh project list"
+        >
+          ↻ Refresh
+        </button>
       </div>
 
       {data?.error && (

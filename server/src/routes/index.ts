@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import fs from 'fs-extra';
 import path from 'path';
-import type { FileInfo, Config, RenameRequest, RenameResponse, SuggestedNaming, ProjectInfo, RecordingFile } from '../../../shared/types.js';
+import type { FileInfo, Config, RenameRequest, RenameResponse, SuggestedNaming, RecordingFile } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
@@ -343,11 +343,14 @@ export function createRoutes(
 
   // FR-14: GET /api/recordings - List all recordings in project's recordings directory
   // NFR-6: Using projectDirectory with getProjectPaths()
+  // FR-88: Unified scanning - merges real recordings with shadow video files
   router.get('/recordings', async (_req: Request, res: Response) => {
     try {
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
-      const recordings: RecordingFile[] = [];
+      // FR-88: Shadow directories
+      const shadowDir = path.join(paths.project, 'recording-shadows');
+      const shadowSafeDir = path.join(paths.project, 'recording-shadows', '-safe');
 
       // Known tags that can appear at the end of filenames
       const knownTags = new Set((config.availableTags || []).map(t => t.toLowerCase()));
@@ -358,68 +361,127 @@ export function createRoutes(
         }
       }
 
-      // Helper to parse filename and get file info
-      // Only returns files that match naming convention (chapter-sequence-name)
-      const processFile = async (filePath: string, folder: 'recordings' | 'safe'): Promise<RecordingFile | null> => {
-        const filename = path.basename(filePath);
-        if (!filename.endsWith('.mov')) return null;
-
-        const parsed = parseRecordingFilename(filename);
-
-        // Only include files that match the naming convention
-        if (!parsed) return null;
-
-        const stats = await fs.stat(filePath);
-
-        // FR-36: Get video duration
-        const duration = await getVideoDuration(filePath);
-
-        // Extract tags - only known tags at the end of the name
-        const nameParts = parsed.name.split('-');
+      // Helper to extract name and tags from parsed name
+      const extractNameAndTags = (parsedName: string): { name: string; tags: string[] } => {
+        const nameParts = parsedName.split('-');
         const tags: string[] = [];
-
-        // Work backwards to find known tags
         while (nameParts.length > 1 && knownTags.has(nameParts[nameParts.length - 1].toLowerCase())) {
           tags.unshift(nameParts.pop()!);
         }
-
-        const name = nameParts.join('-');
-
-        return {
-          filename,
-          path: filePath,
-          size: stats.size,
-          timestamp: stats.mtime.toISOString(),
-          duration: duration ?? undefined,
-          chapter: parsed.chapter,
-          sequence: parsed.sequence || '1',
-          name,
-          tags,
-          folder,
-        };
+        return { name: nameParts.join('-'), tags };
       };
 
-      // Read recordings folder (exclude directories like -safe) - FR-57: parallel processing
-      if (await fs.pathExists(paths.recordings)) {
-        const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
-        const results = await Promise.all(
-          entries
-            .filter(e => e.isFile())
-            .map(e => processFile(path.join(paths.recordings, e.name), 'recordings'))
-        );
-        recordings.push(...results.filter((r): r is NonNullable<typeof r> => r !== null));
+      // FR-88: Build unified map - baseName -> recording (real takes precedence over shadow)
+      const unifiedMap = new Map<string, RecordingFile>();
+
+      // FR-88: Track which baseNames have shadow files (for hasShadow flag)
+      const shadowSet = new Map<string, { size: number; duration: number | null; shadowPath: string }>();
+
+      // FR-88: Scan shadow directories first
+      const shadowFolders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
+        { dir: shadowDir, folder: 'recordings' },
+        { dir: shadowSafeDir, folder: 'safe' },
+      ];
+
+      for (const { dir, folder } of shadowFolders) {
+        if (!await fs.pathExists(dir)) continue;
+
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (!entry.isFile() || !entry.name.match(/\.mp4$/i)) continue;
+
+          const shadowPath = path.join(dir, entry.name);
+          const baseName = entry.name.replace(/\.mp4$/i, '');
+          const parsed = parseRecordingFilename(baseName + '.mov');
+          if (!parsed) continue;
+
+          const stats = await fs.stat(shadowPath);
+          const duration = await getVideoDuration(shadowPath);
+
+          // Track shadow for hasShadow check on real files
+          const key = `${folder}:${baseName}`;
+          shadowSet.set(key, { size: stats.size, duration, shadowPath });
+
+          // Extract name and tags
+          const { name, tags } = extractNameAndTags(parsed.name);
+
+          // Add as shadow-only entry (may be overwritten by real file)
+          unifiedMap.set(key, {
+            filename: `${baseName}.mov`,  // Report as .mov for UI consistency
+            path: shadowPath,  // Path points to shadow video
+            size: stats.size,
+            timestamp: stats.mtime.toISOString(),
+            duration: duration ?? undefined,
+            chapter: parsed.chapter,
+            sequence: parsed.sequence || '1',
+            name,
+            tags,
+            folder,
+            isShadow: true,
+            hasShadow: true,  // Shadow-only files obviously have shadow
+          });
+        }
       }
 
-      // Read -safe folder if it exists (inside recordings/) - FR-57: parallel processing
-      if (await fs.pathExists(paths.safe)) {
-        const entries = await fs.readdir(paths.safe, { withFileTypes: true });
-        const results = await Promise.all(
-          entries
-            .filter(e => e.isFile())
-            .map(e => processFile(path.join(paths.safe, e.name), 'safe'))
-        );
-        recordings.push(...results.filter((r): r is NonNullable<typeof r> => r !== null));
+      // FR-88: Scan real recordings (overwrites shadow entries)
+      const realFolders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
+        { dir: paths.recordings, folder: 'recordings' },
+        { dir: paths.safe, folder: 'safe' },
+      ];
+
+      for (const { dir, folder } of realFolders) {
+        if (!await fs.pathExists(dir)) continue;
+
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        const fileEntries = entries.filter(e => e.isFile() && e.name.endsWith('.mov'));
+
+        // FR-57: parallel processing
+        const results = await Promise.all(fileEntries.map(async (entry) => {
+          const filePath = path.join(dir, entry.name);
+          const parsed = parseRecordingFilename(entry.name);
+          if (!parsed) return null;
+
+          const stats = await fs.stat(filePath);
+
+          // Check if this recording has a shadow
+          const baseName = entry.name.replace('.mov', '');
+          const key = `${folder}:${baseName}`;
+          const shadowInfo = shadowSet.get(key);
+
+          // FR-36: Get video duration (prefer shadow duration if available, faster to read)
+          const duration = shadowInfo?.duration ?? await getVideoDuration(filePath);
+
+          const { name, tags } = extractNameAndTags(parsed.name);
+
+          return {
+            key,
+            recording: {
+              filename: entry.name,
+              path: filePath,
+              size: stats.size,
+              timestamp: stats.mtime.toISOString(),
+              duration: duration ?? undefined,
+              chapter: parsed.chapter,
+              sequence: parsed.sequence || '1',
+              name,
+              tags,
+              folder,
+              isShadow: false,
+              hasShadow: !!shadowInfo,
+            } as RecordingFile,
+          };
+        }));
+
+        // Add real recordings to map (overwrites shadow-only entries)
+        for (const result of results) {
+          if (result) {
+            unifiedMap.set(result.key, result.recording);
+          }
+        }
       }
+
+      // Convert map to array
+      const recordings = Array.from(unifiedMap.values());
 
       // Sort by chapter (numeric), then sequence (numeric), then timestamp
       recordings.sort((a, b) => {
@@ -536,73 +598,6 @@ export function createRoutes(
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to undo rename',
-      });
-    }
-  });
-
-  // FR-10: GET /api/projects - List available AppyDave video projects
-  router.get('/projects', async (_req: Request, res: Response) => {
-    try {
-      const projectsRoot = expandPath('~/dev/video-projects/v-appydave');
-
-      // Check if directory exists
-      if (!await fs.pathExists(projectsRoot)) {
-        res.json({ projects: [], error: 'Projects directory not found' });
-        return;
-      }
-
-      // Read all directories in the projects root
-      // Bug fix: Filter out system folders (hidden, -trash, -safe, archived)
-      const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
-      const projectDirs = entries.filter(e =>
-        e.isDirectory() &&
-        !e.name.startsWith('.') &&     // hidden folders
-        !e.name.startsWith('-') &&     // system folders (-trash, -safe)
-        e.name !== 'archived'          // archive folder
-      );
-
-      const projects: ProjectInfo[] = await Promise.all(
-        projectDirs.map(async (dir) => {
-          const projectPath = path.join(projectsRoot, dir.name);
-          const recordingsPath = path.join(projectPath, 'recordings');
-
-          let fileCount = 0;
-          let lastModified = new Date(0).toISOString();
-
-          // Check if recordings folder exists
-          if (await fs.pathExists(recordingsPath)) {
-            const files = await fs.readdir(recordingsPath);
-            const movFiles = files.filter(f => f.endsWith('.mov'));
-            fileCount = movFiles.length;
-
-            // Get most recent file modification time
-            for (const file of movFiles) {
-              const filePath = path.join(recordingsPath, file);
-              const stats = await fs.stat(filePath);
-              if (stats.mtime.toISOString() > lastModified) {
-                lastModified = stats.mtime.toISOString();
-              }
-            }
-          }
-
-          return {
-            code: dir.name,
-            path: projectPath,
-            fileCount,
-            lastModified: fileCount > 0 ? lastModified : '',
-          };
-        })
-      );
-
-      // Sort by project code (which typically includes a number prefix like b72-)
-      projects.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
-
-      res.json({ projects });
-    } catch (error) {
-      console.error('Error listing projects:', error);
-      res.status(500).json({
-        projects: [],
-        error: error instanceof Error ? error.message : 'Failed to list projects',
       });
     }
   });

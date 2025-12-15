@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Toaster, toast } from 'sonner'
 import { useSocket } from './hooks/useSocket'
-import { useConfig, useSuggestedNaming, useTrashFile, useProjectStats, useUpdateConfig, useRefetchSuggestedNaming, useRecentRenames, useUndoRename } from './hooks/useApi'
+import { useConfig, useSuggestedNaming, useTrashFile, useProjects, useUpdateConfig, useRefetchSuggestedNaming, useRecentRenames, useUndoRename } from './hooks/useApi'
 import { useBestTake } from './hooks/useBestTake'
 import { discardFiles } from './utils/fileActions'
 import { collapsePath } from './utils/formatting'
@@ -80,7 +80,7 @@ function App() {
   const trashMutation = useTrashFile()
 
   // FR-43: Project switching hooks
-  const { data: projectStats } = useProjectStats()
+  const { data: projectsData } = useProjects()
   const updateConfig = useUpdateConfig()
   const refetchSuggestedNaming = useRefetchSuggestedNaming()
 
@@ -179,7 +179,7 @@ function App() {
   }, [showProjectDropdown])
 
   // FR-43: Get pinned projects for dropdown
-  const pinnedProjects = projectStats?.projects?.filter(p => p.priority === 'pinned') || []
+  const pinnedProjects = projectsData?.projects?.filter(p => p.priority === 'pinned') || []
   const currentProjectCode = config?.projectDirectory?.split('/').pop() || ''
 
   // FR-43: Switch to a different project
@@ -398,6 +398,17 @@ function App() {
                   label: 'Mockups',
                   icon: <span className="text-purple-500">🎨</span>,
                   onClick: () => changeTab('mockups'),
+                },
+                {
+                  label: 'GitHub',
+                  icon: <span className="text-gray-700">🔗</span>,
+                  onClick: () => window.open('https://github.com/flivideo/flihub', '_blank'),
+                  dividerBefore: true,
+                },
+                {
+                  label: 'Video Projects',
+                  icon: <span className="text-gray-700">🎬</span>,
+                  onClick: () => window.open('https://github.com/appydave-video-projects/v-appydave', '_blank'),
                 },
               ]}
             />
