@@ -1,5 +1,8 @@
 /**
  * FR-70: Video Watch Page
+ * FR-71: Watch Page Enhancements
+ * FR-75: Transcript Sync Highlighting (Segments)
+ * FR-77: Transcript Sync Highlighting (Chapters)
  *
  * Dedicated video playback page with cascading chapter/segment panels.
  * Full-width video player for maximum viewing space.
@@ -9,16 +12,57 @@
  * - Click chapter → plays chapter recording
  * - Hover chapter → Segment panel slides out to the left
  * - Click segment → plays that segment
+ *
+ * FR-71 Enhancements:
+ * - Auto-select last recording on page load (highest chapter + sequence)
+ * - Default to 2x playback speed with speed control bar
+ * - Video size toggle (Normal/Large/Extra Large)
+ * - Persist speed and size preferences to localStorage
+ *
+ * FR-75/FR-77 Transcript Sync:
+ * - SRT-based highlighting with word/phrase modes for both segments and chapters
+ * - Click on word/phrase to seek video to that timestamp
+ * - Auto-scroll to keep highlighted text visible
+ * - Mode preference persisted to localStorage
+ * - Chapter videos use chapter SRT with offset timing
  */
 
-import { useMemo, useState, useRef, useCallback } from 'react'
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import { useRecordings, useConfig } from '../hooks/useApi'
 import { useRecordingsSocket } from '../hooks/useSocket'
 import { extractTagsFromName } from '../../../shared/naming'
 import { formatDuration, formatChapterTitle } from '../utils/formatting'
 import { LoadingSpinner, ErrorMessage } from './shared'
+import { TranscriptSyncPanel } from './TranscriptSyncPanel'
 import { API_URL } from '../config'
 import type { RecordingFile } from '../../../shared/types'
+
+// FR-71: Speed presets
+const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3, 4]
+const DEFAULT_SPEED = 2
+
+// FR-71: Size options
+type VideoSize = 'normal' | 'large' | 'xl'
+const SIZE_LABELS: Record<VideoSize, string> = {
+  normal: 'N',
+  large: 'L',
+  xl: 'XL',
+}
+
+// FR-71: localStorage keys
+const STORAGE_KEYS = {
+  speed: 'flihub:watch:playbackSpeed',
+  size: 'flihub:watch:videoSize',
+  autoplay: 'flihub:watch:autoplay',
+  autonext: 'flihub:watch:autonext',
+}
+
+// FR-71: Size CSS classes
+const SIZE_CLASSES: Record<VideoSize, string> = {
+  normal: 'max-w-4xl mx-auto',
+  large: 'max-w-6xl mx-auto',
+  xl: 'max-w-full px-4',
+}
 
 // Chapter group with files and timing
 interface ChapterGroup {
@@ -82,16 +126,54 @@ function getVideoUrl(projectCode: string, filename: string, folder: 'recordings'
   return `${API_URL}/api/video/${projectCode}/${folder}/${filename}`
 }
 
+// FR-71: Video metadata for transcript loading
+interface VideoMeta {
+  url: string
+  title: string
+  isChapter?: boolean
+  chapterKey?: string    // For chapter videos, the chapter number (e.g., "01")
+  chapterLabel?: string  // FR-77: For chapter videos, the label (e.g., "intro")
+  segmentName?: string   // For segment videos, the full name without extension (e.g., "01-1-intro")
+  chapterFiles?: RecordingFile[]  // For chapter videos, all segments in the chapter
+}
+
 export function WatchPage() {
   const { data: config } = useConfig()
   const { data, isLoading, error } = useRecordings()
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [currentVideo, setCurrentVideo] = useState<{
-    url: string
-    title: string
-    isChapter?: boolean
-  } | null>(null)
+  const [currentVideo, setCurrentVideo] = useState<VideoMeta | null>(null)
   const [hoveredChapter, setHoveredChapter] = useState<ChapterGroup | null>(null)
+
+  // FR-71: Speed and size state with localStorage persistence
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.speed)
+    return saved ? parseFloat(saved) : DEFAULT_SPEED
+  })
+  const [videoSize, setVideoSize] = useState<VideoSize>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.size)
+    return (saved as VideoSize) || 'normal'
+  })
+
+  // FR-75/FR-77: Transcript panel collapsed state
+  const [transcriptCollapsed, setTranscriptCollapsed] = useState(false)
+
+  // FR-75: Video time tracking for transcript sync
+  const [currentTime, setCurrentTime] = useState(0)
+
+  // Play/pause state for manual control
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  // Autoplay state - starts playing when you click a video
+  const [autoplay, setAutoplay] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.autoplay)
+    return saved === 'true'
+  })
+
+  // Auto-next state - plays next segment when video ends
+  const [autonext, setAutonext] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.autonext)
+    return saved === 'true'
+  })
 
   // Subscribe to real-time recordings changes
   useRecordingsSocket()
@@ -105,13 +187,134 @@ export function WatchPage() {
     return groupByChapterWithTiming(data.recordings)
   }, [data?.recordings])
 
+  // FR-71: Find the most recent recording (highest chapter, then highest sequence)
+  const mostRecentRecording = useMemo(() => {
+    if (!data?.recordings) return null
+    const activeRecordings = data.recordings.filter(r => r.folder !== 'safe')
+    if (activeRecordings.length === 0) return null
+
+    return activeRecordings.sort((a, b) => {
+      const chapterDiff = parseInt(b.chapter) - parseInt(a.chapter)
+      if (chapterDiff !== 0) return chapterDiff
+      return parseInt(b.sequence) - parseInt(a.sequence)
+    })[0]
+  }, [data?.recordings])
+
+  // FR-71: Auto-select last recording on page load
+  const hasAutoSelected = useRef(false)
+  useEffect(() => {
+    if (mostRecentRecording && projectCode && !hasAutoSelected.current && !currentVideo) {
+      hasAutoSelected.current = true
+      const url = getVideoUrl(projectCode, mostRecentRecording.filename)
+      const segmentName = mostRecentRecording.filename.replace(/\.mov$/, '')
+      setCurrentVideo({
+        url,
+        title: mostRecentRecording.filename,
+        segmentName,
+      })
+    }
+  }, [mostRecentRecording, projectCode, currentVideo])
+
+  // FR-71: Apply playback speed when video changes or speed changes
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = playbackSpeed
+    }
+  }, [playbackSpeed, currentVideo])
+
+  // FR-71: Persist speed preference
+  const handleSpeedChange = useCallback((speed: number) => {
+    setPlaybackSpeed(speed)
+    localStorage.setItem(STORAGE_KEYS.speed, speed.toString())
+    if (videoRef.current) {
+      videoRef.current.playbackRate = speed
+    }
+  }, [])
+
+  // FR-71: Persist size preference
+  const handleSizeChange = useCallback((size: VideoSize) => {
+    setVideoSize(size)
+    localStorage.setItem(STORAGE_KEYS.size, size)
+  }, [])
+
+  // Toggle autoplay (start playing on click)
+  const handleAutoplayToggle = useCallback(() => {
+    setAutoplay(prev => {
+      const newValue = !prev
+      localStorage.setItem(STORAGE_KEYS.autoplay, String(newValue))
+      return newValue
+    })
+  }, [])
+
+  // Toggle auto-next (play next segment when video ends)
+  const handleAutonextToggle = useCallback(() => {
+    setAutonext(prev => {
+      const newValue = !prev
+      localStorage.setItem(STORAGE_KEYS.autonext, String(newValue))
+      return newValue
+    })
+  }, [])
+
+  // Toggle play/pause for current video
+  const handlePlayPause = useCallback(() => {
+    if (!videoRef.current) return
+    if (isPlaying) {
+      videoRef.current.pause()
+    } else {
+      videoRef.current.play()
+    }
+  }, [isPlaying])
+
+  // FR-75: Seek video to a specific time (for transcript click-to-seek)
+  const handleSeek = useCallback((time: number) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = time
+    }
+  }, [])
+
+  // Get flat list of all segments for autoplay navigation
+  const allSegments = useMemo(() => {
+    return chapters.flatMap(ch => ch.files)
+  }, [chapters])
+
+  // Find and play the next segment
+  const playNextSegment = useCallback(() => {
+    if (!currentVideo || !projectCode || currentVideo.isChapter) return
+
+    // Find current segment index
+    const currentIndex = allSegments.findIndex(
+      seg => currentVideo.url.includes(seg.filename)
+    )
+
+    if (currentIndex === -1 || currentIndex >= allSegments.length - 1) return
+
+    // Play next segment
+    const nextSegment = allSegments[currentIndex + 1]
+    const url = getVideoUrl(projectCode, nextSegment.filename)
+    const segmentName = nextSegment.filename.replace(/\.mov$/, '')
+    setCurrentVideo({
+      url,
+      title: nextSegment.filename,
+      segmentName,
+    })
+
+    // Auto-play the video
+    setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.play()
+      }
+    }, 100)
+  }, [currentVideo, projectCode, allSegments])
+
   // Play a specific recording (segment)
   const playRecording = useCallback((file: RecordingFile) => {
     if (!projectCode) return
     const url = getVideoUrl(projectCode, file.filename)
+    const segmentName = file.filename.replace(/\.mov$/, '')
     setCurrentVideo({
       url,
       title: file.filename,
+      segmentName,
     })
   }, [projectCode])
 
@@ -119,12 +322,16 @@ export function WatchPage() {
   const playChapterRecording = useCallback((chapter: ChapterGroup) => {
     if (!projectCode) return
     // Chapter recordings are named like: 01-intro.mov
-    const chapterFilename = `${chapter.chapterKey}-${chapter.title || 'chapter'}.mov`
+    const chapterLabel = chapter.title || 'chapter'
+    const chapterFilename = `${chapter.chapterKey}-${chapterLabel}.mov`
     const url = getVideoUrl(projectCode, chapterFilename, '-chapters')
     setCurrentVideo({
       url,
       title: `Chapter ${chapter.chapterKey}: ${formatChapterTitle(chapter.title)}`,
       isChapter: true,
+      chapterKey: chapter.chapterKey,
+      chapterLabel,  // FR-77: Store label for SRT filename
+      chapterFiles: chapter.files,
     })
   }, [projectCode])
 
@@ -154,46 +361,169 @@ export function WatchPage() {
 
   return (
     <div className="relative">
-      {/* Full-width Video Player */}
-      <div className="bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
-        {currentVideo ? (
-          <video
-            ref={videoRef}
-            src={currentVideo.url}
-            controls
-            autoPlay
-            className="w-full h-full object-contain"
-            onError={(e) => {
-              console.error('Video error:', e)
-            }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-500">
-            <div className="text-center p-8">
-              <svg className="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-lg">Select a recording to play</p>
-              <p className="text-sm text-gray-600 mt-1">
-                Hover over chapters panel on the right →
-              </p>
+      {/* FR-71: Size-responsive container */}
+      <div className={SIZE_CLASSES[videoSize]}>
+        {/* Full-width Video Player */}
+        <div className="bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
+          {currentVideo ? (
+            <video
+              ref={videoRef}
+              src={currentVideo.url}
+              controls
+              className="w-full h-full object-contain"
+              onLoadedMetadata={() => {
+                // FR-71: Apply saved playback speed when video loads
+                if (videoRef.current) {
+                  videoRef.current.playbackRate = playbackSpeed
+                  // Auto-start playback when autoplay is enabled
+                  if (autoplay) {
+                    videoRef.current.play()
+                  }
+                }
+              }}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+              onError={(e) => {
+                console.error('Video error:', e)
+              }}
+              onEnded={() => {
+                setIsPlaying(false)
+                if (autonext) {
+                  playNextSegment()
+                }
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
+              <div className="text-center p-8">
+                <svg className="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-lg">Select a recording to play</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Hover over chapters panel on the right →
+                </p>
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Now Playing Info + Controls Bar */}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          {/* Left: Now Playing with Play/Stop control */}
+          <div className="flex items-center gap-3">
+            {currentVideo ? (
+              <>
+                <button
+                  onClick={handlePlayPause}
+                  className={`text-lg transition-colors ${
+                    isPlaying
+                      ? 'text-red-500 hover:text-red-600'
+                      : 'text-blue-500 hover:text-blue-600'
+                  }`}
+                  title={isPlaying ? 'Stop playback' : 'Start playback'}
+                >
+                  {isPlaying ? '⏹' : '▶'}
+                </button>
+                <h3 className="font-medium text-gray-800">{currentVideo.title}</h3>
+                {currentVideo.isChapter && (
+                  <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
+                    Chapter Recording
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-gray-400 text-sm">No video selected</span>
+            )}
+          </div>
+
+          {/* Right: Speed + Size Controls */}
+          <div className="flex items-center gap-6">
+            {/* FR-71: Speed Control */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 font-medium">Speed:</span>
+              <div className="flex gap-1">
+                {SPEED_PRESETS.map((speed) => (
+                  <button
+                    key={speed}
+                    onClick={() => handleSpeedChange(speed)}
+                    className={`px-2 py-1 text-xs rounded transition-colors ${
+                      playbackSpeed === speed
+                        ? 'bg-blue-600 text-white font-medium'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {speed}x
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* FR-71: Size Toggle */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 font-medium">Size:</span>
+              <div className="flex gap-1">
+                {(Object.keys(SIZE_LABELS) as VideoSize[]).map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => handleSizeChange(size)}
+                    className={`px-2 py-1 text-xs rounded transition-colors ${
+                      videoSize === size
+                        ? 'bg-blue-600 text-white font-medium'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {SIZE_LABELS[size]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Autoplay Toggle - starts playing on click */}
+            <button
+              onClick={handleAutoplayToggle}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                autoplay
+                  ? 'bg-green-600 text-white font-medium'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title={autoplay ? 'Autoplay ON - videos start playing when clicked' : 'Autoplay OFF'}
+            >
+              Autoplay
+            </button>
+
+            {/* Auto-next Toggle - plays next segment when video ends */}
+            <button
+              onClick={handleAutonextToggle}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                autonext
+                  ? 'bg-green-600 text-white font-medium'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title={autonext ? 'Auto-next ON - plays next segment when video ends' : 'Auto-next OFF'}
+            >
+              Auto Next
+            </button>
+          </div>
+        </div>
+
+        {/* FR-75/FR-77: Transcript Sync Panel (for both segment and chapter videos) */}
+        {currentVideo && (
+          <div className="mt-4">
+            <TranscriptSyncPanel
+              projectCode={projectCode}
+              segmentName={currentVideo.isChapter ? null : (currentVideo.segmentName || null)}
+              chapterName={currentVideo.isChapter ? `${currentVideo.chapterKey}-${currentVideo.chapterLabel}` : null}
+              currentTime={currentTime}
+              onSeek={handleSeek}
+              isCollapsed={transcriptCollapsed}
+              onToggleCollapse={() => setTranscriptCollapsed(!transcriptCollapsed)}
+            />
           </div>
         )}
       </div>
-
-      {/* Now Playing Info */}
-      {currentVideo && (
-        <div className="mt-3 flex items-center gap-3">
-          <h3 className="font-medium text-gray-800">{currentVideo.title}</h3>
-          {currentVideo.isChapter && (
-            <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
-              Chapter Recording
-            </span>
-          )}
-        </div>
-      )}
 
       {/* Cascading Panels Container */}
       <div
@@ -261,7 +591,7 @@ export function WatchPage() {
                     </span>
                     {file.duration && (
                       <span className="font-mono text-xs text-gray-400">
-                        {formatDuration(file.duration, 'compact')}
+                        {formatDuration(file.duration, 'smart')}
                       </span>
                     )}
                   </button>

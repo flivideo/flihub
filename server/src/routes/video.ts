@@ -52,8 +52,10 @@ export function createVideoRoutes(getConfig: () => Config): Router {
 
     try {
       // Build full path to video file
+      // Note: -chapters is inside recordings/ folder
       const projectsDir = expandPath(PROJECTS_ROOT);
-      const videoPath = path.join(projectsDir, projectCode, filepath);
+      const actualFolder = folder === '-chapters' ? 'recordings/-chapters' : folder;
+      const videoPath = path.join(projectsDir, projectCode, actualFolder, filename);
 
       // Verify file exists
       if (!await fs.pathExists(videoPath)) {

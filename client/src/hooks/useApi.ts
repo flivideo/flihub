@@ -465,6 +465,8 @@ export function useChapterRecordingConfig() {
   return useQuery({
     queryKey: QUERY_KEYS.chapterRecordingConfig,
     queryFn: () => fetchApi<{ success: boolean; config: ChapterRecordingConfig }>('/api/chapters/config'),
+    staleTime: 0,  // FR-76: Always consider stale so defaults sync from Config page
+    refetchOnMount: 'always',  // FR-76: Force refetch when modal opens to get latest defaults
   })
 }
 

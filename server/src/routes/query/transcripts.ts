@@ -170,5 +170,90 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
     }
   });
 
+  // ============================================
+  // FR-77: GET /chapters/:chapterName/srt - Get chapter SRT file
+  // NOTE: Must be defined BEFORE /:recording/srt to avoid "chapters" matching as :recording
+  // ============================================
+  router.get('/chapters/:chapterName/srt', async (req: Request, res: Response) => {
+    const { code, chapterName } = req.params;
+    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectPath = path.join(projectsDir, code);
+
+    try {
+      if (!await fs.pathExists(projectPath)) {
+        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+        return;
+      }
+
+      const paths = getProjectPaths(projectPath);
+
+      // Build SRT filename - chapter SRTs are in -chapters folder
+      let filename = chapterName;
+      filename = filename.replace(/\.(mov|srt)$/, '') + '.srt';
+
+      const filePath = path.join(paths.chapters, filename);
+
+      if (!await fs.pathExists(filePath)) {
+        res.status(404).json({ success: false, error: `Chapter SRT not found: ${filename}` });
+        return;
+      }
+
+      const content = await fs.readFile(filePath, 'utf-8');
+
+      res.json({
+        success: true,
+        srt: {
+          filename,
+          content,
+        },
+      });
+    } catch (error) {
+      console.error('Error getting chapter SRT:', error);
+      res.status(500).json({ success: false, error: 'Failed to get chapter SRT' });
+    }
+  });
+
+  // ============================================
+  // FR-75: GET /:recording/srt - Get SRT subtitle file content
+  // ============================================
+  router.get('/:recording/srt', async (req: Request, res: Response) => {
+    const { code, recording } = req.params;
+    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectPath = path.join(projectsDir, code);
+
+    try {
+      if (!await fs.pathExists(projectPath)) {
+        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+        return;
+      }
+
+      const paths = getProjectPaths(projectPath);
+
+      // Build SRT filename
+      let filename = recording;
+      filename = filename.replace(/\.(mov|txt|srt)$/, '') + '.srt';
+
+      const filePath = path.join(paths.transcripts, filename);
+
+      if (!await fs.pathExists(filePath)) {
+        res.status(404).json({ success: false, error: `SRT not found: ${filename}` });
+        return;
+      }
+
+      const content = await fs.readFile(filePath, 'utf-8');
+
+      res.json({
+        success: true,
+        srt: {
+          filename,
+          content,
+        },
+      });
+    } catch (error) {
+      console.error('Error getting SRT:', error);
+      res.status(500).json({ success: false, error: 'Failed to get SRT' });
+    }
+  });
+
   return router;
 }

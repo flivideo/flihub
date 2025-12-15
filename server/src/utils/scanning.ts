@@ -72,18 +72,35 @@ export async function getTranscriptSyncStatus(
     );
   }
 
-  // Get all .txt files (base names, exclude *-chapter.txt)
+  // FR-78: Get transcript files - require BOTH .txt AND .srt for "complete"
   const transcriptDirFiles = await readDirSafe(transcriptsDir);
-  const transcriptFiles = transcriptDirFiles
-    .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
-    .map(f => f.replace('.txt', ''));
+
+  // Get base names for txt files (exclude chapter transcripts)
+  const txtFiles = new Set(
+    transcriptDirFiles
+      .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+      .map(f => f.replace('.txt', ''))
+  );
+
+  // Get base names for srt files
+  const srtFiles = new Set(
+    transcriptDirFiles
+      .filter(f => f.endsWith('.srt'))
+      .map(f => f.replace('.srt', ''))
+  );
+
+  // A transcript is "complete" only if BOTH .txt and .srt exist
+  const completeTranscripts = new Set(
+    [...txtFiles].filter(name => srtFiles.has(name))
+  );
 
   const recordingSet = new Set(recordingFiles);
-  const transcriptSet = new Set(transcriptFiles);
 
-  const matched = recordingFiles.filter(r => transcriptSet.has(r)).length;
-  const missingTranscripts = recordingFiles.filter(r => !transcriptSet.has(r));
-  const orphanedTranscripts = transcriptFiles.filter(t => !recordingSet.has(t));
+  const matched = recordingFiles.filter(r => completeTranscripts.has(r)).length;
+  const missingTranscripts = recordingFiles.filter(r => !completeTranscripts.has(r));
+
+  // Orphaned = txt files without matching recording (srt-only files are ignored)
+  const orphanedTranscripts = [...txtFiles].filter(t => !recordingSet.has(t));
 
   return { matched, missingTranscripts, orphanedTranscripts };
 }

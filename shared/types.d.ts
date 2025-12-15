@@ -377,6 +377,7 @@ export interface ChapterRecordingConfig {
     slideDuration: number;
     resolution: '720p' | '1080p';
     autoGenerate: boolean;
+    includeTitleSlides?: boolean;
 }
 export interface ChapterRecordingRequest {
     chapter?: string;

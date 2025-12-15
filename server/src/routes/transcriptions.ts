@@ -39,11 +39,14 @@ export function createTranscriptionRoutes(
   }
 
   // Check if transcript exists for a video
+  // FR-74: Returns path only if BOTH .txt and .srt exist (complete transcript set)
   function getTranscriptPath(videoFilename: string): string | null {
     const transcriptsDir = getTranscriptsDir();
     const baseName = path.basename(videoFilename, path.extname(videoFilename));
-    const transcriptPath = path.join(transcriptsDir, `${baseName}.txt`);
-    return fs.existsSync(transcriptPath) ? transcriptPath : null;
+    const txtPath = path.join(transcriptsDir, `${baseName}.txt`);
+    const srtPath = path.join(transcriptsDir, `${baseName}.srt`);
+    // Both files must exist for transcript to be considered complete
+    return (fs.existsSync(txtPath) && fs.existsSync(srtPath)) ? txtPath : null;
   }
 
   // Get status for a specific video
@@ -88,12 +91,14 @@ export function createTranscriptionRoutes(
     console.log(`Using Python: ${pythonPath}`);
     console.log(`Output dir: ${transcriptsDir}`);
 
+    // FR-74: Output both TXT (plain text) and SRT (timed subtitles) formats
     activeProcess = spawn(pythonPath, [
       '-m', 'whisper',
       videoPath,
       '--model', WHISPER_MODEL,
       '--language', WHISPER_LANGUAGE,
       '--output_format', 'txt',
+      '--output_format', 'srt',
       '--output_dir', transcriptsDir,
     ]);
 

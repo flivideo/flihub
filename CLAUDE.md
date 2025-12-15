@@ -33,6 +33,23 @@ FliHub is a TypeScript application for managing video recording workflows. It wa
 | `/uat` | User acceptance testing |
 | `/progress` | Quick project status check |
 
+## PO Practices
+
+**Handling Developer Handovers:**
+
+Due to context limits, conversations may be split across sessions. Before issuing a handover to the developer:
+
+1. **Check backlog status first** - Read `backlog.md` to see if the FR is already marked `✓ Complete`
+2. **If complete** - Ask for sign-off verification instead of re-issuing the handover
+3. **If pending** - Proceed with standard handover
+
+**When receiving completion handovers:**
+- Update `backlog.md` and `changelog.md` immediately before context splits
+- Don't batch multiple completion updates
+
+**When resuming from summary:**
+- Re-read `backlog.md` to get accurate current state before taking action
+
 ## Commands
 
 ```bash

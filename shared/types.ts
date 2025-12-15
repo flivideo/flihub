@@ -244,7 +244,7 @@ export interface ServerToClientEvents {
   'inbox:changed': () => void;            // FR-59: Inbox file added/removed
   // FR-58: Chapter recording events
   'chapters:generating': (data: { chapter: string; total: number; current: number }) => void;
-  'chapters:generated': (data: { chapter: string; outputFile: string }) => void;
+  'chapters:generated': (data: { chapter: string; outputFile: string; srtFile?: string }) => void;  // FR-76: srtFile added
   'chapters:complete': (data: { generated: string[]; errors?: string[] }) => void;
   // FR-30: Transcription events
   'transcription:queued': (job: { jobId: string; videoPath: string; position: number }) => void;
@@ -439,6 +439,7 @@ export interface ChapterRecordingConfig {
   slideDuration: number;  // Seconds to show title slide (e.g., 1.0)
   resolution: '720p' | '1080p';  // Output resolution
   autoGenerate: boolean;  // Auto-generate on new chapter
+  includeTitleSlides?: boolean;  // FR-76: Include purple title slides (default: false)
 }
 
 // FR-58: Chapter Recording Request

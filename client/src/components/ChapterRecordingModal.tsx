@@ -33,6 +33,7 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
   const [slideDuration, setSlideDuration] = useState(1.0)
   const [resolution, setResolution] = useState<'720p' | '1080p'>('720p')
   const [autoGenerate, setAutoGenerate] = useState(false)
+  const [includeTitleSlides, setIncludeTitleSlides] = useState(false)
   const [scope, setScope] = useState<'all' | 'single'>('all')
   const [selectedChapter, setSelectedChapter] = useState<string>('')
 
@@ -42,6 +43,7 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
       setSlideDuration(configData.config.slideDuration)
       setResolution(configData.config.resolution)
       setAutoGenerate(configData.config.autoGenerate)
+      setIncludeTitleSlides(configData.config.includeTitleSlides ?? false)
     }
   }, [configData])
 
@@ -59,6 +61,7 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
       slideDuration,
       resolution,
       autoGenerate,
+      includeTitleSlides,
     })
 
     // Generate recordings
@@ -113,25 +116,43 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
 
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Slide Duration */}
+          {/* FR-76: Include Title Slides Toggle */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Slide Duration
-            </label>
-            <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
-                type="number"
-                value={slideDuration}
-                onChange={(e) => setSlideDuration(parseFloat(e.target.value) || 1.0)}
-                min={0.5}
-                max={5}
-                step={0.5}
-                className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                type="checkbox"
+                checked={includeTitleSlides}
+                onChange={(e) => setIncludeTitleSlides(e.target.checked)}
+                className="w-4 h-4 text-purple-500 rounded"
                 disabled={isGenerating}
               />
-              <span className="text-sm text-gray-500">seconds</span>
-            </div>
+              <span className="text-sm text-gray-700">
+                Include purple title slides between segments
+              </span>
+            </label>
           </div>
+
+          {/* Slide Duration - only show when slides enabled */}
+          {includeTitleSlides && (
+            <div className="ml-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Slide Duration
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={slideDuration}
+                  onChange={(e) => setSlideDuration(parseFloat(e.target.value) || 1.0)}
+                  min={0.5}
+                  max={5}
+                  step={0.5}
+                  className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isGenerating}
+                />
+                <span className="text-sm text-gray-500">seconds</span>
+              </div>
+            </div>
+          )}
 
           {/* Resolution */}
           <div>

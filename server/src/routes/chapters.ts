@@ -26,6 +26,7 @@ const DEFAULT_CHAPTER_CONFIG: ChapterRecordingConfig = {
   slideDuration: 1.0,
   resolution: '720p',
   autoGenerate: false,
+  includeTitleSlides: false,  // FR-76: Purple slides off by default
 };
 
 // Generation state
@@ -55,13 +56,14 @@ export function createChapterRoutes(
 
   // PUT /api/chapters/config - Update chapter recording configuration
   router.put('/config', (req: Request, res: Response) => {
-    const { slideDuration, resolution, autoGenerate } = req.body;
+    const { slideDuration, resolution, autoGenerate, includeTitleSlides } = req.body;
     const config = getConfig();
 
     const newChapterConfig: ChapterRecordingConfig = {
       slideDuration: typeof slideDuration === 'number' ? slideDuration : DEFAULT_CHAPTER_CONFIG.slideDuration,
       resolution: resolution === '1080p' ? '1080p' : '720p',
       autoGenerate: typeof autoGenerate === 'boolean' ? autoGenerate : DEFAULT_CHAPTER_CONFIG.autoGenerate,
+      includeTitleSlides: typeof includeTitleSlides === 'boolean' ? includeTitleSlides : DEFAULT_CHAPTER_CONFIG.includeTitleSlides,
     };
 
     config.chapterRecordings = newChapterConfig;
@@ -137,6 +139,8 @@ export function createChapterRoutes(
       resolution: (resolution as '720p' | '1080p') ?? chapterConfig.resolution,
       outputDir: paths.chapters,
       tempDir: path.join(os.tmpdir(), 'flihub-chapters'),
+      includeTitleSlides: chapterConfig.includeTitleSlides ?? false,  // FR-76
+      transcriptsDir: paths.transcripts,  // FR-76
     };
 
     // Start generation in background
@@ -166,13 +170,14 @@ export function createChapterRoutes(
         });
 
         try {
-          const outputFile = await generateChapterRecording(chapterData, options);
-          generated.push(outputFile);
+          const result = await generateChapterRecording(chapterData, options);
+          generated.push(result.videoFilename);
 
           // Emit individual completion
           io.emit('chapters:generated', {
             chapter: chapterNum,
-            outputFile,
+            outputFile: result.videoFilename,
+            srtFile: result.srtFilename || undefined,  // FR-76
           });
         } catch (err) {
           const errorMsg = err instanceof Error ? err.message : 'Unknown error';
