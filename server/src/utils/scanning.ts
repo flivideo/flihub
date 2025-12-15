@@ -172,3 +172,38 @@ export async function getTranscriptBasenames(dir: string): Promise<string[]> {
     .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
     .map(f => f.replace('.txt', ''));
 }
+
+/**
+ * FR-80: Project content indicators
+ * Returns booleans indicating presence of inbox, assets, and chapter videos
+ */
+export interface ProjectIndicators {
+  hasInbox: boolean;
+  hasAssets: boolean;
+  hasChapters: boolean;
+}
+
+/**
+ * FR-80: Check if a project has content in key directories
+ */
+export async function getProjectIndicators(projectPath: string): Promise<ProjectIndicators> {
+  const inboxDir = path.join(projectPath, 'inbox');
+  const imagesDir = path.join(projectPath, 'assets', 'images');
+  const promptsDir = path.join(projectPath, 'assets', 'prompts');
+  const chaptersDir = path.join(projectPath, 'recordings', '-chapters');
+
+  // Check inbox - any files or subdirectories count
+  const inboxFiles = await readDirSafe(inboxDir);
+  const hasInbox = inboxFiles.length > 0;
+
+  // Check assets - either images or prompts directory has files
+  const imageFiles = await readDirSafe(imagesDir);
+  const promptFiles = await readDirSafe(promptsDir);
+  const hasAssets = imageFiles.length > 0 || promptFiles.length > 0;
+
+  // Check chapters - .mov files in -chapters directory
+  const chapterFiles = await readDirSafe(chaptersDir);
+  const hasChapters = chapterFiles.some(f => f.endsWith('.mov'));
+
+  return { hasInbox, hasAssets, hasChapters };
+}

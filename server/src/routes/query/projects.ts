@@ -20,6 +20,7 @@ import {
   countFiles,
   getProjectTimestamps,
   getTranscriptSyncStatus,
+  getProjectIndicators,
 } from '../../utils/scanning.js';
 import {
   formatProjectsReport,
@@ -34,6 +35,24 @@ import type {
 } from '../../../../shared/types.js';
 
 const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
+
+/**
+ * FR-80: Migrate legacy stage values to new stage model
+ */
+function migrateOldStage(oldStage: string | undefined): ProjectStage | undefined {
+  if (!oldStage) return undefined;
+
+  const migration: Record<string, ProjectStage> = {
+    'record': 'recording',
+    'recording': 'recording',
+    'edit': 'first-edit',
+    'editing': 'first-edit',
+    'done': 'published',
+    'none': 'planning',
+  };
+
+  return migration[oldStage] || (oldStage as ProjectStage);
+}
 
 // Get all valid project folders
 async function getProjectFolders(): Promise<string[]> {
@@ -138,15 +157,23 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
         // Timestamps
         const { lastModified } = await getProjectTimestamps(projectPath);
 
-        // Stage (manual override or auto-detect)
-        const manualStage = config.projectStages?.[code];
+        // FR-80: Get content indicators
+        const indicators = await getProjectIndicators(projectPath);
+
+        // FR-80: Stage (manual override or auto-detect)
+        // Use projectStageOverrides (new) or fall back to legacy projectStages
+        const manualStage = config.projectStageOverrides?.[code] ||
+          migrateOldStage(config.projectStages?.[code as keyof typeof config.projectStages] as string | undefined);
+
         let projectStage: ProjectStage;
         if (manualStage) {
           projectStage = manualStage;
         } else if (totalFiles === 0) {
-          projectStage = 'none';
+          // Auto-detect: No recordings = planning
+          projectStage = 'planning';
         } else {
-          projectStage = transcriptPercent >= 100 ? 'editing' : 'recording';
+          // Auto-detect: Has recordings = recording (auto-trigger)
+          projectStage = 'recording';
         }
 
         // Priority
@@ -171,6 +198,10 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
             thumbs: thumbCount,
           },
           lastModified,
+          // FR-80: Content indicators
+          hasInbox: indicators.hasInbox,
+          hasAssets: indicators.hasAssets,
+          hasChapters: indicators.hasChapters,
         });
       }
 

@@ -6,6 +6,14 @@ import { LoadingSpinner, ErrorMessage, PageContainer } from './shared'
 import { ProjectStatsPopup } from './ProjectStatsPopup'
 import { formatFileSize } from '../utils/formatting'
 import type { ProjectStats, ProjectPriority, ProjectStage, ProjectStageOverride } from '../../../shared/types'
+import { DEFAULT_PROJECT_STAGES, STAGE_LABELS } from '../../../shared/types'
+
+// FR-80: Tab type for navigation callback
+type ViewTab = 'incoming' | 'recordings' | 'watch' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config' | 'mockups'
+
+interface ProjectsPanelProps {
+  onNavigateToTab?: (tab: ViewTab) => void
+}
 
 // Valid project code pattern: letter + 2 digits + optional suffix (e.g., b71, b72-awesome)
 const PROJECT_CODE_PATTERN = /^[a-zA-Z]\d{2}(-|$)/
@@ -21,35 +29,34 @@ function getNextPriority(current: ProjectPriority): ProjectPriority {
   return current === 'pinned' ? 'normal' : 'pinned'
 }
 
-// Stage cycle: Click = forward, Shift+Click = backward
-// Forward: none → recording → editing → done → auto (resets to auto-detect)
-// Backward: done → editing → recording → auto (resets to auto-detect)
+// FR-80: Stage cycle using configurable stages
+// Click = forward, Shift+Click = backward
+// At the end, 'auto' resets to auto-detection
 function getNextStage(current: ProjectStage, backward: boolean = false): ProjectStageOverride {
+  const stages = DEFAULT_PROJECT_STAGES
+  const currentIndex = stages.indexOf(current)
+
   if (backward) {
-    const backwardCycle: Record<ProjectStage, ProjectStageOverride> = {
-      none: 'auto',       // Can't go back from none, reset to auto
-      recording: 'auto',  // Backward from recording resets to auto
-      editing: 'recording',
-      done: 'editing',
-    }
-    return backwardCycle[current]
+    // Going backward: if at start or not found, reset to auto
+    if (currentIndex <= 0) return 'auto'
+    return stages[currentIndex - 1]
   }
 
-  const forwardCycle: Record<ProjectStage, ProjectStageOverride> = {
-    none: 'recording',
-    recording: 'editing',
-    editing: 'done',
-    done: 'auto',
-  }
-  return forwardCycle[current]
+  // Going forward: if at end or not found, reset to auto
+  if (currentIndex === -1 || currentIndex >= stages.length - 1) return 'auto'
+  return stages[currentIndex + 1]
 }
 
-// Stage display config
+// FR-80: Stage display config with colors for 8-stage workflow
 const STAGE_DISPLAY: Record<ProjectStage, { label: string; bg: string; text: string }> = {
-  none: { label: '-', bg: '', text: 'text-gray-400' },
-  recording: { label: 'REC', bg: 'bg-yellow-100', text: 'text-yellow-700' },
-  editing: { label: 'EDIT', bg: 'bg-blue-100', text: 'text-blue-700' },
-  done: { label: 'DONE', bg: 'bg-green-100', text: 'text-green-700' },
+  'planning': { label: 'Plan', bg: 'bg-purple-100', text: 'text-purple-700' },
+  'recording': { label: 'REC', bg: 'bg-yellow-100', text: 'text-yellow-700' },
+  'first-edit': { label: '1st', bg: 'bg-blue-100', text: 'text-blue-700' },
+  'second-edit': { label: '2nd', bg: 'bg-blue-200', text: 'text-blue-800' },
+  'review': { label: 'Rev', bg: 'bg-orange-100', text: 'text-orange-700' },
+  'ready-to-publish': { label: 'Ready', bg: 'bg-green-100', text: 'text-green-700' },
+  'published': { label: 'Pub', bg: 'bg-green-200', text: 'text-green-800' },
+  'archived': { label: 'Arch', bg: 'bg-gray-100', text: 'text-gray-600' },
 }
 
 
@@ -150,7 +157,7 @@ function TranscriptPercentCell({ project }: { project: ProjectStats }) {
   )
 }
 
-export function ProjectsPanel() {
+export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   const [showNewProject, setShowNewProject] = useState(false)
   const [newProjectCode, setNewProjectCode] = useState('')
   const [statsPopupProject, setStatsPopupProject] = useState<ProjectStats | null>(null)
@@ -290,10 +297,12 @@ export function ProjectsPanel() {
                 <th className="pb-2 font-medium w-8" title="Priority"></th>
                 <th className="pb-2 font-medium">Project</th>
                 <th className="pb-2 font-medium text-center w-14" title="Stage">Stage</th>
+                {/* FR-80: Content indicators */}
+                <th className="pb-2 font-medium text-center w-20" title="Content">📥 🖼 🎬</th>
                 <th className="pb-2 font-medium text-right w-10" title="Chapters">Ch</th>
                 <th className="pb-2 font-medium text-right w-12" title="Total Files">Files</th>
                 <th className="pb-2 font-medium text-right w-10" title="Transcript %">📄</th>
-                <th className="pb-2 font-medium text-center w-8" title="Final Video">🎬</th>
+                <th className="pb-2 font-medium text-center w-8" title="Final Video">✅</th>
                 <th className="pb-2 font-medium w-8"></th>
               </tr>
             </thead>
@@ -341,12 +350,57 @@ export function ProjectsPanel() {
                       <button
                         onClick={(e) => handleStageClick(e, project)}
                         className={`text-xs font-medium px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity ${
-                          STAGE_DISPLAY[project.stage].bg
-                        } ${STAGE_DISPLAY[project.stage].text}`}
+                          STAGE_DISPLAY[project.stage]?.bg || ''
+                        } ${STAGE_DISPLAY[project.stage]?.text || 'text-gray-400'}`}
                         title="Click: next stage | Shift+Click: previous stage"
                       >
-                        {STAGE_DISPLAY[project.stage].label}
+                        {STAGE_DISPLAY[project.stage]?.label || project.stage}
                       </button>
+                    </td>
+
+                    {/* FR-80: Content indicators - clickable to navigate to tab */}
+                    <td className="py-2 text-center">
+                      <div className="flex justify-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSelectProject(project.path, project.code)
+                            onNavigateToTab?.('inbox')
+                          }}
+                          className={`text-sm hover:scale-110 transition-transform ${
+                            project.hasInbox ? 'opacity-100' : 'opacity-30'
+                          }`}
+                          title={project.hasInbox ? 'Has inbox files - click to view' : 'No inbox files'}
+                        >
+                          📥
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSelectProject(project.path, project.code)
+                            onNavigateToTab?.('assets')
+                          }}
+                          className={`text-sm hover:scale-110 transition-transform ${
+                            project.hasAssets ? 'opacity-100' : 'opacity-30'
+                          }`}
+                          title={project.hasAssets ? 'Has assets - click to view' : 'No assets'}
+                        >
+                          🖼
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSelectProject(project.path, project.code)
+                            onNavigateToTab?.('recordings')
+                          }}
+                          className={`text-sm hover:scale-110 transition-transform ${
+                            project.hasChapters ? 'opacity-100' : 'opacity-30'
+                          }`}
+                          title={project.hasChapters ? 'Has chapter videos - click to view' : 'No chapter videos'}
+                        >
+                          🎬
+                        </button>
+                      </div>
                     </td>
 
                     {/* Chapters */}

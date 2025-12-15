@@ -58,6 +58,10 @@ export function createProjectRoutes(
       totalDuration: null,
       imageCount: raw.imageCount,
       thumbCount: raw.thumbCount,
+      // FR-80: Content indicators
+      hasInbox: raw.hasInbox,
+      hasAssets: raw.hasAssets,
+      hasChapters: raw.hasChapters,
     };
   }
 
@@ -144,32 +148,42 @@ export function createProjectRoutes(
   });
 
   // PUT /api/projects/:code/stage - Update project stage (manual override)
+  // FR-80: Updated to support new 8-stage workflow
   router.put('/:code/stage', async (req: Request, res: Response) => {
     const { code } = req.params;
     const { stage } = req.body;
 
-    if (!['recording', 'editing', 'done', 'auto'].includes(stage)) {
-      res.status(400).json({ success: false, error: 'Invalid stage value. Use "recording", "editing", "done", or "auto".' });
+    // FR-80: Valid stages from the new workflow model + 'auto' for reset
+    const validStages = [
+      'planning', 'recording', 'first-edit', 'second-edit',
+      'review', 'ready-to-publish', 'published', 'archived', 'auto'
+    ];
+
+    if (!validStages.includes(stage)) {
+      res.status(400).json({
+        success: false,
+        error: `Invalid stage. Valid values: ${validStages.join(', ')}`
+      });
       return;
     }
 
     const config = getConfig();
 
     // Initialize if needed
-    if (!config.projectStages) {
-      config.projectStages = {};
+    if (!config.projectStageOverrides) {
+      config.projectStageOverrides = {};
     }
 
     // Set or remove stage override ('auto' removes the override)
     if (stage === 'auto') {
-      delete config.projectStages[code];
+      delete config.projectStageOverrides[code];
     } else {
-      config.projectStages[code] = stage;
+      config.projectStageOverrides[code] = stage;
     }
 
     // Clean up empty object
-    if (Object.keys(config.projectStages).length === 0) {
-      delete config.projectStages;
+    if (Object.keys(config.projectStageOverrides).length === 0) {
+      delete config.projectStageOverrides;
     }
 
     saveConfig(config);

@@ -48,8 +48,10 @@ export interface ProjectInfo {
     lastModified: string;
 }
 export type ProjectPriority = 'pinned' | 'normal';
-export type ProjectStage = 'none' | 'recording' | 'editing' | 'done';
-export type ProjectStageOverride = 'recording' | 'editing' | 'done' | 'auto';
+export type ProjectStage = 'planning' | 'recording' | 'first-edit' | 'second-edit' | 'review' | 'ready-to-publish' | 'published' | 'archived';
+export type ProjectStageOverride = ProjectStage | 'auto';
+export declare const DEFAULT_PROJECT_STAGES: ProjectStage[];
+export declare const STAGE_LABELS: Record<ProjectStage, string>;
 export interface TranscriptSyncStatus {
     matched: number;
     missingTranscripts: string[];
@@ -82,6 +84,9 @@ export interface ProjectStats {
     totalDuration: number | null;
     imageCount: number;
     thumbCount: number;
+    hasInbox: boolean;
+    hasAssets: boolean;
+    hasChapters: boolean;
 }
 export interface RecordingFile {
     filename: string;
@@ -410,6 +415,9 @@ export interface QueryProjectSummary {
         thumbs: number;
     };
     lastModified: string | null;
+    hasInbox: boolean;
+    hasAssets: boolean;
+    hasChapters: boolean;
 }
 export interface QueryProjectDetail {
     code: string;

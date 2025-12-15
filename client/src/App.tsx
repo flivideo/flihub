@@ -641,7 +641,7 @@ function App() {
         {/* Projects Tab */}
         {activeTab === 'projects' && (
           <section>
-            <ProjectsPanel />
+            <ProjectsPanel onNavigateToTab={changeTab} />
           </section>
         )}
 

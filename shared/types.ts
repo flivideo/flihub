@@ -23,7 +23,8 @@ export interface Config {
   commonNames: CommonName[]; // NFR-3: Quick-select common names
   imageSourceDirectory: string; // FR-17: Source for incoming images (default: ~/Downloads)
   projectPriorities?: Record<string, 'pinned'>; // FR-32: Pinned projects (absent = normal)
-  projectStages?: Record<string, 'recording' | 'editing' | 'done'>; // FR-32: Manual stage overrides (absent = auto-detect)
+  projectStageOverrides?: Record<string, ProjectStage>; // FR-80: Manual stage overrides (absent = auto-detect)
+  projectStages?: ProjectStage[]; // FR-80: Configurable stage list (defaults to DEFAULT_PROJECT_STAGES)
   chapterRecordings?: ChapterRecordingConfig;  // FR-58: Chapter recording settings
 }
 
@@ -63,8 +64,44 @@ export interface ProjectInfo {
 
 // FR-32: Extended project stats for improved project list
 export type ProjectPriority = 'pinned' | 'normal';
-export type ProjectStage = 'none' | 'recording' | 'editing' | 'done';
-export type ProjectStageOverride = 'recording' | 'editing' | 'done' | 'auto'; // 'auto' means use auto-detection
+
+// FR-80: New 8-stage workflow model (config-driven)
+export type ProjectStage =
+  | 'planning'
+  | 'recording'
+  | 'first-edit'
+  | 'second-edit'
+  | 'review'
+  | 'ready-to-publish'
+  | 'published'
+  | 'archived';
+
+// FR-80: Stage override includes 'auto' for auto-detection
+export type ProjectStageOverride = ProjectStage | 'auto';
+
+// FR-80: Default stages if not configured
+export const DEFAULT_PROJECT_STAGES: ProjectStage[] = [
+  'planning',
+  'recording',
+  'first-edit',
+  'second-edit',
+  'review',
+  'ready-to-publish',
+  'published',
+  'archived',
+];
+
+// FR-80: Stage display labels for UI
+export const STAGE_LABELS: Record<ProjectStage, string> = {
+  'planning': 'Plan',
+  'recording': 'REC',
+  'first-edit': '1st Edit',
+  'second-edit': '2nd Edit',
+  'review': 'Review',
+  'ready-to-publish': 'Ready',
+  'published': 'Published',
+  'archived': 'Archived',
+};
 
 // FR-48: Transcript sync status for validation & diagnostics
 export interface TranscriptSyncStatus {
@@ -114,6 +151,11 @@ export interface ProjectStats {
   totalDuration: number | null;  // Sum of video durations in seconds (optional)
   imageCount: number;            // Files in assets/images/
   thumbCount: number;            // Files in assets/thumbs/
+
+  // FR-80: Content indicators
+  hasInbox: boolean;             // Has files in inbox/
+  hasAssets: boolean;            // Has files in assets/images/ or assets/prompts/
+  hasChapters: boolean;          // Has .mov files in recordings/-chapters/
 }
 
 // FR-14: Recording file info for asset view
@@ -484,6 +526,10 @@ export interface QueryProjectSummary {
     thumbs: number;
   };
   lastModified: string | null;
+  // FR-80: Content indicators
+  hasInbox: boolean;
+  hasAssets: boolean;
+  hasChapters: boolean;
 }
 
 // Query API: Project detail (single project view)

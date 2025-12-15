@@ -12,6 +12,7 @@ import {
   countFiles,
   getProjectTimestamps,
   getTranscriptSyncStatus,
+  getProjectIndicators,
 } from './scanning.js';
 import { detectFinalMedia } from './finalMedia.js';
 import type {
@@ -20,6 +21,26 @@ import type {
   ProjectStage,
   TranscriptSyncStatus,
 } from '../../../shared/types.js';
+
+/**
+ * FR-80: Migrate legacy stage values to new stage model
+ * - record → recording
+ * - edit/editing → first-edit
+ * - done → published
+ */
+function migrateOldStage(oldStage: string | undefined): ProjectStage | undefined {
+  if (!oldStage) return undefined;
+
+  const migration: Record<string, ProjectStage> = {
+    'record': 'recording',
+    'recording': 'recording',
+    'edit': 'first-edit',
+    'editing': 'first-edit',
+    'done': 'published',
+  };
+
+  return migration[oldStage] || (oldStage as ProjectStage);
+}
 
 /**
  * Raw project stats - the core data before formatting for specific APIs
@@ -49,6 +70,11 @@ export interface ProjectStatsRaw {
   // Computed state
   stage: ProjectStage;
   priority: ProjectPriority;
+
+  // FR-80: Content indicators
+  hasInbox: boolean;
+  hasAssets: boolean;
+  hasChapters: boolean;
 
   // Final media (optional, only if requested)
   finalMedia?: {
@@ -102,15 +128,23 @@ export async function getProjectStatsRaw(
   // Timestamps
   const { createdAt, lastModified } = await getProjectTimestamps(projectPath);
 
-  // Determine stage (check for manual override first)
-  const manualStage = config.projectStages?.[code];
+  // FR-80: Get content indicators
+  const indicators = await getProjectIndicators(projectPath);
+
+  // FR-80: Determine stage (check for manual override first)
+  // Use projectStageOverrides (new) or fall back to legacy projectStages
+  const manualStage = config.projectStageOverrides?.[code] ||
+    migrateOldStage(config.projectStages?.[code as keyof typeof config.projectStages] as string | undefined);
+
   let stage: ProjectStage;
   if (manualStage) {
     stage = manualStage;
   } else if (totalFiles === 0) {
-    stage = 'none';
+    // Auto-detect: No recordings = planning
+    stage = 'planning';
   } else {
-    stage = transcriptPercent >= 100 ? 'editing' : 'recording';
+    // Auto-detect: Has recordings = recording (auto-trigger)
+    stage = 'recording';
   }
 
   // Determine priority from config
@@ -132,6 +166,9 @@ export async function getProjectStatsRaw(
     lastModified,
     stage,
     priority,
+    hasInbox: indicators.hasInbox,
+    hasAssets: indicators.hasAssets,
+    hasChapters: indicators.hasChapters,
   };
 
   // Optionally include final media
