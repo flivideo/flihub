@@ -6,7 +6,18 @@ import { LoadingSpinner, ErrorMessage, PageContainer } from './shared'
 import { ProjectStatsPopup } from './ProjectStatsPopup'
 import { formatFileSize } from '../utils/formatting'
 import type { ProjectStats, ProjectPriority, ProjectStage, ProjectStageOverride } from '../../../shared/types'
-import { DEFAULT_PROJECT_STAGES, STAGE_LABELS } from '../../../shared/types'
+
+// FR-80: Stage constants (defined locally to avoid Vite import issues with shared runtime values)
+const DEFAULT_PROJECT_STAGES: ProjectStage[] = [
+  'planning',
+  'recording',
+  'first-edit',
+  'second-edit',
+  'review',
+  'ready-to-publish',
+  'published',
+  'archived',
+]
 
 // FR-80: Tab type for navigation callback
 type ViewTab = 'incoming' | 'recordings' | 'watch' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config' | 'mockups'
