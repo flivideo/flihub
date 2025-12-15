@@ -18,7 +18,8 @@ export interface Config {
     commonNames: CommonName[];
     imageSourceDirectory: string;
     projectPriorities?: Record<string, 'pinned'>;
-    projectStages?: Record<string, 'recording' | 'editing' | 'done'>;
+    projectStageOverrides?: Record<string, ProjectStage>;
+    projectStages?: ProjectStage[];
     chapterRecordings?: ChapterRecordingConfig;
 }
 export interface RenameRequest {
@@ -87,6 +88,8 @@ export interface ProjectStats {
     hasInbox: boolean;
     hasAssets: boolean;
     hasChapters: boolean;
+    inboxCount: number;
+    chapterVideoCount: number;
 }
 export interface RecordingFile {
     filename: string;
@@ -208,6 +211,7 @@ export interface ServerToClientEvents {
     'chapters:generated': (data: {
         chapter: string;
         outputFile: string;
+        srtFile?: string;
     }) => void;
     'chapters:complete': (data: {
         generated: string[];

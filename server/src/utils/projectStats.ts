@@ -71,10 +71,12 @@ export interface ProjectStatsRaw {
   stage: ProjectStage;
   priority: ProjectPriority;
 
-  // FR-80: Content indicators
+  // FR-80/FR-82: Content indicators with counts
   hasInbox: boolean;
   hasAssets: boolean;
   hasChapters: boolean;
+  inboxCount: number;
+  chapterVideoCount: number;
 
   // Final media (optional, only if requested)
   finalMedia?: {
@@ -169,6 +171,8 @@ export async function getProjectStatsRaw(
     hasInbox: indicators.hasInbox,
     hasAssets: indicators.hasAssets,
     hasChapters: indicators.hasChapters,
+    inboxCount: indicators.inboxCount,
+    chapterVideoCount: indicators.chapterVideoCount,
   };
 
   // Optionally include final media

@@ -152,10 +152,12 @@ export interface ProjectStats {
   imageCount: number;            // Files in assets/images/
   thumbCount: number;            // Files in assets/thumbs/
 
-  // FR-80: Content indicators
+  // FR-80/FR-82: Content indicators with counts for tooltips
   hasInbox: boolean;             // Has files in inbox/
   hasAssets: boolean;            // Has files in assets/images/ or assets/prompts/
   hasChapters: boolean;          // Has .mov files in recordings/-chapters/
+  inboxCount: number;            // FR-82: File count in inbox/ (for tooltip)
+  chapterVideoCount: number;     // FR-82: .mov count in recordings/-chapters/ (for tooltip)
 }
 
 // FR-14: Recording file info for asset view

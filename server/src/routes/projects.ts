@@ -58,10 +58,12 @@ export function createProjectRoutes(
       totalDuration: null,
       imageCount: raw.imageCount,
       thumbCount: raw.thumbCount,
-      // FR-80: Content indicators
+      // FR-80/FR-82: Content indicators with counts
       hasInbox: raw.hasInbox,
       hasAssets: raw.hasAssets,
       hasChapters: raw.hasChapters,
+      inboxCount: raw.inboxCount,
+      chapterVideoCount: raw.chapterVideoCount,
     };
   }
 

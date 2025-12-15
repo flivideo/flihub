@@ -59,15 +59,16 @@ function getNextStage(current: ProjectStage, backward: boolean = false): Project
 }
 
 // FR-80: Stage display config with colors for 8-stage workflow
-const STAGE_DISPLAY: Record<ProjectStage, { label: string; bg: string; text: string }> = {
-  'planning': { label: 'Plan', bg: 'bg-purple-100', text: 'text-purple-700' },
-  'recording': { label: 'REC', bg: 'bg-yellow-100', text: 'text-yellow-700' },
-  'first-edit': { label: '1st', bg: 'bg-blue-100', text: 'text-blue-700' },
-  'second-edit': { label: '2nd', bg: 'bg-blue-200', text: 'text-blue-800' },
-  'review': { label: 'Rev', bg: 'bg-orange-100', text: 'text-orange-700' },
-  'ready-to-publish': { label: 'Ready', bg: 'bg-green-100', text: 'text-green-700' },
-  'published': { label: 'Pub', bg: 'bg-green-200', text: 'text-green-800' },
-  'archived': { label: 'Arch', bg: 'bg-gray-100', text: 'text-gray-600' },
+// FR-82: Added descriptions for tooltips
+const STAGE_DISPLAY: Record<ProjectStage, { label: string; bg: string; text: string; description: string }> = {
+  'planning': { label: 'Plan', bg: 'bg-purple-100', text: 'text-purple-700', description: 'Preparing content outline and script' },
+  'recording': { label: 'REC', bg: 'bg-yellow-100', text: 'text-yellow-700', description: 'Actively recording video segments' },
+  'first-edit': { label: '1st', bg: 'bg-blue-100', text: 'text-blue-700', description: 'Initial rough cut and assembly' },
+  'second-edit': { label: '2nd', bg: 'bg-blue-200', text: 'text-blue-800', description: 'Refining edit and adding polish' },
+  'review': { label: 'Rev', bg: 'bg-orange-100', text: 'text-orange-700', description: 'Final review before publishing' },
+  'ready-to-publish': { label: 'Ready', bg: 'bg-green-100', text: 'text-green-700', description: 'Approved and ready to upload' },
+  'published': { label: 'Pub', bg: 'bg-green-200', text: 'text-green-800', description: 'Live on YouTube' },
+  'archived': { label: 'Arch', bg: 'bg-gray-100', text: 'text-gray-600', description: 'Completed and archived' },
 }
 
 
@@ -115,6 +116,106 @@ function FinalMediaCell({ code }: { code: string }) {
         </div>
       )}
     </span>
+  )
+}
+
+// FR-82: Indicator cell with rich tooltip - Inbox
+function InboxIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
+  const [showTooltip, setShowTooltip] = useState(false)
+
+  if (!project.hasInbox) return null
+
+  return (
+    <button
+      onClick={onClick}
+      className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      📥
+      {showTooltip && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          <div className="font-medium">Inbox</div>
+          <div className="text-gray-300">{project.inboxCount} {project.inboxCount === 1 ? 'item' : 'items'}</div>
+        </div>
+      )}
+    </button>
+  )
+}
+
+// FR-82: Indicator cell with rich tooltip - Assets
+function AssetsIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
+  const [showTooltip, setShowTooltip] = useState(false)
+
+  if (!project.hasAssets) return null
+
+  return (
+    <button
+      onClick={onClick}
+      className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      🖼
+      {showTooltip && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          <div className="font-medium">Assets</div>
+          <div className="text-gray-300">{project.imageCount} {project.imageCount === 1 ? 'image' : 'images'}</div>
+        </div>
+      )}
+    </button>
+  )
+}
+
+// FR-82: Indicator cell with rich tooltip - Chapters
+function ChaptersIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
+  const [showTooltip, setShowTooltip] = useState(false)
+
+  if (!project.hasChapters) return null
+
+  return (
+    <button
+      onClick={onClick}
+      className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      🎬
+      {showTooltip && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          <div className="font-medium">Chapter Videos</div>
+          <div className="text-gray-300">{project.chapterVideoCount} {project.chapterVideoCount === 1 ? 'video' : 'videos'}</div>
+        </div>
+      )}
+    </button>
+  )
+}
+
+// FR-82: Stage cell with rich tooltip
+function StageCell({ project, onClick }: { project: ProjectStats; onClick: (e: React.MouseEvent) => void }) {
+  const [showTooltip, setShowTooltip] = useState(false)
+  const stageConfig = STAGE_DISPLAY[project.stage]
+
+  return (
+    <button
+      onClick={onClick}
+      className={`text-xs font-medium px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity relative ${
+        stageConfig?.bg || ''
+      } ${stageConfig?.text || 'text-gray-400'}`}
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+    >
+      {stageConfig?.label || project.stage}
+      {showTooltip && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap text-left">
+          <div className="font-medium">{stageConfig?.label || project.stage}</div>
+          <div className="text-gray-300">{stageConfig?.description || ''}</div>
+          <div className="text-gray-500 text-[10px] mt-1 border-t border-gray-700 pt-1">
+            Click: next • Shift+Click: prev
+          </div>
+        </div>
+      )}
+    </button>
   )
 }
 
@@ -356,61 +457,38 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                       </button>
                     </td>
 
-                    {/* Stage (clickable to cycle) */}
+                    {/* FR-82: Stage with rich tooltip */}
                     <td className="py-2 text-center">
-                      <button
+                      <StageCell
+                        project={project}
                         onClick={(e) => handleStageClick(e, project)}
-                        className={`text-xs font-medium px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity ${
-                          STAGE_DISPLAY[project.stage]?.bg || ''
-                        } ${STAGE_DISPLAY[project.stage]?.text || 'text-gray-400'}`}
-                        title="Click: next stage | Shift+Click: previous stage"
-                      >
-                        {STAGE_DISPLAY[project.stage]?.label || project.stage}
-                      </button>
+                      />
                     </td>
 
-                    {/* FR-80: Content indicators - clickable to navigate to tab */}
+                    {/* FR-82: Content indicators - blank when empty, rich tooltips when present */}
                     <td className="py-2 text-center">
                       <div className="flex justify-center gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
+                        <InboxIndicator
+                          project={project}
+                          onClick={() => {
                             handleSelectProject(project.path, project.code)
                             onNavigateToTab?.('inbox')
                           }}
-                          className={`text-sm hover:scale-110 transition-transform ${
-                            project.hasInbox ? 'opacity-100' : 'opacity-30'
-                          }`}
-                          title={project.hasInbox ? 'Has inbox files - click to view' : 'No inbox files'}
-                        >
-                          📥
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
+                        />
+                        <AssetsIndicator
+                          project={project}
+                          onClick={() => {
                             handleSelectProject(project.path, project.code)
                             onNavigateToTab?.('assets')
                           }}
-                          className={`text-sm hover:scale-110 transition-transform ${
-                            project.hasAssets ? 'opacity-100' : 'opacity-30'
-                          }`}
-                          title={project.hasAssets ? 'Has assets - click to view' : 'No assets'}
-                        >
-                          🖼
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
+                        />
+                        <ChaptersIndicator
+                          project={project}
+                          onClick={() => {
                             handleSelectProject(project.path, project.code)
                             onNavigateToTab?.('recordings')
                           }}
-                          className={`text-sm hover:scale-110 transition-transform ${
-                            project.hasChapters ? 'opacity-100' : 'opacity-30'
-                          }`}
-                          title={project.hasChapters ? 'Has chapter videos - click to view' : 'No chapter videos'}
-                        >
-                          🎬
-                        </button>
+                        />
                       </div>
                     </td>
 

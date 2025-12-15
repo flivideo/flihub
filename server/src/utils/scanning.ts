@@ -72,7 +72,8 @@ export async function getTranscriptSyncStatus(
     );
   }
 
-  // FR-78: Get transcript files - require BOTH .txt AND .srt for "complete"
+  // FR-82: Get transcript files - .txt files count as valid transcripts
+  // (SRT files are secondary/optional format)
   const transcriptDirFiles = await readDirSafe(transcriptsDir);
 
   // Get base names for txt files (exclude chapter transcripts)
@@ -82,24 +83,13 @@ export async function getTranscriptSyncStatus(
       .map(f => f.replace('.txt', ''))
   );
 
-  // Get base names for srt files
-  const srtFiles = new Set(
-    transcriptDirFiles
-      .filter(f => f.endsWith('.srt'))
-      .map(f => f.replace('.srt', ''))
-  );
-
-  // A transcript is "complete" only if BOTH .txt and .srt exist
-  const completeTranscripts = new Set(
-    [...txtFiles].filter(name => srtFiles.has(name))
-  );
-
   const recordingSet = new Set(recordingFiles);
 
-  const matched = recordingFiles.filter(r => completeTranscripts.has(r)).length;
-  const missingTranscripts = recordingFiles.filter(r => !completeTranscripts.has(r));
+  // A transcript is "complete" if the .txt file exists
+  const matched = recordingFiles.filter(r => txtFiles.has(r)).length;
+  const missingTranscripts = recordingFiles.filter(r => !txtFiles.has(r));
 
-  // Orphaned = txt files without matching recording (srt-only files are ignored)
+  // Orphaned = txt files without matching recording
   const orphanedTranscripts = [...txtFiles].filter(t => !recordingSet.has(t));
 
   return { matched, missingTranscripts, orphanedTranscripts };
@@ -174,17 +164,19 @@ export async function getTranscriptBasenames(dir: string): Promise<string[]> {
 }
 
 /**
- * FR-80: Project content indicators
- * Returns booleans indicating presence of inbox, assets, and chapter videos
+ * FR-80/FR-82: Project content indicators with counts
+ * Returns booleans indicating presence and counts for tooltips
  */
 export interface ProjectIndicators {
   hasInbox: boolean;
   hasAssets: boolean;
   hasChapters: boolean;
+  inboxCount: number;
+  chapterVideoCount: number;
 }
 
 /**
- * FR-80: Check if a project has content in key directories
+ * FR-80/FR-82: Check if a project has content in key directories
  */
 export async function getProjectIndicators(projectPath: string): Promise<ProjectIndicators> {
   const inboxDir = path.join(projectPath, 'inbox');
@@ -192,18 +184,21 @@ export async function getProjectIndicators(projectPath: string): Promise<Project
   const promptsDir = path.join(projectPath, 'assets', 'prompts');
   const chaptersDir = path.join(projectPath, 'recordings', '-chapters');
 
-  // Check inbox - any files or subdirectories count
+  // Check inbox - count all entries (files and subdirectories)
   const inboxFiles = await readDirSafe(inboxDir);
-  const hasInbox = inboxFiles.length > 0;
+  const inboxCount = inboxFiles.length;
+  const hasInbox = inboxCount > 0;
 
   // Check assets - either images or prompts directory has files
   const imageFiles = await readDirSafe(imagesDir);
   const promptFiles = await readDirSafe(promptsDir);
   const hasAssets = imageFiles.length > 0 || promptFiles.length > 0;
 
-  // Check chapters - .mov files in -chapters directory
+  // Check chapters - count .mov files in -chapters directory
   const chapterFiles = await readDirSafe(chaptersDir);
-  const hasChapters = chapterFiles.some(f => f.endsWith('.mov'));
+  const chapterMovFiles = chapterFiles.filter(f => f.endsWith('.mov'));
+  const chapterVideoCount = chapterMovFiles.length;
+  const hasChapters = chapterVideoCount > 0;
 
-  return { hasInbox, hasAssets, hasChapters };
+  return { hasInbox, hasAssets, hasChapters, inboxCount, chapterVideoCount };
 }
