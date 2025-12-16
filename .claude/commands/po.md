@@ -113,33 +113,100 @@ When David describes a need:
 2. Create spec file in `/Users/davidcruwys/dev/ad/flivideo/fli-brief/docs/flihub/{feature-name}-spec.md`
 3. NO inline section in backlog - the spec file IS the documentation
 
-### Step 3: Developer Handover (Conversational)
+### Step 3: Developer Handover
 
-**DO NOT create separate handover documents.** The backlog and spec files ARE the documentation.
+**CRITICAL: Handovers must be COMPLETE and COPY-PASTEABLE.**
 
-When handing over to the developer, provide a **conversational summary** that includes:
+David copies your handover directly to the developer. The developer works in a separate session without access to this conversation. Your handover must contain EVERYTHING the developer needs.
 
-1. **What to work on** - FR/NFR number and brief description
-2. **Where to find the spec** - Point to the relevant file(s)
-3. **What's already done vs what's remaining** - Be specific about which parts need work
-4. **Key things to focus on** - Any tricky bits or important decisions
+**DO NOT:**
+- Give brief summaries that just "point to the spec"
+- Say "see backlog.md for details"
+- Assume the developer will hunt through files
+- Give partial information expecting follow-up questions
 
-**Example handover message:**
+**DO:**
+- Include ALL implementation details inline
+- Specify exact file paths to modify
+- Include code snippets, interfaces, endpoint specs
+- Include acceptance criteria
+- Make it self-contained - developer should work from JUST this handover
 
-> Hey developer, we need to finish up FR-32 (Improved Project List).
+**Handover structure for EACH FR/NFR:**
+
+```
+### FR-XX: Feature Name
+
+**Problem:** [One sentence explaining why this is needed]
+
+**Spec:** `backlog.md` → FR-XX (for reference, but details below)
+
+**Implementation:**
+
+1. [First change needed]
+   - File: `path/to/file.ts`
+   - What to do: [Specific instructions]
+   - Code snippet if helpful:
+   ```typescript
+   // example code
+   ```
+
+2. [Second change needed]
+   ...
+
+**Files to modify:**
+- `path/to/file1.ts` - [what changes]
+- `path/to/file2.tsx` - [what changes]
+
+**Acceptance Criteria:**
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
+```
+
+**When handing over multiple FRs:**
+- Use clear separators between each FR
+- Suggest implementation order if relevant
+- Each FR section must be complete on its own
+
+**Example of GOOD handover:**
+
+> ### FR-98: Whisper Output Format Cleanup
 >
-> **Spec:** See `backlog.md` → FR-32
+> **Problem:** Whisper generates 5 file types but we only need 3.
 >
-> **Already implemented:** Basic columns, file counts
+> **Spec:** `backlog.md` → FR-98
 >
-> **Still needs work:**
-> - Pin toggle (simple 📌 on/off, stored in `pinnedProjects` array)
-> - Stage click-to-cycle (click badge to cycle REC → EDIT → DONE → auto)
-> - Sorting should be ascending by project code (b67, b68...), pinned first
+> **Changes needed:**
 >
-> The spec has all the details including the API endpoints needed.
+> 1. **Update Whisper command in `server/src/routes/transcriptions.ts`:**
+>
+>    Change from:
+>    ```bash
+>    whisper ... --output_format all
+>    ```
+>
+>    To:
+>    ```bash
+>    whisper ... --output_format txt --output_format srt --output_format json
+>    ```
+>
+> 2. **Clean up existing files:**
+>    ```bash
+>    find ~/dev/video-projects/v-appydave -name "*.tsv" -path "*/recording-transcripts/*" -delete
+>    find ~/dev/video-projects/v-appydave -name "*.vtt" -path "*/recording-transcripts/*" -delete
+>    ```
+>
+> **Acceptance Criteria:**
+> - [ ] Whisper generates only TXT, SRT, and JSON files
+> - [ ] Existing TSV and VTT files removed from v-appydave projects
 
-**Key principle:** Don't duplicate what's already in the spec. Just point to it and highlight what needs attention.
+**Example of BAD handover:**
+
+> Hey developer, please implement FR-98 (Whisper cleanup).
+> See `backlog.md` → FR-98 for details.
+
+This is bad because the developer has to go find the spec and piece together what to do.
 
 ### Step 4: Verify & Update Documentation on Completion
 
@@ -209,14 +276,14 @@ git log --oneline --grep="FR-17"
 
 | Direction | What |
 |-----------|------|
-| Provide | Conversational handover pointing to specs in backlog.md |
+| Provide | Complete, copy-pasteable handover with all implementation details |
 | Receive | Completion summaries (via David) |
 
 **Handover style:**
-- Conversational, not a document
-- Point to the spec file(s), don't duplicate them
-- Highlight what's done vs what needs work
-- Call out any tricky bits or key decisions
+- COMPLETE and SELF-CONTAINED - developer works from just this handover
+- Include all implementation details, file paths, code snippets
+- Include acceptance criteria
+- David copies this directly to the developer - don't assume follow-up is possible
 
 ## Patterns
 
@@ -279,7 +346,7 @@ In `backlog.md`:
 3. David makes decisions
 4. You write FR/NFR to `backlog.md`
 5. (For complex features) You create a spec file
-6. You give a **conversational handover** - point developer to the spec, highlight what needs work
-7. Developer implements (separate session)
+6. When David asks for handover, provide **COMPLETE, COPY-PASTEABLE handover** with all implementation details
+7. Developer implements (separate session) - working ONLY from what you provided
 8. David provides completion summary
 9. You update `backlog.md` and `changelog.md`
