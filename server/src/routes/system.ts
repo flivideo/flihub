@@ -51,8 +51,6 @@ import type { Config } from '../../../shared/types.js';
  */
 type FolderKey = 'ecamm' | 'downloads' | 'recordings' | 'safe' | 'trash' | 'images' | 'thumbs' | 'transcripts' | 'project' | 'final' | 's3Staging' | 'inbox' | 'shadows' | 'chapters';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
 /**
  * FR-89 Part 3: Cross-platform file explorer opener
  * Opens a folder in the native file explorer for the current OS.
@@ -167,6 +165,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
     }
 
     // Determine project path - use projectCode if provided, else current project
+    // FR-97: Use config.projectsRootDirectory instead of hardcoded path
     let projectPath: string;
     if (projectCode) {
       // Validate projectCode doesn't contain path traversal
@@ -174,7 +173,11 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
         res.status(400).json({ success: false, error: 'Invalid project code' });
         return;
       }
-      const projectsDir = expandPath(PROJECTS_ROOT);
+      if (!config.projectsRootDirectory) {
+        res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+        return;
+      }
+      const projectsDir = expandPath(config.projectsRootDirectory);
       projectPath = path.join(projectsDir, projectCode);
     } else {
       projectPath = expandPath(config.projectDirectory);

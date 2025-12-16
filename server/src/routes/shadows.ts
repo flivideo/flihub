@@ -14,8 +14,6 @@ import { expandPath } from '../utils/pathUtils.js';
 import { getShadowCounts, generateProjectShadows } from '../utils/shadowFiles.js';
 import { readDirSafe } from '../utils/filesystem.js';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
 export function createShadowsRouter(getConfig: () => Config) {
   const router = Router();
 
@@ -87,11 +85,23 @@ export function createShadowsRouter(getConfig: () => Config) {
 
   // POST /api/shadows/generate-all - Generate shadows for all projects
   // FR-89 Part 6: Uses config.shadowResolution for resolution
+  // FR-97: Use config.projectsRootDirectory instead of hardcoded path
   router.post('/generate-all', async (_req: Request, res: Response) => {
     const config = getConfig();
 
     try {
-      const projectsDir = expandPath(PROJECTS_ROOT);
+      if (!config.projectsRootDirectory) {
+        res.status(400).json({
+          success: false,
+          projects: 0,
+          created: 0,
+          skipped: 0,
+          error: 'projectsRootDirectory not configured',
+        });
+        return;
+      }
+
+      const projectsDir = expandPath(config.projectsRootDirectory);
       const resolution = config.shadowResolution || 240;
 
       // Get all project directories
