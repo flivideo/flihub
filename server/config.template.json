@@ -1,0 +1,30 @@
+{
+  "watchDirectory": "~/Movies/Ecamm Live/",
+  "projectsRootDirectory": "~/dev/video-projects/v-appydave",
+  "activeProject": "",
+  "availableTags": [
+    "CTA",
+    "SKOOL"
+  ],
+  "commonNames": [
+    {
+      "name": "intro",
+      "autoSequence": true
+    },
+    {
+      "name": "demo"
+    },
+    {
+      "name": "summary"
+    },
+    {
+      "name": "outro",
+      "suggestTags": [
+        "RECAP",
+        "ENDCARD"
+      ]
+    }
+  ],
+  "imageSourceDirectory": "~/Downloads",
+  "shadowResolution": 240
+}
