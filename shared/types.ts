@@ -737,3 +737,15 @@ export interface ChapterRecordingStatusResponse {
   }>;
   existing: string[];
 }
+
+// FR-96: Environment detection for cross-platform path guidance
+export interface EnvironmentResponse {
+  platform: 'win32' | 'linux' | 'darwin';
+  isWSL: boolean;
+  pathFormat: 'windows' | 'linux';
+  guidance: {
+    nativeFiles: string;    // e.g., '/home/jan/...' or 'C:\\...'
+    windowsFiles: string;   // e.g., '/mnt/c/...' or 'C:\\...'
+    wslFiles: string;       // e.g., '/home/jan/...' or '\\\\wsl$\\...'
+  };
+}

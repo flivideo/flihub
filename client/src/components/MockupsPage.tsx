@@ -426,6 +426,203 @@ export function MockupsPage() {
           <li>• [?] expands to full panel if needed</li>
         </ul>
       </div>
+
+      {/* FR-96: Environment Detection Mockups */}
+      <div className="mt-16 pt-8 border-t-2 border-gray-300">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">FR-96: Environment Detection & Path Guidance</h1>
+          <p className="text-gray-600">Help Windows+WSL users use correct path formats</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Environment Info Box (Option B) */}
+          <MockupContainer
+            number={1}
+            title="Config Panel Info Box"
+            description="Collapsible info section at top of Config panel"
+          >
+            <div className="p-4 space-y-4">
+              {/* Environment info box */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="flex items-center gap-2 font-medium text-blue-800">
+                    <span className="text-xl">🐧</span>
+                    <span>WSL (Ubuntu on Windows)</span>
+                  </span>
+                  <button className="text-blue-500 hover:text-blue-700 text-sm">Hide ▲</button>
+                </div>
+                <div className="text-sm text-blue-700 space-y-1">
+                  <p className="font-medium">Use Linux path formats:</p>
+                  <ul className="ml-4 space-y-0.5">
+                    <li>• WSL files: <code className="bg-blue-100 px-1 rounded">/home/jan/...</code></li>
+                    <li>• Windows files: <code className="bg-blue-100 px-1 rounded">/mnt/c/Users/...</code></li>
+                  </ul>
+                </div>
+                <div className="mt-2 text-right">
+                  <button className="text-blue-600 hover:text-blue-800 text-sm underline">View docs →</button>
+                </div>
+              </div>
+
+              {/* Sample path field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Projects Root Directory
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value="/home/jan/dev/video-projects/v-appydave"
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
+                  />
+                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">📁</button>
+                </div>
+                <p className="text-xs text-green-600 mt-1">
+                  <span className="inline-block mr-1">✓</span>
+                  Path exists
+                </p>
+              </div>
+            </div>
+          </MockupContainer>
+
+          {/* Path Mismatch Warning (Option C) */}
+          <MockupContainer
+            number={2}
+            title="Inline Path Mismatch Warning"
+            description="Real-time warning when path format doesn't match environment"
+          >
+            <div className="p-4 space-y-4">
+              {/* Compact environment indicator */}
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span>🐧</span>
+                <span>Running in WSL - use Linux paths</span>
+              </div>
+
+              {/* Path field with warning */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Downloads Directory
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value="C:\Users\jan\Downloads"
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-amber-400 rounded-md bg-amber-50 text-sm"
+                  />
+                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">📁</button>
+                </div>
+                <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-sm">
+                  <p className="text-amber-800 font-medium">
+                    ⚠️ Windows path format, but running in WSL
+                  </p>
+                  <p className="text-amber-700 mt-1">
+                    Suggested: <code className="bg-amber-100 px-1 rounded">/mnt/c/Users/jan/Downloads</code>
+                  </p>
+                  <button className="mt-2 px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">
+                    Use suggested path
+                  </button>
+                </div>
+              </div>
+            </div>
+          </MockupContainer>
+
+          {/* macOS Environment */}
+          <MockupContainer
+            number={3}
+            title="macOS Environment"
+            description="Simple indicator for Mac users (no path confusion)"
+          >
+            <div className="p-4 space-y-4">
+              {/* Environment info box - Mac */}
+              <div className="bg-gray-100 border border-gray-200 rounded-lg p-3">
+                <span className="flex items-center gap-2 text-gray-700">
+                  <span className="text-xl">🍎</span>
+                  <span className="font-medium">macOS</span>
+                  <span className="text-gray-500 text-sm">- Unix paths</span>
+                </span>
+              </div>
+
+              {/* Sample path field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Projects Root Directory
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value="~/dev/video-projects/v-appydave"
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
+                  />
+                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">📁</button>
+                </div>
+                <p className="text-xs text-green-600 mt-1">
+                  <span className="inline-block mr-1">✓</span>
+                  Path exists
+                </p>
+              </div>
+            </div>
+          </MockupContainer>
+
+          {/* Native Windows Environment */}
+          <MockupContainer
+            number={4}
+            title="Native Windows Environment"
+            description="When running FliHub directly on Windows (not WSL)"
+          >
+            <div className="p-4 space-y-4">
+              {/* Environment info box - Windows */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="flex items-center gap-2 font-medium text-blue-800">
+                    <span className="text-xl">🪟</span>
+                    <span>Windows</span>
+                  </span>
+                </div>
+                <div className="text-sm text-blue-700 space-y-1">
+                  <p className="font-medium">Use Windows path formats:</p>
+                  <ul className="ml-4 space-y-0.5">
+                    <li>• Windows files: <code className="bg-blue-100 px-1 rounded">C:\Users\...</code></li>
+                    <li>• WSL files: <code className="bg-blue-100 px-1 rounded">\\wsl$\Ubuntu\...</code></li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Path field with UNC path */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Projects Root Directory (in WSL)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value="\\wsl$\Ubuntu\home\jan\dev\video-projects"
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm font-mono text-xs"
+                  />
+                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">📁</button>
+                </div>
+                <p className="text-xs text-green-600 mt-1">
+                  <span className="inline-block mr-1">✓</span>
+                  Path exists
+                </p>
+              </div>
+            </div>
+          </MockupContainer>
+        </div>
+
+        {/* FR-96 Recommendation */}
+        <div className="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <h3 className="font-semibold text-green-800 mb-2">Recommendation: Options B + C Combined</h3>
+          <ul className="text-sm text-green-700 space-y-1">
+            <li>• <strong>Info box</strong> at top of Config - educates user proactively</li>
+            <li>• <strong>Inline warnings</strong> - catches mistakes with actionable suggestions</li>
+            <li>• Environment detection via <code className="bg-green-100 px-1 rounded">GET /api/system/environment</code></li>
+            <li>• WSL detected by checking <code className="bg-green-100 px-1 rounded">process.env.WSL_DISTRO_NAME</code></li>
+          </ul>
+        </div>
+      </div>
     </div>
   )
 }

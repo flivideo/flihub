@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
-import { useConfig, useUpdateConfig, useRefetchSuggestedNaming, useChapterRecordingConfig, useUpdateChapterRecordingConfig, useShadowStatus, useGenerateShadows, useGenerateAllShadows, useWatchers } from '../hooks/useApi'
+import { useConfig, useUpdateConfig, useRefetchSuggestedNaming, useChapterRecordingConfig, useUpdateChapterRecordingConfig, useShadowStatus, useGenerateShadows, useGenerateAllShadows, useWatchers, useEnvironment } from '../hooks/useApi'
 import { collapsePath } from '../utils/formatting'
 import { OpenFolderButton, LoadingSpinner, PageContainer } from './shared'
 import { API_URL } from '../config'
@@ -29,6 +29,151 @@ function validatePath(path: string): string | null {
     return 'Path must start with ~, /, C:\\, or \\\\'
   }
   return null
+}
+
+// FR-96: Detect if path format doesn't match the expected environment
+function detectPathMismatch(path: string, expectedFormat: 'windows' | 'linux'): {
+  mismatch: boolean;
+  message: string;
+  suggestedPath: string | null;
+} {
+  if (!path.trim()) return { mismatch: false, message: '', suggestedPath: null }
+
+  const isWindowsPath = /^[A-Za-z]:\\/.test(path) || /^\\\\/.test(path)
+  const isLinuxPath = /^(~|\/(?!mnt\/))/.test(path)
+  const isMntPath = /^\/mnt\/[a-z]\//.test(path)
+
+  if (expectedFormat === 'linux') {
+    // In WSL/Linux, warn on Windows-style paths
+    if (isWindowsPath) {
+      // Try to convert C:\Users\... to /mnt/c/Users/...
+      const windowsMatch = path.match(/^([A-Za-z]):\\(.*)$/)
+      if (windowsMatch) {
+        const drive = windowsMatch[1].toLowerCase()
+        const rest = windowsMatch[2].replace(/\\/g, '/')
+        return {
+          mismatch: true,
+          message: 'Windows path format, but running in WSL/Linux',
+          suggestedPath: `/mnt/${drive}/${rest}`,
+        }
+      }
+      // UNC path like \\wsl$\Ubuntu\home\...
+      const uncMatch = path.match(/^\\\\wsl\$\\[^\\]+\\(.*)$/)
+      if (uncMatch) {
+        const rest = uncMatch[1].replace(/\\/g, '/')
+        return {
+          mismatch: true,
+          message: 'Windows UNC path, but running in WSL/Linux',
+          suggestedPath: `/${rest}`,
+        }
+      }
+      return { mismatch: true, message: 'Windows path format, but running in WSL/Linux', suggestedPath: null }
+    }
+  } else {
+    // In Windows, warn on Linux-style paths
+    if (isLinuxPath || isMntPath) {
+      return {
+        mismatch: true,
+        message: 'Linux path format, but running in Windows',
+        suggestedPath: null,  // Can't easily convert back
+      }
+    }
+  }
+
+  return { mismatch: false, message: '', suggestedPath: null }
+}
+
+// FR-96: Environment info box component
+function EnvironmentInfoBox({
+  platform,
+  isWSL,
+  guidance,
+  collapsed,
+  onToggle,
+}: {
+  platform: 'win32' | 'linux' | 'darwin';
+  isWSL: boolean;
+  guidance: { nativeFiles: string; windowsFiles: string; wslFiles: string };
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
+  // Environment display config
+  const envConfig = isWSL
+    ? { icon: '🐧', label: 'WSL (Ubuntu on Windows)', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' }
+    : platform === 'darwin'
+    ? { icon: '🍎', label: 'macOS', bgColor: 'bg-gray-50', borderColor: 'border-gray-200' }
+    : platform === 'win32'
+    ? { icon: '🪟', label: 'Windows', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' }
+    : { icon: '🐧', label: 'Linux', bgColor: 'bg-green-50', borderColor: 'border-green-200' }
+
+  return (
+    <div className={`rounded-lg border ${envConfig.borderColor} ${envConfig.bgColor} mb-4`}>
+      <div
+        className="flex items-center justify-between px-3 py-2 cursor-pointer"
+        onClick={onToggle}
+      >
+        <span className="text-sm font-medium">
+          {envConfig.icon} {envConfig.label}
+        </span>
+        <button className="text-xs text-gray-500 hover:text-gray-700">
+          {collapsed ? '[Show ▼]' : '[Hide ▲]'}
+        </button>
+      </div>
+      {!collapsed && (
+        <div className="px-3 pb-3 text-xs text-gray-600">
+          <p className="font-medium mb-1">Use {isWSL || platform !== 'win32' ? 'Linux' : 'Windows'} path formats:</p>
+          <ul className="space-y-0.5 text-gray-500">
+            {isWSL ? (
+              <>
+                <li>• WSL files: <code className="bg-white px-1 rounded">{guidance.nativeFiles}</code></li>
+                <li>• Windows files: <code className="bg-white px-1 rounded">{guidance.windowsFiles}</code></li>
+              </>
+            ) : platform === 'darwin' ? (
+              <li>• Files: <code className="bg-white px-1 rounded">{guidance.nativeFiles}</code></li>
+            ) : platform === 'win32' ? (
+              <>
+                <li>• Windows files: <code className="bg-white px-1 rounded">{guidance.windowsFiles}</code></li>
+                <li>• WSL files: <code className="bg-white px-1 rounded">{guidance.wslFiles}</code></li>
+              </>
+            ) : (
+              <li>• Files: <code className="bg-white px-1 rounded">{guidance.nativeFiles}</code></li>
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// FR-96: Path mismatch warning component
+function PathMismatchWarning({
+  message,
+  suggestedPath,
+  onUseSuggested,
+}: {
+  message: string;
+  suggestedPath: string | null;
+  onUseSuggested: () => void;
+}) {
+  return (
+    <div className="mt-1 text-xs">
+      <p className="text-amber-600">
+        <span className="mr-1">⚠️</span>
+        {message}
+      </p>
+      {suggestedPath && (
+        <p className="text-gray-500 mt-0.5">
+          Suggested: <code className="bg-gray-100 px-1 rounded">{suggestedPath}</code>
+          <button
+            onClick={onUseSuggested}
+            className="ml-2 text-blue-600 hover:text-blue-700 underline"
+          >
+            Use suggested path
+          </button>
+        </p>
+      )}
+    </div>
+  )
 }
 
 // FR-89 Part 2: Path existence indicator component
@@ -72,6 +217,10 @@ export function ConfigPanel() {
   // FR-90: File watchers
   const { data: watchersData } = useWatchers()
   const [showWatchers, setShowWatchers] = useState(false)
+
+  // FR-96: Environment detection
+  const { data: envData } = useEnvironment()
+  const [envCollapsed, setEnvCollapsed] = useState(false)
 
   const [watchDirectory, setWatchDirectory] = useState('')
   // FR-89 Part 5: Split into root + active project
@@ -262,9 +411,25 @@ export function ConfigPanel() {
     return <LoadingSpinner message="Loading configuration..." />
   }
 
+  // FR-96: Compute path mismatches
+  const watchMismatch = envData ? detectPathMismatch(watchDirectory, envData.pathFormat) : { mismatch: false, message: '', suggestedPath: null }
+  const rootMismatch = envData ? detectPathMismatch(projectsRootDirectory, envData.pathFormat) : { mismatch: false, message: '', suggestedPath: null }
+  const imageMismatch = envData ? detectPathMismatch(imageSourceDirectory, envData.pathFormat) : { mismatch: false, message: '', suggestedPath: null }
+
   return (
     <PageContainer>
       <div className="space-y-4">
+        {/* FR-96: Environment info box */}
+        {envData && (
+          <EnvironmentInfoBox
+            platform={envData.platform}
+            isWSL={envData.isWSL}
+            guidance={envData.guidance}
+            collapsed={envCollapsed}
+            onToggle={() => setEnvCollapsed(!envCollapsed)}
+          />
+        )}
+
         <div>
           <label className="block text-sm text-gray-600 mb-1">
             Ecamm Watch Directory
@@ -287,6 +452,12 @@ export function ConfigPanel() {
           </div>
           {watchError ? (
             <p className="text-xs text-red-500 mt-1">{watchError}</p>
+          ) : watchMismatch.mismatch ? (
+            <PathMismatchWarning
+              message={watchMismatch.message}
+              suggestedPath={watchMismatch.suggestedPath}
+              onUseSuggested={() => watchMismatch.suggestedPath && setWatchDirectory(watchMismatch.suggestedPath)}
+            />
           ) : (
             <PathExistsIndicator status={watchDirExists} description="Directory where Ecamm Live saves recordings" />
           )}
@@ -315,6 +486,12 @@ export function ConfigPanel() {
           </div>
           {rootError ? (
             <p className="text-xs text-red-500 mt-1">{rootError}</p>
+          ) : rootMismatch.mismatch ? (
+            <PathMismatchWarning
+              message={rootMismatch.message}
+              suggestedPath={rootMismatch.suggestedPath}
+              onUseSuggested={() => rootMismatch.suggestedPath && setProjectsRootDirectory(rootMismatch.suggestedPath)}
+            />
           ) : (
             <PathExistsIndicator status={rootDirExists} description="Directory containing all project folders" />
           )}
@@ -361,6 +538,12 @@ export function ConfigPanel() {
           </div>
           {imageSourceError ? (
             <p className="text-xs text-red-500 mt-1">{imageSourceError}</p>
+          ) : imageMismatch.mismatch ? (
+            <PathMismatchWarning
+              message={imageMismatch.message}
+              suggestedPath={imageMismatch.suggestedPath}
+              onUseSuggested={() => imageMismatch.suggestedPath && setImageSourceDirectory(imageMismatch.suggestedPath)}
+            />
           ) : (
             <PathExistsIndicator status={imageDirExists} description="Directory to scan for incoming images (Assets page)" />
           )}

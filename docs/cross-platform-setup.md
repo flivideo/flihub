@@ -2,6 +2,8 @@
 
 This guide helps collaborators (primarily on Windows) set up and use FliHub without the original video recordings.
 
+> **Developers using WSL?** See [WSL Development Guide](./wsl-development-guide.md) for the recommended "run from WSL, think Linux" approach that builds transferable skills.
+
 ## Who This Is For
 
 - **Video editors** who receive project files but don't record videos

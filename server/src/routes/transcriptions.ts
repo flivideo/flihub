@@ -8,6 +8,7 @@ import type { ServerToClientEvents, ClientToServerEvents, TranscriptionJob, Tran
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
+import { appendTelemetryEntry } from '../utils/telemetry.js';
 
 // In-memory state
 let queue: TranscriptionJob[] = [];
@@ -107,14 +108,25 @@ export function createTranscriptionRoutes(
     console.log(`Using Python: ${pythonPath}`);
     console.log(`Output dir: ${transcriptsDir}`);
 
-    // FR-74: Output both TXT (plain text) and SRT (timed subtitles) formats
-    // FR-94: Use 'all' to get both formats - multiple --output_format flags don't work
+    // FR-99: Capture timing data for telemetry
+    const transcriptionStartTime = Date.now();
+    let videoFileSizeBytes = 0;
+    try {
+      const stats = await fs.stat(videoPath);
+      videoFileSizeBytes = stats.size;
+    } catch {
+      // File size unavailable, continue without it
+    }
+
+    // FR-74: Output TXT (plain text), SRT (timed subtitles), and JSON (word-level timestamps)
+    // FR-98: Only generate needed formats - removed tsv and vtt (were unused)
+    // Whisper accepts multiple formats as separate arguments after --output_format
     activeProcess = spawn(pythonPath, [
       '-m', 'whisper',
       videoPath,
       '--model', WHISPER_MODEL,
       '--language', WHISPER_LANGUAGE,
-      '--output_format', 'all',
+      '--output_format', 'txt', 'srt', 'json',
       '--output_dir', transcriptsDir,
     ]);
 
@@ -150,6 +162,21 @@ export function createTranscriptionRoutes(
           jobId: activeJob.jobId,
           videoPath: activeJob.videoPath,
           transcriptPath: transcriptPath || '',
+        });
+
+        // FR-99: Log telemetry data
+        const transcriptionEndTime = Date.now();
+        const transcriptionDurationSec = (transcriptionEndTime - transcriptionStartTime) / 1000;
+        getVideoDuration(activeJob.videoPath).then(videoDuration => {
+          appendTelemetryEntry({
+            timestamp: new Date().toISOString(),
+            filename: activeJob!.videoFilename,
+            videoDurationSec: videoDuration ?? 0,
+            transcriptionDurationSec,
+            fileSizeBytes: videoFileSizeBytes,
+          });
+        }).catch(err => {
+          console.error('Error getting video duration for telemetry:', err);
         });
       } else {
         activeJob.status = 'error';

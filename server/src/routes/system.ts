@@ -43,7 +43,7 @@ import fs from 'fs-extra';
 import os from 'os';
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
-import type { Config } from '../../../shared/types.js';
+import type { Config, EnvironmentResponse } from '../../../shared/types.js';
 
 /**
  * Valid folder keys that can be opened.
@@ -137,6 +137,64 @@ import type { WatcherManager } from '../WatcherManager.js';
 
 export function createSystemRoutes(config: Config, watcherManager?: WatcherManager): Router {
   const router = Router();
+
+  /**
+   * GET /api/system/environment
+   *
+   * FR-96: Detect the server's runtime environment for path format guidance.
+   * Returns platform info, WSL detection, and path format examples.
+   */
+  router.get('/environment', (_req: Request, res: Response) => {
+    const platform = os.platform() as 'win32' | 'linux' | 'darwin';
+
+    // WSL detection: Linux with WSL_DISTRO_NAME environment variable
+    const isWSL = platform === 'linux' && !!process.env.WSL_DISTRO_NAME;
+
+    // Determine expected path format
+    const pathFormat = platform === 'win32' ? 'windows' : 'linux';
+
+    // Build guidance based on environment
+    let guidance: EnvironmentResponse['guidance'];
+
+    if (isWSL) {
+      // WSL: Use Linux paths, access Windows via /mnt/c/
+      guidance = {
+        nativeFiles: '/home/username/...',
+        windowsFiles: '/mnt/c/Users/...',
+        wslFiles: '/home/username/...',
+      };
+    } else if (platform === 'win32') {
+      // Native Windows
+      guidance = {
+        nativeFiles: 'C:\\Users\\...',
+        windowsFiles: 'C:\\Users\\...',
+        wslFiles: '\\\\wsl$\\Ubuntu\\home\\...',
+      };
+    } else if (platform === 'darwin') {
+      // macOS
+      guidance = {
+        nativeFiles: '/Users/username/...',
+        windowsFiles: 'N/A',
+        wslFiles: 'N/A',
+      };
+    } else {
+      // Linux (non-WSL)
+      guidance = {
+        nativeFiles: '/home/username/...',
+        windowsFiles: 'N/A',
+        wslFiles: 'N/A',
+      };
+    }
+
+    const response: EnvironmentResponse = {
+      platform,
+      isWSL,
+      pathFormat,
+      guidance,
+    };
+
+    res.json(response);
+  });
 
   /**
    * POST /api/system/open-folder

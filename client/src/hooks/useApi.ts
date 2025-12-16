@@ -33,6 +33,7 @@ import type {
   ShadowStatusResponse,
   ShadowGenerateResponse,
   ShadowGenerateAllResponse,
+  EnvironmentResponse,
 } from '../../../shared/types'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { API_URL } from '../config'
@@ -572,5 +573,14 @@ export function useWatchers() {
   return useQuery({
     queryKey: QUERY_KEYS.watchers,
     queryFn: () => fetchApi<{ watchers: WatcherInfo[] }>('/api/system/watchers'),
+  })
+}
+
+// FR-96: Get server environment info for path format guidance
+export function useEnvironment() {
+  return useQuery({
+    queryKey: ['environment'],
+    queryFn: () => fetchApi<EnvironmentResponse>('/api/system/environment'),
+    staleTime: Infinity,  // Environment won't change during session
   })
 }
