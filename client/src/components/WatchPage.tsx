@@ -204,6 +204,66 @@ export function WatchPage() {
     return groupByChapterWithTiming(data.recordings)
   }, [data?.recordings])
 
+  // FR-100: Flat list of active recordings for next/prev navigation
+  const sortedRecordings = useMemo(() => {
+    if (!data?.recordings) return []
+    return data.recordings
+      .filter(r => r.folder !== 'safe')
+      .sort((a, b) => {
+        const chapterDiff = parseInt(a.chapter) - parseInt(b.chapter)
+        if (chapterDiff !== 0) return chapterDiff
+        return parseInt(a.sequence) - parseInt(b.sequence)
+      })
+  }, [data?.recordings])
+
+  // FR-100: Find current index in sorted list
+  const currentIndex = useMemo(() => {
+    if (!currentVideo?.segmentName || sortedRecordings.length === 0) return -1
+    return sortedRecordings.findIndex(r =>
+      r.filename.replace(/\.mov$/i, '') === currentVideo.segmentName
+    )
+  }, [currentVideo?.segmentName, sortedRecordings])
+
+  // FR-100: Navigation handlers
+  const handlePrevious = useCallback(() => {
+    if (currentIndex <= 0 || !projectCode) return
+    const prev = sortedRecordings[currentIndex - 1]
+    const isShadow = 'isShadow' in prev && prev.isShadow
+    const shadowFolder = prev.folder === 'safe' ? 'safe' : 'recordings'
+    const url = getVideoUrl(projectCode, prev.filename, 'recordings', {
+      isShadow,
+      shadowFolder,
+    })
+    setCurrentVideo({
+      url,
+      title: prev.filename,
+      segmentName: prev.filename.replace(/\.mov$/i, ''),
+      isShadow,
+      sourceFile: prev,
+    })
+  }, [currentIndex, sortedRecordings, projectCode])
+
+  const handleNext = useCallback(() => {
+    if (currentIndex >= sortedRecordings.length - 1 || !projectCode) return
+    const next = sortedRecordings[currentIndex + 1]
+    const isShadow = 'isShadow' in next && next.isShadow
+    const shadowFolder = next.folder === 'safe' ? 'safe' : 'recordings'
+    const url = getVideoUrl(projectCode, next.filename, 'recordings', {
+      isShadow,
+      shadowFolder,
+    })
+    setCurrentVideo({
+      url,
+      title: next.filename,
+      segmentName: next.filename.replace(/\.mov$/i, ''),
+      isShadow,
+      sourceFile: next,
+    })
+  }, [currentIndex, sortedRecordings, projectCode])
+
+  const hasPrevious = currentIndex > 0
+  const hasNext = currentIndex >= 0 && currentIndex < sortedRecordings.length - 1
+
   // FR-71: Find the most recent recording (highest chapter, then highest sequence)
   const mostRecentRecording = useMemo(() => {
     if (!data?.recordings) return null
@@ -428,6 +488,44 @@ export function WatchPage() {
     <div className="relative">
       {/* FR-71: Size-responsive container */}
       <div className={SIZE_CLASSES[videoSize]}>
+        {/* FR-100: Navigation bar */}
+        {currentVideo && !currentVideo.isChapter && (
+          <div className="flex items-center justify-between mb-2 px-2">
+            <button
+              onClick={handlePrevious}
+              disabled={!hasPrevious}
+              className={`px-3 py-1 rounded text-sm ${
+                hasPrevious
+                  ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              ← Previous
+            </button>
+
+            <span className="text-sm text-gray-600 font-medium">
+              {currentVideo.title}
+              {sortedRecordings.length > 0 && (
+                <span className="text-gray-400 ml-2">
+                  ({currentIndex + 1} of {sortedRecordings.length})
+                </span>
+              )}
+            </span>
+
+            <button
+              onClick={handleNext}
+              disabled={!hasNext}
+              className={`px-3 py-1 rounded text-sm ${
+                hasNext
+                  ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              Next →
+            </button>
+          </div>
+        )}
+
         {/* Full-width Video Player */}
         <div className="bg-black rounded-lg overflow-hidden relative" style={{ aspectRatio: '16/9' }}>
           {/* FR-83: Shadow indicator badge */}

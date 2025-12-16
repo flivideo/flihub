@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon --ignore config.json --exec tsx src/index.ts",
+    "dev": "nodemon --ignore config.json --ignore transcription-telemetry.json --ignore '*.log' --exec tsx src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },

@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs-extra';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { createWatcher } from './watcher.js';
 import { createRoutes } from './routes/index.js';
 import { createAssetRoutes } from './routes/assets.js';
@@ -29,6 +30,35 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const PORT = process.env.PORT || 5101;
 const CONFIG_FILE = path.join(__dirname, '..', 'config.json');
+
+// Attempt to kill any process using our port (handles orphaned processes after crash)
+function cleanupPort(port: number | string): void {
+  try {
+    // Find process IDs using the port
+    const result = execSync(`lsof -ti:${port} 2>/dev/null || true`, { encoding: 'utf-8' });
+    const pids = result.trim().split('\n').filter(Boolean);
+
+    if (pids.length > 0) {
+      console.log(`Found existing processes on port ${port}: ${pids.join(', ')}`);
+      // Kill them
+      for (const pid of pids) {
+        try {
+          execSync(`kill -9 ${pid} 2>/dev/null || true`);
+          console.log(`Killed process ${pid}`);
+        } catch {
+          // Process may have already exited
+        }
+      }
+      // Brief pause to let port release
+      execSync('sleep 0.5');
+    }
+  } catch {
+    // lsof might not be available on all systems, continue anyway
+  }
+}
+
+// Clean up port before starting
+cleanupPort(PORT);
 
 const app = express();
 const httpServer = createServer(app);
@@ -243,7 +273,7 @@ function updateConfig(newConfig: Partial<Config>): Config {
 }
 
 // FR-30: Setup transcription routes (must be before main routes to get queueTranscription)
-const { router: transcriptionRoutes, queueTranscription } = createTranscriptionRoutes(
+const { router: transcriptionRoutes, queueTranscription, killActiveProcess } = createTranscriptionRoutes(
   () => currentConfig,
   io
 );
@@ -331,21 +361,45 @@ httpServer.listen(PORT, () => {
   console.log(`Project directory: ${currentConfig.projectDirectory}`);
 });
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\nShutting down...');
+// Graceful shutdown handler
+function gracefulShutdown(signal: string) {
+  console.log(`\n${signal} received. Shutting down...`);
+
+  // Kill any active Whisper transcription process
+  killActiveProcess();
+
   if (watcher) watcher.close();
   // NFR-6: Close all watchers via WatcherManager
   watcherManager.closeAll();
+  console.log('All watchers closed');
+
   // Close all socket connections
   io.close();
+
   httpServer.close(() => {
     console.log('Server closed');
     process.exit(0);
   });
-  // Force exit after 2 seconds if something hangs
+
+  // Force exit after 3 seconds if something hangs
   setTimeout(() => {
     console.log('Force exit');
     process.exit(0);
-  }, 2000);
+  }, 3000);
+}
+
+// Handle both SIGINT (Ctrl+C) and SIGTERM (nodemon restart)
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
+// Global error handlers to catch crashes and log them
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+  console.error('Stack:', err.stack);
+  // Don't exit - let nodemon handle restart
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('UNHANDLED REJECTION at:', promise);
+  console.error('Reason:', reason);
 });

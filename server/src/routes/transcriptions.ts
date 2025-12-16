@@ -110,6 +110,7 @@ export function createTranscriptionRoutes(
 
     // FR-99: Capture timing data for telemetry
     const transcriptionStartTime = Date.now();
+    const startTimestamp = new Date(transcriptionStartTime).toISOString();
     let videoFileSizeBytes = 0;
     try {
       const stats = fs.statSync(videoPath);
@@ -119,14 +120,14 @@ export function createTranscriptionRoutes(
     }
 
     // FR-74: Output TXT (plain text), SRT (timed subtitles), and JSON (word-level timestamps)
-    // FR-98: Only generate needed formats - removed tsv and vtt (were unused)
-    // Whisper accepts multiple formats as separate arguments after --output_format
+    // FR-98: Use 'all' format then delete unwanted vtt/tsv files after completion
+    // (Whisper only accepts a single format argument, not multiple)
     activeProcess = spawn(pythonPath, [
       '-m', 'whisper',
       videoPath,
       '--model', WHISPER_MODEL,
       '--language', WHISPER_LANGUAGE,
-      '--output_format', 'txt', 'srt', 'json',
+      '--output_format', 'all',
       '--output_dir', transcriptsDir,
     ]);
 
@@ -158,6 +159,22 @@ export function createTranscriptionRoutes(
         activeJob.status = 'complete';
         const transcriptPath = getTranscriptPath(activeJob.videoFilename);
         console.log(`Transcription complete: ${activeJob.videoFilename}`);
+
+        // FR-98: Delete unwanted vtt/tsv files (we only need txt, srt, json)
+        const baseName = activeJob.videoFilename.replace(/\.[^.]+$/, '');
+        const unwantedExtensions = ['.vtt', '.tsv'];
+        for (const ext of unwantedExtensions) {
+          const filePath = path.join(transcriptsDir, baseName + ext);
+          if (fs.existsSync(filePath)) {
+            try {
+              fs.unlinkSync(filePath);
+              console.log(`Deleted unwanted transcript file: ${baseName}${ext}`);
+            } catch (err) {
+              console.error(`Failed to delete ${filePath}:`, err);
+            }
+          }
+        }
+
         io.emit('transcription:complete', {
           jobId: activeJob.jobId,
           videoPath: activeJob.videoPath,
@@ -165,15 +182,34 @@ export function createTranscriptionRoutes(
         });
 
         // FR-99: Log telemetry data
+        // IMPORTANT: Capture all job details NOW before async calls, because
+        // activeJob will change to the next job before the promise resolves
         const transcriptionEndTime = Date.now();
+        const endTimestamp = new Date(transcriptionEndTime).toISOString();
         const transcriptionDurationSec = (transcriptionEndTime - transcriptionStartTime) / 1000;
-        getVideoDuration(activeJob.videoPath).then(videoDuration => {
+        const completedFilename = activeJob!.videoFilename;
+        const completedPath = activeJob!.videoPath;
+
+        // Extract project name from path (e.g., /path/to/v-appydave/b85-clauding-01/recordings/file.mov)
+        const pathParts = completedPath.split('/');
+        const recordingsIndex = pathParts.indexOf('recordings');
+        const project = recordingsIndex > 0 ? pathParts[recordingsIndex - 1] : 'unknown';
+
+        getVideoDuration(completedPath).then(videoDuration => {
+          const duration = videoDuration ?? 0;
+          const ratio = duration > 0 ? transcriptionDurationSec / duration : 0;
           appendTelemetryEntry({
-            timestamp: new Date().toISOString(),
-            filename: activeJob!.videoFilename,
-            videoDurationSec: videoDuration ?? 0,
+            startTimestamp,
+            endTimestamp,
+            project,
+            filename: completedFilename,
+            path: completedPath,
+            videoDurationSec: duration,
             transcriptionDurationSec,
+            ratio,
             fileSizeBytes: videoFileSizeBytes,
+            model: WHISPER_MODEL,
+            success: true,
           });
         }).catch(err => {
           console.error('Error getting video duration for telemetry:', err);
@@ -732,6 +768,24 @@ export function createTranscriptionRoutes(
     }
   });
 
-  // Export queueTranscription for use by rename route
-  return { router, queueTranscription };
+  // Kill active transcription process (for graceful shutdown)
+  function killActiveProcess(): void {
+    if (activeProcess) {
+      console.log('Killing active Whisper process...');
+      activeProcess.kill('SIGTERM');
+      // Give it a moment, then force kill if needed
+      setTimeout(() => {
+        if (activeProcess) {
+          console.log('Force killing Whisper process...');
+          activeProcess.kill('SIGKILL');
+        }
+      }, 1000);
+    }
+    // Clear the queue so nothing restarts
+    queue = [];
+    activeJob = null;
+  }
+
+  // Export queueTranscription and killActiveProcess
+  return { router, queueTranscription, killActiveProcess };
 }

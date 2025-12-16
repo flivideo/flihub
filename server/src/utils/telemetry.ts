@@ -16,11 +16,17 @@ const __dirname = path.dirname(__filename);
 const TELEMETRY_FILE = path.join(__dirname, '..', '..', 'transcription-telemetry.json');
 
 export interface TranscriptionLogEntry {
-  timestamp: string;           // ISO timestamp when transcription completed
-  filename: string;            // e.g., "01-1-intro.mov"
+  startTimestamp: string;      // ISO timestamp when transcription started
+  endTimestamp: string;        // ISO timestamp when transcription completed
+  project: string;             // Project name (e.g., "b85-clauding-01")
+  filename: string;            // Just the filename (e.g., "01-1-intro.mov")
+  path: string;                // Full absolute path to video
   videoDurationSec: number;    // Length of video in seconds
   transcriptionDurationSec: number;  // Time Whisper took to transcribe
+  ratio: number;               // transcriptionDurationSec / videoDurationSec
   fileSizeBytes: number;       // Video file size
+  model: string;               // Whisper model used (e.g., "medium")
+  success: boolean;            // Whether transcription succeeded
 }
 
 interface TelemetryData {
@@ -51,7 +57,7 @@ export async function appendTelemetryEntry(entry: TranscriptionLogEntry): Promis
     const data = await readTelemetry();
     data.entries.push(entry);
     await fs.writeJson(TELEMETRY_FILE, data, { spaces: 2 });
-    console.log(`Telemetry logged: ${entry.filename} - ${entry.transcriptionDurationSec.toFixed(1)}s for ${entry.videoDurationSec.toFixed(1)}s video`);
+    console.log(`Telemetry logged: ${entry.project}/${entry.filename} - ${entry.transcriptionDurationSec.toFixed(1)}s for ${entry.videoDurationSec.toFixed(1)}s video (${entry.ratio.toFixed(2)}x)`);
   } catch (err) {
     console.error('Error writing telemetry:', err);
   }

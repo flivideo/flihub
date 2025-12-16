@@ -56,9 +56,14 @@ export class WatcherManager {
       if (existingTimeout) clearTimeout(existingTimeout);
 
       const timeout = setTimeout(() => {
-        console.log(`${config.name} change detected`);
-        // @ts-expect-error - dynamic event emission
-        this.io.emit(config.event);
+        try {
+          console.log(`${config.name} change detected`);
+          // @ts-expect-error - dynamic event emission
+          this.io.emit(config.event);
+          console.log(`${config.name} event emitted successfully`);
+        } catch (err) {
+          console.error(`Error emitting ${config.name} event:`, err);
+        }
       }, config.debounceMs ?? 200);
 
       this.debounceTimeouts.set(config.name, timeout);
