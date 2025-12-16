@@ -1,6 +1,7 @@
 {
   "watchDirectory": "~/ecamm",
-  "projectDirectory": "/Users/davidcruwys/dev/video-projects/v-appydave/b88-test",
+  "projectsRootDirectory": "/Users/davidcruwys/dev/video-projects/v-appydave",
+  "activeProject": "b86-claudemas-01-jump",
   "availableTags": [
     "CTA",
     "SKOOL"
@@ -37,5 +38,6 @@
     "b74-claude-token-usage-tips": "pinned",
     "b81-dam-command-line": "pinned",
     "b86-claudemas-01-jump": "pinned"
-  }
+  },
+  "shadowResolution": 240
 }

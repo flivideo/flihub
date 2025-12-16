@@ -27,8 +27,7 @@
  * 4. **Local-only**: This server is designed for local development use only.
  *    It should NOT be exposed to the public internet.
  *
- * 5. **macOS only**: Currently only supports macOS. Future OS support would
- *    require platform-specific implementations.
+ * 5. **Cross-platform support**: FR-89 adds Windows/Linux support for folder operations.
  *
  * ## Future Candidates for /api/system/
  *
@@ -53,6 +52,87 @@ import type { Config } from '../../../shared/types.js';
 type FolderKey = 'ecamm' | 'downloads' | 'recordings' | 'safe' | 'trash' | 'images' | 'thumbs' | 'transcripts' | 'project' | 'final' | 's3Staging' | 'inbox' | 'shadows' | 'chapters';
 
 const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
+
+/**
+ * FR-89 Part 3: Cross-platform file explorer opener
+ * Opens a folder in the native file explorer for the current OS.
+ *
+ * @param folderPath - The path to open
+ * @returns Promise that resolves when the command completes
+ */
+function openInFileExplorer(folderPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const platform = os.platform();
+    let command: string;
+
+    switch (platform) {
+      case 'darwin':
+        // macOS: open in Finder
+        command = `open "${folderPath}"`;
+        break;
+      case 'win32':
+        // Windows: open in Explorer
+        // Use start command with empty title ("") to handle paths with spaces
+        command = `start "" "${folderPath}"`;
+        break;
+      case 'linux':
+        // Linux: use xdg-open
+        command = `xdg-open "${folderPath}"`;
+        break;
+      default:
+        reject(new Error(`Unsupported platform: ${platform}`));
+        return;
+    }
+
+    exec(command, (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+/**
+ * FR-89 Part 3: Cross-platform file opener
+ * Opens a file in its default application.
+ *
+ * @param filePath - The path to the file to open
+ * @returns Promise that resolves when the command completes
+ */
+function openInDefaultApp(filePath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const platform = os.platform();
+    let command: string;
+
+    switch (platform) {
+      case 'darwin':
+        // macOS: open in default app
+        command = `open "${filePath}"`;
+        break;
+      case 'win32':
+        // Windows: open in default app
+        command = `start "" "${filePath}"`;
+        break;
+      case 'linux':
+        // Linux: use xdg-open
+        command = `xdg-open "${filePath}"`;
+        break;
+      default:
+        reject(new Error(`Unsupported platform: ${platform}`));
+        return;
+    }
+
+    exec(command, (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
 
 export function createSystemRoutes(config: Config): Router {
   const router = Router();
@@ -129,16 +209,15 @@ export function createSystemRoutes(config: Config): Router {
       return;
     }
 
-    // macOS: open in Finder
-    exec(`open "${folderPath}"`, (error) => {
-      if (error) {
-        console.error('Failed to open folder:', error);
-        res.status(500).json({ success: false, error: 'Failed to open folder' });
-        return;
-      }
+    // FR-89 Part 3: Cross-platform folder opener
+    try {
+      await openInFileExplorer(folderPath);
       console.log(`Opened folder: ${folderPath}`);
       res.json({ success: true, path: folderPath });
-    });
+    } catch (error) {
+      console.error('Failed to open folder:', error);
+      res.status(500).json({ success: false, error: 'Failed to open folder' });
+    }
   });
 
   /**
@@ -207,16 +286,48 @@ export function createSystemRoutes(config: Config): Router {
       return;
     }
 
-    // macOS: open in default app
-    exec(`open "${filePath}"`, (error) => {
-      if (error) {
-        console.error('Failed to open file:', error);
-        res.status(500).json({ success: false, error: 'Failed to open file' });
-        return;
-      }
+    // FR-89 Part 3: Cross-platform file opener
+    try {
+      await openInDefaultApp(filePath);
       console.log(`Opened file: ${filePath}`);
       res.json({ success: true, path: filePath });
-    });
+    } catch (error) {
+      console.error('Failed to open file:', error);
+      res.status(500).json({ success: false, error: 'Failed to open file' });
+    }
+  });
+
+  /**
+   * GET /api/system/path-exists
+   *
+   * FR-89 Part 2: Check if a path exists on disk.
+   * Used by Config panel to show path existence indicators.
+   *
+   * Query params:
+   *   path: string - The path to check (must be a valid absolute path)
+   *
+   * Response:
+   *   { exists: boolean, path: string }
+   *
+   * Security: Path is expanded (~ resolved) but not restricted to config paths.
+   * This is safe because we're only checking existence, not executing anything.
+   */
+  router.get('/path-exists', async (req: Request, res: Response) => {
+    const pathToCheck = req.query.path as string;
+
+    if (!pathToCheck) {
+      res.status(400).json({ exists: false, error: 'Path is required' });
+      return;
+    }
+
+    try {
+      const expandedPath = expandPath(pathToCheck);
+      const exists = await fs.pathExists(expandedPath);
+      res.json({ exists, path: expandedPath });
+    } catch (error) {
+      console.error('Error checking path:', error);
+      res.json({ exists: false, path: pathToCheck, error: 'Failed to check path' });
+    }
   });
 
   return router;

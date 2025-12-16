@@ -50,10 +50,13 @@ const pendingFiles: Map<string, FileInfo> = new Map();
 
 // Load config from file, falling back to env vars, then defaults
 // NFR-6: Includes migration from targetDirectory to projectDirectory
+// FR-89 Part 5: Stores projectsRootDirectory + activeProject (derives projectDirectory)
 function loadConfig(): Config {
   const defaults: Config = {
     watchDirectory: process.env.WATCH_DIR || '~/Movies/Ecamm Live/',
-    projectDirectory: process.env.PROJECT_DIR || '/tmp/project/',
+    projectDirectory: '/tmp/project/',  // Derived from root + active
+    projectsRootDirectory: '~/dev/video-projects/v-appydave',
+    activeProject: '',
     fileExtensions: ['.mov'],
     availableTags: ['CTA', 'SKOOL'],  // NFR-2: Global tags (always visible)
     commonNames: [  // NFR-3: Default common names with rules
@@ -63,6 +66,7 @@ function loadConfig(): Config {
       { name: 'outro', suggestTags: ['ENDCARD'] },  // suggestTags appear only for this name
     ],
     imageSourceDirectory: process.env.IMAGE_SOURCE_DIR || '~/Downloads',  // FR-17
+    shadowResolution: 240,  // FR-89 Part 6: Default shadow resolution
   };
 
   try {
@@ -70,20 +74,48 @@ function loadConfig(): Config {
       const saved = fs.readJsonSync(CONFIG_FILE);
       console.log('Loaded config from:', CONFIG_FILE);
 
-      // NFR-6: Migrate old targetDirectory to projectDirectory
-      if (saved.targetDirectory && !saved.projectDirectory) {
-        console.log('Migrating targetDirectory to projectDirectory...');
+      let needsSave = false;
+
+      // NFR-6: Migrate old targetDirectory to projectDirectory (then split below)
+      if (saved.targetDirectory && !saved.projectDirectory && !saved.projectsRootDirectory) {
+        console.log('Migrating targetDirectory...');
         saved.projectDirectory = migrateTargetToProject(saved.targetDirectory);
         delete saved.targetDirectory;
-        // Save migrated config immediately
-        fs.writeJsonSync(CONFIG_FILE, {
+        needsSave = true;
+      }
+
+      // FR-89 Part 5: Migrate old projectDirectory to projectsRootDirectory + activeProject
+      if (saved.projectDirectory && !saved.projectsRootDirectory) {
+        console.log('Migrating projectDirectory to split format...');
+        saved.projectsRootDirectory = path.dirname(saved.projectDirectory);
+        saved.activeProject = path.basename(saved.projectDirectory);
+        delete saved.projectDirectory;  // Remove old field
+        needsSave = true;
+        console.log(`Migration complete: root=${saved.projectsRootDirectory}, active=${saved.activeProject}`);
+      }
+
+      // FR-89 Part 5: Derive projectDirectory from root + active (for backward compatibility)
+      if (saved.projectsRootDirectory && saved.activeProject) {
+        saved.projectDirectory = path.join(saved.projectsRootDirectory, saved.activeProject);
+      } else if (saved.projectsRootDirectory) {
+        saved.projectDirectory = saved.projectsRootDirectory;  // No active project yet
+      }
+
+      // Save migrated config if format changed
+      if (needsSave) {
+        const toSave: Record<string, unknown> = {
           watchDirectory: saved.watchDirectory || defaults.watchDirectory,
-          projectDirectory: saved.projectDirectory,
+          projectsRootDirectory: saved.projectsRootDirectory,
+          activeProject: saved.activeProject || '',
           availableTags: saved.availableTags || defaults.availableTags,
           commonNames: saved.commonNames || defaults.commonNames,
           imageSourceDirectory: saved.imageSourceDirectory || defaults.imageSourceDirectory,
-        }, { spaces: 2 });
-        console.log('Migration complete:', saved.projectDirectory);
+        };
+        if (saved.projectPriorities) toSave.projectPriorities = saved.projectPriorities;
+        if (saved.projectStages) toSave.projectStages = saved.projectStages;
+        if (saved.shadowResolution) toSave.shadowResolution = saved.shadowResolution;
+        fs.writeJsonSync(CONFIG_FILE, toSave, { spaces: 2 });
+        console.log('Config migration saved');
       }
 
       return { ...defaults, ...saved };
@@ -96,11 +128,14 @@ function loadConfig(): Config {
 }
 
 // Save config to file
+// FR-89 Part 5: Saves projectsRootDirectory + activeProject (not projectDirectory)
 function saveConfig(config: Config): void {
   try {
     const toSave: Record<string, unknown> = {
       watchDirectory: config.watchDirectory,
-      projectDirectory: config.projectDirectory,  // NFR-6: Renamed from targetDirectory
+      // FR-89 Part 5: Save split format
+      projectsRootDirectory: config.projectsRootDirectory,
+      activeProject: config.activeProject || '',
       availableTags: config.availableTags,   // NFR-2: Persist tags
       commonNames: config.commonNames,        // NFR-3: Persist common names
       imageSourceDirectory: config.imageSourceDirectory,  // FR-17: Persist image source
@@ -112,6 +147,10 @@ function saveConfig(config: Config): void {
     // FR-32: Only save projectStages if it has values
     if (config.projectStages && Object.keys(config.projectStages).length > 0) {
       toSave.projectStages = config.projectStages;
+    }
+    // FR-89 Part 6: Save shadow resolution if set
+    if (config.shadowResolution) {
+      toSave.shadowResolution = config.shadowResolution;
     }
     fs.writeJsonSync(CONFIG_FILE, toSave, { spaces: 2 });
     console.log('Config saved to:', CONFIG_FILE);
@@ -163,13 +202,31 @@ function startWatcher(watchDir: string): void {
 
 // Function to update config and restart watchers if needed
 // NFR-6: Uses WatcherManager for centralized watcher management
+// FR-89 Part 5: Handles projectsRootDirectory + activeProject
 function updateConfig(newConfig: Partial<Config>): Config {
   const oldConfig = { ...currentConfig };
   const watchDirChanged = newConfig.watchDirectory && newConfig.watchDirectory !== currentConfig.watchDirectory;
 
   if (newConfig.watchDirectory) currentConfig.watchDirectory = newConfig.watchDirectory;
-  if (newConfig.projectDirectory) currentConfig.projectDirectory = newConfig.projectDirectory;
   if (newConfig.imageSourceDirectory) currentConfig.imageSourceDirectory = newConfig.imageSourceDirectory;
+
+  // FR-89 Part 5: Handle split project directory fields
+  if (newConfig.projectsRootDirectory !== undefined) {
+    currentConfig.projectsRootDirectory = newConfig.projectsRootDirectory;
+  }
+  if (newConfig.activeProject !== undefined) {
+    currentConfig.activeProject = newConfig.activeProject;
+  }
+
+  // FR-89 Part 5: Derive projectDirectory from root + active (for backward compatibility)
+  if (currentConfig.projectsRootDirectory && currentConfig.activeProject) {
+    currentConfig.projectDirectory = path.join(currentConfig.projectsRootDirectory, currentConfig.activeProject);
+  } else if (currentConfig.projectsRootDirectory) {
+    currentConfig.projectDirectory = currentConfig.projectsRootDirectory;
+  }
+
+  // FR-89 Part 6: Handle shadow resolution
+  if (newConfig.shadowResolution !== undefined) currentConfig.shadowResolution = newConfig.shadowResolution;
 
   // Persist config to file
   saveConfig(currentConfig);

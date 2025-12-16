@@ -17,6 +17,16 @@ interface FileCardProps {
 export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }: FileCardProps) {
   const { chapter, sequence, name, tags, customTag } = namingState
 
+  // FR-89 DEBUG: Log naming state received by FileCard
+  console.log('[FR-89 DEBUG FileCard] namingState received:', {
+    chapter,
+    sequence,
+    name,
+    tags,
+    customTag,
+    file: file.filename,
+  })
+
   const renameMutation = useRename()
   const trashMutation = useTrashFile()
 

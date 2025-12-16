@@ -148,6 +148,7 @@ interface VideoMeta {
   segmentName?: string   // For segment videos, the full name without extension (e.g., "01-1-intro")
   chapterFiles?: RecordingFile[]  // For chapter videos, all segments in the chapter
   isShadow?: boolean     // FR-83: True if playing 240p preview video
+  sourceFile?: RecordingFile  // FR-88: Original file for fallback logic
 }
 
 export function WatchPage() {
@@ -291,24 +292,33 @@ export function WatchPage() {
   }, [chapters])
 
   // Find and play the next segment
+  // FR-88: Handle shadow files and include sourceFile for fallback
   const playNextSegment = useCallback(() => {
     if (!currentVideo || !projectCode || currentVideo.isChapter) return
 
     // Find current segment index
     const currentIndex = allSegments.findIndex(
-      seg => currentVideo.url.includes(seg.filename)
+      seg => currentVideo.url.includes(seg.filename) ||
+             currentVideo.url.includes(seg.filename.replace(/\.mov$/i, '.mp4'))
     )
 
     if (currentIndex === -1 || currentIndex >= allSegments.length - 1) return
 
     // Play next segment
     const nextSegment = allSegments[currentIndex + 1]
-    const url = getVideoUrl(projectCode, nextSegment.filename)
+    const isShadow = 'isShadow' in nextSegment && nextSegment.isShadow
+    const shadowFolder = nextSegment.folder === 'safe' ? 'safe' : 'recordings'
+    const url = getVideoUrl(projectCode, nextSegment.filename, 'recordings', {
+      isShadow,
+      shadowFolder,
+    })
     const segmentName = nextSegment.filename.replace(/\.mov$/, '')
     setCurrentVideo({
       url,
       title: nextSegment.filename,
       segmentName,
+      isShadow,
+      sourceFile: nextSegment,  // FR-88: Include for fallback
     })
 
     // Auto-play the video
@@ -321,6 +331,7 @@ export function WatchPage() {
 
   // Play a specific recording (segment)
   // FR-83: Shadow files play from recording-shadows/ folder as .mp4
+  // FR-88: Include source file for shadow fallback
   const playRecording = useCallback((file: RecordingFile) => {
     if (!projectCode) return
     const isShadow = 'isShadow' in file && file.isShadow
@@ -335,6 +346,7 @@ export function WatchPage() {
       title: file.filename,
       segmentName,
       isShadow,
+      sourceFile: file,  // FR-88: Keep reference for fallback
     })
   }, [projectCode])
 
@@ -354,6 +366,36 @@ export function WatchPage() {
       chapterFiles: chapter.files,
     })
   }, [projectCode])
+
+  // FR-88: Handle video load error with shadow fallback
+  const handleVideoError = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
+    console.error('Video error:', e)
+
+    // If we're already playing a shadow or no source file, nothing to fall back to
+    if (!currentVideo || currentVideo.isShadow || !currentVideo.sourceFile) {
+      console.log('[FR-88] No fallback available - already shadow or no source file')
+      return
+    }
+
+    const file = currentVideo.sourceFile
+    const hasShadow = 'hasShadow' in file && file.hasShadow
+
+    if (hasShadow && projectCode) {
+      console.log('[FR-88] Falling back to shadow video for:', file.filename)
+      const shadowFolder = file.folder === 'safe' ? 'safe' : 'recordings'
+      const shadowUrl = getVideoUrl(projectCode, file.filename, 'recordings', {
+        isShadow: true,
+        shadowFolder,
+      })
+      setCurrentVideo(prev => prev ? {
+        ...prev,
+        url: shadowUrl,
+        isShadow: true,
+      } : null)
+    } else {
+      console.log('[FR-88] No shadow available for fallback')
+    }
+  }, [currentVideo, projectCode])
 
   // Calculate total duration
   const totalDuration = useMemo(() => {
@@ -411,9 +453,7 @@ export function WatchPage() {
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
                 onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                onError={(e) => {
-                  console.error('Video error:', e)
-                }}
+                onError={handleVideoError}
                 onEnded={() => {
                   setIsPlaying(false)
                   if (autonext) {
@@ -607,21 +647,23 @@ export function WatchPage() {
                 const isShadow = 'isShadow' in file && file.isShadow
                 const hasShadow = 'hasShadow' in file && file.hasShadow
 
-                // FR-83: Status indicator - 📹 = Real | 👻 = Shadow only | 📹👻 = Real + Shadow
+                // FR-88 DEBUG: Log shadow flags for each file
+                console.log('[FR-88 DEBUG Segment]', file.filename, { isShadow, hasShadow, rawFile: file })
+
+                // FR-83/FR-88: Status indicator - show both playing state AND shadow status
+                // 📹 = Real | 👻 = Shadow only | 📹👻 = Real + Shadow
+                // ▶ prefix = currently playing
                 let statusIcon: string
                 let statusTitle: string
-                if (isPlaying) {
-                  statusIcon = '▶'
-                  statusTitle = 'Now playing'
-                } else if (isShadow) {
-                  statusIcon = '👻'
-                  statusTitle = 'Shadow only (collaborator mode)'
+                if (isShadow) {
+                  statusIcon = isPlaying ? '▶ 👻' : '👻'
+                  statusTitle = isPlaying ? 'Playing (shadow only)' : 'Shadow only (collaborator mode)'
                 } else if (hasShadow) {
-                  statusIcon = '📹👻'
-                  statusTitle = 'Real + Shadow'
+                  statusIcon = isPlaying ? '▶ 📹👻' : '📹👻'
+                  statusTitle = isPlaying ? 'Playing (real + shadow)' : 'Real + Shadow'
                 } else {
-                  statusIcon = '📹'
-                  statusTitle = 'Real recording (no shadow)'
+                  statusIcon = isPlaying ? '▶ 📹' : '📹'
+                  statusTitle = isPlaying ? 'Playing (real only)' : 'Real recording (no shadow)'
                 }
 
                 return (

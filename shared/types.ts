@@ -17,7 +17,12 @@ export interface CommonName {
 
 export interface Config {
   watchDirectory: string;
+  // FR-89 Part 5: Split projectDirectory into root + active project
+  // Old field (deprecated, migrated on load):
   projectDirectory: string;  // NFR-6: Renamed from targetDirectory - points to project root
+  // New fields:
+  projectsRootDirectory?: string;  // FR-89: Root directory containing all projects (e.g., ~/dev/video-projects/v-appydave)
+  activeProject?: string;          // FR-89: Currently selected project folder name (e.g., b67)
   fileExtensions: string[];
   availableTags: string[];   // NFR-2: Configurable tags
   commonNames: CommonName[]; // NFR-3: Quick-select common names
@@ -26,6 +31,7 @@ export interface Config {
   projectStageOverrides?: Record<string, ProjectStage>; // FR-80: Manual stage overrides (absent = auto-detect)
   projectStages?: ProjectStage[]; // FR-80: Configurable stage list (defaults to DEFAULT_PROJECT_STAGES)
   chapterRecordings?: ChapterRecordingConfig;  // FR-58: Chapter recording settings
+  shadowResolution?: number;  // FR-89 Part 6: Shadow video resolution (default: 240)
 }
 
 export interface RenameRequest {

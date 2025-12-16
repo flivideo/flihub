@@ -60,25 +60,32 @@ export function createRoutes(
   // NFR-6: Using projectDirectory with getProjectPaths()
   router.get('/suggested-naming', async (_req: Request, res: Response) => {
     try {
+      console.log('[FR-89 DEBUG suggested-naming] config.projectDirectory:', config.projectDirectory);
       const paths = getProjectPaths(expandPath(config.projectDirectory));
+      console.log('[FR-89 DEBUG suggested-naming] paths.recordings:', paths.recordings);
 
       // Check if directory exists
       if (!await fs.pathExists(paths.recordings)) {
-        res.json({
+        const defaultResponse = {
           chapter: '01',
           sequence: '1',
           name: 'intro',
           existingFiles: [],
-        } as SuggestedNaming);
+        } as SuggestedNaming;
+        console.log('[FR-89 DEBUG suggested-naming] Directory not found, returning defaults:', defaultResponse);
+        res.json(defaultResponse);
         return;
       }
 
       // Read all .mov files in recordings directory
       const files = await fs.readdir(paths.recordings);
       const movFiles = files.filter(f => f.endsWith('.mov')).sort();
+      console.log('[FR-89 DEBUG suggested-naming] Found mov files:', movFiles);
 
       const suggestion = calculateSuggested(movFiles);
-      res.json({ ...suggestion, existingFiles: movFiles } as SuggestedNaming);
+      const response = { ...suggestion, existingFiles: movFiles } as SuggestedNaming;
+      console.log('[FR-89 DEBUG suggested-naming] Returning suggestion:', response);
+      res.json(response);
     } catch (error) {
       console.error('Error calculating suggested naming:', error);
       res.status(500).json({
@@ -89,10 +96,24 @@ export function createRoutes(
   });
 
   // POST /api/config - Update configuration
-  // NFR-6: Using projectDirectory instead of targetDirectory
+  // FR-89: Support all config fields including split project directory
   router.post('/config', (req: Request, res: Response) => {
-    const { watchDirectory, projectDirectory } = req.body;
-    const updatedConfig = updateConfig({ watchDirectory, projectDirectory });
+    const {
+      watchDirectory,
+      projectDirectory,
+      projectsRootDirectory,
+      activeProject,
+      imageSourceDirectory,
+      shadowResolution,
+    } = req.body;
+    const updatedConfig = updateConfig({
+      watchDirectory,
+      projectDirectory,
+      projectsRootDirectory,
+      activeProject,
+      imageSourceDirectory,
+      shadowResolution,
+    });
     console.log('Config updated:', updatedConfig);
     res.json(updatedConfig);
   });

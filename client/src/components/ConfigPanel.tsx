@@ -1,14 +1,58 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useConfig, useUpdateConfig, useRefetchSuggestedNaming, useChapterRecordingConfig, useUpdateChapterRecordingConfig, useShadowStatus, useGenerateShadows, useGenerateAllShadows } from '../hooks/useApi'
 import { collapsePath } from '../utils/formatting'
 import { OpenFolderButton, LoadingSpinner, PageContainer } from './shared'
+import { API_URL } from '../config'
 
-// C-4: Basic path validation
+// FR-89 Part 2: Path existence status type
+type PathExistsStatus = 'unknown' | 'checking' | 'exists' | 'not-found'
+
+// FR-89 Part 4: Sanitize path input - strip quotes and whitespace
+function sanitizePath(path: string): { sanitized: string; hadQuotes: boolean } {
+  const trimmed = path.trim()
+  // Check for surrounding quotes (single or double)
+  const quoteMatch = trimmed.match(/^["'](.*)["']$/)
+  if (quoteMatch) {
+    return { sanitized: quoteMatch[1], hadQuotes: true }
+  }
+  return { sanitized: trimmed, hadQuotes: false }
+}
+
+// FR-89 Part 1: Cross-platform path validation
+// Accepts: ~ (Unix home), / (Unix absolute), C:\ (Windows drive), \\ (UNC/network)
 function validatePath(path: string): string | null {
   if (!path.trim()) return 'Path is required'
-  if (!path.startsWith('~') && !path.startsWith('/')) return 'Path must start with ~ or /'
+  // Cross-platform regex: Unix home, Unix absolute, Windows drive letter, UNC path
+  const crossPlatformPathRegex = /^(~|\/|[A-Za-z]:\\|\\\\)/
+  if (!crossPlatformPathRegex.test(path)) {
+    return 'Path must start with ~, /, C:\\, or \\\\'
+  }
   return null
+}
+
+// FR-89 Part 2: Path existence indicator component
+function PathExistsIndicator({ status, description }: { status: PathExistsStatus; description: string }) {
+  switch (status) {
+    case 'checking':
+      return <p className="text-xs text-gray-400 mt-1">Checking path...</p>
+    case 'exists':
+      return (
+        <p className="text-xs text-green-600 mt-1">
+          <span className="inline-block mr-1">✓</span>
+          {description}
+        </p>
+      )
+    case 'not-found':
+      return (
+        <p className="text-xs text-amber-600 mt-1">
+          <span className="inline-block mr-1">⚠</span>
+          Path not found
+        </p>
+      )
+    default:
+      return <p className="text-xs text-gray-400 mt-1">{description}</p>
+  }
 }
 
 export function ConfigPanel() {
@@ -26,9 +70,39 @@ export function ConfigPanel() {
   const generateAllShadows = useGenerateAllShadows()
 
   const [watchDirectory, setWatchDirectory] = useState('')
-  // NFR-6: Renamed from targetDirectory to projectDirectory
-  const [projectDirectory, setProjectDirectory] = useState('')
+  // FR-89 Part 5: Split into root + active project
+  const [projectsRootDirectory, setProjectsRootDirectory] = useState('')
+  const [activeProject, setActiveProject] = useState('')
   const [imageSourceDirectory, setImageSourceDirectory] = useState('')
+
+  // FR-89 Part 2: Path existence status for each directory field
+  const [watchDirExists, setWatchDirExists] = useState<PathExistsStatus>('unknown')
+  const [rootDirExists, setRootDirExists] = useState<PathExistsStatus>('unknown')
+  const [imageDirExists, setImageDirExists] = useState<PathExistsStatus>('unknown')
+
+  // FR-89 Part 2: Check path existence via API
+  const checkPathExists = useCallback(async (
+    path: string,
+    setStatus: React.Dispatch<React.SetStateAction<PathExistsStatus>>
+  ) => {
+    if (!path.trim()) {
+      setStatus('unknown')
+      return
+    }
+    // Don't check if validation fails
+    if (validatePath(path)) {
+      setStatus('unknown')
+      return
+    }
+    setStatus('checking')
+    try {
+      const response = await fetch(`${API_URL}/api/system/path-exists?path=${encodeURIComponent(path)}`)
+      const data = await response.json()
+      setStatus(data.exists ? 'exists' : 'not-found')
+    } catch {
+      setStatus('unknown')
+    }
+  }, [])
 
   // FR-76: Chapter recording defaults
   const [includeTitleSlides, setIncludeTitleSlides] = useState(false)
@@ -36,15 +110,32 @@ export function ConfigPanel() {
   const [resolution, setResolution] = useState<'720p' | '1080p'>('720p')
   const [autoGenerate, setAutoGenerate] = useState(false)
 
+  // FR-89 Part 6: Shadow resolution (240p, 180p, 160p)
+  const [shadowResolution, setShadowResolution] = useState<number>(240)
+
   // C-1: Initialize with collapsed paths (using ~)
-  // NFR-6: Using projectDirectory instead of targetDirectory
+  // FR-89 Part 5: Initialize split project directory fields
+  // FR-89 Part 2: Also check path existence on initial load
   useEffect(() => {
     if (config) {
-      setWatchDirectory(collapsePath(config.watchDirectory))
-      setProjectDirectory(collapsePath(config.projectDirectory))
-      setImageSourceDirectory(collapsePath(config.imageSourceDirectory))
+      const watchPath = collapsePath(config.watchDirectory)
+      const rootPath = collapsePath(config.projectsRootDirectory || '')
+      const imagePath = collapsePath(config.imageSourceDirectory)
+
+      setWatchDirectory(watchPath)
+      setProjectsRootDirectory(rootPath)
+      setActiveProject(config.activeProject || '')
+      setImageSourceDirectory(imagePath)
+
+      // FR-89 Part 6: Initialize shadow resolution
+      setShadowResolution(config.shadowResolution || 240)
+
+      // Check existence on load
+      checkPathExists(watchPath, setWatchDirExists)
+      checkPathExists(rootPath, setRootDirExists)
+      checkPathExists(imagePath, setImageDirExists)
     }
-  }, [config])
+  }, [config, checkPathExists])
 
   // FR-76: Initialize chapter recording config
   useEffect(() => {
@@ -57,11 +148,12 @@ export function ConfigPanel() {
   }, [chapterConfig])
 
   // C-2/C-3: Track if form has changes
-  // NFR-6: Using projectDirectory instead of targetDirectory
+  // FR-89 Part 5: Using split project directory fields
   const hasChanges = useMemo(() => {
     if (!config) return false
     const pathsChanged = collapsePath(config.watchDirectory) !== watchDirectory ||
-           collapsePath(config.projectDirectory) !== projectDirectory ||
+           collapsePath(config.projectsRootDirectory || '') !== projectsRootDirectory ||
+           (config.activeProject || '') !== activeProject ||
            collapsePath(config.imageSourceDirectory) !== imageSourceDirectory
 
     // FR-76: Check chapter config changes
@@ -72,14 +164,18 @@ export function ConfigPanel() {
       chapterConfig.config.autoGenerate !== autoGenerate
     )
 
-    return pathsChanged || chapterChanged
-  }, [config, watchDirectory, projectDirectory, imageSourceDirectory, chapterConfig, includeTitleSlides, slideDuration, resolution, autoGenerate])
+    // FR-89 Part 6: Check shadow resolution changes
+    const shadowChanged = (config.shadowResolution || 240) !== shadowResolution
+
+    return pathsChanged || chapterChanged || shadowChanged
+  }, [config, watchDirectory, projectsRootDirectory, activeProject, imageSourceDirectory, chapterConfig, includeTitleSlides, slideDuration, resolution, autoGenerate, shadowResolution])
 
   // C-4: Validation
+  // FR-89 Part 5: Validate root directory (activeProject is just a folder name, no validation needed)
   const watchError = validatePath(watchDirectory)
-  const projectError = validatePath(projectDirectory)
+  const rootError = validatePath(projectsRootDirectory)
   const imageSourceError = validatePath(imageSourceDirectory)
-  const hasErrors = !!(watchError || projectError || imageSourceError)
+  const hasErrors = !!(watchError || rootError || imageSourceError)
 
   const handleSave = async () => {
     if (hasErrors) {
@@ -87,12 +183,31 @@ export function ConfigPanel() {
       return
     }
 
+    // FR-89 Part 4: Sanitize paths before saving
+    const watchSanitized = sanitizePath(watchDirectory)
+    const rootSanitized = sanitizePath(projectsRootDirectory)
+    const imageSanitized = sanitizePath(imageSourceDirectory)
+
+    // Update state if sanitization changed values
+    if (watchSanitized.sanitized !== watchDirectory) setWatchDirectory(watchSanitized.sanitized)
+    if (rootSanitized.sanitized !== projectsRootDirectory) setProjectsRootDirectory(rootSanitized.sanitized)
+    if (imageSanitized.sanitized !== imageSourceDirectory) setImageSourceDirectory(imageSanitized.sanitized)
+
+    // Show toast if quotes were stripped
+    const quotesStripped = watchSanitized.hadQuotes || rootSanitized.hadQuotes || imageSanitized.hadQuotes
+    if (quotesStripped) {
+      toast.info('Quotes removed from path')
+    }
+
     try {
-      // NFR-6: Using projectDirectory instead of targetDirectory
+      // FR-89 Part 5: Send split project directory fields
+      // FR-89 Part 6: Include shadow resolution
       await updateConfig.mutateAsync({
-        watchDirectory,
-        projectDirectory,
-        imageSourceDirectory,
+        watchDirectory: watchSanitized.sanitized,
+        projectsRootDirectory: rootSanitized.sanitized,
+        activeProject: activeProject.trim(),
+        imageSourceDirectory: imageSanitized.sanitized,
+        shadowResolution,
       })
 
       // FR-76: Save chapter recording defaults
@@ -154,7 +269,11 @@ export function ConfigPanel() {
             <input
               type="text"
               value={watchDirectory}
-              onChange={(e) => setWatchDirectory(e.target.value)}
+              onChange={(e) => {
+                setWatchDirectory(e.target.value)
+                setWatchDirExists('unknown')  // Reset status on change
+              }}
+              onBlur={() => checkPathExists(watchDirectory, setWatchDirExists)}
               className={`flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 watchError ? 'border-red-300 bg-red-50' : 'border-gray-300'
               }`}
@@ -165,35 +284,52 @@ export function ConfigPanel() {
           {watchError ? (
             <p className="text-xs text-red-500 mt-1">{watchError}</p>
           ) : (
-            <p className="text-xs text-gray-400 mt-1">
-              Directory where Ecamm Live saves recordings
-            </p>
+            <PathExistsIndicator status={watchDirExists} description="Directory where Ecamm Live saves recordings" />
+          )}
+        </div>
+
+        {/* FR-89 Part 5: Split into Projects Root + Active Project */}
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">
+            Projects Root Directory
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={projectsRootDirectory}
+              onChange={(e) => {
+                setProjectsRootDirectory(e.target.value)
+                setRootDirExists('unknown')  // Reset status on change
+              }}
+              onBlur={() => checkPathExists(projectsRootDirectory, setRootDirExists)}
+              className={`flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                rootError ? 'border-red-300 bg-red-50' : 'border-gray-300'
+              }`}
+              placeholder="~/dev/video-projects/v-appydave"
+            />
+            <OpenFolderButton folder="project" />
+          </div>
+          {rootError ? (
+            <p className="text-xs text-red-500 mt-1">{rootError}</p>
+          ) : (
+            <PathExistsIndicator status={rootDirExists} description="Directory containing all project folders" />
           )}
         </div>
 
         <div>
           <label className="block text-sm text-gray-600 mb-1">
-            Project Directory
+            Active Project
           </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={projectDirectory}
-              onChange={(e) => setProjectDirectory(e.target.value)}
-              className={`flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                projectError ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
-              placeholder="~/dev/video-projects/v-appydave/b72-project"
-            />
-            <OpenFolderButton folder="project" />
-          </div>
-          {projectError ? (
-            <p className="text-xs text-red-500 mt-1">{projectError}</p>
-          ) : (
-            <p className="text-xs text-gray-400 mt-1">
-              Project root directory (contains recordings/, assets/, etc.)
-            </p>
-          )}
+          <input
+            type="text"
+            value={activeProject}
+            onChange={(e) => setActiveProject(e.target.value)}
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="b72-project"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Folder name within the root (or select from Projects panel)
+          </p>
         </div>
 
         <div>
@@ -204,7 +340,11 @@ export function ConfigPanel() {
             <input
               type="text"
               value={imageSourceDirectory}
-              onChange={(e) => setImageSourceDirectory(e.target.value)}
+              onChange={(e) => {
+                setImageSourceDirectory(e.target.value)
+                setImageDirExists('unknown')  // Reset status on change
+              }}
+              onBlur={() => checkPathExists(imageSourceDirectory, setImageDirExists)}
               className={`flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 imageSourceError ? 'border-red-300 bg-red-50' : 'border-gray-300'
               }`}
@@ -215,9 +355,7 @@ export function ConfigPanel() {
           {imageSourceError ? (
             <p className="text-xs text-red-500 mt-1">{imageSourceError}</p>
           ) : (
-            <p className="text-xs text-gray-400 mt-1">
-              Directory to scan for incoming images (Assets page)
-            </p>
+            <PathExistsIndicator status={imageDirExists} description="Directory to scan for incoming images (Assets page)" />
           )}
         </div>
 
@@ -318,6 +456,51 @@ export function ConfigPanel() {
           <p className="text-xs text-gray-500 mb-3">
             Shadow files allow collaborators to see project structure without the actual video files.
           </p>
+
+          {/* FR-89 Part 6: Shadow Resolution Selection */}
+          <div className="mb-4">
+            <label className="block text-sm text-gray-600 mb-2">
+              Default Shadow Resolution
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="shadowResolution"
+                  value={240}
+                  checked={shadowResolution === 240}
+                  onChange={() => setShadowResolution(240)}
+                  className="text-purple-500"
+                />
+                <span className="text-sm">240p</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="shadowResolution"
+                  value={180}
+                  checked={shadowResolution === 180}
+                  onChange={() => setShadowResolution(180)}
+                  className="text-purple-500"
+                />
+                <span className="text-sm">180p</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="shadowResolution"
+                  value={160}
+                  checked={shadowResolution === 160}
+                  onChange={() => setShadowResolution(160)}
+                  className="text-purple-500"
+                />
+                <span className="text-sm">160p</span>
+              </label>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              Lower = smaller files, less detail
+            </p>
+          </div>
 
           {/* Watch Directory Status */}
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">

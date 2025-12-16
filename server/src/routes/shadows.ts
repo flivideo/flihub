@@ -58,12 +58,14 @@ export function createShadowsRouter(getConfig: () => Config) {
   });
 
   // POST /api/shadows/generate - Generate shadows for current project
+  // FR-89 Part 6: Uses config.shadowResolution for resolution
   router.post('/generate', async (_req: Request, res: Response) => {
     const config = getConfig();
 
     try {
       const projectPath = expandPath(config.projectDirectory);
-      const result = await generateProjectShadows(projectPath);
+      const resolution = config.shadowResolution || 240;
+      const result = await generateProjectShadows(projectPath, undefined, resolution);
 
       const response: ShadowGenerateResponse = {
         success: true,
@@ -84,9 +86,13 @@ export function createShadowsRouter(getConfig: () => Config) {
   });
 
   // POST /api/shadows/generate-all - Generate shadows for all projects
+  // FR-89 Part 6: Uses config.shadowResolution for resolution
   router.post('/generate-all', async (_req: Request, res: Response) => {
+    const config = getConfig();
+
     try {
       const projectsDir = expandPath(PROJECTS_ROOT);
+      const resolution = config.shadowResolution || 240;
 
       // Get all project directories
       const entries = await readDirSafe(projectsDir);
@@ -101,7 +107,7 @@ export function createShadowsRouter(getConfig: () => Config) {
 
       for (const dir of projectDirs) {
         const projectPath = path.join(projectsDir, dir);
-        const result = await generateProjectShadows(projectPath);
+        const result = await generateProjectShadows(projectPath, undefined, resolution);
 
         totalCreated += result.created;
         totalSkipped += result.skipped;

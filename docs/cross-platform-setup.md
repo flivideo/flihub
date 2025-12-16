@@ -61,18 +61,40 @@ The app runs on http://localhost:5101
 
 ### First-Time Setup
 
-On first run, you'll need to configure two paths in the Config tab:
+On first run, you'll need to configure paths in the Config tab.
 
-#### Project Directory (Required)
+#### Path Format Examples
 
-Set this to your local video projects folder:
+FliHub supports paths from all major platforms:
 
-**Windows example:**
-```
-C:\Users\YourName\video-projects\v-appydave
-```
+| Platform | Format | Example |
+|----------|--------|---------|
+| **Mac** | Unix paths | `~/dev/video-projects/v-appydave` or `/Users/jan/projects` |
+| **Windows** | Drive letters | `C:\Users\Jan\video-projects\v-appydave` |
+| **Windows** | UNC paths | `\\wsl$\Ubuntu\home\jan\projects` |
+| **Linux** | Unix paths | `/home/jan/video-projects` |
+
+**Tips:**
+- Paths can start with `~` (home), `/` (Unix root), `C:\` (Windows drive), or `\\` (UNC)
+- The Config panel shows ✓ if the path exists, ⚠ if not found
+- Pasted paths with quotes are automatically cleaned (e.g., `"C:\path"` → `C:\path`)
+
+#### Projects Root Directory (Required)
+
+This is the parent folder containing all your project folders:
+
+**Examples:**
+- Mac: `~/dev/video-projects/v-appydave`
+- Windows: `C:\Users\Jan\video-projects\v-appydave`
+- WSL: `\\wsl$\Ubuntu\home\jan\video-projects\v-appydave`
 
 This folder should contain project subfolders like `b64-bmad-claude-sdk`, `b71-bmad-poem`, etc.
+
+#### Active Project
+
+The currently selected project folder name (e.g., `b71-bmad-poem`). You can:
+- Type the folder name directly, or
+- Select from the Projects panel
 
 #### Watch Directory (Optional - Leave Blank)
 
@@ -93,7 +115,8 @@ This is expected and fine - you're not recording videos.
 ```json
 {
   "watchDirectory": "",
-  "projectDirectory": "C:\\Users\\Jan\\video-projects\\v-appydave",
+  "projectsRootDirectory": "C:\\Users\\Jan\\video-projects\\v-appydave",
+  "activeProject": "b71-bmad-poem",
   "imageSourceDirectory": "C:\\Users\\Jan\\Downloads"
 }
 ```

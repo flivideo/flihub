@@ -20,16 +20,21 @@ import { spawn } from 'child_process';
 import { readDirSafe, statSafe } from './filesystem.js';
 
 /**
- * Shadow video settings - 240p for small file size while maintaining usability
+ * Shadow video settings
+ * FR-89 Part 6: height is now configurable via config.shadowResolution
  */
 const SHADOW_SETTINGS = {
-  height: 240,           // 240p resolution
+  defaultHeight: 240,    // Default 240p, configurable via config.shadowResolution
   videoCodec: 'libx264',
   videoPreset: 'fast',   // Balance speed vs compression
   videoCrf: 28,          // Quality level (lower = better, 28 is reasonable for preview)
   audioCodec: 'aac',
   audioBitrate: '128k',  // Good enough for Whisper transcription
 };
+
+// FR-89 Part 6: Valid shadow resolutions
+export const VALID_SHADOW_RESOLUTIONS = [240, 180, 160] as const;
+export type ShadowResolution = typeof VALID_SHADOW_RESOLUTIONS[number];
 
 /**
  * Get video duration using ffprobe
@@ -62,13 +67,15 @@ export async function getVideoDuration(videoPath: string): Promise<number | null
 }
 
 /**
- * Create shadow video file (240p preview) for a source video
+ * Create shadow video file (preview) for a source video
+ * FR-89 Part 6: Resolution is now configurable (default 240p)
  * Returns a promise that resolves when transcoding is complete
  */
 export async function createShadowFile(
   videoPath: string,
   shadowDir: string,
-  onProgress?: (percent: number) => void
+  onProgress?: (percent: number) => void,
+  resolution: number = SHADOW_SETTINGS.defaultHeight
 ): Promise<{ success: boolean; shadowPath?: string; error?: string }> {
   try {
     const videoFilename = path.basename(videoPath);
@@ -93,11 +100,11 @@ export async function createShadowFile(
     // Ensure shadow directory exists
     await fs.ensureDir(shadowDir);
 
-    // Transcode to 240p using FFmpeg
+    // FR-89 Part 6: Transcode using configurable resolution
     return new Promise((resolve) => {
       const ffmpeg = spawn('ffmpeg', [
         '-i', videoPath,
-        '-vf', `scale=-2:${SHADOW_SETTINGS.height}`,  // -2 maintains aspect ratio with even width
+        '-vf', `scale=-2:${resolution}`,  // -2 maintains aspect ratio with even width
         '-c:v', SHADOW_SETTINGS.videoCodec,
         '-preset', SHADOW_SETTINGS.videoPreset,
         '-crf', SHADOW_SETTINGS.videoCrf.toString(),
@@ -260,11 +267,13 @@ export async function getShadowCounts(
 
 /**
  * Generate shadows for all recordings in a project that don't have them
+ * FR-89 Part 6: Resolution is now configurable (default 240p)
  * Returns progress updates via onProgress callback
  */
 export async function generateProjectShadows(
   projectPath: string,
-  onProgress?: (current: number, total: number, filename: string) => void
+  onProgress?: (current: number, total: number, filename: string) => void,
+  resolution: number = SHADOW_SETTINGS.defaultHeight
 ): Promise<{ created: number; skipped: number; errors: string[] }> {
   const recordingsDir = path.join(projectPath, 'recordings');
   const safeDir = path.join(projectPath, 'recordings', '-safe');
@@ -308,7 +317,7 @@ export async function generateProjectShadows(
       onProgress(i + 1, total, label);
     }
 
-    const result = await createShadowFile(videoPath, targetShadowDir);
+    const result = await createShadowFile(videoPath, targetShadowDir, undefined, resolution);
 
     if (result.success) {
       created++;

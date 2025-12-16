@@ -102,11 +102,31 @@ function App() {
   // FR-4: Apply suggested naming when project directory changes or on initial load
   // NFR-6: Renamed from targetDirectory to projectDirectory
   useEffect(() => {
+    console.log('[FR-89 DEBUG App.tsx] useEffect triggered:', {
+      hasSuggestedNaming: !!suggestedNaming,
+      suggestedNaming,
+      configProjectDir: config?.projectDirectory,
+      configActiveProject: config?.activeProject,
+      configRootDir: config?.projectsRootDirectory,
+      previousProjectDir: previousProjectDir.current,
+    })
+
     if (suggestedNaming) {
       const isInitialLoad = previousProjectDir.current === undefined
       const projectDirChanged = previousProjectDir.current !== config?.projectDirectory
 
+      console.log('[FR-89 DEBUG App.tsx] Update conditions:', {
+        isInitialLoad,
+        projectDirChanged,
+        willUpdate: isInitialLoad || projectDirChanged,
+      })
+
       if (isInitialLoad || projectDirChanged) {
+        console.log('[FR-89 DEBUG App.tsx] Setting namingState to:', {
+          chapter: suggestedNaming.chapter,
+          sequence: suggestedNaming.sequence,
+          name: suggestedNaming.name,
+        })
         setNamingState({
           chapter: suggestedNaming.chapter,
           sequence: suggestedNaming.sequence,
@@ -121,6 +141,7 @@ function App() {
       }
 
       previousProjectDir.current = config?.projectDirectory
+      console.log('[FR-89 DEBUG App.tsx] Updated previousProjectDir to:', previousProjectDir.current)
     }
   }, [suggestedNaming, config?.projectDirectory])
 
@@ -128,11 +149,19 @@ function App() {
   // FR-16: Show discard modal if other files remain
   // FR-54: Custom tag now persists after rename (user must clear manually)
   const handleRenamed = useCallback((filePath: string) => {
+    console.log('[FR-89 DEBUG App.tsx] handleRenamed called for:', filePath)
     removeFile(filePath)
-    setNamingState((prev) => ({
-      ...prev,
-      sequence: String(parseInt(prev.sequence || '0', 10) + 1),
-    }))
+    setNamingState((prev) => {
+      const newState = {
+        ...prev,
+        sequence: String(parseInt(prev.sequence || '0', 10) + 1),
+      }
+      console.log('[FR-89 DEBUG App.tsx] handleRenamed - updating namingState:', {
+        prev,
+        newState,
+      })
+      return newState
+    })
 
     // FR-16: Check if other files remain (files state hasn't updated yet, so subtract 1)
     const remainingCount = files.length - 1
@@ -234,23 +263,35 @@ function App() {
   }, [config?.projectDirectory])
 
   // FR-3: New Chapter button
+  // Preserve the name from previous chapter - user can change if needed
   const handleNewChapter = useCallback(() => {
+    console.log('[FR-89 DEBUG App.tsx] handleNewChapter called')
     setNamingState((prev) => {
       const currentChapter = parseInt(prev.chapter || '01', 10)
       const nextChapter = String(Math.min(99, currentChapter + 1)).padStart(2, '0')
-      return {
+      const newState = {
         chapter: nextChapter,
         sequence: '1',
-        name: '',
+        name: prev.name || 'intro',  // Preserve previous name, default to 'intro'
         tags: [],
         customTag: '',
       }
+      console.log('[FR-89 DEBUG App.tsx] handleNewChapter - updating namingState:', {
+        prev,
+        newState,
+      })
+      return newState
     })
   }, [])
 
   // Update individual naming fields
   const updateNaming = useCallback((field: keyof NamingState, value: string | string[]) => {
-    setNamingState((prev) => ({ ...prev, [field]: value }))
+    console.log('[FR-89 DEBUG App.tsx] updateNaming called:', { field, value })
+    setNamingState((prev) => {
+      const newState = { ...prev, [field]: value }
+      console.log('[FR-89 DEBUG App.tsx] updateNaming - state update:', { prev, newState })
+      return newState
+    })
   }, [])
 
   // FR-8: Best take detection (extracted to hook)

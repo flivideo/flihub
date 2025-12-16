@@ -295,11 +295,12 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   // NFR-85: Subscribe to transcript changes (updates transcript % in table)
   useTranscriptsSocket()
 
-  // FR-11: Switch to a project by updating project directory
-  const handleSelectProject = async (projectPath: string, projectCode: string) => {
+  // FR-11: Switch to a project by updating active project
+  // FR-89 Part 5: Now sends activeProject instead of full projectDirectory
+  const handleSelectProject = async (_projectPath: string, projectCode: string) => {
     try {
       await updateConfig.mutateAsync({
-        projectDirectory: projectPath,
+        activeProject: projectCode,
       })
       refetchSuggestedNaming()
       toast.success(`Switched to project: ${projectCode}`)
@@ -309,10 +310,12 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   }
 
   // Check if a project is currently selected
+  // FR-89 Part 5: Compare against activeProject
   const isProjectSelected = (projectPath: string) => {
-    if (!config?.projectDirectory) return false
-    return config.projectDirectory === projectPath ||
-           config.projectDirectory === `${projectPath}/`
+    if (!config?.activeProject) return false
+    // Extract project code from path (basename)
+    const projectCode = projectPath.split('/').pop() || ''
+    return config.activeProject === projectCode
   }
 
   // FR-32: Handle priority click (cycle through priorities)
