@@ -262,7 +262,8 @@ const thumbRoutes = createThumbRoutes(currentConfig);
 app.use('/api/thumbs', thumbRoutes);
 
 // FR-29: Setup system routes for folder operations
-const systemRoutes = createSystemRoutes(currentConfig);
+// FR-90: Pass watcherManager to system routes
+const systemRoutes = createSystemRoutes(currentConfig, watcherManager);
 app.use('/api/system', systemRoutes);
 
 // FR-32: Setup project routes for stats and priority management

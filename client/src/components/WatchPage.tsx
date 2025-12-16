@@ -42,11 +42,12 @@ const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3, 4]
 const DEFAULT_SPEED = 2
 
 // FR-71: Size options
-type VideoSize = 'normal' | 'large' | 'xl'
+// FR-91: Simplified to just N and L
+type VideoSize = 'normal' | 'large'
+// FR-91: Removed XL option
 const SIZE_LABELS: Record<VideoSize, string> = {
   normal: 'N',
   large: 'L',
-  xl: 'XL',
 }
 
 // FR-71: localStorage keys
@@ -57,11 +58,11 @@ const STORAGE_KEYS = {
   autonext: 'flihub:watch:autonext',
 }
 
-// FR-71: Size CSS classes
+// FR-71/FR-91: Size CSS classes
+// N = 896px (max-w-4xl), L = breaks out of container to ~1280px
 const SIZE_CLASSES: Record<VideoSize, string> = {
   normal: 'max-w-4xl mx-auto',
-  large: 'max-w-6xl mx-auto',
-  xl: 'max-w-full px-4',
+  large: 'w-[calc(100vw-2rem)] max-w-7xl relative left-1/2 -translate-x-1/2',  // Break out to viewport
 }
 
 // Chapter group with files and timing
@@ -165,7 +166,9 @@ export function WatchPage() {
   })
   const [videoSize, setVideoSize] = useState<VideoSize>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.size)
-    return (saved as VideoSize) || 'normal'
+    // FR-91: Validate saved value (xl was removed)
+    if (saved === 'normal' || saved === 'large') return saved
+    return 'normal'
   })
 
   // FR-75/FR-77: Transcript panel collapsed state

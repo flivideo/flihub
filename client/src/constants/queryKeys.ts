@@ -44,4 +44,6 @@ export const QUERY_KEYS = {
   chapterRecordingStatus: ['chapter-recording-status'] as const,
   // FR-83: Shadow recording management
   shadowStatus: ['shadow-status'] as const,
+  // FR-90: File watcher management
+  watchers: ['watchers'] as const,
 } as const

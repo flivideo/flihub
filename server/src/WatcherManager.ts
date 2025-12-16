@@ -258,4 +258,25 @@ export class WatcherManager {
     }
     console.log('All watchers closed');
   }
+
+  /**
+   * FR-90: Get info about all active watchers
+   */
+  getWatcherInfo(): Array<{ name: string; pattern: string | string[]; status: 'active' | 'error' }> {
+    const info: Array<{ name: string; pattern: string | string[]; status: 'active' | 'error' }> = [];
+
+    for (const [name, watcher] of this.watchers) {
+      // Get the watched paths from chokidar
+      const watched = watcher.getWatched();
+      const paths = Object.keys(watched);
+
+      info.push({
+        name,
+        pattern: paths.length > 0 ? paths : 'No paths watched',
+        status: 'active',
+      });
+    }
+
+    return info;
+  }
 }

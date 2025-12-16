@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
-import { useConfig, useUpdateConfig, useRefetchSuggestedNaming, useChapterRecordingConfig, useUpdateChapterRecordingConfig, useShadowStatus, useGenerateShadows, useGenerateAllShadows } from '../hooks/useApi'
+import { useConfig, useUpdateConfig, useRefetchSuggestedNaming, useChapterRecordingConfig, useUpdateChapterRecordingConfig, useShadowStatus, useGenerateShadows, useGenerateAllShadows, useWatchers } from '../hooks/useApi'
 import { collapsePath } from '../utils/formatting'
 import { OpenFolderButton, LoadingSpinner, PageContainer } from './shared'
 import { API_URL } from '../config'
@@ -68,6 +68,10 @@ export function ConfigPanel() {
   const { data: shadowStatus, isLoading: shadowStatusLoading, refetch: refetchShadowStatus } = useShadowStatus()
   const generateShadows = useGenerateShadows()
   const generateAllShadows = useGenerateAllShadows()
+
+  // FR-90: File watchers
+  const { data: watchersData } = useWatchers()
+  const [showWatchers, setShowWatchers] = useState(false)
 
   const [watchDirectory, setWatchDirectory] = useState('')
   // FR-89 Part 5: Split into root + active project
@@ -320,15 +324,18 @@ export function ConfigPanel() {
           <label className="block text-sm text-gray-600 mb-1">
             Active Project
           </label>
-          <input
-            type="text"
-            value={activeProject}
-            onChange={(e) => setActiveProject(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="b72-project"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={activeProject}
+              readOnly
+              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded bg-gray-50 text-gray-600 cursor-not-allowed"
+              placeholder="(none selected)"
+            />
+            <OpenFolderButton folder="project" />
+          </div>
           <p className="text-xs text-gray-400 mt-1">
-            Folder name within the root (or select from Projects panel)
+            Select from Projects panel to change active project
           </p>
         </div>
 
@@ -509,7 +516,7 @@ export function ConfigPanel() {
                 <div className="flex items-center gap-2">
                   <span className="text-green-500">🟢</span>
                   <span className="text-sm text-gray-700">
-                    Watching: <code className="text-xs bg-gray-200 px-1 rounded">{collapsePath(shadowStatus.watchDirectory.path)}</code>
+                    Ecamm: <code className="text-xs bg-gray-200 px-1 rounded">{collapsePath(shadowStatus.watchDirectory.path)}</code>
                   </span>
                 </div>
               ) : shadowStatus.watchDirectory.configured ? (
@@ -529,6 +536,38 @@ export function ConfigPanel() {
               <span className="text-sm text-gray-400">Loading status...</span>
             ) : (
               <span className="text-sm text-gray-400">Unable to load status</span>
+            )}
+
+            {/* FR-90: All Active Watchers */}
+            {watchersData?.watchers && watchersData.watchers.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <button
+                  onClick={() => setShowWatchers(!showWatchers)}
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                >
+                  <span className={`transform transition-transform ${showWatchers ? 'rotate-90' : ''}`}>▶</span>
+                  <span>{watchersData.watchers.length} active watchers</span>
+                </button>
+                {showWatchers && (
+                  <div className="mt-2 space-y-1.5 text-xs">
+                    {watchersData.watchers.map((watcher, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <span className="text-green-500 mt-0.5">●</span>
+                        <div>
+                          <span className="font-medium text-gray-600">{watcher.name}</span>
+                          <div className="text-gray-400">
+                            {Array.isArray(watcher.pattern)
+                              ? watcher.pattern.map((p, i) => (
+                                  <div key={i}>{collapsePath(p)}</div>
+                                ))
+                              : collapsePath(watcher.pattern)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

@@ -134,7 +134,10 @@ function openInDefaultApp(filePath: string): Promise<void> {
   });
 }
 
-export function createSystemRoutes(config: Config): Router {
+// FR-90: Import WatcherManager type
+import type { WatcherManager } from '../WatcherManager.js';
+
+export function createSystemRoutes(config: Config, watcherManager?: WatcherManager): Router {
   const router = Router();
 
   /**
@@ -328,6 +331,25 @@ export function createSystemRoutes(config: Config): Router {
       console.error('Error checking path:', error);
       res.json({ exists: false, path: pathToCheck, error: 'Failed to check path' });
     }
+  });
+
+  /**
+   * GET /api/system/watchers
+   *
+   * FR-90: Get list of all active file watchers.
+   * Used by Config panel to show watcher status.
+   *
+   * Response:
+   *   { watchers: Array<{ name: string, pattern: string | string[], status: string }> }
+   */
+  router.get('/watchers', (_req: Request, res: Response) => {
+    if (!watcherManager) {
+      res.json({ watchers: [] });
+      return;
+    }
+
+    const watchers = watcherManager.getWatcherInfo();
+    res.json({ watchers });
   });
 
   return router;

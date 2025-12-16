@@ -544,3 +544,17 @@ export function useGenerateAllShadows() {
     },
   })
 }
+
+// FR-90: Get active file watchers
+interface WatcherInfo {
+  name: string
+  pattern: string | string[]
+  status: 'active' | 'error'
+}
+
+export function useWatchers() {
+  return useQuery({
+    queryKey: QUERY_KEYS.watchers,
+    queryFn: () => fetchApi<{ watchers: WatcherInfo[] }>('/api/system/watchers'),
+  })
+}
