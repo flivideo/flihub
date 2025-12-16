@@ -324,7 +324,7 @@ function App() {
           <div className="py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
               <h1 className="text-xl font-semibold text-gray-900 flex-shrink-0">FliHub</h1>
-              {config?.projectDirectory && (
+              {config?.activeProject && (
                 <>
                   <span className="text-gray-400 flex-shrink-0">›</span>
                   {/* FR-43: Project switcher dropdown */}
