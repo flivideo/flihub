@@ -108,6 +108,7 @@ export interface RecordingFile {
     folder: 'recordings' | 'safe';
     isShadow?: boolean;
     hasShadow?: boolean;
+    shadowSize?: number | null;
 }
 export interface ShadowStatusResponse {
     currentProject: {
@@ -497,6 +498,7 @@ export interface QueryRecording {
     hasTranscript: boolean;
     isShadow?: boolean;
     hasShadow?: boolean;
+    shadowSize?: number | null;
 }
 export interface QueryTranscript {
     filename: string;
@@ -588,4 +590,14 @@ export interface ChapterRecordingStatusResponse {
         totalDuration: number;
     }>;
     existing: string[];
+}
+export interface EnvironmentResponse {
+    platform: 'win32' | 'linux' | 'darwin';
+    isWSL: boolean;
+    pathFormat: 'windows' | 'linux';
+    guidance: {
+        nativeFiles: string;
+        windowsFiles: string;
+        wslFiles: string;
+    };
 }

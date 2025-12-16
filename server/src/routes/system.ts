@@ -74,8 +74,17 @@ function openInFileExplorer(folderPath: string): Promise<void> {
         command = `start "" "${folderPath}"`;
         break;
       case 'linux':
-        // Linux: use xdg-open
-        command = `xdg-open "${folderPath}"`;
+        // FR-101: Detect WSL (has Microsoft in /proc/version)
+        const isWSLExplorer = fs.existsSync('/proc/version') &&
+                      fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
+
+        if (isWSLExplorer) {
+          // WSL: use Windows explorer.exe
+          command = `explorer.exe "${folderPath}"`;
+        } else {
+          // Native Linux: use xdg-open
+          command = `xdg-open "${folderPath}"`;
+        }
         break;
       default:
         reject(new Error(`Unsupported platform: ${platform}`));
@@ -114,8 +123,17 @@ function openInDefaultApp(filePath: string): Promise<void> {
         command = `start "" "${filePath}"`;
         break;
       case 'linux':
-        // Linux: use xdg-open
-        command = `xdg-open "${filePath}"`;
+        // FR-101: Detect WSL (has Microsoft in /proc/version)
+        const isWSLApp = fs.existsSync('/proc/version') &&
+                      fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
+
+        if (isWSLApp) {
+          // WSL: use Windows explorer.exe to open file in default app
+          command = `explorer.exe "${filePath}"`;
+        } else {
+          // Native Linux: use xdg-open
+          command = `xdg-open "${filePath}"`;
+        }
         break;
       default:
         reject(new Error(`Unsupported platform: ${platform}`));
