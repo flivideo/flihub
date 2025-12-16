@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import type {
   Config,
   RenameRequest,
@@ -460,7 +461,7 @@ export function useInboxFileContent(
   })
 }
 
-// FR-64: Open inbox file in external application (browser for HTML)
+/// FR-64: Open inbox file in external application (browser for HTML)
 export function useOpenInboxFile() {
   return useMutation({
     mutationFn: ({ subfolder, filename }: { subfolder: string; filename: string }) =>
@@ -468,6 +469,12 @@ export function useOpenInboxFile() {
         method: 'POST',
         body: JSON.stringify({ subfolder, filename }),
       }),
+    onSuccess: () => {
+      toast.success('File opened')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to open file')
+    },
   })
 }
 

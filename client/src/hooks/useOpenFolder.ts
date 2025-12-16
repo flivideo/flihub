@@ -29,6 +29,9 @@ export function useOpenFolder() {
       }
       return res.json()
     },
+    onSuccess: () => {
+      toast.success('Folder opened')
+    },
     onError: (error: Error) => {
       toast.error(error.message)
     },

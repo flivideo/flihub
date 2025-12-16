@@ -192,6 +192,37 @@ Jan → You (capture & format) → David → PO (for new requirements)
 
 ---
 
+## Git Commands for Jan
+
+### Getting Latest Updates (Normal)
+
+```bash
+git pull
+```
+
+### When Branches Diverge
+
+If you see "divergent branches" or "non-fast-forward" errors, your local copy is out of sync. Since you don't make code changes, just reset to match GitHub:
+
+```bash
+git fetch origin
+git reset --hard origin/main
+```
+
+This throws away your local copy and replaces it with whatever David has pushed. **Always safe for you** since you don't modify code.
+
+### After Pulling - Restart Server
+
+Always restart the server after pulling updates:
+
+```bash
+# Stop the server (Ctrl+C in terminal)
+npm install    # In case dependencies changed
+npm run dev    # Start fresh
+```
+
+---
+
 ## Session Flow
 
 1. Jan describes a problem
