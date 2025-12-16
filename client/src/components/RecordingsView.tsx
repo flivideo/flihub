@@ -530,6 +530,15 @@ export function RecordingsView() {
               | {formatDuration(totalDuration, 'smart')}
             </span>
           )}
+          {/* FR-95: Total recording and shadow sizes */}
+          {data?.totalRecordingsSize != null && data.totalRecordingsSize > 0 && (
+            <span className="font-normal text-gray-400 ml-1">
+              | {formatFileSize(data.totalRecordingsSize)}
+              {data.totalShadowsSize != null && data.totalShadowsSize > 0 && (
+                <span className="text-purple-400"> (shadows: {formatFileSize(data.totalShadowsSize)})</span>
+              )}
+            </span>
+          )}
         </span>
         <span className="text-gray-300">|</span>
         <label className="flex items-center gap-1.5 cursor-pointer hover:text-gray-700">
@@ -708,7 +717,13 @@ export function RecordingsView() {
 
                       <div className="flex items-center gap-4 text-sm text-gray-400">
                         <span className="font-mono">{formatDuration(file.duration)}</span>
-                        <span>{formatFileSize(file.size)}</span>
+                        {/* FR-95: File size with shadow tooltip */}
+                        <span
+                          title={file.shadowSize ? `Shadow: ${formatFileSize(file.shadowSize)}` : 'No shadow'}
+                          className="cursor-help"
+                        >
+                          {formatFileSize(file.size)}
+                        </span>
                         <span>{formatTimestamp(file.timestamp)}</span>
                         {/* FR-83: Transcription works for both real and shadow files (video shadows have audio) */}
                         <TranscriptionBadge

@@ -183,6 +183,7 @@ export interface RecordingFile {
   folder: 'recordings' | 'safe';  // Which folder it's in
   isShadow?: boolean;     // FR-83: True if shadow-only (no real recording)
   hasShadow?: boolean;    // FR-83: True if this recording has a shadow file
+  shadowSize?: number | null;  // FR-95: Shadow file size in bytes (null if no shadow)
 }
 
 // FR-83: Shadow generation API responses
@@ -615,6 +616,7 @@ export interface QueryRecording {
   hasTranscript: boolean;
   isShadow?: boolean;   // FR-83: True if shadow-only (no real recording)
   hasShadow?: boolean;  // FR-83: True if this recording has a shadow file
+  shadowSize?: number | null;  // FR-95: Shadow file size in bytes (null if no shadow)
 }
 
 // Query API: Transcript info

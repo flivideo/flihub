@@ -32,10 +32,10 @@ interface ProjectsPanelProps {
 // Valid project code pattern: letter + 2 digits + optional suffix (e.g., b71, b72-awesome)
 const PROJECT_CODE_PATTERN = /^[a-zA-Z]\d{2}(-|$)/
 
-// Priority display config
+// Priority display config (NFR-87: visual rebrand to "starred" - code still uses "pinned")
 const PRIORITY_DISPLAY: Record<ProjectPriority, { icon: string; title: string }> = {
-  pinned: { icon: '📌', title: 'Pinned (click to unpin)' },
-  normal: { icon: '', title: 'Click to pin' },
+  pinned: { icon: '⭐', title: 'Starred (click to unstar)' },
+  normal: { icon: '', title: 'Click to star' },
 }
 
 // Simple toggle: normal ↔ pinned
@@ -372,7 +372,7 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   }
 
   // Split projects into valid and invalid (issues)
-  // Data already comes sorted from server (priority then lastModified)
+  // NFR-87: Data comes sorted by project code (natural order) - stars just mark interest
   const { projects, issueProjects } = useMemo(() => {
     const allProjects = data?.projects || []
     const valid: ProjectStats[] = []

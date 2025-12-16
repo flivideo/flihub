@@ -216,14 +216,8 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
         filtered = filtered.filter(p => p.stage === stage);
       }
 
-      // Sort: pinned first, then by code
-      filtered.sort((a, b) => {
-        const priorityOrder: Record<ProjectPriority, number> = { pinned: 0, normal: 1 };
-        const aPriority = priorityOrder[a.priority];
-        const bPriority = priorityOrder[b.priority];
-        if (aPriority !== bPriority) return aPriority - bPriority;
-        return a.code.localeCompare(b.code);
-      });
+      // NFR-87: Sort by project code only (natural order) - stars just mark interest
+      filtered.sort((a, b) => a.code.localeCompare(b.code));
 
       // Recent filter (after sorting by lastModified)
       if (recent && typeof recent === 'string') {

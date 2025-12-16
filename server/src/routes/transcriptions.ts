@@ -25,6 +25,12 @@ function generateJobId(): string {
   return `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+// FR-94: Get base filename without extension for consistent comparison
+// Both .mov and .mp4 files with same base name should be treated as the same recording
+function getBaseName(filename: string): string {
+  return path.basename(filename, path.extname(filename));
+}
+
 export function createTranscriptionRoutes(
   getConfig: () => Config,
   io: Server<ClientToServerEvents, ServerToClientEvents>
@@ -38,19 +44,17 @@ export function createTranscriptionRoutes(
     return paths.transcripts;
   }
 
-  // Check if transcript exists for a video
-  // FR-74: Returns path only if BOTH .txt and .srt exist (complete transcript set)
+  // Check if transcript exists for a video (for status checks)
+  // FR-94: .txt is the primary format - only .txt counts as "complete"
   function getTranscriptPath(videoFilename: string): string | null {
     const transcriptsDir = getTranscriptsDir();
     const baseName = path.basename(videoFilename, path.extname(videoFilename));
     const txtPath = path.join(transcriptsDir, `${baseName}.txt`);
-    const srtPath = path.join(transcriptsDir, `${baseName}.srt`);
-    // Both files must exist for transcript to be considered complete
-    return (fs.existsSync(txtPath) && fs.existsSync(srtPath)) ? txtPath : null;
+    return fs.existsSync(txtPath) ? txtPath : null;
   }
 
-  // FR-92: Check if ANY transcript file exists (for skip logic)
-  // Only requires .txt - older transcripts may not have .srt
+  // FR-92: Check if transcript file exists (for skip logic)
+  // FR-94: .txt is the primary format - only .txt counts as "transcribed"
   function hasTranscriptFile(videoFilename: string): boolean {
     const transcriptsDir = getTranscriptsDir();
     const baseName = path.basename(videoFilename, path.extname(videoFilename));
@@ -59,18 +63,21 @@ export function createTranscriptionRoutes(
   }
 
   // Get status for a specific video
+  // FR-94: Uses base name comparison to handle both .mov and .mp4 extensions
   function getStatusForVideo(videoFilename: string): TranscriptionStatus {
+    const baseName = getBaseName(videoFilename);
+
     // Check if complete
     if (getTranscriptPath(videoFilename)) return 'complete';
 
-    // Check if active
-    if (activeJob?.videoFilename === videoFilename) return 'transcribing';
+    // Check if active (compare base names)
+    if (activeJob && getBaseName(activeJob.videoFilename) === baseName) return 'transcribing';
 
-    // Check if queued
-    if (queue.some(j => j.videoFilename === videoFilename)) return 'queued';
+    // Check if queued (compare base names)
+    if (queue.some(j => getBaseName(j.videoFilename) === baseName)) return 'queued';
 
-    // Check if failed recently
-    const recent = recentJobs.find(j => j.videoFilename === videoFilename);
+    // Check if failed recently (compare base names)
+    const recent = recentJobs.find(j => getBaseName(j.videoFilename) === baseName);
     if (recent?.status === 'error') return 'error';
 
     return 'none';
@@ -101,13 +108,13 @@ export function createTranscriptionRoutes(
     console.log(`Output dir: ${transcriptsDir}`);
 
     // FR-74: Output both TXT (plain text) and SRT (timed subtitles) formats
+    // FR-94: Use 'all' to get both formats - multiple --output_format flags don't work
     activeProcess = spawn(pythonPath, [
       '-m', 'whisper',
       videoPath,
       '--model', WHISPER_MODEL,
       '--language', WHISPER_LANGUAGE,
-      '--output_format', 'txt',
-      '--output_format', 'srt',
+      '--output_format', 'all',
       '--output_dir', transcriptsDir,
     ]);
 
@@ -155,7 +162,9 @@ export function createTranscriptionRoutes(
         });
       }
 
-      // Move to recent
+      // FR-94: Move to recent, deduping by base name first
+      const completedBaseName = getBaseName(activeJob.videoFilename);
+      recentJobs = recentJobs.filter(j => getBaseName(j.videoFilename) !== completedBaseName);
       recentJobs.unshift(activeJob);
       recentJobs = recentJobs.slice(0, 5);  // Keep last 5
 
@@ -179,6 +188,9 @@ export function createTranscriptionRoutes(
           error: activeJob.error,
         });
 
+        // FR-94: Move to recent, deduping by base name first
+        const errorBaseName = getBaseName(activeJob.videoFilename);
+        recentJobs = recentJobs.filter(j => getBaseName(j.videoFilename) !== errorBaseName);
         recentJobs.unshift(activeJob);
         recentJobs = recentJobs.slice(0, 5);
 
@@ -191,7 +203,12 @@ export function createTranscriptionRoutes(
 
   // Queue a transcription job (exported for use by rename route)
   async function queueTranscription(videoPath: string): Promise<TranscriptionJob | null> {
-    const videoFilename = path.basename(videoPath);
+    const rawFilename = path.basename(videoPath);
+    // FR-94: Normalize to base name for consistent comparison
+    // This prevents duplicates when same recording is queued as .mov and .mp4
+    const baseName = getBaseName(rawFilename);
+    // Use normalized filename with .mov extension for display consistency
+    const videoFilename = `${baseName}.mov`;
 
     // FR-92: Skip if transcript already exists (only check .txt, not .srt)
     if (hasTranscriptFile(videoFilename)) {
@@ -199,15 +216,23 @@ export function createTranscriptionRoutes(
       return null;
     }
 
-    // Skip if already queued or active
-    if (activeJob?.videoFilename === videoFilename) {
+    // FR-94: Skip if already queued or active (compare using base name)
+    const activeBaseName = activeJob ? getBaseName(activeJob.videoFilename) : null;
+    if (activeBaseName === baseName) {
       console.log(`${videoFilename} is already being transcribed`);
       return activeJob;
     }
-    const existing = queue.find(j => j.videoFilename === videoFilename);
+    const existing = queue.find(j => getBaseName(j.videoFilename) === baseName);
     if (existing) {
       console.log(`${videoFilename} is already in queue`);
       return existing;
+    }
+
+    // FR-94: Skip if already in recent (prevents re-queuing just-completed jobs)
+    const inRecent = recentJobs.find(j => getBaseName(j.videoFilename) === baseName);
+    if (inRecent && inRecent.status === 'complete') {
+      console.log(`${videoFilename} was recently transcribed, skipping`);
+      return null;
     }
 
     // FR-36: Get file size and duration
@@ -218,13 +243,13 @@ export function createTranscriptionRoutes(
       size = stats.size;
       duration = (await getVideoDuration(videoPath)) ?? undefined;
     } catch (err) {
-      console.warn(`Could not get file info for ${videoFilename}:`, err);
+      console.warn(`Could not get file info for ${rawFilename}:`, err);
     }
 
     const job: TranscriptionJob = {
       jobId: generateJobId(),
       videoPath,
-      videoFilename,
+      videoFilename,  // FR-94: Now normalized to .mov extension
       status: 'queued',
       duration,
       size,
@@ -271,20 +296,61 @@ export function createTranscriptionRoutes(
   });
 
   // GET /api/transcriptions/transcript/:filename - Get transcript content
+  // FR-94: Supports ?format=txt|srt query param, defaults to txt if available
   router.get('/transcript/:filename', async (req: Request, res: Response) => {
     const { filename } = req.params;
+    const requestedFormat = req.query.format as string | undefined;
     const baseName = path.basename(filename, path.extname(filename));
-    const transcriptFilename = `${baseName}.txt`;
     const transcriptsDir = getTranscriptsDir();
-    const transcriptPath = path.join(transcriptsDir, transcriptFilename);
+
+    const txtPath = path.join(transcriptsDir, `${baseName}.txt`);
+    const srtPath = path.join(transcriptsDir, `${baseName}.srt`);
+
+    const hasTxt = fs.existsSync(txtPath);
+    const hasSrt = fs.existsSync(srtPath);
+
+    if (!hasTxt && !hasSrt) {
+      res.status(404).json({ success: false, error: 'Transcript not found' });
+      return;
+    }
+
+    // Determine which format to return
+    let transcriptPath: string;
+    let transcriptFilename: string;
+    let activeFormat: 'txt' | 'srt';
+
+    if (requestedFormat === 'srt' && hasSrt) {
+      transcriptPath = srtPath;
+      transcriptFilename = `${baseName}.srt`;
+      activeFormat = 'srt';
+    } else if (requestedFormat === 'txt' && hasTxt) {
+      transcriptPath = txtPath;
+      transcriptFilename = `${baseName}.txt`;
+      activeFormat = 'txt';
+    } else if (hasTxt) {
+      // Default to txt
+      transcriptPath = txtPath;
+      transcriptFilename = `${baseName}.txt`;
+      activeFormat = 'txt';
+    } else {
+      // Fallback to srt
+      transcriptPath = srtPath;
+      transcriptFilename = `${baseName}.srt`;
+      activeFormat = 'srt';
+    }
 
     try {
-      if (!fs.existsSync(transcriptPath)) {
-        res.status(404).json({ success: false, error: 'Transcript not found' });
-        return;
-      }
       const content = await fs.readFile(transcriptPath, 'utf-8');
-      res.json({ filename: transcriptFilename, content });
+      res.json({
+        filename: transcriptFilename,
+        content,
+        // FR-94: Include available formats for UI toggle
+        formats: {
+          txt: hasTxt,
+          srt: hasSrt,
+        },
+        activeFormat,
+      });
     } catch (error) {
       console.error('Error reading transcript:', error);
       res.status(500).json({ success: false, error: 'Failed to read transcript' });
@@ -443,7 +509,7 @@ export function createTranscriptionRoutes(
   });
 
   // FR-30 Enhancement: POST /api/transcriptions/queue-all - Queue transcription for all videos
-  // FR-83: Also supports shadow files (.mp4) when real recordings don't exist
+  // FR-94: Only transcribe real recordings, NOT shadow files (shadows are just low-res copies)
   router.post('/queue-all', async (req: Request, res: Response) => {
     const { scope, chapter } = req.body;
 
@@ -462,36 +528,10 @@ export function createTranscriptionRoutes(
     const projectPaths = getProjectPaths(projectPath);
 
     try {
-      // FR-83: Build unified map of videos (real takes precedence over shadow)
-      // Key: baseName, Value: { path, isShadow }
+      // FR-94: Only scan real recordings - shadows should never be transcribed
       const videoMap = new Map<string, { path: string; isShadow: boolean }>();
 
-      // First, add shadow files (will be overwritten by real files)
-      const shadowDirs = [
-        { dir: path.join(projectPath, 'recording-shadows'), folder: 'recordings' },
-        { dir: path.join(projectPath, 'recording-shadows', '-safe'), folder: 'safe' },
-      ];
-
-      for (const { dir } of shadowDirs) {
-        if (fs.existsSync(dir)) {
-          const files = await fs.readdir(dir);
-          for (const file of files) {
-            if (!file.match(/\.mp4$/i)) continue;
-
-            const baseName = file.replace(/\.mp4$/i, '');
-
-            // Filter by chapter if scope is 'chapter'
-            if (scope === 'chapter') {
-              const match = baseName.match(/^(\d{2})-/);
-              if (!match || match[1] !== chapter) continue;
-            }
-
-            videoMap.set(baseName, { path: path.join(dir, file), isShadow: true });
-          }
-        }
-      }
-
-      // Then, add real recordings (overwrite shadows)
+      // Only scan real recordings (not shadows)
       const realDirs = [projectPaths.recordings, projectPaths.safe];
 
       for (const dir of realDirs) {

@@ -6,12 +6,14 @@
  * - Open folder button (optional)
  * - Open externally button (optional, for HTML files)
  * - Close button + Escape key support
+ * - FR-94: headerExtra slot for custom controls (e.g., format toggle)
  *
  * Used by TranscriptModal and InboxPage for viewing text-based files.
  */
 import { toast } from 'sonner'
 import { OpenFolderButton } from './OpenFolderButton'
 import type { FolderKey } from '../../hooks/useOpenFolder'
+import type { ReactNode } from 'react'
 
 interface FileViewerModalProps {
   title: string
@@ -22,6 +24,7 @@ interface FileViewerModalProps {
   onCopy?: () => void
   onOpenExternal?: () => void
   folderKey?: FolderKey
+  headerExtra?: ReactNode  // FR-94: Custom header controls
 }
 
 export function FileViewerModal({
@@ -33,6 +36,7 @@ export function FileViewerModal({
   onCopy,
   onOpenExternal,
   folderKey,
+  headerExtra,
 }: FileViewerModalProps) {
   const handleCopy = async () => {
     if (onCopy) {
@@ -65,6 +69,8 @@ export function FileViewerModal({
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-medium truncate flex-1 mr-4">{title}</h3>
           <div className="flex items-center gap-2 flex-shrink-0">
+            {/* FR-94: Custom header controls */}
+            {headerExtra}
             {/* Copy button */}
             <button
               onClick={handleCopy}

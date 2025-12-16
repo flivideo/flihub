@@ -23,9 +23,11 @@ const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 // FR-83: Extended recording with shadow support
 // isShadow: true = shadow-only (no real recording)
 // hasShadow: true = real recording has a corresponding shadow
+// FR-95: shadowSize = size of corresponding shadow file (null if no shadow)
 interface UnifiedRecording extends QueryRecording {
   isShadow?: boolean;
   hasShadow?: boolean;
+  shadowSize?: number | null;
 }
 
 export function createRecordingsRoutes(getConfig: () => Config): Router {
@@ -59,6 +61,7 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
       const shadowSet = new Map<string, { size: number; duration: number | null }>();
 
       // Get transcript filenames for hasTranscript check
+      // FR-94: .txt is the primary format - only .txt counts as "transcribed"
       const transcriptSet = new Set<string>();
       const transcriptFiles = await readDirSafe(paths.transcripts);
       for (const f of transcriptFiles) {
@@ -109,6 +112,7 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
             hasTranscript: transcriptSet.has(baseName),
             isShadow: true,
             hasShadow: true,  // Shadow-only files obviously have shadow
+            shadowSize: stat.size,  // FR-95: Shadow-only, so shadow size = file size
           };
 
           unifiedMap.set(`${folder}:${baseName}`, recording);
@@ -153,6 +157,7 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
             hasTranscript: transcriptSet.has(baseName),
             isShadow: false,
             hasShadow,
+            shadowSize: shadowInfo?.size ?? null,  // FR-95: Shadow file size (null if no shadow)
           };
 
           // Real file overwrites shadow
@@ -182,13 +187,33 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         filtered = filtered.filter(r => !r.hasTranscript);
       }
 
+      // FR-95: Calculate total sizes for header display
+      // Real recordings: sum of actual .mov file sizes (excludes shadow-only)
+      // Shadows: sum of all shadow file sizes
+      let totalRecordingsSize = 0;
+      let totalShadowsSize = 0;
+
+      for (const r of recordings) {
+        if (!r.isShadow) {
+          totalRecordingsSize += r.size;
+        }
+        if (r.shadowSize) {
+          totalShadowsSize += r.shadowSize;
+        }
+      }
+
       // FR-53: ASCII format support
       if (req.query.format === 'text') {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         return res.send(formatRecordingsReport(filtered, code));
       }
 
-      res.json({ success: true, recordings: filtered });
+      res.json({
+        success: true,
+        recordings: filtered,
+        totalRecordingsSize,  // FR-95: Total size of real recordings in bytes
+        totalShadowsSize: totalShadowsSize > 0 ? totalShadowsSize : null,  // FR-95: Total shadow size (null if none)
+      });
     } catch (error) {
       console.error('Error listing recordings:', error);
       res.status(500).json({ success: false, error: 'Failed to list recordings' });

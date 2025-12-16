@@ -440,6 +440,7 @@ export function createRoutes(
             folder,
             isShadow: true,
             hasShadow: true,  // Shadow-only files obviously have shadow
+            shadowSize: stats.size,  // FR-95: Shadow-only, so shadow size = file size
           });
         }
       }
@@ -489,6 +490,7 @@ export function createRoutes(
               folder,
               isShadow: false,
               hasShadow: !!shadowInfo,
+              shadowSize: shadowInfo?.size ?? null,  // FR-95: Shadow file size (null if no shadow)
             } as RecordingFile,
           };
         }));
@@ -513,11 +515,30 @@ export function createRoutes(
         return a.timestamp.localeCompare(b.timestamp);
       });
 
-      res.json({ recordings });
+      // FR-95: Calculate total sizes for header display
+      let totalRecordingsSize = 0;
+      let totalShadowsSize = 0;
+
+      for (const r of recordings) {
+        if (!r.isShadow) {
+          totalRecordingsSize += r.size;
+        }
+        if (r.shadowSize) {
+          totalShadowsSize += r.shadowSize;
+        }
+      }
+
+      res.json({
+        recordings,
+        totalRecordingsSize,  // FR-95: Total size of real recordings in bytes
+        totalShadowsSize: totalShadowsSize > 0 ? totalShadowsSize : null,  // FR-95: Total shadow size (null if none)
+      });
     } catch (error) {
       console.error('Error listing recordings:', error);
       res.status(500).json({
         recordings: [],
+        totalRecordingsSize: 0,
+        totalShadowsSize: null,
         error: error instanceof Error ? error.message : 'Failed to list recordings',
       });
     }

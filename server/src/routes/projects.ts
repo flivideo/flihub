@@ -98,16 +98,8 @@ export function createProjectRoutes(
         stats.push(projectStats);
       }
 
-      // Sort by priority (pinned first), then by project code ascending
-      stats.sort((a, b) => {
-        const priorityOrder: Record<ProjectPriority, number> = { pinned: 0, normal: 1 };
-        const aPriority = priorityOrder[a.priority];
-        const bPriority = priorityOrder[b.priority];
-        if (aPriority !== bPriority) return aPriority - bPriority;
-
-        // Then by project code ascending (e.g., b67, b68, b69...)
-        return a.code.localeCompare(b.code);
-      });
+      // NFR-87: Sort by project code only (natural order) - stars just mark interest
+      stats.sort((a, b) => a.code.localeCompare(b.code));
 
       res.json({ projects: stats });
     } catch (error) {

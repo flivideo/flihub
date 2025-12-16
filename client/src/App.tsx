@@ -386,7 +386,7 @@ function App() {
                                     project.code === currentProjectCode ? 'bg-blue-50' : ''
                                   }`}
                                 >
-                                  <span className="text-gray-400 flex-shrink-0">📌</span>
+                                  <span className="text-gray-400 flex-shrink-0">⭐</span>
                                   <span className="truncate flex-grow">{project.code}</span>
                                   {project.code === currentProjectCode && (
                                     <span className="text-blue-600 flex-shrink-0">✓</span>

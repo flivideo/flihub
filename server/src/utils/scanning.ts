@@ -72,11 +72,10 @@ export async function getTranscriptSyncStatus(
     );
   }
 
-  // FR-82: Get transcript files - .txt files count as valid transcripts
-  // (SRT files are secondary/optional format)
+  // FR-94: .txt is the primary format - only .txt counts as "transcribed"
   const transcriptDirFiles = await readDirSafe(transcriptsDir);
 
-  // Get base names for txt files (exclude chapter transcripts)
+  // Get base names for .txt files only (exclude chapter transcripts)
   const txtFiles = new Set(
     transcriptDirFiles
       .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
@@ -85,11 +84,11 @@ export async function getTranscriptSyncStatus(
 
   const recordingSet = new Set(recordingFiles);
 
-  // A transcript is "complete" if the .txt file exists
+  // A transcript is "complete" only if .txt exists
   const matched = recordingFiles.filter(r => txtFiles.has(r)).length;
   const missingTranscripts = recordingFiles.filter(r => !txtFiles.has(r));
 
-  // Orphaned = txt files without matching recording
+  // Orphaned = .txt files without matching recording
   const orphanedTranscripts = [...txtFiles].filter(t => !recordingSet.has(t));
 
   return { matched, missingTranscripts, orphanedTranscripts };

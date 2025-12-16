@@ -133,10 +133,16 @@ export function useCreateProject() {
 }
 
 // FR-14: Get recordings in target directory
+// FR-95: Response now includes total size fields
 export function useRecordings() {
   return useQuery({
     queryKey: QUERY_KEYS.recordings,
-    queryFn: () => fetchApi<{ recordings: RecordingFile[]; error?: string }>('/api/recordings'),
+    queryFn: () => fetchApi<{
+      recordings: RecordingFile[];
+      totalRecordingsSize: number;      // FR-95: Total size of real recordings in bytes
+      totalShadowsSize: number | null;  // FR-95: Total shadow size (null if none)
+      error?: string;
+    }>('/api/recordings'),
   })
 }
 
