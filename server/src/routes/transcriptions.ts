@@ -112,7 +112,7 @@ export function createTranscriptionRoutes(
     const transcriptionStartTime = Date.now();
     let videoFileSizeBytes = 0;
     try {
-      const stats = await fs.stat(videoPath);
+      const stats = fs.statSync(videoPath);
       videoFileSizeBytes = stats.size;
     } catch {
       // File size unavailable, continue without it
