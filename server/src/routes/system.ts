@@ -37,7 +37,7 @@
  * - POST /api/system/restart-watchers - Reinitialize file watchers
  */
 import { Router, Request, Response } from 'express';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs-extra';
 import os from 'os';
@@ -79,8 +79,13 @@ function openInFileExplorer(folderPath: string): Promise<void> {
                       fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
 
         if (isWSLExplorer) {
-          // WSL: use Windows explorer.exe
-          command = `explorer.exe "${folderPath}"`;
+          // WSL: use Windows explorer.exe with converted path
+          // wslpath -w converts Linux paths to Windows format
+          const windowsPath = execSync(`wslpath -w "${folderPath}"`).toString().trim();
+          // explorer.exe often returns exit code 1 even on success, so fire-and-forget
+          exec(`explorer.exe "${windowsPath}"`);
+          resolve();
+          return;
         } else {
           // Native Linux: use xdg-open
           command = `xdg-open "${folderPath}"`;
@@ -128,8 +133,13 @@ function openInDefaultApp(filePath: string): Promise<void> {
                       fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
 
         if (isWSLApp) {
-          // WSL: use Windows explorer.exe to open file in default app
-          command = `explorer.exe "${filePath}"`;
+          // WSL: use Windows explorer.exe with converted path
+          // wslpath -w converts Linux paths to Windows format
+          const windowsPath = execSync(`wslpath -w "${filePath}"`).toString().trim();
+          // explorer.exe often returns exit code 1 even on success, so fire-and-forget
+          exec(`explorer.exe "${windowsPath}"`);
+          resolve();
+          return;
         } else {
           // Native Linux: use xdg-open
           command = `xdg-open "${filePath}"`;
