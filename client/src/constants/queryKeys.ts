@@ -23,6 +23,8 @@ export const QUERY_KEYS = {
   transcriptionStatus: (filename: string) => ['transcription-status', filename] as const,
   transcript: (filename: string) => ['transcript', filename] as const,
   chapterStatus: (chapter: string) => ['chapter-status', chapter] as const,
+  // FR-92: Pending transcription count
+  pendingTranscriptionCount: ['pending-transcription-count'] as const,
   // FR-55: Combined video transcript
   combinedTranscript: ['combined-transcript'] as const,
   // FR-33: Final media detection

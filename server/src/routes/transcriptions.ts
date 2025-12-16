@@ -49,6 +49,15 @@ export function createTranscriptionRoutes(
     return (fs.existsSync(txtPath) && fs.existsSync(srtPath)) ? txtPath : null;
   }
 
+  // FR-92: Check if ANY transcript file exists (for skip logic)
+  // Only requires .txt - older transcripts may not have .srt
+  function hasTranscriptFile(videoFilename: string): boolean {
+    const transcriptsDir = getTranscriptsDir();
+    const baseName = path.basename(videoFilename, path.extname(videoFilename));
+    const txtPath = path.join(transcriptsDir, `${baseName}.txt`);
+    return fs.existsSync(txtPath);
+  }
+
   // Get status for a specific video
   function getStatusForVideo(videoFilename: string): TranscriptionStatus {
     // Check if complete
@@ -184,8 +193,8 @@ export function createTranscriptionRoutes(
   async function queueTranscription(videoPath: string): Promise<TranscriptionJob | null> {
     const videoFilename = path.basename(videoPath);
 
-    // Skip if already complete
-    if (getTranscriptPath(videoFilename)) {
+    // FR-92: Skip if transcript already exists (only check .txt, not .srt)
+    if (hasTranscriptFile(videoFilename)) {
       console.log(`Transcript already exists for ${videoFilename}, skipping`);
       return null;
     }
@@ -535,6 +544,65 @@ export function createTranscriptionRoutes(
     } catch (error) {
       console.error('Error queuing all transcriptions:', error);
       res.status(500).json({ success: false, error: 'Failed to queue transcriptions' });
+    }
+  });
+
+  // FR-92: GET /api/transcriptions/pending-count - Count files needing transcription
+  router.get('/pending-count', async (_req: Request, res: Response) => {
+    const config = getConfig();
+    const projectPath = expandPath(config.projectDirectory);
+    const projectPaths = getProjectPaths(projectPath);
+
+    try {
+      // FR-92: Build unified map of videos (same logic as queue-all)
+      const videoMap = new Map<string, { path: string; isShadow: boolean }>();
+
+      // First, add shadow files
+      const shadowDirs = [
+        { dir: path.join(projectPath, 'recording-shadows'), folder: 'recordings' },
+        { dir: path.join(projectPath, 'recording-shadows', '-safe'), folder: 'safe' },
+      ];
+
+      for (const { dir } of shadowDirs) {
+        if (fs.existsSync(dir)) {
+          const files = await fs.readdir(dir);
+          for (const file of files) {
+            if (!file.match(/\.mp4$/i)) continue;
+            const baseName = file.replace(/\.mp4$/i, '');
+            videoMap.set(baseName, { path: path.join(dir, file), isShadow: true });
+          }
+        }
+      }
+
+      // Then, add real recordings (overwrite shadows)
+      const realDirs = [projectPaths.recordings, projectPaths.safe];
+
+      for (const dir of realDirs) {
+        if (fs.existsSync(dir)) {
+          const files = await fs.readdir(dir);
+          for (const file of files) {
+            if (!file.endsWith('.mov')) continue;
+            const baseName = file.replace('.mov', '');
+            videoMap.set(baseName, { path: path.join(dir, file), isShadow: false });
+          }
+        }
+      }
+
+      // Count files without transcripts
+      let pendingCount = 0;
+      for (const [baseName] of videoMap) {
+        if (!hasTranscriptFile(`${baseName}.mov`)) {
+          pendingCount++;
+        }
+      }
+
+      res.json({
+        pendingCount,
+        totalCount: videoMap.size,
+      });
+    } catch (error) {
+      console.error('Error counting pending transcriptions:', error);
+      res.status(500).json({ success: false, error: 'Failed to count pending transcriptions' });
     }
   });
 

@@ -240,7 +240,17 @@ export function useTranscribeAll() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transcriptions })
+      // FR-92: Refresh pending count after transcription queue changes
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pendingTranscriptionCount })
     },
+  })
+}
+
+// FR-92: Get count of files pending transcription
+export function usePendingTranscriptionCount() {
+  return useQuery({
+    queryKey: QUERY_KEYS.pendingTranscriptionCount,
+    queryFn: () => fetchApi<{ pendingCount: number; totalCount: number }>('/api/transcriptions/pending-count'),
   })
 }
 

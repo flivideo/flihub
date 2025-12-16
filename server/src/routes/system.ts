@@ -314,6 +314,8 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
    *
    * Security: Path is expanded (~ resolved) but not restricted to config paths.
    * This is safe because we're only checking existence, not executing anything.
+   *
+   * FR-89 Windows fix: Uses fs.stat() with try/catch for better UNC path support.
    */
   router.get('/path-exists', async (req: Request, res: Response) => {
     const pathToCheck = req.query.path as string;
@@ -325,8 +327,23 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
 
     try {
       const expandedPath = expandPath(pathToCheck);
-      const exists = await fs.pathExists(expandedPath);
-      res.json({ exists, path: expandedPath });
+
+      // FR-89: Use fs.stat() instead of fs.pathExists() for better Windows UNC path support
+      // fs.stat() is more reliable for paths like \\wsl$\Ubuntu\... on Windows
+      try {
+        await fs.stat(expandedPath);
+        res.json({ exists: true, path: expandedPath });
+      } catch (statError: unknown) {
+        // ENOENT = path doesn't exist, other errors = path might exist but can't be accessed
+        const code = (statError as { code?: string }).code;
+        if (code === 'ENOENT' || code === 'ENOTDIR') {
+          res.json({ exists: false, path: expandedPath });
+        } else {
+          // Log unexpected errors but still report as not accessible
+          console.warn(`Path check warning for ${expandedPath}:`, statError);
+          res.json({ exists: false, path: expandedPath, warning: 'Path not accessible' });
+        }
+      }
     } catch (error) {
       console.error('Error checking path:', error);
       res.json({ exists: false, path: pathToCheck, error: 'Failed to check path' });

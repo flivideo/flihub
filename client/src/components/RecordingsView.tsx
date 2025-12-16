@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useRecordings, useMoveToSafe, useRestoreFromSafe, useTranscribeAll, useGenerateChapterRecordings } from '../hooks/useApi'
+import { useRecordings, useMoveToSafe, useRestoreFromSafe, useTranscribeAll, useGenerateChapterRecordings, usePendingTranscriptionCount } from '../hooks/useApi'
 import { useRecordingsSocket, useChapterRecordingSocket } from '../hooks/useSocket'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { TranscriptModal } from './TranscriptModal'
@@ -258,6 +258,9 @@ export function RecordingsView() {
   const restoreFromSafe = useRestoreFromSafe()
   const transcribeAll = useTranscribeAll()
   const generateChapter = useGenerateChapterRecordings()
+  // FR-92: Get count of files pending transcription
+  const { data: pendingData } = usePendingTranscriptionCount()
+  const pendingCount = pendingData?.pendingCount ?? 0
   const [showSafe, setShowSafe] = useState(true)
   const [viewingTranscript, setViewingTranscript] = useState<string | null>(null)
   // FR-47: State for editing chapter label
@@ -551,11 +554,11 @@ export function RecordingsView() {
         <span className="text-gray-300">|</span>
         <button
           onClick={handleTranscribeProject}
-          disabled={transcribeAll.isPending}
+          disabled={transcribeAll.isPending || pendingCount === 0}
           className="text-purple-600 hover:text-purple-700 disabled:opacity-50"
-          title="Queue all untranscribed videos for transcription"
+          title={pendingCount > 0 ? `Queue ${pendingCount} untranscribed video${pendingCount > 1 ? 's' : ''} for transcription` : 'All videos already have transcripts'}
         >
-          🎙️ Transcribe All
+          🎙️ {pendingCount > 0 ? `Transcribe ${pendingCount}` : 'All Transcribed'}
         </button>
         {/* FR-55: Video-level transcript export */}
         <span className="text-gray-300">|</span>

@@ -13,6 +13,8 @@ export interface CommonName {
 export interface Config {
     watchDirectory: string;
     projectDirectory: string;
+    projectsRootDirectory?: string;
+    activeProject?: string;
     fileExtensions: string[];
     availableTags: string[];
     commonNames: CommonName[];
@@ -21,6 +23,7 @@ export interface Config {
     projectStageOverrides?: Record<string, ProjectStage>;
     projectStages?: ProjectStage[];
     chapterRecordings?: ChapterRecordingConfig;
+    shadowResolution?: number;
 }
 export interface RenameRequest {
     originalPath: string;
