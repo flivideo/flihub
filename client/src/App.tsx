@@ -209,15 +209,17 @@ function App() {
 
   // FR-43: Get pinned projects for dropdown
   const pinnedProjects = projectsData?.projects?.filter(p => p.priority === 'pinned') || []
-  const currentProjectCode = config?.projectDirectory?.split('/').pop() || ''
+  // FR-93: Use activeProject for cross-platform support (split('/') doesn't work on Windows backslash paths)
+  const currentProjectCode = config?.activeProject || config?.projectDirectory?.split(/[/\\]/).pop() || ''
 
   // FR-43: Switch to a different project
+  // FR-93: Use regex split for cross-platform path support
   const handleSwitchProject = useCallback(async (projectPath: string) => {
     try {
       await updateConfig.mutateAsync({ projectDirectory: projectPath })
       refetchSuggestedNaming()
       setShowProjectDropdown(false)
-      toast.success(`Switched to ${projectPath.split('/').pop()}`)
+      toast.success(`Switched to ${projectPath.split(/[/\\]/).pop()}`)
     } catch (err) {
       toast.error('Failed to switch project')
     }
@@ -239,12 +241,12 @@ function App() {
   }, [undoRenameMutation, refetchRecentRenames])
 
   // FR-51: Copy project info for calendar
+  // FR-93: Use currentProjectCode for cross-platform support
   const handleCopyCalendar = useCallback(async () => {
-    if (!config?.projectDirectory) return
+    if (!currentProjectCode) return
 
-    const projectCode = config.projectDirectory.split('/').pop() || ''
     // Extract code (e.g., "b76") and name (e.g., "vibe-code-auto-chapters")
-    const parts = projectCode.split('-')
+    const parts = currentProjectCode.split('-')
     const code = parts[0] // e.g., "b76"
     const nameParts = parts.slice(1)
     // Take first 3-4 segments if name is very long
@@ -260,7 +262,7 @@ function App() {
     } catch {
       toast.error('Failed to copy')
     }
-  }, [config?.projectDirectory])
+  }, [currentProjectCode])
 
   // FR-3: New Chapter button
   // Preserve the name from previous chapter - user can change if needed
@@ -332,7 +334,8 @@ function App() {
                       className="flex items-center gap-1 text-lg font-medium text-blue-600 hover:text-blue-800 truncate transition-colors"
                       title={config.projectDirectory}
                     >
-                      <span className="truncate">{config.projectDirectory.split('/').pop()}</span>
+                      {/* FR-93: Use currentProjectCode for cross-platform support */}
+                      <span className="truncate">{currentProjectCode}</span>
                       {pinnedProjects.length > 0 && (
                         <span className="text-gray-400 flex-shrink-0">▾</span>
                       )}
