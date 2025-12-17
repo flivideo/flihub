@@ -195,36 +195,26 @@ export function createTranscriptionRoutes(
         const recordingsIndex = pathParts.indexOf('recordings');
         const project = recordingsIndex > 0 ? pathParts[recordingsIndex - 1] : 'unknown';
 
-        console.log(`[TELEMETRY] Starting for ${completedFilename}`);
-
-        // Delay telemetry write to avoid race with watcher debounce (300ms + buffer)
-        setTimeout(() => {
-          console.log(`[TELEMETRY] Delayed write starting for ${completedFilename}`);
-          getVideoDuration(completedPath).then(videoDuration => {
-            const duration = videoDuration ?? 0;
-            const ratio = duration > 0 ? transcriptionDurationSec / duration : 0;
-            console.log(`[TELEMETRY] Writing entry for ${completedFilename}`);
-            appendTelemetryEntry({
-              startTimestamp,
-              endTimestamp,
-              project,
-              filename: completedFilename,
-              path: completedPath,
-              videoDurationSec: duration,
-              transcriptionDurationSec,
-              ratio,
-              fileSizeBytes: videoFileSizeBytes,
-              model: WHISPER_MODEL,
-              success: true,
-            }).then(() => {
-              console.log(`[TELEMETRY] Write complete for ${completedFilename}`);
-            }).catch(err => {
-              console.error(`[TELEMETRY] Write failed for ${completedFilename}:`, err);
-            });
-          }).catch(err => {
-            console.error(`[TELEMETRY] Error getting video duration for ${completedFilename}:`, err);
+        // FR-99: Log telemetry (file uses .jsonl extension to avoid triggering nodemon)
+        getVideoDuration(completedPath).then(videoDuration => {
+          const duration = videoDuration ?? 0;
+          const ratio = duration > 0 ? transcriptionDurationSec / duration : 0;
+          appendTelemetryEntry({
+            startTimestamp,
+            endTimestamp,
+            project,
+            filename: completedFilename,
+            path: completedPath,
+            videoDurationSec: duration,
+            transcriptionDurationSec,
+            ratio,
+            fileSizeBytes: videoFileSizeBytes,
+            model: WHISPER_MODEL,
+            success: true,
           });
-        }, 500);  // Wait 500ms to avoid race with 300ms watcher debounce
+        }).catch(err => {
+          console.error('Error getting video duration for telemetry:', err);
+        });
       } else {
         activeJob.status = 'error';
         activeJob.error = `Whisper exited with code ${code}`;

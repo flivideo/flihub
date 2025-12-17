@@ -18,6 +18,8 @@ import { createQueryRoutes } from './routes/query/index.js';
 import { createChapterRoutes } from './routes/chapters.js';
 import { createVideoRoutes } from './routes/video.js';
 import { createShadowsRouter } from './routes/shadows.js';
+import { createFirstEditRoutes } from './routes/first-edit.js';
+import { createS3StagingRoutes } from './routes/s3-staging.js';
 import { migrateTargetToProject } from '../../shared/paths.js';
 import { WatcherManager } from './WatcherManager.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -328,6 +330,14 @@ app.use('/api/video', videoRoutes);
 // FR-83: Setup shadow recording routes
 const shadowRoutes = createShadowsRouter(() => currentConfig);
 app.use('/api/shadows', shadowRoutes);
+
+// FR-102: Setup first edit prep routes
+const firstEditRoutes = createFirstEditRoutes(() => currentConfig);
+app.use('/api/first-edit', firstEditRoutes);
+
+// FR-103: Setup S3 staging routes
+const s3StagingRoutes = createS3StagingRoutes(() => currentConfig);
+app.use('/api/s3-staging', s3StagingRoutes);
 
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);

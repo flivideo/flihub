@@ -32,6 +32,7 @@ export interface Config {
   projectStages?: ProjectStage[]; // FR-80: Configurable stage list (defaults to DEFAULT_PROJECT_STAGES)
   chapterRecordings?: ChapterRecordingConfig;  // FR-58: Chapter recording settings
   shadowResolution?: number;  // FR-89 Part 6: Shadow video resolution (default: 240)
+  glingDictionary?: string[];  // FR-102: Custom dictionary words for Gling transcription
 }
 
 export interface RenameRequest {

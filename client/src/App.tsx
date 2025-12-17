@@ -17,6 +17,8 @@ import { TranscriptionsPage } from './components/TranscriptionsPage'
 import { InboxPage } from './components/InboxPage'
 import { MockupsPage } from './components/MockupsPage'
 import { WatchPage } from './components/WatchPage'
+import { FirstEditPrepPage } from './components/FirstEditPrepPage'
+import { S3StagingPage } from './components/S3StagingPage'
 import { ConnectionIndicator } from './components/ConnectionIndicator'
 import { OpenFolderButton } from './components/shared'
 import { HeaderDropdown } from './components/HeaderDropdown'
@@ -74,6 +76,10 @@ function App() {
   // FR-43: Project switcher dropdown state
   const [showProjectDropdown, setShowProjectDropdown] = useState(false)
   const projectDropdownRef = useRef<HTMLDivElement>(null)
+  // FR-102: First Edit Prep modal state
+  const [showFirstEditPrep, setShowFirstEditPrep] = useState(false)
+  // FR-103: S3 Staging modal state
+  const [showS3Staging, setShowS3Staging] = useState(false)
 
   const { files, connected, isReconnecting, removeFile } = useSocket()
   const { data: config } = useConfig()
@@ -242,6 +248,7 @@ function App() {
 
   // FR-51: Copy project info for calendar
   // FR-93: Use currentProjectCode for cross-platform support
+  // FR-101: Format as "b85 > Clauding 01" (not "b85 - clauding-01")
   const handleCopyCalendar = useCallback(async () => {
     if (!currentProjectCode) return
 
@@ -254,7 +261,13 @@ function App() {
       ? nameParts.slice(0, 4).join('-')
       : nameParts.join('-')
 
-    const text = `${code} - ${shortName}`
+    // Convert kebab-case to Title Case
+    const titleName = shortName
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+
+    const text = `${code} > ${titleName}`
 
     try {
       await navigator.clipboard.writeText(text)
@@ -315,6 +328,16 @@ function App() {
           onConfirm={handleDiscardRemaining}
           onCancel={handleCancelDiscard}
         />
+      )}
+
+      {/* FR-102: First Edit Prep modal */}
+      {showFirstEditPrep && (
+        <FirstEditPrepPage onClose={() => setShowFirstEditPrep(false)} />
+      )}
+
+      {/* FR-103: S3 Staging modal */}
+      {showS3Staging && (
+        <S3StagingPage onClose={() => setShowS3Staging(false)} />
       )}
 
       {/* FR-37: Two-row header with breadcrumb and navigation */}
@@ -442,6 +465,16 @@ function App() {
                   label: 'Mockups',
                   icon: <span className="text-purple-500">🎨</span>,
                   onClick: () => changeTab('mockups'),
+                },
+                {
+                  label: 'First Edit Prep',
+                  icon: <span className="text-orange-500">🎬</span>,
+                  onClick: () => setShowFirstEditPrep(true),
+                },
+                {
+                  label: 'S3 Staging',
+                  icon: <span className="text-blue-500">☁️</span>,
+                  onClick: () => setShowS3Staging(true),
                 },
                 {
                   label: 'GitHub',

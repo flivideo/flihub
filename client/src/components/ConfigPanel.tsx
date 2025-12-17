@@ -227,6 +227,8 @@ export function ConfigPanel() {
   const [projectsRootDirectory, setProjectsRootDirectory] = useState('')
   const [activeProject, setActiveProject] = useState('')
   const [imageSourceDirectory, setImageSourceDirectory] = useState('')
+  // FR-102: Gling dictionary words
+  const [glingDictionary, setGlingDictionary] = useState('')
 
   // FR-89 Part 2: Path existence status for each directory field
   const [watchDirExists, setWatchDirExists] = useState<PathExistsStatus>('unknown')
@@ -280,6 +282,9 @@ export function ConfigPanel() {
       setActiveProject(config.activeProject || '')
       setImageSourceDirectory(imagePath)
 
+      // FR-102: Initialize Gling dictionary (one word per line)
+      setGlingDictionary((config.glingDictionary || []).join('\n'))
+
       // FR-89 Part 6: Initialize shadow resolution
       setShadowResolution(config.shadowResolution || 240)
 
@@ -309,6 +314,10 @@ export function ConfigPanel() {
            (config.activeProject || '') !== activeProject ||
            collapsePath(config.imageSourceDirectory) !== imageSourceDirectory
 
+    // FR-102: Check Gling dictionary changes
+    const currentDict = (config.glingDictionary || []).join('\n')
+    const dictChanged = currentDict !== glingDictionary
+
     // FR-76: Check chapter config changes
     const chapterChanged = chapterConfig?.config && (
       (chapterConfig.config.includeTitleSlides ?? false) !== includeTitleSlides ||
@@ -320,8 +329,8 @@ export function ConfigPanel() {
     // FR-89 Part 6: Check shadow resolution changes
     const shadowChanged = (config.shadowResolution || 240) !== shadowResolution
 
-    return pathsChanged || chapterChanged || shadowChanged
-  }, [config, watchDirectory, projectsRootDirectory, activeProject, imageSourceDirectory, chapterConfig, includeTitleSlides, slideDuration, resolution, autoGenerate, shadowResolution])
+    return pathsChanged || dictChanged || chapterChanged || shadowChanged
+  }, [config, watchDirectory, projectsRootDirectory, activeProject, imageSourceDirectory, glingDictionary, chapterConfig, includeTitleSlides, slideDuration, resolution, autoGenerate, shadowResolution])
 
   // C-4: Validation
   // FR-89 Part 5: Validate root directory (activeProject is just a folder name, no validation needed)
@@ -353,14 +362,22 @@ export function ConfigPanel() {
     }
 
     try {
+      // FR-102: Parse Gling dictionary (one word per line, filter empty)
+      const dictWords = glingDictionary
+        .split('\n')
+        .map(w => w.trim())
+        .filter(w => w.length > 0)
+
       // FR-89 Part 5: Send split project directory fields
       // FR-89 Part 6: Include shadow resolution
+      // FR-102: Include Gling dictionary
       await updateConfig.mutateAsync({
         watchDirectory: watchSanitized.sanitized,
         projectsRootDirectory: rootSanitized.sanitized,
         activeProject: activeProject.trim(),
         imageSourceDirectory: imageSanitized.sanitized,
         shadowResolution,
+        glingDictionary: dictWords,
       })
 
       // FR-76: Save chapter recording defaults
@@ -547,6 +564,23 @@ export function ConfigPanel() {
           ) : (
             <PathExistsIndicator status={imageDirExists} description="Directory to scan for incoming images (Assets page)" />
           )}
+        </div>
+
+        {/* FR-102: Gling Dictionary */}
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">
+            Gling Dictionary Words
+          </label>
+          <textarea
+            value={glingDictionary}
+            onChange={(e) => setGlingDictionary(e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+            placeholder="AppyDave&#10;BMAD&#10;FliVideo"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Custom words for Gling transcription (one per line). Used in First Edit Prep.
+          </p>
         </div>
 
         {/* FR-76: Chapter Recording Defaults */}

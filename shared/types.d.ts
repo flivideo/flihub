@@ -24,6 +24,7 @@ export interface Config {
     projectStages?: ProjectStage[];
     chapterRecordings?: ChapterRecordingConfig;
     shadowResolution?: number;
+    glingDictionary?: string[];
 }
 export interface RenameRequest {
     originalPath: string;

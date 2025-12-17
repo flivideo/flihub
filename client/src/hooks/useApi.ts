@@ -591,3 +591,20 @@ export function useEnvironment() {
     staleTime: Infinity,  // Environment won't change during session
   })
 }
+
+// FR-102: Open a predefined folder in Finder/Explorer
+export function useOpenFolder() {
+  return useMutation({
+    mutationFn: ({ folderKey, projectCode }: { folderKey: string; projectCode?: string }) =>
+      fetchApi<{ success: boolean; path?: string; error?: string }>('/api/system/open-folder', {
+        method: 'POST',
+        body: JSON.stringify({ folder: folderKey, projectCode }),
+      }),
+    onSuccess: () => {
+      toast.success('Folder opened')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to open folder')
+    },
+  })
+}

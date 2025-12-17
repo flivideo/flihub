@@ -313,8 +313,12 @@ Use ASCII art for mockups:
 
 In `backlog.md`:
 - `Pending` - Not yet implemented
-- `✅ Implemented YYYY-MM-DD` - Complete
+- `🔧 With Developer` - Handover sent, awaiting implementation
+- `🔍 Awaiting Verification` - Implemented, needs testing/sign-off
+- `✅ YYYY-MM-DD` - Complete
 - `⚠️ Needs Rework` - Issues found
+
+**After creating a handover:** Update status to `🔧 With Developer` so you know to move on to the next item.
 
 ## Related Agents
 

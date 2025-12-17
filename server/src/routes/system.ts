@@ -63,6 +63,10 @@ function openInFileExplorer(folderPath: string): Promise<void> {
     const platform = os.platform();
     let command: string;
 
+    // FR-106: Debug logging for WSL troubleshooting
+    console.log(`[FR-106] openInFileExplorer called with: ${folderPath}`);
+    console.log(`[FR-106] Platform: ${platform}`);
+
     switch (platform) {
       case 'darwin':
         // macOS: open in Finder
@@ -77,11 +81,13 @@ function openInFileExplorer(folderPath: string): Promise<void> {
         // FR-101: Detect WSL (has Microsoft in /proc/version)
         const isWSLExplorer = fs.existsSync('/proc/version') &&
                       fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
+        console.log(`[FR-106] isWSL: ${isWSLExplorer}`);
 
         if (isWSLExplorer) {
           // WSL: use Windows explorer.exe with converted path
           // wslpath -w converts Linux paths to Windows format
           const windowsPath = execSync(`wslpath -w "${folderPath}"`).toString().trim();
+          console.log(`[FR-106] Converted to Windows path: ${windowsPath}`);
           // explorer.exe often returns exit code 1 even on success, so fire-and-forget
           exec(`explorer.exe "${windowsPath}"`);
           resolve();
@@ -118,6 +124,10 @@ function openInDefaultApp(filePath: string): Promise<void> {
     const platform = os.platform();
     let command: string;
 
+    // FR-106: Debug logging for WSL troubleshooting
+    console.log(`[FR-106] openInDefaultApp called with: ${filePath}`);
+    console.log(`[FR-106] Platform: ${platform}`);
+
     switch (platform) {
       case 'darwin':
         // macOS: open in default app
@@ -131,11 +141,13 @@ function openInDefaultApp(filePath: string): Promise<void> {
         // FR-101: Detect WSL (has Microsoft in /proc/version)
         const isWSLApp = fs.existsSync('/proc/version') &&
                       fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
+        console.log(`[FR-106] isWSL: ${isWSLApp}`);
 
         if (isWSLApp) {
           // WSL: use Windows explorer.exe with converted path
           // wslpath -w converts Linux paths to Windows format
           const windowsPath = execSync(`wslpath -w "${filePath}"`).toString().trim();
+          console.log(`[FR-106] Converted to Windows path: ${windowsPath}`);
           // explorer.exe often returns exit code 1 even on success, so fire-and-forget
           exec(`explorer.exe "${windowsPath}"`);
           resolve();
