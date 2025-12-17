@@ -1,8 +1,102 @@
 // FR-103: S3 Staging Page API
+// FR-104: S3 Staging Migration Tool
 import express from 'express'
 import path from 'path'
 import fs from 'fs/promises'
 import type { Config } from '../../../shared/types.js'
+
+// FR-104: Migration types
+interface MigrationActions {
+  delete: string[]
+  toPrep: Array<{ from: string; to: string }>
+  toPost: Array<{ from: string; to: string }>
+  conflicts: Array<{ file: string; reason: string }>
+}
+
+// FR-104: Categorize files for migration
+function categorizeMigrationFiles(files: string[], projectName: string): MigrationActions {
+  const actions: MigrationActions = {
+    delete: [],
+    toPrep: [],
+    toPost: [],
+    conflicts: [],
+  }
+
+  // Track versions we've seen to detect conflicts
+  const seenVersions = new Set<string>()
+
+  for (const file of files) {
+    // Junk files - delete
+    if (file === '.DS_Store' || file.endsWith('.Zone.Identifier')) {
+      actions.delete.push(file)
+      continue
+    }
+
+    // Final files go to post/ with version rename
+    // Pattern: *-final*.mp4 or *-final*.srt
+    const finalMatch = file.match(/^(.+)-final(-v(\d+))?\.(mp4|srt|mov)$/i)
+    if (finalMatch) {
+      const baseName = projectName || finalMatch[1]
+      const version = finalMatch[3] || '1' // Default to v1 if no version
+      const ext = finalMatch[4]
+      const targetName = `${baseName}-v${version}.${ext}`
+
+      // Check for conflicts
+      if (seenVersions.has(targetName)) {
+        actions.conflicts.push({ file, reason: `Would overwrite existing v${version}` })
+      } else {
+        seenVersions.add(targetName)
+        actions.toPost.push({ from: file, to: `post/${targetName}` })
+      }
+      continue
+    }
+
+    // Everything else goes to prep/
+    if (/\.(mp4|srt|mov)$/i.test(file)) {
+      actions.toPrep.push({ from: file, to: `prep/${file}` })
+    }
+  }
+
+  return actions
+}
+
+// FR-104: Execute migration
+async function executeMigration(stagingDir: string, actions: MigrationActions): Promise<void> {
+  // Create subfolders
+  await fs.mkdir(path.join(stagingDir, 'prep'), { recursive: true })
+  await fs.mkdir(path.join(stagingDir, 'post'), { recursive: true })
+
+  // Delete junk files
+  for (const file of actions.delete) {
+    await fs.rm(path.join(stagingDir, file), { force: true })
+  }
+
+  // Move to prep/
+  for (const { from, to } of actions.toPrep) {
+    const srcPath = path.join(stagingDir, from)
+    const destPath = path.join(stagingDir, to)
+    // Check if destination exists to avoid overwrite
+    try {
+      await fs.access(destPath)
+      // File exists, skip
+    } catch {
+      await fs.rename(srcPath, destPath)
+    }
+  }
+
+  // Move to post/
+  for (const { from, to } of actions.toPost) {
+    const srcPath = path.join(stagingDir, from)
+    const destPath = path.join(stagingDir, to)
+    // Check if destination exists to avoid overwrite
+    try {
+      await fs.access(destPath)
+      // File exists, skip
+    } catch {
+      await fs.rename(srcPath, destPath)
+    }
+  }
+}
 
 export function createS3StagingRoutes(getConfig: () => Config) {
   const router = express.Router()
@@ -82,6 +176,16 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         .filter(v => !v.hasSrt)
         .map(v => ({ type: 'missing_srt', file: v.name }))
 
+      // FR-104: Detect flat files in s3-staging root (legacy structure)
+      const stagingDir = path.join(config.projectDirectory, 's3-staging')
+      let flatFiles: string[] = []
+      try {
+        const stagingEntries = await fs.readdir(stagingDir, { withFileTypes: true })
+        flatFiles = stagingEntries.filter(e => e.isFile()).map(e => e.name)
+      } catch {
+        // s3-staging folder doesn't exist
+      }
+
       res.json({
         success: true,
         project: projectCode,
@@ -109,6 +213,11 @@ export function createS3StagingRoutes(getConfig: () => Config) {
           path: 'edits/publish/',
           exists: await folderExists(publishPath),
           files: publishFiles
+        },
+        // FR-104: Migration info
+        migration: {
+          hasLegacyFiles: flatFiles.length > 0,
+          flatFileCount: flatFiles.length
         }
       })
     } catch (error) {
@@ -188,6 +297,55 @@ export function createS3StagingRoutes(getConfig: () => Config) {
       }
 
       res.json({ success: true, files: copied })
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) })
+    }
+  })
+
+  // FR-104: POST /api/s3-staging/migrate - Migrate flat s3-staging to prep/ + post/ structure
+  router.post('/migrate', async (req, res) => {
+    try {
+      const { dryRun = true } = req.body
+      const config = getConfig()
+
+      if (!config.projectDirectory) {
+        return res.status(400).json({ success: false, error: 'No project selected' })
+      }
+
+      const stagingDir = path.join(config.projectDirectory, 's3-staging')
+
+      // Check if staging folder exists
+      try {
+        const stat = await fs.stat(stagingDir)
+        if (!stat.isDirectory()) {
+          return res.status(400).json({ success: false, error: 's3-staging is not a directory' })
+        }
+      } catch {
+        return res.status(400).json({ success: false, error: 's3-staging folder does not exist' })
+      }
+
+      // Get files in root of s3-staging (not in subfolders)
+      const entries = await fs.readdir(stagingDir, { withFileTypes: true })
+      const flatFiles = entries.filter(e => e.isFile()).map(e => e.name)
+
+      if (flatFiles.length === 0) {
+        return res.json({
+          success: true,
+          message: 'No flat files to migrate',
+          dryRun,
+          actions: { delete: [], toPrep: [], toPost: [], conflicts: [] }
+        })
+      }
+
+      // Categorize files
+      const projectName = config.activeProject || ''
+      const actions = categorizeMigrationFiles(flatFiles, projectName)
+
+      if (!dryRun) {
+        await executeMigration(stagingDir, actions)
+      }
+
+      res.json({ success: true, dryRun, actions })
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) })
     }

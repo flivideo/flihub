@@ -1,6 +1,7 @@
 // FR-103: S3 Staging Page
+// FR-104: S3 Staging Migration Tool
 import { useState } from 'react'
-import { useS3StagingStatus, useSyncPrep, usePromoteToPublish } from '../hooks/useS3StagingApi'
+import { useS3StagingStatus, useSyncPrep, usePromoteToPublish, useMigrate, MigrationActions } from '../hooks/useS3StagingApi'
 
 interface S3StagingPageProps {
   onClose: () => void
@@ -20,10 +21,14 @@ const extractVersion = (filename: string): string | null => {
 }
 
 export function S3StagingPage({ onClose }: S3StagingPageProps) {
-  const { data, isLoading } = useS3StagingStatus()
+  const { data, isLoading, refetch } = useS3StagingStatus()
   const syncPrep = useSyncPrep()
   const promoteToPublish = usePromoteToPublish()
+  const migrate = useMigrate()
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null)
+  // FR-104: Migration state
+  const [showMigrationPreview, setShowMigrationPreview] = useState(false)
+  const [migrationPreview, setMigrationPreview] = useState<MigrationActions | null>(null)
 
   if (isLoading) {
     return (
@@ -69,6 +74,24 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
     }
   }
 
+  // FR-104: Migration handlers
+  const handlePreviewMigration = async () => {
+    const result = await migrate.mutateAsync(true)
+    if (result.success && result.actions) {
+      setMigrationPreview(result.actions)
+      setShowMigrationPreview(true)
+    }
+  }
+
+  const handleRunMigration = async () => {
+    setShowMigrationPreview(false)
+    const result = await migrate.mutateAsync(false)
+    if (result.success) {
+      setMigrationPreview(null)
+      refetch()
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
@@ -85,6 +108,38 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
           <div className="text-sm text-gray-500">
             PROJECT: <span className="font-medium text-gray-900">{data.project}</span>
           </div>
+
+          {/* FR-104: Legacy structure warning */}
+          {data.migration?.hasLegacyFiles && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-amber-500 text-xl">⚠️</span>
+                <div className="flex-1">
+                  <h3 className="font-medium text-amber-800">Legacy Structure Detected</h3>
+                  <p className="text-sm text-amber-700 mt-1">
+                    This project has {data.migration.flatFileCount} file(s) in flat s3-staging/ structure.
+                    Migrate to prep/ + post/ subfolders?
+                  </p>
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={handlePreviewMigration}
+                      disabled={migrate.isPending}
+                      className="px-3 py-1.5 text-sm bg-amber-100 text-amber-800 rounded hover:bg-amber-200 disabled:opacity-50"
+                    >
+                      {migrate.isPending ? 'Loading...' : 'Preview Migration'}
+                    </button>
+                    <button
+                      onClick={handleRunMigration}
+                      disabled={migrate.isPending}
+                      className="px-3 py-1.5 text-sm bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50"
+                    >
+                      Run Migration
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* PREP Section */}
           <div className="border-t border-gray-200 pt-4">
@@ -275,6 +330,78 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
           </div>
         </div>
       </div>
+
+      {/* FR-104: Migration preview modal */}
+      {showMigrationPreview && migrationPreview && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] overflow-auto">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h3 className="font-medium text-gray-900">Migration Preview</h3>
+              <button
+                onClick={() => setShowMigrationPreview(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-4 text-sm font-mono space-y-4">
+              {migrationPreview.delete.length > 0 && (
+                <div>
+                  <div className="text-red-600 font-medium font-sans">DELETE ({migrationPreview.delete.length}):</div>
+                  {migrationPreview.delete.map((f) => (
+                    <div key={f} className="ml-4 text-gray-600">{f}</div>
+                  ))}
+                </div>
+              )}
+              {migrationPreview.toPrep.length > 0 && (
+                <div>
+                  <div className="text-blue-600 font-medium font-sans">MOVE TO prep/ ({migrationPreview.toPrep.length}):</div>
+                  {migrationPreview.toPrep.map(({ from, to }) => (
+                    <div key={from} className="ml-4 text-gray-600">{from} → {to}</div>
+                  ))}
+                </div>
+              )}
+              {migrationPreview.toPost.length > 0 && (
+                <div>
+                  <div className="text-green-600 font-medium font-sans">MOVE TO post/ ({migrationPreview.toPost.length}):</div>
+                  {migrationPreview.toPost.map(({ from, to }) => (
+                    <div key={from} className="ml-4 text-gray-600">{from} → {to}</div>
+                  ))}
+                </div>
+              )}
+              {migrationPreview.conflicts.length > 0 && (
+                <div>
+                  <div className="text-orange-600 font-medium font-sans">CONFLICTS ({migrationPreview.conflicts.length}):</div>
+                  {migrationPreview.conflicts.map(({ file, reason }) => (
+                    <div key={file} className="ml-4 text-gray-600">{file} - {reason}</div>
+                  ))}
+                </div>
+              )}
+              {migrationPreview.delete.length === 0 &&
+                migrationPreview.toPrep.length === 0 &&
+                migrationPreview.toPost.length === 0 &&
+                migrationPreview.conflicts.length === 0 && (
+                <div className="text-gray-500 font-sans">No files to migrate.</div>
+              )}
+            </div>
+            <div className="p-4 border-t flex justify-end gap-2">
+              <button
+                onClick={() => setShowMigrationPreview(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRunMigration}
+                disabled={migrate.isPending}
+                className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors disabled:opacity-50"
+              >
+                {migrate.isPending ? 'Migrating...' : 'Run Migration'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
