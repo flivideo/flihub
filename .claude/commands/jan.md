@@ -50,8 +50,8 @@ Jan runs FliHub on **Windows with WSL (Ubuntu)**. This means:
 - File watching behavior differences
 
 **Reference docs (read these if needed):**
-- `docs/wsl-development-guide.md` - WSL-first approach
-- `docs/cross-platform-setup.md` - General Windows setup
+- `docs/guides/wsl-development-guide.md` - WSL-first approach
+- `docs/guides/cross-platform-setup.md` - General Windows setup
 
 ---
 

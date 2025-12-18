@@ -2,21 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
-## Current Focus (2025-12-15)
+## Quick Reference
 
-**Sprint:** Shadow system completion + Watch page polish
-
-| Priority | Item | Status |
-|----------|------|--------|
-| 1 | FR-88: Shadow Fallback in Recordings UI | Bug - blocks shadow system |
-| 2 | FR-71: Watch Page Enhancements | Feature |
-| 3 | FR-54: Naming Template Bugs | Bug Fix (4 items) |
-
-**Recently Completed:** FR-72 through FR-87, NFR-79, NFR-85 (shadow system, transcript sync, chapter SRT)
-
-**Quick Reference:**
 - `/progress` - Get quick project status
-- Specs in [flivideo-docs](https://github.com/flivideo/flivideo-docs) repo
+- `/po` - Product Owner mode (requirements, specs)
+- `/dev` - Developer mode (implementation)
+- `docs/backlog.md` - Active requirements
+- `docs/changelog.md` - What's been implemented
 
 ---
 
@@ -24,15 +16,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 FliHub is a TypeScript application for managing video recording workflows. It watches for new recordings from Ecamm Live, provides a web UI for naming/organizing files, and manages project assets.
 
-**Specifications:** See [flivideo-docs](https://github.com/flivideo/flivideo-docs) repository
+## Documentation
+
+All documentation lives in `docs/`:
+
+```
+docs/
+├── prd/              # Feature specs (FR-8, FR-30, etc.)
+├── architecture/     # API reference, patterns, sockets
+├── guides/           # Setup guides, troubleshooting
+├── archive/          # Completed requirements (historical)
+├── backlog.md        # Active requirements
+├── changelog.md      # Implementation history
+└── README.md         # Documentation index
+```
+
+**Key files:**
+- `docs/backlog.md` - Current FRs/NFRs with status
+- `docs/prd/*.md` - Detailed feature specifications
+- `docs/architecture/patterns.md` - Code conventions
 
 ## Slash Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/dev` | Developer role - implementation |
+| `/po` | Product Owner - requirements, specs, handovers |
+| `/dev` | Developer - implementation |
 | `/uat` | User acceptance testing |
 | `/progress` | Quick project status check |
+| `/jan` | WSL collaborator support |
 
 ## PO Practices
 
