@@ -208,6 +208,28 @@ David copies your handover directly to the developer. The developer works in a s
 
 This is bad because the developer has to go find the spec and piece together what to do.
 
+### Step 3.5: Validate Handover (Reader Testing)
+
+Before providing handover to David, validate it's truly self-contained:
+
+**Quick self-check (always do this):**
+1. Read the handover as if you have NO context from this conversation
+2. Would a developer understand exactly what to build?
+3. Are there assumed knowledge gaps or ambiguous terms?
+
+**For critical/complex features, use sub-agent testing:**
+1. Invoke a sub-agent with ONLY the handover text (no conversation context)
+2. Ask: "Based on this handover, what would you implement? What's unclear?"
+3. If the sub-agent misunderstands or has questions, the handover needs work
+
+**Common gaps Reader Testing catches:**
+- References to "the approach we discussed" (context not included)
+- Assumed knowledge of existing code structure
+- Ambiguous acceptance criteria
+- Missing edge case handling
+
+**Fix any gaps before providing to David.** The developer works from JUST the handover - if Reader Testing reveals confusion, the real developer will have the same confusion.
+
 ### Step 4: Verify & Update Documentation on Completion
 
 When developer provides a completion summary:

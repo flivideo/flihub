@@ -154,6 +154,26 @@ After completing work, provide:
 
 **Important:** Always end with the TL;DR line. This helps David quickly understand context when returning to a conversation without scrolling to the top.
 
+### Step 4.5: Validate Handover (Optional - Complex Features)
+
+For complex implementations where you made significant decisions, changed approach, or discovered new requirements:
+
+**Quick self-check:**
+1. Would the PO understand what was built vs what was specified?
+2. Are any deviations from the spec clearly explained?
+3. If new requirements were discovered, are they clearly flagged?
+
+**When to use Reader Testing:**
+- You changed the approach from what the spec described
+- You discovered edge cases that affected implementation
+- You made architectural decisions not in the original spec
+- The feature touched multiple systems in unexpected ways
+
+**Skip for:**
+- Straightforward implementations that matched the spec
+- Bug fixes with obvious solutions
+- Simple features with no surprises
+
 ### Step 5: Commit
 
 When asked to commit (via `/commit`):
