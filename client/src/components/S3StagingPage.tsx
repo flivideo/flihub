@@ -1,7 +1,8 @@
 // FR-103: S3 Staging Page
 // FR-104: S3 Staging Migration Tool
+// FR-105: S3 DAM Integration
 import { useState } from 'react'
-import { useS3StagingStatus, useSyncPrep, usePromoteToPublish, useMigrate, MigrationActions } from '../hooks/useS3StagingApi'
+import { useS3StagingStatus, useSyncPrep, usePromoteToPublish, useMigrate, MigrationActions, useS3Status, useDamCommand, useCleanLocal, useLocalSize } from '../hooks/useS3StagingApi'
 
 interface S3StagingPageProps {
   onClose: () => void
@@ -29,6 +30,64 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
   // FR-104: Migration state
   const [showMigrationPreview, setShowMigrationPreview] = useState(false)
   const [migrationPreview, setMigrationPreview] = useState<MigrationActions | null>(null)
+
+  // FR-105: S3 DAM integration
+  const { data: s3Status, refetch: refetchS3Status } = useS3Status()
+  const damCommand = useDamCommand()
+  const cleanLocal = useCleanLocal()
+  const { data: localSize } = useLocalSize()
+  const [showCleanConfirm, setShowCleanConfirm] = useState<'local' | 's3' | null>(null)
+
+  // FR-105: Check if any DAM operation is in progress
+  const isDamBusy = damCommand.isPending || cleanLocal.isPending
+
+  // FR-105: Open S3 console in browser
+  const handleViewS3 = () => {
+    if (data?.project && s3Status?.brand) {
+      const url = `https://s3.console.aws.amazon.com/s3/buckets/v-${s3Status.brand}/${data.project}/`
+      window.open(url, '_blank')
+    }
+  }
+
+  // FR-105: Handle DAM upload
+  const handleUpload = () => {
+    damCommand.mutate('upload', {
+      onSuccess: () => {
+        refetchS3Status()
+        refetch()
+      }
+    })
+  }
+
+  // FR-105: Handle DAM download
+  const handleDownload = () => {
+    damCommand.mutate('download', {
+      onSuccess: () => {
+        refetchS3Status()
+        refetch()
+      }
+    })
+  }
+
+  // FR-105: Handle clean local
+  const handleCleanLocal = () => {
+    setShowCleanConfirm(null)
+    cleanLocal.mutate(undefined, {
+      onSuccess: () => {
+        refetch()
+      }
+    })
+  }
+
+  // FR-105: Handle clean S3
+  const handleCleanS3 = () => {
+    setShowCleanConfirm(null)
+    damCommand.mutate('cleanup-s3', {
+      onSuccess: () => {
+        refetchS3Status()
+      }
+    })
+  }
 
   if (isLoading) {
     return (
@@ -203,6 +262,51 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
                 ))
               )}
             </div>
+
+            {/* FR-105: S3 Status for PREP */}
+            <div className="mt-3 bg-blue-50 border border-blue-200 rounded p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">S3:</span>
+                  {s3Status?.prep.error ? (
+                    <span className="text-red-600 text-sm">✕ {s3Status.prep.error}</span>
+                  ) : s3Status?.prep.uploaded ? (
+                    <span className="text-green-600 text-sm">✓ Uploaded</span>
+                  ) : (
+                    <span className="text-gray-500 text-sm">○ Not uploaded</span>
+                  )}
+                  {s3Status?.prep.fileCount ? (
+                    <span className="text-xs text-gray-400">
+                      {s3Status.prep.fileCount} files
+                      {s3Status.prep.lastSync && ` • Last sync: ${new Date(s3Status.prep.lastSync).toLocaleDateString()}`}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleUpload}
+                    disabled={isDamBusy || data.prep.staging.files.length === 0}
+                    className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                  >
+                    {damCommand.isPending && damCommand.variables === 'upload' ? (
+                      <>
+                        <span className="animate-spin">⏳</span>
+                        Uploading...
+                      </>
+                    ) : (
+                      'Upload to S3'
+                    )}
+                  </button>
+                  <button
+                    onClick={handleViewS3}
+                    disabled={!s3Status?.brand}
+                    className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* POST Section */}
@@ -210,6 +314,45 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
             <h3 className="text-sm font-semibold text-gray-700 mb-3">
               POST <span className="font-normal text-gray-500">(Jan's Edits → You)</span>
             </h3>
+
+            {/* FR-105: S3 Status for POST */}
+            <div className="mb-3 bg-green-50 border border-green-200 rounded p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-700">S3:</span>
+                    {s3Status?.post.newFilesAvailable && s3Status.post.newFilesAvailable > 0 ? (
+                      <span className="text-blue-600 text-sm font-medium">
+                        {s3Status.post.newFilesAvailable} new file(s) available
+                      </span>
+                    ) : s3Status?.post.fileCount && s3Status.post.fileCount > 0 ? (
+                      <span className="text-green-600 text-sm">✓ All downloaded</span>
+                    ) : (
+                      <span className="text-gray-500 text-sm">No files from Jan</span>
+                    )}
+                  </div>
+                  {s3Status?.post.newFiles && s3Status.post.newFiles.length > 0 && (
+                    <div className="text-xs text-gray-500 mt-1 font-mono truncate">
+                      {s3Status.post.newFiles.join(', ')}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={handleDownload}
+                  disabled={isDamBusy}
+                  className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  {damCommand.isPending && damCommand.variables === 'download' ? (
+                    <>
+                      <span className="animate-spin">⏳</span>
+                      Downloading...
+                    </>
+                  ) : (
+                    'Download from S3'
+                  )}
+                </button>
+              </div>
+            </div>
 
             <div className="text-xs text-gray-400 mb-1">Local: {data.post.staging.path}</div>
             <div className="bg-gray-50 border border-gray-200 rounded max-h-40 overflow-y-auto">
@@ -328,8 +471,81 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
               </p>
             )}
           </div>
+
+          {/* FR-105: CLEANUP Section */}
+          <div className="border-t border-gray-200 pt-4">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">CLEANUP</h3>
+
+            <div className="space-y-2">
+              {/* Local cleanup */}
+              <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded p-3">
+                <div>
+                  <span className="text-sm text-gray-700">Local s3-staging:</span>
+                  <span className="text-sm text-gray-500 ml-2">
+                    {localSize?.totalSize ? formatSize(localSize.totalSize) : 'calculating...'}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowCleanConfirm('local')}
+                  disabled={isDamBusy || !localSize?.totalSize}
+                  className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {cleanLocal.isPending ? 'Cleaning...' : 'Clean Local'}
+                </button>
+              </div>
+
+              {/* S3 cleanup */}
+              <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded p-3">
+                <div>
+                  <span className="text-sm text-gray-700">S3 bucket:</span>
+                  <span className="text-sm text-gray-500 ml-2">
+                    {s3Status?.prep.totalSize || s3Status?.post.totalSize
+                      ? formatSize((s3Status.prep.totalSize || 0) + (s3Status.post.totalSize || 0))
+                      : 'unknown'}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowCleanConfirm('s3')}
+                  disabled={isDamBusy}
+                  className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {damCommand.isPending && damCommand.variables === 'cleanup-s3' ? 'Cleaning...' : 'Clean S3'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* FR-105: Clean confirmation modal */}
+      {showCleanConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="font-medium text-gray-900 mb-3">
+              {showCleanConfirm === 'local' ? 'Clean Local Staging?' : 'Clean S3 Bucket?'}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              {showCleanConfirm === 'local'
+                ? 'This will delete all files in s3-staging/prep/ and s3-staging/post/. This cannot be undone.'
+                : `This will delete all S3 files for ${data?.project}. This cannot be undone.`}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowCleanConfirm(null)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={showCleanConfirm === 'local' ? handleCleanLocal : handleCleanS3}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+              >
+                Delete All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FR-104: Migration preview modal */}
       {showMigrationPreview && migrationPreview && (

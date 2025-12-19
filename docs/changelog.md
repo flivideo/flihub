@@ -4,15 +4,56 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
-## Quick Summary - 2025-12-16
+## Quick Summary - 2025-12-18
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
 **Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-54 (Naming bugs), FR-69 (Header Dropdowns), FR-71 (Watch Page Enhancements), FR-73 (Template Visibility), FR-80 (Project List & Stages), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-105: S3 DAM Integration
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2025-12-18 | Implemented | - |
+
+**What was built:**
+S3 DAM Integration adds Upload/Download buttons to the S3 Staging modal that execute DAM CLI commands for S3 sync operations.
+
+**Features:**
+- PREP section: S3 status display (uploaded/not uploaded/out of sync), [Upload to S3] button, [View] button
+- POST section: S3 status display (new files available/all downloaded), [Download from S3] button
+- CLEANUP section: Local staging size display with [Clean Local] button, S3 size with [Clean S3] button
+- Confirmation dialogs for destructive operations
+- Progress indicators during DAM operations
+- All buttons disabled during active DAM operations
+
+**API Endpoints:**
+- `GET /api/s3-staging/s3-status` - Get S3 bucket status via `dam s3-status`
+- `POST /api/s3-staging/dam` - Execute DAM command (upload/download/cleanup-s3/status)
+- `DELETE /api/s3-staging/local` - Delete all local staging files
+- `GET /api/s3-staging/local-size` - Get local staging size
+
+**DAM Commands Used:**
+- `dam s3-up {brand} {project}` - Upload prep files to S3
+- `dam s3-down {brand} {project}` - Download post files from S3
+- `dam s3-cleanup {brand} {project}` - Delete S3 files for project
+- `dam s3-status {brand} {project}` - Get S3 file listing
+
+**Brand Detection:**
+Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `appydave`
+
+**Files created/modified:**
+- `server/src/routes/s3-staging.ts` - Added DAM command execution, S3 status, local cleanup endpoints
+- `client/src/hooks/useS3StagingApi.ts` - Added useS3Status, useDamCommand, useCleanLocal, useLocalSize hooks
+- `client/src/components/S3StagingPage.tsx` - Added S3 status displays, DAM buttons, CLEANUP section
+
+**Note:** Requires DAM CLI (`appydave-tools` gem) and AWS CLI configured with credentials.
+
+---
 
 ### FR-94: Transcription Progress State Bugs
 

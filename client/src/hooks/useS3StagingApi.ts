@@ -143,3 +143,138 @@ export function useMigrate() {
     }
   })
 }
+
+// FR-105: S3 Status types
+interface S3Status {
+  success: boolean
+  error?: string
+  project?: string
+  brand?: string
+  prep: {
+    uploaded: boolean
+    fileCount?: number
+    totalSize?: number
+    lastSync?: string
+    inSync?: boolean
+    error?: string
+  }
+  post: {
+    fileCount: number
+    totalSize?: number
+    newFilesAvailable: number
+    newFiles: string[]
+  }
+  rawOutput?: string
+}
+
+// FR-105: DAM command types
+type DamAction = 'upload' | 'download' | 'cleanup-s3' | 'status'
+
+interface DamResult {
+  success: boolean
+  action: DamAction
+  command: string
+  output?: string
+  error?: string
+  exitCode?: number
+  duration?: number
+}
+
+interface CleanLocalResult {
+  success: boolean
+  error?: string
+  deleted?: {
+    prep: number
+    post: number
+  }
+  freedSpace?: number
+}
+
+interface LocalSizeResult {
+  success: boolean
+  error?: string
+  totalSize?: number
+}
+
+// FR-105: Get S3 status
+export function useS3Status() {
+  return useQuery<S3Status>({
+    queryKey: ['s3-staging-s3-status'],
+    queryFn: async () => {
+      const res = await fetch(`${API_URL}/api/s3-staging/s3-status`)
+      return res.json()
+    },
+    staleTime: 30000 // 30 seconds - don't refetch too often
+  })
+}
+
+// FR-105: Execute DAM command
+export function useDamCommand() {
+  const queryClient = useQueryClient()
+  return useMutation<DamResult, Error, DamAction>({
+    mutationFn: async (action: DamAction) => {
+      const res = await fetch(`${API_URL}/api/s3-staging/dam`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      })
+      return res.json()
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        const actionLabels: Record<DamAction, string> = {
+          upload: 'Upload',
+          download: 'Download',
+          'cleanup-s3': 'S3 cleanup',
+          status: 'Status check'
+        }
+        toast.success(`${actionLabels[data.action]} completed`)
+        // Refresh both S3 status and local status
+        queryClient.invalidateQueries({ queryKey: ['s3-staging-s3-status'] })
+        queryClient.invalidateQueries({ queryKey: ['s3-staging-status'] })
+      } else {
+        toast.error(data.error || `${data.action} failed`)
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'DAM command failed')
+    }
+  })
+}
+
+// FR-105: Clean local staging files
+export function useCleanLocal() {
+  const queryClient = useQueryClient()
+  return useMutation<CleanLocalResult, Error, void>({
+    mutationFn: async () => {
+      const res = await fetch(`${API_URL}/api/s3-staging/local`, {
+        method: 'DELETE'
+      })
+      return res.json()
+    },
+    onSuccess: (data) => {
+      if (data.success && data.deleted) {
+        const total = data.deleted.prep + data.deleted.post
+        toast.success(`Deleted ${total} file(s) from staging`)
+        queryClient.invalidateQueries({ queryKey: ['s3-staging-status'] })
+        queryClient.invalidateQueries({ queryKey: ['s3-staging-local-size'] })
+      } else {
+        toast.error(data.error || 'Clean failed')
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Clean failed')
+    }
+  })
+}
+
+// FR-105: Get local staging size
+export function useLocalSize() {
+  return useQuery<LocalSizeResult>({
+    queryKey: ['s3-staging-local-size'],
+    queryFn: async () => {
+      const res = await fetch(`${API_URL}/api/s3-staging/local-size`)
+      return res.json()
+    }
+  })
+}

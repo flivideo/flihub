@@ -10,6 +10,7 @@ Requirements index for FliHub.
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
+| FR-105 | [S3 DAM Integration](prd/fr-105-s3-dam-integration.md) | 2025-12-18 | Implemented |
 | FR-94 | [Transcription Progress State Bugs](prd/fr-94-transcription-progress-bugs.md) | 2025-12-16 | Implemented |
 | FR-93 | [Project Name Shows Full Path on Windows](prd/fr-93-windows-project-path-display.md) | 2025-12-16 | Pending |
 | FR-92 | [Transcribe All Re-Transcribes Existing Files](prd/fr-92-transcribe-all-skip-existing.md) | 2025-12-16 | Implemented |

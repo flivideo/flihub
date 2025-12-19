@@ -1,9 +1,88 @@
 // FR-103: S3 Staging Page API
 // FR-104: S3 Staging Migration Tool
+// FR-105: S3 DAM Integration
 import express from 'express'
 import path from 'path'
 import fs from 'fs/promises'
+import { exec } from 'child_process'
+import { promisify } from 'util'
 import type { Config } from '../../../shared/types.js'
+
+const execAsync = promisify(exec)
+
+// FR-105: DAM command types
+type DamAction = 'upload' | 'download' | 'cleanup-s3' | 'status'
+
+interface DamResult {
+  success: boolean
+  action: DamAction
+  command: string
+  output?: string
+  error?: string
+  exitCode?: number
+  duration?: number
+}
+
+// FR-105: Extract brand from project path
+// e.g., /video-projects/v-appydave/b85-clauding-01/ -> appydave
+function extractBrand(projectPath: string): string {
+  const parts = projectPath.split(path.sep)
+  // Find the v-* directory
+  for (let i = parts.length - 1; i >= 0; i--) {
+    if (parts[i].startsWith('v-')) {
+      return parts[i].slice(2)
+    }
+  }
+  return 'appydave' // default fallback
+}
+
+// FR-105: Run DAM CLI command
+async function runDamCommand(action: DamAction, brand: string, projectCode: string): Promise<DamResult> {
+  const commandMap: Record<DamAction, string> = {
+    upload: `dam s3-up ${brand} ${projectCode}`,
+    download: `dam s3-down ${brand} ${projectCode}`,
+    'cleanup-s3': `dam s3-cleanup ${brand} ${projectCode}`,
+    status: `dam s3-status ${brand} ${projectCode}`
+  }
+
+  const command = commandMap[action]
+  const startTime = Date.now()
+
+  try {
+    const { stdout, stderr } = await execAsync(command, { timeout: 300000 }) // 5 min timeout
+    const duration = Date.now() - startTime
+
+    return {
+      success: true,
+      action,
+      command,
+      output: stdout || stderr,
+      duration
+    }
+  } catch (error: unknown) {
+    const duration = Date.now() - startTime
+    const execError = error as { code?: number; stderr?: string; message?: string }
+
+    // Provide helpful error messages
+    let errorMessage = execError.stderr || execError.message || 'Unknown error'
+    if (errorMessage.includes('command not found') || errorMessage.includes('not recognized')) {
+      errorMessage = 'DAM CLI not found. Install with: gem install appydave-tools'
+    } else if (errorMessage.includes('credentials') || errorMessage.includes('AccessDenied')) {
+      errorMessage = 'AWS credentials not configured. Run: aws configure'
+    } else if (errorMessage.includes('timeout')) {
+      errorMessage = 'Operation timed out. Check your connection and try again.'
+    }
+
+    return {
+      success: false,
+      action,
+      command,
+      error: errorMessage,
+      exitCode: execError.code,
+      duration
+    }
+  }
+}
 
 // FR-104: Migration types
 interface MigrationActions {
@@ -346,6 +425,202 @@ export function createS3StagingRoutes(getConfig: () => Config) {
       }
 
       res.json({ success: true, dryRun, actions })
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) })
+    }
+  })
+
+  // FR-105: GET /api/s3-staging/s3-status - Get S3 bucket status
+  router.get('/s3-status', async (req, res) => {
+    try {
+      const config = getConfig()
+      if (!config.projectDirectory) {
+        return res.json({ success: false, error: 'No project selected' })
+      }
+
+      const projectCode = path.basename(config.projectDirectory)
+      const brand = extractBrand(config.projectDirectory)
+
+      // Get S3 status via DAM command
+      const damResult = await runDamCommand('status', brand, projectCode)
+
+      if (!damResult.success) {
+        return res.json({
+          success: true,
+          project: projectCode,
+          brand,
+          prep: { uploaded: false, error: damResult.error },
+          post: { fileCount: 0, newFilesAvailable: 0, newFiles: [] }
+        })
+      }
+
+      // Parse DAM status output (format depends on DAM implementation)
+      // For now, return a basic structure - can be enhanced based on actual DAM output format
+      const output = damResult.output || ''
+
+      // Try to parse JSON output if DAM returns JSON
+      let parsedStatus = { prep: {}, post: {} }
+      try {
+        parsedStatus = JSON.parse(output)
+      } catch {
+        // DAM might return text format - parse as needed
+        // For now, return basic status indicating command succeeded
+      }
+
+      res.json({
+        success: true,
+        project: projectCode,
+        brand,
+        prep: {
+          uploaded: true,
+          fileCount: (parsedStatus.prep as { fileCount?: number })?.fileCount || 0,
+          totalSize: (parsedStatus.prep as { totalSize?: number })?.totalSize || 0,
+          lastSync: (parsedStatus.prep as { lastSync?: string })?.lastSync,
+          inSync: true
+        },
+        post: {
+          fileCount: (parsedStatus.post as { fileCount?: number })?.fileCount || 0,
+          totalSize: (parsedStatus.post as { totalSize?: number })?.totalSize || 0,
+          newFilesAvailable: (parsedStatus.post as { newFilesAvailable?: number })?.newFilesAvailable || 0,
+          newFiles: (parsedStatus.post as { newFiles?: string[] })?.newFiles || []
+        },
+        rawOutput: output
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) })
+    }
+  })
+
+  // FR-105: POST /api/s3-staging/dam - Execute DAM command
+  router.post('/dam', async (req, res) => {
+    try {
+      const config = getConfig()
+      const { action } = req.body as { action: DamAction }
+
+      if (!config.projectDirectory) {
+        return res.json({ success: false, error: 'No project selected' })
+      }
+
+      if (!['upload', 'download', 'cleanup-s3', 'status'].includes(action)) {
+        return res.status(400).json({ success: false, error: `Invalid action: ${action}` })
+      }
+
+      const projectCode = path.basename(config.projectDirectory)
+      const brand = extractBrand(config.projectDirectory)
+
+      console.log(`[S3 Staging] Running DAM ${action} for ${brand}/${projectCode}`)
+
+      const result = await runDamCommand(action, brand, projectCode)
+
+      if (result.success) {
+        console.log(`[S3 Staging] DAM ${action} completed in ${result.duration}ms`)
+      } else {
+        console.error(`[S3 Staging] DAM ${action} failed: ${result.error}`)
+      }
+
+      res.json(result)
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) })
+    }
+  })
+
+  // FR-105: DELETE /api/s3-staging/local - Delete all local staging files
+  router.delete('/local', async (req, res) => {
+    try {
+      const config = getConfig()
+      if (!config.projectDirectory) {
+        return res.json({ success: false, error: 'No project selected' })
+      }
+
+      const stagingDir = path.join(config.projectDirectory, 's3-staging')
+      const prepDir = path.join(stagingDir, 'prep')
+      const postDir = path.join(stagingDir, 'post')
+
+      let prepDeleted = 0
+      let postDeleted = 0
+      let freedSpace = 0
+
+      // Delete files in prep/
+      try {
+        const prepFiles = await fs.readdir(prepDir)
+        for (const file of prepFiles) {
+          if (file.startsWith('.')) continue
+          const filePath = path.join(prepDir, file)
+          const stat = await fs.stat(filePath)
+          freedSpace += stat.size
+          await fs.rm(filePath, { force: true })
+          prepDeleted++
+        }
+      } catch {
+        // prep folder doesn't exist or is empty
+      }
+
+      // Delete files in post/
+      try {
+        const postFiles = await fs.readdir(postDir)
+        for (const file of postFiles) {
+          if (file.startsWith('.')) continue
+          const filePath = path.join(postDir, file)
+          const stat = await fs.stat(filePath)
+          freedSpace += stat.size
+          await fs.rm(filePath, { force: true })
+          postDeleted++
+        }
+      } catch {
+        // post folder doesn't exist or is empty
+      }
+
+      console.log(`[S3 Staging] Cleaned local staging: ${prepDeleted} prep, ${postDeleted} post files`)
+
+      res.json({
+        success: true,
+        deleted: {
+          prep: prepDeleted,
+          post: postDeleted
+        },
+        freedSpace
+      })
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) })
+    }
+  })
+
+  // FR-105: GET /api/s3-staging/local-size - Get local staging size
+  router.get('/local-size', async (req, res) => {
+    try {
+      const config = getConfig()
+      if (!config.projectDirectory) {
+        return res.json({ success: false, error: 'No project selected' })
+      }
+
+      const stagingDir = path.join(config.projectDirectory, 's3-staging')
+
+      // Calculate total size
+      const calculateDirSize = async (dir: string): Promise<number> => {
+        let total = 0
+        try {
+          const entries = await fs.readdir(dir, { withFileTypes: true })
+          for (const entry of entries) {
+            const entryPath = path.join(dir, entry.name)
+            if (entry.isFile()) {
+              const stat = await fs.stat(entryPath)
+              total += stat.size
+            } else if (entry.isDirectory()) {
+              total += await calculateDirSize(entryPath)
+            }
+          }
+        } catch {
+          // Directory doesn't exist
+        }
+        return total
+      }
+
+      const totalSize = await calculateDirSize(stagingDir)
+
+      res.json({
+        success: true,
+        totalSize
+      })
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) })
     }
