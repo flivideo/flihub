@@ -23,6 +23,9 @@ logs/
 *.log
 npm-debug.log*
 
+# Runtime telemetry data
+*.jsonl
+
 # Test coverage
 coverage/
 
