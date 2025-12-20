@@ -95,6 +95,7 @@ Add a **Play button** to each FileCard:
 - Escape key: Close modal
 - Video player: Native HTML5 with browser controls
 - Aspect ratio: 16:9 with `object-contain`
+- **Autoplay**: Video begins playing automatically when modal opens
 
 ### 3. Controls Bar
 
@@ -137,7 +138,17 @@ This endpoint streams files from the watch directory (ecamm folder).
 
 **File: `server/src/routes/video.ts`**
 
-Add this new route handler AFTER the existing `/:projectCode/:folder/:filename` route (around line 128, before `return router;`):
+Add this new route handler AFTER the existing `/:projectCode/:folder/:filename` route, before `return router;`.
+
+**Important:** Route order matters in Express. The `/incoming/:filename` route must come AFTER the `/:projectCode/:folder/:filename` route because Express matches routes in order. If `/incoming/:filename` came first, requests like `/b85/recordings/video.mov` would incorrectly match with `incoming` as the filename.
+
+Find this pattern and add the new route after it:
+```typescript
+  });
+
+  return router;
+}
+```
 
 ```typescript
   /**
@@ -335,6 +346,7 @@ export function IncomingVideoModal({ file, onClose }: IncomingVideoModalProps) {
             ref={videoRef}
             src={videoUrl}
             controls
+            autoPlay
             className="w-full h-full object-contain"
             onLoadedMetadata={() => {
               if (videoRef.current) {
@@ -489,6 +501,7 @@ const [showPreview, setShowPreview] = useState(false)
 ### Testing
 - [ ] Preview button appears on all incoming files
 - [ ] Modal opens with correct video
+- [ ] **Video autoplays when modal opens**
 - [ ] Video plays with seeking support
 - [ ] Speed controls work and persist
 - [ ] Modal closes on backdrop click
