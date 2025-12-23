@@ -5,6 +5,7 @@ import type { FileInfo, RenameRequest } from '../../../shared/types'
 import type { NamingState } from '../App'
 import { formatFileSize, formatDuration, formatRelativeTime } from '../utils/formatting'
 import { buildPreviewFilename } from '../utils/naming'
+import { IncomingVideoModal } from './IncomingVideoModal'
 
 interface FileCardProps {
   file: FileInfo
@@ -29,6 +30,9 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
 
   const renameMutation = useRename()
   const trashMutation = useTrashFile()
+
+  // FR-106: State for video preview modal
+  const [showPreview, setShowPreview] = useState(false)
 
   // FR-46: Periodic refresh for relative time display
   const [, setTick] = useState(0)
@@ -153,6 +157,15 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
         </p>
 
         <div className="flex gap-2">
+          {/* FR-106: Preview button */}
+          <button
+            onClick={() => setShowPreview(true)}
+            disabled={isLoading}
+            className="px-3 py-1.5 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+            title="Preview video"
+          >
+            ▶
+          </button>
           <button
             onClick={handleDiscard}
             disabled={isLoading}
@@ -169,6 +182,14 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
           </button>
         </div>
       </div>
+
+      {/* FR-106: Video preview modal */}
+      {showPreview && (
+        <IncomingVideoModal
+          file={file}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </div>
   )
 }

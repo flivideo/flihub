@@ -538,3 +538,28 @@ const [showPreview, setShowPreview] = useState(false)
 - FR-71: Watch Page Enhancements (speed controls)
 - FileCard component (trigger location)
 - FileViewerModal (modal patterns)
+
+---
+
+## Completion Notes
+
+**What was done:**
+- Added `/api/video/incoming/:filename` endpoint to stream videos from watch directory
+- Created `IncomingVideoModal.tsx` component with video player, speed controls, and file info
+- Added Preview button (▶) to FileCard component
+- Integrated modal with FileCard state
+
+**Files changed:**
+- `server/src/routes/video.ts` (modified) - Added incoming video endpoint with Range support
+- `client/src/components/IncomingVideoModal.tsx` (new) - Video preview modal component
+- `client/src/components/FileCard.tsx` (modified) - Added Preview button and modal integration
+
+**Testing notes:**
+- Preview button appears on all incoming file cards
+- Modal opens with video autoplay
+- Speed controls work and persist to localStorage (shared with Watch page)
+- Seeking works via Range request support
+- Modal closes on backdrop click, X button, or Escape key
+- Security: Path traversal blocked, only .mov/.mp4 allowed
+
+**Status:** Complete

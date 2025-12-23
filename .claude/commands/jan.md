@@ -236,7 +236,8 @@ npm run dev    # Start fresh
 ## Integration
 
 ```
-/brainstorming-agent → Ideas (upstream)
+/brainstorm → Creative thinking (upstream)
+/idea-capture → Document ideas (upstream)
         ↓
 /po → Requirements (upstream)
         ↓
