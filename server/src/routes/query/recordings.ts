@@ -20,10 +20,11 @@ import type { Config, QueryRecording } from '../../../../shared/types.js';
 
 const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 
-// FR-83: Extended recording with shadow support
+// FR-83/FR-111: Extended recording with shadow support
 // isShadow: true = shadow-only (no real recording)
 // hasShadow: true = real recording has a corresponding shadow
 // FR-95: shadowSize = size of corresponding shadow file (null if no shadow)
+// FR-111: folder is always 'recordings', isSafe comes from state file
 interface UnifiedRecording extends QueryRecording {
   isShadow?: boolean;
   hasShadow?: boolean;
@@ -50,15 +51,18 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
 
       const paths = getProjectPaths(projectPath);
 
-      // FR-83: Shadow directories
+      // FR-83/FR-111: Shadow directory (no more -safe folder)
       const shadowDir = path.join(projectPath, 'recording-shadows');
-      const shadowSafeDir = path.join(projectPath, 'recording-shadows', '-safe');
 
       // Build unified map: baseName -> recording (real takes precedence)
       const unifiedMap = new Map<string, UnifiedRecording>();
 
       // FR-83: Track which baseNames have shadow files
       const shadowSet = new Map<string, { size: number; duration: number | null }>();
+
+      // FR-111: Read state file for safe flags
+      const { readProjectState, isRecordingSafe } = await import('../../utils/projectState.js');
+      const state = await readProjectState(projectPath);
 
       // Get transcript filenames for hasTranscript check
       // FR-94: .txt is the primary format - only .txt counts as "transcribed"
@@ -70,99 +74,87 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         }
       }
 
-      // FR-83: First, scan shadow video files to build shadowSet
+      // FR-83/FR-111: First, scan shadow video files to build shadowSet
       // Then add shadow-only entries (will be overwritten by real files)
-      const shadowFolders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
-        { dir: shadowDir, folder: 'recordings' },
-        { dir: shadowSafeDir, folder: 'safe' },
-      ];
+      // Only scan recording-shadows/ (no more -safe folder)
+      const shadowFiles = await readDirSafe(shadowDir);
+      for (const filename of shadowFiles) {
+        if (!filename.match(/\.mp4$/i)) continue;
 
-      for (const { dir, folder } of shadowFolders) {
-        const files = await readDirSafe(dir);
-        for (const filename of files) {
-          if (!filename.match(/\.mp4$/i)) continue;
+        const shadowPath = path.join(shadowDir, filename);
+        const stat = await statSafe(shadowPath);
+        if (!stat) continue;
 
-          const shadowPath = path.join(dir, filename);
-          const stat = await statSafe(shadowPath);
-          if (!stat) continue;
+        // Shadow filename matches original baseName (e.g., 01-1-intro.mp4)
+        const baseName = filename.replace(/\.mp4$/i, '');
+        const parsed = parseRecordingFilename(filename);
+        if (!parsed) continue;
 
-          // Shadow filename matches original baseName (e.g., 01-1-intro.mp4)
-          const baseName = filename.replace(/\.mp4$/i, '');
-          const parsed = parseRecordingFilename(filename);
-          if (!parsed) continue;
+        // Get duration from shadow video
+        const duration = await getVideoDuration(shadowPath);
 
-          // Get duration from shadow video
-          const duration = await getVideoDuration(shadowPath);
+        // Track that this baseName has a shadow
+        shadowSet.set(baseName, { size: stat.size, duration });
 
-          // Track that this baseName has a shadow
-          shadowSet.set(`${folder}:${baseName}`, { size: stat.size, duration });
+        const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
 
-          const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
+        // Add as shadow-only entry (may be overwritten by real file)
+        const recording: UnifiedRecording = {
+          filename: `${baseName}.mov`,  // Report as .mov for consistency
+          chapter: parsed.chapter,
+          sequence: parsed.sequence || '0',
+          name: cleanName,
+          tags,
+          folder: 'recordings',  // FR-111: Always recordings
+          isSafe: isRecordingSafe(state, `${baseName}.mov`),  // FR-111: From state
+          size: stat.size,
+          duration: duration,
+          hasTranscript: transcriptSet.has(baseName),
+          isShadow: true,
+          hasShadow: true,  // Shadow-only files obviously have shadow
+          shadowSize: stat.size,  // FR-95: Shadow-only, so shadow size = file size
+        };
 
-          // Add as shadow-only entry (may be overwritten by real file)
-          const recording: UnifiedRecording = {
-            filename: `${baseName}.mov`,  // Report as .mov for consistency
-            chapter: parsed.chapter,
-            sequence: parsed.sequence || '0',
-            name: cleanName,
-            tags,
-            folder,
-            size: stat.size,
-            duration: duration,
-            hasTranscript: transcriptSet.has(baseName),
-            isShadow: true,
-            hasShadow: true,  // Shadow-only files obviously have shadow
-            shadowSize: stat.size,  // FR-95: Shadow-only, so shadow size = file size
-          };
-
-          unifiedMap.set(`${folder}:${baseName}`, recording);
-        }
+        unifiedMap.set(baseName, recording);
       }
 
-      // Scan real recordings and safe folders (overwrites shadows)
-      const folders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
-        { dir: paths.recordings, folder: 'recordings' },
-        { dir: paths.safe, folder: 'safe' },
-      ];
+      // FR-111: Scan only recordings/ (no more -safe folder)
+      const realFiles = await readDirSafe(paths.recordings);
+      for (const filename of realFiles) {
+        if (!filename.endsWith('.mov')) continue;
 
-      for (const { dir, folder } of folders) {
-        const files = await readDirSafe(dir);
-        for (const filename of files) {
-          if (!filename.endsWith('.mov')) continue;
+        const parsed = parseRecordingFilename(filename);
+        if (!parsed) continue;
 
-          const parsed = parseRecordingFilename(filename);
-          if (!parsed) continue;
+        const filePath = path.join(paths.recordings, filename);
+        const stat = await statSafe(filePath);
+        if (!stat) continue;
 
-          const filePath = path.join(dir, filename);
-          const stat = await statSafe(filePath);
-          if (!stat) continue;
+        const baseName = filename.replace('.mov', '');
+        const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
 
-          const baseName = filename.replace('.mov', '');
-          const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
+        // Check if this real recording has a corresponding shadow
+        const shadowInfo = shadowSet.get(baseName);
+        const hasShadow = !!shadowInfo;
 
-          // Check if this real recording has a corresponding shadow
-          const shadowKey = `${folder}:${baseName}`;
-          const shadowInfo = shadowSet.get(shadowKey);
-          const hasShadow = !!shadowInfo;
+        const recording: UnifiedRecording = {
+          filename,
+          chapter: parsed.chapter,
+          sequence: parsed.sequence || '0',
+          name: cleanName,
+          tags,
+          folder: 'recordings',  // FR-111: Always recordings
+          isSafe: isRecordingSafe(state, filename),  // FR-111: From state
+          size: stat.size,
+          duration: shadowInfo?.duration ?? null, // Use shadow duration if available
+          hasTranscript: transcriptSet.has(baseName),
+          isShadow: false,
+          hasShadow,
+          shadowSize: shadowInfo?.size ?? null,  // FR-95: Shadow file size (null if no shadow)
+        };
 
-          const recording: UnifiedRecording = {
-            filename,
-            chapter: parsed.chapter,
-            sequence: parsed.sequence || '0',
-            name: cleanName,
-            tags,
-            folder,
-            size: stat.size,
-            duration: shadowInfo?.duration ?? null, // Use shadow duration if available
-            hasTranscript: transcriptSet.has(baseName),
-            isShadow: false,
-            hasShadow,
-            shadowSize: shadowInfo?.size ?? null,  // FR-95: Shadow file size (null if no shadow)
-          };
-
-          // Real file overwrites shadow
-          unifiedMap.set(shadowKey, recording);
-        }
+        // Real file overwrites shadow
+        unifiedMap.set(baseName, recording);
       }
 
       // Convert map to array

@@ -132,10 +132,8 @@ export interface ProjectStats {
   // Priority
   priority: ProjectPriority;
 
-  // Counts
-  recordingsCount: number;    // Files in recordings/
-  safeCount: number;          // Files in recordings/-safe/
-  totalFiles: number;         // recordingsCount + safeCount
+  // Counts (FR-111: recordingsCount and safeCount removed, safe status is per-file)
+  totalFiles: number;         // All files in recordings/
 
   // Chapters
   chapterCount: number;       // Unique chapter numbers
@@ -181,7 +179,8 @@ export interface RecordingFile {
   sequence: string;       // Parsed from filename (e.g., "1")
   name: string;           // Parsed from filename (e.g., "intro")
   tags: string[];         // Parsed from filename
-  folder: 'recordings' | 'safe';  // Which folder it's in
+  folder: 'recordings';   // FR-111: Always 'recordings' now (safe uses isSafe flag)
+  isSafe: boolean;        // FR-111: True if hidden from active view (from state file)
   isShadow?: boolean;     // FR-83: True if shadow-only (no real recording)
   hasShadow?: boolean;    // FR-83: True if this recording has a shadow file
   shadowSize?: number | null;  // FR-95: Shadow file size in bytes (null if no shadow)
@@ -583,9 +582,9 @@ export interface QueryProjectDetail {
   path: string;
   stage: ProjectStage;
   priority: ProjectPriority;
+  // FR-111: safe removed (safe status is per-file in state)
   stats: {
     recordings: number;
-    safe: number;
     chapters: number;
     transcripts: {
       matched: number;
@@ -611,7 +610,8 @@ export interface QueryRecording {
   sequence: string;
   name: string;
   tags: string[];
-  folder: 'recordings' | 'safe';
+  folder: 'recordings';           // FR-111: Always 'recordings' now
+  isSafe: boolean;                // FR-111: True if hidden from active view
   size: number;
   duration: number | null;
   hasTranscript: boolean;
@@ -749,4 +749,32 @@ export interface EnvironmentResponse {
     windowsFiles: string;   // e.g., '/mnt/c/...' or 'C:\\...'
     wslFiles: string;       // e.g., '/home/jan/...' or '\\\\wsl$\\...'
   };
+}
+
+// ============================================
+// FR-111: Per-Project State File
+// ============================================
+
+// State for a single recording
+export interface RecordingState {
+  safe?: boolean;           // True = hidden from active view
+  stage?: string;           // Future: per-recording stage (recording, first-edit, review, etc.)
+}
+
+// Full project state file schema
+export interface ProjectState {
+  version: 1;
+  recordings: Record<string, RecordingState>;  // Keyed by filename (e.g., "01-1-intro.mov")
+}
+
+// API response for reading project state
+export interface ProjectStateResponse {
+  success: boolean;
+  state: ProjectState;
+  error?: string;
+}
+
+// API request for updating project state
+export interface UpdateProjectStateRequest {
+  recordings: Record<string, RecordingState>;
 }

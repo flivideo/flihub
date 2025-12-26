@@ -23,13 +23,12 @@ export function createShadowsRouter(getConfig: () => Config) {
 
     try {
       // Current project shadow counts
+      // FR-111: No more -safe folders
       const projectPath = expandPath(config.projectDirectory);
       const recordingsDir = path.join(projectPath, 'recordings');
-      const safeDir = path.join(projectPath, 'recordings', '-safe');
       const shadowDir = path.join(projectPath, 'recording-shadows');
-      const shadowSafeDir = path.join(projectPath, 'recording-shadows', '-safe');
 
-      const counts = await getShadowCounts(recordingsDir, safeDir, shadowDir, shadowSafeDir);
+      const counts = await getShadowCounts(recordingsDir, shadowDir);
 
       // Watch directory status
       const watchPath = expandPath(config.watchDirectory);

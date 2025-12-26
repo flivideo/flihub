@@ -434,11 +434,10 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
 
       {/* Two-column grid for Files, Assets, Final Media */}
       <div className="grid grid-cols-3 gap-4 mb-4">
-        {/* Files Section */}
+        {/* Files Section - FR-111: recordingsCount/safeCount removed */}
         <div className="space-y-1">
           <SectionHeader>Files</SectionHeader>
-          <StatRow label="Recordings" value={project.recordingsCount} />
-          <StatRow label="Safe" value={project.safeCount} />
+          <StatRow label="Total" value={project.totalFiles} />
           <StatRow label="Chapters" value={project.chapterCount} />
         </div>
 

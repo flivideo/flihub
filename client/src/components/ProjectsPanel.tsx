@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useProjects, useUpdateProjectPriority, useUpdateProjectStage, useConfig, useUpdateConfig, useRefetchSuggestedNaming, useCreateProject, useFinalMedia } from '../hooks/useApi'
@@ -9,18 +9,6 @@ import { LoadingSpinner, ErrorMessage, PageContainer } from './shared'
 import { ProjectStatsPopup } from './ProjectStatsPopup'
 import { formatFileSize } from '../utils/formatting'
 import type { ProjectStats, ProjectPriority, ProjectStage, ProjectStageOverride } from '../../../shared/types'
-
-// FR-80: Stage constants (defined locally to avoid Vite import issues with shared runtime values)
-const DEFAULT_PROJECT_STAGES: ProjectStage[] = [
-  'planning',
-  'recording',
-  'first-edit',
-  'second-edit',
-  'review',
-  'ready-to-publish',
-  'published',
-  'archived',
-]
 
 // FR-80: Tab type for navigation callback
 type ViewTab = 'incoming' | 'recordings' | 'watch' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config' | 'mockups'
@@ -41,24 +29,6 @@ const PRIORITY_DISPLAY: Record<ProjectPriority, { icon: string; title: string }>
 // Simple toggle: normal ↔ pinned
 function getNextPriority(current: ProjectPriority): ProjectPriority {
   return current === 'pinned' ? 'normal' : 'pinned'
-}
-
-// FR-80: Stage cycle using configurable stages
-// Click = forward, Shift+Click = backward
-// At the end, 'auto' resets to auto-detection
-function getNextStage(current: ProjectStage, backward: boolean = false): ProjectStageOverride {
-  const stages = DEFAULT_PROJECT_STAGES
-  const currentIndex = stages.indexOf(current)
-
-  if (backward) {
-    // Going backward: if at start or not found, reset to auto
-    if (currentIndex <= 0) return 'auto'
-    return stages[currentIndex - 1]
-  }
-
-  // Going forward: if at end or not found, reset to auto
-  if (currentIndex === -1 || currentIndex >= stages.length - 1) return 'auto'
-  return stages[currentIndex + 1]
 }
 
 // FR-80: Stage display config with colors for 8-stage workflow
@@ -197,31 +167,74 @@ function ChaptersIndicator({ project, onOpenFolder }: { project: ProjectStats; o
   )
 }
 
-// FR-82: Stage cell with rich tooltip
-function StageCell({ project, onClick }: { project: ProjectStats; onClick: (e: React.MouseEvent) => void }) {
-  const [showTooltip, setShowTooltip] = useState(false)
+// FR-110: Stage cell with dropdown selector
+const STAGE_ORDER: (keyof typeof STAGE_DISPLAY)[] = [
+  'planning', 'recording', 'first-edit', 'second-edit', 'review', 'ready-to-publish', 'published', 'archived'
+]
+
+function StageCell({ project, onStageChange }: { project: ProjectStats; onStageChange: (stage: string) => void }) {
+  const [showDropdown, setShowDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const stageConfig = STAGE_DISPLAY[project.stage]
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showDropdown])
+
+  const handleSelect = (stage: string) => {
+    setShowDropdown(false)
+    onStageChange(stage)
+  }
+
   return (
-    <button
-      onClick={onClick}
-      className={`text-xs font-medium px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity relative ${
-        stageConfig?.bg || ''
-      } ${stageConfig?.text || 'text-gray-400'}`}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-    >
-      {stageConfig?.label || project.stage}
-      {showTooltip && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap text-left">
-          <div className="font-medium">{stageConfig?.label || project.stage}</div>
-          <div className="text-gray-300">{stageConfig?.description || ''}</div>
-          <div className="text-gray-500 text-[10px] mt-1 border-t border-gray-700 pt-1">
-            Click: next • Shift+Click: prev
-          </div>
+    <div ref={dropdownRef} className="relative inline-block">
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowDropdown(!showDropdown) }}
+        className={`text-xs font-medium px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity ${
+          stageConfig?.bg || ''
+        } ${stageConfig?.text || 'text-gray-400'}`}
+      >
+        {stageConfig?.label || project.stage}
+      </button>
+      {showDropdown && (
+        <div className="absolute z-50 top-full left-0 mt-1 bg-white border border-gray-200 rounded shadow-lg min-w-[120px]">
+          {/* Auto option to reset */}
+          <button
+            onClick={() => handleSelect('auto')}
+            className="w-full px-2 py-1 text-left text-xs hover:bg-gray-100 flex items-center gap-1 text-gray-600 border-b border-gray-100"
+          >
+            <span>⟳</span> Auto
+          </button>
+          {/* All stages */}
+          {STAGE_ORDER.map((stage) => {
+            const config = STAGE_DISPLAY[stage]
+            const isActive = project.stage === stage
+            return (
+              <button
+                key={stage}
+                onClick={() => handleSelect(stage)}
+                className={`w-full px-2 py-1 text-left text-xs hover:bg-gray-100 flex items-center gap-1 ${
+                  isActive ? 'font-bold' : ''
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${config.bg}`}></span>
+                <span className={config.text}>{config.label}</span>
+                {isActive && <span className="ml-auto">✓</span>}
+              </button>
+            )
+          })}
         </div>
       )}
-    </button>
+    </div>
   )
 }
 
@@ -335,14 +348,10 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
     setStatsPopupProject(statsPopupProject?.code === project.code ? null : project)
   }
 
-  // FR-32: Handle stage click (cycle through stages)
-  // Click = forward, Shift+Click = backward
-  const handleStageClick = async (e: React.MouseEvent, project: ProjectStats) => {
-    e.stopPropagation() // Don't trigger row click
-    const backward = e.shiftKey
-    const nextStage = getNextStage(project.stage, backward)
+  // FR-110: Handle stage change from dropdown
+  const handleStageChange = async (code: string, stage: string) => {
     try {
-      await updateStage.mutateAsync({ code: project.code, stage: nextStage })
+      await updateStage.mutateAsync({ code, stage: stage as ProjectStageOverride })
     } catch (err) {
       toast.error('Failed to update stage')
     }
@@ -480,11 +489,11 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                       </button>
                     </td>
 
-                    {/* FR-82: Stage with rich tooltip */}
+                    {/* FR-110: Stage with dropdown selector */}
                     <td className="py-2 text-center">
                       <StageCell
                         project={project}
-                        onClick={(e) => handleStageClick(e, project)}
+                        onStageChange={(stage) => handleStageChange(project.code, stage)}
                       />
                     </td>
 

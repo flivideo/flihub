@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Toaster, toast } from 'sonner'
 import { useSocket } from './hooks/useSocket'
-import { useConfig, useSuggestedNaming, useTrashFile, useProjects, useUpdateConfig, useRefetchSuggestedNaming, useRecentRenames, useUndoRename } from './hooks/useApi'
+import { useConfig, useSuggestedNaming, useTrashFile, useProjects, useUpdateConfig, useRefetchSuggestedNaming, useRecentRenames, useUndoRename, useRecordings } from './hooks/useApi'
 import { useBestTake } from './hooks/useBestTake'
 import { discardFiles } from './utils/fileActions'
 import { collapsePath } from './utils/formatting'
@@ -99,11 +99,15 @@ function App() {
 
   // FR-4: Get suggested naming based on existing files
   const { data: suggestedNaming } = useSuggestedNaming()
+  // FR-112: Get recordings to calculate highest chapter
+  const { data: recordingsData } = useRecordings()
   // NFR-6: Track project directory changes
   const previousProjectDir = useRef<string | undefined>(undefined)
 
   // Shared naming state (FR-1: defaults to 01, 1, intro)
   const [namingState, setNamingState] = useState<NamingState>(DEFAULT_NAMING_STATE)
+  // FR-112: Track New Chapter clicks for glow detection
+  const [newChapterClickCount, setNewChapterClickCount] = useState(0)
 
   // FR-4: Apply suggested naming when project directory changes or on initial load
   // NFR-6: Renamed from targetDirectory to projectDirectory
@@ -278,12 +282,21 @@ function App() {
   }, [currentProjectCode])
 
   // FR-3: New Chapter button
+  // FR-112: Calculate next chapter from highest recorded chapter (idempotent)
   // Preserve the name from previous chapter - user can change if needed
   const handleNewChapter = useCallback(() => {
-    console.log('[FR-89 DEBUG App.tsx] handleNewChapter called')
+    console.log('[FR-112 DEBUG App.tsx] handleNewChapter called')
+    // FR-112: Increment click counter for glow detection in NamingControls
+    setNewChapterClickCount(c => c + 1)
     setNamingState((prev) => {
-      const currentChapter = parseInt(prev.chapter || '01', 10)
-      const nextChapter = String(Math.min(99, currentChapter + 1)).padStart(2, '0')
+      // FR-112: Calculate highest recorded chapter from project recordings
+      const recordings = recordingsData?.recordings || []
+      const chapters = recordings
+        .map(r => parseInt(r.chapter || '0', 10))
+        .filter(ch => !isNaN(ch) && ch > 0)
+      const highestRecordedChapter = chapters.length > 0 ? Math.max(...chapters) : 0
+      const nextChapter = String(Math.min(99, highestRecordedChapter + 1)).padStart(2, '0')
+
       const newState = {
         chapter: nextChapter,
         sequence: '1',
@@ -291,13 +304,15 @@ function App() {
         tags: [],
         customTag: '',
       }
-      console.log('[FR-89 DEBUG App.tsx] handleNewChapter - updating namingState:', {
+      console.log('[FR-112 DEBUG App.tsx] handleNewChapter - updating namingState:', {
+        highestRecordedChapter,
+        nextChapter,
         prev,
         newState,
       })
       return newState
     })
-  }, [])
+  }, [recordingsData])
 
   // Update individual naming fields
   const updateNaming = useCallback((field: keyof NamingState, value: string | string[]) => {
@@ -594,6 +609,7 @@ function App() {
               onNewChapter={handleNewChapter}
               availableTags={config?.availableTags}
               commonNames={config?.commonNames}
+              newChapterClickCount={newChapterClickCount}
             />
 
             {/* Incoming Files */}

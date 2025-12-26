@@ -28,6 +28,8 @@ export function getProjectPaths(projectDirectory) {
         inboxRaw: path.join(projectDirectory, 'inbox', 'raw'),
         inboxDataset: path.join(projectDirectory, 'inbox', 'dataset'),
         inboxPresentation: path.join(projectDirectory, 'inbox', 'presentation'),
+        // FR-111: Per-project state file
+        stateFile: path.join(projectDirectory, '.flihub-state.json'),
     };
 }
 /**

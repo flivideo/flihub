@@ -56,7 +56,8 @@ function groupByChapter(recordings: RecordingFile[]): Map<string, ChapterGroup> 
     if (recording.duration != null) {
       group.totalDuration += recording.duration
     }
-    if (recording.folder === 'safe') {
+    // FR-111: Use isSafe flag instead of folder check
+    if (recording.isSafe) {
       group.safeCount++
     } else {
       group.activeCount++
@@ -264,10 +265,11 @@ export function RecordingsView() {
   const [showSafe, setShowSafe] = useState(true)
   const [viewingTranscript, setViewingTranscript] = useState<string | null>(null)
   // FR-47: State for editing chapter label
+  // FR-111: Changed from folder to isSafe
   const [editingChapter, setEditingChapter] = useState<{
     chapter: string
     label: string
-    files: { filename: string; folder: string }[]
+    files: { filename: string; isSafe: boolean }[]
   } | null>(null)
 
   // FR-55: State for video transcript modal
@@ -342,8 +344,9 @@ export function RecordingsView() {
 
   // Handle restoring all files from safe
   const handleRestoreAll = () => {
+    // FR-111: Use isSafe flag instead of folder check
     const safeFilenames = data?.recordings
-      .filter(r => r.folder === 'safe')
+      .filter(r => r.isSafe)
       .map(r => r.filename) || []
 
     if (safeFilenames.length === 0) {
@@ -422,10 +425,11 @@ export function RecordingsView() {
   }
 
   // Filter recordings based on showSafe toggle
+  // FR-111: Use isSafe flag instead of folder check
   const filteredRecordings = useMemo(() => {
     if (!data?.recordings) return []
     if (showSafe) return data.recordings
-    return data.recordings.filter(r => r.folder !== 'safe')
+    return data.recordings.filter(r => !r.isSafe)
   }, [data?.recordings, showSafe])
 
   // FR-41: Group recordings and calculate cumulative timing
@@ -510,9 +514,9 @@ export function RecordingsView() {
     )
   }
 
-  // Count files by folder
+  // Count files by safe status (FR-111: Use isSafe flag)
   const totalFiles = data.recordings.length
-  const safeFiles = data.recordings.filter(r => r.folder === 'safe').length
+  const safeFiles = data.recordings.filter(r => r.isSafe).length
   const activeFiles = totalFiles - safeFiles
 
   return (
@@ -598,7 +602,8 @@ export function RecordingsView() {
           const group = chapterData
           const isAllSafe = group.activeCount === 0
           const hasActiveFiles = group.activeCount > 0
-          const safeFilesInChapter = group.files.filter(f => f.folder === 'safe')
+          // FR-111: Use isSafe flag instead of folder check
+          const safeFilesInChapter = group.files.filter(f => f.isSafe)
           const hasSafeFiles = safeFilesInChapter.length > 0
 
           return (
@@ -633,7 +638,8 @@ export function RecordingsView() {
                     onClick={() => setEditingChapter({
                       chapter,
                       label: name,
-                      files: group.files.map(f => ({ filename: f.filename, folder: f.folder })),
+                      // FR-111: Use isSafe flag instead of folder
+                      files: group.files.map(f => ({ filename: f.filename, isSafe: f.isSafe })),
                     })}
                     className="text-xs text-gray-400 hover:text-blue-600 px-1.5 py-0.5 hover:bg-blue-50 rounded transition-colors"
                     title="Rename chapter label"
@@ -687,7 +693,8 @@ export function RecordingsView() {
                     // Shadow-only file: purple tint for collaborator mode
                     rowClasses = 'bg-purple-50 border-purple-200'
                     textClasses = 'text-purple-700'
-                  } else if (file.folder === 'safe') {
+                  } else if (file.isSafe) {
+                    // FR-111: Use isSafe flag instead of folder check
                     rowClasses = 'bg-green-50 border-green-200 text-gray-500'
                     textClasses = 'text-gray-500'
                   } else {
@@ -732,9 +739,10 @@ export function RecordingsView() {
                           onViewTranscript={setViewingTranscript}
                         />
                         {/* Action buttons - disabled for shadow-only files */}
+                        {/* FR-111: Use isSafe flag instead of folder check */}
                         {isShadow ? (
                           <span className="text-xs text-gray-300 px-2 py-0.5" title="Move/Safe actions unavailable for shadow files">-</span>
-                        ) : file.folder === 'safe' ? (
+                        ) : file.isSafe ? (
                           <button
                             onClick={() => handleRestore(file.filename)}
                             disabled={restoreFromSafe.isPending}

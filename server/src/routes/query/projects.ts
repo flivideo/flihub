@@ -137,14 +137,12 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
         const projectPath = path.join(projectsDir, code);
         const paths = getProjectPaths(projectPath);
 
-        // Get counts
-        const recordingsCount = await countMovFiles(paths.recordings);
-        const safeCount = await countMovFiles(paths.safe);
-        const totalFiles = recordingsCount + safeCount;
-        const chapterCount = await countUniqueChapters(paths.recordings, paths.safe);
+        // FR-111: Only count recordings/ (safe status is per-file in state)
+        const totalFiles = await countMovFiles(paths.recordings);
+        const chapterCount = await countUniqueChapters(paths.recordings);
 
-        // Transcript sync
-        const syncStatus = await getTranscriptSyncStatus(paths.recordings, paths.safe, paths.transcripts);
+        // Transcript sync (FR-111: Only recordings/)
+        const syncStatus = await getTranscriptSyncStatus(paths.recordings, paths.transcripts);
         const transcriptPercent = totalFiles > 0
           ? Math.round((syncStatus.matched / totalFiles) * 100)
           : 0;
@@ -264,13 +262,13 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
       const raw = await getProjectStatsRaw(projectPath, code, config, { includeFinalMedia: true });
 
       const project: QueryProjectDetail = {
+        // FR-111: recordingsCount and safeCount removed (safe status is per-file)
         code,
         path: projectPath,
         stage: raw.stage,
         priority: raw.priority,
         stats: {
-          recordings: raw.recordingsCount,
-          safe: raw.safeCount,
+          recordings: raw.totalFiles,  // FR-111: All files are in recordings/
           chapters: raw.chapterCount,
           transcripts: {
             matched: raw.transcriptSync.matched,

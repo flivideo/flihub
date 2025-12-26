@@ -10,9 +10,10 @@ interface NamingControlsProps {
   onNewChapter: () => void
   availableTags?: string[]    // NFR-2: Tags from config
   commonNames?: CommonName[]  // NFR-3/FR-13: Common names from config
+  newChapterClickCount?: number  // FR-112: Track clicks for glow detection
 }
 
-export function NamingControls({ namingState, updateNaming, onNewChapter, availableTags, commonNames }: NamingControlsProps) {
+export function NamingControls({ namingState, updateNaming, onNewChapter, availableTags, commonNames, newChapterClickCount = 0 }: NamingControlsProps) {
   const { chapter, sequence, name, tags, customTag } = namingState
   // NFR-2: Global tags (always visible)
   const globalTags = availableTags ?? [...DEFAULT_TAGS]
@@ -23,20 +24,84 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
 
   // FR-107: Name input auto-focus and glow when New Chapter clicked
   const nameInputRef = useRef<HTMLInputElement>(null)
-  const [showGlow, setShowGlow] = useState(false)
-  const prevChapterRef = useRef<string>(chapter)
+  // FR-112: Refs for chapter and sequence inputs
+  const chapterInputRef = useRef<HTMLInputElement>(null)
+  const sequenceInputRef = useRef<HTMLInputElement>(null)
 
-  // FR-107: Auto-focus name input and glow when chapter changes (New Chapter clicked)
+  // FR-107: Blue glow for name field
+  const [showNameGlow, setShowNameGlow] = useState(false)
+  // FR-112: Green glow for chapter/seq on productive click
+  const [showChapterGlowGreen, setShowChapterGlowGreen] = useState(false)
+  // FR-112: Red glow for chapter/seq on idempotent click
+  const [showChapterGlowRed, setShowChapterGlowRed] = useState(false)
+
+  // FR-112: Track previous state for detecting changes and showing previous filename
+  const prevChapterRef = useRef<string>(chapter)
+  const prevClickCountRef = useRef<number>(newChapterClickCount)
+  const [previousFilename, setPreviousFilename] = useState<string | null>(null)
+  // Store previous naming state before click
+  const prevNamingStateRef = useRef<{ chapter: string; sequence: string; name: string; tags: string[]; customTag: string } | null>(null)
+
+  // FR-112: Detect New Chapter clicks and show appropriate glow
   useEffect(() => {
-    // Only trigger on chapter change (not initial mount)
-    if (prevChapterRef.current !== chapter && prevChapterRef.current !== '') {
-      nameInputRef.current?.focus()
-      setShowGlow(true)
-      const timer = setTimeout(() => setShowGlow(false), 500)
-      return () => clearTimeout(timer)
+    // Skip initial mount
+    if (prevClickCountRef.current === 0 && newChapterClickCount === 0) {
+      prevClickCountRef.current = newChapterClickCount
+      prevChapterRef.current = chapter
+      return
     }
+
+    // Detect if click count increased (New Chapter was clicked)
+    if (newChapterClickCount > prevClickCountRef.current) {
+      const chapterChanged = prevChapterRef.current !== chapter
+
+      // Always show blue glow on name field when New Chapter clicked
+      setShowNameGlow(true)
+      nameInputRef.current?.focus()
+
+      if (chapterChanged) {
+        // Productive click: green glow on chapter/seq
+        setShowChapterGlowRed(false)  // Ensure red is off
+        setShowChapterGlowGreen(true)
+
+        // Build previous filename from the state before the click
+        if (prevNamingStateRef.current) {
+          const prev = prevNamingStateRef.current
+          setPreviousFilename(buildPreviewFilename(prev.chapter, prev.sequence, prev.name, prev.tags, prev.customTag))
+        }
+
+        const timer = setTimeout(() => {
+          setShowChapterGlowGreen(false)
+          setShowNameGlow(false)
+          setPreviousFilename(null)
+        }, 1500)
+
+        prevClickCountRef.current = newChapterClickCount
+        prevChapterRef.current = chapter
+        return () => clearTimeout(timer)
+      } else {
+        // Idempotent click: red glow on chapter/seq
+        setShowChapterGlowGreen(false)  // Ensure green is off
+        setShowChapterGlowRed(true)
+
+        const timer = setTimeout(() => {
+          setShowChapterGlowRed(false)
+          setShowNameGlow(false)
+        }, 500)
+
+        prevClickCountRef.current = newChapterClickCount
+        return () => clearTimeout(timer)
+      }
+    }
+
+    // Update refs when chapter changes without a click (e.g., manual typing)
     prevChapterRef.current = chapter
-  }, [chapter])
+  }, [chapter, newChapterClickCount])
+
+  // FR-112: Capture naming state before each render for previous filename tracking
+  useEffect(() => {
+    prevNamingStateRef.current = { chapter, sequence, name, tags: [...tags], customTag }
+  })
 
   const toggleTag = (tag: string) => {
     const newTags = tags.includes(tag)
@@ -84,24 +149,30 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
         <div className="col-span-2">
           <label className="block text-xs text-gray-600 mb-1">Chapter</label>
           <input
+            ref={chapterInputRef}
             type="text"
             value={chapter}
             onChange={(e) => updateNaming('chapter', e.target.value.slice(0, 2))}
             placeholder="01"
             maxLength={2}
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              showChapterGlowGreen ? 'animate-glow-pulse-green' : ''
+            } ${showChapterGlowRed ? 'animate-glow-pulse-red' : ''}`}
           />
         </div>
 
         <div className="col-span-2">
           <label className="block text-xs text-gray-600 mb-1">Seq</label>
           <input
+            ref={sequenceInputRef}
             type="text"
             value={sequence}
             onChange={(e) => updateNaming('sequence', e.target.value.slice(0, 3))}
             placeholder="1"
             maxLength={3}
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              showChapterGlowGreen ? 'animate-glow-pulse-green' : ''
+            } ${showChapterGlowRed ? 'animate-glow-pulse-red' : ''}`}
           />
         </div>
 
@@ -114,7 +185,7 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
             onChange={(e) => updateNaming('name', e.target.value)}
             placeholder="intro"
             className={`w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              showGlow ? 'animate-glow-pulse' : ''
+              showNameGlow ? 'animate-glow-pulse' : ''
             }`}
           />
           {/* FR-13: Common names quick-select pills - gray outline style */}
@@ -194,7 +265,14 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
         </div>
       </div>
 
-      <div className="flex justify-end">
+      {/* FR-112: Preview filename with optional previous filename */}
+      <div className="flex justify-end items-center gap-3">
+        {previousFilename && (
+          <>
+            <span className="font-mono text-base text-gray-400">{previousFilename}</span>
+            <span className="text-gray-300">→</span>
+          </>
+        )}
         <span className="font-mono text-base text-blue-600">{buildPreviewFilename(chapter, sequence, name, tags, customTag)}</span>
       </div>
     </div>

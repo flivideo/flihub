@@ -141,17 +141,17 @@ export class WatcherManager {
   }
 
   /**
-   * Start recordings watcher (recordings/, safe/, and shadow folders)
+   * Start recordings watcher (recordings/ and shadow folders)
    * FR-83: Also watches recording-shadows/ since unified scanning merges them
+   * FR-111: No more -safe folders (safe status tracked in state file)
    */
   startRecordingsWatcher(projectDir: string): void {
     const expandedProject = expandPath(projectDir);
     const paths = getProjectPaths(expandedProject);
     const shadowsPath = path.join(expandedProject, 'recording-shadows');
-    const shadowsSafePath = path.join(shadowsPath, '-safe');
     this.startWatcher({
       name: 'recordings',
-      pattern: [paths.recordings, paths.safe, shadowsPath, shadowsSafePath],
+      pattern: [paths.recordings, shadowsPath],
       event: 'recordings:changed',
       watchEvents: ['add', 'unlink', 'change'],
     });

@@ -38,17 +38,16 @@ export async function countFiles(dir: string, extensions: string[]): Promise<num
 }
 
 /**
- * Count unique chapter numbers from recordings in both recordings/ and safe/ directories
+ * Count unique chapter numbers from recordings directory
+ * FR-111: Only scans recordings/ (no more -safe folder)
  */
-export async function countUniqueChapters(recordingsDir: string, safeDir: string): Promise<number> {
+export async function countUniqueChapters(recordingsDir: string): Promise<number> {
   const chapters = new Set<string>();
 
-  for (const dir of [recordingsDir, safeDir]) {
-    const files = await readDirSafe(dir);
-    for (const file of files) {
-      const match = file.match(/^(\d{2})-/);
-      if (match) chapters.add(match[1]);
-    }
+  const files = await readDirSafe(recordingsDir);
+  for (const file of files) {
+    const match = file.match(/^(\d{2})-/);
+    if (match) chapters.add(match[1]);
   }
 
   return chapters.size;
@@ -57,20 +56,17 @@ export async function countUniqueChapters(recordingsDir: string, safeDir: string
 /**
  * Get transcript sync status by matching recording filenames to transcript filenames
  * Returns a TranscriptSyncStatus object compatible with the shared type
+ * FR-111: Only scans recordings/ (no more -safe folder)
  */
 export async function getTranscriptSyncStatus(
   recordingsDir: string,
-  safeDir: string,
   transcriptsDir: string
 ): Promise<TranscriptSyncStatus> {
   // Get all .mov files (base names without extension)
-  const recordingFiles: string[] = [];
-  for (const dir of [recordingsDir, safeDir]) {
-    const files = await readDirSafe(dir);
-    recordingFiles.push(
-      ...files.filter(f => f.endsWith('.mov')).map(f => f.replace('.mov', ''))
-    );
-  }
+  const files = await readDirSafe(recordingsDir);
+  const recordingFiles = files
+    .filter(f => f.endsWith('.mov'))
+    .map(f => f.replace('.mov', ''))
 
   // FR-94: .txt is the primary format - only .txt counts as "transcribed"
   const transcriptDirFiles = await readDirSafe(transcriptsDir);
@@ -115,8 +111,9 @@ export async function getProjectTimestamps(projectPath: string): Promise<Project
   const createdAt = projectStat.birthtime.toISOString();
 
   // Find most recent file across all subdirs
+  // FR-111: Removed recordings/-safe (no more -safe folder)
   let latestTime = 0;
-  const subdirs = ['recordings', 'recordings/-safe', 'recording-transcripts', 'assets/images', 'assets/thumbs'];
+  const subdirs = ['recordings', 'recording-transcripts', 'assets/images', 'assets/thumbs'];
 
   for (const subdir of subdirs) {
     const dir = path.join(projectPath, subdir);

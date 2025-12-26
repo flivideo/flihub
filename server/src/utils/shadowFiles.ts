@@ -208,26 +208,19 @@ export async function getUnifiedRecordings(
 
 /**
  * Count shadows and missing for a project
+ * FR-111: Only scans recordings/ and recording-shadows/ (no more -safe folders)
  */
 export async function getShadowCounts(
   recordingsDir: string,
-  safeDir: string,
-  shadowDir: string,
-  shadowSafeDir: string
+  shadowDir: string
 ): Promise<{ recordings: number; shadows: number; missing: number }> {
   // Count real recordings
   const recordingFiles = await readDirSafe(recordingsDir);
-  const safeFiles = await readDirSafe(safeDir);
-  const realCount =
-    recordingFiles.filter(f => f.match(/\.(mov|mp4)$/i)).length +
-    safeFiles.filter(f => f.match(/\.(mov|mp4)$/i)).length;
+  const realCount = recordingFiles.filter(f => f.match(/\.(mov|mp4)$/i)).length;
 
   // Count shadow files (now .mp4)
   const shadowFiles = await readDirSafe(shadowDir);
-  const shadowSafeFiles = await readDirSafe(shadowSafeDir);
-  const shadowCount =
-    shadowFiles.filter(f => f.match(/\.mp4$/i)).length +
-    shadowSafeFiles.filter(f => f.match(/\.mp4$/i)).length;
+  const shadowCount = shadowFiles.filter(f => f.match(/\.mp4$/i)).length;
 
   // Get unified to count missing (real files without shadows)
   const realBaseNames = new Set<string>();
@@ -236,19 +229,9 @@ export async function getShadowCounts(
       realBaseNames.add(f.replace(/\.(mov|mp4)$/i, ''));
     }
   }
-  for (const f of safeFiles) {
-    if (f.match(/\.(mov|mp4)$/i)) {
-      realBaseNames.add(f.replace(/\.(mov|mp4)$/i, ''));
-    }
-  }
 
   const shadowBaseNames = new Set<string>();
   for (const f of shadowFiles) {
-    if (f.match(/\.mp4$/i)) {
-      shadowBaseNames.add(f.replace(/\.mp4$/i, ''));
-    }
-  }
-  for (const f of shadowSafeFiles) {
     if (f.match(/\.mp4$/i)) {
       shadowBaseNames.add(f.replace(/\.mp4$/i, ''));
     }
@@ -268,6 +251,7 @@ export async function getShadowCounts(
 /**
  * Generate shadows for all recordings in a project that don't have them
  * FR-89 Part 6: Resolution is now configurable (default 240p)
+ * FR-111: Only scans recordings/ (no more -safe folder)
  * Returns progress updates via onProgress callback
  */
 export async function generateProjectShadows(
@@ -276,9 +260,7 @@ export async function generateProjectShadows(
   resolution: number = SHADOW_SETTINGS.defaultHeight
 ): Promise<{ created: number; skipped: number; errors: string[] }> {
   const recordingsDir = path.join(projectPath, 'recordings');
-  const safeDir = path.join(projectPath, 'recordings', '-safe');
   const shadowDir = path.join(projectPath, 'recording-shadows');
-  const shadowSafeDir = path.join(projectPath, 'recording-shadows', '-safe');
 
   let created = 0;
   let skipped = 0;
@@ -294,16 +276,6 @@ export async function generateProjectShadows(
       videoPath: path.join(recordingsDir, file),
       shadowDir,
       label: file,
-    });
-  }
-
-  const safeFiles = await readDirSafe(safeDir);
-  for (const file of safeFiles) {
-    if (!file.match(/\.(mov|mp4)$/i)) continue;
-    filesToProcess.push({
-      videoPath: path.join(safeDir, file),
-      shadowDir: shadowSafeDir,
-      label: `-safe/${file}`,
     });
   }
 

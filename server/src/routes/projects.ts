@@ -37,12 +37,11 @@ export function createProjectRoutes(
   async function getProjectStats(projectPath: string, code: string, config: Config): Promise<ProjectStats> {
     const raw = await getProjectStatsRaw(projectPath, code, config);
 
+    // FR-111: recordingsCount and safeCount removed (safe status is per-file)
     return {
       code: raw.code,
       path: raw.projectPath,
       priority: raw.priority,
-      recordingsCount: raw.recordingsCount,
-      safeCount: raw.safeCount,
       totalFiles: raw.totalFiles,
       chapterCount: raw.chapterCount,
       transcriptCount: raw.transcriptSync.matched,
@@ -201,17 +200,13 @@ export function createProjectRoutes(
     }
 
     const recordingsDir = path.join(projectPath, 'recordings');
-    const safeDir = path.join(projectPath, 'recordings', '-safe');
     const transcriptsDir = path.join(projectPath, 'recording-transcripts');
 
-    // Get all .mov files (base names without extension)
-    const recordingFiles: string[] = [];
-    for (const dir of [recordingsDir, safeDir]) {
-      const files = await readDirSafe(dir);
-      recordingFiles.push(
-        ...files.filter(f => f.endsWith('.mov')).map(f => f.replace('.mov', ''))
-      );
-    }
+    // FR-111: Only scan recordings/ (no more -safe folder)
+    const files = await readDirSafe(recordingsDir);
+    const recordingFiles = files
+      .filter(f => f.endsWith('.mov'))
+      .map(f => f.replace('.mov', ''))
 
     // Get all .txt files (base names, exclude *-chapter.txt)
     const transcriptDirFiles = await readDirSafe(transcriptsDir);

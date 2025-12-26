@@ -72,8 +72,6 @@ export interface ProjectStats {
     code: string;
     path: string;
     priority: ProjectPriority;
-    recordingsCount: number;
-    safeCount: number;
     totalFiles: number;
     chapterCount: number;
     transcriptCount: number;
@@ -106,7 +104,8 @@ export interface RecordingFile {
     sequence: string;
     name: string;
     tags: string[];
-    folder: 'recordings' | 'safe';
+    folder: 'recordings';
+    isSafe: boolean;
     isShadow?: boolean;
     hasShadow?: boolean;
     shadowSize?: number | null;
@@ -464,7 +463,6 @@ export interface QueryProjectDetail {
     priority: ProjectPriority;
     stats: {
         recordings: number;
-        safe: number;
         chapters: number;
         transcripts: {
             matched: number;
@@ -493,7 +491,8 @@ export interface QueryRecording {
     sequence: string;
     name: string;
     tags: string[];
-    folder: 'recordings' | 'safe';
+    folder: 'recordings';
+    isSafe: boolean;
     size: number;
     duration: number | null;
     hasTranscript: boolean;
@@ -601,4 +600,20 @@ export interface EnvironmentResponse {
         windowsFiles: string;
         wslFiles: string;
     };
+}
+export interface RecordingState {
+    safe?: boolean;
+    stage?: string;
+}
+export interface ProjectState {
+    version: 1;
+    recordings: Record<string, RecordingState>;
+}
+export interface ProjectStateResponse {
+    success: boolean;
+    state: ProjectState;
+    error?: string;
+}
+export interface UpdateProjectStateRequest {
+    recordings: Record<string, RecordingState>;
 }

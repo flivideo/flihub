@@ -39,6 +39,7 @@ interface ProjectSummary {
   lastModified: string | null;
 }
 
+// FR-111: safe removed (safe status is per-file in state)
 interface ProjectDetail {
   code: string;
   path: string;
@@ -46,7 +47,6 @@ interface ProjectDetail {
   priority: string;
   stats: {
     recordings: number;
-    safe: number;
     chapters: number;
     transcripts: {
       matched: number;
@@ -167,14 +167,14 @@ export function formatProjectDetail(project: ProjectDetail): string {
   lines.push('STATS');
   lines.push(divider('─', 30));
 
-  const totalRecordings = project.stats.recordings + project.stats.safe;
+  // FR-111: safe count removed (safe status is per-file)
+  const totalRecordings = project.stats.recordings;
   const totalTranscripts = project.stats.transcripts.matched;
   const transcriptPercent = totalRecordings > 0
     ? Math.round((totalTranscripts / totalRecordings) * 100)
     : 0;
 
   lines.push(`Recordings:     ${project.stats.recordings}`);
-  lines.push(`Safe:           ${project.stats.safe}`);
   lines.push(`Chapters:       ${project.stats.chapters}`);
   lines.push(`Transcripts:    ${totalTranscripts}/${totalRecordings} (${transcriptPercent}%)`);
   lines.push(`Images:         ${project.stats.images}`);

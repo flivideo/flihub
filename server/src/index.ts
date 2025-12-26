@@ -20,7 +20,9 @@ import { createVideoRoutes } from './routes/video.js';
 import { createShadowsRouter } from './routes/shadows.js';
 import { createFirstEditRoutes } from './routes/first-edit.js';
 import { createS3StagingRoutes } from './routes/s3-staging.js';
+import { createStateRoutes } from './routes/state.js';
 import { migrateTargetToProject } from '../../shared/paths.js';
+import { migrateSafeFolder, needsMigration } from './utils/safeMigration.js';
 import { WatcherManager } from './WatcherManager.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import type { ServerToClientEvents, ClientToServerEvents, FileInfo, Config } from '../../shared/types.js';
@@ -180,6 +182,10 @@ function saveConfig(config: Config): void {
     // FR-32: Only save projectStages if it has values
     if (config.projectStages && Object.keys(config.projectStages).length > 0) {
       toSave.projectStages = config.projectStages;
+    }
+    // FR-110: Save project stage overrides (per-project manual assignments)
+    if (config.projectStageOverrides && Object.keys(config.projectStageOverrides).length > 0) {
+      toSave.projectStageOverrides = config.projectStageOverrides;
     }
     // FR-89 Part 6: Save shadow resolution if set
     if (config.shadowResolution) {
@@ -343,6 +349,10 @@ app.use('/api/first-edit', firstEditRoutes);
 const s3StagingRoutes = createS3StagingRoutes(() => currentConfig);
 app.use('/api/s3-staging', s3StagingRoutes);
 
+// FR-111: Setup project state routes
+const stateRoutes = createStateRoutes(() => currentConfig);
+app.use('/api', stateRoutes);
+
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);
 
@@ -362,6 +372,24 @@ io.on('connection', (socket) => {
 
 // Export for use in routes
 export { io, pendingFiles };
+
+// FR-111: Run safe folder migration on startup (async, non-blocking)
+(async () => {
+  if (currentConfig.projectDirectory) {
+    try {
+      if (await needsMigration(currentConfig.projectDirectory)) {
+        console.log('[FR-111] Starting safe folder migration...');
+        const result = await migrateSafeFolder(currentConfig.projectDirectory);
+        console.log(`[FR-111] Migration complete: ${result.migrated} files, ${result.shadowsMigrated} shadows`);
+        if (result.errors.length > 0) {
+          console.warn('[FR-111] Migration warnings:', result.errors);
+        }
+      }
+    } catch (err) {
+      console.error('[FR-111] Migration error (non-fatal):', err);
+    }
+  }
+})();
 
 // Start initial watchers
 startWatcher(currentConfig.watchDirectory);

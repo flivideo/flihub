@@ -6,6 +6,7 @@ import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { createShadowFile, moveShadowFile, renameShadowFile, deleteShadowFile } from '../utils/shadowFiles.js';
+import { readProjectState, writeProjectState, setRecordingSafe, isRecordingSafe } from '../utils/projectState.js';
 import {
   NAMING_RULES,
   parseRecordingFilename,
@@ -367,13 +368,16 @@ export function createRoutes(
   // FR-14: GET /api/recordings - List all recordings in project's recordings directory
   // NFR-6: Using projectDirectory with getProjectPaths()
   // FR-88: Unified scanning - merges real recordings with shadow video files
+  // FR-111 Phase 3: Rewritten to use state file instead of -safe folder
   router.get('/recordings', async (_req: Request, res: Response) => {
     try {
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
-      // FR-88: Shadow directories
+      // FR-111: Read project state for isSafe flags
+      const state = await readProjectState(config.projectDirectory);
+
+      // FR-88: Shadow directory (no longer scanning -safe subfolder)
       const shadowDir = path.join(paths.project, 'recording-shadows');
-      const shadowSafeDir = path.join(paths.project, 'recording-shadows', '-safe');
 
       // Known tags that can appear at the end of filenames
       const knownTags = new Set((config.availableTags || []).map(t => t.toLowerCase()));
@@ -400,20 +404,15 @@ export function createRoutes(
       // FR-88: Track which baseNames have shadow files (for hasShadow flag)
       const shadowSet = new Map<string, { size: number; duration: number | null; shadowPath: string }>();
 
-      // FR-88: Scan shadow directories first
-      const shadowFolders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
-        { dir: shadowDir, folder: 'recordings' },
-        { dir: shadowSafeDir, folder: 'safe' },
-      ];
-
-      for (const { dir, folder } of shadowFolders) {
-        if (!await fs.pathExists(dir)) continue;
-
-        const entries = await fs.readdir(dir, { withFileTypes: true });
+      // FR-111: Only scan main shadow directory (no -safe subfolder)
+      if (await fs.pathExists(shadowDir)) {
+        const entries = await fs.readdir(shadowDir, { withFileTypes: true });
         for (const entry of entries) {
+          // Skip -safe directory if it still exists (migration not complete)
+          if (entry.isDirectory() && entry.name === '-safe') continue;
           if (!entry.isFile() || !entry.name.match(/\.mp4$/i)) continue;
 
-          const shadowPath = path.join(dir, entry.name);
+          const shadowPath = path.join(shadowDir, entry.name);
           const baseName = entry.name.replace(/\.mp4$/i, '');
           const parsed = parseRecordingFilename(baseName + '.mov');
           if (!parsed) continue;
@@ -422,14 +421,16 @@ export function createRoutes(
           const duration = await getVideoDuration(shadowPath);
 
           // Track shadow for hasShadow check on real files
-          const key = `${folder}:${baseName}`;
-          shadowSet.set(key, { size: stats.size, duration, shadowPath });
+          shadowSet.set(baseName, { size: stats.size, duration, shadowPath });
 
           // Extract name and tags
           const { name, tags } = extractNameAndTags(parsed.name);
 
+          // FR-111: Check state for isSafe flag
+          const isSafe = isRecordingSafe(state, `${baseName}.mov`);
+
           // Add as shadow-only entry (may be overwritten by real file)
-          unifiedMap.set(key, {
+          unifiedMap.set(baseName, {
             filename: `${baseName}.mov`,  // Report as .mov for UI consistency
             path: shadowPath,  // Path points to shadow video
             size: stats.size,
@@ -439,7 +440,8 @@ export function createRoutes(
             sequence: parsed.sequence || '1',
             name,
             tags,
-            folder,
+            folder: 'recordings',  // FR-111: Always 'recordings' now
+            isSafe,                // FR-111: From state file
             isShadow: true,
             hasShadow: true,  // Shadow-only files obviously have shadow
             shadowSize: stats.size,  // FR-95: Shadow-only, so shadow size = file size
@@ -447,21 +449,15 @@ export function createRoutes(
         }
       }
 
-      // FR-88: Scan real recordings (overwrites shadow entries)
-      const realFolders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
-        { dir: paths.recordings, folder: 'recordings' },
-        { dir: paths.safe, folder: 'safe' },
-      ];
-
-      for (const { dir, folder } of realFolders) {
-        if (!await fs.pathExists(dir)) continue;
-
-        const entries = await fs.readdir(dir, { withFileTypes: true });
+      // FR-111: Only scan main recordings folder (no -safe subfolder)
+      if (await fs.pathExists(paths.recordings)) {
+        const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
+        // Skip -safe directory if it still exists (migration not complete)
         const fileEntries = entries.filter(e => e.isFile() && e.name.endsWith('.mov'));
 
         // FR-57: parallel processing
         const results = await Promise.all(fileEntries.map(async (entry) => {
-          const filePath = path.join(dir, entry.name);
+          const filePath = path.join(paths.recordings, entry.name);
           const parsed = parseRecordingFilename(entry.name);
           if (!parsed) return null;
 
@@ -469,16 +465,18 @@ export function createRoutes(
 
           // Check if this recording has a shadow
           const baseName = entry.name.replace('.mov', '');
-          const key = `${folder}:${baseName}`;
-          const shadowInfo = shadowSet.get(key);
+          const shadowInfo = shadowSet.get(baseName);
 
           // FR-36: Get video duration (prefer shadow duration if available, faster to read)
           const duration = shadowInfo?.duration ?? await getVideoDuration(filePath);
 
           const { name, tags } = extractNameAndTags(parsed.name);
 
+          // FR-111: Check state for isSafe flag
+          const isSafe = isRecordingSafe(state, entry.name);
+
           return {
-            key,
+            baseName,
             recording: {
               filename: entry.name,
               path: filePath,
@@ -489,18 +487,19 @@ export function createRoutes(
               sequence: parsed.sequence || '1',
               name,
               tags,
-              folder,
+              folder: 'recordings' as const,  // FR-111: Always 'recordings' now
+              isSafe,                         // FR-111: From state file
               isShadow: false,
               hasShadow: !!shadowInfo,
               shadowSize: shadowInfo?.size ?? null,  // FR-95: Shadow file size (null if no shadow)
-            } as RecordingFile,
+            } satisfies RecordingFile,
           };
         }));
 
         // Add real recordings to map (overwrites shadow-only entries)
         for (const result of results) {
           if (result) {
-            unifiedMap.set(result.key, result.recording);
+            unifiedMap.set(result.baseName, result.recording);
           }
         }
       }
@@ -646,8 +645,8 @@ export function createRoutes(
     }
   });
 
-  // FR-15: POST /api/recordings/safe - Move file(s) to -safe folder
-  // NFR-6: Using projectDirectory with getProjectPaths()
+  // FR-15: POST /api/recordings/safe - Mark file(s) as safe
+  // FR-111 Phase 3: Rewritten to use state file instead of moving files
   router.post('/recordings/safe', async (req: Request, res: Response) => {
     const { files, chapter } = req.body;
 
@@ -659,18 +658,18 @@ export function createRoutes(
     try {
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
-      // Ensure -safe directory exists
-      await fs.ensureDir(paths.safe);
+      // Read current state
+      let state = await readProjectState(config.projectDirectory);
 
-      let filesToMove: string[] = [];
+      let filesToMark: string[] = [];
 
       if (files && Array.isArray(files)) {
-        // Move specific files
-        filesToMove = files;
+        // Mark specific files
+        filesToMark = files;
       } else if (chapter) {
-        // Move all files in the chapter
+        // Mark all files in the chapter
         const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
-        filesToMove = entries
+        filesToMark = entries
           .filter(e => e.isFile() && e.name.endsWith('.mov'))
           .map(e => e.name)
           .filter(name => {
@@ -679,53 +678,47 @@ export function createRoutes(
           });
       }
 
-      const moved: string[] = [];
+      const marked: string[] = [];
       const errors: string[] = [];
 
-      // FR-83: Shadow directories for sync
-      const shadowDir = path.join(paths.project, 'recording-shadows');
-      const shadowSafeDir = path.join(paths.project, 'recording-shadows', '-safe');
-
-      for (const filename of filesToMove) {
-        const sourcePath = path.join(paths.recordings, filename);
-        const destPath = path.join(paths.safe, filename);
+      for (const filename of filesToMark) {
+        const filePath = path.join(paths.recordings, filename);
 
         try {
-          if (await fs.pathExists(sourcePath)) {
-            await fs.move(sourcePath, destPath, { overwrite: true });
-            moved.push(filename);
-            console.log(`Moved to safe: ${filename}`);
-
-            // FR-83: Also move shadow file if it exists
-            const baseName = filename.replace(/\.mov$/i, '');
-            moveShadowFile(baseName, shadowDir, shadowSafeDir).catch(err => {
-              console.warn(`Failed to move shadow for ${filename}:`, err);
-            });
+          // Verify file exists
+          if (await fs.pathExists(filePath)) {
+            // Update state to mark as safe
+            state = setRecordingSafe(state, filename, true);
+            marked.push(filename);
+            console.log(`[FR-111] Marked safe: ${filename}`);
           } else {
             errors.push(`File not found: ${filename}`);
           }
         } catch (err) {
-          errors.push(`Failed to move ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          errors.push(`Failed to mark ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
       }
 
+      // Write updated state
+      await writeProjectState(config.projectDirectory, state);
+
       res.json({
         success: errors.length === 0,
-        moved,
-        count: moved.length,
+        moved: marked,  // Keep 'moved' for API compatibility
+        count: marked.length,
         errors: errors.length > 0 ? errors : undefined,
       });
     } catch (error) {
-      console.error('Error moving to safe:', error);
+      console.error('Error marking as safe:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to move files to safe',
+        error: error instanceof Error ? error.message : 'Failed to mark files as safe',
       });
     }
   });
 
-  // FR-15: POST /api/recordings/restore - Restore file(s) from -safe folder
-  // NFR-6: Using projectDirectory with getProjectPaths()
+  // FR-15: POST /api/recordings/restore - Restore file(s) from safe state
+  // FR-111 Phase 3: Rewritten to use state file instead of moving files
   router.post('/recordings/restore', async (req: Request, res: Response) => {
     const { files } = req.body;
 
@@ -735,43 +728,30 @@ export function createRoutes(
     }
 
     try {
-      const paths = getProjectPaths(expandPath(config.projectDirectory));
-
-      // FR-83: Shadow directories for sync
-      const shadowDir = path.join(paths.project, 'recording-shadows');
-      const shadowSafeDir = path.join(paths.project, 'recording-shadows', '-safe');
+      // Read current state
+      let state = await readProjectState(config.projectDirectory);
 
       const restored: string[] = [];
       const errors: string[] = [];
 
       for (const filename of files) {
-        const sourcePath = path.join(paths.safe, filename);
-        const destPath = path.join(paths.recordings, filename);
-
         try {
-          // Check if file already exists in recordings
-          if (await fs.pathExists(destPath)) {
-            errors.push(`File already exists in recordings: ${filename}`);
-            continue;
-          }
-
-          if (await fs.pathExists(sourcePath)) {
-            await fs.move(sourcePath, destPath);
+          // Check if file is currently marked as safe
+          if (isRecordingSafe(state, filename)) {
+            // Update state to mark as not safe (active)
+            state = setRecordingSafe(state, filename, false);
             restored.push(filename);
-            console.log(`Restored from safe: ${filename}`);
-
-            // FR-83: Also restore shadow file if it exists
-            const baseName = filename.replace(/\.mov$/i, '');
-            moveShadowFile(baseName, shadowSafeDir, shadowDir).catch(err => {
-              console.warn(`Failed to restore shadow for ${filename}:`, err);
-            });
+            console.log(`[FR-111] Restored from safe: ${filename}`);
           } else {
-            errors.push(`File not found in safe: ${filename}`);
+            errors.push(`File not marked as safe: ${filename}`);
           }
         } catch (err) {
           errors.push(`Failed to restore ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
       }
+
+      // Write updated state
+      await writeProjectState(config.projectDirectory, state);
 
       res.json({
         success: errors.length === 0,

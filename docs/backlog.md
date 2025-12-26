@@ -10,7 +10,9 @@ Requirements index for FliHub.
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
-| FR-110 | [Project Stage Persistence & Dropdown](prd/fr-110-project-stage-fixes.md) | 2025-12-26 | Pending |
+| FR-112 | [Sequential Chapter Increment](prd/fr-112-sequential-chapter-increment.md) | 2025-12-26 | Pending |
+| FR-111 | [Safe Architecture Rework](prd/fr-111-safe-architecture-rework.md) | 2025-12-26 | Implemented (Phase 5 Future) |
+| FR-110 | [Project Stage Persistence & Dropdown](prd/fr-110-project-stage-fixes.md) | 2025-12-26 | Implemented |
 | FR-109 | [Transcript Management Bugs](prd/fr-109-transcript-bugs.md) | 2025-12-26 | Implemented |
 | FR-108 | [Gling Dictionary Not Saving](prd/fr-108-gling-dictionary-save-bug.md) | 2025-12-25 | Implemented |
 | FR-107 | [Chapter Input Auto-Focus & Glow](prd/fr-107-chapter-input-focus-glow.md) | 2025-12-23 | Implemented |

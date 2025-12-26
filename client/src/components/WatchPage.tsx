@@ -56,6 +56,7 @@ const STORAGE_KEYS = {
   size: 'flihub:watch:videoSize',
   autoplay: 'flihub:watch:autoplay',
   autonext: 'flihub:watch:autonext',
+  showSafe: 'flihub:watch:showSafe',  // FR-111 Phase 4: Show safe recordings toggle
 }
 
 // FR-71/FR-91: Size CSS classes
@@ -83,13 +84,14 @@ function getChapterDisplayName(files: RecordingFile[]): string {
 }
 
 // Group recordings by chapter and calculate timing
-function groupByChapterWithTiming(recordings: RecordingFile[]): ChapterGroup[] {
+// FR-111 Phase 4: Accept showSafe parameter to optionally include safe recordings
+function groupByChapterWithTiming(recordings: RecordingFile[], showSafe: boolean = false): ChapterGroup[] {
   const groups = new Map<string, { files: RecordingFile[]; totalDuration: number }>()
 
-  // Only include active recordings (not safe folder) for watching
-  const activeRecordings = recordings.filter(r => r.folder !== 'safe')
+  // FR-111: Filter based on showSafe toggle
+  const filteredRecordings = showSafe ? recordings : recordings.filter(r => !r.isSafe)
 
-  for (const recording of activeRecordings) {
+  for (const recording of filteredRecordings) {
     const key = recording.chapter
     if (!groups.has(key)) {
       groups.set(key, { files: [], totalDuration: 0 })
@@ -192,6 +194,12 @@ export function WatchPage() {
     return saved === 'true'
   })
 
+  // FR-111 Phase 4: Show safe recordings toggle (default: false)
+  const [showSafe, setShowSafe] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.showSafe)
+    return saved === 'true'
+  })
+
   // Subscribe to real-time recordings changes
   useRecordingsSocket()
 
@@ -199,22 +207,23 @@ export function WatchPage() {
   const projectCode = config?.projectDirectory?.split('/').pop() || ''
 
   // Group recordings by chapter with timing
+  // FR-111 Phase 4: Pass showSafe to filter
   const chapters = useMemo(() => {
     if (!data?.recordings) return []
-    return groupByChapterWithTiming(data.recordings)
-  }, [data?.recordings])
+    return groupByChapterWithTiming(data.recordings, showSafe)
+  }, [data?.recordings, showSafe])
 
-  // FR-100: Flat list of active recordings for next/prev navigation
+  // FR-100: Flat list of recordings for next/prev navigation
+  // FR-111 Phase 4: Filter based on showSafe toggle
   const sortedRecordings = useMemo(() => {
     if (!data?.recordings) return []
-    return data.recordings
-      .filter(r => r.folder !== 'safe')
-      .sort((a, b) => {
-        const chapterDiff = parseInt(a.chapter) - parseInt(b.chapter)
-        if (chapterDiff !== 0) return chapterDiff
-        return parseInt(a.sequence) - parseInt(b.sequence)
-      })
-  }, [data?.recordings])
+    const filtered = showSafe ? data.recordings : data.recordings.filter(r => !r.isSafe)
+    return filtered.sort((a, b) => {
+      const chapterDiff = parseInt(a.chapter) - parseInt(b.chapter)
+      if (chapterDiff !== 0) return chapterDiff
+      return parseInt(a.sequence) - parseInt(b.sequence)
+    })
+  }, [data?.recordings, showSafe])
 
   // FR-100: Find current index in sorted list
   const currentIndex = useMemo(() => {
@@ -225,14 +234,14 @@ export function WatchPage() {
   }, [currentVideo?.segmentName, sortedRecordings])
 
   // FR-100: Navigation handlers
+  // FR-111: Simplified - no more -safe subfolder for shadows
   const handlePrevious = useCallback(() => {
     if (currentIndex <= 0 || !projectCode) return
     const prev = sortedRecordings[currentIndex - 1]
     const isShadow = 'isShadow' in prev && prev.isShadow
-    const shadowFolder = prev.folder === 'safe' ? 'safe' : 'recordings'
     const url = getVideoUrl(projectCode, prev.filename, 'recordings', {
       isShadow,
-      shadowFolder,
+      shadowFolder: 'recordings',  // FR-111: Always recordings now
     })
     setCurrentVideo({
       url,
@@ -247,10 +256,9 @@ export function WatchPage() {
     if (currentIndex >= sortedRecordings.length - 1 || !projectCode) return
     const next = sortedRecordings[currentIndex + 1]
     const isShadow = 'isShadow' in next && next.isShadow
-    const shadowFolder = next.folder === 'safe' ? 'safe' : 'recordings'
     const url = getVideoUrl(projectCode, next.filename, 'recordings', {
       isShadow,
-      shadowFolder,
+      shadowFolder: 'recordings',  // FR-111: Always recordings now
     })
     setCurrentVideo({
       url,
@@ -267,7 +275,7 @@ export function WatchPage() {
   // FR-71: Find the most recent recording (highest chapter, then highest sequence)
   const mostRecentRecording = useMemo(() => {
     if (!data?.recordings) return null
-    const activeRecordings = data.recordings.filter(r => r.folder !== 'safe')
+    const activeRecordings = data.recordings.filter(r => !r.isSafe)  // FR-111
     if (activeRecordings.length === 0) return null
 
     return activeRecordings.sort((a, b) => {
@@ -332,6 +340,15 @@ export function WatchPage() {
     })
   }, [])
 
+  // FR-111 Phase 4: Toggle show safe recordings
+  const handleShowSafeToggle = useCallback(() => {
+    setShowSafe(prev => {
+      const newValue = !prev
+      localStorage.setItem(STORAGE_KEYS.showSafe, String(newValue))
+      return newValue
+    })
+  }, [])
+
   // Toggle play/pause for current video
   const handlePlayPause = useCallback(() => {
     if (!videoRef.current) return
@@ -368,12 +385,12 @@ export function WatchPage() {
     if (currentIndex === -1 || currentIndex >= allSegments.length - 1) return
 
     // Play next segment
+    // FR-111: Simplified - no more -safe subfolder for shadows
     const nextSegment = allSegments[currentIndex + 1]
     const isShadow = 'isShadow' in nextSegment && nextSegment.isShadow
-    const shadowFolder = nextSegment.folder === 'safe' ? 'safe' : 'recordings'
     const url = getVideoUrl(projectCode, nextSegment.filename, 'recordings', {
       isShadow,
-      shadowFolder,
+      shadowFolder: 'recordings',  // FR-111: Always recordings now
     })
     const segmentName = nextSegment.filename.replace(/\.mov$/, '')
     setCurrentVideo({
@@ -395,13 +412,13 @@ export function WatchPage() {
   // Play a specific recording (segment)
   // FR-83: Shadow files play from recording-shadows/ folder as .mp4
   // FR-88: Include source file for shadow fallback
+  // FR-111: Simplified - no more -safe subfolder for shadows
   const playRecording = useCallback((file: RecordingFile) => {
     if (!projectCode) return
     const isShadow = 'isShadow' in file && file.isShadow
-    const shadowFolder = file.folder === 'safe' ? 'safe' : 'recordings'
     const url = getVideoUrl(projectCode, file.filename, 'recordings', {
       isShadow,
-      shadowFolder,
+      shadowFolder: 'recordings',  // FR-111: Always recordings now
     })
     const segmentName = file.filename.replace(/\.mov$/, '')
     setCurrentVideo({
@@ -445,10 +462,10 @@ export function WatchPage() {
 
     if (hasShadow && projectCode) {
       console.log('[FR-88] Falling back to shadow video for:', file.filename)
-      const shadowFolder = file.folder === 'safe' ? 'safe' : 'recordings'
+      // FR-111: Always recordings now (no more -safe folder)
       const shadowUrl = getVideoUrl(projectCode, file.filename, 'recordings', {
         isShadow: true,
-        shadowFolder,
+        shadowFolder: 'recordings',
       })
       setCurrentVideo(prev => prev ? {
         ...prev,
@@ -679,6 +696,19 @@ export function WatchPage() {
             >
               Auto Next
             </button>
+
+            {/* FR-111 Phase 4: Show Safe Toggle - shows hidden safe recordings */}
+            <button
+              onClick={handleShowSafeToggle}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                showSafe
+                  ? 'bg-yellow-500 text-white font-medium'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title={showSafe ? 'Showing safe recordings' : 'Safe recordings hidden'}
+            >
+              Safe
+            </button>
           </div>
         </div>
 
@@ -699,12 +729,14 @@ export function WatchPage() {
       </div>
 
       {/* Cascading Panels Container */}
+      {/* FR-111: Width must include both panels (72+64=136 units = 544px) so segment panel is inside bounds */}
+      {/* pointer-events-none on parent prevents blocking main content, pointer-events-auto on children */}
       <div
-        className="fixed right-0 top-32 bottom-4 z-40 group"
+        className="fixed right-0 top-32 bottom-4 z-40 group w-[544px] pointer-events-none"
         onMouseLeave={() => setHoveredChapter(null)}
       >
         {/* Hover trigger tab */}
-        <div className="absolute right-0 top-0 h-full flex items-start pt-8">
+        <div className="absolute right-0 top-0 h-full flex items-start pt-8 pointer-events-auto">
           <div className="bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover:opacity-0 transition-opacity">
             <span
               className="text-xs font-medium text-gray-600"
@@ -717,7 +749,7 @@ export function WatchPage() {
 
         {/* Segments Panel - slides out to the LEFT of chapters panel */}
         <div
-          className={`absolute right-72 top-0 h-full w-64 transition-all duration-200 ease-out ${
+          className={`absolute right-72 top-0 h-full w-64 transition-all duration-200 ease-out pointer-events-auto ${
             hoveredChapter ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0 pointer-events-none'
           }`}
         >
@@ -747,9 +779,8 @@ export function WatchPage() {
                 // FR-83: Recording status
                 const isShadow = 'isShadow' in file && file.isShadow
                 const hasShadow = 'hasShadow' in file && file.hasShadow
-
-                // FR-88 DEBUG: Log shadow flags for each file
-                console.log('[FR-88 DEBUG Segment]', file.filename, { isShadow, hasShadow, rawFile: file })
+                // FR-111 Phase 4: Safe status
+                const isSafe = 'isSafe' in file && file.isSafe
 
                 // FR-83/FR-88: Status indicator - show both playing state AND shadow status
                 // 📹 = Real | 👻 = Shadow only | 📹👻 = Real + Shadow
@@ -767,20 +798,26 @@ export function WatchPage() {
                   statusTitle = isPlaying ? 'Playing (real only)' : 'Real recording (no shadow)'
                 }
 
+                // FR-111 Phase 4: Determine row styling - safe files get yellow bg
+                let rowClasses: string
+                if (isPlaying) {
+                  rowClasses = 'bg-blue-50 text-blue-700 border-l-2 border-blue-500'
+                } else if (isSafe) {
+                  rowClasses = 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-l-2 border-yellow-400'
+                } else if (isShadow) {
+                  rowClasses = 'hover:bg-purple-50 text-purple-600 border-l-2 border-transparent'
+                } else {
+                  rowClasses = 'hover:bg-gray-50 text-gray-600 border-l-2 border-transparent'
+                }
+
                 return (
                   <button
                     key={file.path}
                     onClick={() => playRecording(file)}
-                    className={`w-full text-left px-4 py-2 flex items-center gap-2 transition-colors ${
-                      isPlaying
-                        ? 'bg-blue-50 text-blue-700 border-l-2 border-blue-500'
-                        : isShadow
-                          ? 'hover:bg-purple-50 text-purple-600 border-l-2 border-transparent'
-                          : 'hover:bg-gray-50 text-gray-600 border-l-2 border-transparent'
-                    }`}
-                    title={statusTitle}
+                    className={`w-full text-left px-4 py-2 flex items-center gap-2 transition-colors ${rowClasses}`}
+                    title={isSafe ? `${statusTitle} (Safe)` : statusTitle}
                   >
-                    <span className={`text-xs ${isPlaying ? 'text-blue-500' : isShadow ? 'text-purple-400' : 'text-gray-400'}`}>
+                    <span className={`text-xs ${isPlaying ? 'text-blue-500' : isSafe ? 'text-yellow-500' : isShadow ? 'text-purple-400' : 'text-gray-400'}`}>
                       {statusIcon}
                     </span>
                     <span className={`flex-1 font-mono text-xs truncate ${
@@ -788,6 +825,12 @@ export function WatchPage() {
                     }`}>
                       {file.chapter}-{file.sequence}-{file.name}
                     </span>
+                    {/* FR-111 Phase 4: SAFE badge for safe files */}
+                    {isSafe && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-medium bg-yellow-200 text-yellow-800 rounded">
+                        SAFE
+                      </span>
+                    )}
                     {file.duration && (
                       <span className="font-mono text-xs text-gray-400">
                         {formatDuration(file.duration, 'smart')}
@@ -801,7 +844,8 @@ export function WatchPage() {
         </div>
 
         {/* Chapter Panel - slides out from right edge */}
-        <div className="h-full w-72 translate-x-full group-hover:translate-x-0 transition-transform duration-200 ease-out">
+        {/* FR-111: absolute right-0 positions at right edge of wider parent container */}
+        <div className="absolute right-0 top-0 h-full w-72 translate-x-full group-hover:translate-x-0 transition-transform duration-200 ease-out pointer-events-auto">
           <div className="bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-lg h-full flex flex-col">
             {/* Header */}
             <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">

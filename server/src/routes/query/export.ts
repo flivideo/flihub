@@ -65,13 +65,13 @@ export function createExportRoutes(getConfig: () => Config): Router {
         const raw = await getProjectStatsRaw(projectPath, code, config, { includeFinalMedia: true });
 
         exportData.project = {
+          // FR-111: recordingsCount and safeCount removed (safe status is per-file)
           code,
           path: projectPath,
           stage: raw.stage,
           priority: raw.priority,
           stats: {
-            recordings: raw.recordingsCount,
-            safe: raw.safeCount,
+            recordings: raw.totalFiles,  // FR-111: All files are in recordings/
             chapters: raw.chapterCount,
             transcripts: {
               matched: raw.transcriptSync.matched,
@@ -102,39 +102,37 @@ export function createExportRoutes(getConfig: () => Config): Router {
           }
         }
 
-        const folders: Array<{ dir: string; folder: 'recordings' | 'safe' }> = [
-          { dir: paths.recordings, folder: 'recordings' },
-          { dir: paths.safe, folder: 'safe' },
-        ];
+        // FR-111: Only scan recordings/ (no more -safe folder)
+        const { readProjectState, isRecordingSafe } = await import('../../utils/projectState.js');
+        const state = await readProjectState(projectPath);
 
-        for (const { dir, folder } of folders) {
-          const files = await readDirSafe(dir);
-          for (const filename of files) {
-            if (!filename.endsWith('.mov')) continue;
-            const parsed = parseRecordingFilename(filename);
-            if (!parsed) continue;
+        const files = await readDirSafe(paths.recordings);
+        for (const filename of files) {
+          if (!filename.endsWith('.mov')) continue;
+          const parsed = parseRecordingFilename(filename);
+          if (!parsed) continue;
 
-            const filePath = path.join(dir, filename);
-            const stat = await statSafe(filePath);
-            if (!stat) continue; // File deleted between readdir and stat
+          const filePath = path.join(paths.recordings, filename);
+          const stat = await statSafe(filePath);
+          if (!stat) continue; // File deleted between readdir and stat
 
-            const baseName = filename.replace('.mov', '');
+          const baseName = filename.replace('.mov', '');
 
-            // NFR-65: Use extractTagsFromName utility
-            const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
+          // NFR-65: Use extractTagsFromName utility
+          const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
 
-            recordings.push({
-              filename,
-              chapter: parsed.chapter,
-              sequence: parsed.sequence || '0',
-              name: cleanName,
-              tags,
-              folder,
-              size: stat.size,
-              duration: null,
-              hasTranscript: transcriptSet.has(baseName),
-            });
-          }
+          recordings.push({
+            filename,
+            chapter: parsed.chapter,
+            sequence: parsed.sequence || '0',
+            name: cleanName,
+            tags,
+            folder: 'recordings',  // FR-111: Always recordings
+            isSafe: isRecordingSafe(state, filename),  // FR-111: From state
+            size: stat.size,
+            duration: null,
+            hasTranscript: transcriptSet.has(baseName),
+          });
         }
 
         recordings.sort((a, b) => {

@@ -21,6 +21,7 @@ export interface ProjectPaths {
     inboxRaw: string;
     inboxDataset: string;
     inboxPresentation: string;
+    stateFile: string;
 }
 /**
  * Get all project-related paths from the project directory

@@ -6,7 +6,7 @@ import { toKebabCase } from '../utils/formatting'
 
 interface FileToRename {
   filename: string
-  folder: string  // 'recordings' | 'safe'
+  isSafe: boolean  // FR-111: State-based safe flag
 }
 
 interface ChapterInfo {
@@ -143,8 +143,9 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
                   key={idx}
                   className="px-3 py-1.5 text-xs font-mono text-gray-600 border-b border-gray-100 last:border-b-0 flex items-center gap-2"
                 >
-                  <span className={file.folder === 'safe' ? 'text-green-600' : 'text-gray-400'}>
-                    {file.folder === 'safe' ? '🔒' : '📁'}
+                  {/* FR-111: Use isSafe flag instead of folder check */}
+                  <span className={file.isSafe ? 'text-green-600' : 'text-gray-400'}>
+                    {file.isSafe ? '🔒' : '📁'}
                   </span>
                   <span className="truncate">{file.filename}</span>
                 </div>

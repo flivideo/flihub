@@ -50,9 +50,7 @@ export interface ProjectStatsRaw {
   code: string;
   projectPath: string;
 
-  // File counts
-  recordingsCount: number;
-  safeCount: number;
+  // File counts (FR-111: safeCount removed, safe status is per-file in state)
   totalFiles: number;
   chapterCount: number;
 
@@ -107,24 +105,21 @@ export async function getProjectStatsRaw(
   options: GetProjectStatsOptions = {}
 ): Promise<ProjectStatsRaw> {
   const recordingsDir = path.join(projectPath, 'recordings');
-  const safeDir = path.join(projectPath, 'recordings', '-safe');
   const transcriptsDir = path.join(projectPath, 'recording-transcripts');
   const imagesDir = path.join(projectPath, 'assets', 'images');
   const thumbsDir = path.join(projectPath, 'assets', 'thumbs');
 
-  // Count files
-  const recordingsCount = await countMovFiles(recordingsDir);
-  const safeCount = await countMovFiles(safeDir);
-  const totalFiles = recordingsCount + safeCount;
+  // FR-111: Only count recordings/ (safe status tracked in state file, not folder)
+  const totalFiles = await countMovFiles(recordingsDir);
 
-  // Transcript sync status
-  const transcriptSync = await getTranscriptSyncStatus(recordingsDir, safeDir, transcriptsDir);
+  // Transcript sync status (FR-111: Only recordings/)
+  const transcriptSync = await getTranscriptSyncStatus(recordingsDir, transcriptsDir);
   const transcriptPercent = totalFiles > 0
     ? Math.round((transcriptSync.matched / totalFiles) * 100)
     : 0;
 
-  // Chapter count
-  const chapterCount = await countUniqueChapters(recordingsDir, safeDir);
+  // Chapter count (FR-111: Only recordings/)
+  const chapterCount = await countUniqueChapters(recordingsDir);
 
   // Asset counts
   const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
@@ -137,10 +132,9 @@ export async function getProjectStatsRaw(
   // FR-80: Get content indicators
   const indicators = await getProjectIndicators(projectPath);
 
-  // FR-83: Get shadow counts
+  // FR-83/FR-111: Get shadow counts (no more -safe folders)
   const shadowDir = path.join(projectPath, 'recording-shadows');
-  const shadowSafeDir = path.join(projectPath, 'recording-shadows', '-safe');
-  const shadowCounts = await getShadowCounts(recordingsDir, safeDir, shadowDir, shadowSafeDir);
+  const shadowCounts = await getShadowCounts(recordingsDir, shadowDir);
 
   // FR-80: Determine stage (check for manual override first)
   // Use projectStageOverrides (new) or fall back to legacy projectStages
@@ -162,11 +156,10 @@ export async function getProjectStatsRaw(
   const storedPriority = config.projectPriorities?.[code];
   const priority: ProjectPriority = storedPriority === 'pinned' ? 'pinned' : 'normal';
 
+  // FR-111: recordingsCount and safeCount removed - safe status is per-file in state
   const result: ProjectStatsRaw = {
     code,
     projectPath,
-    recordingsCount,
-    safeCount,
     totalFiles,
     chapterCount,
     transcriptSync,

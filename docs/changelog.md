@@ -6,13 +6,122 @@ Track what was implemented, fixed, or changed and when.
 
 ## Quick Summary - 2025-12-26
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
 **Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-54 (Naming bugs), FR-69 (Header Dropdowns), FR-71 (Watch Page Enhancements), FR-73 (Template Visibility), FR-80 (Project List & Stages), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-111: Safe Architecture Rework (Phase 1-4)
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2025-12-26 | Phase 1 implemented | - |
+| 2025-12-26 | Phase 2 implemented | - |
+| 2025-12-26 | Phase 3 implemented | - |
+| 2025-12-26 | Phase 4 implemented | - |
+
+**Phase 1 - What was fixed:**
+Watch page segment panel not showing when hovering chapters 09-10 after moving other files to safe.
+
+**Root cause:**
+CSS layout issue - the parent container for the cascading panels had no explicit width, so it was only as wide as the chapter panel (288px). The segment panel, positioned at `right-72` (288px from the parent's right edge), was outside the parent's bounds. When the mouse moved from the chapter panel toward the segment panel, it exited the parent container, triggering `onMouseLeave → setHoveredChapter(null)`.
+
+**Fix applied:**
+- Added `w-[544px]` to parent container (288px + 256px for both panels)
+- Added `pointer-events-none` to parent, `pointer-events-auto` to children
+- Added `absolute right-0 top-0` to chapter panel
+
+**Files modified:**
+- `client/src/components/WatchPage.tsx`
+
+**Phase 2 - State File Foundation:**
+Created infrastructure for `.flihub-state.json` per-project state files.
+
+**New API endpoints:**
+- `GET /api/projects/:code/state` - Read project state
+- `POST /api/projects/:code/state` - Update project state (merge with existing)
+
+**Files created/modified:**
+- `shared/paths.ts` - Added `stateFile` path
+- `shared/types.ts` - Added `RecordingState`, `ProjectState`, `ProjectStateResponse`, `UpdateProjectStateRequest`
+- `server/src/utils/projectState.ts` - NEW: State file utilities
+- `server/src/routes/state.ts` - NEW: State API endpoints
+- `server/src/index.ts` - Registered state routes
+
+**Phase 3 - Safe Migration:**
+Replaced physical `-safe/` folder moves with state-based flags.
+
+**Migration script:** `server/src/utils/safeMigration.ts`
+- `migrateSafeFolder()` - Moves files from `-safe/` back to `recordings/`, updates state file
+- `needsMigration()` - Checks if project has files to migrate
+- Runs automatically on server startup if `-safe/` folder detected
+
+**Architecture changes:**
+- `RecordingFile.folder` now always `'recordings'` (removed `'safe'` option)
+- Added `RecordingFile.isSafe: boolean` flag
+- Removed `recordingsCount` and `safeCount` from ProjectStats (use `isSafe` filter instead)
+- Safe/Restore buttons toggle state flag instead of moving files
+
+**Files created/modified:**
+- `server/src/utils/safeMigration.ts` - NEW: Migration utilities
+- `shared/types.ts` - Changed folder type, added isSafe flag
+- `server/src/routes/index.ts` - Safe/Restore now toggle state flags
+- `server/src/utils/scanning.ts` - Removed safeDir parameters
+- `server/src/WatcherManager.ts` - Only watches `recordings/` (no more `-safe`)
+- `client/src/components/WatchPage.tsx` - Uses `isSafe` instead of `folder === 'safe'`
+- `client/src/components/RecordingsView.tsx` - Uses `isSafe` for filtering
+- `client/src/components/RenameLabelModal.tsx` - Simplified shadowFolder logic
+
+**Phase 4 - UI Polish:**
+Added "Show safe" toggle to Watch page.
+
+**Changes:**
+- Added `showSafe` state with localStorage persistence (default: false)
+- Updated `groupByChapterWithTiming()` to filter based on toggle
+- Added yellow "Safe" button in controls bar
+- Safe files show yellow background + border + SAFE badge when visible
+
+**Additional cleanup:**
+- `ProjectStatsPopup.tsx` - Replaced `recordingsCount/safeCount` with `totalFiles`
+- `RecordingsView.tsx` - Updated `editingChapter` type to use `isSafe`
+
+**Files modified:**
+- `client/src/components/WatchPage.tsx`
+- `client/src/components/ProjectStatsPopup.tsx`
+- `client/src/components/RecordingsView.tsx`
+
+**Phase 5 (optional, future):** Per-recording stage UI.
+
+---
+
+### FR-110: Project Stage Persistence & Dropdown
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2025-12-26 | Implemented | - |
+
+**What was fixed:**
+Two issues with project stage management.
+
+**Bug Fix - Persistence:**
+- `saveConfig()` wasn't including `projectStageOverrides`
+- Stage changes were lost on server restart
+- Same pattern as FR-108
+
+**Enhancement - Dropdown UI:**
+- Replaced click-to-cycle with dropdown menu
+- Shows all 8 stages with colored dots
+- "Auto" option to reset to auto-detection
+- Current stage has checkmark indicator
+
+**Files modified:**
+- `server/src/index.ts` - Added projectStageOverrides to saveConfig()
+- `client/src/components/ProjectsPanel.tsx` - StageCell dropdown, removed cycle code
+
+---
 
 ### FR-109: Transcript Management Bugs
 
