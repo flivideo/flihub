@@ -4,15 +4,81 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
-## Quick Summary - 2025-12-18
+## Quick Summary - 2025-12-26
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
 **Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-54 (Naming bugs), FR-69 (Header Dropdowns), FR-71 (Watch Page Enhancements), FR-73 (Template Visibility), FR-80 (Project List & Stages), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-109: Transcript Management Bugs
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2025-12-26 | Implemented | - |
+
+**What was fixed:**
+Two related bugs causing orphaned transcripts to accumulate.
+
+**Bug 1 - Delete returns 404:**
+- `path.extname()` broke on filenames with dots (e.g., `23-1-develop.2.4-setup`)
+- The last dot was treated as a file extension, corrupting the filename
+- Fix: Filename param is already a base name, just append `.txt` directly
+
+**Bug 2 - Transcripts save to wrong project:**
+- Output dir used current config's `projectDirectory` instead of the video's project
+- When switching projects during queue processing, transcripts went to wrong folder
+- Fix: Derive `transcriptsDir` from `activeJob.videoPath` by finding `recordings/` and going up one level
+
+**Files modified:**
+- `server/src/routes/transcriptions.ts` (lines 101-112, 429-431)
+
+---
+
+### FR-108: Gling Dictionary Not Saving
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2025-12-26 | Implemented | - |
+
+**What was fixed:**
+Config save pipeline was dropping the `glingDictionary` field at every step - the UI sent it but the server never extracted, processed, or persisted it.
+
+**Root cause:**
+Three locations all needed to handle the field:
+1. POST route didn't extract it from request body
+2. `updateConfig()` didn't process it
+3. `saveConfig()` didn't include it in the saved object
+
+**Files modified:**
+- `server/src/routes/index.ts` - Added glingDictionary to destructure and pass-through
+- `server/src/index.ts` - Added to saveConfig() toSave object and updateConfig() handling
+
+---
+
+### FR-107: Chapter Input Auto-Focus & Glow Animation
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2025-12-23 | Implemented | - |
+
+**What was built:**
+Small UX enhancement for the Naming Template. When user clicks "New Chapter" button, the **Name** input field automatically receives focus with a pulsing blue glow animation (500ms).
+
+**Features:**
+- Auto-focus on Name input (not Chapter) when "New Chapter" clicked
+- Custom CSS `glow-pulse` keyframe animation with pulsing box-shadow
+- Animation only triggers on chapter change, not manual focus or initial mount
+- Helps prevent users from forgetting to update the chapter name
+
+**Files modified:**
+- `client/src/components/NamingControls.tsx` - Added useRef, useState, useEffect for focus/glow
+- `client/src/index.css` - Added `@keyframes glow-pulse` and `.animate-glow-pulse` class
+
+---
 
 ### FR-105: S3 DAM Integration
 

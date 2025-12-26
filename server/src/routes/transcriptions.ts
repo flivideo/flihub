@@ -98,7 +98,18 @@ export function createTranscriptionRoutes(
       videoPath: activeJob.videoPath,
     });
 
-    const transcriptsDir = getTranscriptsDir();
+    // FR-109: Derive transcripts dir from video path, not current config
+    // This ensures transcripts go to the correct project even if user switches projects during queue
+    let transcriptsDir: string;
+    const pathParts = activeJob.videoPath.split(path.sep);
+    const recordingsIndex = pathParts.indexOf('recordings');
+    if (recordingsIndex > 0) {
+      const projectDir = pathParts.slice(0, recordingsIndex).join(path.sep);
+      transcriptsDir = path.join(projectDir, 'recording-transcripts');
+    } else {
+      // Fallback to current config if path structure unexpected
+      transcriptsDir = getTranscriptsDir();
+    }
     fs.ensureDirSync(transcriptsDir);
 
     const pythonPath = expandPath(WHISPER_PYTHON);
@@ -426,8 +437,9 @@ export function createTranscriptionRoutes(
   router.delete('/transcript/:filename', async (req: Request, res: Response) => {
     const { filename } = req.params;
     const { project } = req.query;
-    const baseName = path.basename(filename, path.extname(filename));
-    const transcriptFilename = `${baseName}.txt`;
+    // FR-109: filename is already a base name (no extension), just append .txt
+    // Don't use path.extname() - it breaks on filenames with dots like "23-1-develop.2.4-setup"
+    const transcriptFilename = `${filename}.txt`;
 
     // Determine transcripts directory: use project param if provided, else current project
     let transcriptsDir: string;

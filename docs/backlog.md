@@ -10,6 +10,10 @@ Requirements index for FliHub.
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
+| FR-110 | [Project Stage Persistence & Dropdown](prd/fr-110-project-stage-fixes.md) | 2025-12-26 | Pending |
+| FR-109 | [Transcript Management Bugs](prd/fr-109-transcript-bugs.md) | 2025-12-26 | Implemented |
+| FR-108 | [Gling Dictionary Not Saving](prd/fr-108-gling-dictionary-save-bug.md) | 2025-12-25 | Implemented |
+| FR-107 | [Chapter Input Auto-Focus & Glow](prd/fr-107-chapter-input-focus-glow.md) | 2025-12-23 | Implemented |
 | FR-106 | [Incoming Video Preview](prd/fr-106-incoming-video-preview.md) | 2025-12-19 | Implemented |
 | FR-105 | [S3 DAM Integration](prd/fr-105-s3-dam-integration.md) | 2025-12-18 | Implemented |
 | FR-94 | [Transcription Progress State Bugs](prd/fr-94-transcription-progress-bugs.md) | 2025-12-16 | Implemented |

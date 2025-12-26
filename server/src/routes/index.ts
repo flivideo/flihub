@@ -105,6 +105,7 @@ export function createRoutes(
       activeProject,
       imageSourceDirectory,
       shadowResolution,
+      glingDictionary,
     } = req.body;
     const updatedConfig = updateConfig({
       watchDirectory,
@@ -113,6 +114,7 @@ export function createRoutes(
       activeProject,
       imageSourceDirectory,
       shadowResolution,
+      glingDictionary,
     });
     console.log('Config updated:', updatedConfig);
     res.json(updatedConfig);

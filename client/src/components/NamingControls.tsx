@@ -1,3 +1,4 @@
+import { useRef, useState, useEffect } from 'react'
 import type { NamingState } from '../App'
 import type { CommonName } from '../../../shared/types'
 import { DEFAULT_TAGS } from '../../../shared/types'
@@ -19,6 +20,23 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
   // NFR-2 fix: Find suggestTags for the currently active common name
   const activeCommonName = commonNames?.find(cn => cn.name === name)
   const suggestedTags = activeCommonName?.suggestTags ?? []
+
+  // FR-107: Name input auto-focus and glow when New Chapter clicked
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const [showGlow, setShowGlow] = useState(false)
+  const prevChapterRef = useRef<string>(chapter)
+
+  // FR-107: Auto-focus name input and glow when chapter changes (New Chapter clicked)
+  useEffect(() => {
+    // Only trigger on chapter change (not initial mount)
+    if (prevChapterRef.current !== chapter && prevChapterRef.current !== '') {
+      nameInputRef.current?.focus()
+      setShowGlow(true)
+      const timer = setTimeout(() => setShowGlow(false), 500)
+      return () => clearTimeout(timer)
+    }
+    prevChapterRef.current = chapter
+  }, [chapter])
 
   const toggleTag = (tag: string) => {
     const newTags = tags.includes(tag)
@@ -90,11 +108,14 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
         <div className="col-span-5">
           <label className="block text-xs text-gray-600 mb-1">Name</label>
           <input
+            ref={nameInputRef}
             type="text"
             value={name}
             onChange={(e) => updateNaming('name', e.target.value)}
             placeholder="intro"
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              showGlow ? 'animate-glow-pulse' : ''
+            }`}
           />
           {/* FR-13: Common names quick-select pills - gray outline style */}
           {commonNames && commonNames.length > 0 && (

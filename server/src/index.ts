@@ -171,6 +171,7 @@ function saveConfig(config: Config): void {
       availableTags: config.availableTags,   // NFR-2: Persist tags
       commonNames: config.commonNames,        // NFR-3: Persist common names
       imageSourceDirectory: config.imageSourceDirectory,  // FR-17: Persist image source
+      glingDictionary: config.glingDictionary || [],  // FR-108: Persist Gling dictionary
     };
     // FR-32: Only save projectPriorities if it has values
     if (config.projectPriorities && Object.keys(config.projectPriorities).length > 0) {
@@ -259,6 +260,9 @@ function updateConfig(newConfig: Partial<Config>): Config {
 
   // FR-89 Part 6: Handle shadow resolution
   if (newConfig.shadowResolution !== undefined) currentConfig.shadowResolution = newConfig.shadowResolution;
+
+  // FR-108: Handle Gling dictionary
+  if (newConfig.glingDictionary !== undefined) currentConfig.glingDictionary = newConfig.glingDictionary;
 
   // Persist config to file
   saveConfig(currentConfig);
