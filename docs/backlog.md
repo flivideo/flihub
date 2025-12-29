@@ -10,6 +10,7 @@ Requirements index for FliHub.
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
+| FR-113 | [First Edit Prep Path Expansion Bug](prd/fr-113-first-edit-path-expansion.md) | 2025-12-27 | Pending |
 | FR-112 | [Sequential Chapter Increment](prd/fr-112-sequential-chapter-increment.md) | 2025-12-26 | Pending |
 | FR-111 | [Safe Architecture Rework](prd/fr-111-safe-architecture-rework.md) | 2025-12-26 | Implemented (Phase 5 Future) |
 | FR-110 | [Project Stage Persistence & Dropdown](prd/fr-110-project-stage-fixes.md) | 2025-12-26 | Implemented |
