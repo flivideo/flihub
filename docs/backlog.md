@@ -10,8 +10,14 @@ Requirements index for FliHub.
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
-| FR-113 | [First Edit Prep Path Expansion Bug](prd/fr-113-first-edit-path-expansion.md) | 2025-12-27 | Pending |
-| FR-112 | [Sequential Chapter Increment](prd/fr-112-sequential-chapter-increment.md) | 2025-12-26 | Pending |
+| FR-119 | [API Documentation & Testing Page](prd/fr-119-api-documentation-testing.md) | 2025-12-31 | Pending |
+| FR-118 | [Project-Specific Gling Dictionary](prd/fr-118-project-gling-dictionary.md) | 2025-12-31 | Pending |
+| FR-117 | [Hover UX Improvements](prd/fr-117-hover-ux-improvements.md) | 2025-12-30 | ✓ Implemented |
+| FR-116 | [Incoming Page - Quick Config Access](prd/fr-116-quick-config-access.md) | 2025-12-30 | ✓ Implemented |
+| FR-115 | [Incoming Page - Chapter Context Panel](prd/fr-115-chapter-context-panel.md) | 2025-12-30 | ✓ Implemented |
+| FR-114 | [Projects Page - Transcript Quick Access](prd/fr-114-transcript-quick-access.md) | 2025-12-30 | With Developer |
+| FR-113 | [Edit Prep Path Fix & Folder Restructure](prd/fr-113-first-edit-path-expansion.md) | 2025-12-27 | ✓ Implemented |
+| FR-112 | [Sequential Chapter Increment](prd/fr-112-sequential-chapter-increment.md) | 2025-12-26 | ✓ Implemented |
 | FR-111 | [Safe Architecture Rework](prd/fr-111-safe-architecture-rework.md) | 2025-12-26 | Implemented (Phase 5 Future) |
 | FR-110 | [Project Stage Persistence & Dropdown](prd/fr-110-project-stage-fixes.md) | 2025-12-26 | Implemented |
 | FR-109 | [Transcript Management Bugs](prd/fr-109-transcript-bugs.md) | 2025-12-26 | Implemented |
@@ -25,7 +31,7 @@ Requirements index for FliHub.
 | FR-89 | [Cross-Platform Path Support](prd/fr-89-cross-platform-path-support.md) | 2025-12-16 | Pending (Parts 1b, 2 await UAT) |
 | FR-80 | [Enhanced Project List & Stage Model](prd/fr-80-project-list-stage-model.md) | 2025-12-15 | Pending |
 | FR-73 | [Template Visibility Rules](prd/fr-73-template-visibility-rules.md) | 2025-12-15 | Pending |
-| FR-71 | [Watch Page Enhancements](prd/fr-71-watch-page-enhancements.md) | 2025-12-15 | Pending |
+| FR-71 | [Watch Page Enhancements](prd/fr-71-watch-page-enhancements.md) | 2025-12-15 | ✓ Implemented |
 | FR-69 | [Header Dropdown Menus](prd/fr-69-header-dropdown-menus.md) | 2025-12-14 | Pending |
 | FR-54 | [Naming Template Bugs](prd/fr-54-naming-template-bugs.md) | 2025-12-10 | Pending |
 | FR-34 | [Chapter Timestamp Extraction - Phase 3](prd/chapter-extraction-spec.md) | 2025-12-03 | Future |
@@ -63,6 +69,7 @@ See [ux-improvements.md](prd/ux-improvements.md) for detailed list.
 | Status | Meaning |
 |--------|---------|
 | `Pending` | Ready for development |
+| `With Developer` | Currently being implemented |
 | `Implemented` | Complete |
 | `Future` | Planned but not prioritized |
 

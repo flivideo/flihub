@@ -1,8 +1,9 @@
-# FR-113: First Edit Prep Path Expansion Bug
+# FR-113: Edit Prep Path Fix & Folder Restructure
 
-**Type:** Bug Fix
+**Type:** Bug Fix + Enhancement
 **Priority:** High
 **Added:** 2025-12-27
+**Implemented:** 2025-12-31
 
 ---
 
@@ -107,6 +108,62 @@ rm -rf /Users/davidcruwys/dev/ad/flivideo/flihub/server/'~'
 3. Click "Create prep folder"
 4. Verify folder created at `{project}/edits/prep/` (not in server directory)
 5. Verify no `~` folder exists in `flihub/server/`
+
+---
+
+## Completion Notes
+
+**Implemented:** 2025-12-31
+
+### Bug Fix (Original Scope)
+- Added `expandPath()` to resolve tilde paths correctly
+- Recordings list now shows actual files
+- Folders created in correct project location
+
+### Additional Enhancements (Bundled)
+
+**New folder structure:**
+```
+project/
+├── edit-1st/      # First edit prep (Gling cuts)
+├── edit-2nd/      # Second edit (Jan's graphics)
+└── edit-final/    # Final review
+```
+
+- Flat structure (no nested `edits/prep`)
+- Singular naming to match "recording" convention
+- "Create All" button creates all three folders in one click
+
+**Naming convention change:**
+- Renamed from "first-edit/edits" to "edit" (singular)
+- Consistent with "recording" (not "recordings")
+
+### Files Changed
+
+**Renamed:**
+- `server/src/routes/first-edit.ts` -> `server/src/routes/edit.ts`
+- `client/src/hooks/useFirstEditApi.ts` -> `client/src/hooks/useEditApi.ts`
+- `client/src/components/FirstEditPrepPage.tsx` -> `client/src/components/EditPrepPage.tsx`
+
+**Modified:**
+- `server/src/index.ts` - Import + route `/api/edit`
+- `client/src/App.tsx` - Imports, state, menu label
+
+### API Changes
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/edit/prep` | Returns `editFolders: { allExist, folders: [{name, exists}] }` |
+| `POST /api/edit/create-folders` | Creates all three edit folders |
+
+### Testing
+
+1. Open Edit Prep page
+2. Verify recordings list shows files with sizes
+3. Click "Create All" -> all three folders created
+4. Folders appear at `{project}/edit-1st/`, `edit-2nd/`, `edit-final/`
+
+**Status:** Complete
 
 ---
 

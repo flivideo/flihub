@@ -1,15 +1,15 @@
-// FR-102: First Edit Prep Page
-import { useFirstEditPrep, useCreatePrepFolder } from '../hooks/useFirstEditApi'
+// FR-102: Edit Prep Page
+import { useEditPrep, useCreateEditFolders } from '../hooks/useEditApi'
 import { useOpenFolder } from '../hooks/useApi'
 import { toast } from 'sonner'
 
-interface FirstEditPrepPageProps {
+interface EditPrepPageProps {
   onClose: () => void
 }
 
-export function FirstEditPrepPage({ onClose }: FirstEditPrepPageProps) {
-  const { data, isLoading } = useFirstEditPrep()
-  const createFolder = useCreatePrepFolder()
+export function EditPrepPage({ onClose }: EditPrepPageProps) {
+  const { data, isLoading } = useEditPrep()
+  const createFolders = useCreateEditFolders()
   const openFolder = useOpenFolder()
 
   const formatSize = (bytes: number) => {
@@ -43,8 +43,8 @@ export function FirstEditPrepPage({ onClose }: FirstEditPrepPageProps) {
     openFolder.mutate({ folderKey: 'recordings' })
   }
 
-  const handleCreateFolder = () => {
-    createFolder.mutate()
+  const handleCreateFolders = () => {
+    createFolders.mutate()
   }
 
   if (isLoading) {
@@ -73,7 +73,7 @@ export function FirstEditPrepPage({ onClose }: FirstEditPrepPageProps) {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">First Edit Prep</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Edit Prep</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">✕</button>
         </div>
 
@@ -146,33 +146,33 @@ export function FirstEditPrepPage({ onClose }: FirstEditPrepPageProps) {
             <p className="text-xs text-gray-400 mt-1">Drag these into Gling in order</p>
           </div>
 
-          {/* Prep Folder */}
+          {/* Edit Folders */}
           <div>
-            <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Prep Folder: edits/prep/</h3>
-            <div className="bg-gray-50 border border-gray-200 rounded px-3 py-2">
-              {data.prepFolder.exists ? (
-                data.prepFolder.files.length > 0 ? (
-                  data.prepFolder.files.map(f => (
-                    <div key={f.name} className="flex justify-between text-sm py-0.5">
-                      <span className="text-gray-700">{f.name}</span>
-                      <span className="text-gray-400">{formatSize(f.size)}</span>
-                    </div>
-                  ))
-                ) : (
-                  <span className="text-gray-400 text-sm">(empty - ready for Gling export)</span>
-                )
-              ) : (
-                <span className="text-gray-400 text-sm">(folder does not exist)</span>
-              )}
+            <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Edit Folders</h3>
+            <div className="bg-gray-50 border border-gray-200 rounded px-3 py-2 space-y-1">
+              {data.editFolders.folders.map(f => (
+                <div key={f.name} className="flex items-center gap-2 text-sm">
+                  <span className={f.exists ? 'text-green-500' : 'text-gray-300'}>{f.exists ? '✓' : '○'}</span>
+                  <span className={f.exists ? 'text-gray-700' : 'text-gray-400'}>{f.name}/</span>
+                  <span className="text-xs text-gray-400">
+                    {f.name === 'edit-1st' && '← Gling exports'}
+                    {f.name === 'edit-2nd' && '← Jan\'s edits'}
+                    {f.name === 'edit-final' && '← Final publish'}
+                  </span>
+                </div>
+              ))}
             </div>
-            {!data.prepFolder.exists && (
+            {!data.editFolders.allExist && (
               <button
-                onClick={handleCreateFolder}
+                onClick={handleCreateFolders}
                 className="mt-2 px-4 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
-                disabled={createFolder.isPending}
+                disabled={createFolders.isPending}
               >
-                {createFolder.isPending ? 'Creating...' : 'Create Folder'}
+                {createFolders.isPending ? 'Creating...' : 'Create All Folders'}
               </button>
+            )}
+            {data.editFolders.allExist && (
+              <p className="mt-2 text-xs text-green-600">All edit folders ready</p>
             )}
           </div>
         </div>

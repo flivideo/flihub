@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Toaster, toast } from 'sonner'
-import { useSocket } from './hooks/useSocket'
+import { useSocket, useRecordingsSocket } from './hooks/useSocket'
 import { useConfig, useSuggestedNaming, useTrashFile, useProjects, useUpdateConfig, useRefetchSuggestedNaming, useRecentRenames, useUndoRename, useRecordings } from './hooks/useApi'
 import { useBestTake } from './hooks/useBestTake'
 import { discardFiles } from './utils/fileActions'
@@ -17,8 +17,9 @@ import { TranscriptionsPage } from './components/TranscriptionsPage'
 import { InboxPage } from './components/InboxPage'
 import { MockupsPage } from './components/MockupsPage'
 import { WatchPage } from './components/WatchPage'
-import { FirstEditPrepPage } from './components/FirstEditPrepPage'
+import { EditPrepPage } from './components/EditPrepPage'
 import { S3StagingPage } from './components/S3StagingPage'
+import { ChapterContextPanel } from './components/ChapterContextPanel'
 import { ConnectionIndicator } from './components/ConnectionIndicator'
 import { OpenFolderButton } from './components/shared'
 import { HeaderDropdown } from './components/HeaderDropdown'
@@ -28,6 +29,9 @@ import type { FileInfo } from '../../shared/types'
 type ViewTab = 'incoming' | 'recordings' | 'watch' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config' | 'mockups'
 
 const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'watch', 'transcriptions', 'inbox', 'assets', 'thumbs', 'projects', 'config', 'mockups']
+
+// FR-116: Config section focus targets
+export type ConfigFocusSection = 'common-names' | null
 
 // Get initial tab from URL hash
 function getTabFromHash(): ViewTab {
@@ -76,10 +80,12 @@ function App() {
   // FR-43: Project switcher dropdown state
   const [showProjectDropdown, setShowProjectDropdown] = useState(false)
   const projectDropdownRef = useRef<HTMLDivElement>(null)
-  // FR-102: First Edit Prep modal state
-  const [showFirstEditPrep, setShowFirstEditPrep] = useState(false)
+  // FR-102: Edit Prep modal state
+  const [showEditPrep, setShowEditPrep] = useState(false)
   // FR-103: S3 Staging modal state
   const [showS3Staging, setShowS3Staging] = useState(false)
+  // FR-116: Config section focus (for quick navigation from other pages)
+  const [configFocusSection, setConfigFocusSection] = useState<ConfigFocusSection>(null)
 
   const { files, connected, isReconnecting, removeFile } = useSocket()
   const { data: config } = useConfig()
@@ -101,6 +107,8 @@ function App() {
   const { data: suggestedNaming } = useSuggestedNaming()
   // FR-112: Get recordings to calculate highest chapter
   const { data: recordingsData } = useRecordings()
+  // FR-115: Real-time updates for recordings (invalidates cache on socket event)
+  useRecordingsSocket()
   // NFR-6: Track project directory changes
   const previousProjectDir = useRef<string | undefined>(undefined)
 
@@ -281,6 +289,12 @@ function App() {
     }
   }, [currentProjectCode])
 
+  // FR-116: Navigate to Config tab with focus on a specific section
+  const handleNavigateToConfig = useCallback((section: ConfigFocusSection) => {
+    setConfigFocusSection(section)
+    changeTab('config')
+  }, [changeTab])
+
   // FR-3: New Chapter button
   // FR-112: Calculate next chapter from highest recorded chapter (idempotent)
   // Preserve the name from previous chapter - user can change if needed
@@ -345,9 +359,9 @@ function App() {
         />
       )}
 
-      {/* FR-102: First Edit Prep modal */}
-      {showFirstEditPrep && (
-        <FirstEditPrepPage onClose={() => setShowFirstEditPrep(false)} />
+      {/* FR-102: Edit Prep modal */}
+      {showEditPrep && (
+        <EditPrepPage onClose={() => setShowEditPrep(false)} />
       )}
 
       {/* FR-103: S3 Staging modal */}
@@ -482,9 +496,9 @@ function App() {
                   onClick: () => changeTab('mockups'),
                 },
                 {
-                  label: 'First Edit Prep',
+                  label: 'Edit Prep',
                   icon: <span className="text-orange-500">🎬</span>,
-                  onClick: () => setShowFirstEditPrep(true),
+                  onClick: () => setShowEditPrep(true),
                 },
                 {
                   label: 'S3 Staging',
@@ -610,6 +624,7 @@ function App() {
               availableTags={config?.availableTags}
               commonNames={config?.commonNames}
               newChapterClickCount={newChapterClickCount}
+              onAddCommonName={() => handleNavigateToConfig('common-names')}
             />
 
             {/* Incoming Files */}
@@ -753,7 +768,10 @@ function App() {
         {activeTab === 'config' && (
           <section>
             <h2 className="text-lg font-medium text-gray-700 mb-4">Configuration</h2>
-            <ConfigPanel />
+            <ConfigPanel
+              focusSection={configFocusSection}
+              onFocusSectionHandled={() => setConfigFocusSection(null)}
+            />
           </section>
         )}
 
@@ -774,6 +792,14 @@ function App() {
           </div>
         </footer>
       </main>
+
+      {/* FR-115: Floating Chapter Context Panel - only on Incoming tab */}
+      {/* Positioned just outside the max-w-4xl (56rem/896px) centered content */}
+      {activeTab === 'incoming' && (
+        <div className="fixed left-[calc(50%+29rem)] top-32 z-40">
+          <ChapterContextPanel recordings={recordingsData?.recordings || []} />
+        </div>
+      )}
     </div>
   )
 }

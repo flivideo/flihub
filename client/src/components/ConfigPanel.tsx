@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import type { ConfigFocusSection } from '../App'
 import { toast } from 'sonner'
 import { useConfig, useUpdateConfig, useRefetchSuggestedNaming, useChapterRecordingConfig, useUpdateChapterRecordingConfig, useShadowStatus, useGenerateShadows, useGenerateAllShadows, useWatchers, useEnvironment } from '../hooks/useApi'
 import { collapsePath } from '../utils/formatting'
@@ -200,7 +201,12 @@ function PathExistsIndicator({ status, description }: { status: PathExistsStatus
   }
 }
 
-export function ConfigPanel() {
+interface ConfigPanelProps {
+  focusSection?: ConfigFocusSection
+  onFocusSectionHandled?: () => void
+}
+
+export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanelProps) {
   const { data: config, isLoading } = useConfig()
   const updateConfig = useUpdateConfig()
   const refetchSuggestedNaming = useRefetchSuggestedNaming()
@@ -229,6 +235,11 @@ export function ConfigPanel() {
   const [imageSourceDirectory, setImageSourceDirectory] = useState('')
   // FR-102: Gling dictionary words
   const [glingDictionary, setGlingDictionary] = useState('')
+  // FR-116: Common names editing
+  const [commonNames, setCommonNames] = useState<string[]>([])
+  const [newCommonName, setNewCommonName] = useState('')
+  const commonNamesInputRef = useRef<HTMLInputElement>(null)
+  const commonNamesSectionRef = useRef<HTMLDivElement>(null)
 
   // FR-89 Part 2: Path existence status for each directory field
   const [watchDirExists, setWatchDirExists] = useState<PathExistsStatus>('unknown')
@@ -285,6 +296,9 @@ export function ConfigPanel() {
       // FR-102: Initialize Gling dictionary (one word per line)
       setGlingDictionary((config.glingDictionary || []).join('\n'))
 
+      // FR-116: Initialize common names (just the name strings)
+      setCommonNames((config.commonNames || []).map(cn => cn.name))
+
       // FR-89 Part 6: Initialize shadow resolution
       setShadowResolution(config.shadowResolution || 240)
 
@@ -304,6 +318,18 @@ export function ConfigPanel() {
       setAutoGenerate(chapterConfig.config.autoGenerate ?? false)
     }
   }, [chapterConfig])
+
+  // FR-116: Handle focus on mount when navigating from another page
+  useEffect(() => {
+    if (focusSection === 'common-names' && commonNamesSectionRef.current && commonNamesInputRef.current) {
+      // Small delay to ensure DOM is ready after tab switch
+      setTimeout(() => {
+        commonNamesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        commonNamesInputRef.current?.focus()
+        onFocusSectionHandled?.()
+      }, 100)
+    }
+  }, [focusSection, onFocusSectionHandled])
 
   // C-2/C-3: Track if form has changes
   // FR-89 Part 5: Using split project directory fields
@@ -329,8 +355,12 @@ export function ConfigPanel() {
     // FR-89 Part 6: Check shadow resolution changes
     const shadowChanged = (config.shadowResolution || 240) !== shadowResolution
 
-    return pathsChanged || dictChanged || chapterChanged || shadowChanged
-  }, [config, watchDirectory, projectsRootDirectory, activeProject, imageSourceDirectory, glingDictionary, chapterConfig, includeTitleSlides, slideDuration, resolution, autoGenerate, shadowResolution])
+    // FR-116: Check common names changes
+    const currentCommonNames = (config.commonNames || []).map(cn => cn.name)
+    const commonNamesChanged = JSON.stringify(currentCommonNames) !== JSON.stringify(commonNames)
+
+    return pathsChanged || dictChanged || chapterChanged || shadowChanged || commonNamesChanged
+  }, [config, watchDirectory, projectsRootDirectory, activeProject, imageSourceDirectory, glingDictionary, chapterConfig, includeTitleSlides, slideDuration, resolution, autoGenerate, shadowResolution, commonNames])
 
   // C-4: Validation
   // FR-89 Part 5: Validate root directory (activeProject is just a folder name, no validation needed)
@@ -368,9 +398,17 @@ export function ConfigPanel() {
         .map(w => w.trim())
         .filter(w => w.length > 0)
 
+      // FR-116: Build common names array (preserve existing autoSequence/suggestTags if name exists)
+      const existingCommonNames = config?.commonNames || []
+      const updatedCommonNames = commonNames.map(name => {
+        const existing = existingCommonNames.find(cn => cn.name === name)
+        return existing || { name }
+      })
+
       // FR-89 Part 5: Send split project directory fields
       // FR-89 Part 6: Include shadow resolution
       // FR-102: Include Gling dictionary
+      // FR-116: Include common names
       await updateConfig.mutateAsync({
         watchDirectory: watchSanitized.sanitized,
         projectsRootDirectory: rootSanitized.sanitized,
@@ -378,6 +416,7 @@ export function ConfigPanel() {
         imageSourceDirectory: imageSanitized.sanitized,
         shadowResolution,
         glingDictionary: dictWords,
+        commonNames: updatedCommonNames,
       })
 
       // FR-76: Save chapter recording defaults
@@ -580,6 +619,67 @@ export function ConfigPanel() {
           />
           <p className="text-xs text-gray-400 mt-1">
             Custom words for Gling transcription (one per line). Used in First Edit Prep.
+          </p>
+        </div>
+
+        {/* FR-116: Common Names */}
+        <div ref={commonNamesSectionRef} id="common-names">
+          <label className="block text-sm text-gray-600 mb-1">
+            Common Names
+          </label>
+          {/* Existing common names as removable pills */}
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {commonNames.map((name, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded border border-gray-200"
+              >
+                {name}
+                <button
+                  onClick={() => setCommonNames(commonNames.filter((_, i) => i !== idx))}
+                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  title="Remove"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+          {/* Add new common name input */}
+          <div className="flex gap-2">
+            <input
+              ref={commonNamesInputRef}
+              type="text"
+              value={newCommonName}
+              onChange={(e) => setNewCommonName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newCommonName.trim()) {
+                  e.preventDefault()
+                  if (!commonNames.includes(newCommonName.trim())) {
+                    setCommonNames([...commonNames, newCommonName.trim()])
+                  }
+                  setNewCommonName('')
+                }
+              }}
+              placeholder="intro, demo, setup..."
+              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <button
+              onClick={() => {
+                if (newCommonName.trim() && !commonNames.includes(newCommonName.trim())) {
+                  setCommonNames([...commonNames, newCommonName.trim()])
+                  setNewCommonName('')
+                  commonNamesInputRef.current?.focus()
+                }
+              }}
+              disabled={!newCommonName.trim()}
+              className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              Add
+            </button>
+          </div>
+          <p className="text-xs text-gray-400 mt-1">
+            Quick-select names shown as pills on the Incoming page. Press Enter to add.
           </p>
         </div>
 

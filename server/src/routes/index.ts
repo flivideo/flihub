@@ -98,6 +98,7 @@ export function createRoutes(
 
   // POST /api/config - Update configuration
   // FR-89: Support all config fields including split project directory
+  // FR-116: Support common names editing
   router.post('/config', (req: Request, res: Response) => {
     const {
       watchDirectory,
@@ -107,6 +108,7 @@ export function createRoutes(
       imageSourceDirectory,
       shadowResolution,
       glingDictionary,
+      commonNames,
     } = req.body;
     const updatedConfig = updateConfig({
       watchDirectory,
@@ -116,6 +118,7 @@ export function createRoutes(
       imageSourceDirectory,
       shadowResolution,
       glingDictionary,
+      commonNames,
     });
     console.log('Config updated:', updatedConfig);
     res.json(updatedConfig);

@@ -4,15 +4,111 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
-## Quick Summary - 2025-12-26
+## Quick Summary - 2025-12-31
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-115, FR-116, FR-117, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
-**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-54 (Naming bugs), FR-69 (Header Dropdowns), FR-71 (Watch Page Enhancements), FR-73 (Template Visibility), FR-80 (Project List & Stages), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
+**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-54 (Naming bugs), FR-69 (Header Dropdowns), FR-73 (Template Visibility), FR-80 (Project List & Stages), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Transcript Quick Access), FR-118 (Project Gling Dictionary), FR-119 (API Documentation), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-113: Edit Prep Path Fix & Folder Restructure
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2025-12-31 | Implemented | - |
+
+**Bug fix:**
+Path expansion bug - `expandPath()` was missing, causing folders to be created at literal `~` path inside server directory instead of user's home directory.
+
+**Enhancements bundled with fix:**
+
+1. **New folder structure:**
+   ```
+   project/
+   ├── edit-1st/      # First edit prep (Gling cuts)
+   ├── edit-2nd/      # Second edit (Jan's graphics)
+   └── edit-final/    # Final review
+   ```
+
+2. **"Create All" button** - Single click creates all three folders
+
+3. **Naming convention** - Renamed from "first-edit/edits" to "edit" (singular) for consistency with "recording"
+
+**Files renamed:**
+- `server/src/routes/first-edit.ts` -> `server/src/routes/edit.ts`
+- `client/src/hooks/useFirstEditApi.ts` -> `client/src/hooks/useEditApi.ts`
+- `client/src/components/FirstEditPrepPage.tsx` -> `client/src/components/EditPrepPage.tsx`
+
+**Files modified:**
+- `server/src/index.ts` - Import + route `/api/edit`
+- `client/src/App.tsx` - Imports, state, menu label
+
+**API changes:**
+- `GET /api/edit/prep` - Returns `editFolders: { allExist, folders: [{name, exists}] }`
+- `POST /api/edit/create-folders` - Creates all three edit folders
+
+---
+
+### FR-117: Hover UX Improvements
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2025-12-31 | Implemented | - |
+
+**What was built:**
+Improved hover interactions across the app to reduce flicker and prevent "whack-a-mole" behavior.
+
+**Part A: Tooltip Delays (Projects Page)**
+- All indicator tooltips (📥 Inbox, 🖼 Assets, 🎬 Chapters, % Transcripts, 🎬 Final) now have 150ms leave delay
+- Visual anchors (tooltip arrows) added pointing to trigger element
+- Reduces flicker when moving mouse across multiple indicators
+
+**Part B: Chapter Panel Hover (Watch Page)**
+- 250ms enter delay on chapter hover - prevents accidental panel switches
+- 200ms leave delay keeps segment panel visible while moving toward it
+- `lockCurrentChapter()` - entering segment panel cancels any pending chapter switches
+- Solves "whack-a-mole" issue where mouse path crossed other chapters
+
+**Key insight:** The fix required canceling pending enter timers when mouse reaches destination (segment panel), not just delaying the enter.
+
+**Files created:**
+- `client/src/hooks/useDelayedHover.ts` - Reusable hooks: `useDelayedHover`, `useDelayedHoverValue`
+
+**Files modified:**
+- `client/src/components/WatchPage.tsx` - Chapter hover delays, `lockCurrentChapter` on segment panel enter
+- `client/src/components/ProjectsPanel.tsx` - 5 indicator components updated with delayed hover
+
+---
+
+### FR-116: Incoming Page - Quick Config Access
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2025-12-31 | Implemented | - |
+
+**What was built:**
+Quick access to common names configuration from the Incoming page.
+
+**Features:**
+- ⚙+ button added after common name pills on Incoming page
+- Clicking navigates to Config tab and auto-focuses new "Common Names" section
+- Common Names section added to Config page with:
+  - Existing names shown as removable pills (× to delete)
+  - Input field to add new names (Enter or Add button)
+  - Input sanitization (lowercase, alphanumeric, dashes only)
+- Changes persist on Save
+
+**Files modified:**
+- `client/src/App.tsx` - state, navigation callback
+- `client/src/components/NamingControls.tsx` - ⚙+ button
+- `client/src/components/ConfigPanel.tsx` - Common Names section
+- `server/src/index.ts` - updateConfig handler
+- `server/src/routes/index.ts` - POST /config endpoint
+
+---
 
 ### FR-111: Safe Architecture Rework (Phase 1-4)
 

@@ -1,13 +1,14 @@
-// FR-102: First Edit Prep Page API
+// FR-102: Edit Prep Page API
 import express from 'express'
 import path from 'path'
 import fs from 'fs/promises'
 import type { Config } from '../../../shared/types.js'
+import { expandPath } from '../utils/pathUtils.js'
 
-export function createFirstEditRoutes(getConfig: () => Config) {
+export function createEditRoutes(getConfig: () => Config) {
   const router = express.Router()
 
-  // GET /api/first-edit/prep - Get first edit prep data
+  // GET /api/edit/prep - Get edit prep data
   router.get('/prep', async (req, res) => {
     try {
       const config = getConfig()
@@ -23,7 +24,7 @@ export function createFirstEditRoutes(getConfig: () => Config) {
       const name = parts.slice(1).join('-')
 
       // Get recordings
-      const recordingsPath = path.join(config.projectDirectory, 'recordings')
+      const recordingsPath = path.join(expandPath(config.projectDirectory), 'recordings')
       let recordings: { name: string; size: number }[] = []
       let recordingsTotal = 0
 
@@ -43,28 +44,24 @@ export function createFirstEditRoutes(getConfig: () => Config) {
         // No recordings folder
       }
 
-      // Check prep folder
-      const prepPath = path.join(config.projectDirectory, 'edits', 'prep')
-      let prepExists = false
-      let prepFiles: { name: string; size: number }[] = []
+      // Check edit folders
+      const projectPath = expandPath(config.projectDirectory)
+      const editFolders = ['edit-1st', 'edit-2nd', 'edit-final']
+      const editFolderStatus: { name: string; exists: boolean }[] = []
 
-      try {
-        const stat = await fs.stat(prepPath)
-        prepExists = stat.isDirectory()
-        if (prepExists) {
-          const files = await fs.readdir(prepPath)
-          prepFiles = await Promise.all(
-            files
-              .filter(f => !f.startsWith('.'))
-              .map(async f => {
-                const s = await fs.stat(path.join(prepPath, f))
-                return { name: f, size: s.size }
-              })
-          )
+      for (const folder of editFolders) {
+        const folderPath = path.join(projectPath, folder)
+        let exists = false
+        try {
+          const stat = await fs.stat(folderPath)
+          exists = stat.isDirectory()
+        } catch {
+          // Folder doesn't exist
         }
-      } catch {
-        // Folder doesn't exist
+        editFolderStatus.push({ name: folder, exists })
       }
+
+      const allExist = editFolderStatus.every(f => f.exists)
 
       res.json({
         success: true,
@@ -77,10 +74,9 @@ export function createFirstEditRoutes(getConfig: () => Config) {
         glingDictionary: config.glingDictionary || [],
         recordings,
         recordingsTotal,
-        prepFolder: {
-          exists: prepExists,
-          path: 'edits/prep/',
-          files: prepFiles
+        editFolders: {
+          allExist,
+          folders: editFolderStatus
         }
       })
     } catch (error) {
@@ -88,8 +84,8 @@ export function createFirstEditRoutes(getConfig: () => Config) {
     }
   })
 
-  // POST /api/first-edit/create-prep-folder - Create edits/prep folder
-  router.post('/create-prep-folder', async (req, res) => {
+  // POST /api/edit/create-folders - Create all edit folders
+  router.post('/create-folders', async (req, res) => {
     try {
       const config = getConfig()
 
@@ -97,10 +93,14 @@ export function createFirstEditRoutes(getConfig: () => Config) {
         return res.json({ success: false, error: 'No project selected' })
       }
 
-      const prepPath = path.join(config.projectDirectory, 'edits', 'prep')
-      await fs.mkdir(prepPath, { recursive: true })
+      const projectPath = expandPath(config.projectDirectory)
+      const editFolders = ['edit-1st', 'edit-2nd', 'edit-final']
 
-      res.json({ success: true, path: 'edits/prep/' })
+      for (const folder of editFolders) {
+        await fs.mkdir(path.join(projectPath, folder), { recursive: true })
+      }
+
+      res.json({ success: true, folders: editFolders })
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) })
     }

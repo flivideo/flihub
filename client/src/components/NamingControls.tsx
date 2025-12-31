@@ -11,9 +11,10 @@ interface NamingControlsProps {
   availableTags?: string[]    // NFR-2: Tags from config
   commonNames?: CommonName[]  // NFR-3/FR-13: Common names from config
   newChapterClickCount?: number  // FR-112: Track clicks for glow detection
+  onAddCommonName?: () => void  // FR-116: Navigate to config to add common name
 }
 
-export function NamingControls({ namingState, updateNaming, onNewChapter, availableTags, commonNames, newChapterClickCount = 0 }: NamingControlsProps) {
+export function NamingControls({ namingState, updateNaming, onNewChapter, availableTags, commonNames, newChapterClickCount = 0, onAddCommonName }: NamingControlsProps) {
   const { chapter, sequence, name, tags, customTag } = namingState
   // NFR-2: Global tags (always visible)
   const globalTags = availableTags ?? [...DEFAULT_TAGS]
@@ -190,7 +191,7 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
           />
           {/* FR-13: Common names quick-select pills - gray outline style */}
           {commonNames && commonNames.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-1.5">
+            <div className="flex flex-wrap gap-1.5 mt-1.5 items-center">
               {commonNames.map((cn) => (
                 <button
                   key={cn.name}
@@ -205,6 +206,16 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
                   {cn.name}
                 </button>
               ))}
+              {/* FR-116: Quick config access button */}
+              {onAddCommonName && (
+                <button
+                  onClick={onAddCommonName}
+                  className="px-1.5 py-0.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Add common name"
+                >
+                  ⚙+
+                </button>
+              )}
             </div>
           )}
         </div>

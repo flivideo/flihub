@@ -1,4 +1,4 @@
-// FR-102: First Edit Prep API hooks
+// FR-102: Edit Prep API hooks
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 const API_BASE = 'http://localhost:5101/api'
@@ -15,35 +15,34 @@ interface PrepData {
   glingDictionary: string[]
   recordings: { name: string; size: number }[]
   recordingsTotal: number
-  prepFolder: {
-    exists: boolean
-    path: string
-    files: { name: string; size: number }[]
+  editFolders: {
+    allExist: boolean
+    folders: { name: string; exists: boolean }[]
   }
 }
 
-export function useFirstEditPrep() {
+export function useEditPrep() {
   return useQuery<PrepData>({
-    queryKey: ['first-edit-prep'],
+    queryKey: ['edit-prep'],
     queryFn: async () => {
-      const res = await fetch(`${API_BASE}/first-edit/prep`)
+      const res = await fetch(`${API_BASE}/edit/prep`)
       return res.json()
     }
   })
 }
 
-export function useCreatePrepFolder() {
+export function useCreateEditFolders() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async () => {
-      const res = await fetch(`${API_BASE}/first-edit/create-prep-folder`, {
+      const res = await fetch(`${API_BASE}/edit/create-folders`, {
         method: 'POST'
       })
       return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['first-edit-prep'] })
+      queryClient.invalidateQueries({ queryKey: ['edit-prep'] })
     }
   })
 }

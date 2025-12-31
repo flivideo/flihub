@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useProjects, useUpdateProjectPriority, useUpdateProjectStage, useConfig, useUpdateConfig, useRefetchSuggestedNaming, useCreateProject, useFinalMedia } from '../hooks/useApi'
 import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket'
+import { useDelayedHover } from '../hooks/useDelayedHover'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { useOpenFolder } from '../hooks/useOpenFolder'
 import { LoadingSpinner, ErrorMessage, PageContainer } from './shared'
@@ -46,8 +47,9 @@ const STAGE_DISPLAY: Record<ProjectStage, { label: string; bg: string; text: str
 
 
 // FR-33: Final media cell component - fetches and displays final video status
+// FR-117: Added hover delay to prevent flicker
 function FinalMediaCell({ code }: { code: string }) {
-  const [showTooltip, setShowTooltip] = useState(false)
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150)
   const { data, isLoading } = useFinalMedia(code)
 
   if (isLoading) {
@@ -67,12 +69,14 @@ function FinalMediaCell({ code }: { code: string }) {
   return (
     <span
       className="cursor-help relative"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {icon}
-      {showTooltip && (
+      {isHovered && (
         <div className="absolute z-50 bottom-full right-0 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          {/* FR-117: Tooltip arrow */}
+          <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
           <div className="flex items-center gap-2">
             <span className={hasVideo ? 'text-green-400' : 'text-gray-500'}>Video:</span>
             <span>{hasVideo ? formatFileSize(data.video!.size) : 'missing'}</span>
@@ -93,8 +97,9 @@ function FinalMediaCell({ code }: { code: string }) {
 }
 
 // FR-82: Indicator cell with rich tooltip - Inbox (navigates to tab)
+// FR-117: Added hover delay to prevent flicker
 function InboxIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
-  const [showTooltip, setShowTooltip] = useState(false)
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150)
 
   if (!project.hasInbox) return null
 
@@ -102,12 +107,14 @@ function InboxIndicator({ project, onClick }: { project: ProjectStats; onClick: 
     <button
       onClick={onClick}
       className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       📥
-      {showTooltip && (
+      {isHovered && (
         <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          {/* FR-117: Tooltip arrow */}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
           <div className="font-medium">Inbox</div>
           <div className="text-gray-300">{project.inboxCount} {project.inboxCount === 1 ? 'item' : 'items'}</div>
           <div className="text-gray-500 text-[10px] mt-1">Click to view in app</div>
@@ -118,8 +125,9 @@ function InboxIndicator({ project, onClick }: { project: ProjectStats; onClick: 
 }
 
 // FR-82: Indicator cell with rich tooltip - Assets (navigates to tab)
+// FR-117: Added hover delay to prevent flicker
 function AssetsIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
-  const [showTooltip, setShowTooltip] = useState(false)
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150)
 
   if (!project.hasAssets) return null
 
@@ -127,12 +135,14 @@ function AssetsIndicator({ project, onClick }: { project: ProjectStats; onClick:
     <button
       onClick={onClick}
       className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       🖼
-      {showTooltip && (
+      {isHovered && (
         <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          {/* FR-117: Tooltip arrow */}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
           <div className="font-medium">Assets</div>
           <div className="text-gray-300">{project.imageCount} {project.imageCount === 1 ? 'image' : 'images'}</div>
           <div className="text-gray-500 text-[10px] mt-1">Click to view in app</div>
@@ -143,8 +153,9 @@ function AssetsIndicator({ project, onClick }: { project: ProjectStats; onClick:
 }
 
 // FR-82: Indicator cell with rich tooltip - Chapter Videos (in -chapters folder)
+// FR-117: Added hover delay to prevent flicker
 function ChaptersIndicator({ project, onOpenFolder }: { project: ProjectStats; onOpenFolder: () => void }) {
-  const [showTooltip, setShowTooltip] = useState(false)
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150)
 
   if (!project.hasChapters) return null
 
@@ -152,12 +163,14 @@ function ChaptersIndicator({ project, onOpenFolder }: { project: ProjectStats; o
     <button
       onClick={onOpenFolder}
       className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       🎬
-      {showTooltip && (
+      {isHovered && (
         <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          {/* FR-117: Tooltip arrow */}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
           <div className="font-medium">Chapter Videos</div>
           <div className="text-gray-300">{project.chapterVideoCount} {project.chapterVideoCount === 1 ? 'video' : 'videos'} in -chapters/</div>
           <div className="text-gray-500 text-[10px] mt-1">Click to open folder</div>
@@ -239,8 +252,9 @@ function StageCell({ project, onStageChange }: { project: ProjectStats; onStageC
 }
 
 // FR-48: Transcript percentage cell with color-coding and instant tooltip
+// FR-117: Added hover delay to prevent flicker
 function TranscriptPercentCell({ project }: { project: ProjectStats }) {
-  const [showTooltip, setShowTooltip] = useState(false)
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150)
 
   if (project.totalFiles === 0) {
     return <span className="text-gray-400">-</span>
@@ -273,12 +287,14 @@ function TranscriptPercentCell({ project }: { project: ProjectStats }) {
   return (
     <span
       className={`${colorClass} cursor-help relative`}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {displayText}
-      {showTooltip && (
+      {isHovered && (
         <div className="absolute z-50 bottom-full right-0 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          {/* FR-117: Tooltip arrow */}
+          <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
           <div>{matched} matched</div>
           {missingCount > 0 && <div className="text-yellow-300">{missingCount} missing</div>}
           {orphanedCount > 0 && <div className="text-orange-300">{orphanedCount} orphaned</div>}

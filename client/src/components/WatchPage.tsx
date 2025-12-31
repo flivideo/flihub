@@ -30,6 +30,7 @@
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import { useRecordings, useConfig } from '../hooks/useApi'
 import { useRecordingsSocket } from '../hooks/useSocket'
+import { useDelayedHoverValue } from '../hooks/useDelayedHover'
 import { extractTagsFromName } from '../../../shared/naming'
 import { formatDuration, formatChapterTitle } from '../utils/formatting'
 import { LoadingSpinner, ErrorMessage } from './shared'
@@ -159,7 +160,16 @@ export function WatchPage() {
   const { data, isLoading, error } = useRecordings()
   const videoRef = useRef<HTMLVideoElement>(null)
   const [currentVideo, setCurrentVideo] = useState<VideoMeta | null>(null)
-  const [hoveredChapter, setHoveredChapter] = useState<ChapterGroup | null>(null)
+  // FR-117: Delayed hover for chapter→segment panel transitions
+  // 250ms enter delay allows mouse to cross chapters without triggering change
+  // 200ms leave delay keeps panel visible while moving toward it
+  // cancelPendingEnter: when mouse reaches segment panel, lock in current chapter
+  const {
+    value: hoveredChapter,
+    handleEnter: handleChapterEnter,
+    handleLeave: handleChapterLeave,
+    cancelPendingEnter: lockCurrentChapter,
+  } = useDelayedHoverValue<ChapterGroup>(250, 200)
 
   // FR-71: Speed and size state with localStorage persistence
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(() => {
@@ -731,9 +741,10 @@ export function WatchPage() {
       {/* Cascading Panels Container */}
       {/* FR-111: Width must include both panels (72+64=136 units = 544px) so segment panel is inside bounds */}
       {/* pointer-events-none on parent prevents blocking main content, pointer-events-auto on children */}
+      {/* FR-117: Extended hover zone includes both panels for smooth mouse transitions */}
       <div
         className="fixed right-0 top-32 bottom-4 z-40 group w-[544px] pointer-events-none"
-        onMouseLeave={() => setHoveredChapter(null)}
+        onMouseLeave={handleChapterLeave}
       >
         {/* Hover trigger tab */}
         <div className="absolute right-0 top-0 h-full flex items-start pt-8 pointer-events-auto">
@@ -748,7 +759,9 @@ export function WatchPage() {
         </div>
 
         {/* Segments Panel - slides out to the LEFT of chapters panel */}
+        {/* FR-117: onMouseEnter locks in current chapter, preventing switches from crossing other chapters */}
         <div
+          onMouseEnter={lockCurrentChapter}
           className={`absolute right-72 top-0 h-full w-64 transition-all duration-200 ease-out pointer-events-auto ${
             hoveredChapter ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0 pointer-events-none'
           }`}
@@ -870,7 +883,7 @@ export function WatchPage() {
                   <button
                     key={chapter.chapterKey}
                     onClick={() => playChapterRecording(chapter)}
-                    onMouseEnter={() => setHoveredChapter(chapter)}
+                    onMouseEnter={() => handleChapterEnter(chapter)}
                     className={`w-full px-4 py-2 text-left flex items-center gap-2 transition-colors ${
                       isChapterPlaying
                         ? 'bg-purple-50 text-purple-700 border-l-2 border-purple-500'

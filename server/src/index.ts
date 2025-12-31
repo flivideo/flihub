@@ -18,7 +18,7 @@ import { createQueryRoutes } from './routes/query/index.js';
 import { createChapterRoutes } from './routes/chapters.js';
 import { createVideoRoutes } from './routes/video.js';
 import { createShadowsRouter } from './routes/shadows.js';
-import { createFirstEditRoutes } from './routes/first-edit.js';
+import { createEditRoutes } from './routes/edit.js';
 import { createS3StagingRoutes } from './routes/s3-staging.js';
 import { createStateRoutes } from './routes/state.js';
 import { migrateTargetToProject } from '../../shared/paths.js';
@@ -270,6 +270,9 @@ function updateConfig(newConfig: Partial<Config>): Config {
   // FR-108: Handle Gling dictionary
   if (newConfig.glingDictionary !== undefined) currentConfig.glingDictionary = newConfig.glingDictionary;
 
+  // FR-116: Handle common names
+  if (newConfig.commonNames !== undefined) currentConfig.commonNames = newConfig.commonNames;
+
   // Persist config to file
   saveConfig(currentConfig);
 
@@ -341,9 +344,9 @@ app.use('/api/video', videoRoutes);
 const shadowRoutes = createShadowsRouter(() => currentConfig);
 app.use('/api/shadows', shadowRoutes);
 
-// FR-102: Setup first edit prep routes
-const firstEditRoutes = createFirstEditRoutes(() => currentConfig);
-app.use('/api/first-edit', firstEditRoutes);
+// FR-102: Setup edit prep routes
+const editRoutes = createEditRoutes(() => currentConfig);
+app.use('/api/edit', editRoutes);
 
 // FR-103: Setup S3 staging routes
 const s3StagingRoutes = createS3StagingRoutes(() => currentConfig);
