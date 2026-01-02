@@ -1,8 +1,8 @@
 # FR-69: Header Dropdown Menus
 
-**Status:** Pending
+**Status:** Implemented
 **Added:** 2025-12-14
-**Implemented:** -
+**Implemented:** 2025-12 (discovered in review 2026-01-01)
 
 ---
 
@@ -28,10 +28,10 @@ Header has multiple standalone icons that could be better organized into logical
 
 ## Acceptance Criteria
 
-- [ ] Gear icon opens dropdown with Config and Mockups
-- [ ] Project actions grouped into single dropdown
-- [ ] Dropdowns close when clicking outside
-- [ ] Keyboard accessible
+- [x] Gear icon opens dropdown with Config and Mockups
+- [x] Project actions grouped into single dropdown
+- [x] Dropdowns close when clicking outside
+- [x] Keyboard accessible
 
 ## Technical Notes
 
@@ -39,4 +39,17 @@ Consider using a dropdown component library or building a simple one with proper
 
 ## Completion Notes
 
-_To be filled by developer._
+**Discovered 2026-01-01:** Code review revealed FR-69 was already implemented.
+
+**What was built:**
+- `client/src/components/HeaderDropdown.tsx` - Reusable dropdown component
+- Settings dropdown (gear icon) with Config and Mockups options
+- Project actions dropdown (ellipsis icon) with Copy for Calendar, Copy Path, Open in Finder
+
+**Evidence:**
+- HeaderDropdown.tsx has `// FR-69:` comment at top
+- App.tsx uses HeaderDropdown with `// FR-69: Project Actions dropdown` and `// FR-69: Settings dropdown` comments
+
+**Files:**
+- `client/src/components/HeaderDropdown.tsx` (created)
+- `client/src/App.tsx` (modified - imports and uses HeaderDropdown)

@@ -1,7 +1,7 @@
 # FR-114: Projects Page - Transcript Quick Access
 
 **Added:** 2025-12-30
-**Status:** Pending
+**Status:** Phase 1 Complete
 **Scope:** Medium (UI + new API endpoints)
 
 ---
@@ -103,10 +103,10 @@ interface MultiSelectState {
 ## Acceptance Criteria
 
 ### Phase 1
-- [ ] Single-click copy button on each project row
-- [ ] Toast shows confirmation with character count
-- [ ] Button disabled if project has no transcripts (0%)
-- [ ] Copy icon uses same style as existing clipboard buttons
+- [x] Single-click copy button on each project row
+- [x] Toast shows confirmation with character count
+- [x] Button disabled if project has no transcripts (0%)
+- [x] Copy icon uses same style as existing clipboard buttons
 
 ### Phase 2
 - [ ] Checkbox appears on each row when multi-select enabled
@@ -131,4 +131,24 @@ Multi-select infrastructure enables future bulk operations:
 
 ## Completion Notes
 
-_To be filled in by developer after implementation._
+**Phase 1 completed:** 2026-01-02
+
+**What was built:**
+
+1. **New API endpoint** - `GET /api/query/projects/:code/transcript/text`
+   - Reads all transcript `.txt` files from the project
+   - Sorts by chapter/sequence order
+   - Returns combined plain text
+
+2. **Copy button in UI** - 📋 icon on each project row
+   - Disabled (grayed) when project has 0% transcripts
+   - On click: fetches transcript -> copies to clipboard -> shows toast with char count
+
+**Bug fix during implementation:**
+- Had to use `API_URL` (`http://localhost:5101`) instead of relative URL, since Vite dev server doesn't proxy API requests to the backend.
+
+**Files modified:**
+- `server/src/routes/query/projects.ts` - New transcript text endpoint
+- `client/src/components/ProjectsPanel.tsx` - Copy button per row
+
+**Phases 2-3 (Multi-Select):** Not yet implemented - available for future work.

@@ -4,15 +4,268 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
-## Quick Summary - 2025-12-31
+## Quick Summary - 2026-01-02
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-115, FR-116, FR-117, NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-120, FR-121, FR-122, FR-124, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
-**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-54 (Naming bugs), FR-69 (Header Dropdowns), FR-73 (Template Visibility), FR-80 (Project List & Stages), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Transcript Quick Access), FR-118 (Project Gling Dictionary), FR-119 (API Documentation), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
+**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), FR-119 (API Documentation), FR-123 (Watch Panel Enhancements), FR-125 (Config & EditPrep Consolidation), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-124: Export Panel Enhancements
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-02 | Implemented | - |
+
+**What was built:**
+Smart folder creation, edit folders management, and Gling prep info in Export panel.
+
+**Features:**
+- Smart Open/Create button (detects folder existence, prevents errors)
+- Edit Folders section with ✓/○ status indicators
+- Individual Create/Open buttons per folder
+- "Create All Folders" convenience button
+- Collapsible Gling Prep Info section
+- Gling filename with copy button
+- Dictionary words with count and copy button
+
+**Files modified:**
+- `server/src/routes/edit.ts` - Single folder creation endpoint
+- `client/src/components/ExportPanel.tsx` - UI enhancements
+- `client/src/hooks/useEditApi.ts` - Single folder mutation hook
+
+**New API:** `POST /api/edit/create-folder`
+
+---
+
+### FR-122: Export Panel
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-02 | Implemented | - |
+
+**What was built:**
+New "Export" tab for preparing recordings for Gling AI, with file selection and copy operations.
+
+**Files created:**
+- `client/src/components/ExportPanel.tsx`
+- `server/src/routes/export.ts`
+
+**Features:**
+- Show Parked toggle (default: OFF)
+- File selection with checkboxes (non-parked selected by default)
+- Chapter-level Select/Deselect All buttons
+- Color-coded rows (blue=selected, pink=parked, gray=unselected)
+- Copy File List - copies paths to clipboard
+- Prepare for Gling - copies files to edit-1st folder
+- Open Folder button
+
+**API:** `POST /api/export/copy-to-gling`
+
+**Known issue:** Open Folder errors if folder doesn't exist (FR-124)
+
+---
+
+### FR-121: Parked State in Watch Panel
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-02 | Implemented | - |
+
+**What was built:**
+PARKED badge and filtering for Watch panel, matching FR-120's pink styling.
+
+**Changes to WatchPage.tsx:**
+- State: `showParked` with localStorage persistence
+- Filtering: `groupByChapterWithTiming`, `sortedRecordings`, `mostRecentRecording` respect toggle
+- UI: Pink row styling (`bg-pink-50`), PARKED badge, toggle button next to Safe
+
+**Visual consistency:** Same UX pattern as SAFE feature.
+
+---
+
+### FR-120: Parked Recording State
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-02 | Implemented | - |
+
+**What was built:**
+Third recording state "Parked" for clips that are good content but not for this edit.
+
+**Backend:**
+- Types: Added `parked?: boolean` to RecordingState, `isParked: boolean` to RecordingFile/QueryRecording
+- State management: `isRecordingParked()`, `setRecordingParked()`, `getParkedRecordings()`
+- API routes: `POST /api/recordings/park`, `POST /api/recordings/unpark`
+- Query endpoints return `isParked` flag
+
+**Frontend:**
+- API hooks: `useParkRecording()`, `useUnparkRecording()`
+- RecordingsView: Pink background (`bg-pink-50`), show/hide toggle, per-file and chapter-level actions
+- Stats display: "(X active, Y safe, Z parked)"
+
+**Files modified:**
+- `shared/types.ts`
+- `server/src/utils/projectState.ts`
+- `server/src/routes/index.ts`
+- `server/src/routes/query/recordings.ts`
+- `server/src/routes/query/export.ts`
+- `client/src/hooks/useApi.ts`
+- `client/src/components/RecordingsView.tsx`
+
+---
+
+### FR-73: Template Visibility Rules
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-02 | Implemented | - |
+
+**What was built:**
+Chapter-based filtering for common name templates, plus Config UI for editing filter rules.
+
+**Part 1: Filtering Logic**
+- Added `ChapterFilter` interface to `shared/types.ts`
+- Extended `CommonName` with `chapterFilter?: 'all' | ChapterFilter`
+- Template pills on Incoming page now filter by current chapter value
+- Support for `"all"`, `{ max }`, `{ min }`, `{ min, max }` filters
+
+**Part 2: Config UI**
+- Refactored Common Names from pills to rows
+- Each row: ▲/▼ reorder, name, dropdown, custom inputs (if needed), delete
+- Dropdown presets: All chapters, Early (1-4), Late (10+), Custom
+- All changes auto-save immediately
+
+**Bonus:** ▲/▼ reorder buttons to control display order on Incoming page
+
+**Files modified:**
+- `shared/types.ts` - ChapterFilter type, extended CommonName
+- `client/src/components/NamingControls.tsx` - Filter function, useMemo for filtered list
+- `client/src/components/ConfigPanel.tsx` - Row-based Common Names UI with dropdowns
+
+---
+
+### FR-69: Header Dropdown Menus (Discovered Already Implemented)
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-01 | Discovered already implemented during backlog audit | - |
+
+**What was discovered:**
+HeaderDropdown component exists with FR-69 comments. Used in App.tsx for:
+- Settings dropdown (gear icon) - Config, Mockups
+- Project actions dropdown (ellipsis) - Copy for Calendar, Copy Path, Open in Finder
+
+**Files:**
+- `client/src/components/HeaderDropdown.tsx` (created)
+- `client/src/App.tsx` (uses HeaderDropdown)
+
+---
+
+### FR-80: Enhanced Project List & Stage Model (Discovered Already Implemented)
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-01 | Discovered implemented via FR-82 during backlog audit | - |
+
+**What was discovered:**
+All FR-80 functionality was implemented as part of FR-82: Project List UX Fixes (2025-12-15).
+
+- 8-stage model with STAGE_DISPLAY config
+- InboxIndicator, AssetsIndicator, ChaptersIndicator components
+- Click handlers navigate to relevant tabs
+- Stage dropdown for manual changes
+
+See FR-82 changelog entry for full implementation details.
+
+---
+
+### FR-118: Project-Specific Gling Dictionary
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-02 | Implemented | - |
+
+**What was built:**
+Project-specific dictionary words that merge with global dictionary, plus UX improvements for dictionary management.
+
+1. **Project Dictionary Storage**
+   - Added `glingDictionary` field to ProjectState (`.flihub-state.json`)
+   - New endpoint: `PATCH /api/projects/:code/state/dictionary`
+
+2. **Dictionary Merge**
+   - First Edit Prep now merges global + project dictionaries (deduped, sorted)
+   - Returns both individual and merged dictionaries
+
+3. **Config Panel UI**
+   - Renamed "Gling Dictionary Words" to "Global Dictionary Words"
+   - Added "Project Dictionary Words" textarea (shows project code, disabled when no project)
+   - Added "Copy all" button - copies merged dictionary to clipboard
+
+4. **Common Names Auto-Save**
+   - Add/delete now saves immediately (no need to click Save button)
+   - Updated help text to indicate auto-save behavior
+
+**Files modified:**
+- `shared/types.ts` - Added glingDictionary to ProjectState
+- `server/src/utils/projectState.ts` - Updated write + added helper
+- `server/src/routes/state.ts` - Added PATCH dictionary endpoint
+- `server/src/routes/edit.ts` - Merge dictionaries in /prep
+- `client/src/hooks/useApi.ts` - Added useProjectState, useUpdateProjectDictionary
+- `client/src/components/ConfigPanel.tsx` - Added project dictionary UI
+
+---
+
+### FR-54: Naming Template Bugs (Discovered Already Fixed)
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-01 | Discovered all 4 bugs already fixed during code review | - |
+
+**What was discovered:**
+Code review revealed all 4 naming template bugs had been fixed incrementally during previous development work. The PRD was not updated at the time.
+
+**Bugs confirmed fixed:**
+1. **Custom tag cleared after rename** - `handleRenamed` in App.tsx no longer clears customTag
+2. **Tags appearing in suggested name** - `stripTrailingTags()` in shared/naming.ts removes uppercase tags
+3. **Sequence limited to single digit** - Input now accepts 3 digits (slice(0, 3), maxLength={3})
+4. **Custom tag input too narrow** - Width increased from w-16 to w-24, helpful title added
+
+**Evidence:** Comments referencing FR-54 found in App.tsx (line 168), NamingControls.tsx (line 114), and shared/naming.ts (lines 161, 231).
+
+---
+
+### FR-114: Projects Page - Transcript Quick Access (Phase 1)
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-01 | Phase 1 Implemented | - |
+
+**What was built:**
+One-click transcript copy from the Projects panel.
+
+1. **New API endpoint** - `GET /api/query/projects/:code/transcript/text`
+   - Reads all transcript `.txt` files from the project
+   - Sorts by chapter/sequence order
+   - Returns combined plain text
+
+2. **Copy button in UI** - 📋 icon on each project row
+   - Disabled (grayed) when project has 0% transcripts
+   - On click: fetches transcript -> copies to clipboard -> shows toast with char count
+
+**Bug fix during implementation:**
+- Had to use `API_URL` (`http://localhost:5101`) instead of relative URL, since Vite dev server doesn't proxy API requests to the backend.
+
+**Files modified:**
+- `server/src/routes/query/projects.ts` - New transcript text endpoint
+- `client/src/components/ProjectsPanel.tsx` - Copy button per row
+
+**Phases 2-3 (Multi-Select):** Future work - enables bulk transcript operations.
+
+---
 
 ### FR-113: Edit Prep Path Fix & Folder Restructure
 

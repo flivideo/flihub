@@ -1,8 +1,8 @@
 # FR-118: Project-Specific Gling Dictionary
 
-**Status:** Pending
+**Status:** Complete
 **Added:** 2025-12-31
-**Implemented:** -
+**Implemented:** 2026-01-02
 **Origin:** Developer suggestion during FR-116 implementation
 
 ---
@@ -60,11 +60,11 @@ Duplicates removed, alphabetically sorted.
 
 ## Acceptance Criteria
 
-- [ ] Project dictionary stored per-project
-- [ ] Project dictionary editable in UI
-- [ ] Global + project dictionaries merged for First Edit Prep
-- [ ] Empty project dictionary doesn't affect behavior
-- [ ] Clear indication which dictionary is being edited
+- [x] Project dictionary stored per-project
+- [x] Project dictionary editable in UI
+- [x] Global + project dictionaries merged for First Edit Prep
+- [x] Empty project dictionary doesn't affect behavior
+- [x] Clear indication which dictionary is being edited
 
 ## Technical Notes
 
@@ -79,4 +79,37 @@ Duplicates removed, alphabetically sorted.
 
 ## Completion Notes
 
-_To be filled by developer._
+**What was done:**
+- Added `glingDictionary?: string[]` to `ProjectState` type in shared/types.ts
+- Updated `writeProjectState()` to preserve the new field
+- Added `setProjectDictionary()` helper function
+- Added `PATCH /api/projects/:code/state/dictionary` endpoint
+- Updated First Edit Prep `/api/edit/prep` to merge global + project dictionaries
+- Added "Project Dictionary Words" textarea in Config panel (below Global Dictionary)
+- Dictionary is disabled when no project is selected
+- Shows current project code in label
+
+**Files changed:**
+- `shared/types.ts` (modified) - Added glingDictionary to ProjectState
+- `server/src/utils/projectState.ts` (modified) - Updated write + added helper
+- `server/src/routes/state.ts` (modified) - Added PATCH dictionary endpoint
+- `server/src/routes/edit.ts` (modified) - Merge dictionaries in /prep
+- `client/src/hooks/useApi.ts` (modified) - Added useProjectState, useUpdateProjectDictionary
+- `client/src/components/ConfigPanel.tsx` (modified) - Added project dictionary UI
+
+**Additional features implemented:**
+- "Copy all" button - copies merged dictionary to clipboard
+- Common Names auto-save - add/delete now saves immediately without needing Save button
+- Renamed "Gling Dictionary Words" to "Global Dictionary Words" for clarity
+
+**Testing notes:**
+1. Go to Config page with a project selected
+2. Add words to "Project Dictionary Words" (e.g., "Claudemas")
+3. Click Save
+4. Open First Edit Prep - verify merged dictionary shows both global + project words
+5. Switch projects - verify project dictionary changes to new project's words
+6. No project selected - verify project dictionary textarea is disabled
+7. Click "Copy all" - verify merged dictionary copied to clipboard
+8. Add/remove common names - verify changes save automatically
+
+**Status:** Complete (2026-01-02)
