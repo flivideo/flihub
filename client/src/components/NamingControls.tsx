@@ -1,8 +1,19 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import type { NamingState } from '../App'
-import type { CommonName } from '../../../shared/types'
+import type { CommonName, ChapterFilter } from '../../../shared/types'
 import { DEFAULT_TAGS } from '../../../shared/types'
 import { buildPreviewFilename } from '../utils/naming'
+
+// FR-73: Filter templates by current chapter
+function shouldShowTemplate(template: CommonName, currentChapter: number): boolean {
+  const filter = template.chapterFilter ?? 'all'
+  if (filter === 'all') return true
+
+  const { min, max } = filter as ChapterFilter
+  if (min !== undefined && currentChapter < min) return false
+  if (max !== undefined && currentChapter > max) return false
+  return true
+}
 
 interface NamingControlsProps {
   namingState: NamingState
@@ -22,6 +33,13 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
   // NFR-2 fix: Find suggestTags for the currently active common name
   const activeCommonName = commonNames?.find(cn => cn.name === name)
   const suggestedTags = activeCommonName?.suggestTags ?? []
+
+  // FR-73: Filter common names by current chapter
+  const filteredCommonNames = useMemo(() => {
+    if (!commonNames) return []
+    const chapterNum = parseInt(chapter, 10) || 0
+    return commonNames.filter(cn => shouldShowTemplate(cn, chapterNum))
+  }, [commonNames, chapter])
 
   // FR-107: Name input auto-focus and glow when New Chapter clicked
   const nameInputRef = useRef<HTMLInputElement>(null)
@@ -190,9 +208,10 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
             }`}
           />
           {/* FR-13: Common names quick-select pills - gray outline style */}
-          {commonNames && commonNames.length > 0 && (
+          {/* FR-73: Filtered by current chapter */}
+          {filteredCommonNames.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-1.5 items-center">
-              {commonNames.map((cn) => (
+              {filteredCommonNames.map((cn) => (
                 <button
                   key={cn.name}
                   onClick={() => applyCommonName(cn)}

@@ -46,3 +46,24 @@ export function useCreateEditFolders() {
     }
   })
 }
+
+// FR-124: Create a single edit folder
+export function useCreateEditFolder() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (folder: string) => {
+      const res = await fetch(`${API_BASE}/edit/create-folder`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ folder })
+      })
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['edit-prep'] })
+    }
+  })
+}

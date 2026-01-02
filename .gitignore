@@ -35,3 +35,6 @@ temp/
 
 # User-specific config (copy from config.template.json)
 server/config.json
+
+# Auto Claude data directory
+.auto-claude/

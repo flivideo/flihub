@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { API_URL } from '../config'
 import { useProjects, useUpdateProjectPriority, useUpdateProjectStage, useConfig, useUpdateConfig, useRefetchSuggestedNaming, useCreateProject, useFinalMedia } from '../hooks/useApi'
 import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket'
 import { useDelayedHover } from '../hooks/useDelayedHover'
@@ -248,6 +249,54 @@ function StageCell({ project, onStageChange }: { project: ProjectStats; onStageC
         </div>
       )}
     </div>
+  )
+}
+
+// FR-114: Copy transcript button - fetches combined transcript and copies to clipboard
+function TranscriptCopyButton({ project }: { project: ProjectStats }) {
+  const [isCopying, setIsCopying] = useState(false)
+  const isDisabled = project.transcriptPercent === 0 || project.totalFiles === 0
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isDisabled || isCopying) return
+
+    setIsCopying(true)
+    try {
+      const response = await fetch(`${API_URL}/api/query/projects/${project.code}/transcript/text`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch transcript')
+      }
+      const text = await response.text()
+
+      if (!text.trim()) {
+        toast.error('No transcript content available')
+        return
+      }
+
+      await navigator.clipboard.writeText(text)
+      toast.success(`Transcript copied (${text.length.toLocaleString()} chars)`)
+    } catch (error) {
+      toast.error('Failed to copy transcript')
+      console.error('Copy transcript error:', error)
+    } finally {
+      setIsCopying(false)
+    }
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      disabled={isDisabled || isCopying}
+      className={`text-sm transition-transform ${
+        isDisabled
+          ? 'opacity-30 cursor-not-allowed'
+          : 'hover:scale-110 cursor-pointer'
+      }`}
+      title={isDisabled ? 'No transcripts available' : 'Copy transcript to clipboard'}
+    >
+      {isCopying ? '...' : '📋'}
+    </button>
   )
 }
 
@@ -586,9 +635,12 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                       )}
                     </td>
 
-                    {/* FR-48: Transcript % with sync status */}
+                    {/* FR-48: Transcript % with sync status, FR-114: Copy button */}
                     <td className="py-2 text-right">
-                      <TranscriptPercentCell project={project} />
+                      <div className="flex items-center justify-end gap-1">
+                        <TranscriptCopyButton project={project} />
+                        <TranscriptPercentCell project={project} />
+                      </div>
                     </td>
 
                     {/* FR-33: Final Video */}

@@ -8,11 +8,18 @@ export interface FileInfo {
   duration?: number; // Video duration in seconds (if available)
 }
 
+// FR-73: Chapter filter for common names
+export interface ChapterFilter {
+  min?: number;  // Show if chapter >= min
+  max?: number;  // Show if chapter <= max
+}
+
 // NFR-3: Common name configuration with optional rules
 export interface CommonName {
   name: string;              // Display name and value (e.g., "intro")
   autoSequence?: boolean;    // Reset sequence to 1 when selected (default: false)
   suggestTags?: string[];    // Auto-suggest these tags when selected
+  chapterFilter?: 'all' | ChapterFilter;  // FR-73: Chapter visibility filter (default: 'all')
 }
 
 export interface Config {
@@ -181,6 +188,8 @@ export interface RecordingFile {
   tags: string[];         // Parsed from filename
   folder: 'recordings';   // FR-111: Always 'recordings' now (safe uses isSafe flag)
   isSafe: boolean;        // FR-111: True if hidden from active view (from state file)
+  isParked: boolean;      // FR-120: True if parked (excluded from this edit)
+  annotation?: string;    // FR-123: Optional note explaining why parked
   isShadow?: boolean;     // FR-83: True if shadow-only (no real recording)
   hasShadow?: boolean;    // FR-83: True if this recording has a shadow file
   shadowSize?: number | null;  // FR-95: Shadow file size in bytes (null if no shadow)
@@ -612,6 +621,8 @@ export interface QueryRecording {
   tags: string[];
   folder: 'recordings';           // FR-111: Always 'recordings' now
   isSafe: boolean;                // FR-111: True if hidden from active view
+  isParked: boolean;              // FR-120: True if parked (excluded from this edit)
+  annotation?: string;            // FR-123: Optional note explaining why parked
   size: number;
   duration: number | null;
   hasTranscript: boolean;
@@ -670,6 +681,24 @@ export interface SafeResponse {
 export interface RestoreResponse {
   success: boolean;
   restored?: string[];
+  count?: number;
+  errors?: string[];
+  error?: string;
+}
+
+// FR-120: Park recording response
+export interface ParkResponse {
+  success: boolean;
+  parked?: string[];
+  count?: number;
+  errors?: string[];
+  error?: string;
+}
+
+// FR-120: Unpark recording response
+export interface UnparkResponse {
+  success: boolean;
+  unparked?: string[];
   count?: number;
   errors?: string[];
   error?: string;
@@ -758,6 +787,8 @@ export interface EnvironmentResponse {
 // State for a single recording
 export interface RecordingState {
   safe?: boolean;           // True = hidden from active view
+  parked?: boolean;         // FR-120: True = excluded from this edit (good content, not for this video)
+  annotation?: string;      // FR-123: Optional note explaining why parked (e.g., "Too technical for YouTube")
   stage?: string;           // Future: per-recording stage (recording, first-edit, review, etc.)
 }
 
@@ -765,6 +796,7 @@ export interface RecordingState {
 export interface ProjectState {
   version: 1;
   recordings: Record<string, RecordingState>;  // Keyed by filename (e.g., "01-1-intro.mov")
+  glingDictionary?: string[];  // FR-118: Project-specific dictionary words
 }
 
 // API response for reading project state

@@ -19,6 +19,7 @@ import { createChapterRoutes } from './routes/chapters.js';
 import { createVideoRoutes } from './routes/video.js';
 import { createShadowsRouter } from './routes/shadows.js';
 import { createEditRoutes } from './routes/edit.js';
+import { createExportRoutes } from './routes/export.js';
 import { createS3StagingRoutes } from './routes/s3-staging.js';
 import { createStateRoutes } from './routes/state.js';
 import { migrateTargetToProject } from '../../shared/paths.js';
@@ -348,12 +349,16 @@ app.use('/api/shadows', shadowRoutes);
 const editRoutes = createEditRoutes(() => currentConfig);
 app.use('/api/edit', editRoutes);
 
+// FR-122: Setup export routes
+const exportRoutes = createExportRoutes(() => currentConfig);
+app.use('/api/export', exportRoutes);
+
 // FR-103: Setup S3 staging routes
 const s3StagingRoutes = createS3StagingRoutes(() => currentConfig);
 app.use('/api/s3-staging', s3StagingRoutes);
 
-// FR-111: Setup project state routes
-const stateRoutes = createStateRoutes(() => currentConfig);
+// FR-111: Setup project state routes (FR-123: pass io for socket events)
+const stateRoutes = createStateRoutes(() => currentConfig, io);
 app.use('/api', stateRoutes);
 
 // NFR-6: Global error handler (must be after routes)

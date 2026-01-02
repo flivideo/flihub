@@ -10,6 +10,7 @@ Documentation for FliHub - the video recording workflow management application (
 |----------|---------|
 | [backlog.md](backlog.md) | Requirements index (links to PRD files) |
 | [changelog.md](changelog.md) | Implementation history |
+| [learnings.md](learnings.md) | Mistakes and lessons learned |
 | [brainstorming-notes.md](brainstorming-notes.md) | Ideas and exploration |
 | [current-state.md](current-state.md) | What's implemented |
 

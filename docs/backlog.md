@@ -10,13 +10,14 @@ Requirements index for FliHub.
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
-| FR-125 | [Config & EditPrep Consolidation](prd/fr-125-config-editprep-consolidation.md) | 2026-01-02 | Pending |
+| FR-126 | [Edit Folder Manifest & Cleanup](prd/fr-126-edit-folder-manifest.md) | 2026-01-02 | With Developer |
+| FR-125 | [Config & EditPrep Consolidation](prd/fr-125-config-editprep-consolidation.md) | 2026-01-02 | ✓ Implemented |
 | FR-124 | [Export Panel Enhancements](prd/fr-124-export-panel-enhancements.md) | 2026-01-02 | ✓ Implemented |
-| FR-123 | [Watch Panel Enhancements](prd/fr-123-per-segment-annotation.md) | 2026-01-02 | Pending |
+| FR-123 | [Watch Panel Enhancements](prd/fr-123-per-segment-annotation.md) | 2026-01-02 | With Developer |
 | FR-122 | [Export Panel](prd/fr-122-export-panel.md) | 2026-01-02 | ✓ Implemented |
 | FR-121 | [Parked State in Watch Panel](prd/fr-121-parked-state-watch-panel.md) | 2026-01-02 | ✓ Implemented |
 | FR-120 | [Parked Recording State](prd/fr-120-parked-recording-state.md) | 2026-01-02 | ✓ Implemented |
-| FR-119 | [API Documentation & Testing Page](prd/fr-119-api-documentation-testing.md) | 2025-12-31 | Pending |
+| FR-119 | [API Documentation & Testing Page](prd/fr-119-api-documentation-testing.md) | 2025-12-31 | With Developer |
 | FR-118 | [Project-Specific Gling Dictionary](prd/fr-118-project-gling-dictionary.md) | 2025-12-31 | ✓ Implemented |
 | FR-117 | [Hover UX Improvements](prd/fr-117-hover-ux-improvements.md) | 2025-12-30 | ✓ Implemented |
 | FR-116 | [Incoming Page - Quick Config Access](prd/fr-116-quick-config-access.md) | 2025-12-30 | ✓ Implemented |

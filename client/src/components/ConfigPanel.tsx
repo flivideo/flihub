@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import type { ConfigFocusSection } from '../App'
+import type { CommonName, ChapterFilter } from '../../../shared/types'
 import { toast } from 'sonner'
 import { useConfig, useUpdateConfig, useRefetchSuggestedNaming, useChapterRecordingConfig, useUpdateChapterRecordingConfig, useShadowStatus, useGenerateShadows, useGenerateAllShadows, useWatchers, useEnvironment } from '../hooks/useApi'
 import { collapsePath } from '../utils/formatting'
@@ -233,10 +234,10 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const [projectsRootDirectory, setProjectsRootDirectory] = useState('')
   const [activeProject, setActiveProject] = useState('')
   const [imageSourceDirectory, setImageSourceDirectory] = useState('')
-  // FR-102: Gling dictionary words
+  // FR-102: Gling dictionary words (global)
   const [glingDictionary, setGlingDictionary] = useState('')
-  // FR-116: Common names editing
-  const [commonNames, setCommonNames] = useState<string[]>([])
+  // FR-116/FR-73: Common names editing with chapter filters
+  const [commonNames, setCommonNames] = useState<CommonName[]>([])
   const [newCommonName, setNewCommonName] = useState('')
   const commonNamesInputRef = useRef<HTMLInputElement>(null)
   const commonNamesSectionRef = useRef<HTMLDivElement>(null)
@@ -296,8 +297,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       // FR-102: Initialize Gling dictionary (one word per line)
       setGlingDictionary((config.glingDictionary || []).join('\n'))
 
-      // FR-116: Initialize common names (just the name strings)
-      setCommonNames((config.commonNames || []).map(cn => cn.name))
+      // FR-116/FR-73: Initialize common names (full objects with filters)
+      setCommonNames(config.commonNames || [])
 
       // FR-89 Part 6: Initialize shadow resolution
       setShadowResolution(config.shadowResolution || 240)
@@ -355,9 +356,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     // FR-89 Part 6: Check shadow resolution changes
     const shadowChanged = (config.shadowResolution || 240) !== shadowResolution
 
-    // FR-116: Check common names changes
-    const currentCommonNames = (config.commonNames || []).map(cn => cn.name)
-    const commonNamesChanged = JSON.stringify(currentCommonNames) !== JSON.stringify(commonNames)
+    // FR-116/FR-73: Check common names changes (full objects with filters)
+    const commonNamesChanged = JSON.stringify(config.commonNames || []) !== JSON.stringify(commonNames)
 
     return pathsChanged || dictChanged || chapterChanged || shadowChanged || commonNamesChanged
   }, [config, watchDirectory, projectsRootDirectory, activeProject, imageSourceDirectory, glingDictionary, chapterConfig, includeTitleSlides, slideDuration, resolution, autoGenerate, shadowResolution, commonNames])
@@ -447,6 +447,15 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       }
     } catch (error) {
       toast.error('Failed to generate shadow files')
+    }
+  }
+
+  // FR-118/FR-73: Auto-save common names (full objects)
+  const saveCommonNames = async (names: CommonName[]) => {
+    try {
+      await updateConfig.mutateAsync({ commonNames: names })
+    } catch {
+      toast.error('Failed to save common names')
     }
   }
 
@@ -605,10 +614,10 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
           )}
         </div>
 
-        {/* FR-102: Gling Dictionary */}
+        {/* FR-102: Gling Dictionary (Global) */}
         <div>
           <label className="block text-sm text-gray-600 mb-1">
-            Gling Dictionary Words
+            Global Dictionary Words
           </label>
           <textarea
             value={glingDictionary}
@@ -618,32 +627,138 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             placeholder="AppyDave&#10;BMAD&#10;FliVideo"
           />
           <p className="text-xs text-gray-400 mt-1">
-            Custom words for Gling transcription (one per line). Used in First Edit Prep.
+            Brand-wide words for Gling transcription (one per line). Applies to all projects.
           </p>
         </div>
 
-        {/* FR-116: Common Names */}
+        {/* FR-116/FR-73: Common Names with Chapter Filters (auto-saves) */}
         <div ref={commonNamesSectionRef} id="common-names">
-          <label className="block text-sm text-gray-600 mb-1">
+          <label className="block text-sm text-gray-600 mb-2">
             Common Names
           </label>
-          {/* Existing common names as removable pills */}
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {commonNames.map((name, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded border border-gray-200"
-              >
-                {name}
-                <button
-                  onClick={() => setCommonNames(commonNames.filter((_, i) => i !== idx))}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
-                  title="Remove"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
+          {/* FR-73: Common name rows with chapter filters */}
+          <div className="space-y-2 mb-3">
+            {commonNames.map((cn, idx) => {
+              // Determine current filter preset
+              const filter = cn.chapterFilter
+              const isAll = !filter || filter === 'all'
+              const isEarly = typeof filter === 'object' && filter.max === 4 && !filter.min
+              const isLate = typeof filter === 'object' && filter.min === 10 && !filter.max
+              const isCustom = typeof filter === 'object' && !isEarly && !isLate
+
+              const currentPreset = isAll ? 'all' : isEarly ? 'early' : isLate ? 'late' : 'custom'
+              const customMin = isCustom && typeof filter === 'object' ? filter.min : undefined
+              const customMax = isCustom && typeof filter === 'object' ? filter.max : undefined
+
+              const updateFilter = (preset: string, min?: number, max?: number) => {
+                let newFilter: 'all' | ChapterFilter | undefined
+                if (preset === 'all') newFilter = undefined  // Default, no need to store
+                else if (preset === 'early') newFilter = { max: 4 }
+                else if (preset === 'late') newFilter = { min: 10 }
+                else if (preset === 'custom') {
+                  newFilter = {}
+                  if (min !== undefined) newFilter.min = min
+                  if (max !== undefined) newFilter.max = max
+                }
+
+                const updated = commonNames.map((c, i) =>
+                  i === idx ? { ...c, chapterFilter: newFilter } : c
+                )
+                setCommonNames(updated)
+                saveCommonNames(updated)
+              }
+
+              const moveUp = () => {
+                if (idx === 0) return
+                const updated = [...commonNames]
+                ;[updated[idx - 1], updated[idx]] = [updated[idx], updated[idx - 1]]
+                setCommonNames(updated)
+                saveCommonNames(updated)
+              }
+
+              const moveDown = () => {
+                if (idx === commonNames.length - 1) return
+                const updated = [...commonNames]
+                ;[updated[idx], updated[idx + 1]] = [updated[idx + 1], updated[idx]]
+                setCommonNames(updated)
+                saveCommonNames(updated)
+              }
+
+              return (
+                <div key={idx} className="flex items-center gap-2 py-1 px-2 bg-gray-50 rounded border border-gray-200">
+                  {/* Reorder buttons */}
+                  <div className="flex flex-col -my-1">
+                    <button
+                      onClick={moveUp}
+                      disabled={idx === 0}
+                      className={`text-xs leading-none ${idx === 0 ? 'text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                      title="Move up"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      onClick={moveDown}
+                      disabled={idx === commonNames.length - 1}
+                      className={`text-xs leading-none ${idx === commonNames.length - 1 ? 'text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                      title="Move down"
+                    >
+                      ▼
+                    </button>
+                  </div>
+
+                  {/* Name */}
+                  <span className="font-mono text-sm text-gray-700 w-24">{cn.name}</span>
+
+                  {/* Chapter filter dropdown */}
+                  <select
+                    value={currentPreset}
+                    onChange={(e) => updateFilter(e.target.value)}
+                    className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="all">All chapters</option>
+                    <option value="early">Early (1-4)</option>
+                    <option value="late">Late (10+)</option>
+                    <option value="custom">Custom...</option>
+                  </select>
+
+                  {/* Custom range inputs */}
+                  {currentPreset === 'custom' && (
+                    <div className="flex items-center gap-1 text-xs">
+                      <input
+                        type="number"
+                        placeholder="min"
+                        value={customMin ?? ''}
+                        onChange={(e) => updateFilter('custom', e.target.value ? parseInt(e.target.value) : undefined, customMax)}
+                        className="w-12 px-1 py-0.5 border border-gray-300 rounded text-center"
+                        min={1}
+                      />
+                      <span className="text-gray-400">to</span>
+                      <input
+                        type="number"
+                        placeholder="max"
+                        value={customMax ?? ''}
+                        onChange={(e) => updateFilter('custom', customMin, e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="w-12 px-1 py-0.5 border border-gray-300 rounded text-center"
+                        min={1}
+                      />
+                    </div>
+                  )}
+
+                  {/* Delete button */}
+                  <button
+                    onClick={() => {
+                      const updated = commonNames.filter((_, i) => i !== idx)
+                      setCommonNames(updated)
+                      saveCommonNames(updated)
+                    }}
+                    className="ml-auto text-gray-400 hover:text-red-500 transition-colors text-sm"
+                    title="Remove"
+                  >
+                    ×
+                  </button>
+                </div>
+              )
+            })}
           </div>
           {/* Add new common name input */}
           <div className="flex gap-2">
@@ -655,19 +770,23 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && newCommonName.trim()) {
                   e.preventDefault()
-                  if (!commonNames.includes(newCommonName.trim())) {
-                    setCommonNames([...commonNames, newCommonName.trim()])
+                  if (!commonNames.find(cn => cn.name === newCommonName.trim())) {
+                    const updated = [...commonNames, { name: newCommonName.trim() }]
+                    setCommonNames(updated)
+                    saveCommonNames(updated)
                   }
                   setNewCommonName('')
                 }
               }}
-              placeholder="intro, demo, setup..."
+              placeholder="Add new name..."
               className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <button
               onClick={() => {
-                if (newCommonName.trim() && !commonNames.includes(newCommonName.trim())) {
-                  setCommonNames([...commonNames, newCommonName.trim()])
+                if (newCommonName.trim() && !commonNames.find(cn => cn.name === newCommonName.trim())) {
+                  const updated = [...commonNames, { name: newCommonName.trim() }]
+                  setCommonNames(updated)
+                  saveCommonNames(updated)
                   setNewCommonName('')
                   commonNamesInputRef.current?.focus()
                 }
@@ -679,7 +798,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             </button>
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            Quick-select names shown as pills on the Incoming page. Press Enter to add.
+            Filter which chapters each name appears in. Auto-saves on change.
           </p>
         </div>
 

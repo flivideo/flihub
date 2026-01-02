@@ -24,6 +24,8 @@ import type {
   ChapterRecordingResponse,
   SafeResponse,
   RestoreResponse,
+  ParkResponse,
+  UnparkResponse,
   RenameChapterResponse,
   QueueAllResponse,
   RecentRename,
@@ -40,7 +42,7 @@ import { QUERY_KEYS } from '../constants/queryKeys'
 import { API_URL } from '../config'
 
 // Fetch helper
-async function fetchApi<T>(
+export async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
@@ -171,6 +173,38 @@ export function useRestoreFromSafe() {
   return useMutation({
     mutationFn: (files: string[]) =>
       fetchApi<RestoreResponse>('/api/recordings/restore', {
+        method: 'POST',
+        body: JSON.stringify({ files }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
+    },
+  })
+}
+
+// FR-120: Park recording(s) (NFR-66: using shared ParkResponse type)
+export function useParkRecording() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (request: { files?: string[]; chapter?: string }) =>
+      fetchApi<ParkResponse>('/api/recordings/park', {
+        method: 'POST',
+        body: JSON.stringify(request),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
+    },
+  })
+}
+
+// FR-120: Unpark recording(s) (NFR-66: using shared UnparkResponse type)
+export function useUnparkRecording() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (files: string[]) =>
+      fetchApi<UnparkResponse>('/api/recordings/unpark', {
         method: 'POST',
         body: JSON.stringify({ files }),
       }),
@@ -605,6 +639,31 @@ export function useOpenFolder() {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to open folder')
+    },
+  })
+}
+
+// FR-118: Get project state (includes project dictionary)
+export function useProjectState(projectCode: string | undefined) {
+  return useQuery({
+    queryKey: ['projectState', projectCode],
+    queryFn: () => fetchApi<{ success: boolean; state: { glingDictionary?: string[] } }>(`/api/projects/${projectCode}/state`),
+    enabled: !!projectCode,
+  })
+}
+
+// FR-118: Update project dictionary
+export function useUpdateProjectDictionary() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ projectCode, words }: { projectCode: string; words: string[] }) =>
+      fetchApi<{ success: boolean; words: string[] }>(`/api/projects/${projectCode}/state/dictionary`, {
+        method: 'PATCH',
+        body: JSON.stringify({ words }),
+      }),
+    onSuccess: (_, { projectCode }) => {
+      queryClient.invalidateQueries({ queryKey: ['projectState', projectCode] })
     },
   })
 }

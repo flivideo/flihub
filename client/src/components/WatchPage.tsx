@@ -28,13 +28,14 @@
  */
 
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
-import { useRecordings, useConfig } from '../hooks/useApi'
+import { useRecordings, useConfig, useParkRecording, useUnparkRecording, fetchApi } from '../hooks/useApi'
 import { useRecordingsSocket } from '../hooks/useSocket'
 import { useDelayedHoverValue } from '../hooks/useDelayedHover'
 import { extractTagsFromName } from '../../../shared/naming'
 import { formatDuration, formatChapterTitle } from '../utils/formatting'
 import { LoadingSpinner, ErrorMessage } from './shared'
 import { TranscriptSyncPanel } from './TranscriptSyncPanel'
+import { toast } from 'sonner'
 import { API_URL } from '../config'
 import type { RecordingFile } from '../../../shared/types'
 
@@ -58,6 +59,7 @@ const STORAGE_KEYS = {
   autoplay: 'flihub:watch:autoplay',
   autonext: 'flihub:watch:autonext',
   showSafe: 'flihub:watch:showSafe',  // FR-111 Phase 4: Show safe recordings toggle
+  showParked: 'flihub:watch:showParked',  // FR-121: Show parked recordings toggle
 }
 
 // FR-71/FR-91: Size CSS classes
@@ -85,12 +87,16 @@ function getChapterDisplayName(files: RecordingFile[]): string {
 }
 
 // Group recordings by chapter and calculate timing
-// FR-111 Phase 4: Accept showSafe parameter to optionally include safe recordings
-function groupByChapterWithTiming(recordings: RecordingFile[], showSafe: boolean = false): ChapterGroup[] {
+// FR-111/FR-121: Accept showSafe and showParked parameters to optionally include safe/parked recordings
+function groupByChapterWithTiming(recordings: RecordingFile[], showSafe: boolean = false, showParked: boolean = true): ChapterGroup[] {
   const groups = new Map<string, { files: RecordingFile[]; totalDuration: number }>()
 
-  // FR-111: Filter based on showSafe toggle
-  const filteredRecordings = showSafe ? recordings : recordings.filter(r => !r.isSafe)
+  // FR-111/FR-121: Filter based on showSafe and showParked toggles
+  const filteredRecordings = recordings.filter(r => {
+    if (!showSafe && r.isSafe) return false
+    if (!showParked && r.isParked) return false
+    return true
+  })
 
   for (const recording of filteredRecordings) {
     const key = recording.chapter
@@ -210,6 +216,20 @@ export function WatchPage() {
     return saved === 'true'
   })
 
+  // FR-121: Show parked recordings toggle (default: true)
+  const [showParked, setShowParked] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.showParked)
+    return saved !== 'false'  // Default to true (show parked)
+  })
+
+  // FR-123: Annotation editing state
+  const [editingAnnotation, setEditingAnnotation] = useState(false)
+  const [annotationText, setAnnotationText] = useState('')
+
+  // FR-123: Park/Unpark mutations
+  const parkRecording = useParkRecording()
+  const unparkRecording = useUnparkRecording()
+
   // Subscribe to real-time recordings changes
   useRecordingsSocket()
 
@@ -220,20 +240,24 @@ export function WatchPage() {
   // FR-111 Phase 4: Pass showSafe to filter
   const chapters = useMemo(() => {
     if (!data?.recordings) return []
-    return groupByChapterWithTiming(data.recordings, showSafe)
-  }, [data?.recordings, showSafe])
+    return groupByChapterWithTiming(data.recordings, showSafe, showParked)
+  }, [data?.recordings, showSafe, showParked])
 
   // FR-100: Flat list of recordings for next/prev navigation
-  // FR-111 Phase 4: Filter based on showSafe toggle
+  // FR-111/FR-121: Filter based on showSafe and showParked toggles
   const sortedRecordings = useMemo(() => {
     if (!data?.recordings) return []
-    const filtered = showSafe ? data.recordings : data.recordings.filter(r => !r.isSafe)
+    const filtered = data.recordings.filter(r => {
+      if (!showSafe && r.isSafe) return false
+      if (!showParked && r.isParked) return false
+      return true
+    })
     return filtered.sort((a, b) => {
       const chapterDiff = parseInt(a.chapter) - parseInt(b.chapter)
       if (chapterDiff !== 0) return chapterDiff
       return parseInt(a.sequence) - parseInt(b.sequence)
     })
-  }, [data?.recordings, showSafe])
+  }, [data?.recordings, showSafe, showParked])
 
   // FR-100: Find current index in sorted list
   const currentIndex = useMemo(() => {
@@ -285,7 +309,8 @@ export function WatchPage() {
   // FR-71: Find the most recent recording (highest chapter, then highest sequence)
   const mostRecentRecording = useMemo(() => {
     if (!data?.recordings) return null
-    const activeRecordings = data.recordings.filter(r => !r.isSafe)  // FR-111
+    // FR-111/FR-121: Filter out safe and parked recordings
+    const activeRecordings = data.recordings.filter(r => !r.isSafe && !r.isParked)
     if (activeRecordings.length === 0) return null
 
     return activeRecordings.sort((a, b) => {
@@ -355,6 +380,15 @@ export function WatchPage() {
     setShowSafe(prev => {
       const newValue = !prev
       localStorage.setItem(STORAGE_KEYS.showSafe, String(newValue))
+      return newValue
+    })
+  }, [])
+
+  // FR-121: Toggle show parked recordings
+  const handleShowParkedToggle = useCallback(() => {
+    setShowParked(prev => {
+      const newValue = !prev
+      localStorage.setItem(STORAGE_KEYS.showParked, String(newValue))
       return newValue
     })
   }, [])
@@ -487,6 +521,82 @@ export function WatchPage() {
     }
   }, [currentVideo, projectCode])
 
+  // FR-123: Park/Unpark handlers
+  const handleParkToggle = useCallback(async () => {
+    if (!currentVideo?.segmentName || !projectCode) return
+
+    const filename = currentVideo.segmentName + '.mov'
+    const currentRecording = sortedRecordings.find(r => r.filename === filename)
+
+    if (currentRecording?.isParked) {
+      // Unpark
+      await unparkRecording.mutateAsync([filename])
+      setEditingAnnotation(false)
+      setAnnotationText('')
+      toast.success('Recording unparked')
+    } else {
+      // Park
+      await parkRecording.mutateAsync({ files: [filename] })
+      // Initialize annotation from current recording if exists
+      const annotation = currentRecording?.annotation || ''
+      setAnnotationText(annotation)
+      toast.success('Recording parked')
+    }
+  }, [currentVideo, projectCode, sortedRecordings, parkRecording, unparkRecording])
+
+  // FR-123: Save annotation
+  const handleSaveAnnotation = useCallback(async () => {
+    if (!currentVideo?.segmentName || !projectCode) return
+
+    const filename = currentVideo.segmentName + '.mov'
+    const currentRecording = sortedRecordings.find(r => r.filename === filename)
+
+    const payload = {
+      recordings: {
+        [filename]: {
+          parked: currentRecording?.isParked || undefined,
+          safe: currentRecording?.isSafe || undefined,
+          annotation: annotationText.trim() || undefined,
+        },
+      },
+    }
+
+    console.log('[SAVE] Annotation:', {
+      filename,
+      projectCode,
+      annotationText: annotationText.trim(),
+      payload,
+    })
+
+    try {
+      const response = await fetchApi(`/api/projects/${projectCode}/state`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      })
+
+      console.log('[SAVE] Response:', response)
+      setEditingAnnotation(false)
+      toast.success('Annotation saved')
+    } catch (error) {
+      console.error('[SAVE] Error:', error)
+      toast.error('Failed to save annotation')
+    }
+  }, [currentVideo, projectCode, annotationText, sortedRecordings])
+
+  // FR-123: Initialize annotation when current video changes
+  useEffect(() => {
+    if (currentVideo?.segmentName) {
+      const filename = currentVideo.segmentName + '.mov'
+      const recording = sortedRecordings.find(r => r.filename === filename)
+      console.log('[LOAD] Annotation for:', filename)
+      console.log('[LOAD] Recording object:', recording)
+      console.log('[LOAD] Annotation value:', recording?.annotation)
+      console.log('[LOAD] All recordings:', sortedRecordings.map(r => ({ filename: r.filename, annotation: r.annotation })))
+      setAnnotationText(recording?.annotation || '')
+      setEditingAnnotation(false)
+    }
+  }, [currentVideo?.segmentName, sortedRecordings])
+
   // Calculate total duration
   const totalDuration = useMemo(() => {
     return chapters.reduce((sum, ch) => sum + ch.totalDuration, 0)
@@ -515,44 +625,6 @@ export function WatchPage() {
     <div className="relative">
       {/* FR-71: Size-responsive container */}
       <div className={SIZE_CLASSES[videoSize]}>
-        {/* FR-100: Navigation bar */}
-        {currentVideo && !currentVideo.isChapter && (
-          <div className="flex items-center justify-between mb-2 px-2">
-            <button
-              onClick={handlePrevious}
-              disabled={!hasPrevious}
-              className={`px-3 py-1 rounded text-sm ${
-                hasPrevious
-                  ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              ← Previous
-            </button>
-
-            <span className="text-sm text-gray-600 font-medium">
-              {currentVideo.title}
-              {sortedRecordings.length > 0 && (
-                <span className="text-gray-400 ml-2">
-                  ({currentIndex + 1} of {sortedRecordings.length})
-                </span>
-              )}
-            </span>
-
-            <button
-              onClick={handleNext}
-              disabled={!hasNext}
-              className={`px-3 py-1 rounded text-sm ${
-                hasNext
-                  ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              Next →
-            </button>
-          </div>
-        )}
-
         {/* Full-width Video Player */}
         <div className="bg-black rounded-lg overflow-hidden relative" style={{ aspectRatio: '16/9' }}>
           {/* FR-83: Shadow indicator badge */}
@@ -605,12 +677,90 @@ export function WatchPage() {
           )}
         </div>
 
-        {/* Now Playing Info + Controls Bar */}
+        {/* FR-123: Consolidated Controls Bar */}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          {/* Left: Now Playing with Play/Stop control */}
-          <div className="flex items-center gap-3">
-            {currentVideo ? (
+          {/* Left: Navigation + Now Playing */}
+          <div className="flex items-center gap-2">
+            {currentVideo && !currentVideo.isChapter ? (
               <>
+                {/* FR-123: Previous button */}
+                <button
+                  onClick={handlePrevious}
+                  disabled={!hasPrevious}
+                  className={`px-2 py-1 text-lg transition-colors ${
+                    hasPrevious
+                      ? 'text-gray-700 hover:text-gray-900'
+                      : 'text-gray-300 cursor-not-allowed'
+                  }`}
+                  title="Previous recording"
+                >
+                  ←
+                </button>
+
+                {/* Play/Stop button */}
+                <button
+                  onClick={handlePlayPause}
+                  className={`text-lg transition-colors ${
+                    isPlaying
+                      ? 'text-red-500 hover:text-red-600'
+                      : 'text-blue-500 hover:text-blue-600'
+                  }`}
+                  title={isPlaying ? 'Stop playback' : 'Start playback'}
+                >
+                  {isPlaying ? '⏹' : '▶'}
+                </button>
+
+                {/* FR-123: Next button */}
+                <button
+                  onClick={handleNext}
+                  disabled={!hasNext}
+                  className={`px-2 py-1 text-lg transition-colors ${
+                    hasNext
+                      ? 'text-gray-700 hover:text-gray-900'
+                      : 'text-gray-300 cursor-not-allowed'
+                  }`}
+                  title="Next recording"
+                >
+                  →
+                </button>
+
+                {/* FR-123: Park/Unpark button - moved here between nav and filename */}
+                {(() => {
+                  const filename = currentVideo.segmentName + '.mov'
+                  const isParked = sortedRecordings.find(r => r.filename === filename)?.isParked
+                  return (
+                    <button
+                      onClick={handleParkToggle}
+                      className={`px-3 py-1 text-xs rounded font-medium transition-colors ml-2 ${
+                        isParked
+                          ? 'bg-pink-600 text-white hover:bg-pink-700'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                      title={isParked ? 'Click to unpark' : 'Click to park (exclude from edit)'}
+                    >
+                      {isParked ? '← Unpark' : 'Park →'}
+                    </button>
+                  )
+                })()}
+
+                {/* Filename + counter */}
+                <h3 className="font-medium text-gray-800 ml-1">{currentVideo.title}</h3>
+                {sortedRecordings.length > 0 && (
+                  <span className="text-sm text-gray-400">
+                    ({currentIndex + 1}/{sortedRecordings.length})
+                  </span>
+                )}
+
+                {/* Badges */}
+                {currentVideo.isShadow && (
+                  <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded flex items-center gap-1">
+                    <span>👻</span> Shadow
+                  </span>
+                )}
+              </>
+            ) : currentVideo ? (
+              <>
+                {/* Chapter video - no navigation */}
                 <button
                   onClick={handlePlayPause}
                   className={`text-lg transition-colors ${
@@ -719,8 +869,89 @@ export function WatchPage() {
             >
               Safe
             </button>
+
+            {/* FR-121: Show Parked Toggle - shows parked recordings */}
+            <button
+              onClick={handleShowParkedToggle}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                showParked
+                  ? 'bg-pink-500 text-white font-medium'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title={showParked ? 'Showing parked recordings' : 'Parked recordings hidden'}
+            >
+              Parked
+            </button>
           </div>
         </div>
+
+        {/* FR-123: Annotation field when parked */}
+        {currentVideo && !currentVideo.isChapter && (() => {
+          const filename = currentVideo.segmentName + '.mov'
+          const currentRecording = sortedRecordings.find(r => r.filename === filename)
+          const isParked = currentRecording?.isParked
+
+          if (!isParked) return null
+
+          return (
+            <div className="mt-3 p-3 bg-pink-50 border border-pink-200 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-pink-700 uppercase tracking-wide">
+                  Parked - Optional Note
+                </span>
+                {!editingAnnotation && annotationText && (
+                  <button
+                    onClick={() => setEditingAnnotation(true)}
+                    className="text-xs text-pink-600 hover:text-pink-700 hover:underline"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+
+              {editingAnnotation ? (
+                <div>
+                  <textarea
+                    value={annotationText}
+                    onChange={(e) => setAnnotationText(e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 text-sm border border-pink-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+                    placeholder="Why is this parked? (e.g., 'Too technical for YouTube', 'Save for SKOOL')"
+                    autoFocus
+                  />
+                  <div className="flex items-center justify-end gap-2 mt-2">
+                    <button
+                      onClick={() => {
+                        setAnnotationText(currentRecording?.annotation || '')
+                        setEditingAnnotation(false)
+                      }}
+                      className="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveAnnotation}
+                      className="px-3 py-1 text-xs bg-pink-600 text-white rounded hover:bg-pink-700 transition-colors"
+                    >
+                      Save Note
+                    </button>
+                  </div>
+                </div>
+              ) : annotationText ? (
+                <p className="text-sm text-gray-700 italic">
+                  "{annotationText}"
+                </p>
+              ) : (
+                <button
+                  onClick={() => setEditingAnnotation(true)}
+                  className="text-sm text-pink-600 hover:text-pink-700 hover:underline"
+                >
+                  + Add note explaining why this is parked
+                </button>
+              )}
+            </div>
+          )
+        })()}
 
         {/* FR-75/FR-77: Transcript Sync Panel (for both segment and chapter videos) */}
         {currentVideo && (
@@ -794,6 +1025,8 @@ export function WatchPage() {
                 const hasShadow = 'hasShadow' in file && file.hasShadow
                 // FR-111 Phase 4: Safe status
                 const isSafe = 'isSafe' in file && file.isSafe
+                // FR-121: Parked status
+                const isParked = 'isParked' in file && file.isParked
 
                 // FR-83/FR-88: Status indicator - show both playing state AND shadow status
                 // 📹 = Real | 👻 = Shadow only | 📹👻 = Real + Shadow
@@ -811,12 +1044,14 @@ export function WatchPage() {
                   statusTitle = isPlaying ? 'Playing (real only)' : 'Real recording (no shadow)'
                 }
 
-                // FR-111 Phase 4: Determine row styling - safe files get yellow bg
+                // FR-111/FR-121: Determine row styling - safe=yellow, parked=pink
                 let rowClasses: string
                 if (isPlaying) {
                   rowClasses = 'bg-blue-50 text-blue-700 border-l-2 border-blue-500'
                 } else if (isSafe) {
                   rowClasses = 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-l-2 border-yellow-400'
+                } else if (isParked) {
+                  rowClasses = 'bg-pink-50 text-pink-700 hover:bg-pink-100 border-l-2 border-pink-400'
                 } else if (isShadow) {
                   rowClasses = 'hover:bg-purple-50 text-purple-600 border-l-2 border-transparent'
                 } else {
@@ -828,7 +1063,7 @@ export function WatchPage() {
                     key={file.path}
                     onClick={() => playRecording(file)}
                     className={`w-full text-left px-4 py-2 flex items-center gap-2 transition-colors ${rowClasses}`}
-                    title={isSafe ? `${statusTitle} (Safe)` : statusTitle}
+                    title={isSafe ? `${statusTitle} (Safe)` : isParked ? `${statusTitle} (Parked)` : statusTitle}
                   >
                     <span className={`text-xs ${isPlaying ? 'text-blue-500' : isSafe ? 'text-yellow-500' : isShadow ? 'text-purple-400' : 'text-gray-400'}`}>
                       {statusIcon}
@@ -842,6 +1077,12 @@ export function WatchPage() {
                     {isSafe && (
                       <span className="px-1.5 py-0.5 text-[10px] font-medium bg-yellow-200 text-yellow-800 rounded">
                         SAFE
+                      </span>
+                    )}
+                    {/* FR-121: PARKED badge for parked files */}
+                    {isParked && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-medium bg-pink-200 text-pink-800 rounded">
+                        PARKED
                       </span>
                     )}
                     {file.duration && (

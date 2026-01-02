@@ -6,13 +6,104 @@ Track what was implemented, fixed, or changed and when.
 
 ## Quick Summary - 2026-01-02
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-120, FR-121, FR-122, FR-124, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
-**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), FR-119 (API Documentation), FR-123 (Watch Panel Enhancements), FR-125 (Config & EditPrep Consolidation), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
+**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), FR-119 (API Documentation), FR-126 (Edit Folder Manifest), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-123: Watch Panel Enhancements
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-02 | Implemented | - |
+
+**What was built:**
+Unified Watch panel controls with park/unpark actions and per-segment annotations for better video review workflow.
+
+**Part 1: Consolidated Navigation**
+- Moved Previous/Next buttons from above video to controls bar below
+- Clean single-line layout: [← Prev] [▶ Play] [→ Next] filename (X/Y) [tags] [toggles]
+- All controls in one visual location (better UX)
+
+**Part 2: Park/Unpark in Watch Panel**
+- Park button added to controls bar (between navigation and filename)
+- Visual states:
+  - Active: Gray "Park →" button
+  - Parked: Pink "← Unpark" button
+- Toast notifications on state changes
+- Uses existing FR-120 mutations
+
+**Part 3: Per-Segment Annotations**
+- Optional note field appears when recording is parked
+- Edit/save/cancel workflow
+- Stored in `.flihub-state.json` under `recordings[filename].annotation`
+- Persists across navigation and sessions
+- Real-time updates via Socket.io
+
+**Example annotation in state file:**
+```json
+{
+  "recordings": {
+    "05-1-setup.mov": {
+      "parked": true,
+      "annotation": "Save for SKOOL advanced module"
+    }
+  }
+}
+```
+
+**Files modified:**
+- `shared/types.ts` - Added `annotation?: string` to RecordingState, RecordingFile, QueryRecording
+- `server/src/utils/projectState.ts` - Added `getRecordingAnnotation()` helper
+- `server/src/routes/index.ts` - Added annotation to recordings endpoint
+- `server/src/routes/query/recordings.ts` - Added annotation support
+- `server/src/routes/query/export.ts` - Added annotation support
+- `server/src/routes/state.ts` - Socket.io events for real-time updates
+- `client/src/components/WatchPage.tsx` - Full UI implementation
+
+**UX Benefits:**
+- Single eye position for all controls (no more jumping between top/bottom)
+- Make park decisions while watching (instead of switching to Recordings panel)
+- Capture reasoning immediately ("why did I park this?")
+- Annotations persist and travel with recording state
+
+---
+
+### FR-125: Config & EditPrep Consolidation
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-02 | Implemented | - |
+
+**What was built:**
+Consolidated Gling preparation features into Export panel with split dictionary display and inline project dictionary editing.
+
+**Features:**
+- Split dictionary display: Global (config.json) / Project (.flihub-state.json) / Combined (merged)
+- Three copy buttons for each dictionary type
+- Inline project dictionary editing with Save/Cancel buttons
+- Project dictionary removed from Config panel (kept Global only)
+- EditPrep modal deleted (redundant after FR-124)
+
+**Files modified:**
+- `client/src/components/ExportPanel.tsx` - Added dictionary split display, editing, 3 copy buttons
+- `client/src/components/ConfigPanel.tsx` - Removed project dictionary section
+- `client/src/App.tsx` - Removed EditPrep menu item and modal
+
+**Files deleted:**
+- `client/src/components/EditPrepPage.tsx` - No longer needed
+
+**API changes:** None - existing endpoints work as-is
+
+**User impact:**
+- One location for all Gling prep (Export panel)
+- More flexible dictionary copying (can copy global/project separately)
+- Cleaner Config page (only global settings)
+
+---
 
 ### FR-124: Export Panel Enhancements
 

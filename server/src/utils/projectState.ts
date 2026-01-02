@@ -78,10 +78,14 @@ export async function writeProjectState(projectDir: string, state: ProjectState)
   const paths = getProjectPaths(expandedDir)
   const stateFilePath = paths.stateFile
 
-  // Ensure version is set
+  // Ensure version is set, preserve all fields
   const stateToWrite: ProjectState = {
     version: 1,
     recordings: state.recordings || {},
+    // FR-118: Preserve project dictionary if present
+    ...(state.glingDictionary && state.glingDictionary.length > 0
+      ? { glingDictionary: state.glingDictionary }
+      : {}),
   }
 
   await fs.writeFile(stateFilePath, JSON.stringify(stateToWrite, null, 2), 'utf-8')
@@ -113,7 +117,7 @@ export function setRecordingSafe(state: ProjectState, filename: string, safe: bo
 
   // Remove entry if all flags are default/false
   const recordingState = newState.recordings[filename]
-  if (!recordingState.safe && !recordingState.stage) {
+  if (!recordingState.safe && !recordingState.parked && !recordingState.stage) {
     delete newState.recordings[filename]
   }
 
@@ -131,17 +135,25 @@ export function getRecordingState(state: ProjectState, filename: string): Record
 /**
  * Merge new recording states into existing state
  * Only updates specified recordings, preserves others
+ * FR-123: Deep merge each recording to preserve all fields
  */
 export function mergeRecordingStates(
   state: ProjectState,
   updates: Record<string, RecordingState>
 ): ProjectState {
+  const mergedRecordings = { ...state.recordings }
+
+  // Deep merge each recording state
+  for (const [filename, update] of Object.entries(updates)) {
+    mergedRecordings[filename] = {
+      ...mergedRecordings[filename],  // Preserve existing fields
+      ...update,                       // Apply updates
+    }
+  }
+
   return {
     ...state,
-    recordings: {
-      ...state.recordings,
-      ...updates,
-    },
+    recordings: mergedRecordings,
   }
 }
 
@@ -163,4 +175,65 @@ export function getActiveRecordingsFromState(state: ProjectState): string[] {
   return (Object.entries(state.recordings) as [string, RecordingState][])
     .filter(([_, recordingState]) => recordingState.safe !== true)
     .map(([filename]) => filename)
+}
+
+/**
+ * FR-120: Check if a recording is marked as parked (excluded from this edit)
+ */
+export function isRecordingParked(state: ProjectState, filename: string): boolean {
+  const recordingState = state.recordings[filename]
+  return recordingState?.parked === true
+}
+
+/**
+ * FR-120: Set the parked flag for a recording
+ * Returns the updated state (does not persist to disk)
+ */
+export function setRecordingParked(state: ProjectState, filename: string, parked: boolean): ProjectState {
+  const newState: ProjectState = {
+    ...state,
+    recordings: {
+      ...state.recordings,
+      [filename]: {
+        ...state.recordings[filename],
+        parked,
+      },
+    },
+  }
+
+  // Remove entry if all flags are default/false
+  const recordingState = newState.recordings[filename]
+  if (!recordingState.safe && !recordingState.parked && !recordingState.stage) {
+    delete newState.recordings[filename]
+  }
+
+  return newState
+}
+
+/**
+ * FR-120: Get list of parked recordings from state
+ */
+export function getParkedRecordings(state: ProjectState): string[] {
+  return (Object.entries(state.recordings) as [string, RecordingState][])
+    .filter(([_, recordingState]) => recordingState.parked === true)
+    .map(([filename]) => filename)
+}
+
+/**
+ * FR-123: Get annotation for a recording (if any)
+ */
+export function getRecordingAnnotation(state: ProjectState, filename: string): string | undefined {
+  const recordingState = state.recordings[filename]
+  return recordingState?.annotation
+}
+
+/**
+ * FR-118: Update project dictionary
+ * Returns the updated state (does not persist to disk)
+ */
+export function setProjectDictionary(state: ProjectState, words: string[]): ProjectState {
+  return {
+    ...state,
+    glingDictionary: words.length > 0 ? words : undefined,
+  }
 }

@@ -49,7 +49,7 @@ import type { Config, EnvironmentResponse } from '../../../shared/types.js';
  * Valid folder keys that can be opened.
  * This whitelist prevents arbitrary path execution.
  */
-type FolderKey = 'ecamm' | 'downloads' | 'recordings' | 'safe' | 'trash' | 'images' | 'thumbs' | 'transcripts' | 'project' | 'final' | 's3Staging' | 'inbox' | 'shadows' | 'chapters';
+type FolderKey = 'ecamm' | 'downloads' | 'recordings' | 'safe' | 'trash' | 'images' | 'thumbs' | 'transcripts' | 'project' | 'final' | 's3Staging' | 'inbox' | 'shadows' | 'chapters' | 'edit-1st';
 
 /**
  * FR-89 Part 3: Cross-platform file explorer opener
@@ -298,6 +298,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
       inbox: paths.inbox,
       shadows: path.join(projectPath, 'recording-shadows'),
       chapters: path.join(paths.recordings, '-chapters'),
+      'edit-1st': path.join(projectPath, 'edit-1st'),
     };
 
     const folderPath = folderMap[folder];

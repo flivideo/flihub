@@ -5,10 +5,15 @@ export interface FileInfo {
     size: number;
     duration?: number;
 }
+export interface ChapterFilter {
+    min?: number;
+    max?: number;
+}
 export interface CommonName {
     name: string;
     autoSequence?: boolean;
     suggestTags?: string[];
+    chapterFilter?: 'all' | ChapterFilter;
 }
 export interface Config {
     watchDirectory: string;
@@ -106,6 +111,7 @@ export interface RecordingFile {
     tags: string[];
     folder: 'recordings';
     isSafe: boolean;
+    isParked: boolean;
     isShadow?: boolean;
     hasShadow?: boolean;
     shadowSize?: number | null;
@@ -493,6 +499,7 @@ export interface QueryRecording {
     tags: string[];
     folder: 'recordings';
     isSafe: boolean;
+    isParked: boolean;
     size: number;
     duration: number | null;
     hasTranscript: boolean;
@@ -537,6 +544,20 @@ export interface SafeResponse {
 export interface RestoreResponse {
     success: boolean;
     restored?: string[];
+    count?: number;
+    errors?: string[];
+    error?: string;
+}
+export interface ParkResponse {
+    success: boolean;
+    parked?: string[];
+    count?: number;
+    errors?: string[];
+    error?: string;
+}
+export interface UnparkResponse {
+    success: boolean;
+    unparked?: string[];
     count?: number;
     errors?: string[];
     error?: string;
@@ -603,11 +624,13 @@ export interface EnvironmentResponse {
 }
 export interface RecordingState {
     safe?: boolean;
+    parked?: boolean;
     stage?: string;
 }
 export interface ProjectState {
     version: 1;
     recordings: Record<string, RecordingState>;
+    glingDictionary?: string[];
 }
 export interface ProjectStateResponse {
     success: boolean;

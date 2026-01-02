@@ -1,8 +1,8 @@
 # FR-125: Config & EditPrep Consolidation
 
-**Status:** Pending
+**Status:** Complete
 **Added:** 2026-01-02
-**Implemented:** -
+**Implemented:** 2026-01-02
 **Dependencies:** FR-124
 
 ---
@@ -143,4 +143,53 @@ Reuse existing endpoint:
 
 ## Completion Notes
 
-_To be filled by developer._
+**What was done:**
+
+1. **Export Panel Enhancements** - Added project dictionary editing with inline textarea
+   - Global dictionary: X words [Copy] button
+   - Project dictionary: Y words [Edit] [Copy] buttons
+   - Edit mode: Inline textarea with Save/Cancel buttons
+   - Combined dictionary: Z words [Copy All] button
+   - Visual separator between project and combined sections
+   - Word counts displayed for each type
+
+2. **Config Panel Cleanup** - Removed redundant project dictionary section
+   - Removed project dictionary textarea and state
+   - Removed useProjectState and useUpdateProjectDictionary imports
+   - Removed project dictionary initialization useEffect
+   - Removed project dictionary from hasChanges check
+   - Removed project dictionary save logic from handleSave
+   - Kept global dictionary (correct location)
+
+3. **EditPrep Modal Removal**
+   - Deleted `EditPrepPage.tsx` component
+   - Removed EditPrepPage import from App.tsx
+   - Removed showEditPrep state variable
+   - Removed EditPrepPage modal rendering
+   - Removed "Edit Prep" menu item from settings dropdown
+
+**Files changed:**
+- `client/src/components/ExportPanel.tsx` - Added project dictionary editing UI and handlers
+- `client/src/components/ConfigPanel.tsx` - Removed project dictionary section
+- `client/src/App.tsx` - Removed EditPrep references
+- `client/src/components/EditPrepPage.tsx` - DELETED
+
+**API changes:**
+- None required - `/api/edit/prep` already returns split dictionaries (globalDictionary, projectDictionary, glingDictionary)
+- Reuses existing `PATCH /api/projects/:code/state/dictionary` for updates
+
+**Testing notes:**
+1. Navigate to Export tab
+2. Click "Gling Prep Info" to expand
+3. Verify three dictionary sections display:
+   - Global: X words [Copy]
+   - Project: Y words [Edit] [Copy]
+   - Combined: Z words [Copy All]
+4. Click [Edit] on project dictionary
+5. Edit words in textarea
+6. Click [Save] - should update and show success toast
+7. Test all three copy buttons
+8. Verify EditPrep menu item is gone from settings dropdown
+9. Verify Config panel no longer has project dictionary section
+
+**Status:** Complete

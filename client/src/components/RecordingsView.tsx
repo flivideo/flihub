@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useRecordings, useMoveToSafe, useRestoreFromSafe, useTranscribeAll, useGenerateChapterRecordings, usePendingTranscriptionCount } from '../hooks/useApi'
+import { useRecordings, useMoveToSafe, useRestoreFromSafe, useParkRecording, useUnparkRecording, useTranscribeAll, useGenerateChapterRecordings, usePendingTranscriptionCount } from '../hooks/useApi'
 import { useRecordingsSocket, useChapterRecordingSocket } from '../hooks/useSocket'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { TranscriptModal } from './TranscriptModal'
@@ -15,11 +15,12 @@ import { formatFileSize, formatDuration, formatChapterTitle, formatTimestamp } f
 import { LoadingSpinner, ErrorMessage } from './shared'
 import { API_URL } from '../config'
 
-// FR-41: Group info with active/safe file counts and total duration
+// FR-41: Group info with active/safe/parked file counts and total duration
 interface ChapterGroup {
   files: RecordingFile[]
   activeCount: number
   safeCount: number
+  parkedCount: number  // FR-120: Count of parked files
   totalDuration: number  // Sum of all file durations in seconds
 }
 
@@ -48,7 +49,7 @@ function groupByChapter(recordings: RecordingFile[]): Map<string, ChapterGroup> 
     // Key by chapter number only
     const key = recording.chapter
     if (!groups.has(key)) {
-      groups.set(key, { files: [], activeCount: 0, safeCount: 0, totalDuration: 0 })
+      groups.set(key, { files: [], activeCount: 0, safeCount: 0, parkedCount: 0, totalDuration: 0 })
     }
     const group = groups.get(key)!
     group.files.push(recording)
@@ -56,9 +57,11 @@ function groupByChapter(recordings: RecordingFile[]): Map<string, ChapterGroup> 
     if (recording.duration != null) {
       group.totalDuration += recording.duration
     }
-    // FR-111: Use isSafe flag instead of folder check
+    // FR-111/FR-120: Count safe, parked, and active files
     if (recording.isSafe) {
       group.safeCount++
+    } else if (recording.isParked) {
+      group.parkedCount++
     } else {
       group.activeCount++
     }
@@ -257,12 +260,15 @@ export function RecordingsView() {
   const { data, isLoading, error } = useRecordings()
   const moveToSafe = useMoveToSafe()
   const restoreFromSafe = useRestoreFromSafe()
+  const parkRecording = useParkRecording()  // FR-120
+  const unparkRecording = useUnparkRecording()  // FR-120
   const transcribeAll = useTranscribeAll()
   const generateChapter = useGenerateChapterRecordings()
   // FR-92: Get count of files pending transcription
   const { data: pendingData } = usePendingTranscriptionCount()
   const pendingCount = pendingData?.pendingCount ?? 0
   const [showSafe, setShowSafe] = useState(true)
+  const [showParked, setShowParked] = useState(true)  // FR-120: Toggle for parked files
   const [viewingTranscript, setViewingTranscript] = useState<string | null>(null)
   // FR-47: State for editing chapter label
   // FR-111: Changed from folder to isSafe
@@ -368,6 +374,78 @@ export function RecordingsView() {
     })
   }
 
+  // FR-120: Handle parking a file
+  const handlePark = (filename: string) => {
+    parkRecording.mutate(
+      { files: [filename] },
+      {
+        onSuccess: (data) => {
+          if (data.success && data.count && data.count > 0) {
+            toast.success(`Parked ${filename}`)
+          } else if (data.errors?.length) {
+            toast.error(data.errors[0])
+          }
+        },
+        onError: (err) => {
+          toast.error(err.message || 'Failed to park file')
+        },
+      }
+    )
+  }
+
+  // FR-120: Handle unparking a file
+  const handleUnpark = (filename: string) => {
+    unparkRecording.mutate([filename], {
+      onSuccess: (data) => {
+        if (data.success && data.count && data.count > 0) {
+          toast.success(`Unparked ${filename}`)
+        } else if (data.errors?.length) {
+          toast.error(data.errors[0])
+        }
+      },
+      onError: (err) => {
+        toast.error(err.message || 'Failed to unpark file')
+      },
+    })
+  }
+
+  // FR-120: Handle parking all files in a chapter
+  const handleParkChapter = (chapter: string) => {
+    parkRecording.mutate(
+      { chapter },
+      {
+        onSuccess: (data) => {
+          if (data.success && data.count && data.count > 0) {
+            toast.success(`Parked ${data.count} file${data.count > 1 ? 's' : ''}`)
+          } else if (data.errors?.length) {
+            toast.error(data.errors[0])
+          }
+        },
+        onError: (err) => {
+          toast.error(err.message || 'Failed to park files')
+        },
+      }
+    )
+  }
+
+  // FR-120: Handle unparking all files in a chapter
+  const handleUnparkChapter = (filenames: string[]) => {
+    if (filenames.length === 0) return
+
+    unparkRecording.mutate(filenames, {
+      onSuccess: (result) => {
+        if (result.success && result.count && result.count > 0) {
+          toast.success(`Unparked ${result.count} file${result.count > 1 ? 's' : ''}`)
+        } else if (result.errors?.length) {
+          toast.error(result.errors[0])
+        }
+      },
+      onError: (err) => {
+        toast.error(err.message || 'Failed to unpark files')
+      },
+    })
+  }
+
   // Handle restoring all files in a chapter from safe
   const handleRestoreChapterFromSafe = (filenames: string[]) => {
     if (filenames.length === 0) return
@@ -424,13 +502,16 @@ export function RecordingsView() {
     )
   }
 
-  // Filter recordings based on showSafe toggle
-  // FR-111: Use isSafe flag instead of folder check
+  // Filter recordings based on showSafe and showParked toggles
+  // FR-111/FR-120: Filter by isSafe and isParked flags
   const filteredRecordings = useMemo(() => {
     if (!data?.recordings) return []
-    if (showSafe) return data.recordings
-    return data.recordings.filter(r => !r.isSafe)
-  }, [data?.recordings, showSafe])
+    return data.recordings.filter(r => {
+      if (!showSafe && r.isSafe) return false
+      if (!showParked && r.isParked) return false
+      return true
+    })
+  }, [data?.recordings, showSafe, showParked])
 
   // FR-41: Group recordings and calculate cumulative timing
   const chaptersWithTiming = useMemo(() => {
@@ -514,10 +595,11 @@ export function RecordingsView() {
     )
   }
 
-  // Count files by safe status (FR-111: Use isSafe flag)
+  // Count files by safe/parked status (FR-111/FR-120)
   const totalFiles = data.recordings.length
   const safeFiles = data.recordings.filter(r => r.isSafe).length
-  const activeFiles = totalFiles - safeFiles
+  const parkedFiles = data.recordings.filter(r => r.isParked).length
+  const activeFiles = totalFiles - safeFiles - parkedFiles
 
   return (
     <div>
@@ -526,7 +608,7 @@ export function RecordingsView() {
         <span className="text-gray-700 font-medium">
           {totalFiles} files
           <span className="font-normal text-gray-400 ml-1">
-            ({activeFiles} active, {safeFiles} safe)
+            ({activeFiles} active, {safeFiles} safe, {parkedFiles} parked)
           </span>
           {/* FR-35: Total duration in header */}
           {totalDuration > 0 && (
@@ -553,6 +635,15 @@ export function RecordingsView() {
             className="w-3 h-3 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
           />
           Safe
+        </label>
+        <label className="flex items-center gap-1.5 cursor-pointer hover:text-gray-700">
+          <input
+            type="checkbox"
+            checked={showParked}
+            onChange={(e) => setShowParked(e.target.checked)}
+            className="w-3 h-3 rounded border-gray-300 text-pink-500 focus:ring-pink-500"
+          />
+          Parked
         </label>
         {safeFiles > 0 && (
           <button
@@ -605,6 +696,9 @@ export function RecordingsView() {
           // FR-111: Use isSafe flag instead of folder check
           const safeFilesInChapter = group.files.filter(f => f.isSafe)
           const hasSafeFiles = safeFilesInChapter.length > 0
+          // FR-120: Track parked files in chapter
+          const parkedFilesInChapter = group.files.filter(f => f.isParked)
+          const hasParkedFiles = parkedFilesInChapter.length > 0
 
           return (
             <div
@@ -665,6 +759,25 @@ export function RecordingsView() {
                       ← Restore All
                     </button>
                   )}
+                  {/* FR-120: Park/Unpark chapter buttons */}
+                  {hasActiveFiles && (
+                    <button
+                      onClick={() => handleParkChapter(chapter)}
+                      disabled={parkRecording.isPending}
+                      className="text-xs text-gray-500 hover:text-pink-600 px-2 py-0.5 hover:bg-pink-50 rounded transition-colors disabled:opacity-50"
+                    >
+                      → Park All
+                    </button>
+                  )}
+                  {hasParkedFiles && (
+                    <button
+                      onClick={() => handleUnparkChapter(parkedFilesInChapter.map(f => f.filename))}
+                      disabled={unparkRecording.isPending}
+                      className="text-xs text-pink-600 hover:text-pink-700 px-2 py-0.5 hover:bg-pink-50 rounded transition-colors disabled:opacity-50"
+                    >
+                      ← Unpark All
+                    </button>
+                  )}
                   {/* FR-30 Enhancement: Transcribe chapter button */}
                   <button
                     onClick={() => handleTranscribeChapter(chapter)}
@@ -685,7 +798,7 @@ export function RecordingsView() {
                   // FR-88: Check if shadow-only file
                   const isShadow = 'isShadow' in file && file.isShadow
 
-                  // FR-83: Determine row styling based on folder and shadow status
+                  // FR-83/FR-111/FR-120: Determine row styling based on shadow/safe/parked status
                   let rowClasses: string
                   let textClasses: string
 
@@ -694,10 +807,15 @@ export function RecordingsView() {
                     rowClasses = 'bg-purple-50 border-purple-200'
                     textClasses = 'text-purple-700'
                   } else if (file.isSafe) {
-                    // FR-111: Use isSafe flag instead of folder check
+                    // FR-111: Safe files (green background)
                     rowClasses = 'bg-green-50 border-green-200 text-gray-500'
                     textClasses = 'text-gray-500'
+                  } else if (file.isParked) {
+                    // FR-120: Parked files (pink background)
+                    rowClasses = 'bg-pink-50 border-pink-200 text-gray-500'
+                    textClasses = 'text-gray-500'
                   } else {
+                    // Active files (blue background)
                     rowClasses = 'bg-blue-50 border-blue-200'
                     textClasses = 'text-gray-700'
                   }
@@ -739,9 +857,9 @@ export function RecordingsView() {
                           onViewTranscript={setViewingTranscript}
                         />
                         {/* Action buttons - disabled for shadow-only files */}
-                        {/* FR-111: Use isSafe flag instead of folder check */}
+                        {/* FR-111/FR-120: Safe and Park actions */}
                         {isShadow ? (
-                          <span className="text-xs text-gray-300 px-2 py-0.5" title="Move/Safe actions unavailable for shadow files">-</span>
+                          <span className="text-xs text-gray-300 px-2 py-0.5" title="Actions unavailable for shadow files">-</span>
                         ) : file.isSafe ? (
                           <button
                             onClick={() => handleRestore(file.filename)}
@@ -750,14 +868,31 @@ export function RecordingsView() {
                           >
                             ← Restore
                           </button>
-                        ) : (
+                        ) : file.isParked ? (
                           <button
-                            onClick={() => handleMoveToSafe(file.filename)}
-                            disabled={moveToSafe.isPending}
-                            className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-100 rounded transition-colors disabled:opacity-50"
+                            onClick={() => handleUnpark(file.filename)}
+                            disabled={unparkRecording.isPending}
+                            className="text-xs text-pink-600 hover:text-pink-700 px-2 py-0.5 hover:bg-pink-100 rounded transition-colors disabled:opacity-50"
                           >
-                            → Safe
+                            ← Unpark
                           </button>
+                        ) : (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleMoveToSafe(file.filename)}
+                              disabled={moveToSafe.isPending}
+                              className="text-xs text-gray-500 hover:text-green-600 px-2 py-0.5 hover:bg-green-100 rounded transition-colors disabled:opacity-50"
+                            >
+                              → Safe
+                            </button>
+                            <button
+                              onClick={() => handlePark(file.filename)}
+                              disabled={parkRecording.isPending}
+                              className="text-xs text-gray-500 hover:text-pink-600 px-2 py-0.5 hover:bg-pink-100 rounded transition-colors disabled:opacity-50"
+                            >
+                              → Park
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>

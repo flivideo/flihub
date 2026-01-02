@@ -4,6 +4,7 @@ import path from 'path'
 import fs from 'fs/promises'
 import type { Config } from '../../../shared/types.js'
 import { expandPath } from '../utils/pathUtils.js'
+import { readProjectState } from '../utils/projectState.js'
 
 export function createEditRoutes(getConfig: () => Config) {
   const router = express.Router()
@@ -63,6 +64,14 @@ export function createEditRoutes(getConfig: () => Config) {
 
       const allExist = editFolderStatus.every(f => f.exists)
 
+      // FR-118: Read project state for project-specific dictionary
+      const projectState = await readProjectState(projectPath)
+      const projectDictionary = projectState.glingDictionary || []
+      const globalDictionary = config.glingDictionary || []
+
+      // FR-118: Merge dictionaries - dedupe and sort alphabetically
+      const mergedDictionary = [...new Set([...globalDictionary, ...projectDictionary])].sort()
+
       res.json({
         success: true,
         project: {
@@ -71,7 +80,10 @@ export function createEditRoutes(getConfig: () => Config) {
           fullCode: projectCode
         },
         glingFilename: projectCode,
-        glingDictionary: config.glingDictionary || [],
+        glingDictionary: mergedDictionary,
+        // FR-118: Also return individual dictionaries for UI display
+        globalDictionary,
+        projectDictionary,
         recordings,
         recordingsTotal,
         editFolders: {
@@ -101,6 +113,34 @@ export function createEditRoutes(getConfig: () => Config) {
       }
 
       res.json({ success: true, folders: editFolders })
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) })
+    }
+  })
+
+  // FR-124: POST /api/edit/create-folder - Create a single edit folder
+  router.post('/create-folder', async (req, res) => {
+    try {
+      const config = getConfig()
+
+      if (!config.projectDirectory) {
+        return res.json({ success: false, error: 'No project selected' })
+      }
+
+      const { folder } = req.body as { folder: string }
+
+      // Validate folder name
+      const validFolders = ['edit-1st', 'edit-2nd', 'edit-final']
+      if (!validFolders.includes(folder)) {
+        return res.json({ success: false, error: 'Invalid folder name' })
+      }
+
+      const projectPath = expandPath(config.projectDirectory)
+      const folderPath = path.join(projectPath, folder)
+
+      await fs.mkdir(folderPath, { recursive: true })
+
+      res.json({ success: true, folder })
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) })
     }

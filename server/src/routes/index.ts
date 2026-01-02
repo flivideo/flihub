@@ -6,7 +6,7 @@ import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { createShadowFile, moveShadowFile, renameShadowFile, deleteShadowFile } from '../utils/shadowFiles.js';
-import { readProjectState, writeProjectState, setRecordingSafe, isRecordingSafe } from '../utils/projectState.js';
+import { readProjectState, writeProjectState, setRecordingSafe, isRecordingSafe, setRecordingParked, isRecordingParked, getRecordingAnnotation } from '../utils/projectState.js';
 import {
   NAMING_RULES,
   parseRecordingFilename,
@@ -429,8 +429,10 @@ export function createRoutes(
           // Extract name and tags
           const { name, tags } = extractNameAndTags(parsed.name);
 
-          // FR-111: Check state for isSafe flag
+          // FR-111/FR-120/FR-123: Check state for isSafe, isParked, and annotation
           const isSafe = isRecordingSafe(state, `${baseName}.mov`);
+          const isParked = isRecordingParked(state, `${baseName}.mov`);
+          const annotation = getRecordingAnnotation(state, `${baseName}.mov`);
 
           // Add as shadow-only entry (may be overwritten by real file)
           unifiedMap.set(baseName, {
@@ -445,6 +447,8 @@ export function createRoutes(
             tags,
             folder: 'recordings',  // FR-111: Always 'recordings' now
             isSafe,                // FR-111: From state file
+            isParked,              // FR-120: From state file
+            annotation,            // FR-123: From state file
             isShadow: true,
             hasShadow: true,  // Shadow-only files obviously have shadow
             shadowSize: stats.size,  // FR-95: Shadow-only, so shadow size = file size
@@ -475,8 +479,10 @@ export function createRoutes(
 
           const { name, tags } = extractNameAndTags(parsed.name);
 
-          // FR-111: Check state for isSafe flag
+          // FR-111/FR-120/FR-123: Check state for isSafe, isParked, and annotation
           const isSafe = isRecordingSafe(state, entry.name);
+          const isParked = isRecordingParked(state, entry.name);
+          const annotation = getRecordingAnnotation(state, entry.name);
 
           return {
             baseName,
@@ -492,6 +498,8 @@ export function createRoutes(
               tags,
               folder: 'recordings' as const,  // FR-111: Always 'recordings' now
               isSafe,                         // FR-111: From state file
+              isParked,                       // FR-120: From state file
+              annotation,                     // FR-123: From state file
               isShadow: false,
               hasShadow: !!shadowInfo,
               shadowSize: shadowInfo?.size ?? null,  // FR-95: Shadow file size (null if no shadow)
@@ -767,6 +775,127 @@ export function createRoutes(
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to restore files from safe',
+      });
+    }
+  });
+
+  // FR-120: POST /api/recordings/park - Mark file(s) as parked
+  router.post('/recordings/park', async (req: Request, res: Response) => {
+    const { files, chapter } = req.body;
+
+    if (!files && !chapter) {
+      res.status(400).json({ success: false, error: 'Either files array or chapter is required' });
+      return;
+    }
+
+    try {
+      const paths = getProjectPaths(expandPath(config.projectDirectory));
+
+      // Read current state
+      let state = await readProjectState(config.projectDirectory);
+
+      let filesToMark: string[] = [];
+
+      if (files && Array.isArray(files)) {
+        // Mark specific files
+        filesToMark = files;
+      } else if (chapter) {
+        // Mark all files in the chapter
+        const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
+        filesToMark = entries
+          .filter(e => e.isFile() && e.name.endsWith('.mov'))
+          .map(e => e.name)
+          .filter(name => {
+            const parsed = parseRecordingFilename(name);
+            return parsed && parsed.chapter === chapter;
+          });
+      }
+
+      const parked: string[] = [];
+      const errors: string[] = [];
+
+      for (const filename of filesToMark) {
+        const filePath = path.join(paths.recordings, filename);
+
+        try {
+          // Verify file exists
+          if (await fs.pathExists(filePath)) {
+            // Update state to mark as parked
+            state = setRecordingParked(state, filename, true);
+            parked.push(filename);
+            console.log(`[FR-120] Marked parked: ${filename}`);
+          } else {
+            errors.push(`File not found: ${filename}`);
+          }
+        } catch (err) {
+          errors.push(`Failed to mark ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        }
+      }
+
+      // Write updated state
+      await writeProjectState(config.projectDirectory, state);
+
+      res.json({
+        success: errors.length === 0,
+        parked,
+        count: parked.length,
+        errors: errors.length > 0 ? errors : undefined,
+      });
+    } catch (error) {
+      console.error('Error marking as parked:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to mark files as parked',
+      });
+    }
+  });
+
+  // FR-120: POST /api/recordings/unpark - Restore file(s) from parked state
+  router.post('/recordings/unpark', async (req: Request, res: Response) => {
+    const { files } = req.body;
+
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      res.status(400).json({ success: false, error: 'Files array is required' });
+      return;
+    }
+
+    try {
+      // Read current state
+      let state = await readProjectState(config.projectDirectory);
+
+      const unparked: string[] = [];
+      const errors: string[] = [];
+
+      for (const filename of files) {
+        try {
+          // Check if file is currently marked as parked
+          if (isRecordingParked(state, filename)) {
+            // Update state to mark as not parked (active)
+            state = setRecordingParked(state, filename, false);
+            unparked.push(filename);
+            console.log(`[FR-120] Unparked: ${filename}`);
+          } else {
+            errors.push(`File not marked as parked: ${filename}`);
+          }
+        } catch (err) {
+          errors.push(`Failed to unpark ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        }
+      }
+
+      // Write updated state
+      await writeProjectState(config.projectDirectory, state);
+
+      res.json({
+        success: errors.length === 0,
+        unparked,
+        count: unparked.length,
+        errors: errors.length > 0 ? errors : undefined,
+      });
+    } catch (error) {
+      console.error('Error unparking:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to unpark files',
       });
     }
   });
