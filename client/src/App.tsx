@@ -17,18 +17,19 @@ import { TranscriptionsPage } from './components/TranscriptionsPage'
 import { InboxPage } from './components/InboxPage'
 import { MockupsPage } from './components/MockupsPage'
 import { WatchPage } from './components/WatchPage'
-import { EditPrepPage } from './components/EditPrepPage'
 import { S3StagingPage } from './components/S3StagingPage'
+import { ExportPanel } from './components/ExportPanel'
 import { ChapterContextPanel } from './components/ChapterContextPanel'
 import { ConnectionIndicator } from './components/ConnectionIndicator'
 import { OpenFolderButton } from './components/shared'
 import { HeaderDropdown } from './components/HeaderDropdown'
 import { useOpenFolder } from './hooks/useOpenFolder'
+import ApiExplorer from './components/ApiExplorer'
 import type { FileInfo } from '../../shared/types'
 
-type ViewTab = 'incoming' | 'recordings' | 'watch' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'projects' | 'config' | 'mockups'
+type ViewTab = 'incoming' | 'recordings' | 'watch' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'export' | 'projects' | 'config' | 'mockups' | 'api-explorer'
 
-const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'watch', 'transcriptions', 'inbox', 'assets', 'thumbs', 'projects', 'config', 'mockups']
+const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'watch', 'transcriptions', 'inbox', 'assets', 'thumbs', 'export', 'projects', 'config', 'mockups', 'api-explorer']
 
 // FR-116: Config section focus targets
 export type ConfigFocusSection = 'common-names' | null
@@ -80,8 +81,6 @@ function App() {
   // FR-43: Project switcher dropdown state
   const [showProjectDropdown, setShowProjectDropdown] = useState(false)
   const projectDropdownRef = useRef<HTMLDivElement>(null)
-  // FR-102: Edit Prep modal state
-  const [showEditPrep, setShowEditPrep] = useState(false)
   // FR-103: S3 Staging modal state
   const [showS3Staging, setShowS3Staging] = useState(false)
   // FR-116: Config section focus (for quick navigation from other pages)
@@ -359,11 +358,6 @@ function App() {
         />
       )}
 
-      {/* FR-102: Edit Prep modal */}
-      {showEditPrep && (
-        <EditPrepPage onClose={() => setShowEditPrep(false)} />
-      )}
-
       {/* FR-103: S3 Staging modal */}
       {showS3Staging && (
         <S3StagingPage onClose={() => setShowS3Staging(false)} />
@@ -478,7 +472,7 @@ function App() {
             {/* FR-69: Settings dropdown */}
             <HeaderDropdown
               trigger={
-                <svg className={`w-5 h-5 ${activeTab === 'config' || activeTab === 'mockups' ? 'text-blue-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-5 h-5 ${activeTab === 'config' || activeTab === 'mockups' || activeTab === 'api-explorer' ? 'text-blue-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -496,14 +490,14 @@ function App() {
                   onClick: () => changeTab('mockups'),
                 },
                 {
-                  label: 'Edit Prep',
-                  icon: <span className="text-orange-500">🎬</span>,
-                  onClick: () => setShowEditPrep(true),
-                },
-                {
                   label: 'S3 Staging',
                   icon: <span className="text-blue-500">☁️</span>,
                   onClick: () => setShowS3Staging(true),
+                },
+                {
+                  label: 'API Explorer',
+                  icon: <span className="text-green-600">🔌</span>,
+                  onClick: () => changeTab('api-explorer'),
                 },
                 {
                   label: 'GitHub',
@@ -596,6 +590,16 @@ function App() {
               }`}
             >
               Thumbs
+            </button>
+            <button
+              onClick={() => changeTab('export')}
+              className={`text-sm transition-colors ${
+                activeTab === 'export'
+                  ? 'text-blue-600 font-medium'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Export
             </button>
             <button
               onClick={() => changeTab('projects')}
@@ -757,6 +761,14 @@ function App() {
           </section>
         )}
 
+        {/* FR-122: Export Tab */}
+        {activeTab === 'export' && (
+          <section>
+            <h2 className="text-lg font-medium text-gray-700 mb-4">Export for Gling AI</h2>
+            <ExportPanel />
+          </section>
+        )}
+
         {/* Projects Tab */}
         {activeTab === 'projects' && (
           <section>
@@ -779,6 +791,14 @@ function App() {
         {activeTab === 'mockups' && (
           <section>
             <MockupsPage />
+          </section>
+        )}
+
+        {/* API Explorer Tab - FR-119 */}
+        {activeTab === 'api-explorer' && (
+          <section>
+            <h2 className="text-lg font-medium text-gray-700 mb-4">API Explorer</h2>
+            <ApiExplorer currentProject={currentProjectCode} />
           </section>
         )}
 

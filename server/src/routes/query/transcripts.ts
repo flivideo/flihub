@@ -10,6 +10,7 @@ import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
 import { expandPath } from '../../utils/pathUtils.js';
+import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseRecordingFilename } from '../../../../shared/naming.js';
 import { readFileSafe } from '../../utils/filesystem.js';
@@ -25,17 +26,19 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
   // GET / - List transcripts for a project
   // ============================================
   router.get('/', async (req: Request, res: Response) => {
-    const { code } = req.params;
-    const { chapter: chapterFilter, include } = req.query;
+    const { code: codeInput } = req.params;
+    const { chapter: chapterFilter, segments: segmentsParam, include } = req.query;
     const includeContent = include === 'content';
-    const projectsDir = expandPath(PROJECTS_ROOT);
-    const projectPath = path.join(projectsDir, code);
 
     try {
-      if (!await fs.pathExists(projectPath)) {
-        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
+      const resolved = await resolveProjectCode(codeInput);
+      if (!resolved) {
+        res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
       }
+
+      const { code, path: projectPath } = resolved;
 
       const paths = getProjectPaths(projectPath);
       const transcripts: QueryTranscript[] = [];
@@ -104,6 +107,12 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
         filtered = filtered.filter(t => t.chapter === chapterNum || t.chapter === chapterFilter);
       }
 
+      // FR-119: Apply segments filter (comma-delimited: "1,2,3")
+      if (segmentsParam && typeof segmentsParam === 'string') {
+        const segments = segmentsParam.split(',').map(s => s.trim());
+        filtered = filtered.filter(t => segments.includes(t.sequence));
+      }
+
       // FR-53: ASCII format support
       if (req.query.format === 'text') {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -121,15 +130,17 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
   // GET /:recording - Get single transcript content
   // ============================================
   router.get('/:recording', async (req: Request, res: Response) => {
-    const { code, recording } = req.params;
-    const projectsDir = expandPath(PROJECTS_ROOT);
-    const projectPath = path.join(projectsDir, code);
+    const { code: codeInput, recording } = req.params;
 
     try {
-      if (!await fs.pathExists(projectPath)) {
-        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
+      const resolved = await resolveProjectCode(codeInput);
+      if (!resolved) {
+        res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
       }
+
+      const { code, path: projectPath } = resolved;
 
       const paths = getProjectPaths(projectPath);
 

@@ -11,6 +11,7 @@ import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
 import { expandPath } from '../../utils/pathUtils.js';
+import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseRecordingFilename, extractTagsFromName } from '../../../../shared/naming.js';
 import { readDirSafe, statSafe } from '../../utils/filesystem.js';
@@ -38,16 +39,19 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
   // GET / - List recordings for a project
   // ============================================
   router.get('/', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const { code: codeInput } = req.params;
+    console.log('[RECORDINGS API] ===== GET RECORDINGS REQUEST =====', codeInput);
     const { chapter: chapterFilter, 'missing-transcripts': missingFilter } = req.query;
-    const projectsDir = expandPath(PROJECTS_ROOT);
-    const projectPath = path.join(projectsDir, code);
 
     try {
-      if (!await fs.pathExists(projectPath)) {
-        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
+      const resolved = await resolveProjectCode(codeInput);
+      if (!resolved) {
+        res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
       }
+
+      const { code, path: projectPath } = resolved;
 
       const paths = getProjectPaths(projectPath);
 
@@ -61,8 +65,11 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
       const shadowSet = new Map<string, { size: number; duration: number | null }>();
 
       // FR-111: Read state file for safe flags
-      const { readProjectState, isRecordingSafe } = await import('../../utils/projectState.js');
+      // FR-120: Also check parked flags
+      // FR-123: Also get annotations
+      const { readProjectState, isRecordingSafe, isRecordingParked, getRecordingAnnotation } = await import('../../utils/projectState.js');
       const state = await readProjectState(projectPath);
+      console.log('[RECORDINGS API] State loaded:', JSON.stringify(state, null, 2));
 
       // Get transcript filenames for hasTranscript check
       // FR-94: .txt is the primary format - only .txt counts as "transcribed"
@@ -99,6 +106,9 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
 
         // Add as shadow-only entry (may be overwritten by real file)
+        const annotationValue = getRecordingAnnotation(state, `${baseName}.mov`);
+        console.log(`[RECORDINGS API] Shadow ${baseName}.mov - annotation:`, annotationValue);
+
         const recording: UnifiedRecording = {
           filename: `${baseName}.mov`,  // Report as .mov for consistency
           chapter: parsed.chapter,
@@ -107,6 +117,8 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
           tags,
           folder: 'recordings',  // FR-111: Always recordings
           isSafe: isRecordingSafe(state, `${baseName}.mov`),  // FR-111: From state
+          isParked: isRecordingParked(state, `${baseName}.mov`),  // FR-120: From state
+          annotation: annotationValue,  // FR-123: From state
           size: stat.size,
           duration: duration,
           hasTranscript: transcriptSet.has(baseName),
@@ -137,6 +149,9 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         const shadowInfo = shadowSet.get(baseName);
         const hasShadow = !!shadowInfo;
 
+        const annotationValue = getRecordingAnnotation(state, filename);
+        console.log(`[RECORDINGS API] Real ${filename} - annotation:`, annotationValue);
+
         const recording: UnifiedRecording = {
           filename,
           chapter: parsed.chapter,
@@ -145,6 +160,8 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
           tags,
           folder: 'recordings',  // FR-111: Always recordings
           isSafe: isRecordingSafe(state, filename),  // FR-111: From state
+          isParked: isRecordingParked(state, filename),  // FR-120: From state
+          annotation: annotationValue,  // FR-123: From state
           size: stat.size,
           duration: shadowInfo?.duration ?? null, // Use shadow duration if available
           hasTranscript: transcriptSet.has(baseName),
@@ -199,6 +216,12 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         return res.send(formatRecordingsReport(filtered, code));
       }
+
+      console.log('[RECORDINGS API] Final filtered recordings:', filtered.map(r => ({
+        filename: r.filename,
+        isParked: r.isParked,
+        annotation: r.annotation
+      })));
 
       res.json({
         success: true,

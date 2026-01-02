@@ -9,6 +9,7 @@ import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
 import { expandPath } from '../../utils/pathUtils.js';
+import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { getProjectStatsRaw } from '../../utils/projectStats.js';
 import { detectFinalMedia } from '../../utils/finalMedia.js';
@@ -38,16 +39,18 @@ export function createExportRoutes(getConfig: () => Config): Router {
   // GET / - Export project data
   // ============================================
   router.get('/', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const { code: codeInput } = req.params;
     const { include } = req.query;
-    const projectsDir = expandPath(PROJECTS_ROOT);
-    const projectPath = path.join(projectsDir, code);
 
     try {
-      if (!await fs.pathExists(projectPath)) {
-        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
+      const resolved = await resolveProjectCode(codeInput);
+      if (!resolved) {
+        res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
       }
+
+      const { code, path: projectPath } = resolved;
 
       // Parse include param
       const includeSections = include
@@ -102,8 +105,9 @@ export function createExportRoutes(getConfig: () => Config): Router {
           }
         }
 
-        // FR-111: Only scan recordings/ (no more -safe folder)
-        const { readProjectState, isRecordingSafe } = await import('../../utils/projectState.js');
+        // FR-111/FR-120: Only scan recordings/ (no more -safe folder)
+        // FR-123: Also get annotations
+        const { readProjectState, isRecordingSafe, isRecordingParked, getRecordingAnnotation } = await import('../../utils/projectState.js');
         const state = await readProjectState(projectPath);
 
         const files = await readDirSafe(paths.recordings);
@@ -129,6 +133,8 @@ export function createExportRoutes(getConfig: () => Config): Router {
             tags,
             folder: 'recordings',  // FR-111: Always recordings
             isSafe: isRecordingSafe(state, filename),  // FR-111: From state
+            isParked: isRecordingParked(state, filename),  // FR-120: From state
+            annotation: getRecordingAnnotation(state, filename),  // FR-123: From state
             size: stat.size,
             duration: null,
             hasTranscript: transcriptSet.has(baseName),

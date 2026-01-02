@@ -11,8 +11,11 @@ import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
 import { expandPath } from '../../utils/pathUtils.js';
+import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { getProjectStatsRaw } from '../../utils/projectStats.js';
+import { parseRecordingFilename } from '../../../../shared/naming.js';
+import { readFileSafe } from '../../utils/filesystem.js';
 import {
   countMovFiles,
   countTxtFiles,
@@ -244,19 +247,83 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
   });
 
   // ============================================
+  // FR-114: GET /:code/transcript/text - Combined transcript as plain text
+  // ============================================
+  router.get('/:code/transcript/text', async (req: Request, res: Response) => {
+    const { code: codeInput } = req.params;
+
+    try {
+      // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
+      const resolved = await resolveProjectCode(codeInput);
+      if (!resolved) {
+        res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
+        return;
+      }
+
+      const { code, path: projectPath } = resolved;
+
+      const paths = getProjectPaths(projectPath);
+
+      if (!await fs.pathExists(paths.transcripts)) {
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        return res.send('');
+      }
+
+      const files = await fs.readdir(paths.transcripts);
+      const transcriptFiles: { chapter: string; sequence: string; content: string }[] = [];
+
+      for (const filename of files) {
+        if (!filename.endsWith('.txt') || filename.endsWith('-chapter.txt')) continue;
+
+        const parsed = parseRecordingFilename(filename.replace('.txt', '.mov'));
+        if (!parsed) continue;
+
+        const filePath = path.join(paths.transcripts, filename);
+        const content = await readFileSafe(filePath);
+
+        if (content) {
+          transcriptFiles.push({
+            chapter: parsed.chapter,
+            sequence: parsed.sequence || '0',
+            content: content.trim(),
+          });
+        }
+      }
+
+      // Sort by chapter, sequence
+      transcriptFiles.sort((a, b) => {
+        const chapterCompare = parseInt(a.chapter, 10) - parseInt(b.chapter, 10);
+        if (chapterCompare !== 0) return chapterCompare;
+        return parseInt(a.sequence, 10) - parseInt(b.sequence, 10);
+      });
+
+      // Combine all transcripts with double newlines between them
+      const combinedText = transcriptFiles.map(t => t.content).join('\n\n');
+
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.send(combinedText);
+    } catch (error) {
+      console.error('Error getting combined transcript:', error);
+      res.status(500).json({ success: false, error: 'Failed to get transcript' });
+    }
+  });
+
+  // ============================================
   // GET /:code - Project detail
   // ============================================
   router.get('/:code', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const { code: codeInput } = req.params;
     const config = getConfig();
-    const projectsDir = expandPath(PROJECTS_ROOT);
-    const projectPath = path.join(projectsDir, code);
 
     try {
-      if (!await fs.pathExists(projectPath)) {
-        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
+      const resolved = await resolveProjectCode(codeInput);
+      if (!resolved) {
+        res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
       }
+
+      const { code, path: projectPath } = resolved;
 
       // NFR-9: Use shared utility for stats calculation
       const raw = await getProjectStatsRaw(projectPath, code, config, { includeFinalMedia: true });

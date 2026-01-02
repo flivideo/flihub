@@ -7,6 +7,7 @@ import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
 import { expandPath } from '../utils/pathUtils.js';
+import { resolveProjectCode } from '../utils/projectResolver.js';
 import { detectFinalMedia } from '../utils/finalMedia.js';
 import { extractChapters } from '../utils/chapterExtraction.js';
 import { verifyChapterWithLLM } from '../utils/llmVerification.js';
@@ -109,13 +110,21 @@ export function createProjectRoutes(
 
   // PUT /api/projects/:code/priority - Update project priority (pin/unpin)
   router.put('/:code/priority', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const { code: codeInput } = req.params;
     const { priority } = req.body;
 
     if (!['pinned', 'normal'].includes(priority)) {
       res.status(400).json({ success: false, error: 'Invalid priority value. Use "pinned" or "normal".' });
       return;
     }
+
+    // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
+    const resolved = await resolveProjectCode(codeInput);
+    if (!resolved) {
+      res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
+      return;
+    }
+    const { code } = resolved;
 
     const config = getConfig();
 

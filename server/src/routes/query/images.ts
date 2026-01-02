@@ -8,6 +8,7 @@ import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
 import { expandPath } from '../../utils/pathUtils.js';
+import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseImageFilename, compareImageAssets } from '../../../../shared/naming.js';
 import { formatImagesReport } from '../../utils/reporters.js';
@@ -22,16 +23,18 @@ export function createImagesRoutes(getConfig: () => Config): Router {
   // GET / - List images for a project
   // ============================================
   router.get('/', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const { code: codeInput } = req.params;
     const { chapter: chapterFilter } = req.query;
-    const projectsDir = expandPath(PROJECTS_ROOT);
-    const projectPath = path.join(projectsDir, code);
 
     try {
-      if (!await fs.pathExists(projectPath)) {
-        res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
+      const resolved = await resolveProjectCode(codeInput);
+      if (!resolved) {
+        res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
       }
+
+      const { code, path: projectPath } = resolved;
 
       const paths = getProjectPaths(projectPath);
       const images: QueryImage[] = [];
