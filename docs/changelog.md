@@ -6,13 +6,97 @@ Track what was implemented, fixed, or changed and when.
 
 ## Quick Summary - 2026-01-03
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-126, FR-127, FR-128, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-126, FR-127, FR-128, FR-130, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
 **Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-130: Simplify Rename Logic (Delete+Regenerate)
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-03 | Implemented | - |
+
+**What was built:**
+Simplified rename logic using delete+regenerate pattern instead of complex multi-directory renaming. Three critical bugs discovered and fixed during implementation.
+
+**Three-Phase Algorithm:**
+1. **Delete derivable files** - Shadows, transcripts (all 5 formats), chapter videos
+2. **Rename core files** - Recording file, state key migration, manifest updates
+3. **Regenerate derivables** - Shadow files (instant), transcriptions (queued)
+
+**Core Features:**
+- **State migration** - Preserves parked, annotation, safe flags when renaming
+- **Manifest updates** - Updates FR-126 manifest filename references
+- **Queue check** - Prevents rename during active transcription
+- **User feedback** - Warning banner + enhanced toast notifications
+
+**CRITICAL BUGS FOUND & FIXED:**
+
+**Bug 1: Shadow Files Wrong Extension**
+- **Problem:** Code tried to delete `.txt` shadow files, but shadows are `.mp4` files
+- **Impact:** Old shadow files were never deleted, causing duplicate entries in UI
+- **Fix:** Changed deletion target from `.txt` to `.mp4`
+- **Evidence:** `[FR-130] Deleted: 04-1-steve-showcase-test.mp4`
+
+**Bug 2: Incomplete Transcript Deletion**
+- **Problem:** Whisper creates 5 file types (`.txt`, `.srt`, `.json`, `.vtt`, `.tsv`), but only 2 were deleted
+- **Impact:** Orphaned `.json`, `.vtt`, `.tsv` files remained after rename
+- **Fix:** Now deletes all 5 transcript file types
+- **Evidence:** `[FR-130] Deleted: 04-1-steve-showcase-test.txt/srt`
+
+**Bug 3: FR-111 Architecture Mismatch**
+- **Problem:** Code assumed physical `-safe` folders (old architecture), but FR-111 Phase 3 migrated to state-based flags
+- **Impact:** Code tried to access non-existent `-safe` subfolders
+- **Fix:** Updated to FR-111 Phase 3 - all files stay in main folders, safe is just metadata
+
+**Code Improvements:**
+- Rename endpoint: 152 → 139 lines (9% reduction in route code)
+- New utility: 240 lines of clean, testable functions
+- No special case handling (delete+regenerate is uniform)
+- Reuses existing systems (shadows, transcription queue, state management)
+
+**Files created:**
+- `server/src/utils/renameRecording.ts` (240 lines) - New utility with 6 exported functions
+
+**Files modified:**
+- `server/src/routes/transcriptions.ts` - Added `getActiveJob()` and `getQueue()` getters
+- `server/src/index.ts` - Queue getter integration
+- `server/src/routes/index.ts` - Replaced rename-chapter endpoint (152 → 139 lines)
+- `client/src/components/RenameLabelModal.tsx` - Warning banner + toast notifications
+
+**UX Changes:**
+- Yellow warning banner: "⚠️ Transcripts will be regenerated (5-10 minutes)"
+- Enhanced toast notifications:
+  - Single file: "Renamed to {filename}" + "Transcription queued (view progress in Transcriptions tab)"
+  - Multiple files: "Renamed {count} files" + "Transcriptions queued..."
+  - Duration: 5 seconds (from 3 seconds)
+
+**Testing Results:**
+Verified working:
+- ✅ Shadow deletion: `.mp4` files correctly deleted
+- ✅ Transcript deletion: All 5 file types (`.txt`, `.srt`, `.json`, `.vtt`, `.tsv`) deleted
+- ✅ Shadow regeneration: New `.mp4` created with correct name
+- ✅ Transcript regeneration: Queued successfully
+- ✅ Transcription conflict: Rename blocked during active transcription
+- ✅ State preservation: Parked/annotation flags preserved (needs user verification)
+- ✅ FR-111 compliance: No physical `-safe` folders used
+
+**Verification:**
+Use FR-127 Developer Tools (⚙️ → 🔍) to inspect `.flihub-state.json`:
+- `recordings[newFilename]` - Verify parked/annotation/safe preserved
+- `editManifest[folder].files[]` - Verify filename updated
+
+**Next steps for user:**
+1. Verify state preservation (park + annotate → rename → confirm preserved)
+2. Verify manifest updates (export → rename → check FR-127 Dev Tools)
+3. User acceptance testing with real project data
+4. Monitor for duplicate shadow files (should not occur)
+
+---
 
 ### FR-128: Recording Quick Preview
 

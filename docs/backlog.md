@@ -10,8 +10,9 @@ Requirements index for FliHub.
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
+| FR-132 | [Dual Transcription System with Progress Tracking](prd/fr-132-dual-transcription-progress.md) | 2026-01-03 | Pending |
 | FR-131 | [Manage Panel with Bulk Rename & Regen Toolbar](prd/fr-131-manage-panel-bulk-rename.md) | 2026-01-03 | Pending |
-| FR-130 | [Simplify Rename Logic (Delete+Regenerate)](prd/fr-130-simplify-rename-delete-regenerate.md) | 2026-01-03 | Pending |
+| FR-130 | [Simplify Rename Logic (Delete+Regenerate)](prd/fr-130-simplify-rename-delete-regenerate.md) | 2026-01-03 | ✓ Implemented |
 | FR-128 | [Recording Quick Preview](prd/fr-128-recording-quick-preview.md) | 2026-01-03 | ✓ Implemented |
 | FR-127 | [Developer Drawer (Data Files Viewer)](prd/fr-127-developer-drawer.md) | 2026-01-02 | ✓ Implemented |
 | FR-126 | [Edit Folder Manifest & Cleanup](prd/fr-126-edit-folder-manifest.md) | 2026-01-02 | ✓ Implemented |

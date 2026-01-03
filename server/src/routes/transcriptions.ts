@@ -799,6 +799,15 @@ export function createTranscriptionRoutes(
     activeJob = null;
   }
 
-  // Export queueTranscription and killActiveProcess
-  return { router, queueTranscription, killActiveProcess };
+  // FR-130: Getters for queue state (used by rename logic to check conflicts)
+  function getActiveJob(): TranscriptionJob | null {
+    return activeJob;
+  }
+
+  function getQueue(): TranscriptionJob[] {
+    return queue;
+  }
+
+  // Export queueTranscription, killActiveProcess, and queue getters
+  return { router, queueTranscription, killActiveProcess, getActiveJob, getQueue };
 }

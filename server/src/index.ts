@@ -290,14 +290,16 @@ function updateConfig(newConfig: Partial<Config>): Config {
 }
 
 // FR-30: Setup transcription routes (must be before main routes to get queueTranscription)
-const { router: transcriptionRoutes, queueTranscription, killActiveProcess } = createTranscriptionRoutes(
+// FR-130: Also get queue getters for rename conflict detection
+const { router: transcriptionRoutes, queueTranscription, killActiveProcess, getActiveJob, getQueue } = createTranscriptionRoutes(
   () => currentConfig,
   io
 );
 app.use('/api/transcriptions', transcriptionRoutes);
 
 // Setup routes with config update callback and transcription queue function
-const routes = createRoutes(pendingFiles, currentConfig, updateConfig, queueTranscription);
+// FR-130: Also pass queue getters for rename conflict detection
+const routes = createRoutes(pendingFiles, currentConfig, updateConfig, queueTranscription, getActiveJob, getQueue);
 app.use('/api', routes);
 
 // FR-17: Setup asset routes for image management

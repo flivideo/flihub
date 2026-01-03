@@ -53,7 +53,25 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
       })
 
       if (result.success) {
-        toast.success(`Renamed ${result.renamedFiles.length} file(s)`)
+        // FR-130: Inform user about transcript regeneration
+        const fileCount = result.renamedFiles.length
+        if (fileCount === 1) {
+          toast.success(
+            `Renamed to ${result.renamedFiles[0]}`,
+            {
+              description: 'Transcription queued (view progress in Transcriptions tab)',
+              duration: 5000,
+            }
+          )
+        } else {
+          toast.success(
+            `Renamed ${fileCount} files`,
+            {
+              description: 'Transcriptions queued (view progress in Transcriptions tab)',
+              duration: 5000,
+            }
+          )
+        }
         onClose()
       } else {
         toast.error(result.error || 'Failed to rename')
@@ -135,7 +153,7 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
           {/* Files to rename */}
           <div>
             <label className="block text-sm text-gray-600 mb-1">
-              Files to rename ({chapterInfo.files.length} recordings + transcripts)
+              Files to rename ({chapterInfo.files.length} recordings)
             </label>
             <div className="max-h-40 overflow-y-auto border border-gray-200 rounded bg-gray-50">
               {chapterInfo.files.map((file, idx) => (
@@ -151,9 +169,19 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
                 </div>
               ))}
             </div>
-            <p className="text-xs text-gray-400 mt-1">
-              Associated transcript files will also be renamed
-            </p>
+          </div>
+
+          {/* FR-130: Warning about transcript regeneration */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+            <div className="flex items-start gap-2">
+              <span className="text-yellow-600 text-lg">⚠️</span>
+              <div className="text-sm text-yellow-800">
+                <p className="font-medium mb-1">Transcripts will be regenerated</p>
+                <p className="text-xs text-yellow-700">
+                  Existing transcripts will be deleted and re-queued. This may take 5-10 minutes depending on file count and duration.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 

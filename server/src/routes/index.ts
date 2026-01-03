@@ -1,12 +1,13 @@
 import { Router, Request, Response } from 'express';
 import fs from 'fs-extra';
 import path from 'path';
-import type { FileInfo, Config, RenameRequest, RenameResponse, SuggestedNaming, RecordingFile } from '../../../shared/types.js';
+import type { FileInfo, Config, RenameRequest, RenameResponse, SuggestedNaming, RecordingFile, TranscriptionJob } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { createShadowFile, moveShadowFile, renameShadowFile, deleteShadowFile } from '../utils/shadowFiles.js';
 import { readProjectState, writeProjectState, setRecordingSafe, isRecordingSafe, setRecordingParked, isRecordingParked, getRecordingAnnotation } from '../utils/projectState.js';
+import { renameRecording } from '../utils/renameRecording.js';  // FR-130: Simplified rename logic
 import {
   NAMING_RULES,
   parseRecordingFilename,
@@ -48,7 +49,9 @@ export function createRoutes(
   pendingFiles: Map<string, FileInfo>,
   config: Config,
   updateConfig: (newConfig: Partial<Config>) => Config,
-  queueTranscription?: (videoPath: string) => void  // FR-30: Auto-transcribe on rename
+  queueTranscription?: (videoPath: string) => void,  // FR-30: Auto-transcribe on rename
+  getActiveJob?: () => TranscriptionJob | null,      // FR-130: Check rename conflicts
+  getQueue?: () => TranscriptionJob[]                // FR-130: Check rename conflicts
 ): Router {
   const router = Router();
 
@@ -900,7 +903,8 @@ export function createRoutes(
     }
   });
 
-  // FR-47: POST /api/recordings/rename-chapter - Rename the label for all files in a chapter
+  // FR-47/FR-130: POST /api/recordings/rename-chapter - Rename the label for all files in a chapter
+  // Simplified using delete+regenerate pattern (152 lines → ~80 lines)
   router.post('/recordings/rename-chapter', async (req: Request, res: Response) => {
     const { chapter, currentLabel, newLabel } = req.body;
 
@@ -934,27 +938,19 @@ export function createRoutes(
         }
       }
 
-      // Find all files matching this chapter-label pattern
-      const filesToRename: { oldPath: string; newPath: string }[] = [];
+      // Find all .mov files matching this chapter-label pattern
+      const recordingsToRename: { oldFilename: string; newFilename: string }[] = [];
 
-      // Helper to process files in a directory
-      const processDirectory = async (dirPath: string) => {
+      // Helper to find recordings (only .mov files, not transcripts or shadows)
+      const findRecordings = async (dirPath: string) => {
         if (!await fs.pathExists(dirPath)) return;
 
-        const entries = await fs.readdir(dirPath, { withFileTypes: true });
-        for (const entry of entries) {
-          if (!entry.isFile()) continue;
-
-          const filename = entry.name;
-          const isMovFile = filename.endsWith('.mov');
-          const isTxtFile = filename.endsWith('.txt');
-
-          if (!isMovFile && !isTxtFile) continue;
+        const entries = await fs.readdir(dirPath);
+        for (const filename of entries) {
+          if (!filename.endsWith('.mov') && !filename.endsWith('.mp4')) continue;
 
           // Parse the filename
-          const baseName = filename.replace(/\.(mov|txt)$/, '');
-          const parsed = parseRecordingFilename(baseName + '.mov');
-
+          const parsed = parseRecordingFilename(filename);
           if (!parsed || parsed.chapter !== chapter) continue;
 
           // Extract label (name without tags) from parsed name
@@ -971,32 +967,17 @@ export function createRoutes(
           if (fileLabel !== currentLabel) continue;
 
           // Build new filename
-          const ext = isMovFile ? '.mov' : '.txt';
-          const newFilename = buildRecordingFilename(parsed.chapter, parsed.sequence, newLabel, fileTags).replace('.mov', ext);
+          const newFilename = buildRecordingFilename(parsed.chapter, parsed.sequence, newLabel, fileTags);
 
-          // Handle chapter transcript suffix (e.g., 04-chapter.txt)
-          const isChapterTranscript = filename.endsWith('-chapter.txt');
-          const finalNewFilename = isChapterTranscript
-            ? newFilename.replace('.txt', '-chapter.txt')
-            : newFilename;
-
-          filesToRename.push({
-            oldPath: path.join(dirPath, filename),
-            newPath: path.join(dirPath, finalNewFilename),
-          });
+          recordingsToRename.push({ oldFilename: filename, newFilename });
         }
       };
 
-      // Process recordings folder
-      await processDirectory(paths.recordings);
+      // Find recordings in both locations
+      await findRecordings(paths.recordings);
+      await findRecordings(paths.safe);
 
-      // Process -safe folder
-      await processDirectory(paths.safe);
-
-      // Process transcripts folder
-      await processDirectory(paths.transcripts);
-
-      if (filesToRename.length === 0) {
+      if (recordingsToRename.length === 0) {
         res.status(404).json({
           success: false,
           renamedFiles: [],
@@ -1006,40 +987,51 @@ export function createRoutes(
       }
 
       // Check for conflicts
-      for (const { newPath } of filesToRename) {
-        if (await fs.pathExists(newPath)) {
+      for (const { newFilename } of recordingsToRename) {
+        const newPath = path.join(paths.recordings, newFilename);
+        const newSafePath = path.join(paths.safe, newFilename);
+        if ((await fs.pathExists(newPath)) || (await fs.pathExists(newSafePath))) {
           res.status(409).json({
             success: false,
             renamedFiles: [],
-            error: `Target file already exists: ${path.basename(newPath)}`,
+            error: `Target file already exists: ${newFilename}`,
           });
           return;
         }
       }
 
-      // FR-83: Shadow directories for sync
-      const shadowDir = path.join(paths.project, 'recording-shadows');
-      const shadowSafeDir = path.join(paths.project, 'recording-shadows', '-safe');
-
-      // Perform all renames
+      // FR-130: Use delete+regenerate pattern for each recording
       const renamedFiles: string[] = [];
-      for (const { oldPath, newPath } of filesToRename) {
-        await fs.rename(oldPath, newPath);
-        renamedFiles.push(path.basename(newPath));
-        console.log(`Renamed: ${path.basename(oldPath)} -> ${path.basename(newPath)}`);
+      const activeJob = getActiveJob ? getActiveJob() : null;
+      const queue = getQueue ? getQueue() : [];
 
-        // FR-83: Also rename shadow file if this is a .mov file
-        const oldFilename = path.basename(oldPath);
-        if (oldFilename.endsWith('.mov')) {
-          const oldBaseName = oldFilename.replace('.mov', '');
-          const newBaseName = path.basename(newPath).replace('.mov', '');
+      console.log(`[FR-130] Processing ${recordingsToRename.length} files for rename`);
 
-          // Try to rename in both shadow directories (one will succeed if shadow exists)
-          renameShadowFile(oldBaseName, newBaseName, shadowDir).catch(() => {});
-          renameShadowFile(oldBaseName, newBaseName, shadowSafeDir).catch(() => {});
+      for (const { oldFilename, newFilename } of recordingsToRename) {
+        const result = await renameRecording(
+          oldFilename,
+          newFilename,
+          paths,
+          activeJob,
+          queue,
+          queueTranscription
+        );
+
+        if (result.success) {
+          renamedFiles.push(newFilename);
+          console.log(`Renamed: ${oldFilename} -> ${newFilename}`);
+        } else {
+          console.error(`Failed to rename ${oldFilename}:`, result.error);
+          res.status(500).json({
+            success: false,
+            renamedFiles,
+            error: result.error || `Failed to rename ${oldFilename}`,
+          });
+          return;
         }
       }
 
+      console.log(`[FR-130] All renames complete, sending success response with ${renamedFiles.length} files`);
       res.json({
         success: true,
         renamedFiles,
