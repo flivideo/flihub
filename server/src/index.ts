@@ -299,7 +299,8 @@ app.use('/api/transcriptions', transcriptionRoutes);
 
 // Setup routes with config update callback and transcription queue function
 // FR-130: Also pass queue getters for rename conflict detection
-const routes = createRoutes(pendingFiles, currentConfig, updateConfig, queueTranscription, getActiveJob, getQueue);
+// Socket.IO for real-time state updates (park/unpark)
+const routes = createRoutes(pendingFiles, currentConfig, updateConfig, queueTranscription, getActiveJob, getQueue, io);
 app.use('/api', routes);
 
 // FR-17: Setup asset routes for image management

@@ -119,9 +119,9 @@ export function setRecordingSafe(state: ProjectState, filename: string, safe: bo
     },
   }
 
-  // Remove entry if all flags are default/false
+  // Remove entry if all flags are default/false and no annotation
   const recordingState = newState.recordings[filename]
-  if (!recordingState.safe && !recordingState.parked && !recordingState.stage) {
+  if (!recordingState.safe && !recordingState.parked && !recordingState.stage && !recordingState.annotation) {
     delete newState.recordings[filename]
   }
 
@@ -205,9 +205,9 @@ export function setRecordingParked(state: ProjectState, filename: string, parked
     },
   }
 
-  // Remove entry if all flags are default/false
+  // Remove entry if all flags are default/false and no annotation
   const recordingState = newState.recordings[filename]
-  if (!recordingState.safe && !recordingState.parked && !recordingState.stage) {
+  if (!recordingState.safe && !recordingState.parked && !recordingState.stage && !recordingState.annotation) {
     delete newState.recordings[filename]
   }
 

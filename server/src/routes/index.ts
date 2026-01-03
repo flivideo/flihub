@@ -51,7 +51,8 @@ export function createRoutes(
   updateConfig: (newConfig: Partial<Config>) => Config,
   queueTranscription?: (videoPath: string) => void,  // FR-30: Auto-transcribe on rename
   getActiveJob?: () => TranscriptionJob | null,      // FR-130: Check rename conflicts
-  getQueue?: () => TranscriptionJob[]                // FR-130: Check rename conflicts
+  getQueue?: () => TranscriptionJob[],               // FR-130: Check rename conflicts
+  io?: import('socket.io').Server<import('../../../shared/types.js').ClientToServerEvents, import('../../../shared/types.js').ServerToClientEvents>  // Socket.IO for real-time updates
 ): Router {
   const router = Router();
 
@@ -716,6 +717,11 @@ export function createRoutes(
       // Write updated state
       await writeProjectState(config.projectDirectory, state);
 
+      // Emit socket event for real-time UI updates
+      if (io) {
+        io.emit('recordings:changed');
+      }
+
       res.json({
         success: errors.length === 0,
         moved: marked,  // Keep 'moved' for API compatibility
@@ -766,6 +772,11 @@ export function createRoutes(
 
       // Write updated state
       await writeProjectState(config.projectDirectory, state);
+
+      // Emit socket event for real-time UI updates
+      if (io) {
+        io.emit('recordings:changed');
+      }
 
       res.json({
         success: errors.length === 0,
@@ -838,6 +849,11 @@ export function createRoutes(
       // Write updated state
       await writeProjectState(config.projectDirectory, state);
 
+      // Emit socket event for real-time UI updates
+      if (io) {
+        io.emit('recordings:changed');
+      }
+
       res.json({
         success: errors.length === 0,
         parked,
@@ -887,6 +903,11 @@ export function createRoutes(
 
       // Write updated state
       await writeProjectState(config.projectDirectory, state);
+
+      // Emit socket event for real-time UI updates
+      if (io) {
+        io.emit('recordings:changed');
+      }
 
       res.json({
         success: errors.length === 0,

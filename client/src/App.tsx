@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { Toaster, toast } from 'sonner'
-import { useSocket, useRecordingsSocket } from './hooks/useSocket'
+import { useSocket, useRecordingsSocket, useDeveloperSocket } from './hooks/useSocket'
 import { useConfig, useSuggestedNaming, useTrashFile, useProjects, useUpdateConfig, useRefetchSuggestedNaming, useRecentRenames, useUndoRename, useRecordings } from './hooks/useApi'
 import { useBestTake } from './hooks/useBestTake'
 import { discardFiles } from './utils/fileActions'
@@ -111,6 +111,8 @@ function App() {
   const { data: recordingsData } = useRecordings()
   // FR-115: Real-time updates for recordings (invalidates cache on socket event)
   useRecordingsSocket()
+  // FR-127: Real-time updates for developer tools (invalidates cache on socket event)
+  useDeveloperSocket()
   // NFR-6: Track project directory changes
   const previousProjectDir = useRef<string | undefined>(undefined)
 

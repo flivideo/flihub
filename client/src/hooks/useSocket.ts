@@ -257,3 +257,24 @@ export function useTranscriptsSocket() {
     }
   }, [queryClient])
 }
+
+// FR-127: Hook for developer drawer socket events - auto-refresh on state changes
+export function useDeveloperSocket() {
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    const socket = getSocket()
+
+    const handleRecordingsChanged = () => {
+      console.log('Socket: recordings:changed - invalidating developer tools cache')
+      // Invalidate project state when recordings state changes
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.developerProjectState })
+    }
+
+    socket.on('recordings:changed', handleRecordingsChanged)
+
+    return () => {
+      socket.off('recordings:changed', handleRecordingsChanged)
+    }
+  }, [queryClient])
+}

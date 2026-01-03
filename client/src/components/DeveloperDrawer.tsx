@@ -50,7 +50,7 @@ export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProp
   const [isResizing, setIsResizing] = useState(false)
   const queryClient = useQueryClient()
 
-  // Fetch data
+  // Fetch data (FR-127: Socket listener is at App level)
   const projectState = useDeveloperProjectState()
   const config = useDeveloperConfig()
   const telemetry = useDeveloperTelemetry()
