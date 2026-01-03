@@ -11,8 +11,8 @@ Requirements index for FliHub.
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
 | FR-128 | [Recording Quick Preview](prd/fr-128-recording-quick-preview.md) | 2026-01-03 | With Developer |
-| FR-127 | [Developer Drawer (Data Files Viewer)](prd/fr-127-developer-drawer.md) | 2026-01-02 | With Developer |
-| FR-126 | [Edit Folder Manifest & Cleanup](prd/fr-126-edit-folder-manifest.md) | 2026-01-02 | With Developer |
+| FR-127 | [Developer Drawer (Data Files Viewer)](prd/fr-127-developer-drawer.md) | 2026-01-02 | ✓ Implemented |
+| FR-126 | [Edit Folder Manifest & Cleanup](prd/fr-126-edit-folder-manifest.md) | 2026-01-02 | ✓ Implemented |
 | FR-125 | [Config & EditPrep Consolidation](prd/fr-125-config-editprep-consolidation.md) | 2026-01-02 | ✓ Implemented |
 | FR-124 | [Export Panel Enhancements](prd/fr-124-export-panel-enhancements.md) | 2026-01-02 | ✓ Implemented |
 | FR-123 | [Watch Panel Enhancements](prd/fr-123-per-segment-annotation.md) | 2026-01-02 | ✓ Implemented |

@@ -4,15 +4,174 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
-## Quick Summary - 2026-01-02
+## Quick Summary - 2026-01-03
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-126, FR-127, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
-**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), FR-126 (Edit Folder Manifest), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
+**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-127: Developer Drawer (Data Files Viewer)
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-03 | Implemented | 7f5462c |
+
+**What was built:**
+Professional developer tools drawer with Monaco Editor integration for viewing and debugging internal JSON files without leaving FliHub.
+
+**Core Features:**
+- Monaco Editor integration (VSCode's actual editor)
+  - Perfect syntax highlighting (VSCode Dark+ theme)
+  - Collapsible JSON sections with +/- icons
+  - Line numbers and professional code viewing
+  - Read-only mode prevents accidental edits
+
+- Resizable drawer
+  - 800px default width (resizable 300-1000px)
+  - Drag left edge to resize
+  - Width persists to localStorage
+  - No black overlay - slides over content without blocking app
+
+- Tab navigation
+  - Three tabs: `.flihub-state.json` | `config.json` | `telemetry.jsonl`
+  - Simple, clean navigation (rejected tree view)
+  - File metadata: path, size, modified date, line count
+
+- Actions
+  - Copy JSON - Copies formatted JSON to clipboard
+  - Open in Editor - Opens file in default text editor (VSCode, TextEdit, etc.)
+  - Refresh - Reloads file content from disk
+  - Sticky action bar always visible while scrolling
+
+**Access:**
+- Cog menu (⚙️) → 🔍 Developer Tools
+- Escape key closes drawer
+
+**Use Cases:**
+- Debug application state
+- Verify FR-126 manifest creation
+- Inspect configuration
+- Review transcription performance
+- Support debugging
+
+**Files created:**
+- `client/src/components/DeveloperDrawer.tsx` (307 lines)
+- `server/src/routes/developer.ts` (195 lines)
+
+**Files modified:**
+- `server/src/index.ts` - Registered developer routes
+- `server/src/routes/system.ts` - Added `POST /api/system/open-file-by-path`
+- `client/src/App.tsx` - Drawer state, menu item, component render
+- `client/src/hooks/useApi.ts` - Added 3 hooks
+- `client/src/constants/queryKeys.ts` - Developer query keys
+
+**API Endpoints:**
+- `GET /api/developer/project-state` - Returns `.flihub-state.json`
+- `GET /api/developer/config` - Returns `config.json`
+- `GET /api/developer/telemetry` - Returns `transcription-telemetry.jsonl`
+- `POST /api/system/open-file-by-path` - Opens file in default editor
+
+**Dependencies:**
+- `@monaco-editor/react` - VSCode editor component
+
+**Design Iterations:**
+1. Custom JSON viewer ❌
+2. @uiw/react-json-view ❌
+3. react-json-view-lite ❌
+4. Monaco Editor ✅ (Perfect VSCode experience)
+
+**Time:** ~6-7 hours (within 5-7 hour estimate)
+
+**User impact:**
+- Developers can debug state without leaving app
+- Exactly matches VSCode's JSON viewing experience
+- Essential tool for FR-126 manifest verification
+- Professional developer experience
+
+---
+
+### FR-126: Edit Folder Manifest & Cleanup
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-03 | Implemented | 5229de0 |
+
+**What was built:**
+Manifest-based copy tracking system with clean/restore operations to save disk space after exporting files to Gling.
+
+**Core Features:**
+1. **Manifest Creation** (automatic during copy)
+   - Tracks which files were copied to edit folders
+   - SHA-256 hash of first 1MB (fast change detection)
+   - Timestamp and size metadata
+   - Stored in `.flihub-state.json` under `editManifest`
+
+2. **Clean Edit Folder** (new button)
+   - Deletes source `.mov/.mp4` files from edit folders
+   - Preserves Gling output files (not in manifest)
+   - Shows confirmation with size savings
+   - Manifest remains intact for restore
+
+3. **Restore for Gling** (new button)
+   - Re-copies original files from `recordings/` → edit folder
+   - Validates originals exist before copying
+   - Warns if originals changed (hash mismatch)
+   - Atomic operation (all or nothing)
+
+**Status Indicators:**
+- 🟢 Present (X.X GB) - Source files exist in edit folder
+- 🔴 Cleaned - Source files deleted, ready to restore
+- ⚠️ Changed (N files) - Originals modified since copy
+- ❌ Missing (N files) - Originals no longer exist
+
+**Example workflow:**
+1. Copy 12 files to Gling → Edit → Clean (saves 2.4 GB)
+2. Gling crashes or session closes
+3. Restore with 1 click → Continue editing
+4. No need to remember which files were selected
+
+**Files created:**
+- `server/src/utils/editManifest.ts` (230 lines)
+  - `calculateFileHash()` - SHA-256 hash
+  - `createManifest()` - Generate manifest
+  - `getManifestStatus()` - Check state
+  - `cleanEditFolder()` - Delete sources
+  - `restoreEditFolder()` - Re-copy from recordings
+
+**Files modified:**
+- `shared/types.ts` (+90 lines) - Manifest types
+- `server/src/utils/projectState.ts` (+28 lines) - Manifest helpers
+- `server/src/routes/export.ts` (+180 lines) - New endpoints
+- `client/src/hooks/useEditApi.ts` (+55 lines) - Query hooks
+- `client/src/components/ExportPanel.tsx` (+105 lines) - UI
+
+**API Endpoints:**
+- `GET /api/export/manifest-status/:folder` - Returns status
+- `POST /api/export/clean-edit-folder` - Delete source files
+- `POST /api/export/restore-edit-folder` - Restore from manifest
+- Enhanced: `POST /api/export/copy-to-gling` - Creates manifest
+
+**Value:**
+- Disk space savings: 2-10 GB per project during editing
+- Safe: Originals never touched in recordings/
+- Manifest provides audit trail
+- Can restore anytime
+- Gling outputs automatically preserved
+
+**Critical bug fixed during development:**
+- Missing .js extension in imports (TypeScript ES modules)
+- Wrong fs API usage (callback-based vs. promise-based)
+- Missing type annotations
+- Server compiles cleanly after fixes
+
+**Verification via FR-127:**
+Users can now verify manifest creation by opening Developer Tools and inspecting `.flihub-state.json` → `editManifest` section.
+
+---
 
 ### FR-119: API Documentation & Testing Page
 
