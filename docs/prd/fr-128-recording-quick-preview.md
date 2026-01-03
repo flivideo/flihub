@@ -1,8 +1,8 @@
 # FR-128: Recording Quick Preview
 
-**Status:** With Developer
+**Status:** ✓ Complete
 **Added:** 2026-01-03
-**Implemented:** -
+**Implemented:** 2026-01-03
 **Dependencies:** None (complements FR-106)
 
 ---
@@ -341,4 +341,43 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
 
 ## Completion Notes
 
-_To be filled by developer upon completion._
+**What was done:**
+- Created `RecordingVideoModal.tsx` component (cloned from IncomingVideoModal)
+- Added play button (▶) to left side of each recording row in RecordingsView
+- Implemented `GET /api/video/recordings/:filename` endpoint in server/routes/video.ts
+- Play button disabled for shadow-only files with tooltip
+- Modal includes video player with playback speed controls (1x, 1.5x, 2x, 2.5x, 3x)
+- Speed persists to localStorage and is shared with Incoming and Watch pages
+- Escape key and overlay click close the modal
+
+**Files changed:**
+- `client/src/components/RecordingVideoModal.tsx` (new, 196 lines)
+- `client/src/components/RecordingsView.tsx` (modified)
+  - Import RecordingVideoModal
+  - Add state: `previewRecording`
+  - Add play button to file row before filename
+  - Render RecordingVideoModal when previewRecording is set
+- `server/src/routes/video.ts` (modified)
+  - Add `GET /api/video/recordings/:filename` endpoint
+  - Range request support for video seeking
+  - Security validation (no path traversal, .mov/.mp4 only)
+
+**API Endpoint:**
+- `GET /api/video/recordings/:filename`
+  - Serves video from `{projectDirectory}/recordings/{filename}`
+  - Supports HTTP Range requests for seeking
+  - Returns 404 if file not found
+  - Returns 400 for invalid filenames or file types
+
+**Testing notes:**
+- Play button appears on all recording rows
+- Button is disabled (grayed out) for shadow-only files
+- Clicking play button opens modal with video player
+- Video plays automatically at saved playback speed (default 2x)
+- Speed controls work and persist across sessions
+- Modal closes with Escape key or clicking overlay
+- Video streaming works with seek/scrub controls
+
+**Status:** Complete
+
+**Implementation time:** ~2 hours (as estimated)

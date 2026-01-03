@@ -6,13 +6,76 @@ Track what was implemented, fixed, or changed and when.
 
 ## Quick Summary - 2026-01-03
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-126, FR-127, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-126, FR-127, FR-128, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
 **Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-128: Recording Quick Preview
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-03 | Implemented | - |
+
+**What was built:**
+Added a play button (▶) to each recording row on the Recordings page that opens a video preview modal with playback speed controls.
+
+**Core Features:**
+- **Play Button**
+  - Positioned at left side of each recording row (before filename)
+  - Blue ▶ icon with hover state
+  - Disabled (grayed with tooltip) for shadow-only files
+  - Tooltip: "Video not available locally"
+
+- **RecordingVideoModal Component**
+  - Cloned from IncomingVideoModal pattern
+  - Video player with 16:9 aspect ratio
+  - Autoplay on open
+  - HTML5 video controls (play/pause, scrubbing, volume)
+  - Range request support for seeking
+
+- **Playback Speed Controls**
+  - Presets: 1x, 1.5x, 2x, 2.5x, 3x
+  - Default: 2x (or last saved speed)
+  - Speed persists to localStorage: `flihub:watch:playbackSpeed`
+  - Shared across Incoming, Watch, and Recordings preview
+
+- **Metadata Display**
+  - Filename in modal header
+  - Duration and file size in controls bar
+  - Close button (X) in top-right
+
+- **Keyboard Shortcuts**
+  - Escape key closes modal
+  - Click overlay (dark background) closes modal
+
+**Files created:**
+- `client/src/components/RecordingVideoModal.tsx` (196 lines)
+
+**Files modified:**
+- `client/src/components/RecordingsView.tsx` - Added play button, modal state, component render
+- `server/src/routes/video.ts` - Added `GET /api/video/recordings/:filename` endpoint
+
+**API Endpoint:**
+- `GET /api/video/recordings/:filename` - Serves video from project recordings folder with Range request support
+
+**Implementation time:** ~2 hours (matched estimate)
+
+**User impact:**
+- Quick video preview without leaving Recordings page
+- Consistent UX with Incoming page preview
+- Faster decision-making during recording review
+- No navigation required for spot-checks
+
+**Complements:**
+- FR-106: Incoming Video Preview (same modal pattern)
+- FR-71: Watch Page (alternative deep-review workflow)
+- FR-88: Shadow Fallback (disabled state for shadow files)
+
+---
 
 ### FR-127: Developer Drawer (Data Files Viewer)
 

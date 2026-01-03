@@ -9,6 +9,7 @@ import { VideoTranscriptModal } from './VideoTranscriptModal'
 import { RenameLabelModal } from './RenameLabelModal'
 import { ChapterPanel } from './ChapterPanel'
 import { ChapterRecordingModal } from './ChapterRecordingModal'
+import { RecordingVideoModal } from './RecordingVideoModal'
 import type { RecordingFile, TranscriptionStatusResponse } from '../../../shared/types'
 import { extractTagsFromName } from '../../../shared/naming'
 import { formatFileSize, formatDuration, formatChapterTitle, formatTimestamp } from '../utils/formatting'
@@ -283,6 +284,9 @@ export function RecordingsView() {
 
   // FR-58: State for chapter recording modal
   const [showChapterRecording, setShowChapterRecording] = useState(false)
+
+  // FR-128: State for recording preview modal
+  const [previewRecording, setPreviewRecording] = useState<RecordingFile | null>(null)
 
   // FR-56: Refs and state for chapter navigation panel
   const chapterRefs = useRef<Map<string, HTMLDivElement>>(new Map())
@@ -826,6 +830,17 @@ export function RecordingsView() {
                       className={`flex items-center justify-between px-4 py-2 rounded-lg border ${rowClasses}`}
                     >
                       <div className="flex items-center gap-3">
+                        {/* FR-128: Play button for video preview */}
+                        <button
+                          onClick={() => setPreviewRecording(file)}
+                          disabled={isShadow}
+                          className={`text-blue-600 hover:text-blue-700 transition-colors ${
+                            isShadow ? 'opacity-30 cursor-not-allowed' : ''
+                          }`}
+                          title={isShadow ? 'Video not available locally' : 'Preview recording'}
+                        >
+                          ▶
+                        </button>
                         {/* FR-88: Only show ghost icon for shadow-only files */}
                         {isShadow && (
                           <span className="text-sm" title="Shadow only - video not available locally">👻</span>
@@ -954,6 +969,16 @@ export function RecordingsView() {
       {showChapterRecording && (
         <ChapterRecordingModal
           onClose={() => setShowChapterRecording(false)}
+        />
+      )}
+
+      {/* FR-128: Recording Preview Modal */}
+      {previewRecording && (
+        <RecordingVideoModal
+          filename={previewRecording.filename}
+          duration={previewRecording.duration}
+          size={previewRecording.size}
+          onClose={() => setPreviewRecording(null)}
         />
       )}
 
