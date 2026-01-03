@@ -30,6 +30,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
   const [paramValues, setParamValues] = useState<ParamValues>({})
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [copiedCurl, setCopiedCurl] = useState<string | null>(null)
 
   const endpointGroups = useMemo(() => getEndpointGroups(), [])
 
@@ -46,6 +47,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
   const selectEndpoint = (endpoint: ApiEndpoint) => {
     setSelectedEndpoint(endpoint)
     setResponse(null)
+    setCopiedCurl(null)
     // Set default values (not examples - those are just placeholders)
     const defaults: ParamValues = {}
     endpoint.parameters.forEach(param => {
@@ -189,6 +191,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
     }
 
     navigator.clipboard.writeText(curl)
+    setCopiedCurl(curl)
   }
 
   const copyResponse = () => {
@@ -384,20 +387,32 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 mb-6">
-              <button
-                onClick={executeRequest}
-                disabled={isLoading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors"
-              >
-                {isLoading ? 'Sending...' : 'Send Request'}
-              </button>
-              <button
-                onClick={copyAsCurl}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 font-medium transition-colors"
-              >
-                Copy as cURL
-              </button>
+            <div className="mb-6">
+              <div className="flex gap-3 mb-3">
+                <button
+                  onClick={executeRequest}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors"
+                >
+                  {isLoading ? 'Sending...' : 'Send Request'}
+                </button>
+                <button
+                  onClick={copyAsCurl}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 font-medium transition-colors"
+                >
+                  Copy as cURL
+                </button>
+              </div>
+
+              {/* Show copied curl command */}
+              {copiedCurl && (
+                <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                  <p className="text-xs text-green-600 font-medium mb-1">Copied to clipboard:</p>
+                  <pre className="text-sm text-green-700 font-mono whitespace-pre-wrap break-all">
+                    {copiedCurl}
+                  </pre>
+                </div>
+              )}
             </div>
 
             {/* Response Section */}

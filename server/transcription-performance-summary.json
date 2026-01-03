@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "totalTranscriptions": 891,
+    "dateRange": {
+      "firstTranscription": "2025-12-16",
+      "lastTranscription": "2026-01-03"
+    },
+    "cleanDataset": {
+      "count": 868,
+      "outliersRemoved": 23,
+      "meanRatio": 1.36,
+      "medianRatio": 1.311,
+      "stdDev": 0.323,
+      "confidenceIntervals": {
+        "68percent": { "min": 1.04, "max": 1.68 },
+        "95percent": { "min": 0.71, "max": 2.01 }
+      }
+    },
+    "predictionModel": {
+      "description": "For a video of X seconds, transcription takes approximately 1.36X seconds",
+      "examples": [
+        { "videoSec": 30, "expectedSec": 41, "range95": "21-60s" },
+        { "videoSec": 60, "expectedSec": 82, "range95": "43-120s" },
+        { "videoSec": 120, "expectedSec": 163, "range95": "86-241s" },
+        { "videoSec": 300, "expectedSec": 408, "range95": "214-602s" }
+      ]
+    },
+    "fileSize": {
+      "avgMBperSecVideo": 0.58
+    },
+    "performanceTrend": {
+      "note": "42% slowdown observed from first 10 to last 10 transcriptions",
+      "first10Avg": 1.497,
+      "last10Avg": 2.125,
+      "possibleCauses": "System resource contention or background processes"
+    }
+  },
+  "metadata": {
+    "generatedAt": "2026-01-03",
+    "sourceFile": "transcription-telemetry.jsonl",
+    "analysisScript": "analyze-transcription.js"
+  }
+}

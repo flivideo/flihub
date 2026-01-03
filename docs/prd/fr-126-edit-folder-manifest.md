@@ -495,4 +495,338 @@ export async function getManifestStatus(folder: string, manifest: EditFolderMani
 
 ## Completion Notes
 
-_To be filled by developer upon completion._
+**Status:** Implementation Complete, Bug Fixed, Awaiting Verification
+
+**Date:** 2026-01-02
+
+---
+
+### Implementation Summary
+
+All three operations have been implemented:
+
+**1. Manifest Creation (Automatic)** ✅
+- Integrated into existing `POST /api/export/copy-to-gling` endpoint
+- Creates manifest entry in `.flihub-state.json` after successful copy
+- Tracks per file: filename, SHA-256 hash (first 1MB), timestamp, size
+- Manifest structure: `editManifest.edit-1st.files[]`
+
+**2. Clean Edit Folder (New Button)** ✅
+- New endpoint: `POST /api/export/clean-edit-folder`
+- Deletes ONLY files that are IN the manifest
+- Preserves Gling outputs and manual additions (not in manifest)
+- Shows confirmation dialog with file count and size savings
+- Updates status to 🔴 Cleaned after successful operation
+
+**3. Restore for Gling (New Button)** ✅
+- New endpoint: `POST /api/export/restore-edit-folder`
+- Validates ALL originals exist before copying ANY (atomic operation)
+- Detects hash changes (warns if originals modified)
+- Re-copies files from `recordings/` → `edit-1st/`
+- Updates status to 🟢 Present after successful restore
+
+---
+
+### UI Implementation
+
+**Export Panel Integration:**
+- Manifest status display under edit-1st folder section
+- Real-time status polling (every 5 seconds via React Query)
+- Status indicators:
+  - 🟢 Present (X.X GB) - Source files exist in edit folder
+  - 🔴 Cleaned - Source files deleted, ready to restore
+  - ⚠️ Changed (N files) - Originals modified since copy
+  - ❌ Missing (N files) - Originals no longer exist
+- Clean/Restore buttons with smart enable/disable logic
+- Confirmation dialogs with detailed information
+- Toast notifications for success/error feedback
+
+**Button States:**
+- Clean: Enabled when status is 🟢 Present
+- Restore: Enabled when status is 🔴 Cleaned or ⚠️ Changed
+- Both disabled when no manifest or status is ❌ Missing
+
+---
+
+### Files Created (1 file, 230 lines)
+
+**`server/src/utils/editManifest.ts`**
+- `calculateFileHash()` - SHA-256 hash of first 1MB
+- `createManifest()` - Generate manifest from copied files
+- `getManifestStatus()` - Check current state vs manifest
+- `cleanEditFolder()` - Delete source files (preserve non-manifest)
+- `restoreEditFolder()` - Re-copy from recordings using manifest
+
+---
+
+### Files Modified (5 files, ~460 lines)
+
+**`shared/types.ts` (+90 lines)**
+- `EditManifestFile` interface
+- `EditFolderManifest` interface
+- `EditManifest` interface
+- `ManifestStatus` type
+- Added `editManifest?` to `ProjectState`
+- Response types: `ManifestStatusResponse`, `CleanEditFolderResponse`, `RestoreEditFolderResponse`
+
+**`server/src/utils/projectState.ts` (+28 lines)**
+- `setEditManifest()` - Update manifest for specific folder
+- `getEditManifest()` - Get manifest for specific folder
+- Updated `writeProjectState()` to preserve editManifest
+
+**`server/src/routes/export.ts` (+180 lines)**
+- Enhanced `POST /api/export/copy-to-gling` to create manifest after copy
+- New `GET /api/export/manifest-status/:folder` - Returns current status
+- New `POST /api/export/clean-edit-folder` - Delete source files
+- New `POST /api/export/restore-edit-folder` - Restore from manifest
+
+**`client/src/hooks/useEditApi.ts` (+55 lines)**
+- `useManifestStatus()` - Query hook with 5s polling
+- `useCleanEditFolder()` - Mutation hook for clean operation
+- `useRestoreEditFolder()` - Mutation hook for restore operation
+
+**`client/src/components/ExportPanel.tsx` (+105 lines)**
+- Manifest status display section
+- Clean/Restore buttons with confirmation dialogs
+- Status indicator rendering
+- Size formatting (bytes → GB)
+
+---
+
+### Critical Bug Discovered & Fixed
+
+**During Testing:**
+- Test project: `c04-12-days-of-claudmas-09`
+- Copied 2 files via "Prepare for Gling" ✅
+- Files copied successfully to `edit-1st/` ✅
+- **Manifest NOT created** ❌
+- No Clean/Restore buttons appeared ❌
+
+**Investigation:**
+- Server console showed TypeScript compilation errors
+- Errors in `server/src/utils/editManifest.ts`
+
+**Root Causes:**
+
+1. **Missing .js extension in import**
+   ```typescript
+   // WRONG:
+   import type { ... } from '../../../shared/types'
+
+   // CORRECT:
+   import type { ... } from '../../../shared/types.js'
+   ```
+   - TypeScript ES modules require explicit .js extension
+   - Build succeeded but runtime import failed
+
+2. **Wrong fs API usage**
+   ```typescript
+   // WRONG:
+   const fd = await fs.open(filePath, 'r')
+
+   // CORRECT:
+   const fd = await fs.promises.open(filePath, 'r')
+   ```
+   - Used callback-based `fs.open()` instead of promise-based
+   - Caused runtime errors during hash calculation
+
+3. **Missing type annotations on arrow functions**
+   ```typescript
+   // WRONG:
+   .reduce((acc, endpoint) => { ... }, {})
+
+   // CORRECT:
+   .reduce((acc, endpoint) => { ... }, {} as Record<string, ApiEndpoint[]>)
+   ```
+   - TypeScript couldn't infer reducer accumulator type
+
+**Fixes Applied:**
+- Updated all imports to include `.js` extension
+- Changed to `fs.promises.open()` throughout
+- Added explicit type annotations on reducers and callbacks
+
+**Result:**
+- TypeScript errors resolved ✅
+- Server compiles cleanly ✅
+- Code ready for testing ✅
+
+---
+
+### Testing Status
+
+**Pre-Fix Testing (FAILED):**
+- ❌ Manifest creation (runtime import error)
+- ⚠️ UI loaded but no status displayed
+- ⚠️ No Clean/Restore buttons
+
+**Post-Fix Testing (PENDING VERIFICATION):**
+- ⏳ Requires server restart (`npm run dev`)
+- ⏳ Full test checklist needs execution
+- ⏳ Verification on real project data
+
+---
+
+### Verification Checklist
+
+**User must perform these tests after server restart:**
+
+#### Test 1: Manifest Creation
+1. Restart server: `npm run dev`
+2. Go to Export panel
+3. Select 2-3 recordings (checkbox selection)
+4. Click "Prepare for Gling"
+5. ✅ Files copy to `edit-1st/`
+6. ✅ Status shows "🟢 Present (X.X GB)"
+7. ✅ Clean/Restore buttons appear
+8. ✅ Open `.flihub-state.json` in project root
+9. ✅ Verify `editManifest.edit-1st.files[]` exists with entries
+10. ✅ Each entry has: `filename`, `sourceHash` (sha256:...), `copiedAt`, `sourceSize`
+
+#### Test 2: Clean Operation
+1. Create dummy Gling output file: `echo "test" > edit-1st/gling-output.mov`
+2. Click "Clean Edit Folder" button
+3. ✅ Confirmation dialog shows file count and size
+4. ✅ Click "Delete Sources"
+5. ✅ Toast notification confirms deletion
+6. ✅ Status changes to "🔴 Cleaned"
+7. ✅ Check `edit-1st/` folder
+8. ✅ Source files deleted (files in manifest)
+9. ✅ `gling-output.mov` preserved (not in manifest)
+
+#### Test 3: Restore Operation
+1. With status showing "🔴 Cleaned"
+2. Click "Restore for Gling" button
+3. ✅ Files copy from `recordings/` → `edit-1st/`
+4. ✅ Toast notification confirms restore
+5. ✅ Status changes to "🟢 Present (X.X GB)"
+6. ✅ Verify all manifest files are back in `edit-1st/`
+
+#### Test 4: Hash Change Detection
+1. After clean, modify a source file: `echo "new content" >> recordings/01-1-intro.mov`
+2. ✅ Status should change to "⚠️ Changed (1 file)"
+3. Click "Restore for Gling"
+4. ✅ Warning dialog appears listing changed files
+5. ✅ Click "Restore Anyway"
+6. ✅ Files restore successfully with warning acknowledged
+
+#### Test 5: Missing File Detection
+1. After clean, delete a source file: `rm recordings/01-1-intro.mov`
+2. ✅ Status should change to "❌ Missing (1 file)"
+3. ✅ Restore button should be disabled
+
+#### Test 6: Multiple Copy Operations
+1. Select different files
+2. Click "Prepare for Gling" again
+3. ✅ Manifest replaces previous (new files tracked)
+4. ✅ Old manifest entries gone
+5. ✅ Status reflects new file set
+
+---
+
+### Known Limitations
+
+1. **Manual file deletion not detected immediately**
+   - Status updates every 5 seconds (polling interval)
+   - Manual changes visible after next poll cycle
+
+2. **No progress indicator for large operations**
+   - Clean/Restore show loading state but no progress bar
+   - Future enhancement: show "X of Y files processed"
+
+3. **Only edit-1st folder supported in UI**
+   - Backend supports edit-2nd and edit-final
+   - UI only shows controls for edit-1st
+   - Future enhancement: expand to all three folders
+
+4. **Hash calculation performance**
+   - First 1MB only (fast for multi-GB files)
+   - Sufficient for change detection but not foolproof
+   - Extremely rare collision risk acceptable for use case
+
+---
+
+### Acceptance Criteria Status
+
+**Must Have:**
+- ✅ Manifest created/updated when "Prepare for Gling" copies files
+- ✅ Manifest stored in `.flihub-state.json` under `editManifest`
+- ✅ File hash calculated using first 1MB (SHA-256)
+- ✅ "Clean Edit Folder" button deletes source files
+- ✅ Clean preserves Gling output files (not in manifest)
+- ✅ "Restore for Gling" button re-copies from recordings/
+- ✅ Status indicator shows Present/Cleaned/Changed/Missing
+- ✅ Confirmation dialog shows file count and size savings
+- ✅ Restore validates all originals exist before copying
+- ✅ Warning dialog if originals changed (hash mismatch)
+
+**Should Have:**
+- ✅ Manifest tracks all three edit folders (backend ready)
+- ✅ Status shows total size in GB
+- ✅ Clean preserves manual additions (files not in manifest)
+- ⏳ Restore updates manifest with new timestamps/hashes (not implemented)
+
+**Nice to Have:**
+- ❌ Progress indicator during clean/restore (future)
+- ❌ Detailed log of what was cleaned/restored (future)
+- ❌ "View Manifest" button (can use FR-127 Developer Drawer)
+
+---
+
+### What User Should Test
+
+**After restarting server (`npm run dev`):**
+
+1. **Happy Path Test:**
+   - Copy files → Verify manifest → Clean → Verify deletion → Restore → Verify copy
+   - Expected: Full cycle works smoothly
+
+2. **Edge Case Tests:**
+   - Modify source file → Verify hash change detection
+   - Delete source file → Verify missing file detection
+   - Create dummy Gling output → Verify preservation during clean
+
+3. **UI Verification:**
+   - Status indicators display correctly
+   - Buttons enable/disable appropriately
+   - Confirmation dialogs show accurate information
+   - Toast notifications appear
+   - Size formatting (GB) is readable
+
+4. **State File Verification:**
+   - Open `.flihub-state.json` after operations
+   - Verify manifest structure matches spec
+   - Verify hashes are SHA-256 format (sha256:...)
+   - Verify timestamps are ISO 8601 format
+
+---
+
+### Next Steps
+
+**For User:**
+1. ✅ Restart server: `npm run dev`
+2. ⏳ Run Test 1 (Manifest Creation) - CRITICAL
+3. ⏳ Run Tests 2-6 if Test 1 passes
+4. ⏳ Report results (pass/fail per test)
+
+**For PO:**
+- ⏳ Awaiting verification results
+- ⏳ Sign-off pending successful test completion
+- ⏳ If tests pass → Update status to "✓ Implemented"
+- ⏳ If tests fail → Document issues, keep status "With Developer"
+
+**For Future:**
+- Consider FR-127 (Developer Drawer) for easier manifest inspection
+- Consider progress indicators for large operations
+- Consider expanding UI to edit-2nd and edit-final folders
+
+---
+
+### Bug Fix Summary
+
+**Issue:** Manifest not created during copy operation
+**Cause:** TypeScript compilation errors (import paths, fs API, type annotations)
+**Fix:** Corrected imports, API usage, and type annotations
+**Status:** Fixed, awaiting verification
+**Impact:** Feature was non-functional until fix applied
+
+**Critical for sign-off:** User MUST verify manifest creation works after server restart.

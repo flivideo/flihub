@@ -6,13 +6,96 @@ Track what was implemented, fixed, or changed and when.
 
 ## Quick Summary - 2026-01-02
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
-**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), FR-119 (API Documentation), FR-126 (Edit Folder Manifest), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
+**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), FR-126 (Edit Folder Manifest), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-119: API Documentation & Testing Page
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-02 | Implemented (Phase 3) | 7a8c5a1 |
+
+**What was built:**
+Interactive API Explorer with 36 documented endpoints, auto-populate features, and short code resolution.
+
+**Phase 3: Interactive API Explorer UI**
+- New "API Explorer" accessible from Cog menu (⚙ → 🔌 API Explorer)
+- Two-column layout: endpoint list (left) + request/response panel (right)
+- 36 endpoints across 7 groups (180% of minimum 20 requirement)
+- Endpoint groups:
+  - Query API (10 endpoints)
+  - Config (2 endpoints)
+  - Projects (6 endpoints)
+  - Recordings (6 endpoints)
+  - Transcription (4 endpoints)
+  - System (4 endpoints)
+  - State (2 endpoints)
+
+**Core Features:**
+- Collapsible endpoint groups with expand/collapse
+- HTTP method color coding (GET=green, POST=blue, PUT=yellow, DELETE=red)
+- Smart parameter forms (dropdowns for enums, text/number inputs)
+- Live request execution against localhost:5101
+- Response display with status code and JSON formatting
+- "Copy as cURL" generates curl command
+- "Copy Response" copies JSON to clipboard
+
+**Bonus Feature 1: Auto-populate Current Project**
+- Project code parameters auto-filled with active project
+- Eliminates repetitive typing for `:code` parameters
+- Still manually editable for testing other projects
+- Applies to: GET/POST/PUT endpoints with `:code` path param
+
+**Bonus Feature 2: Short Code Resolution**
+- All endpoints accept short codes (e.g., "c10") OR full codes (e.g., "c10-poem-epic-3")
+- Resolution logic: Exact match → Prefix match → 404
+- New utility: `server/src/utils/projectResolver.ts`
+- Updated 13 route files with resolution:
+  - 7 query routes (projects.ts, recordings.ts, transcripts.ts, chapters.ts, images.ts, export.ts, inbox.ts)
+  - 2 main routes (projects.ts, state.ts)
+  - 4 specialized routes (transcriptions.ts, chapters.ts, s3-staging.ts, shadows.ts)
+
+**Bonus Feature 3: Comma-delimited Segments Filter**
+- New `segments` parameter for transcripts endpoint
+- Usage: `GET /api/query/projects/:code/transcripts?segments=1,2,3`
+- Returns only recordings matching specified segment numbers
+- Example: `segments=1,5,10` returns all X-1, X-5, X-10 recordings
+
+**UX Polish:**
+- Required parameters pre-filled with example values
+- Optional parameters empty with placeholder hints
+- Enum parameter simplification (include: "content" dropdown)
+- Error messages displayed clearly
+
+**Files created:**
+- `client/src/components/ApiExplorer.tsx` (418 lines)
+- `shared/apiRegistry.ts` (650 lines) - 36 endpoint definitions
+- `server/src/utils/projectResolver.ts` (82 lines) - Short code resolution
+
+**Files modified:**
+- `client/src/App.tsx` - Navigation integration (Cog menu + tab routing)
+- 13 route files with short code resolution
+- `docs/prd/fr-119-api-documentation-testing.md` - Completion notes
+
+**Git commit:**
+- Hash: 7a8c5a1
+- Message: "feat(FR-119): API Explorer with auto-populate and short code support"
+- Stats: 13 files changed, 1,850 insertions(+), 67 deletions(-)
+
+**User impact:**
+- Developers can test APIs without Postman/curl
+- Auto-populate saves typing for project-specific endpoints
+- Short codes (c10) work everywhere, not just full codes
+- Segment filtering enables granular transcript queries
+
+**Note:** Phase 1 (documentation) was already complete via `docs/architecture/api-reference.md`. Phase 2 (type consolidation) was skipped as optional.
+
+---
 
 ### FR-123: Watch Panel Enhancements
 

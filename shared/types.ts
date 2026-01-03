@@ -797,6 +797,7 @@ export interface ProjectState {
   version: 1;
   recordings: Record<string, RecordingState>;  // Keyed by filename (e.g., "01-1-intro.mov")
   glingDictionary?: string[];  // FR-118: Project-specific dictionary words
+  editManifest?: EditManifest; // FR-126: Edit folder manifest tracking
 }
 
 // API response for reading project state
@@ -809,4 +810,82 @@ export interface ProjectStateResponse {
 // API request for updating project state
 export interface UpdateProjectStateRequest {
   recordings: Record<string, RecordingState>;
+}
+
+// ============================================
+// FR-126: Edit Folder Manifest & Cleanup
+// ============================================
+
+// Single file entry in manifest
+export interface EditManifestFile {
+  filename: string;       // e.g., "01-1-intro.mov"
+  sourceHash: string;     // SHA-256 hash of first 1MB from recordings/
+  copiedAt: string;       // ISO timestamp when copied
+  sourceSize: number;     // File size in bytes
+}
+
+// Manifest for one edit folder
+export interface EditFolderManifest {
+  lastCopied: string | null;  // ISO timestamp of most recent copy operation
+  files: EditManifestFile[];  // Files tracked in this folder
+}
+
+// All edit folder manifests
+export interface EditManifest {
+  'edit-1st': EditFolderManifest;
+  'edit-2nd': EditFolderManifest;
+  'edit-final': EditFolderManifest;
+}
+
+// Edit folder key type
+export type EditFolderKey = 'edit-1st' | 'edit-2nd' | 'edit-final';
+
+// Manifest validation status for each file
+export interface ManifestFileStatus {
+  filename: string;
+  status: 'present' | 'missing' | 'changed';  // present = exists and hash matches, missing = doesn't exist, changed = exists but hash mismatch
+  sourceSize?: number;  // Size if present
+  currentHash?: string; // Current hash if present
+}
+
+// Overall status for a folder's manifest
+export type ManifestStatus = 'present' | 'cleaned' | 'changed' | 'missing' | 'no-manifest';
+
+export interface ManifestStatusDetail {
+  status: ManifestStatus;
+  manifestedFiles: number;      // Total files in manifest
+  presentFiles: number;          // Files that exist in edit folder
+  missingFiles: number;          // Files deleted from edit folder
+  changedFiles: number;          // Files with hash mismatch
+  totalSize: number;             // Total size of all manifested files (from recordings/)
+  fileDetails?: ManifestFileStatus[];  // Per-file status (for warnings)
+}
+
+// API response for manifest status check
+export interface ManifestStatusResponse {
+  success: boolean;
+  folder: EditFolderKey;
+  detail: ManifestStatusDetail;
+  error?: string;
+}
+
+// API response for clean operation
+export interface CleanEditFolderResponse {
+  success: boolean;
+  folder: EditFolderKey;
+  deleted: string[];      // Files deleted from edit folder
+  deletedCount: number;
+  spaceSaved: number;     // Bytes freed
+  preserved: string[];    // Files in folder that were NOT deleted (not in manifest)
+  error?: string;
+}
+
+// API response for restore operation
+export interface RestoreEditFolderResponse {
+  success: boolean;
+  folder: EditFolderKey;
+  restored: string[];     // Files copied back
+  restoredCount: number;
+  warnings?: string[];    // Hash mismatch warnings
+  error?: string;
 }

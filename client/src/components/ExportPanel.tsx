@@ -11,12 +11,19 @@
 import { useState, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useRecordings, useConfig, fetchApi, useUpdateProjectDictionary } from '../hooks/useApi'
-import { useEditPrep, useCreateEditFolders, useCreateEditFolder } from '../hooks/useEditApi'
+import {
+  useEditPrep,
+  useCreateEditFolders,
+  useCreateEditFolder,
+  useManifestStatus,
+  useCleanEditFolder,
+  useRestoreEditFolder
+} from '../hooks/useEditApi'
 import { useRecordingsSocket } from '../hooks/useSocket'
 import { formatFileSize, formatChapterTitle } from '../utils/formatting'
 import { LoadingSpinner, ErrorMessage } from './shared'
 import { extractTagsFromName } from '../../../shared/naming'
-import type { RecordingFile } from '../../../shared/types'
+import type { RecordingFile, EditFolderKey } from '../../../shared/types'
 
 interface ChapterGroup {
   chapterKey: string
@@ -319,6 +326,113 @@ export function ExportPanel() {
     createFolder.mutate(folderName)
   }
 
+  // FR-126: Manifest status component for a single folder
+  const FolderManifestStatus = ({ folder }: { folder: EditFolderKey }) => {
+    const { data: manifestData } = useManifestStatus(folder)
+    const cleanFolder = useCleanEditFolder()
+    const restoreFolder = useRestoreEditFolder()
+
+    if (!manifestData?.success || manifestData.detail.status === 'no-manifest') {
+      return null
+    }
+
+    const { detail } = manifestData
+    const statusEmoji = {
+      'present': '🟢',
+      'cleaned': '🔴',
+      'changed': '⚠️',
+      'missing': '❌',
+      'no-manifest': '',
+    }[detail.status]
+
+    const statusText = {
+      'present': `Present (${formatFileSize(detail.totalSize)})`,
+      'cleaned': 'Cleaned',
+      'changed': `Changed (${detail.changedFiles} files)`,
+      'missing': `Missing (${detail.missingFiles} files)`,
+      'no-manifest': '',
+    }[detail.status]
+
+    const handleClean = async () => {
+      const confirmed = window.confirm(
+        `Delete ${detail.manifestedFiles} source files from ${folder}?\n\n` +
+        `This will free up ${formatFileSize(detail.totalSize)}.\n\n` +
+        `Gling outputs will be preserved.\n` +
+        `You can restore these files later from recordings/.`
+      )
+
+      if (!confirmed) return
+
+      try {
+        const result = await cleanFolder.mutateAsync(folder)
+        if (result.success) {
+          toast.success(
+            `Cleaned ${result.deletedCount} files (${formatFileSize(result.spaceSaved)} freed)`
+          )
+        } else {
+          toast.error(result.error || 'Failed to clean folder')
+        }
+      } catch {
+        toast.error('Failed to clean folder')
+      }
+    }
+
+    const handleRestore = async () => {
+      try {
+        const result = await restoreFolder.mutateAsync(folder)
+        if (result.success) {
+          if (result.warnings && result.warnings.length > 0) {
+            toast.warning(
+              `Restored ${result.restoredCount} files with ${result.warnings.length} warnings`,
+              { duration: 5000 }
+            )
+          } else {
+            toast.success(`Restored ${result.restoredCount} files`)
+          }
+        } else {
+          toast.error(result.error || 'Failed to restore files')
+        }
+      } catch {
+        toast.error('Failed to restore files')
+      }
+    }
+
+    return (
+      <div className="mt-2 pl-6 text-xs space-y-1">
+        <div className="flex items-center gap-2 text-gray-600">
+          <span>📋 Manifest:</span>
+          <span className="font-medium">{detail.manifestedFiles} files tracked</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600">Source files:</span>
+          <span className="font-medium">
+            {statusEmoji} {statusText}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          {detail.status === 'present' && (
+            <button
+              onClick={handleClean}
+              disabled={cleanFolder.isPending}
+              className="px-3 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 transition-colors"
+            >
+              {cleanFolder.isPending ? 'Cleaning...' : 'Clean Edit Folder'}
+            </button>
+          )}
+          {(detail.status === 'cleaned' || detail.status === 'changed') && (
+            <button
+              onClick={handleRestore}
+              disabled={restoreFolder.isPending || detail.status === 'missing'}
+              className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
+            >
+              {restoreFolder.isPending ? 'Restoring...' : 'Restore for Gling'}
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return <LoadingSpinner message="Loading recordings..." />
   }
@@ -615,40 +729,44 @@ export function ExportPanel() {
             <div className="h-px bg-gray-300 flex-1" />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {editPrepData.editFolders.folders.map(folder => {
               const exists = folder.exists
               return (
-                <div key={folder.name} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className={exists ? 'text-green-500' : 'text-gray-300'}>
-                      {exists ? '✓' : '○'}
-                    </span>
-                    <span className={exists ? 'text-gray-700 font-mono' : 'text-gray-400 font-mono'}>
-                      {folder.name}/
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {folder.name === 'edit-1st' && '← Gling exports'}
-                      {folder.name === 'edit-2nd' && '← Jan\'s edits'}
-                      {folder.name === 'edit-final' && '← Final publish'}
-                    </span>
+                <div key={folder.name}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className={exists ? 'text-green-500' : 'text-gray-300'}>
+                        {exists ? '✓' : '○'}
+                      </span>
+                      <span className={exists ? 'text-gray-700 font-mono' : 'text-gray-400 font-mono'}>
+                        {folder.name}/
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {folder.name === 'edit-1st' && '← Gling exports'}
+                        {folder.name === 'edit-2nd' && '← Jan\'s edits'}
+                        {folder.name === 'edit-final' && '← Final publish'}
+                      </span>
+                    </div>
+                    {exists ? (
+                      <button
+                        onClick={() => handleOpenFolder(folder.name)}
+                        className="px-3 py-1 text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      >
+                        Open
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleCreateFolder(folder.name)}
+                        disabled={createFolder.isPending}
+                        className="px-3 py-1 text-xs text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
+                      >
+                        Create
+                      </button>
+                    )}
                   </div>
-                  {exists ? (
-                    <button
-                      onClick={() => handleOpenFolder(folder.name)}
-                      className="px-3 py-1 text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                    >
-                      Open
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleCreateFolder(folder.name)}
-                      disabled={createFolder.isPending}
-                      className="px-3 py-1 text-xs text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
-                    >
-                      Create
-                    </button>
-                  )}
+                  {/* FR-126: Manifest status for this folder */}
+                  {exists && <FolderManifestStatus folder={folder.name as EditFolderKey} />}
                 </div>
               )
             })}

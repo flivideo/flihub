@@ -112,6 +112,7 @@ export interface RecordingFile {
     folder: 'recordings';
     isSafe: boolean;
     isParked: boolean;
+    annotation?: string;
     isShadow?: boolean;
     hasShadow?: boolean;
     shadowSize?: number | null;
@@ -500,6 +501,7 @@ export interface QueryRecording {
     folder: 'recordings';
     isSafe: boolean;
     isParked: boolean;
+    annotation?: string;
     size: number;
     duration: number | null;
     hasTranscript: boolean;
@@ -625,12 +627,14 @@ export interface EnvironmentResponse {
 export interface RecordingState {
     safe?: boolean;
     parked?: boolean;
+    annotation?: string;
     stage?: string;
 }
 export interface ProjectState {
     version: 1;
     recordings: Record<string, RecordingState>;
     glingDictionary?: string[];
+    editManifest?: EditManifest;
 }
 export interface ProjectStateResponse {
     success: boolean;
@@ -639,4 +643,59 @@ export interface ProjectStateResponse {
 }
 export interface UpdateProjectStateRequest {
     recordings: Record<string, RecordingState>;
+}
+export interface EditManifestFile {
+    filename: string;
+    sourceHash: string;
+    copiedAt: string;
+    sourceSize: number;
+}
+export interface EditFolderManifest {
+    lastCopied: string | null;
+    files: EditManifestFile[];
+}
+export interface EditManifest {
+    'edit-1st': EditFolderManifest;
+    'edit-2nd': EditFolderManifest;
+    'edit-final': EditFolderManifest;
+}
+export type EditFolderKey = 'edit-1st' | 'edit-2nd' | 'edit-final';
+export interface ManifestFileStatus {
+    filename: string;
+    status: 'present' | 'missing' | 'changed';
+    sourceSize?: number;
+    currentHash?: string;
+}
+export type ManifestStatus = 'present' | 'cleaned' | 'changed' | 'missing' | 'no-manifest';
+export interface ManifestStatusDetail {
+    status: ManifestStatus;
+    manifestedFiles: number;
+    presentFiles: number;
+    missingFiles: number;
+    changedFiles: number;
+    totalSize: number;
+    fileDetails?: ManifestFileStatus[];
+}
+export interface ManifestStatusResponse {
+    success: boolean;
+    folder: EditFolderKey;
+    detail: ManifestStatusDetail;
+    error?: string;
+}
+export interface CleanEditFolderResponse {
+    success: boolean;
+    folder: EditFolderKey;
+    deleted: string[];
+    deletedCount: number;
+    spaceSaved: number;
+    preserved: string[];
+    error?: string;
+}
+export interface RestoreEditFolderResponse {
+    success: boolean;
+    folder: EditFolderKey;
+    restored: string[];
+    restoredCount: number;
+    warnings?: string[];
+    error?: string;
 }

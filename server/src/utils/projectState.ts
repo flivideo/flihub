@@ -86,6 +86,10 @@ export async function writeProjectState(projectDir: string, state: ProjectState)
     ...(state.glingDictionary && state.glingDictionary.length > 0
       ? { glingDictionary: state.glingDictionary }
       : {}),
+    // FR-126: Preserve edit manifest if present
+    ...(state.editManifest
+      ? { editManifest: state.editManifest }
+      : {}),
   }
 
   await fs.writeFile(stateFilePath, JSON.stringify(stateToWrite, null, 2), 'utf-8')
@@ -235,5 +239,37 @@ export function setProjectDictionary(state: ProjectState, words: string[]): Proj
   return {
     ...state,
     glingDictionary: words.length > 0 ? words : undefined,
+  }
+}
+
+/**
+ * FR-126: Get edit manifest for a specific folder
+ * Returns undefined if no manifest exists
+ */
+export function getEditManifest(
+  state: ProjectState,
+  folder: 'edit-1st' | 'edit-2nd' | 'edit-final'
+): import('../../../shared/types.js').EditFolderManifest | undefined {
+  return state.editManifest?.[folder]
+}
+
+/**
+ * FR-126: Set/update edit manifest for a specific folder
+ * Returns the updated state (does not persist to disk)
+ */
+export function setEditManifest(
+  state: ProjectState,
+  folder: 'edit-1st' | 'edit-2nd' | 'edit-final',
+  manifest: import('../../../shared/types.js').EditFolderManifest
+): ProjectState {
+  return {
+    ...state,
+    editManifest: {
+      'edit-1st': { lastCopied: null, files: [] },
+      'edit-2nd': { lastCopied: null, files: [] },
+      'edit-final': { lastCopied: null, files: [] },
+      ...state.editManifest,
+      [folder]: manifest,
+    },
   }
 }
