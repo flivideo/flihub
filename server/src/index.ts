@@ -22,6 +22,7 @@ import { createEditRoutes } from './routes/edit.js';
 import { createExportRoutes } from './routes/export.js';
 import { createS3StagingRoutes } from './routes/s3-staging.js';
 import { createStateRoutes } from './routes/state.js';
+import { createDeveloperRoutes } from './routes/developer.js';
 import { migrateTargetToProject } from '../../shared/paths.js';
 import { migrateSafeFolder, needsMigration } from './utils/safeMigration.js';
 import { WatcherManager } from './WatcherManager.js';
@@ -360,6 +361,10 @@ app.use('/api/s3-staging', s3StagingRoutes);
 // FR-111: Setup project state routes (FR-123: pass io for socket events)
 const stateRoutes = createStateRoutes(() => currentConfig, io);
 app.use('/api', stateRoutes);
+
+// FR-127: Setup developer tools routes
+const developerRoutes = createDeveloperRoutes(currentConfig);
+app.use('/api/developer', developerRoutes);
 
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);

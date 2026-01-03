@@ -48,4 +48,8 @@ export const QUERY_KEYS = {
   shadowStatus: ['shadow-status'] as const,
   // FR-90: File watcher management
   watchers: ['watchers'] as const,
+  // FR-127: Developer tools
+  developerProjectState: ['developer', 'project-state'] as const,
+  developerConfig: ['developer', 'config'] as const,
+  developerTelemetry: ['developer', 'telemetry'] as const,
 } as const

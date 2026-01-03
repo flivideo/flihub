@@ -25,6 +25,7 @@ import { OpenFolderButton } from './components/shared'
 import { HeaderDropdown } from './components/HeaderDropdown'
 import { useOpenFolder } from './hooks/useOpenFolder'
 import ApiExplorer from './components/ApiExplorer'
+import DeveloperDrawer from './components/DeveloperDrawer'
 import type { FileInfo } from '../../shared/types'
 
 type ViewTab = 'incoming' | 'recordings' | 'watch' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'export' | 'projects' | 'config' | 'mockups' | 'api-explorer'
@@ -85,6 +86,8 @@ function App() {
   const [showS3Staging, setShowS3Staging] = useState(false)
   // FR-116: Config section focus (for quick navigation from other pages)
   const [configFocusSection, setConfigFocusSection] = useState<ConfigFocusSection>(null)
+  // FR-127: Developer drawer state
+  const [isDevDrawerOpen, setIsDevDrawerOpen] = useState(false)
 
   const { files, connected, isReconnecting, removeFile } = useSocket()
   const { data: config } = useConfig()
@@ -363,6 +366,9 @@ function App() {
         <S3StagingPage onClose={() => setShowS3Staging(false)} />
       )}
 
+      {/* FR-127: Developer drawer */}
+      <DeveloperDrawer isOpen={isDevDrawerOpen} onClose={() => setIsDevDrawerOpen(false)} />
+
       {/* FR-37: Two-row header with breadcrumb and navigation */}
       <header className="bg-white shadow">
         <div className="max-w-4xl mx-auto px-4">
@@ -498,6 +504,11 @@ function App() {
                   label: 'API Explorer',
                   icon: <span className="text-green-600">🔌</span>,
                   onClick: () => changeTab('api-explorer'),
+                },
+                {
+                  label: 'Developer Tools',
+                  icon: <span className="text-blue-600">🔍</span>,
+                  onClick: () => setIsDevDrawerOpen(true),
                 },
                 {
                   label: 'GitHub',

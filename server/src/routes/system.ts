@@ -403,6 +403,65 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
   });
 
   /**
+   * POST /api/system/open-file-by-path
+   *
+   * FR-127: Opens a file by absolute path in its default application.
+   * Used by Developer Tools drawer to open config.json, state files, etc.
+   *
+   * Request body:
+   *   { filePath: string } - Absolute path to the file
+   *
+   * Response:
+   *   Success: { success: true, path: string }
+   *   Error: { success: false, error: string }
+   *
+   * Security: Only accepts files that are managed by FliHub:
+   * - config.json (server directory)
+   * - .flihub-state.json (project directory)
+   * - transcription-telemetry.jsonl (server directory)
+   */
+  router.post('/open-file-by-path', async (req: Request, res: Response) => {
+    const { filePath } = req.body as { filePath: string };
+
+    if (!filePath) {
+      res.status(400).json({ success: false, error: 'File path is required' });
+      return;
+    }
+
+    // Security whitelist: Only allow opening specific FliHub-managed files
+    const allowedFiles = [
+      'config.json',
+      '.flihub-state.json',
+      'transcription-telemetry.jsonl',
+    ];
+
+    const filename = path.basename(filePath);
+    if (!allowedFiles.includes(filename)) {
+      res.status(403).json({
+        success: false,
+        error: `Opening ${filename} is not allowed. Only FliHub-managed files can be opened.`
+      });
+      return;
+    }
+
+    // Check file exists
+    if (!await fs.pathExists(filePath)) {
+      res.status(404).json({ success: false, error: `File does not exist: ${filePath}` });
+      return;
+    }
+
+    // Open in default app
+    try {
+      await openInDefaultApp(filePath);
+      console.log(`[FR-127] Opened file: ${filePath}`);
+      res.json({ success: true, path: filePath });
+    } catch (error) {
+      console.error('[FR-127] Failed to open file:', error);
+      res.status(500).json({ success: false, error: 'Failed to open file' });
+    }
+  });
+
+  /**
    * GET /api/system/path-exists
    *
    * FR-89 Part 2: Check if a path exists on disk.
