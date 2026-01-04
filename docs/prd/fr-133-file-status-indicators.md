@@ -1,9 +1,12 @@
 # FR-133: File Status Indicators
 
-**Status:** Pending
+**Status:** Pending (Blocked by FR-131 Phase 2)
 **Added:** 2026-01-04
 **Implemented:** -
-**Dependencies:** FR-130 (delete+regenerate pattern), FR-132 (dual transcription with Groq)
+**Dependencies:**
+- FR-130 (delete+regenerate pattern) - ✅ Implemented
+- FR-131 Phase 2 (Manage panel complete) - ⏳ **BLOCKER** - See [Phase 2 Plan](../../planning/fr-131-phase-2-implementation-plan.md)
+- FR-132 (dual transcription with Groq) - ⚠️ Optional (graceful degradation)
 
 ---
 

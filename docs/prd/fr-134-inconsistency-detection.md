@@ -1,9 +1,10 @@
 # FR-134: Inconsistency Detection & Auto-Fix
 
-**Status:** Pending
+**Status:** Pending (Blocked by FR-131 Phase 2)
 **Added:** 2026-01-04
 **Implemented:** -
-**Dependencies:** FR-131 (Manage panel)
+**Dependencies:**
+- FR-131 Phase 2 (Manage panel complete) - ⏳ **BLOCKER** - See [Phase 2 Plan](../../planning/fr-131-phase-2-implementation-plan.md)
 
 ---
 

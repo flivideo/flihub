@@ -347,6 +347,15 @@ export interface ServerToClientEvents {
   'transcription:progress': (data: { jobId: string; text: string }) => void;
   'transcription:complete': (job: { jobId: string; videoPath: string; transcriptPath: string }) => void;
   'transcription:error': (job: { jobId: string; videoPath: string; error: string }) => void;
+  // FR-131 Phase 2: Regeneration events
+  'regen:shadows:progress': (data: { current: number; total: number; filename: string }) => void;
+  'regen:shadows:complete': (data: { completed: number; failed: number; errors?: Array<{ file: string; error: string }> }) => void;
+  'regen:chapters:progress': (data: { current: number; total: number; chapter: string }) => void;
+  'regen:chapters:complete': (data: { completed: number; failed: number; errors?: Array<{ chapter: string; error: string }> }) => void;
+  'regen:all:started': () => void;
+  'regen:all:progress': (data: { step: 'shadows' | 'transcripts' | 'chapters'; current: number; total: number }) => void;
+  'regen:all:complete': (data: { shadows: any; transcripts: any; chapters: any }) => void;
+  'regen:all:error': (data: { error: string }) => void;
 }
 
 export interface ClientToServerEvents {

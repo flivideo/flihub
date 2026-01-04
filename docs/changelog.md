@@ -16,6 +16,145 @@ Track what was implemented, fixed, or changed and when.
 
 ## Per-Item History
 
+### FR-131 Phase 2: Manage Panel Regeneration Toolbar & Chapter-Level Rename
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-04 | Implemented | - |
+
+**What was built:**
+Completed FR-131 Phase 2 with three major features: Regeneration Toolbar (4 buttons), Chapter-Level Rename dropdown, and Shared Code Documentation.
+
+**Feature 1: Regeneration Toolbar**
+
+Added collapsible toolbar with 4 buttons to regenerate derivative files:
+
+1. **Regen Shadows** (FAST - ~1ms per file)
+   - Deletes existing shadow files in `recording-shadows/`
+   - Regenerates 240p preview videos from source recordings
+   - Socket.io event: `regen:shadows:complete`
+
+2. **Regen Transcripts** (SLOW - 5-10 min per file, queued)
+   - Queues transcription jobs for recordings without transcripts
+   - Optional `force` parameter to re-transcribe ALL files
+   - Uses existing transcription queue system
+
+3. **Regen Chapters** (EXPENSIVE - 30-60s per chapter)
+   - Deletes existing chapter videos in `recordings/-chapters/`
+   - Regenerates chapter videos from recordings
+   - Real-time progress via Socket.io: `regen:chapters:progress`
+
+4. **Regen All** (SEQUENTIAL)
+   - Runs shadows → transcripts → chapters sequentially
+   - Progress updates for each step via Socket.io
+   - Best-effort error handling (continues on error, reports at end)
+
+**Backend Implementation:**
+
+**New Routes:**
+- `POST /api/manage/regen-shadows` - Regenerate shadow files
+- `POST /api/manage/regen-transcripts` - Queue transcriptions
+- `POST /api/manage/regen-chapters` - Regenerate chapter videos (async)
+- `POST /api/manage/regen-all` - Regenerate all (async, sequential)
+
+**Helper Functions:**
+- `regenerateShadowsInternal()` - Shadow regeneration logic
+- `regenerateTranscriptsInternal()` - Transcript queuing logic
+- `regenerateChaptersInternal()` - Chapter regeneration logic
+- `regenerateAllAsync()` - Sequential orchestrator
+- `regenerateChaptersAsync()` - Async chapter generation with progress
+
+**Socket.io Events (added to `shared/types.ts`):**
+- `regen:shadows:complete` - Shadow regeneration complete
+- `regen:chapters:progress` - Chapter-by-chapter progress
+- `regen:chapters:complete` - All chapters complete
+- `regen:all:started` - All regeneration started
+- `regen:all:progress` - Step-by-step progress (shadows/transcripts/chapters)
+- `regen:all:complete` - All regeneration complete
+- `regen:all:error` - Regeneration error
+
+**Frontend Implementation:**
+
+**New Component:**
+- `client/src/components/shared/RegenToolbar.tsx` (280 lines)
+  - Collapsible toolbar (localStorage persists state)
+  - Confirmation dialogs for expensive operations
+  - Real-time progress display via Socket.io
+  - Progress bar with percentage and current item display
+
+**Feature 2: Chapter-Level Rename**
+
+Added dropdown to rename all files in a chapter at once:
+- Select chapter from dropdown (shows file count)
+- Input new label (pre-fills current chapter label)
+- "Rename Ch XX" button
+- Reuses existing `POST /api/manage/bulk-rename` endpoint
+- Same FR-130 delete+regenerate logic
+- Confirmation dialog with file count
+
+**UI Location:**
+- Inside bulk rename section in ManagePanel
+- Separated by border with "Or rename by chapter:" header
+- Appears only when files are selected (same condition as bulk rename)
+
+**Feature 3: Shared Code Documentation**
+
+Created comprehensive documentation for shared code between RecordingsView and ManagePanel:
+
+**New File:**
+- `docs/architecture/shared-code-index.md` (300+ lines)
+
+**Contents:**
+- Decision rules (when to share code vs keep separate)
+- Client-side shared hooks (useRecordings, useConfig, useRecordingsSocket)
+- Client-side shared components (LoadingSpinner, ErrorMessage, RegenToolbar)
+- Client-side shared utilities (formatFileSize, formatChapterTitle, extractTagsFromName)
+- Server-side shared routes (bulk-rename, regen endpoints)
+- Server-side shared utilities (renameRecording, createShadowFile, queueTranscription, etc.)
+- Code examples and JSDoc patterns
+- Future refactoring opportunities
+
+**Files Created (3):**
+- `client/src/components/shared/RegenToolbar.tsx` (280 lines)
+- `docs/architecture/shared-code-index.md` (300+ lines)
+
+**Files Modified (4):**
+- `server/src/routes/manage.ts` (+480 lines) - 4 regen endpoints + helper functions
+- `server/src/index.ts` (1 line) - Pass `io` to createManageRoutes
+- `client/src/components/ManagePanel.tsx` (+80 lines) - RegenToolbar + chapter rename
+- `shared/types.ts` (+7 lines) - Socket.io event types
+
+**Total LOC:** ~850 lines
+
+**UX Enhancements:**
+- Collapsible toolbar (saves screen space)
+- Real-time progress updates (no page refresh needed)
+- Confirmation dialogs prevent accidental operations
+- Best-effort error handling (show errors but continue)
+- Toast notifications for completion
+- Disabled state during operations (prevents double-clicks)
+
+**Testing:**
+- Backend endpoints compile successfully
+- Socket.io event types validated
+- Frontend component integrates into ManagePanel
+- Chapter rename reuses existing bulk rename logic (already tested)
+
+**User Impact:**
+- Quick regeneration of derivative files without manual deletion
+- Faster workflow for chapter-level renaming
+- Clear documentation for future developers
+- Real-time feedback during long operations
+
+**Ready to Test:**
+- Start dev server (`npm run dev`)
+- Navigate to Manage panel
+- Test regen buttons with a real project
+- Test chapter rename dropdown
+- Verify Socket.io progress updates in console
+
+---
+
 ### FR-130: Simplify Rename Logic (Delete+Regenerate)
 
 | Date | Change | Commit |

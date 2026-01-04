@@ -10,11 +10,12 @@ Requirements index for FliHub.
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
-| FR-135 | [Chapter Tools (Move, Swap, Undo)](prd/fr-135-chapter-tools.md) | 2026-01-04 | Pending |
-| FR-134 | [Inconsistency Detection & Auto-Fix](prd/fr-134-inconsistency-detection.md) | 2026-01-04 | Pending |
-| FR-133 | [File Status Indicators](prd/fr-133-file-status-indicators.md) | 2026-01-04 | Pending |
+| FR-136 | [Tool-Oriented Manage Panel](prd/fr-136-tool-oriented-manage-panel.md) | 2026-01-04 | Pending (Redesign - Supersedes FR-131 P2 UI) |
+| FR-135 | [Chapter Tools (Move, Swap, Undo)](prd/fr-135-chapter-tools.md) | 2026-01-04 | Pending (Blocked by FR-131 P2 OR FR-136) |
+| FR-134 | [Inconsistency Detection & Auto-Fix](prd/fr-134-inconsistency-detection.md) | 2026-01-04 | Pending (Blocked by FR-131 P2 OR FR-136) |
+| FR-133 | [File Status Indicators](prd/fr-133-file-status-indicators.md) | 2026-01-04 | Pending (Blocked by FR-131 P2 OR FR-136) |
 | FR-132 | [Dual Transcription System with Progress Tracking](prd/fr-132-dual-transcription-progress.md) | 2026-01-03 | Pending |
-| FR-131 | [Manage Panel with Bulk Rename & Regen Toolbar](prd/fr-131-manage-panel-bulk-rename.md) | 2026-01-03 | With Developer |
+| FR-131 | [Manage Panel with Bulk Rename & Regen Toolbar](prd/fr-131-manage-panel-bulk-rename.md) | 2026-01-03 | Phase 1 ✓ / Phase 2 Pending - See FR-136 for alternative UI |
 | FR-130 | [Simplify Rename Logic (Delete+Regenerate)](prd/fr-130-simplify-rename-delete-regenerate.md) | 2026-01-03 | ✓ Implemented |
 | FR-128 | [Recording Quick Preview](prd/fr-128-recording-quick-preview.md) | 2026-01-03 | ✓ Implemented |
 | FR-127 | [Developer Drawer (Data Files Viewer)](prd/fr-127-developer-drawer.md) | 2026-01-02 | ✓ Implemented |

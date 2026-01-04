@@ -1,9 +1,11 @@
 # FR-131: Manage Panel with Bulk Rename & Regen Toolbar
 
-**Status:** Pending
+**Status:** Phase 1 ✓ Implemented / Phase 2 Pending
 **Added:** 2026-01-03
-**Implemented:** -
+**Implemented:** Phase 1 (2026-01-03)
 **Dependencies:** FR-130 (Delete+Regenerate pattern), FR-122/124 (Export panel base)
+
+**⚠️ Note:** [FR-136 (Tool-Oriented Manage Panel)](fr-136-tool-oriented-manage-panel.md) proposes a redesigned UI that replaces the rename-focused panel approach with a tool-oriented architecture. FR-131 Phase 2 may be adapted to fit FR-136's design, or FR-136 may supersede Phase 2's UI approach. See FR-136 for alternative implementation.
 
 ---
 

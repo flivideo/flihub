@@ -8,7 +8,7 @@
  * - Visual style matching RecordingsView
  */
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useRecordings, useConfig, fetchApi, useUpdateProjectDictionary } from '../hooks/useApi'
 import {
@@ -19,9 +19,9 @@ import {
   useCleanEditFolder,
   useRestoreEditFolder
 } from '../hooks/useEditApi'
-import { useRecordingsSocket } from '../hooks/useSocket'
+import { useRecordingsSocket, getSocket } from '../hooks/useSocket'
 import { formatFileSize, formatChapterTitle } from '../utils/formatting'
-import { LoadingSpinner, ErrorMessage } from './shared'
+import { LoadingSpinner, ErrorMessage, ToolsSidebar, SlideOutDrawer, ConfirmationModal } from './shared'
 import { extractTagsFromName } from '../../../shared/naming'
 import type { RecordingFile, EditFolderKey } from '../../../shared/types'
 
@@ -90,8 +90,89 @@ export function ManagePanel() {
   const [bulkRenameLabel, setBulkRenameLabel] = useState('')
   const [isRenaming, setIsRenaming] = useState(false)
 
+  // FR-136: Tool-oriented design
+  const [activeTool, setActiveTool] = useState<'rename' | 'export' | 'folders' | null>(null)
+
+  // Confirmation modal state
+  const [confirmationModal, setConfirmationModal] = useState<{
+    title: string;
+    message: string;
+    files?: string[];
+    warning?: string;
+    variant?: 'primary' | 'danger' | 'warning';
+    chapterSettings?: {
+      resolution: '720p' | '1080p';
+      includeTitleSlides: boolean;
+      slideDuration: number;
+    };
+    onConfirm: () => void;
+  } | null>(null)
+
+  // Chapter settings state for editing in modal
+  const [modalChapterSettings, setModalChapterSettings] = useState<{
+    resolution: '720p' | '1080p';
+    includeTitleSlides: boolean;
+    slideDuration: number;
+  } | null>(null)
+
   // Subscribe to real-time updates
   useRecordingsSocket()
+
+  // Socket.io listeners for regen progress
+  useEffect(() => {
+    const socket = getSocket();
+
+    const handleShadowsProgress = (data: { current: number; total: number; filename: string }) => {
+      toast.loading(`Shadows: ${data.current}/${data.total} - ${data.filename}`, { id: 'shadows-progress' });
+    };
+
+    const handleShadowsComplete = (data: { completed: number; failed: number }) => {
+      toast.dismiss('shadows-progress');
+      if (data.failed > 0) {
+        toast.warning(`Shadows: ${data.completed} done, ${data.failed} failed`);
+      } else {
+        toast.success(`Shadows: ${data.completed} regenerated`);
+      }
+    };
+
+    const handleChaptersProgress = (data: { current: number; total: number; chapter: string }) => {
+      toast.loading(`Chapters: ${data.current}/${data.total} - Chapter ${data.chapter}`, { id: 'chapters-progress' });
+    };
+
+    const handleChaptersComplete = (data: { completed: number; failed: number }) => {
+      toast.dismiss('chapters-progress');
+      if (data.failed > 0) {
+        toast.warning(`Chapters: ${data.completed} done, ${data.failed} failed`);
+      } else {
+        toast.success(`Chapters: ${data.completed} regenerated`);
+      }
+    };
+
+    const handleAllProgress = (data: { step: string; current: number; total: number }) => {
+      toast.loading(`Regen All: Step ${data.current}/${data.total} (${data.step})`, { id: 'all-progress' });
+    };
+
+    const handleAllComplete = () => {
+      toast.dismiss('all-progress');
+      toast.success('All derivative files regenerated');
+    };
+
+    socket.on('regen:shadows:progress', handleShadowsProgress);
+    socket.on('regen:shadows:complete', handleShadowsComplete);
+    socket.on('regen:chapters:progress', handleChaptersProgress);
+    socket.on('regen:chapters:complete', handleChaptersComplete);
+    socket.on('regen:all:progress', handleAllProgress);
+    socket.on('regen:all:complete', handleAllComplete);
+
+    return () => {
+      socket.off('regen:shadows:progress', handleShadowsProgress);
+      socket.off('regen:shadows:complete', handleShadowsComplete);
+      socket.off('regen:chapters:progress', handleChaptersProgress);
+      socket.off('regen:chapters:complete', handleChaptersComplete);
+      socket.off('regen:all:progress', handleAllProgress);
+      socket.off('regen:all:complete', handleAllComplete);
+    };
+  }, []);
 
   // FR-125: Initialize project dictionary from API data
   useMemo(() => {
@@ -309,6 +390,106 @@ export function ManagePanel() {
     } finally {
       setIsRenaming(false)
     }
+  }
+
+  // FR-136: Tool handlers
+  const handleSimpleToolClick = (tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all') => {
+    const selectedFilesArray = Array.from(selectedFiles);
+
+    // Determine scope
+    const targetFiles = selectedFilesArray.length > 0 ? selectedFilesArray : undefined;
+    const scope = selectedFilesArray.length > 0
+      ? `${selectedFilesArray.length} selected file${selectedFilesArray.length === 1 ? '' : 's'}`
+      : `all ${data?.recordings?.length || 0} files`;
+
+    // Determine type and labels
+    const type = tool.replace('regen-', '');
+    const typeLabel = type === 'shadows' ? 'shadows' :
+                      type === 'transcripts' ? 'transcripts' :
+                      type === 'chapters' ? 'chapter videos' : 'all derivative files';
+
+    // Build warning message and chapter settings
+    let warning: string | undefined;
+    let initialChapterSettings: { resolution: '720p' | '1080p'; includeTitleSlides: boolean; slideDuration: number } | undefined;
+
+    if (type === 'chapters' || type === 'all') {
+      // Initialize chapter settings from config
+      const chapterConfig = config?.chapterRecordings || {
+        resolution: '720p' as '720p' | '1080p',
+        includeTitleSlides: false,
+        slideDuration: 1.0,
+      };
+
+      initialChapterSettings = {
+        resolution: chapterConfig.resolution as '720p' | '1080p',
+        includeTitleSlides: chapterConfig.includeTitleSlides ?? false,
+        slideDuration: chapterConfig.slideDuration ?? 1.0,
+      };
+
+      setModalChapterSettings(initialChapterSettings);
+
+      if (type === 'chapters') {
+        warning = 'This may take 30-60 seconds per chapter.';
+      } else {
+        warning = 'This will run all three operations sequentially:\n1. Regenerate shadows\n2. Queue transcriptions\n3. Regenerate chapter videos\n\nThis may take a long time.';
+      }
+    }
+
+    // Show confirmation modal
+    setConfirmationModal({
+      title: `Regenerate ${typeLabel}`,
+      message: `Regenerate ${typeLabel} for ${scope}?`,
+      files: selectedFilesArray.length > 0 ? selectedFilesArray : undefined,
+      warning,
+      variant: type === 'all' ? 'warning' : 'primary',
+      chapterSettings: initialChapterSettings,
+      onConfirm: async () => {
+        setConfirmationModal(null);
+
+        // Show start toast
+        const toastLabel = type === 'shadows' ? 'Shadow Files' :
+                           type === 'transcripts' ? 'Transcripts' :
+                           type === 'chapters' ? 'Chapter Videos' : 'All Files';
+        toast.info(`Regenerating ${toastLabel}...`);
+
+        try {
+          const endpoint = `/api/manage/${tool}`;
+
+          // Build request body with optional chapter settings
+          const requestBody: any = { files: targetFiles };
+          if ((type === 'chapters' || type === 'all') && modalChapterSettings) {
+            requestBody.chapterSettings = modalChapterSettings;
+          }
+
+          const response = await fetch(`http://localhost:5101${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+          });
+
+          const result = await response.json();
+
+          if (!result.success) {
+            throw new Error(result.error || 'Regeneration failed');
+          }
+
+          // For transcripts, show immediate completion (no Socket.io events)
+          if (type === 'transcripts') {
+            const queued = result.queued || 0;
+            toast.success(`Queued ${queued} file${queued !== 1 ? 's' : ''} for transcription`);
+          }
+
+          // For shadows, chapters, and all - Socket.io events will handle progress/completion
+        } catch (err) {
+          console.error(`[Regen ${type}] Error:`, err);
+          toast.error(`Failed to regenerate ${type}: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+    });
+  }
+
+  const handleComplexToolClick = (tool: 'rename' | 'export' | 'folders') => {
+    setActiveTool(activeTool === tool ? null : tool)
   }
 
   // FR-124: Copy Gling filename
@@ -536,9 +717,11 @@ export function ManagePanel() {
   const activeFiles = totalFiles - parkedFiles
 
   return (
-    <div>
-      {/* Stats and filter toggle - matching RecordingsView style */}
-      <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
+    <div className="relative">
+      {/* FR-136: Center Content - 896px centered */}
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Stats and filter toggle - matching RecordingsView style */}
+        <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
         <span className="text-gray-700 font-medium">
           {selectedCount} of {filteredRecordings.length} selected
           <span className="font-normal text-gray-400 ml-1">
@@ -576,42 +759,7 @@ export function ManagePanel() {
         )}
       </div>
 
-      {/* FR-131: Bulk Rename Section */}
-      {selectedCount > 0 && (
-        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 flex-1">
-              <label htmlFor="bulk-rename-label" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                Rename {selectedCount} file{selectedCount > 1 ? 's' : ''} to:
-              </label>
-              <input
-                id="bulk-rename-label"
-                type="text"
-                value={bulkRenameLabel}
-                onChange={(e) => setBulkRenameLabel(e.target.value)}
-                placeholder="new-label"
-                disabled={isRenaming}
-                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !isRenaming) {
-                    handleBulkRename()
-                  }
-                }}
-              />
-            </div>
-            <button
-              onClick={handleBulkRename}
-              disabled={isRenaming || !bulkRenameLabel.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-            >
-              {isRenaming ? 'Renaming...' : 'Apply Rename'}
-            </button>
-          </div>
-          <p className="mt-2 text-xs text-gray-600">
-            ⚠️ Transcripts will be regenerated (5-10 minutes). Chapter/sequence numbers will be preserved.
-          </p>
-        </div>
-      )}
+      {/* FR-136: Bulk Rename moved to slide-out drawer */}
 
       {/* Recordings list - matching RecordingsView style */}
       <div className="space-y-6">
@@ -637,21 +785,21 @@ export function ManagePanel() {
                     onClick={() => deselectAllInChapter(chapterData)}
                     className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
                   >
-                    ☐ Deselect All
+                    ☐ Deselect <span className="text-blue-600 font-medium">{chapterData.chapterKey}</span>
                   </button>
                 ) : allSelected ? (
                   <button
                     onClick={() => deselectAllInChapter(chapterData)}
                     className="text-xs text-blue-600 hover:text-gray-500 px-2 py-0.5 hover:bg-gray-50 rounded transition-colors"
                   >
-                    ☑ Deselect All
+                    ☑ Deselect <span className="font-medium">{chapterData.chapterKey}</span>
                   </button>
                 ) : (
                   <button
                     onClick={() => selectAllInChapter(chapterData)}
                     className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
                   >
-                    ☐ Select All
+                    ☐ Select <span className="text-blue-600 font-medium">{chapterData.chapterKey}</span>
                   </button>
                 )}
                 <div className="h-px bg-gray-300 flex-1" />
@@ -970,6 +1118,99 @@ export function ManagePanel() {
           First Edit Prep: <span className="font-mono">{config?.projectDirectory}/edit-1st/</span>
         </span>
       </div>
+      </div>
+
+      {/* FR-136: Left Sidebar - Fixed in left margin */}
+      <div className="fixed left-8 top-32 bottom-8 w-[200px] z-30">
+        <ToolsSidebar
+          selectedFiles={Array.from(selectedFiles)}
+          totalFiles={filteredRecordings.length}
+          activeTool={activeTool}
+          onSimpleToolClick={handleSimpleToolClick}
+          onComplexToolClick={handleComplexToolClick}
+        />
+      </div>
+
+      {/* FR-136: Slide-Out Drawers */}
+      <SlideOutDrawer
+          isOpen={activeTool === 'rename'}
+          title="Rename Tool"
+          onClose={() => setActiveTool(null)}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Rename {selectedCount} file{selectedCount !== 1 ? 's' : ''} to:
+              </label>
+              <input
+                type="text"
+                value={bulkRenameLabel}
+                onChange={(e) => setBulkRenameLabel(e.target.value)}
+                placeholder="new-label"
+                disabled={isRenaming}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isRenaming) {
+                    handleBulkRename()
+                  }
+                }}
+              />
+              <p className="mt-2 text-xs text-gray-500">
+                ⚠️ Transcripts will be regenerated (5-10 minutes). Chapter/sequence numbers will be preserved.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleBulkRename}
+                disabled={isRenaming || !bulkRenameLabel.trim() || selectedCount === 0}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+              >
+                {isRenaming ? 'Renaming...' : 'Apply Rename'}
+              </button>
+              <button
+                onClick={() => setActiveTool(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </SlideOutDrawer>
+
+        <SlideOutDrawer
+          isOpen={activeTool === 'export'}
+          title="Export Tool"
+          onClose={() => setActiveTool(null)}
+        >
+          <div className="text-gray-600">
+            Export functionality coming soon...
+          </div>
+        </SlideOutDrawer>
+
+        <SlideOutDrawer
+          isOpen={activeTool === 'folders'}
+          title="Folder Management"
+          onClose={() => setActiveTool(null)}
+        >
+          <div className="text-gray-600">
+            Folder management functionality coming soon...
+          </div>
+        </SlideOutDrawer>
+
+        {/* Confirmation Modal */}
+        {confirmationModal && (
+          <ConfirmationModal
+            title={confirmationModal.title}
+            message={confirmationModal.message}
+            files={confirmationModal.files}
+            warning={confirmationModal.warning}
+            variant={confirmationModal.variant}
+            chapterSettings={modalChapterSettings ?? undefined}
+            onChapterSettingsChange={modalChapterSettings ? setModalChapterSettings : undefined}
+            onConfirm={confirmationModal.onConfirm}
+            onCancel={() => setConfirmationModal(null)}
+          />
+        )}
     </div>
   )
 }

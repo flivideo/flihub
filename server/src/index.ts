@@ -358,8 +358,8 @@ app.use('/api/edit', editRoutes);
 const exportRoutes = createExportRoutes(() => currentConfig);
 app.use('/api/export', exportRoutes);
 
-// FR-131: Setup manage panel routes (bulk operations)
-const manageRoutes = createManageRoutes(() => currentConfig, queueTranscription, getActiveJob, getQueue);
+// FR-131: Setup manage panel routes (bulk operations + Phase 2 regen)
+const manageRoutes = createManageRoutes(() => currentConfig, io, queueTranscription, getActiveJob, getQueue);
 app.use('/api/manage', manageRoutes);
 
 // FR-103: Setup S3 staging routes
