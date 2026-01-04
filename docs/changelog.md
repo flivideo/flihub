@@ -53,6 +53,13 @@ Simplified rename logic using delete+regenerate pattern instead of complex multi
 - **Impact:** Code tried to access non-existent `-safe` subfolders
 - **Fix:** Updated to FR-111 Phase 3 - all files stay in main folders, safe is just metadata
 
+**Bug 4: Socket.IO Events Missing (CRITICAL)**
+- **Problem:** Park/unpark/safe/restore endpoints wrote state files but didn't emit Socket.IO events
+- **Impact:** Developer Tools (FR-127) showed stale data, users had to refresh page to see state changes
+- **Fix:** Added `io.emit('recordings:changed')` to all four endpoints + created `useDeveloperSocket()` hook
+- **Affected endpoints:** `/recordings/park`, `/recordings/unpark`, `/recordings/safe`, `/recordings/restore`
+- **Result:** Real-time state updates now work - Developer Tools auto-refreshes on park/unpark/safe operations
+
 **Code Improvements:**
 - Rename endpoint: 152 → 139 lines (9% reduction in route code)
 - New utility: 240 lines of clean, testable functions
@@ -64,9 +71,11 @@ Simplified rename logic using delete+regenerate pattern instead of complex multi
 
 **Files modified:**
 - `server/src/routes/transcriptions.ts` - Added `getActiveJob()` and `getQueue()` getters
-- `server/src/index.ts` - Queue getter integration
-- `server/src/routes/index.ts` - Replaced rename-chapter endpoint (152 → 139 lines)
+- `server/src/index.ts` - Queue getter integration + pass `io` to routes
+- `server/src/routes/index.ts` - Replaced rename-chapter endpoint (152 → 139 lines) + Socket.IO events for park/unpark/safe/restore
 - `client/src/components/RenameLabelModal.tsx` - Warning banner + toast notifications
+- `client/src/hooks/useSocket.ts` - Added `useDeveloperSocket()` hook for real-time state updates
+- `client/src/App.tsx` - Added `useDeveloperSocket()` at app level (always active)
 
 **UX Changes:**
 - Yellow warning banner: "⚠️ Transcripts will be regenerated (5-10 minutes)"
@@ -84,6 +93,8 @@ Verified working:
 - ✅ Transcription conflict: Rename blocked during active transcription
 - ✅ State preservation: Parked/annotation flags preserved (needs user verification)
 - ✅ FR-111 compliance: No physical `-safe` folders used
+- ✅ Socket.IO events: Developer Tools auto-refreshes on park/unpark/safe operations
+- ✅ Real-time updates: No page refresh required for state changes
 
 **Verification:**
 Use FR-127 Developer Tools (⚙️ → 🔍) to inspect `.flihub-state.json`:

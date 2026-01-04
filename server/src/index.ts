@@ -20,6 +20,7 @@ import { createVideoRoutes } from './routes/video.js';
 import { createShadowsRouter } from './routes/shadows.js';
 import { createEditRoutes } from './routes/edit.js';
 import { createExportRoutes } from './routes/export.js';
+import { createManageRoutes } from './routes/manage.js';
 import { createS3StagingRoutes } from './routes/s3-staging.js';
 import { createStateRoutes } from './routes/state.js';
 import { createDeveloperRoutes } from './routes/developer.js';
@@ -356,6 +357,10 @@ app.use('/api/edit', editRoutes);
 // FR-122: Setup export routes
 const exportRoutes = createExportRoutes(() => currentConfig);
 app.use('/api/export', exportRoutes);
+
+// FR-131: Setup manage panel routes (bulk operations)
+const manageRoutes = createManageRoutes(() => currentConfig, queueTranscription, getActiveJob, getQueue);
+app.use('/api/manage', manageRoutes);
 
 // FR-103: Setup S3 staging routes
 const s3StagingRoutes = createS3StagingRoutes(() => currentConfig);

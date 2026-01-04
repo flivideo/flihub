@@ -6,7 +6,7 @@ import { useRecordingsSocket, useChapterRecordingSocket } from '../hooks/useSock
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { TranscriptModal } from './TranscriptModal'
 import { VideoTranscriptModal } from './VideoTranscriptModal'
-import { RenameLabelModal } from './RenameLabelModal'
+// FR-131: RenameLabelModal removed - bulk rename moved to Manage panel
 import { ChapterPanel } from './ChapterPanel'
 import { ChapterRecordingModal } from './ChapterRecordingModal'
 import { RecordingVideoModal } from './RecordingVideoModal'
@@ -271,13 +271,7 @@ export function RecordingsView() {
   const [showSafe, setShowSafe] = useState(true)
   const [showParked, setShowParked] = useState(true)  // FR-120: Toggle for parked files
   const [viewingTranscript, setViewingTranscript] = useState<string | null>(null)
-  // FR-47: State for editing chapter label
-  // FR-111: Changed from folder to isSafe
-  const [editingChapter, setEditingChapter] = useState<{
-    chapter: string
-    label: string
-    files: { filename: string; isSafe: boolean }[]
-  } | null>(null)
+  // FR-131: Removed editingChapter state - bulk rename moved to Manage panel
 
   // FR-55: State for video transcript modal
   const [showVideoTranscript, setShowVideoTranscript] = useState(false)
@@ -731,19 +725,10 @@ export function RecordingsView() {
                   <span className="text-xs text-gray-400 font-mono">
                     @ {formatDuration(chapterData.startTime, 'youtube')}
                   </span>
-                  {/* FR-47: Rename chapter button */}
-                  <button
-                    onClick={() => setEditingChapter({
-                      chapter,
-                      label: name,
-                      // FR-111: Use isSafe flag instead of folder
-                      files: group.files.map(f => ({ filename: f.filename, isSafe: f.isSafe })),
-                    })}
-                    className="text-xs text-gray-400 hover:text-blue-600 px-1.5 py-0.5 hover:bg-blue-50 rounded transition-colors"
-                    title="Rename chapter label"
-                  >
-                    ✏️
-                  </button>
+                  {/* FR-131: Removed rename button - use Manage panel instead */}
+                  <span className="text-xs text-gray-400 italic" title="To rename multiple files, use the Manage panel">
+                    (Use Manage panel to rename)
+                  </span>
                   {/* Chapter action buttons */}
                   {hasActiveFiles && (
                     <button
@@ -950,13 +935,7 @@ export function RecordingsView() {
         />
       )}
 
-      {/* FR-47: Rename Chapter Label Modal */}
-      {editingChapter && (
-        <RenameLabelModal
-          chapterInfo={editingChapter}
-          onClose={() => setEditingChapter(null)}
-        />
-      )}
+      {/* FR-131: Rename Chapter Label Modal removed - use Manage panel */}
 
       {/* FR-55: Video Transcript Modal */}
       {showVideoTranscript && (

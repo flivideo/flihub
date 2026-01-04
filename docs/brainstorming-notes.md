@@ -1193,3 +1193,369 @@ Timing reconciliation might need to run twice.
 | Video Watch Page Enhancements | FR-71 | 2025-12-15 | Pending |
 | Shadow Recording System | FR-83 | 2025-12-15 | ✅ |
 | Cross-Platform Setup Guide | FR-84 | 2025-12-15 | ✅ |
+
+---
+
+## Active Brainstorms
+
+### Manage Panel Enhancement: File Status, Inconsistency Detection, Chapter Promotion
+
+**Date:** 2026-01-03
+
+**Source:** PO brainstorming session following FR-130/131 requirements creation
+
+**Status:** Brainstorming - Awaiting user decisions before creating requirements
+
+**Context:** After creating FR-130 (Simplify Rename with Delete+Regenerate) and FR-131 (Manage Panel with Bulk Rename), we explored three potential enhancements for the Manage panel to provide better file management capabilities.
+
+---
+
+#### Part 1: File Status Indicators
+
+**Problem:** Users can't easily see which derivative files exist for a recording (shadows, transcripts, chapter videos, manifest entries).
+
+**Current state:** Information is scattered across different tabs/systems.
+
+**Proposed solutions:**
+
+**Option A: Badge Count System**
+```
+01-1-intro.mov [7]
+```
+- Shows total derivative files as a badge number
+- Expandable tooltip shows breakdown: "2 shadows, 2 transcripts, 1 chapter, 1 manifest, 1 safe"
+- Pro: Compact, scannable
+- Con: Doesn't show WHICH files at a glance
+
+**Option B: Icon Grid**
+```
+01-1-intro.mov [S] [T] [C] [M] [🔒]
+```
+- Individual icons for each file type
+- Hover for details
+- Pro: Shows which types exist
+- Con: Visual clutter if many types
+
+**Option C: Status Icons**
+```
+01-1-intro.mov ✓ (all files present)
+01-2-setup.mov ⚠ (missing some files)
+01-3-demo.mov ✗ (no derivatives)
+```
+- Three-state system: Complete / Partial / None
+- Pro: Simple visual health check
+- Con: Doesn't show what's missing
+
+**Option D: Hybrid**
+```
+01-1-intro.mov ✓ [7] (hover for breakdown)
+```
+- Status icon + badge count + expandable tooltip
+- Best of all worlds but most complex
+
+---
+
+#### Part 2: Inconsistency Detection
+
+**Problem:** Users can't easily detect problems like:
+- Chapter/sequence gaps (missing 01-4)
+- Chapter renumbering cascades (label says "Chapter 5" but files are 04-*)
+- Out-of-order sequences
+- Missing expected files
+
+**Proposed detection types:**
+
+**Type 1: Label Mismatch**
+- User types "Chapter 5" but files are numbered 04-*
+- Auto-suggest: "Did you mean to rename these to 05-*?"
+
+**Type 2: Chapter Gaps**
+- Files exist for chapters 01, 02, 04, 05 (missing 03)
+- Show warning: "Gap detected at Chapter 3"
+- Could be intentional (deleted content) or accidental
+
+**Type 3: Sequence Gaps**
+- Chapter 10 has: 10-1, 10-2, 10-5, 10-6 (missing 10-3, 10-4)
+- Show warning or auto-suggest renumber
+
+**Type 4: Missing Files**
+- Recording exists but no transcript
+- Recording exists but not in manifest (if FR-126 manifest system is active)
+- Shadow missing for external collaborator project
+
+**UI considerations:**
+- Where to show these warnings? (inline in Manage panel? dedicated "Issues" section?)
+- Auto-fix vs manual review?
+- Can user dismiss false positives?
+
+---
+
+#### Part 3: Chapter Promotion (Most Complex)
+
+**Problem:** Sometimes you record content in one chapter but realize it belongs in another chapter.
+
+**Example scenarios:**
+
+**Scenario 1: Simple move (no conflicts)**
+```
+Before:
+02-1-intro.mov, 02-2-setup.mov
+05-1-demo.mov
+
+User wants to move 02-2 to chapter 05:
+After:
+02-1-intro.mov
+05-1-demo.mov, 05-2-setup.mov  ← promoted and renumbered
+```
+
+**Scenario 2: Move with cascade (insert behavior)**
+```
+Before:
+02-1-intro.mov, 02-2-setup.mov, 02-3-demo.mov
+03-1-advanced.mov, 03-2-config.mov
+
+User wants to move 02-3-demo to chapter 03:
+Option A (insert):
+02-1-intro.mov, 02-2-setup.mov
+03-1-demo.mov ← inserted
+03-2-advanced.mov ← cascaded from 03-1
+03-3-config.mov ← cascaded from 03-2
+
+Option B (append):
+02-1-intro.mov, 02-2-setup.mov
+03-1-advanced.mov
+03-2-config.mov
+03-3-demo.mov ← appended at end
+```
+
+**Scenario 3: Multi-file promotion**
+```
+User selects:
+02-4-partA.mov
+02-5-partB.mov
+02-6-partC.mov
+
+Promote all to chapter 07:
+07-1-partA.mov
+07-2-partB.mov
+07-3-partC.mov
+```
+
+**Scenario 4: Out-of-order promotion**
+```
+User selects (non-contiguous):
+02-2-setup.mov
+02-5-demo.mov
+02-8-recap.mov
+
+Promote to chapter 10:
+Should they become 10-1, 10-2, 10-3? (renumber)
+Or preserve original sequence numbers? (10-2, 10-5, 10-8)
+```
+
+**Scenario 5: Chapter replacement**
+```
+Before:
+03-1-old-intro.mov
+03-2-old-demo.mov
+
+User promotes 02-5-new-intro to chapter 03:
+
+Option A (replace):
+03-1-new-intro.mov ← replaces existing
+(old files deleted or moved to -safe?)
+
+Option B (merge):
+03-1-old-intro.mov
+03-2-old-demo.mov
+03-3-new-intro.mov ← appended
+```
+
+**Scenario 6: Reorder within chapter**
+```
+10-1-intro.mov
+10-2-setup.mov
+10-3-demo.mov
+
+User realizes 10-3-demo should come before 10-2-setup:
+After:
+10-1-intro.mov
+10-2-demo.mov ← was 10-3
+10-3-setup.mov ← was 10-2
+```
+
+**Scenario 7: Chapter split**
+```
+Before:
+05-1-intro.mov
+05-2-partA.mov
+05-3-partB.mov
+05-4-partC.mov
+05-5-outro.mov
+
+User realizes partB and partC should be chapter 06:
+After:
+05-1-intro.mov
+05-2-partA.mov
+05-3-outro.mov ← renumbered from 05-5
+06-1-partB.mov ← promoted from 05-3
+06-2-partC.mov ← promoted from 05-4
+```
+
+**Scenario 8: Cascading ripple (complex)**
+```
+Before:
+18-1-demo.mov
+19-1-config.mov
+20-1-deploy.mov
+
+User promotes 02-5-setup to chapter 19:
+After:
+18-1-demo.mov
+19-1-setup.mov ← promoted from 02-5
+20-1-config.mov ← cascaded from 19-1
+21-1-deploy.mov ← cascaded from 20-1
+```
+
+**Scenario 9: Cascade with gaps**
+```
+Before:
+10-1-intro.mov
+12-1-advanced.mov (note: no chapter 11)
+13-1-deploy.mov
+
+User promotes files to chapter 11:
+After:
+10-1-intro.mov
+11-1-promoted.mov ← new
+12-1-advanced.mov (no cascade needed, gap preserved)
+13-1-deploy.mov
+```
+
+**Scenario 10: Backward promotion (demotion?)**
+```
+Before:
+20-5-outro.mov
+
+User promotes to chapter 02:
+After:
+02-1-outro.mov ← demoted from 20-5
+(What happens to chapters 03-20? Do they shift down?)
+```
+
+---
+
+#### Cascading Algorithm Considerations
+
+**When cascading is needed:**
+- User promotes to chapter N
+- Chapter N already has files
+- User chooses "Insert" behavior
+- All subsequent chapters must shift forward
+
+**Cascade direction:**
+- MUST rename in REVERSE order (highest to lowest)
+- Example: Rename 20→21, then 19→20, then 18→19, etc.
+- This avoids filename conflicts during rename
+
+**Cascade with gaps:**
+- If chapter 15 doesn't exist, does 16 cascade to 17 or stay at 16?
+- Likely: Preserve gaps (only cascade if destination would conflict)
+
+**Cascade limits:**
+- What if there are 50 chapters? Cascade all?
+- Should there be a "preview" showing what will change?
+- Undo becomes critical for large cascades
+
+**State synchronization:**
+- FR-130 pattern: Delete shadows/transcripts, rename core, regenerate
+- Cascade amplifies this: Could be renaming 20+ files
+- Progress indication critical
+
+---
+
+#### User Mental Models
+
+**Model 1: File-centric**
+"I want to move this specific file to a different chapter"
+- Think: File manager drag-and-drop
+- Expects: File moves, derivatives regenerate
+
+**Model 2: Content-centric**
+"This content belongs in Chapter 5, not Chapter 2"
+- Think: Outline/structure editing
+- Expects: Logical reordering, files follow content
+
+**Model 3: Timeline-centric**
+"I recorded these out of order, need to fix the sequence"
+- Think: Video editing timeline
+- Expects: Visual reordering, smart renumbering
+
+**Which model does FliHub support?**
+- Currently: File-centric (rename recordings)
+- Chapter promotion: Content-centric (move content between chapters)
+- These can conflict - need to decide primary metaphor
+
+---
+
+#### Open Questions for PO (21 questions)
+
+**File Status Indicators:**
+1. Which design option (A/B/C/D) best fits the Manage panel use case?
+2. Should status be shown for ALL recordings, or only when issues detected?
+3. What derivative files should be tracked? (shadows, transcripts, chapters, manifest, safe, annotations, ...?)
+4. Hover tooltip vs inline display vs expandable section?
+
+**Inconsistency Detection:**
+5. Which inconsistency types are most important? (Priority order?)
+6. Should detection run automatically or on-demand ("Check for issues" button)?
+7. Can users dismiss false positives? (e.g., "Chapter 3 gap is intentional")
+
+**Chapter Promotion (Critical - Most Questions):**
+8. What's the PRIMARY use case? (Simple move? Reorder? Cascade?)
+9. Should this be a Manage panel feature, or separate "Reorganize" workflow?
+10. Multi-select support? (Can user promote multiple files at once?)
+11. Insert vs Append vs Replace behavior - which is default?
+12. Should user choose behavior each time, or have a global preference?
+13. Out-of-order selections: Renumber or preserve sequence numbers?
+14. Chapter replacement: Delete old files, move to -safe, or merge?
+15. Cascade preview: Show "20 files will be renamed" before executing?
+16. Cascade limits: Maximum cascade depth? Or always cascade all subsequent chapters?
+17. Gap preservation: Cascade through gaps or preserve them?
+18. Undo: Single operation undo, or full cascade undo?
+
+**General Architecture:**
+19. Should these features be built incrementally (FR-133, FR-134, FR-135) or as one large FR?
+20. File Status + Inconsistency Detection seem related - combine into one FR?
+21. Chapter Promotion is complex - defer until simpler features proven?
+
+---
+
+#### Potential Requirements (If Promoted)
+
+If user decides to proceed:
+- **FR-133:** File Status Indicators (Option D - Hybrid)
+- **FR-134:** Inconsistency Detection & Auto-Suggest
+- **FR-135:** Chapter Promotion with Cascade Support
+
+Or combined:
+- **FR-133:** Manage Panel Power Tools (status + detection + promotion)
+
+---
+
+#### Related Work
+
+- **FR-130:** Simplify Rename Logic (Delete+Regenerate Pattern) - foundation for promotion
+- **FR-131:** Manage Panel with Bulk Rename - where these features would live
+- **Future Bulk Operations:** Documents park/safe/sequence operations (deferred)
+
+---
+
+#### Next Steps
+
+Awaiting PO decisions on:
+1. Which features to prioritize
+2. Answers to 21 questions above
+3. Whether to proceed with requirements or continue exploring
+
+---

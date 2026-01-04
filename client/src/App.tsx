@@ -18,7 +18,7 @@ import { InboxPage } from './components/InboxPage'
 import { MockupsPage } from './components/MockupsPage'
 import { WatchPage } from './components/WatchPage'
 import { S3StagingPage } from './components/S3StagingPage'
-import { ExportPanel } from './components/ExportPanel'
+import { ManagePanel } from './components/ManagePanel'
 import { ChapterContextPanel } from './components/ChapterContextPanel'
 import { ConnectionIndicator } from './components/ConnectionIndicator'
 import { OpenFolderButton } from './components/shared'
@@ -611,8 +611,9 @@ function App() {
                   ? 'text-blue-600 font-medium'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
+              title="Bulk operations, export to Gling, file regeneration, edit folder management"
             >
-              Export
+              Manage
             </button>
             <button
               onClick={() => changeTab('projects')}
@@ -774,11 +775,11 @@ function App() {
           </section>
         )}
 
-        {/* FR-122: Export Tab */}
+        {/* FR-131: Manage Tab (formerly Export) */}
         {activeTab === 'export' && (
           <section>
-            <h2 className="text-lg font-medium text-gray-700 mb-4">Export for Gling AI</h2>
-            <ExportPanel />
+            <h2 className="text-lg font-medium text-gray-700 mb-4">Manage & Export</h2>
+            <ManagePanel />
           </section>
         )}
 

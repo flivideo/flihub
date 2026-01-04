@@ -1,11 +1,11 @@
 /**
- * FR-122: Export Panel
+ * FR-131: Manage Panel (formerly Export Panel)
  *
- * Prepare recordings for Gling AI export
+ * Power tools for bulk operations and file management:
+ * - Bulk rename operations (selected files + chapter-level)
+ * - Export to Gling AI (FR-122/124/125/126)
+ * - Edit folder management
  * - Visual style matching RecordingsView
- * - Show/hide parked recordings toggle (default: hidden)
- * - Chapter grouping with checkboxes
- * - Copy paths and copy to edit-1st folder
  */
 
 import { useState, useMemo, useCallback } from 'react'
@@ -71,7 +71,7 @@ function groupByChapter(recordings: RecordingFile[]): ChapterGroup[] {
   return result.sort((a, b) => parseInt(a.chapterKey) - parseInt(b.chapterKey))
 }
 
-export function ExportPanel() {
+export function ManagePanel() {
   const { data, isLoading, error } = useRecordings()
   const { data: config } = useConfig()
   const { data: editPrepData } = useEditPrep() // FR-124: Get folder status
@@ -85,6 +85,10 @@ export function ExportPanel() {
   const [editingDictionary, setEditingDictionary] = useState(false)
   const [projectDictionary, setProjectDictionary] = useState('')
   const updateProjectDictionary = useUpdateProjectDictionary()
+
+  // FR-131: Bulk rename
+  const [bulkRenameLabel, setBulkRenameLabel] = useState('')
+  const [isRenaming, setIsRenaming] = useState(false)
 
   // Subscribe to real-time updates
   useRecordingsSocket()
@@ -124,14 +128,21 @@ export function ExportPanel() {
     return { selectedCount: count, selectedSize: size }
   }, [data?.recordings, selectedFiles])
 
-  // Initialize selection: all non-parked files
-  useMemo(() => {
-    if (!data?.recordings) return
-    const activeFiles = data.recordings
-      .filter(r => !r.isParked)
+  // FR-131: No auto-selection - user must manually select files
+
+  // Select all files
+  const selectAll = useCallback(() => {
+    const recordings = data?.recordings || []
+    const allFiles = recordings
+      .filter(r => !showParked ? !r.isParked : true)
       .map(r => r.filename)
-    setSelectedFiles(new Set(activeFiles))
-  }, [data?.recordings])
+    setSelectedFiles(new Set(allFiles))
+  }, [data?.recordings, showParked])
+
+  // Clear all selections
+  const clearSelection = useCallback(() => {
+    setSelectedFiles(new Set())
+  }, [])
 
   // Toggle individual file
   const toggleFile = useCallback((filename: string) => {
@@ -230,6 +241,73 @@ export function ExportPanel() {
       toast.error('Failed to prepare files for Gling')
     } finally {
       setIsCopying(false)
+    }
+  }
+
+  // FR-131: Bulk rename selected files
+  const handleBulkRename = async () => {
+    if (!bulkRenameLabel || bulkRenameLabel.trim().length === 0) {
+      toast.error('Please enter a new label')
+      return
+    }
+
+    const recordings = data?.recordings || []
+    const selectedRecordings = recordings.filter(r => selectedFiles.has(r.filename))
+
+    if (selectedRecordings.length === 0) {
+      toast.error('No files selected')
+      return
+    }
+
+    // Confirmation dialog
+    const confirmed = window.confirm(
+      `Rename ${selectedRecordings.length} file${selectedRecordings.length > 1 ? 's' : ''}?\n\n` +
+      `New label: "${bulkRenameLabel.trim()}"\n\n` +
+      `Transcripts will be regenerated (may take 5-10 minutes).`
+    )
+
+    if (!confirmed) return
+
+    setIsRenaming(true)
+    try {
+      const response = await fetchApi<{
+        success: boolean
+        renamedCount: number
+        transcriptionQueued: boolean
+        files?: Array<{ old: string; new: string }>
+        errors?: Array<{ file: string; error: string }>
+        error?: string
+      }>(
+        '/api/manage/bulk-rename',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            files: selectedRecordings.map(r => r.filename),
+            newLabel: bulkRenameLabel.trim(),
+          }),
+        }
+      )
+
+      if (response.success) {
+        toast.success(
+          `Renamed ${response.renamedCount} file${response.renamedCount > 1 ? 's' : ''}`,
+          { duration: 5000 }
+        )
+        if (response.transcriptionQueued) {
+          toast.info('Transcription queued (view progress in Transcriptions tab)', { duration: 5000 })
+        }
+        setBulkRenameLabel('') // Clear input
+      } else {
+        toast.error(response.error || 'Failed to rename files')
+        if (response.errors && response.errors.length > 0) {
+          console.error('Rename errors:', response.errors)
+        }
+      }
+    } catch (err) {
+      toast.error('Failed to rename files')
+      console.error('Bulk rename error:', err)
+    } finally {
+      setIsRenaming(false)
     }
   }
 
@@ -480,7 +558,60 @@ export function ExportPanel() {
           />
           Show Parked
         </label>
+        <span className="text-gray-300">|</span>
+        {selectedCount === 0 ? (
+          <button
+            onClick={selectAll}
+            className="text-xs text-blue-600 hover:text-blue-700 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
+          >
+            Select All
+          </button>
+        ) : (
+          <button
+            onClick={clearSelection}
+            className="text-xs text-gray-600 hover:text-gray-700 px-2 py-0.5 hover:bg-gray-50 rounded transition-colors"
+          >
+            Clear Selection
+          </button>
+        )}
       </div>
+
+      {/* FR-131: Bulk Rename Section */}
+      {selectedCount > 0 && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-1">
+              <label htmlFor="bulk-rename-label" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                Rename {selectedCount} file{selectedCount > 1 ? 's' : ''} to:
+              </label>
+              <input
+                id="bulk-rename-label"
+                type="text"
+                value={bulkRenameLabel}
+                onChange={(e) => setBulkRenameLabel(e.target.value)}
+                placeholder="new-label"
+                disabled={isRenaming}
+                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isRenaming) {
+                    handleBulkRename()
+                  }
+                }}
+              />
+            </div>
+            <button
+              onClick={handleBulkRename}
+              disabled={isRenaming || !bulkRenameLabel.trim()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+            >
+              {isRenaming ? 'Renaming...' : 'Apply Rename'}
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-gray-600">
+            ⚠️ Transcripts will be regenerated (5-10 minutes). Chapter/sequence numbers will be preserved.
+          </p>
+        </div>
+      )}
 
       {/* Recordings list - matching RecordingsView style */}
       <div className="space-y-6">
