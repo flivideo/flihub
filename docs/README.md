@@ -48,7 +48,7 @@ docs/
 ├── uat/                  # User Acceptance Testing
 │
 ├── archive/              # Completed requirements (historical)
-│   └── completed-requirements.md
+│   └── requirements-2025-q4.md
 │
 ├── backlog.md            # Requirements INDEX
 ├── changelog.md          # Version history

@@ -48,7 +48,7 @@ As a user, I want to see at-a-glance which projects have inbox files, assets, an
 
 ## Technical Notes
 
-**Full spec:** See `archive/completed-requirements.md` line ~635 for detailed implementation notes.
+**Full spec:** See `archive/requirements-2025-q4.md` line ~635 for detailed implementation notes.
 
 Consider NFR-81 (Project List Scanning Optimization) if this causes performance issues with many projects.
 

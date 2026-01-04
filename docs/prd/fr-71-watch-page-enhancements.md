@@ -40,7 +40,7 @@ Enhance Watch page with smart defaults and better video player controls.
 
 ## Technical Notes
 
-**Full spec:** See `archive/completed-requirements.md` line ~1573 for detailed implementation notes.
+**Full spec:** See `archive/requirements-2025-q4.md` line ~1573 for detailed implementation notes.
 
 localStorage keys to use:
 - `flihub.watch.playbackSpeed`

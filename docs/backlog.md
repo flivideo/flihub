@@ -2,7 +2,7 @@
 
 Requirements index for FliHub.
 
-**Archive:** Completed items moved to `archive/completed-requirements.md`
+**Archive:** Completed items moved to `archive/requirements-2025-q4.md`
 
 ---
 
