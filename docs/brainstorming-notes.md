@@ -1193,6 +1193,9 @@ Timing reconciliation might need to run twice.
 | Video Watch Page Enhancements | FR-71 | 2025-12-15 | Pending |
 | Shadow Recording System | FR-83 | 2025-12-15 | ✅ |
 | Cross-Platform Setup Guide | FR-84 | 2025-12-15 | ✅ |
+| File Status Indicators | FR-133 | 2026-01-04 | Pending |
+| Inconsistency Detection & Auto-Fix | FR-134 | 2026-01-04 | Pending |
+| Chapter Tools (Move, Swap, Undo) | FR-135 | 2026-01-04 | Pending |
 
 ---
 
@@ -1204,9 +1207,16 @@ Timing reconciliation might need to run twice.
 
 **Source:** PO brainstorming session following FR-130/131 requirements creation
 
-**Status:** Brainstorming - Awaiting user decisions before creating requirements
+**Status:** ✅ RESOLVED - Requirements created (FR-133, FR-134, FR-135)
+
+**Resolution Date:** 2026-01-04
 
 **Context:** After creating FR-130 (Simplify Rename with Delete+Regenerate) and FR-131 (Manage Panel with Bulk Rename), we explored three potential enhancements for the Manage panel to provide better file management capabilities.
+
+**Outcome:** All 21 questions answered by PO. Created three separate PRDs:
+- **FR-133:** File Status Indicators (Hybrid badge/hover, Groq accuracy warnings, stale file tracking)
+- **FR-134:** Inconsistency Detection & Auto-Fix (Critical issues only, confirmation dialogs)
+- **FR-135:** Chapter Tools (Move, Swap, Undo with preview and atomic rollback)
 
 ---
 
