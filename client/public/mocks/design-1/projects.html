@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects - FliHub Design-1</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --header-height: 80px;
+      --bg-app: #f8f9fa;
+      --bg-content: #ffffff;
+      --border-subtle: #e5e7eb;
+      --border-medium: #d1d5db;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --accent-blue: #2563eb;
+      --accent-blue-light: #dbeafe;
+      --accent-green: #059669;
+      --accent-yellow: #f59e0b;
+      --font-sans: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans); background: var(--bg-app); color: var(--text-primary); }
+
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+      background: var(--bg-content); border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 300;
+    }
+    .app-title { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; }
+    .app-brand { color: var(--accent-blue); }
+    .project-name { font-size: 14px; color: var(--text-secondary); font-weight: 500; margin-left: 16px; }
+    .nav-tabs { display: flex; gap: 4px; }
+    .nav-tab {
+      padding: 8px 16px; border: none; background: transparent; color: var(--text-secondary);
+      font-size: 14px; font-weight: 500; font-family: var(--font-sans); border-radius: 6px; cursor: pointer; transition: all 0.15s;
+    }
+    .nav-tab:hover { background: var(--accent-blue-light); color: var(--accent-blue); }
+    .nav-tab.active { background: var(--accent-blue); color: white; }
+
+    .app-container { min-height: 100vh; padding: var(--header-height) 0 40px; }
+    .content-area { padding: 40px; max-width: 1600px; margin: 0 auto; }
+
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;
+    }
+    .page-title { font-size: 20px; font-weight: 600; }
+    .page-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+    .refresh-btn {
+      padding: 8px 16px; background: white; border: 1px solid var(--border-medium);
+      color: var(--text-secondary); font-size: 13px; font-weight: 500;
+      border-radius: 6px; cursor: pointer; transition: all 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .refresh-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+    .projects-table-container {
+      background: var(--bg-content); border: 1px solid var(--border-subtle);
+      border-radius: 12px; overflow: hidden;
+    }
+    .projects-table {
+      width: 100%; border-collapse: collapse;
+    }
+    .projects-table th {
+      text-align: left; padding: 14px 16px; background: linear-gradient(to bottom, #fafafa, #ffffff);
+      border-bottom: 1px solid var(--border-subtle); font-size: 12px; font-weight: 600;
+      color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .projects-table td {
+      padding: 14px 16px; border-bottom: 1px solid var(--border-subtle);
+      font-size: 14px;
+    }
+    .projects-table tr:last-child td { border-bottom: none; }
+    .projects-table tr:hover { background: #fafbfc; }
+
+    .project-link {
+      font-family: var(--font-mono); font-size: 13px; color: var(--accent-blue);
+      text-decoration: none; font-weight: 500;
+    }
+    .project-link:hover { text-decoration: underline; }
+
+    .stage-badge {
+      padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600;
+      display: inline-block; text-transform: uppercase;
+    }
+    .stage-rec { background: #fef3c7; color: #92400e; }
+    .stage-pub { background: #d1fae5; color: #065f46; }
+    .stage-1st { background: #dbeafe; color: #1e40af; }
+
+    .icon-cell {
+      display: flex; gap: 6px; font-size: 16px;
+    }
+    .tooltip {
+      position: relative; cursor: pointer;
+    }
+    .tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+      padding: 8px 12px; background: #1f2937; color: white;
+      border-radius: 6px; font-size: 12px; white-space: nowrap;
+      margin-bottom: 8px; z-index: 1000; opacity: 0.95;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.15s ease;
+    }
+    .tooltip:hover::before {
+      content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+      border: 4px solid transparent; border-top-color: #1f2937;
+      margin-bottom: 4px; z-index: 1000;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+      to { opacity: 0.95; transform: translateX(-50%) translateY(0); }
+    }
+
+    .progress-bar {
+      width: 80px; height: 20px; background: #f3f4f6; border-radius: 4px;
+      position: relative; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--accent-green); transition: width 0.3s ease;
+    }
+    .progress-text {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: var(--text-primary);
+    }
+
+    .favorite-star {
+      cursor: pointer; font-size: 16px; color: #d1d5db; transition: all 0.15s;
+    }
+    .favorite-star.active { color: #f59e0b; }
+    .favorite-star:hover { color: #f59e0b; transform: scale(1.2); }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div style="display: flex; align-items: center;">
+      <div class="app-title"><span class="app-brand">FliHub</span></div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab">Incoming</button>
+      <button class="nav-tab">Recordings</button>
+      <button class="nav-tab">Watch</button>
+      <button class="nav-tab">Transcripts</button>
+      <button class="nav-tab">Inbox</button>
+      <button class="nav-tab">Assets</button>
+      <button class="nav-tab">Thumbs</button>
+      <button class="nav-tab">Manage</button>
+      <button class="nav-tab active">Projects</button>
+    </nav>
+  </header>
+
+  <div class="app-container">
+    <main class="content-area">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">AppyDave Projects</h1>
+          <div class="page-subtitle">(44 projects)</div>
+        </div>
+        <button class="refresh-btn">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M14 8c0-3.3-2.7-6-6-6S2 4.7 2 8s2.7 6 6 6c1.5 0 2.9-.6 4-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M14 4v4h-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+
+      <div class="projects-table-container">
+        <table class="projects-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;"></th>
+              <th>Project</th>
+              <th style="width: 100px;">Stage</th>
+              <th style="width: 80px;">Status</th>
+              <th style="width: 80px; text-align: center;">Ch</th>
+              <th style="width: 80px; text-align: center;">Files</th>
+              <th style="width: 80px; text-align: center;">T%</th>
+              <th style="width: 80px; text-align: center;">Actions</th>
+              <th style="width: 40px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span class="favorite-star">☆</span>
+              </td>
+              <td>
+                <a href="#" class="project-link">b59-n8n-digital-ocean</a>
+              </td>
+              <td>
+                <span class="stage-badge stage-rec">REC</span>
+              </td>
+              <td>
+                <div class="icon-cell">
+                  <span class="tooltip" data-tooltip="Video: 846.3 MB">💿</span>
+                  <span class="tooltip" data-tooltip="SRT: ready">📄</span>
+                  <span class="tooltip" data-tooltip="Root folder">🗑️</span>
+                </div>
+              </td>
+              <td style="text-align: center;">6</td>
+              <td style="text-align: center;">16</td>
+              <td style="text-align: center;">
+                <div style="display: flex; justify-content: center;">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                    <div class="progress-text">100%</div>
+                  </div>
+                </div>
+              </td>
+              <td style="text-align: center;">
+                <span class="tooltip" data-tooltip="Transcribed">✓</span>
+              </td>
+              <td>
+                <span class="tooltip" data-tooltip="Show details">ⓘ</span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="favorite-star active">★</span>
+              </td>
+              <td>
+                <a href="#" class="project-link">b64-bmad-claude-sdk</a>
+              </td>
+              <td>
+                <span class="stage-badge stage-pub">Pub</span>
+              </td>
+              <td>
+                <div class="icon-cell">
+                  <span class="tooltip" data-tooltip="Video: 2.1 GB">💿</span>
+                  <span class="tooltip" data-tooltip="SRT: ready">📄</span>
+                  <span class="tooltip" data-tooltip="Root folder">🗑️</span>
+                </div>
+              </td>
+              <td style="text-align: center;">32</td>
+              <td style="text-align: center;">88</td>
+              <td style="text-align: center;">
+                <div style="display: flex; justify-content: center;">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                    <div class="progress-text">100%</div>
+                  </div>
+                </div>
+              </td>
+              <td style="text-align: center;">
+                <span class="tooltip" data-tooltip="Transcribed">✓</span>
+              </td>
+              <td>
+                <span class="tooltip" data-tooltip="Show details">ⓘ</span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="favorite-star">☆</span>
+              </td>
+              <td>
+                <a href="#" class="project-link">b65-guy-monroe-marketing-plan</a>
+              </td>
+              <td>
+                <span class="stage-badge stage-rec">REC</span>
+              </td>
+              <td>
+                <div class="icon-cell">
+                  <span class="tooltip" data-tooltip="Video: 523 MB">💿</span>
+                  <span class="tooltip" data-tooltip="SRT: ready">📄</span>
+                  <span class="tooltip" data-tooltip="Root folder">🗑️</span>
+                </div>
+              </td>
+              <td style="text-align: center;">9</td>
+              <td style="text-align: center;">26</td>
+              <td style="text-align: center;">
+                <div style="display: flex; justify-content: center;">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                    <div class="progress-text">100%</div>
+                  </div>
+                </div>
+              </td>
+              <td style="text-align: center;">
+                <span class="tooltip" data-tooltip="Transcribed">✓</span>
+              </td>
+              <td>
+                <span class="tooltip" data-tooltip="Show details">ⓘ</span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="favorite-star">☆</span>
+              </td>
+              <td>
+                <a href="#" class="project-link">b66-context-engineered-html-art</a>
+              </td>
+              <td>
+                <span class="stage-badge stage-rec">REC</span>
+              </td>
+              <td>
+                <div class="icon-cell">
+                  <span class="tooltip" data-tooltip="Video: 1.2 GB">💿</span>
+                  <span class="tooltip" data-tooltip="SRT: ready">📄</span>
+                  <span class="tooltip" data-tooltip="Root folder">🗑️</span>
+                </div>
+              </td>
+              <td style="text-align: center;">14</td>
+              <td style="text-align: center;">25</td>
+              <td style="text-align: center;">
+                <div style="display: flex; justify-content: center;">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%;"></div>
+                    <div class="progress-text">0%</div>
+                  </div>
+                </div>
+              </td>
+              <td style="text-align: center;">
+                <span class="tooltip" data-tooltip="Not transcribed">—</span>
+              </td>
+              <td>
+                <span class="tooltip" data-tooltip="Show details">ⓘ</span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="favorite-star active">★</span>
+              </td>
+              <td>
+                <a href="#" class="project-link">c05-12-days-of-claudmas-10</a>
+              </td>
+              <td>
+                <span class="stage-badge stage-rec">REC</span>
+              </td>
+              <td>
+                <div class="icon-cell">
+                  <span class="tooltip" data-tooltip="Video: 743.5 MB">💿</span>
+                  <span class="tooltip" data-tooltip="SRT: ready">📄</span>
+                  <span class="tooltip" data-tooltip="Root folder">🗑️</span>
+                </div>
+              </td>
+              <td style="text-align: center;">7</td>
+              <td style="text-align: center;">26</td>
+              <td style="text-align: center;">
+                <div style="display: flex; justify-content: center;">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                    <div class="progress-text">100%</div>
+                  </div>
+                </div>
+              </td>
+              <td style="text-align: center;">
+                <span class="tooltip" data-tooltip="Transcribed">✓</span>
+              </td>
+              <td>
+                <span class="tooltip" data-tooltip="Show details">ⓘ</span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="favorite-star">☆</span>
+              </td>
+              <td>
+                <a href="#" class="project-link">b70-ito.ai-doubled-productivity</a>
+              </td>
+              <td>
+                <span class="stage-badge stage-rec">REC</span>
+              </td>
+              <td>
+                <div class="icon-cell">
+                  <span class="tooltip" data-tooltip="Video: 892 MB">💿</span>
+                  <span class="tooltip" data-tooltip="SRT: ready">📄</span>
+                  <span class="tooltip" data-tooltip="Root folder">🗑️</span>
+                </div>
+              </td>
+              <td style="text-align: center;">5</td>
+              <td style="text-align: center;">14</td>
+              <td style="text-align: center;">
+                <div style="display: flex; justify-content: center;">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                    <div class="progress-text">100%</div>
+                  </div>
+                </div>
+              </td>
+              <td style="text-align: center;">
+                <span class="tooltip" data-tooltip="Transcribed">✓</span>
+              </td>
+              <td>
+                <span class="tooltip" data-tooltip="Show details">ⓘ</span>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <span class="favorite-star active">★</span>
+              </td>
+              <td>
+                <a href="#" class="project-link">b71-bmad-poem</a>
+              </td>
+              <td>
+                <span class="stage-badge stage-1st">1st</span>
+              </td>
+              <td>
+                <div class="icon-cell">
+                  <span class="tooltip" data-tooltip="Video: 3.8 GB">💿</span>
+                  <span class="tooltip" data-tooltip="SRT: ready">📄</span>
+                  <span class="tooltip" data-tooltip="Root folder">🗑️</span>
+                </div>
+              </td>
+              <td style="text-align: center;">16</td>
+              <td style="text-align: center;">121</td>
+              <td style="text-align: center;">
+                <div style="display: flex; justify-content: center;">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                    <div class="progress-text">100%</div>
+                  </div>
+                </div>
+              </td>
+              <td style="text-align: center;">
+                <span class="tooltip" data-tooltip="Transcribed">✓</span>
+              </td>
+              <td>
+                <span class="tooltip" data-tooltip="Show details">ⓘ</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.querySelectorAll('.favorite-star').forEach(star => {
+      star.addEventListener('click', () => {
+        star.classList.toggle('active');
+        star.textContent = star.classList.contains('active') ? '★' : '☆';
+      });
+    });
+  </script>
+</body>
+</html>

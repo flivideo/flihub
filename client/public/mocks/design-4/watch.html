@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - FliHub Design-4: Dense Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      font-size: 11px;
+      line-height: 1.4;
+      background: #fafafa;
+      color: #111827;
+      overflow: hidden;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      grid-template-rows: 1fr 180px;
+      gap: 1px;
+      height: 100vh;
+      background: #d0d0d0;
+    }
+
+    .panel {
+      background: #ffffff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      background: #f0f0f0;
+      border-bottom: 1px solid #d0d0d0;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    /* Video Player Panel */
+    .player-panel {
+      grid-column: 1;
+      grid-row: 1;
+      background: #000;
+    }
+
+    .video-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 72px;
+      position: relative;
+    }
+
+    .video-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .video-container:hover .video-overlay {
+      opacity: 1;
+    }
+
+    .video-title {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Roboto Mono', monospace;
+      margin-bottom: 8px;
+    }
+
+    .video-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .play-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: white;
+      color: #111827;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: white;
+      border-radius: 3px;
+      width: 35%;
+    }
+
+    .time-info {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11px;
+      color: white;
+    }
+
+    /* Tabbed Panel (Right) */
+    .tabbed-panel {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .tabs {
+      display: flex;
+      background: #f9fafb;
+      border-bottom: 1px solid #d0d0d0;
+      flex-shrink: 0;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: 'Roboto', sans-serif;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      color: #6b7280;
+    }
+
+    .tab:hover {
+      background: #f3f4f6;
+    }
+
+    .tab.active {
+      color: #2563eb;
+      border-bottom-color: #2563eb;
+      background: white;
+    }
+
+    .tab-content {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Transcript Tab */
+    .transcript-line {
+      padding: 6px 12px;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+      display: flex;
+      gap: 8px;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .transcript-line:hover {
+      background: #f9fafb;
+    }
+
+    .transcript-line.active {
+      background: #dbeafe;
+      border-left: 3px solid #2563eb;
+    }
+
+    .transcript-time {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 9px;
+      color: #6b7280;
+      min-width: 50px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .transcript-text {
+      flex: 1;
+      color: #374151;
+    }
+
+    /* Chapters Tab */
+    .chapter-entry {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      cursor: pointer;
+    }
+
+    .chapter-entry:hover {
+      background: #f9fafb;
+    }
+
+    .chapter-entry.active {
+      background: #dbeafe;
+      border-left: 3px solid #2563eb;
+    }
+
+    .chapter-entry-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .chapter-number {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #2563eb;
+    }
+
+    .chapter-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .chapter-entry-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 9px;
+      color: #6b7280;
+    }
+
+    /* Segments Tab */
+    .segment-item {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f3f4f6;
+      cursor: pointer;
+    }
+
+    .segment-item:hover {
+      background: #f9fafb;
+    }
+
+    .segment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .segment-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .segment-duration {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 9px;
+      color: #6b7280;
+    }
+
+    .segment-description {
+      font-size: 10px;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+
+    /* Timeline Waveform Panel (Bottom) */
+    .timeline-panel {
+      grid-column: 1 / 3;
+      grid-row: 2;
+    }
+
+    .waveform-container {
+      height: 100px;
+      background: #fafafa;
+      border: 1px solid #e5e7eb;
+      border-radius: 2px;
+      display: flex;
+      align-items: end;
+      gap: 1px;
+      padding: 8px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .wave-bar {
+      flex: 1;
+      background: #9ca3af;
+      border-radius: 1px;
+      min-height: 4px;
+      transition: background 0.15s ease;
+    }
+
+    .wave-bar:hover {
+      background: #2563eb;
+    }
+
+    .playhead {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #dc2626;
+      left: 35%;
+      pointer-events: none;
+    }
+
+    .playhead::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -4px;
+      width: 10px;
+      height: 10px;
+      background: #dc2626;
+      border-radius: 50%;
+    }
+
+    .timeline-markers {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #9ca3af;
+      font-family: 'Roboto Mono', monospace;
+      margin-top: 6px;
+    }
+
+    .chapter-markers {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
+    }
+
+    .chapter-marker {
+      position: absolute;
+      width: 2px;
+      height: 100%;
+      background: #f59e0b;
+      opacity: 0.5;
+    }
+
+    .chapter-marker::after {
+      content: attr(data-chapter);
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      font-size: 8px;
+      color: #f59e0b;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2px 4px;
+      border-radius: 2px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f3f4f6;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    .stats-inline {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #f3f4f6;
+      border-radius: 2px;
+      font-size: 9px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 2px;
+      padding: 10px 12px;
+      margin: 12px;
+      font-size: 10px;
+      color: #1e40af;
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d0d0d0;
+      background: white;
+      font-size: 11px;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      border-radius: 2px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .action-btn:hover {
+      background: #f3f4f6;
+      border-color: #2563eb;
+    }
+
+    .action-btn.primary {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    .action-btn.primary:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Video Player Panel -->
+    <div class="panel player-panel" style="padding: 0;">
+      <div class="video-container">
+        ▶
+        <div class="video-overlay">
+          <div class="video-title">01-1-intro.mov</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.8);">Chapter 01, Sequence 1 · 00:36 · 19.0 MB</div>
+          <div class="video-controls">
+            <button class="play-btn">▶</button>
+            <div class="progress-track">
+              <div class="progress-fill"></div>
+            </div>
+            <span class="time-info">00:12 / 00:36</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabbed Panel (Right) -->
+    <div class="panel tabbed-panel">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(0)">Transcript</button>
+        <button class="tab" onclick="switchTab(1)">Chapters</button>
+        <button class="tab" onclick="switchTab(2)">Segments</button>
+        <button class="tab" onclick="switchTab(3)">Actions</button>
+      </div>
+
+      <!-- Transcript Tab -->
+      <div class="tab-content active" id="tab-0">
+        <div class="info-box">
+          <strong>💡 Interactive Transcript:</strong> Click any line to jump to that timestamp
+        </div>
+        <div class="transcript-line active">
+          <span class="transcript-time">00:00</span>
+          <span class="transcript-text">Hey everyone, welcome back to the channel! Today we're diving into something really exciting.</span>
+        </div>
+        <div class="transcript-line">
+          <span class="transcript-time">00:05</span>
+          <span class="transcript-text">We're going to explore how to use Claude to build amazing applications.</span>
+        </div>
+        <div class="transcript-line">
+          <span class="transcript-time">00:10</span>
+          <span class="transcript-text">This is part of our 12 days of Claudmas series, and this is day 10.</span>
+        </div>
+        <div class="transcript-line">
+          <span class="transcript-time">00:15</span>
+          <span class="transcript-text">If you haven't watched the previous episodes, I'll link them in the description.</span>
+        </div>
+        <div class="transcript-line">
+          <span class="transcript-time">00:20</span>
+          <span class="transcript-text">But don't worry, this video stands on its own as well.</span>
+        </div>
+        <div class="transcript-line">
+          <span class="transcript-time">00:24</span>
+          <span class="transcript-text">Let's get started by opening up our code editor.</span>
+        </div>
+        <div class="transcript-line">
+          <span class="transcript-time">00:28</span>
+          <span class="transcript-text">I've already set up a basic project structure for us.</span>
+        </div>
+        <div class="transcript-line">
+          <span class="transcript-time">00:32</span>
+          <span class="transcript-text">And we're going to build something really cool together.</span>
+        </div>
+      </div>
+
+      <!-- Chapters Tab -->
+      <div class="tab-content" id="tab-1">
+        <div class="info-box">
+          <strong>📚 Project Chapters:</strong> Navigate to any chapter in the project
+        </div>
+        <div class="chapter-entry active">
+          <div class="chapter-entry-header">
+            <span class="chapter-number">01</span>
+            <span class="chapter-name">Intro</span>
+            <span class="stats-inline">5 files</span>
+          </div>
+          <div class="chapter-entry-meta">
+            <span>Duration: 02:18</span>
+            <span>Size: 94.7 MB</span>
+            <span>Trans: 100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-entry">
+          <div class="chapter-entry-header">
+            <span class="chapter-number">02</span>
+            <span class="chapter-name">Overview</span>
+            <span class="stats-inline">8 files</span>
+          </div>
+          <div class="chapter-entry-meta">
+            <span>Duration: 07:51</span>
+            <span>Size: 268.5 MB</span>
+            <span>Trans: 88%</span>
+          </div>
+        </div>
+
+        <div class="chapter-entry">
+          <div class="chapter-entry-header">
+            <span class="chapter-number">03</span>
+            <span class="chapter-name">Generate Advanced Visuals</span>
+            <span class="stats-inline">3 files</span>
+          </div>
+          <div class="chapter-entry-meta">
+            <span>Duration: 04:52</span>
+            <span>Size: 198.9 MB</span>
+            <span>Trans: 100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-entry">
+          <div class="chapter-entry-header">
+            <span class="chapter-number">04</span>
+            <span class="chapter-name">Steve Final</span>
+            <span class="stats-inline">1 file</span>
+          </div>
+          <div class="chapter-entry-meta">
+            <span>Duration: 00:29</span>
+            <span>Size: 14.7 MB</span>
+            <span>Trans: 100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-entry">
+          <div class="chapter-entry-header">
+            <span class="chapter-number">05</span>
+            <span class="chapter-name">N8n</span>
+            <span class="stats-inline">3 files</span>
+          </div>
+          <div class="chapter-entry-meta">
+            <span>Duration: 01:29</span>
+            <span>Size: 51.8 MB</span>
+            <span>Trans: 100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-entry">
+          <div class="chapter-entry-header">
+            <span class="chapter-number">06</span>
+            <span class="chapter-name">Outro</span>
+            <span class="stats-inline">4 files</span>
+          </div>
+          <div class="chapter-entry-meta">
+            <span>Duration: 01:07</span>
+            <span>Size: 38.2 MB</span>
+            <span>Trans: 100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-entry">
+          <div class="chapter-entry-header">
+            <span class="chapter-number">07</span>
+            <span class="chapter-name">Replacement Outro</span>
+            <span class="stats-inline">2 files</span>
+          </div>
+          <div class="chapter-entry-meta">
+            <span>Duration: 00:29</span>
+            <span>Size: 18.4 MB</span>
+            <span>Trans: 100%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Segments Tab -->
+      <div class="tab-content" id="tab-2">
+        <div class="info-box">
+          <strong>✂️ Video Segments:</strong> Key moments and timestamps in this recording
+        </div>
+        <div class="segment-item">
+          <div class="segment-header">
+            <span class="segment-title">Cold Open</span>
+            <span class="segment-duration">00:00 - 00:08</span>
+          </div>
+          <div class="segment-description">Channel introduction and topic reveal</div>
+        </div>
+
+        <div class="segment-item">
+          <div class="segment-header">
+            <span class="segment-title">Series Context</span>
+            <span class="segment-duration">00:08 - 00:20</span>
+          </div>
+          <div class="segment-description">Explaining this is day 10 of 12 days of Claudmas</div>
+        </div>
+
+        <div class="segment-item">
+          <div class="segment-header">
+            <span class="segment-title">Transition</span>
+            <span class="segment-duration">00:20 - 00:28</span>
+          </div>
+          <div class="segment-description">Moving into the main content</div>
+        </div>
+
+        <div class="segment-item">
+          <div class="segment-header">
+            <span class="segment-title">Setup</span>
+            <span class="segment-duration">00:28 - 00:36</span>
+          </div>
+          <div class="segment-description">Code editor and project structure reveal</div>
+        </div>
+      </div>
+
+      <!-- Actions Tab -->
+      <div class="tab-content" id="tab-3">
+        <div style="padding: 12px;">
+          <div class="info-box">
+            <strong>🔧 Quick Actions:</strong> Common operations for this recording
+          </div>
+
+          <div style="margin-top: 16px; margin-bottom: 8px; font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase;">
+            Export
+          </div>
+          <button class="action-btn">Open in Finder</button>
+          <button class="action-btn">Export to S3</button>
+          <button class="action-btn">Copy Transcript</button>
+
+          <div style="margin-top: 16px; margin-bottom: 8px; font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase;">
+            Processing
+          </div>
+          <button class="action-btn">Regenerate Transcript</button>
+          <button class="action-btn">Regenerate Shadow</button>
+          <button class="action-btn">Generate Subtitles (SRT)</button>
+
+          <div style="margin-top: 16px; margin-bottom: 8px; font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase;">
+            Organization
+          </div>
+          <button class="action-btn">Move to Safe</button>
+          <button class="action-btn">Park Recording</button>
+          <button class="action-btn">Rename File</button>
+
+          <div style="margin-top: 16px; margin-bottom: 8px; font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase;">
+            Danger Zone
+          </div>
+          <button class="action-btn" style="color: #dc2626; border-color: #dc2626;">Delete Recording</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline Waveform Panel -->
+    <div class="panel timeline-panel">
+      <div class="panel-header">
+        <span>Waveform Timeline</span>
+        <div style="display: flex; gap: 16px; align-items: center;">
+          <span style="font-weight: 400; font-size: 10px;">00:12 / 00:36</span>
+          <span style="font-weight: 400; font-size: 10px;">33% complete</span>
+        </div>
+      </div>
+      <div class="panel-content">
+        <div class="waveform-container">
+          <div class="playhead"></div>
+          <div class="chapter-markers">
+            <div class="chapter-marker" style="left: 0%;" data-chapter="01"></div>
+          </div>
+          <div class="wave-bar" style="height: 35%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 75%;"></div>
+          <div class="wave-bar" style="height: 90%;"></div>
+          <div class="wave-bar" style="height: 65%;"></div>
+          <div class="wave-bar" style="height: 45%;"></div>
+          <div class="wave-bar" style="height: 70%;"></div>
+          <div class="wave-bar" style="height: 85%;"></div>
+          <div class="wave-bar" style="height: 60%;"></div>
+          <div class="wave-bar" style="height: 40%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 75%;"></div>
+          <div class="wave-bar" style="height: 95%;"></div>
+          <div class="wave-bar" style="height: 70%;"></div>
+          <div class="wave-bar" style="height: 50%;"></div>
+          <div class="wave-bar" style="height: 65%;"></div>
+          <div class="wave-bar" style="height: 80%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 35%;"></div>
+          <div class="wave-bar" style="height: 45%;"></div>
+          <div class="wave-bar" style="height: 60%;"></div>
+          <div class="wave-bar" style="height: 75%;"></div>
+          <div class="wave-bar" style="height: 90%;"></div>
+          <div class="wave-bar" style="height: 65%;"></div>
+          <div class="wave-bar" style="height: 40%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 70%;"></div>
+          <div class="wave-bar" style="height: 50%;"></div>
+          <div class="wave-bar" style="height: 30%;"></div>
+          <div class="wave-bar" style="height: 45%;"></div>
+          <div class="wave-bar" style="height: 65%;"></div>
+          <div class="wave-bar" style="height: 85%;"></div>
+          <div class="wave-bar" style="height: 60%;"></div>
+          <div class="wave-bar" style="height: 40%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 75%;"></div>
+          <div class="wave-bar" style="height: 90%;"></div>
+          <div class="wave-bar" style="height: 65%;"></div>
+          <div class="wave-bar" style="height: 45%;"></div>
+          <div class="wave-bar" style="height: 60%;"></div>
+          <div class="wave-bar" style="height: 80%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 35%;"></div>
+          <div class="wave-bar" style="height: 50%;"></div>
+          <div class="wave-bar" style="height: 70%;"></div>
+          <div class="wave-bar" style="height: 85%;"></div>
+          <div class="wave-bar" style="height: 60%;"></div>
+          <div class="wave-bar" style="height: 40%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 75%;"></div>
+          <div class="wave-bar" style="height: 50%;"></div>
+          <div class="wave-bar" style="height: 30%;"></div>
+          <div class="wave-bar" style="height: 45%;"></div>
+          <div class="wave-bar" style="height: 65%;"></div>
+          <div class="wave-bar" style="height: 80%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 35%;"></div>
+          <div class="wave-bar" style="height: 50%;"></div>
+          <div class="wave-bar" style="height: 70%;"></div>
+          <div class="wave-bar" style="height: 45%;"></div>
+          <div class="wave-bar" style="height: 25%;"></div>
+        </div>
+        <div class="timeline-markers">
+          <span>00:00</span>
+          <span>00:06</span>
+          <span>00:12</span>
+          <span>00:18</span>
+          <span>00:24</span>
+          <span>00:30</span>
+          <span>00:36</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(index) {
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach((tab, i) => {
+        if (i === index) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach((content, i) => {
+        if (i === index) {
+          content.classList.add('active');
+        } else {
+          content.classList.remove('active');
+        }
+      });
+    }
+
+    // Transcript line click
+    document.querySelectorAll('.transcript-line').forEach(line => {
+      line.addEventListener('click', () => {
+        document.querySelectorAll('.transcript-line').forEach(l => l.classList.remove('active'));
+        line.classList.add('active');
+        console.log('Jump to:', line.querySelector('.transcript-time').textContent);
+      });
+    });
+
+    // Chapter entry click
+    document.querySelectorAll('.chapter-entry').forEach(entry => {
+      entry.addEventListener('click', () => {
+        document.querySelectorAll('.chapter-entry').forEach(e => e.classList.remove('active'));
+        entry.classList.add('active');
+      });
+    });
+
+    // Waveform click
+    document.querySelector('.waveform-container').addEventListener('click', (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percent = (x / rect.width) * 100;
+      console.log('Seek to:', percent.toFixed(1) + '%');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incoming - FliHub Design-2 Dark Cinematic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Dark Backgrounds */
+      --bg-void: #0a0a0a;
+      --bg-panel: #1a1a1a;
+      --bg-surface: #242424;
+      --bg-elevated: #2a2a2a;
+
+      /* Text */
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-tertiary: #737373;
+
+      /* Accent Colors */
+      --accent-electric: #0ea5e9;
+      --accent-neon: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-pink: #ec4899;
+      --accent-purple: #8b5cf6;
+
+      /* Glassmorphism */
+      --panel-glass: rgba(26, 26, 26, 0.85);
+      --glow-blur: 20px;
+
+      /* Fonts */
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 300;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .app-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .app-brand {
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .project-name {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-left: 12px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 2px;
+    }
+
+    .nav-tab {
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+    }
+
+    .nav-tab:hover {
+      background: rgba(14, 165, 233, 0.1);
+      color: var(--accent-electric);
+    }
+
+    .nav-tab.active {
+      background: var(--accent-electric);
+      color: white;
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+    }
+
+    /* Layout */
+    .app-container {
+      position: relative;
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+
+    /* Video Preview Container */
+    .video-preview-container {
+      position: relative;
+      height: calc(100vh - 60px - 180px); /* Full height minus header and timeline */
+      background: linear-gradient(135deg, #0f0f1e, #1a1a2e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .video-preview-container::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.15), transparent 70%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .video-placeholder {
+      font-size: 120px;
+      color: rgba(255, 255, 255, 0.1);
+      z-index: 1;
+    }
+
+    /* Naming Form Overlay */
+    .naming-form-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 600px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 16px 64px rgba(0, 0, 0, 0.7);
+      z-index: 10;
+    }
+
+    .form-header {
+      margin-bottom: 24px;
+    }
+
+    .form-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-neon));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.3);
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    .quick-select {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .quick-btn {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+      font-family: var(--font-mono);
+    }
+
+    .quick-btn:hover {
+      background: rgba(14, 165, 233, 0.2);
+      border-color: var(--accent-electric);
+      color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-purple));
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.4);
+      font-family: var(--font-body);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 50px rgba(14, 165, 233, 0.7);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      padding: 14px 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+      font-family: var(--font-body);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: var(--text-primary);
+    }
+
+    .tag-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag-checkbox {
+      display: none;
+    }
+
+    .tag-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+      font-family: var(--font-mono);
+    }
+
+    .tag-checkbox:checked + .tag-label {
+      background: rgba(236, 72, 153, 0.2);
+      border-color: var(--accent-pink);
+      color: var(--accent-pink);
+      box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+    }
+
+    .tag-label:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Bottom Timeline */
+    .bottom-timeline {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 180px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px 32px;
+      z-index: 200;
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .timeline-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+    }
+
+    .timeline-stats {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .chapter-timeline {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .chapter-marker {
+      flex-shrink: 0;
+      width: 120px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chapter-marker:hover {
+      background: rgba(14, 165, 233, 0.1);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .chapter-marker-number {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+
+    .chapter-marker-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chapter-marker-count {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div style="display: flex; align-items: center;">
+      <div class="app-title"><span class="app-brand">FliHub</span></div>
+      <div class="project-name">› c05-12-days-of-claudmas-10</div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab active">Incoming</button>
+      <button class="nav-tab">Recordings</button>
+      <button class="nav-tab">Watch</button>
+      <button class="nav-tab">Inbox</button>
+      <button class="nav-tab">Assets</button>
+      <button class="nav-tab">Manage</button>
+      <button class="nav-tab">Projects</button>
+    </nav>
+  </header>
+
+  <div class="app-container">
+    <!-- Video Preview Container -->
+    <div class="video-preview-container">
+      <div class="video-placeholder">🎬</div>
+
+      <!-- Naming Form Overlay -->
+      <div class="naming-form-overlay">
+        <div class="form-header">
+          <div class="form-title">Name Your Recording</div>
+          <div class="form-subtitle">Recording-2025-01-05-14-32.mov · 94.7 MB · 8:45</div>
+        </div>
+
+        <form>
+          <div class="form-group">
+            <label class="form-label">Chapter Number</label>
+            <input type="text" class="form-input" value="01" placeholder="01-99">
+            <div class="form-hint">Two-digit chapter number (01-99)</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Sequence</label>
+            <input type="text" class="form-input" value="1" placeholder="1, 2, 3...">
+            <div class="form-hint">Auto-increments within chapter</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-input" placeholder="intro" autofocus>
+            <div class="form-hint">Kebab-case label (e.g., intro, overview, final-thoughts)</div>
+
+            <div class="quick-select">
+              <button type="button" class="quick-btn" onclick="setName('intro')">intro</button>
+              <button type="button" class="quick-btn" onclick="setName('overview')">overview</button>
+              <button type="button" class="quick-btn" onclick="setName('demo')">demo</button>
+              <button type="button" class="quick-btn" onclick="setName('outro')">outro</button>
+              <button type="button" class="quick-btn" onclick="setName('setup')">setup</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tags (Optional)</label>
+            <div class="tag-selector">
+              <input type="checkbox" id="tag-cta" class="tag-checkbox">
+              <label for="tag-cta" class="tag-label">CTA</label>
+
+              <input type="checkbox" id="tag-skool" class="tag-checkbox">
+              <label for="tag-skool" class="tag-label">SKOOL</label>
+
+              <input type="checkbox" id="tag-intro" class="tag-checkbox">
+              <label for="tag-intro" class="tag-label">INTRO</label>
+
+              <input type="checkbox" id="tag-outro" class="tag-checkbox">
+              <label for="tag-outro" class="tag-label">OUTRO</label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary">Park</button>
+            <button type="submit" class="btn-primary">Apply Name</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Bottom Timeline -->
+    <div class="bottom-timeline">
+      <div class="timeline-header">
+        <div class="timeline-title">Existing Chapters (6)</div>
+        <div class="timeline-stats">Total: 18:35 · 26 files</div>
+      </div>
+      <div class="chapter-timeline">
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-01</div>
+          <div class="chapter-marker-name">Intro</div>
+          <div class="chapter-marker-count">5 files</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-02</div>
+          <div class="chapter-marker-name">Overview</div>
+          <div class="chapter-marker-count">8 files</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-03</div>
+          <div class="chapter-marker-name">Generate Advanced</div>
+          <div class="chapter-marker-count">3 files</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-04</div>
+          <div class="chapter-marker-name">Steve Final</div>
+          <div class="chapter-marker-count">1 file</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-05</div>
+          <div class="chapter-marker-name">N8n</div>
+          <div class="chapter-marker-count">3 files</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-06</div>
+          <div class="chapter-marker-name">Outro</div>
+          <div class="chapter-marker-count">4 files</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setName(name) {
+      const input = document.querySelector('input[placeholder="intro"]');
+      input.value = name;
+      input.focus();
+    }
+
+    // Prevent form submission for demo
+    document.querySelector('form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('File would be renamed: 01-1-' + document.querySelector('input[placeholder="intro"]').value + '.mov');
+    });
+  </script>
+</body>
+</html>

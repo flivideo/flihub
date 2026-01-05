@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage - FliHub Design-2 Dark Cinematic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Dark Backgrounds */
+      --bg-void: #0a0a0a;
+      --bg-panel: #1a1a1a;
+      --bg-surface: #242424;
+      --bg-elevated: #2a2a2a;
+
+      /* Text */
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-tertiary: #737373;
+
+      /* Accent Colors */
+      --accent-electric: #0ea5e9;
+      --accent-neon: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-pink: #ec4899;
+      --accent-purple: #8b5cf6;
+
+      /* Glassmorphism */
+      --panel-glass: rgba(26, 26, 26, 0.85);
+      --glow-blur: 20px;
+
+      /* Fonts */
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 300;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .app-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .app-brand {
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .project-name {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-left: 12px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 2px;
+    }
+
+    .nav-tab {
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+    }
+
+    .nav-tab:hover {
+      background: rgba(14, 165, 233, 0.1);
+      color: var(--accent-electric);
+    }
+
+    .nav-tab.active {
+      background: var(--accent-electric);
+      color: white;
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+    }
+
+    /* Layout */
+    .app-container {
+      position: relative;
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+
+    .main-content {
+      padding: 32px;
+      padding-bottom: 200px; /* Space for timeline */
+    }
+
+    /* Floating Toolbar */
+    .floating-toolbar {
+      position: fixed;
+      left: 24px;
+      top: 100px;
+      width: 220px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .floating-toolbar.hidden {
+      opacity: 0;
+      transform: translateX(-20px);
+      pointer-events: none;
+    }
+
+    .toolbar-section {
+      margin-bottom: 24px;
+    }
+
+    .toolbar-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .toolbar-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+    }
+
+    .tool-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+      margin-bottom: 8px;
+    }
+
+    .tool-button:last-child {
+      margin-bottom: 0;
+    }
+
+    .tool-button:hover {
+      background: rgba(14, 165, 233, 0.2);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+      transform: translateX(4px);
+    }
+
+    .tool-button.active {
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-purple));
+      border-color: transparent;
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.5);
+    }
+
+    /* Content Grid */
+    .content-grid {
+      max-width: 1400px;
+      margin: 0 auto 0 260px;
+    }
+
+    .selection-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+    }
+
+    .selection-count {
+      font-weight: 600;
+      color: var(--accent-neon);
+      font-size: 14px;
+    }
+
+    .selection-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+    }
+
+    .btn-sm:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: var(--text-primary);
+    }
+
+    /* Thumbnail Grid */
+    .thumbnail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .video-card {
+      background: var(--bg-surface);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .video-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 0 40px rgba(14, 165, 233, 0.4);
+      border-color: var(--accent-electric);
+    }
+
+    .video-card.selected {
+      border-color: var(--accent-neon);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+    }
+
+    .video-thumbnail {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+      font-size: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .video-thumbnail::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(14, 165, 233, 0.1), transparent);
+    }
+
+    .video-info {
+      padding: 16px;
+    }
+
+    .video-filename {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chapter-badge {
+      background: rgba(14, 165, 233, 0.2);
+      color: var(--accent-electric);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .video-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .select-checkbox {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 24px;
+      height: 24px;
+      accent-color: var(--accent-neon);
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    /* Bottom Timeline */
+    .bottom-timeline {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 180px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px 32px;
+      z-index: 200;
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .timeline-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+    }
+
+    .timeline-stats {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .chapter-timeline {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .chapter-marker {
+      flex-shrink: 0;
+      width: 120px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chapter-marker:hover {
+      background: rgba(14, 165, 233, 0.1);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .chapter-marker.active {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(139, 92, 246, 0.3));
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.5);
+    }
+
+    .chapter-marker-number {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+
+    .chapter-marker-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chapter-marker-count {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* Glow Animations */
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(14, 165, 233, 0.8); }
+    }
+
+    .glow-pulse {
+      animation: glow-pulse 2s ease-in-out infinite;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div style="display: flex; align-items: center;">
+      <div class="app-title"><span class="app-brand">FliHub</span></div>
+      <div class="project-name">› c05-12-days-of-claudmas-10</div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab">Incoming</button>
+      <button class="nav-tab">Recordings</button>
+      <button class="nav-tab">Watch</button>
+      <button class="nav-tab">Inbox</button>
+      <button class="nav-tab">Assets</button>
+      <button class="nav-tab active">Manage</button>
+      <button class="nav-tab">Projects</button>
+    </nav>
+  </header>
+
+  <div class="app-container">
+    <!-- Floating Toolbar -->
+    <aside class="floating-toolbar" id="toolbar">
+      <div class="toolbar-section">
+        <div class="toolbar-title">Quick Actions</div>
+        <button class="tool-button">
+          <span>⚡</span>
+          <span>Regen Shadows</span>
+        </button>
+        <button class="tool-button">
+          <span>⚡</span>
+          <span>Regen Transcripts</span>
+        </button>
+        <button class="tool-button">
+          <span>⚡</span>
+          <span>Regen Chapters</span>
+        </button>
+      </div>
+
+      <div class="toolbar-section">
+        <div class="toolbar-title">Tools</div>
+        <button class="tool-button active">
+          <span>✏️</span>
+          <span>Rename</span>
+        </button>
+        <button class="tool-button">
+          <span>📤</span>
+          <span>Export</span>
+        </button>
+        <button class="tool-button">
+          <span>📁</span>
+          <span>Folders</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content-grid">
+        <!-- Selection Badge -->
+        <div class="selection-badge">
+          <div class="selection-count">5 of 26 selected (94.7 MB)</div>
+          <div style="flex: 1;"></div>
+          <div class="selection-actions">
+            <button class="btn-sm">Select All</button>
+            <button class="btn-sm">Clear</button>
+          </div>
+        </div>
+
+        <!-- Thumbnail Grid -->
+        <div class="thumbnail-grid">
+          <!-- Video Card 1 -->
+          <div class="video-card selected">
+            <input type="checkbox" class="select-checkbox" checked>
+            <div class="video-thumbnail">
+              🎬
+            </div>
+            <div class="video-info">
+              <div class="video-filename">
+                <span class="chapter-badge">01</span>
+                <span>01-1-intro.mov</span>
+              </div>
+              <div class="video-meta">
+                <span>19.0 MB</span>
+                <span>2:15</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 2 -->
+          <div class="video-card selected">
+            <input type="checkbox" class="select-checkbox" checked>
+            <div class="video-thumbnail">
+              🎬
+            </div>
+            <div class="video-info">
+              <div class="video-filename">
+                <span class="chapter-badge">01</span>
+                <span>01-2-intro.mov</span>
+              </div>
+              <div class="video-meta">
+                <span>6.5 MB</span>
+                <span>0:45</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 3 -->
+          <div class="video-card selected">
+            <input type="checkbox" class="select-checkbox" checked>
+            <div class="video-thumbnail">
+              🎬
+            </div>
+            <div class="video-info">
+              <div class="video-filename">
+                <span class="chapter-badge">01</span>
+                <span>01-3-intro.mov</span>
+              </div>
+              <div class="video-meta">
+                <span>12.2 MB</span>
+                <span>1:30</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 4 -->
+          <div class="video-card selected">
+            <input type="checkbox" class="select-checkbox" checked>
+            <div class="video-thumbnail">
+              🎬
+            </div>
+            <div class="video-info">
+              <div class="video-filename">
+                <span class="chapter-badge">01</span>
+                <span>01-4-intro.mov</span>
+              </div>
+              <div class="video-meta">
+                <span>31.4 MB</span>
+                <span>3:45</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 5 -->
+          <div class="video-card selected">
+            <input type="checkbox" class="select-checkbox" checked>
+            <div class="video-thumbnail">
+              🎬
+            </div>
+            <div class="video-info">
+              <div class="video-filename">
+                <span class="chapter-badge">01</span>
+                <span>01-5-intro.mov</span>
+              </div>
+              <div class="video-meta">
+                <span>25.7 MB</span>
+                <span>3:00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 6 -->
+          <div class="video-card">
+            <input type="checkbox" class="select-checkbox">
+            <div class="video-thumbnail">
+              🎬
+            </div>
+            <div class="video-info">
+              <div class="video-filename">
+                <span class="chapter-badge">02</span>
+                <span>02-1-overview.mov</span>
+              </div>
+              <div class="video-meta">
+                <span>35.6 MB</span>
+                <span>4:20</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 7 -->
+          <div class="video-card">
+            <input type="checkbox" class="select-checkbox">
+            <div class="video-thumbnail">
+              🎬
+            </div>
+            <div class="video-info">
+              <div class="video-filename">
+                <span class="chapter-badge">02</span>
+                <span>02-2-overview.mov</span>
+              </div>
+              <div class="video-meta">
+                <span>8.6 MB</span>
+                <span>1:05</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Card 8 -->
+          <div class="video-card">
+            <input type="checkbox" class="select-checkbox">
+            <div class="video-thumbnail">
+              🎬
+            </div>
+            <div class="video-info">
+              <div class="video-filename">
+                <span class="chapter-badge">03</span>
+                <span>03-1-generate-advanced.mov</span>
+              </div>
+              <div class="video-meta">
+                <span>63.2 MB</span>
+                <span>7:45</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Timeline -->
+    <div class="bottom-timeline">
+      <div class="timeline-header">
+        <div class="timeline-title">Chapters (7)</div>
+        <div class="timeline-stats">Total: 18:35 · 26 files</div>
+      </div>
+      <div class="chapter-timeline">
+        <div class="chapter-marker active">
+          <div class="chapter-marker-number">CH-01</div>
+          <div class="chapter-marker-name">Intro</div>
+          <div class="chapter-marker-count">5 files</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-02</div>
+          <div class="chapter-marker-name">Overview</div>
+          <div class="chapter-marker-count">8 files</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-03</div>
+          <div class="chapter-marker-name">Generate Advanced</div>
+          <div class="chapter-marker-count">3 files</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-04</div>
+          <div class="chapter-marker-name">Steve Final</div>
+          <div class="chapter-marker-count">1 file</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-05</div>
+          <div class="chapter-marker-name">N8n</div>
+          <div class="chapter-marker-count">3 files</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-06</div>
+          <div class="chapter-marker-name">Outro</div>
+          <div class="chapter-marker-count">4 files</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-07</div>
+          <div class="chapter-marker-name">Replacement Outro</div>
+          <div class="chapter-marker-count">2 files</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Checkbox interaction
+    document.querySelectorAll('.select-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const card = e.target.closest('.video-card');
+        if (e.target.checked) {
+          card.classList.add('selected');
+        } else {
+          card.classList.remove('selected');
+        }
+      });
+    });
+
+    // Chapter marker interaction
+    document.querySelectorAll('.chapter-marker').forEach(marker => {
+      marker.addEventListener('click', (e) => {
+        document.querySelectorAll('.chapter-marker').forEach(m => m.classList.remove('active'));
+        marker.classList.add('active');
+      });
+    });
+
+    // Toolbar auto-hide on scroll (optional)
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset;
+      const toolbar = document.getElementById('toolbar');
+
+      if (currentScroll > lastScroll && currentScroll > 100) {
+        toolbar.classList.add('hidden');
+      } else {
+        toolbar.classList.remove('hidden');
+      }
+      lastScroll = currentScroll;
+    });
+  </script>
+</body>
+</html>

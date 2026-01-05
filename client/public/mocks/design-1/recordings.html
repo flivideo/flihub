@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recordings - FliHub Design-1</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-right-width: 280px;
+      --header-height: 80px;
+      --bg-app: #f8f9fa;
+      --bg-content: #ffffff;
+      --border-subtle: #e5e7eb;
+      --border-medium: #d1d5db;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --accent-blue: #2563eb;
+      --accent-blue-light: #dbeafe;
+      --accent-green: #059669;
+      --font-sans: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans); background: var(--bg-app); color: var(--text-primary); }
+
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+      background: var(--bg-content); border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 300;
+    }
+    .app-title { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; }
+    .app-brand { color: var(--accent-blue); }
+    .project-name { font-size: 14px; color: var(--text-secondary); font-weight: 500; margin-left: 16px; }
+    .nav-tabs { display: flex; gap: 4px; }
+    .nav-tab {
+      padding: 8px 16px; border: none; background: transparent; color: var(--text-secondary);
+      font-size: 14px; font-weight: 500; font-family: var(--font-sans); border-radius: 6px; cursor: pointer; transition: all 0.15s;
+    }
+    .nav-tab:hover { background: var(--accent-blue-light); color: var(--accent-blue); }
+    .nav-tab.active { background: var(--accent-blue); color: white; }
+
+    .app-container { min-height: 100vh; padding: var(--header-height) 0 40px; }
+    .content-area { margin-right: var(--sidebar-right-width); padding: 40px; }
+
+    .chapter-panel {
+      position: fixed; right: 0; top: var(--header-height); width: var(--sidebar-right-width);
+      height: calc(100vh - var(--header-height)); background: var(--bg-content);
+      border-left: 1px solid var(--border-subtle); overflow-y: auto; z-index: 100;
+    }
+    .chapter-panel-header {
+      padding: 20px; border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(to bottom, #fafafa, #ffffff);
+    }
+    .chapter-panel-title {
+      font-size: 13px; font-weight: 600; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    .chapter-nav-list { padding: 12px; }
+    .chapter-nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      border-radius: 6px; cursor: pointer; transition: all 0.15s; margin-bottom: 4px;
+    }
+    .chapter-nav-item:hover { background: var(--accent-blue-light); }
+    .chapter-nav-item.active { background: var(--accent-blue); color: white; }
+    .chapter-nav-number { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-tertiary); width: 24px; }
+    .chapter-nav-item.active .chapter-nav-number { color: rgba(255, 255, 255, 0.8); }
+    .chapter-nav-name { font-size: 13px; font-weight: 500; flex: 1; }
+    .chapter-nav-time { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
+
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);
+    }
+    .page-title { font-size: 20px; font-weight: 600; }
+    .page-stats { font-size: 14px; color: var(--text-secondary); }
+
+    .filters-bar {
+      display: flex; gap: 12px; margin-bottom: 24px;
+      padding: 16px; background: var(--bg-content); border: 1px solid var(--border-subtle); border-radius: 8px;
+    }
+    .filter-btn {
+      padding: 6px 12px; border: 1px solid var(--border-medium); background: white;
+      color: var(--text-secondary); font-size: 13px; font-weight: 500;
+      border-radius: 5px; cursor: pointer; transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+    .filter-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+
+    .recording-group { background: var(--bg-content); border: 1px solid var(--border-subtle); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+    .recording-header {
+      display: flex; align-items: center; gap: 12px; padding: 16px 20px;
+      background: linear-gradient(to bottom, #fafafa, #ffffff); border-bottom: 1px solid var(--border-subtle);
+    }
+    .recording-title { font-size: 15px; font-weight: 600; flex: 1; }
+    .recording-meta { font-size: 13px; color: var(--text-secondary); }
+
+    .recording-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+      border-bottom: 1px solid var(--border-subtle); transition: background 0.1s;
+    }
+    .recording-item:last-child { border-bottom: none; }
+    .recording-item:hover { background: #fafbfc; }
+    .play-btn {
+      width: 32px; height: 32px; background: var(--accent-blue); color: white; border: none;
+      border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .play-btn:hover { background: #1d4ed8; transform: scale(1.05); }
+    .recording-name { font-family: var(--font-mono); font-size: 13px; flex: 1; }
+    .recording-duration { font-size: 12px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; margin-right: 12px; }
+    .recording-size { font-size: 13px; color: var(--text-secondary); min-width: 80px; text-align: right; }
+    .recording-date { font-size: 12px; color: var(--text-tertiary); min-width: 90px; text-align: right; }
+    .status-badge {
+      padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+      background: var(--accent-green); color: white; opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div style="display: flex; align-items: center;">
+      <div class="app-title"><span class="app-brand">FliHub</span></div>
+      <div class="project-name">› c05-12-days-of-claudmas-10</div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab">Incoming</button>
+      <button class="nav-tab active">Recordings</button>
+      <button class="nav-tab">Watch</button>
+      <button class="nav-tab">Transcripts</button>
+      <button class="nav-tab">Inbox</button>
+      <button class="nav-tab">Assets</button>
+      <button class="nav-tab">Thumbs</button>
+      <button class="nav-tab">Manage</button>
+      <button class="nav-tab">Projects</button>
+    </nav>
+  </header>
+
+  <div class="app-container">
+    <main class="content-area">
+      <div class="page-header">
+        <h1 class="page-title">Project Recordings</h1>
+        <div class="page-stats">26 files (26 active, 0 safe, 0 parked) | 18:35 | 743.5 MB</div>
+      </div>
+
+      <div class="filters-bar">
+        <button class="filter-btn active">
+          <span style="margin-right: 4px;">✓</span> Safe
+        </button>
+        <button class="filter-btn active">
+          <span style="margin-right: 4px;">✓</span> Parked
+        </button>
+        <span style="flex: 1;"></span>
+        <button class="filter-btn">→ Safe All</button>
+        <button class="filter-btn">→ Park All</button>
+        <button class="filter-btn">
+          <span style="margin-right: 4px;">📝</span> All
+        </button>
+        <button class="filter-btn">Combine</button>
+      </div>
+
+      <div class="recording-group">
+        <div class="recording-header">
+          <span class="recording-title">01 Intro</span>
+          <span class="recording-meta">5 files · 2:18</span>
+          <span class="recording-meta" style="font-family: var(--font-mono);">@ 00:00</span>
+        </div>
+        <div class="recording-item">
+          <button class="play-btn">▶</button>
+          <span class="recording-name">01-1-intro.mov</span>
+          <span class="recording-duration">36s</span>
+          <span class="recording-size">19.0 MB</span>
+          <span class="recording-date">03/01/2026</span>
+          <span class="status-badge">T</span>
+        </div>
+        <div class="recording-item">
+          <button class="play-btn">▶</button>
+          <span class="recording-name">01-2-intro.mov</span>
+          <span class="recording-duration">18s</span>
+          <span class="recording-size">6.5 MB</span>
+          <span class="recording-date">03/01/2026</span>
+          <span class="status-badge">T</span>
+        </div>
+        <div class="recording-item">
+          <button class="play-btn">▶</button>
+          <span class="recording-name">01-3-intro.mov</span>
+          <span class="recording-duration">30s</span>
+          <span class="recording-size">12.2 MB</span>
+          <span class="recording-date">03/01/2026</span>
+          <span class="status-badge">T</span>
+        </div>
+      </div>
+
+      <div class="recording-group">
+        <div class="recording-header">
+          <span class="recording-title">02 Overview</span>
+          <span class="recording-meta">8 files · 7:51</span>
+          <span class="recording-meta" style="font-family: var(--font-mono);">@ 02:18</span>
+        </div>
+        <div class="recording-item">
+          <button class="play-btn">▶</button>
+          <span class="recording-name">02-1-overview.mov</span>
+          <span class="recording-duration">56s</span>
+          <span class="recording-size">35.6 MB</span>
+          <span class="recording-date">03/01/2026</span>
+          <span class="status-badge">T</span>
+        </div>
+        <div class="recording-item">
+          <button class="play-btn">▶</button>
+          <span class="recording-name">02-2-overview.mov</span>
+          <span class="recording-duration">16s</span>
+          <span class="recording-size">8.6 MB</span>
+          <span class="recording-date">03/01/2026</span>
+          <span class="status-badge">T</span>
+        </div>
+        <div class="recording-item">
+          <button class="play-btn">▶</button>
+          <span class="recording-name">02-3-generate-simple-visuals.mov</span>
+          <span class="recording-duration">2:49</span>
+          <span class="recording-size">83.6 MB</span>
+          <span class="recording-date">03/01/2026</span>
+          <span class="status-badge">T</span>
+        </div>
+      </div>
+
+      <div class="recording-group">
+        <div class="recording-header">
+          <span class="recording-title">03 Generate Advanced Visuals</span>
+          <span class="recording-meta">3 files · 4:57</span>
+          <span class="recording-meta" style="font-family: var(--font-mono);">@ 10:10</span>
+        </div>
+        <div class="recording-item">
+          <button class="play-btn">▶</button>
+          <span class="recording-name">03-1-generate-advanced-visuals.mov</span>
+          <span class="recording-duration">1:39</span>
+          <span class="recording-size">63.2 MB</span>
+          <span class="recording-date">03/01/2026</span>
+          <span class="status-badge">T</span>
+        </div>
+        <div class="recording-item">
+          <button class="play-btn">▶</button>
+          <span class="recording-name">03-2-generate-advanced-visuals.mov</span>
+          <span class="recording-duration">44s</span>
+          <span class="recording-size">16.9 MB</span>
+          <span class="recording-date">03/01/2026</span>
+          <span class="status-badge">T</span>
+        </div>
+      </div>
+    </main>
+
+    <aside class="chapter-panel">
+      <div class="chapter-panel-header">
+        <div class="chapter-panel-title">Chapters (7)</div>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Total: 18:35</div>
+      </div>
+      <div class="chapter-nav-list">
+        <div class="chapter-nav-item active">
+          <span class="chapter-nav-number">01</span>
+          <span class="chapter-nav-name">Intro</span>
+          <span class="chapter-nav-time">00:00</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">02</span>
+          <span class="chapter-nav-name">Overview</span>
+          <span class="chapter-nav-time">02:18</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">03</span>
+          <span class="chapter-nav-name">Generate...</span>
+          <span class="chapter-nav-time">10:10</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">04</span>
+          <span class="chapter-nav-name">Steve Final</span>
+          <span class="chapter-nav-time">15:07</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">05</span>
+          <span class="chapter-nav-name">N8n</span>
+          <span class="chapter-nav-time">15:36</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">06</span>
+          <span class="chapter-nav-name">Outro</span>
+          <span class="chapter-nav-time">17:00</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">07</span>
+          <span class="chapter-nav-name">Replacement</span>
+          <span class="chapter-nav-time">18:13</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

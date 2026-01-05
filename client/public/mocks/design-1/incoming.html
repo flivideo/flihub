@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incoming - FliHub Design-1</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-right-width: 280px;
+      --content-max-width: 1200px;
+      --header-height: 80px;
+      --bg-app: #f8f9fa;
+      --bg-content: #ffffff;
+      --border-subtle: #e5e7eb;
+      --border-medium: #d1d5db;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --accent-blue: #2563eb;
+      --accent-blue-light: #dbeafe;
+      --accent-green: #059669;
+      --accent-green-light: #d1fae5;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --font-sans: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-app);
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: var(--bg-content);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 300;
+    }
+
+    .app-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .app-brand {
+      color: var(--accent-blue);
+    }
+
+    .project-name {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-left: 16px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-tab {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .nav-tab:hover {
+      background: var(--accent-blue-light);
+      color: var(--accent-blue);
+    }
+
+    .nav-tab.active {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    .app-container {
+      position: relative;
+      min-height: 100vh;
+      padding: var(--header-height) 0 40px;
+    }
+
+    .chapter-panel {
+      position: fixed;
+      right: 0;
+      top: var(--header-height);
+      width: var(--sidebar-right-width);
+      height: calc(100vh - var(--header-height));
+      background: var(--bg-content);
+      border-left: 1px solid var(--border-subtle);
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .chapter-panel-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(to bottom, #fafafa, #ffffff);
+    }
+
+    .chapter-panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .chapter-panel-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .chapter-nav-list {
+      padding: 12px;
+    }
+
+    .chapter-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .chapter-nav-number {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-tertiary);
+      width: 24px;
+    }
+
+    .chapter-nav-name {
+      font-weight: 500;
+      flex: 1;
+      color: var(--text-secondary);
+    }
+
+    .content-area {
+      max-width: var(--content-max-width);
+      margin: 0 auto;
+      padding: 40px;
+      margin-right: var(--sidebar-right-width);
+    }
+
+    .naming-card {
+      background: var(--bg-content);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 32px;
+    }
+
+    .naming-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .naming-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .btn-new-chapter {
+      padding: 8px 16px;
+      border: none;
+      background: var(--accent-green);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-new-chapter:hover {
+      background: #047857;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .naming-form {
+      display: grid;
+      grid-template-columns: 100px 80px 1fr 200px;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .form-input {
+      padding: 10px 12px;
+      border: 1px solid var(--border-medium);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: var(--font-mono);
+      transition: all 0.15s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px var(--accent-blue-light);
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .tag {
+      padding: 4px 10px;
+      background: #f3f4f6;
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tag:hover {
+      background: var(--accent-blue-light);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    .tag.selected {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    .preview-output {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: var(--accent-blue);
+      padding: 16px;
+      background: #f0f7ff;
+      border: 1px solid var(--accent-blue-light);
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .incoming-files-card {
+      background: var(--bg-content);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(to bottom, #fafafa, #ffffff);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-tertiary);
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .empty-state-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .project-path {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--accent-green);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div style="display: flex; align-items: center;">
+      <div class="app-title"><span class="app-brand">FliHub</span></div>
+      <div class="project-name">› c05-12-days-of-claudmas-10</div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab active">Incoming</button>
+      <button class="nav-tab">Recordings</button>
+      <button class="nav-tab">Watch</button>
+      <button class="nav-tab">Transcripts</button>
+      <button class="nav-tab">Inbox</button>
+      <button class="nav-tab">Assets</button>
+      <button class="nav-tab">Thumbs</button>
+      <button class="nav-tab">Manage</button>
+      <button class="nav-tab">Projects</button>
+    </nav>
+  </header>
+
+  <div class="app-container">
+    <!-- CENTER CONTENT (no left sidebar on this page) -->
+    <main class="content-area">
+      <!-- Naming Template Card -->
+      <div class="naming-card">
+        <div class="naming-header">
+          <h2 class="naming-title">Naming Template</h2>
+          <button class="btn-new-chapter">New Chapter</button>
+        </div>
+
+        <div class="naming-form">
+          <div class="form-field">
+            <label class="form-label">Chapter</label>
+            <input type="text" class="form-input" value="07" placeholder="01">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Seq</label>
+            <input type="text" class="form-input" value="2" placeholder="1">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-input" value="replacement-outro" placeholder="descriptive-name">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Tags</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" class="form-input" value="" placeholder="TAG" style="flex: 1;">
+            </div>
+          </div>
+        </div>
+
+        <div class="tag-list">
+          <span class="tag">CTA</span>
+          <span class="tag">SKOOL</span>
+          <span class="tag">outro</span>
+          <span class="tag">requirements</span>
+          <span class="tag">development</span>
+          <span class="tag">summary</span>
+          <span class="tag">demo</span>
+        </div>
+
+        <div style="height: 1px; background: var(--border-subtle); margin: 24px 0;"></div>
+
+        <div class="preview-output">
+          07-2-replacement-outro.mov
+        </div>
+      </div>
+
+      <!-- Incoming Files Queue -->
+      <div class="incoming-files-card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>Incoming Files</span>
+            <span style="display: inline-flex; align-items: center; gap: 6px; margin-left: 8px;">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <path d="M2 8h12M8 2v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </div>
+          <div class="project-path">
+            Project: ~/dev/video-projects/v-appydave/c05-12-days-of-claudmas-10
+            <span class="status-indicator">
+              <span class="status-dot"></span>
+              Watching...
+            </span>
+          </div>
+        </div>
+
+        <div class="empty-state">
+          <div class="empty-state-icon">📂</div>
+          <div class="empty-state-text">No pending files</div>
+          <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 8px;">
+            Watching for new .mov files...
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR - Chapter Navigation (context only) -->
+    <aside class="chapter-panel">
+      <div class="chapter-panel-header">
+        <div class="chapter-panel-title">Chapters (7)</div>
+        <div class="chapter-panel-meta">For reference</div>
+      </div>
+      <div class="chapter-nav-list">
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">01</span>
+          <span class="chapter-nav-name">intro</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">02</span>
+          <span class="chapter-nav-name">overview</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">03</span>
+          <span class="chapter-nav-name">generate-advanc...</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">04</span>
+          <span class="chapter-nav-name">steve-final</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">05</span>
+          <span class="chapter-nav-name">n8n</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">06</span>
+          <span class="chapter-nav-name">outro</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">07</span>
+          <span class="chapter-nav-name">replacement-outro</span>
+        </div>
+        <div style="padding: 12px; margin-top: 12px; border-top: 1px solid var(--border-subtle);">
+          <div style="font-size: 12px; color: var(--text-secondary);">Next: <strong>08</strong></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // Tag selection
+    document.querySelectorAll('.tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        tag.classList.toggle('selected');
+      });
+    });
+
+    // Auto-update filename preview
+    const inputs = document.querySelectorAll('.naming-form .form-input');
+    const preview = document.querySelector('.preview-output');
+
+    inputs.forEach(input => {
+      input.addEventListener('input', updatePreview);
+    });
+
+    function updatePreview() {
+      const chapter = document.querySelectorAll('.form-input')[0].value || '00';
+      const seq = document.querySelectorAll('.form-input')[1].value || '1';
+      const name = document.querySelectorAll('.form-input')[2].value || 'unnamed';
+      const tags = document.querySelectorAll('.form-input')[3].value;
+
+      const selectedTags = Array.from(document.querySelectorAll('.tag.selected'))
+        .map(t => t.textContent)
+        .join('-');
+
+      let filename = `${chapter.padStart(2, '0')}-${seq}-${name}`;
+      if (tags) filename += `-${tags}`;
+      if (selectedTags) filename += `-${selectedTags}`;
+      filename += '.mov';
+
+      preview.textContent = filename;
+    }
+  </script>
+</body>
+</html>

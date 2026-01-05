@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Incoming - FliHub Design-3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Berkeley+Mono:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --text-secondary: #666666;
+      --accent: #0000ff;
+      --border: #e0e0e0;
+      --hover-bg: #f5f5f5;
+      --font-family: 'Berkeley Mono', 'JetBrains Mono', monospace;
+      --font-size-sm: 12px;
+      --font-size-base: 14px;
+      --font-size-lg: 18px;
+      --spacing-unit: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: var(--font-size-base);
+    }
+
+    .header {
+      height: 50px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .page-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+    }
+
+    .shortcut-hint {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .naming-form {
+      border: 1px solid var(--border);
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .form-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 100px 80px 1fr 200px;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-field label {
+      display: block;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-secondary);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tag {
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      font-size: var(--font-size-sm);
+      cursor: pointer;
+      background: var(--bg);
+      font-family: var(--font-family);
+    }
+
+    .tag:hover {
+      background: var(--hover-bg);
+    }
+
+    .tag.selected {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .preview {
+      padding: 16px;
+      border: 1px solid var(--border);
+      text-align: center;
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .btn {
+      background: transparent;
+      border: 1px solid var(--text);
+      padding: 8px 16px;
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      cursor: pointer;
+      transition: all 0s;
+    }
+
+    .btn:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .queue-section {
+      border: 1px solid var(--border);
+      padding: 24px;
+    }
+
+    .queue-header {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .status-indicator {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    /* Command Palette Modal */
+    .cmd-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .cmd-overlay.active { display: flex; }
+
+    .cmd-palette {
+      background: var(--bg);
+      border: 2px solid var(--text);
+      width: 600px;
+      max-height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cmd-search {
+      border: none;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      outline: none;
+    }
+
+    .cmd-results {
+      overflow-y: auto;
+      max-height: 400px;
+    }
+
+    .cmd-category {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 12px 20px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cmd-item:hover,
+    .cmd-item.selected {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .cmd-item-name { flex: 1; }
+
+    .cmd-shortcut {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    .cmd-item:hover .cmd-shortcut,
+    .cmd-item.selected .cmd-shortcut {
+      color: var(--bg);
+    }
+
+    .keyboard-hints {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="page-title">Incoming Files</div>
+    <div class="shortcut-hint">CMD+K to search | N to expand form</div>
+  </div>
+
+  <div class="content">
+    <!-- Naming Form -->
+    <div class="naming-form">
+      <div class="form-title">
+        <span>Naming Template</span>
+        <button class="btn">New Chapter</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>CHAPTER</label>
+          <input type="text" class="form-input" value="07" id="chapter">
+        </div>
+        <div class="form-field">
+          <label>SEQ</label>
+          <input type="text" class="form-input" value="2" id="seq">
+        </div>
+        <div class="form-field">
+          <label>NAME</label>
+          <input type="text" class="form-input" value="replacement-outro" id="name">
+        </div>
+        <div class="form-field">
+          <label>TAGS</label>
+          <input type="text" class="form-input" placeholder="TAG" id="tags">
+        </div>
+      </div>
+
+      <div class="tag-list">
+        <button class="tag">CTA</button>
+        <button class="tag">SKOOL</button>
+        <button class="tag">outro</button>
+        <button class="tag">requirements</button>
+        <button class="tag">development</button>
+        <button class="tag">summary</button>
+        <button class="tag">demo</button>
+      </div>
+
+      <div class="preview" id="preview">07-2-replacement-outro.mov</div>
+    </div>
+
+    <!-- Incoming Queue -->
+    <div class="queue-section">
+      <div class="queue-header">Incoming Queue</div>
+      <div class="empty-state">
+        <div class="empty-icon">[]</div>
+        <div>No pending files</div>
+        <div class="status-indicator">Watching for new .mov files...</div>
+        <div class="status-indicator" style="margin-top: 12px;">
+          ~/dev/video-projects/v-appydave/c05-12-days-of-claudmas-10
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Command Palette -->
+  <div class="cmd-overlay" id="cmdPalette">
+    <div class="cmd-palette">
+      <input type="text" class="cmd-search" id="cmdSearch" placeholder="Type a command..." autocomplete="off">
+      <div class="cmd-results" id="cmdResults">
+        <div class="cmd-category">ACTIONS</div>
+        <div class="cmd-item selected">
+          <span class="cmd-item-name">Create new chapter</span>
+          <span class="cmd-shortcut">N</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Process incoming file</span>
+          <span class="cmd-shortcut">Enter</span>
+        </div>
+
+        <div class="cmd-category">NAVIGATION</div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Recordings</span>
+          <span class="cmd-shortcut">2</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Manage</span>
+          <span class="cmd-shortcut">8</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Projects</span>
+          <span class="cmd-shortcut">9</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Hints -->
+  <div class="keyboard-hints">
+    CMD+K: Command Palette | N: New Chapter | Enter: Process | ESC: Close
+  </div>
+
+  <script>
+    let selectedIndex = 0;
+
+    // Update preview
+    function updatePreview() {
+      const chapter = document.getElementById('chapter').value.padStart(2, '0');
+      const seq = document.getElementById('seq').value;
+      const name = document.getElementById('name').value || 'unnamed';
+      const tags = document.getElementById('tags').value;
+
+      const selectedTags = Array.from(document.querySelectorAll('.tag.selected'))
+        .map(t => t.textContent)
+        .join('-');
+
+      let filename = `${chapter}-${seq}-${name}`;
+      if (tags) filename += `-${tags}`;
+      if (selectedTags) filename += `-${selectedTags}`;
+      filename += '.mov';
+
+      document.getElementById('preview').textContent = filename;
+    }
+
+    // Form inputs
+    document.querySelectorAll('.form-input').forEach(input => {
+      input.addEventListener('input', updatePreview);
+    });
+
+    // Tag selection
+    document.querySelectorAll('.tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        tag.classList.toggle('selected');
+        updatePreview();
+      });
+    });
+
+    // Open command palette with CMD+K
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openCommandPalette();
+      }
+
+      if (e.key === 'Escape') {
+        closeCommandPalette();
+      }
+
+      if (e.key === 'n' && !document.getElementById('cmdPalette').classList.contains('active')) {
+        document.getElementById('chapter').focus();
+      }
+    });
+
+    function openCommandPalette() {
+      const palette = document.getElementById('cmdPalette');
+      palette.classList.add('active');
+      document.getElementById('cmdSearch').focus();
+    }
+
+    function closeCommandPalette() {
+      document.getElementById('cmdPalette').classList.remove('active');
+      document.getElementById('cmdSearch').value = '';
+      selectedIndex = 0;
+      filterCommands('');
+    }
+
+    // Command palette navigation
+    document.getElementById('cmdSearch').addEventListener('keydown', (e) => {
+      const items = document.querySelectorAll('.cmd-item:not([style*="display: none"])');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+        updateSelection(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, 0);
+        updateSelection(items);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        items[selectedIndex]?.click();
+        closeCommandPalette();
+      }
+    });
+
+    document.getElementById('cmdSearch').addEventListener('input', (e) => {
+      filterCommands(e.target.value.toLowerCase());
+    });
+
+    function updateSelection(items) {
+      items.forEach((item, idx) => {
+        item.classList.toggle('selected', idx === selectedIndex);
+      });
+    }
+
+    function filterCommands(query) {
+      const items = document.querySelectorAll('.cmd-item');
+      let visibleIndex = 0;
+
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        const matches = text.includes(query);
+        item.style.display = matches ? 'flex' : 'none';
+
+        if (matches && visibleIndex === selectedIndex) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+
+        if (matches) visibleIndex++;
+      });
+
+      selectedIndex = 0;
+    }
+
+    // Command palette item clicks
+    document.querySelectorAll('.cmd-item').forEach(item => {
+      item.addEventListener('click', () => {
+        alert(`Selected: ${item.querySelector('.cmd-item-name').textContent}`);
+      });
+    });
+  </script>
+</body>
+</html>

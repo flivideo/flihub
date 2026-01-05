@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recordings - FliHub Design-2 Dark Cinematic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Dark Backgrounds */
+      --bg-void: #0a0a0a;
+      --bg-panel: #1a1a1a;
+      --bg-surface: #242424;
+      --bg-elevated: #2a2a2a;
+
+      /* Text */
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-tertiary: #737373;
+
+      /* Accent Colors */
+      --accent-electric: #0ea5e9;
+      --accent-neon: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-pink: #ec4899;
+      --accent-purple: #8b5cf6;
+
+      /* Glassmorphism */
+      --panel-glass: rgba(26, 26, 26, 0.85);
+      --glow-blur: 20px;
+
+      /* Fonts */
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 300;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .app-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .app-brand {
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .project-name {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-left: 12px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 2px;
+    }
+
+    .nav-tab {
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+    }
+
+    .nav-tab:hover {
+      background: rgba(14, 165, 233, 0.1);
+      color: var(--accent-electric);
+    }
+
+    .nav-tab.active {
+      background: var(--accent-electric);
+      color: white;
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+    }
+
+    /* Layout */
+    .app-container {
+      position: relative;
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+
+    .main-content {
+      padding: 32px;
+      padding-bottom: 280px; /* Space for expanded timeline */
+    }
+
+    /* Filter Panel */
+    .filter-panel {
+      position: fixed;
+      top: 100px;
+      right: 24px;
+      width: 260px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+    }
+
+    .filter-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+    }
+
+    .filter-group {
+      margin-bottom: 20px;
+    }
+
+    .filter-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .filter-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      transition: all 0.2s ease-out;
+    }
+
+    .filter-input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+    }
+
+    .filter-checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .filter-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .filter-checkbox-label input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent-electric);
+    }
+
+    /* Thumbnail Grid */
+    .thumbnail-grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-right: 300px; /* Space for filter panel */
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 28px;
+    }
+
+    .video-card {
+      background: var(--bg-surface);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .video-card:hover {
+      transform: translateY(-12px) scale(1.02);
+      box-shadow: 0 0 50px rgba(14, 165, 233, 0.6);
+      border-color: var(--accent-electric);
+      z-index: 10;
+    }
+
+    .video-card:hover .video-hover-preview {
+      opacity: 1;
+    }
+
+    .video-thumbnail {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+      font-size: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .video-thumbnail::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(14, 165, 233, 0.15), transparent);
+    }
+
+    .video-hover-preview {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(14, 165, 233, 0.3));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .video-info {
+      padding: 16px;
+    }
+
+    .video-filename {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chapter-badge {
+      background: rgba(14, 165, 233, 0.2);
+      color: var(--accent-electric);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .tag-badge {
+      background: rgba(236, 72, 153, 0.2);
+      color: var(--accent-pink);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .video-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    .video-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* Bottom Timeline (Expanded) */
+    .bottom-timeline {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 260px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px 32px;
+      z-index: 200;
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .timeline-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+    }
+
+    .timeline-stats {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    /* Waveform Timeline */
+    .waveform-container {
+      position: relative;
+      height: 80px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .waveform {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 16px;
+      gap: 2px;
+    }
+
+    .waveform-bar {
+      flex: 1;
+      min-width: 3px;
+      background: linear-gradient(to top, var(--accent-electric), var(--accent-purple));
+      opacity: 0.4;
+      border-radius: 2px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .waveform-bar:hover {
+      opacity: 0.8;
+      box-shadow: 0 0 10px rgba(14, 165, 233, 0.6);
+    }
+
+    .playhead {
+      position: absolute;
+      top: 0;
+      left: 30%;
+      width: 2px;
+      height: 100%;
+      background: var(--accent-neon);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+    }
+
+    .chapter-timeline {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .chapter-marker {
+      flex-shrink: 0;
+      width: 140px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chapter-marker:hover {
+      background: rgba(14, 165, 233, 0.1);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .chapter-marker.active {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(139, 92, 246, 0.3));
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.5);
+    }
+
+    .chapter-marker-number {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+
+    .chapter-marker-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chapter-marker-count {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div style="display: flex; align-items: center;">
+      <div class="app-title"><span class="app-brand">FliHub</span></div>
+      <div class="project-name">› c05-12-days-of-claudmas-10</div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab">Incoming</button>
+      <button class="nav-tab active">Recordings</button>
+      <button class="nav-tab">Watch</button>
+      <button class="nav-tab">Inbox</button>
+      <button class="nav-tab">Assets</button>
+      <button class="nav-tab">Manage</button>
+      <button class="nav-tab">Projects</button>
+    </nav>
+  </header>
+
+  <div class="app-container">
+    <!-- Filter Panel -->
+    <aside class="filter-panel">
+      <div class="filter-title">Filters</div>
+
+      <div class="filter-group">
+        <label class="filter-label">Search</label>
+        <input type="text" class="filter-input" placeholder="Filter by name...">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Chapter</label>
+        <input type="text" class="filter-input" placeholder="e.g., 01, 02...">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Status</label>
+        <div class="filter-checkbox-group">
+          <label class="filter-checkbox-label">
+            <input type="checkbox" checked>
+            <span>Active</span>
+          </label>
+          <label class="filter-checkbox-label">
+            <input type="checkbox">
+            <span>Parked</span>
+          </label>
+          <label class="filter-checkbox-label">
+            <input type="checkbox">
+            <span>Has Transcript</span>
+          </label>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="thumbnail-grid">
+        <!-- Video Card 1 -->
+        <div class="video-card">
+          <div class="video-thumbnail">
+            🎬
+            <div class="video-hover-preview">▶</div>
+          </div>
+          <div class="video-info">
+            <div class="video-filename">
+              <span class="chapter-badge">01</span>
+              <span>01-1-intro.mov</span>
+              <span class="tag-badge">CTA</span>
+            </div>
+            <div class="video-meta">
+              <span>19.0 MB</span>
+              <span>2:15</span>
+            </div>
+            <div class="video-stats">
+              <span>✓ Transcript</span>
+              <span>✓ Shadow</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card 2 -->
+        <div class="video-card">
+          <div class="video-thumbnail">
+            🎬
+            <div class="video-hover-preview">▶</div>
+          </div>
+          <div class="video-info">
+            <div class="video-filename">
+              <span class="chapter-badge">01</span>
+              <span>01-2-intro.mov</span>
+            </div>
+            <div class="video-meta">
+              <span>6.5 MB</span>
+              <span>0:45</span>
+            </div>
+            <div class="video-stats">
+              <span>✓ Transcript</span>
+              <span>✓ Shadow</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card 3 -->
+        <div class="video-card">
+          <div class="video-thumbnail">
+            🎬
+            <div class="video-hover-preview">▶</div>
+          </div>
+          <div class="video-info">
+            <div class="video-filename">
+              <span class="chapter-badge">02</span>
+              <span>02-1-overview.mov</span>
+              <span class="tag-badge">SKOOL</span>
+            </div>
+            <div class="video-meta">
+              <span>35.6 MB</span>
+              <span>4:20</span>
+            </div>
+            <div class="video-stats">
+              <span>✓ Transcript</span>
+              <span style="opacity: 0.3;">⊘ Shadow</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card 4 -->
+        <div class="video-card">
+          <div class="video-thumbnail">
+            🎬
+            <div class="video-hover-preview">▶</div>
+          </div>
+          <div class="video-info">
+            <div class="video-filename">
+              <span class="chapter-badge">02</span>
+              <span>02-2-overview.mov</span>
+            </div>
+            <div class="video-meta">
+              <span>8.6 MB</span>
+              <span>1:05</span>
+            </div>
+            <div class="video-stats">
+              <span>✓ Transcript</span>
+              <span>✓ Shadow</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card 5 -->
+        <div class="video-card">
+          <div class="video-thumbnail">
+            🎬
+            <div class="video-hover-preview">▶</div>
+          </div>
+          <div class="video-info">
+            <div class="video-filename">
+              <span class="chapter-badge">03</span>
+              <span>03-1-generate-advanced.mov</span>
+            </div>
+            <div class="video-meta">
+              <span>63.2 MB</span>
+              <span>7:45</span>
+            </div>
+            <div class="video-stats">
+              <span>✓ Transcript</span>
+              <span>✓ Shadow</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card 6 -->
+        <div class="video-card">
+          <div class="video-thumbnail">
+            🎬
+            <div class="video-hover-preview">▶</div>
+          </div>
+          <div class="video-info">
+            <div class="video-filename">
+              <span class="chapter-badge">04</span>
+              <span>04-1-steve-final.mov</span>
+              <span class="tag-badge">OUTRO</span>
+            </div>
+            <div class="video-meta">
+              <span>42.1 MB</span>
+              <span>5:12</span>
+            </div>
+            <div class="video-stats">
+              <span>✓ Transcript</span>
+              <span>✓ Shadow</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Timeline with Waveform -->
+    <div class="bottom-timeline">
+      <div class="timeline-header">
+        <div class="timeline-title">Timeline & Chapters (7)</div>
+        <div class="timeline-stats">Total: 18:35 · 26 files</div>
+      </div>
+
+      <!-- Waveform -->
+      <div class="waveform-container">
+        <div class="waveform">
+          <div class="waveform-bar" style="height: 40%"></div>
+          <div class="waveform-bar" style="height: 60%"></div>
+          <div class="waveform-bar" style="height: 45%"></div>
+          <div class="waveform-bar" style="height: 70%"></div>
+          <div class="waveform-bar" style="height: 55%"></div>
+          <div class="waveform-bar" style="height: 80%"></div>
+          <div class="waveform-bar" style="height: 50%"></div>
+          <div class="waveform-bar" style="height: 65%"></div>
+          <div class="waveform-bar" style="height: 75%"></div>
+          <div class="waveform-bar" style="height: 55%"></div>
+          <div class="waveform-bar" style="height: 90%"></div>
+          <div class="waveform-bar" style="height: 60%"></div>
+          <div class="waveform-bar" style="height: 50%"></div>
+          <div class="waveform-bar" style="height: 70%"></div>
+          <div class="waveform-bar" style="height: 45%"></div>
+          <div class="waveform-bar" style="height: 85%"></div>
+          <div class="waveform-bar" style="height: 55%"></div>
+          <div class="waveform-bar" style="height: 65%"></div>
+          <div class="waveform-bar" style="height: 75%"></div>
+          <div class="waveform-bar" style="height: 50%"></div>
+          <div class="waveform-bar" style="height: 60%"></div>
+          <div class="waveform-bar" style="height: 70%"></div>
+          <div class="waveform-bar" style="height: 55%"></div>
+          <div class="waveform-bar" style="height: 45%"></div>
+          <div class="waveform-bar" style="height: 80%"></div>
+          <div class="waveform-bar" style="height: 60%"></div>
+          <div class="waveform-bar" style="height: 50%"></div>
+          <div class="waveform-bar" style="height: 70%"></div>
+          <div class="waveform-bar" style="height: 65%"></div>
+          <div class="waveform-bar" style="height: 55%"></div>
+        </div>
+        <div class="playhead"></div>
+      </div>
+
+      <!-- Chapter Timeline -->
+      <div class="chapter-timeline">
+        <div class="chapter-marker active">
+          <div class="chapter-marker-number">CH-01</div>
+          <div class="chapter-marker-name">Intro</div>
+          <div class="chapter-marker-count">5 files · 2:15</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-02</div>
+          <div class="chapter-marker-name">Overview</div>
+          <div class="chapter-marker-count">8 files · 4:45</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-03</div>
+          <div class="chapter-marker-name">Generate Advanced</div>
+          <div class="chapter-marker-count">3 files · 3:20</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-04</div>
+          <div class="chapter-marker-name">Steve Final</div>
+          <div class="chapter-marker-count">1 file · 1:30</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-05</div>
+          <div class="chapter-marker-name">N8n</div>
+          <div class="chapter-marker-count">3 files · 2:40</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-06</div>
+          <div class="chapter-marker-name">Outro</div>
+          <div class="chapter-marker-count">4 files · 3:05</div>
+        </div>
+        <div class="chapter-marker">
+          <div class="chapter-marker-number">CH-07</div>
+          <div class="chapter-marker-name">Replacement Outro</div>
+          <div class="chapter-marker-count">2 files · 1:00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Chapter marker interaction
+    document.querySelectorAll('.chapter-marker').forEach(marker => {
+      marker.addEventListener('click', () => {
+        document.querySelectorAll('.chapter-marker').forEach(m => m.classList.remove('active'));
+        marker.classList.add('active');
+      });
+    });
+
+    // Waveform scrubbing
+    document.querySelectorAll('.waveform-bar').forEach(bar => {
+      bar.addEventListener('click', (e) => {
+        const container = document.querySelector('.waveform-container');
+        const playhead = document.querySelector('.playhead');
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const percentage = (x / rect.width) * 100;
+        playhead.style.left = percentage + '%';
+      });
+    });
+  </script>
+</body>
+</html>

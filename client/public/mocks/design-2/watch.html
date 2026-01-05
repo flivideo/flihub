@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - FliHub Design-2 Dark Cinematic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Dark Backgrounds */
+      --bg-void: #0a0a0a;
+      --bg-panel: #1a1a1a;
+      --bg-surface: #242424;
+      --bg-elevated: #2a2a2a;
+
+      /* Text */
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-tertiary: #737373;
+
+      /* Accent Colors */
+      --accent-electric: #0ea5e9;
+      --accent-neon: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-pink: #ec4899;
+      --accent-purple: #8b5cf6;
+
+      /* Glassmorphism */
+      --panel-glass: rgba(26, 26, 26, 0.85);
+      --glow-blur: 20px;
+
+      /* Fonts */
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      line-height: 1.5;
+      overflow: hidden;
+    }
+
+    /* App Container */
+    .app-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Full-screen Video */
+    .video-container {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f0f1e, #1a1a2e);
+    }
+
+    .video-container::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.1), transparent 70%);
+      animation: breath 6s ease-in-out infinite;
+    }
+
+    @keyframes breath {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+    }
+
+    .video-placeholder {
+      font-size: 200px;
+      color: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Top Header (Auto-hide) */
+    .top-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 300;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .top-header.hidden {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    .video-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 18px;
+    }
+
+    .icon-btn:hover {
+      background: rgba(14, 165, 233, 0.2);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+    }
+
+    /* Floating Controls (Center) */
+    .floating-controls {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 20px;
+      z-index: 100;
+      transition: opacity 0.3s ease;
+    }
+
+    .floating-controls.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .control-btn {
+      width: 80px;
+      height: 80px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .control-btn:hover {
+      transform: scale(1.1);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 40px rgba(14, 165, 233, 0.6);
+    }
+
+    .control-btn.play {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-purple));
+      border-color: transparent;
+      box-shadow: 0 0 40px rgba(14, 165, 233, 0.5);
+    }
+
+    .control-btn.play:hover {
+      box-shadow: 0 0 60px rgba(14, 165, 233, 0.8);
+    }
+
+    /* Bottom Timeline */
+    .bottom-timeline {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px 32px;
+      z-index: 200;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .bottom-timeline.hidden {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    .playback-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .playback-btn {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 20px;
+    }
+
+    .playback-btn:hover {
+      background: rgba(14, 165, 233, 0.2);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+    }
+
+    .playback-btn.primary {
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-purple));
+      border-color: transparent;
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.5);
+    }
+
+    .time-display {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-secondary);
+      min-width: 120px;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .volume-slider {
+      width: 100px;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--accent-electric);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(14, 165, 233, 0.6);
+    }
+
+    .scrub-timeline {
+      position: relative;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+
+    .scrub-progress {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 35%;
+      background: linear-gradient(90deg, var(--accent-electric), var(--accent-purple));
+      border-radius: 4px;
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.6);
+    }
+
+    .scrub-handle {
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: white;
+      border: 2px solid var(--accent-electric);
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.8);
+      cursor: grab;
+    }
+
+    .scrub-handle:active {
+      cursor: grabbing;
+    }
+
+    .chapter-segments {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .chapter-segment {
+      flex-shrink: 0;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chapter-segment:hover {
+      background: rgba(14, 165, 233, 0.1);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+    }
+
+    .chapter-segment.active {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(139, 92, 246, 0.3));
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.5);
+    }
+
+    .chapter-number {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+    }
+
+    .chapter-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    /* Transcript Panel */
+    .transcript-panel {
+      position: absolute;
+      right: 0;
+      top: 60px;
+      bottom: 0;
+      width: 400px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px;
+      overflow-y: auto;
+      z-index: 250;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .transcript-panel.visible {
+      transform: translateX(0);
+    }
+
+    .transcript-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .transcript-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .close-btn {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+      transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+      background: rgba(236, 72, 153, 0.2);
+      border-color: var(--accent-pink);
+      color: var(--accent-pink);
+    }
+
+    .transcript-content {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text-secondary);
+    }
+
+    .transcript-segment {
+      margin-bottom: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .transcript-segment:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .transcript-segment.active {
+      background: rgba(14, 165, 233, 0.1);
+      color: var(--text-primary);
+    }
+
+    .transcript-time {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-electric);
+      margin-bottom: 6px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Keyboard Hint */
+    .keyboard-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .keyboard-hint.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Video Container -->
+    <div class="video-container">
+      <div class="video-placeholder">🎬</div>
+    </div>
+
+    <!-- Top Header -->
+    <div class="top-header" id="topHeader">
+      <div class="video-title">01-1-intro.mov</div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="toggleTranscript()">📄</button>
+        <button class="icon-btn">⚙️</button>
+        <button class="icon-btn">✕</button>
+      </div>
+    </div>
+
+    <!-- Floating Controls -->
+    <div class="floating-controls" id="floatingControls">
+      <button class="control-btn">⏮</button>
+      <button class="control-btn play">▶</button>
+      <button class="control-btn">⏭</button>
+    </div>
+
+    <!-- Bottom Timeline -->
+    <div class="bottom-timeline" id="bottomTimeline">
+      <!-- Scrub Timeline -->
+      <div class="scrub-timeline">
+        <div class="scrub-progress">
+          <div class="scrub-handle"></div>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="playback-controls">
+        <button class="playback-btn">⏮</button>
+        <button class="playback-btn primary">▶</button>
+        <button class="playback-btn">⏭</button>
+        <div class="time-display">2:35 / 8:45</div>
+        <div style="flex: 1;"></div>
+        <div class="volume-control">
+          <button class="playback-btn">🔊</button>
+          <input type="range" class="volume-slider" min="0" max="100" value="75">
+        </div>
+        <button class="playback-btn">⛶</button>
+      </div>
+
+      <!-- Chapter Segments -->
+      <div class="chapter-segments">
+        <div class="chapter-segment active">
+          <span class="chapter-number">01</span>
+          <span class="chapter-name">Intro</span>
+        </div>
+        <div class="chapter-segment">
+          <span class="chapter-number">02</span>
+          <span class="chapter-name">Overview</span>
+        </div>
+        <div class="chapter-segment">
+          <span class="chapter-number">03</span>
+          <span class="chapter-name">Generate Advanced</span>
+        </div>
+        <div class="chapter-segment">
+          <span class="chapter-number">04</span>
+          <span class="chapter-name">Steve Final</span>
+        </div>
+        <div class="chapter-segment">
+          <span class="chapter-number">05</span>
+          <span class="chapter-name">N8n</span>
+        </div>
+        <div class="chapter-segment">
+          <span class="chapter-number">06</span>
+          <span class="chapter-name">Outro</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transcript Panel -->
+    <div class="transcript-panel" id="transcriptPanel">
+      <div class="transcript-header">
+        <div class="transcript-title">Transcript</div>
+        <button class="close-btn" onclick="toggleTranscript()">✕</button>
+      </div>
+      <div class="transcript-content">
+        <div class="transcript-segment active">
+          <div class="transcript-time">[00:00]</div>
+          <div>Hey everyone, welcome back to the channel. Today we're going to dive into something really exciting...</div>
+        </div>
+        <div class="transcript-segment">
+          <div class="transcript-time">[00:15]</div>
+          <div>Before we get started, I want to give you a quick overview of what we'll be covering in this video.</div>
+        </div>
+        <div class="transcript-segment">
+          <div class="transcript-time">[00:30]</div>
+          <div>First, we'll look at the basic setup. This is crucial because without a solid foundation, everything else falls apart.</div>
+        </div>
+        <div class="transcript-segment">
+          <div class="transcript-time">[00:52]</div>
+          <div>Then we'll move into the advanced features. This is where things get really interesting and you'll see the true power of this approach.</div>
+        </div>
+        <div class="transcript-segment">
+          <div class="transcript-time">[01:15]</div>
+          <div>Finally, we'll wrap up with some best practices and common pitfalls to avoid. Trust me, these tips will save you hours of debugging.</div>
+        </div>
+        <div class="transcript-segment">
+          <div class="transcript-time">[01:38]</div>
+          <div>Alright, let's get into it. The first thing you need to understand is the core concept behind this entire system.</div>
+        </div>
+        <div class="transcript-segment">
+          <div class="transcript-time">[02:00]</div>
+          <div>Think of it like building blocks. Each piece serves a specific purpose, and when you put them all together, you get something amazing.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard Hint -->
+    <div class="keyboard-hint" id="keyboardHint">
+      Press <strong>T</strong> to toggle transcript · <strong>Space</strong> to play/pause · <strong>F</strong> for fullscreen
+    </div>
+  </div>
+
+  <script>
+    let controlsVisible = true;
+    let hideTimeout;
+
+    // Auto-hide controls
+    function resetHideTimer() {
+      clearTimeout(hideTimeout);
+      showControls();
+      hideTimeout = setTimeout(hideControls, 3000);
+    }
+
+    function showControls() {
+      document.getElementById('topHeader').classList.remove('hidden');
+      document.getElementById('floatingControls').classList.remove('hidden');
+      document.getElementById('bottomTimeline').classList.remove('hidden');
+      controlsVisible = true;
+    }
+
+    function hideControls() {
+      document.getElementById('topHeader').classList.add('hidden');
+      document.getElementById('floatingControls').classList.add('hidden');
+      document.getElementById('bottomTimeline').classList.add('hidden');
+      controlsVisible = false;
+    }
+
+    // Mouse movement triggers control visibility
+    document.addEventListener('mousemove', resetHideTimer);
+    document.addEventListener('click', resetHideTimer);
+
+    // Start the auto-hide timer
+    resetHideTimer();
+
+    // Toggle transcript
+    function toggleTranscript() {
+      const panel = document.getElementById('transcriptPanel');
+      panel.classList.toggle('visible');
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 't' || e.key === 'T') {
+        toggleTranscript();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        // Toggle play/pause
+      } else if (e.key === 'f' || e.key === 'F') {
+        // Toggle fullscreen
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // Show keyboard hint briefly
+    setTimeout(() => {
+      document.getElementById('keyboardHint').classList.add('visible');
+      setTimeout(() => {
+        document.getElementById('keyboardHint').classList.remove('visible');
+      }, 4000);
+    }, 1000);
+
+    // Chapter segment interaction
+    document.querySelectorAll('.chapter-segment').forEach(segment => {
+      segment.addEventListener('click', () => {
+        document.querySelectorAll('.chapter-segment').forEach(s => s.classList.remove('active'));
+        segment.classList.add('active');
+      });
+    });
+
+    // Transcript segment interaction
+    document.querySelectorAll('.transcript-segment').forEach(segment => {
+      segment.addEventListener('click', () => {
+        document.querySelectorAll('.transcript-segment').forEach(s => s.classList.remove('active'));
+        segment.classList.add('active');
+      });
+    });
+
+    // Scrub timeline interaction
+    const scrubTimeline = document.querySelector('.scrub-timeline');
+    const scrubProgress = document.querySelector('.scrub-progress');
+
+    scrubTimeline.addEventListener('click', (e) => {
+      const rect = scrubTimeline.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percentage = (x / rect.width) * 100;
+      scrubProgress.style.width = percentage + '%';
+    });
+  </script>
+</body>
+</html>

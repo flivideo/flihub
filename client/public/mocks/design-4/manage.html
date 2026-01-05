@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage - FliHub Design-4: Dense Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      font-size: 11px;
+      line-height: 1.4;
+      background: #fafafa;
+      color: #111827;
+      overflow: hidden;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 250px 1fr 300px;
+      grid-template-rows: 1fr 200px;
+      gap: 1px;
+      height: 100vh;
+      background: #d0d0d0;
+    }
+
+    .panel {
+      background: #ffffff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      background: #f0f0f0;
+      border-bottom: 1px solid #d0d0d0;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    /* Navigator Panel */
+    .navigator {
+      grid-column: 1;
+      grid-row: 1 / 3;
+    }
+
+    .nav-tree {
+      font-size: 11px;
+    }
+
+    .nav-item {
+      padding: 4px 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 2px;
+      margin-bottom: 1px;
+    }
+
+    .nav-item:hover {
+      background: #f3f4f6;
+    }
+
+    .nav-item.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .nav-icon {
+      font-size: 12px;
+      width: 14px;
+      text-align: center;
+    }
+
+    .nav-count {
+      margin-left: auto;
+      font-size: 10px;
+      color: #9ca3af;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nav-item.active .nav-count {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .nav-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .nav-section:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    /* Content Panel - File Grid */
+    .content-panel {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #fafafa;
+      border-bottom: 1px solid #d0d0d0;
+      flex-shrink: 0;
+    }
+
+    .toolbar-btn {
+      padding: 4px 10px;
+      border: 1px solid #d0d0d0;
+      background: white;
+      font-size: 11px;
+      font-family: 'Roboto', sans-serif;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .toolbar-btn:hover {
+      background: #f3f4f6;
+      border-color: #2563eb;
+    }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 16px;
+      background: #d0d0d0;
+    }
+
+    .file-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .file-table th {
+      background: #f0f0f0;
+      padding: 6px 8px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 10px;
+      border-bottom: 1px solid #d0d0d0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .file-table th:hover {
+      background: #e5e7eb;
+    }
+
+    .file-table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .file-table tr:hover {
+      background: #f9fafb;
+    }
+
+    .file-table tr.selected {
+      background: #dbeafe;
+    }
+
+    .file-name {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 9px;
+      font-weight: 600;
+    }
+
+    .status-complete {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .status-processing {
+      background: #fef3c7;
+      color: #f59e0b;
+    }
+
+    .status-error {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #2563eb;
+      transition: width 0.3s ease;
+    }
+
+    /* Inspector Panel */
+    .inspector {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .inspector-section {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .inspector-section:last-child {
+      border-bottom: none;
+    }
+
+    .inspector-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .inspector-value {
+      font-size: 11px;
+      color: #111827;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .inspector-value.mono {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .stat-box {
+      background: #f9fafb;
+      padding: 8px;
+      border-radius: 2px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .stat-label {
+      font-size: 9px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111827;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Activity Log Panel */
+    .activity-log {
+      grid-column: 2 / 4;
+      grid-row: 2;
+    }
+
+    .log-entry {
+      display: flex;
+      align-items: start;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 11px;
+    }
+
+    .log-time {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 10px;
+      color: #6b7280;
+      min-width: 80px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .log-type {
+      font-weight: 600;
+      min-width: 60px;
+    }
+
+    .log-type.info {
+      color: #2563eb;
+    }
+
+    .log-type.success {
+      color: #059669;
+    }
+
+    .log-type.warning {
+      color: #f59e0b;
+    }
+
+    .log-type.error {
+      color: #dc2626;
+    }
+
+    .log-message {
+      flex: 1;
+      color: #374151;
+    }
+
+    /* Divider - resizable */
+    .divider {
+      background: #d0d0d0;
+      cursor: col-resize;
+      position: relative;
+    }
+
+    .divider:hover {
+      background: #2563eb;
+    }
+
+    .divider.horizontal {
+      cursor: row-resize;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f3f4f6;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      font-size: 9px;
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .icon-btn:hover {
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Navigator Panel -->
+    <div class="panel navigator">
+      <div class="panel-header">
+        <span>Navigator</span>
+        <span style="font-weight: 400; font-size: 10px;">26 files</span>
+      </div>
+      <div class="panel-content">
+        <div class="nav-tree">
+          <div class="nav-item active">
+            <span class="nav-icon">📁</span>
+            <span>All Files</span>
+            <span class="nav-count">26</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">⭐</span>
+            <span>Favorites</span>
+            <span class="nav-count">3</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">🔒</span>
+            <span>Safe</span>
+            <span class="nav-count">0</span>
+          </div>
+          <div class="nav-item">
+            <span class="nav-icon">📦</span>
+            <span>Parked</span>
+            <span class="nav-count">0</span>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-item">
+              <span class="nav-icon">01</span>
+              <span>Intro</span>
+              <span class="nav-count">5</span>
+            </div>
+            <div class="nav-item">
+              <span class="nav-icon">02</span>
+              <span>Overview</span>
+              <span class="nav-count">8</span>
+            </div>
+            <div class="nav-item">
+              <span class="nav-icon">03</span>
+              <span>Generate Advanced</span>
+              <span class="nav-count">3</span>
+            </div>
+            <div class="nav-item">
+              <span class="nav-icon">04</span>
+              <span>Steve Final</span>
+              <span class="nav-count">1</span>
+            </div>
+            <div class="nav-item">
+              <span class="nav-icon">05</span>
+              <span>N8n</span>
+              <span class="nav-count">3</span>
+            </div>
+            <div class="nav-item">
+              <span class="nav-icon">06</span>
+              <span>Outro</span>
+              <span class="nav-count">4</span>
+            </div>
+            <div class="nav-item">
+              <span class="nav-icon">07</span>
+              <span>Replacement</span>
+              <span class="nav-count">2</span>
+            </div>
+          </div>
+
+          <div class="nav-section">
+            <div class="nav-item">
+              <span class="nav-icon">📊</span>
+              <span>Needs Transcript</span>
+              <span class="nav-count">0</span>
+            </div>
+            <div class="nav-item">
+              <span class="nav-icon">🎬</span>
+              <span>Needs Shadow</span>
+              <span class="nav-count">0</span>
+            </div>
+            <div class="nav-item">
+              <span class="nav-icon">⚠️</span>
+              <span>Errors</span>
+              <span class="nav-count">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Panel - File Grid -->
+    <div class="panel content-panel">
+      <div class="panel-header">
+        <span>Files: All (26)</span>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span style="font-weight: 400; font-size: 10px;">5 selected · 94.7 MB</span>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="toolbar-btn">Select All</button>
+        <button class="toolbar-btn">Clear</button>
+        <span class="toolbar-divider"></span>
+        <button class="toolbar-btn">Rename (5)</button>
+        <button class="toolbar-btn">Export</button>
+        <button class="toolbar-btn">Move to Safe</button>
+        <span class="toolbar-divider"></span>
+        <button class="toolbar-btn">Regen Trans</button>
+        <button class="toolbar-btn">Regen Shadow</button>
+        <button class="toolbar-btn">Regen Chapter</button>
+        <span style="margin-left: auto; font-size: 10px; color: #6b7280;">
+          <input type="checkbox" id="show-parked" style="margin-right: 4px;">
+          <label for="show-parked">Show Parked</label>
+        </span>
+      </div>
+      <div class="panel-content" style="padding: 0;">
+        <table class="file-table">
+          <thead>
+            <tr>
+              <th style="width: 30px;"><input type="checkbox"></th>
+              <th style="width: 40px;">Ch</th>
+              <th style="width: 40px;">Seq</th>
+              <th>Name</th>
+              <th style="width: 70px;">Duration</th>
+              <th style="width: 80px;">Size</th>
+              <th style="width: 70px;">Date</th>
+              <th style="width: 50px;">Trans</th>
+              <th style="width: 50px;">Shadow</th>
+              <th style="width: 80px;">Status</th>
+              <th style="width: 40px;">Tags</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="selected">
+              <td><input type="checkbox" checked></td>
+              <td>01</td>
+              <td>1</td>
+              <td class="file-name">intro.mov</td>
+              <td>00:36</td>
+              <td>19.0 MB</td>
+              <td>03/01</td>
+              <td><span class="status-badge status-complete">100%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-complete">Ready</span></td>
+              <td>⭐</td>
+            </tr>
+            <tr class="selected">
+              <td><input type="checkbox" checked></td>
+              <td>01</td>
+              <td>2</td>
+              <td class="file-name">intro.mov</td>
+              <td>00:18</td>
+              <td>6.5 MB</td>
+              <td>03/01</td>
+              <td><span class="status-badge status-complete">100%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-complete">Ready</span></td>
+              <td></td>
+            </tr>
+            <tr class="selected">
+              <td><input type="checkbox" checked></td>
+              <td>01</td>
+              <td>3</td>
+              <td class="file-name">intro.mov</td>
+              <td>00:22</td>
+              <td>12.2 MB</td>
+              <td>03/01</td>
+              <td><span class="status-badge status-complete">100%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-complete">Ready</span></td>
+              <td></td>
+            </tr>
+            <tr class="selected">
+              <td><input type="checkbox" checked></td>
+              <td>01</td>
+              <td>4</td>
+              <td class="file-name">intro.mov</td>
+              <td>01:12</td>
+              <td>31.4 MB</td>
+              <td>03/01</td>
+              <td><span class="status-badge status-complete">100%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-complete">Ready</span></td>
+              <td>🔒</td>
+            </tr>
+            <tr class="selected">
+              <td><input type="checkbox" checked></td>
+              <td>01</td>
+              <td>5</td>
+              <td class="file-name">intro.mov</td>
+              <td>00:50</td>
+              <td>25.7 MB</td>
+              <td>03/01</td>
+              <td><span class="status-badge status-complete">100%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-complete">Ready</span></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>02</td>
+              <td>1</td>
+              <td class="file-name">overview.mov</td>
+              <td>00:56</td>
+              <td>35.6 MB</td>
+              <td>03/01</td>
+              <td><span class="status-badge status-complete">100%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-complete">Ready</span></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>02</td>
+              <td>2</td>
+              <td class="file-name">overview.mov</td>
+              <td>00:13</td>
+              <td>8.6 MB</td>
+              <td>03/01</td>
+              <td><span class="status-badge status-complete">100%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-complete">Ready</span></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>02</td>
+              <td>3</td>
+              <td class="file-name">generate-simple-visuals.mov</td>
+              <td>02:38</td>
+              <td>83.6 MB</td>
+              <td>03/01</td>
+              <td><span class="status-badge status-processing">45%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-processing">Trans...</span></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>03</td>
+              <td>1</td>
+              <td class="file-name">generate-advanced-visuals.mov</td>
+              <td>01:47</td>
+              <td>63.2 MB</td>
+              <td>03/01</td>
+              <td><span class="status-badge status-complete">100%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-complete">Ready</span></td>
+              <td>⭐</td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>03</td>
+              <td>2</td>
+              <td class="file-name">generate-advanced-visuals.mov</td>
+              <td>00:28</td>
+              <td>16.9 MB</td>
+              <td>03/02</td>
+              <td><span class="status-badge status-complete">100%</span></td>
+              <td><span class="status-badge status-complete">✓</span></td>
+              <td><span class="status-badge status-complete">Ready</span></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Inspector Panel -->
+    <div class="panel inspector">
+      <div class="panel-header">
+        <span>Inspector</span>
+        <span style="font-weight: 400; font-size: 10px;">01-1-intro.mov</span>
+      </div>
+      <div class="panel-content">
+        <div class="inspector-section">
+          <div class="inspector-label">File Information</div>
+          <div style="margin-top: 8px;">
+            <div class="inspector-value mono">01-1-intro.mov</div>
+            <div style="margin-top: 4px; font-size: 10px; color: #6b7280;">Chapter 01, Sequence 1</div>
+          </div>
+        </div>
+
+        <div class="inspector-section">
+          <div class="inspector-label">Media Details</div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-label">Duration</div>
+              <div class="stat-value">00:36</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Size</div>
+              <div class="stat-value">19.0 MB</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Codec</div>
+              <div class="stat-value" style="font-size: 10px;">H.264</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Resolution</div>
+              <div class="stat-value" style="font-size: 10px;">1920x1080</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="inspector-section">
+          <div class="inspector-label">Processing Status</div>
+          <div style="margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-size: 10px;">Transcript</span>
+              <span style="font-size: 10px; font-weight: 600; color: #059669;">100%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+          <div style="margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-size: 10px;">Shadow</span>
+              <span style="font-size: 10px; font-weight: 600; color: #059669;">Complete</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="inspector-section">
+          <div class="inspector-label">Timestamps</div>
+          <div style="margin-top: 8px; font-size: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="color: #6b7280;">Created</span>
+              <span class="inspector-value">2026-01-03 14:28</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="color: #6b7280;">Modified</span>
+              <span class="inspector-value">2026-01-03 14:32</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #6b7280;">Processed</span>
+              <span class="inspector-value">2026-01-03 14:37</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="inspector-section">
+          <div class="inspector-label">Tags & Flags</div>
+          <div style="margin-top: 8px;">
+            <span class="tag">⭐ Favorite</span>
+          </div>
+        </div>
+
+        <div class="inspector-section">
+          <div class="inspector-label">Related Files</div>
+          <div style="margin-top: 8px; font-size: 10px;">
+            <div style="margin-bottom: 4px;">
+              <span style="color: #6b7280;">Transcript:</span>
+              <span class="inspector-value"> 01-1-intro.txt</span>
+            </div>
+            <div style="margin-bottom: 4px;">
+              <span style="color: #6b7280;">Shadow:</span>
+              <span class="inspector-value"> 01-1-intro-shadow.mp4</span>
+            </div>
+            <div>
+              <span style="color: #6b7280;">Chapter:</span>
+              <span class="inspector-value"> chapter-01.mov</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="inspector-section" style="border-bottom: none;">
+          <div class="inspector-label">Project Stats</div>
+          <div style="margin-top: 8px; background: #f9fafb; padding: 12px; border-radius: 2px; border: 1px solid #e5e7eb;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-size: 10px; color: #6b7280;">Chapters</span>
+              <span style="font-size: 12px; font-weight: 700;">7</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-size: 10px; color: #6b7280;">Files</span>
+              <span style="font-size: 12px; font-weight: 700;">26</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-size: 10px; color: #6b7280;">Duration</span>
+              <span style="font-size: 12px; font-weight: 700;">18:35</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="font-size: 10px; color: #6b7280;">Total Size</span>
+              <span style="font-size: 12px; font-weight: 700;">743.5 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Log Panel -->
+    <div class="panel activity-log">
+      <div class="panel-header">
+        <span>Activity Log & Processing Queue</span>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span style="font-weight: 400; font-size: 10px;">1 task running</span>
+        </div>
+      </div>
+      <div class="panel-content">
+        <div class="log-entry">
+          <span class="log-time">14:35:12</span>
+          <span class="log-type warning">PROCESSING</span>
+          <span class="log-message">Transcribing 02-3-generate-simple-visuals.mov (45% complete, ETA 3min)</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-time">14:32:05</span>
+          <span class="log-type success">COMPLETE</span>
+          <span class="log-message">Transcribed 01-5-intro.mov (543 words, 50s duration)</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-time">14:30:18</span>
+          <span class="log-type info">RENAME</span>
+          <span class="log-message">Renamed 5 files in chapter 01 to "intro"</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-time">14:28:44</span>
+          <span class="log-type success">IMPORT</span>
+          <span class="log-message">Imported 01-1 through 01-5 from watch directory (5 files, 94.7 MB)</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-time">14:15:33</span>
+          <span class="log-type info">CREATE</span>
+          <span class="log-message">Created chapter 01 - Intro</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-time">13:52:19</span>
+          <span class="log-type success">COMPLETE</span>
+          <span class="log-message">Generated chapter-01.mov (2:18 duration, 94.7 MB)</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-time">13:48:06</span>
+          <span class="log-type info">EXPORT</span>
+          <span class="log-message">Exported 3 files to S3 staging (shadow files for collaborator)</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-time">13:45:22</span>
+          <span class="log-type success">COMPLETE</span>
+          <span class="log-message">Generated 3 video shadows (22.6 MB total)</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-time">13:42:11</span>
+          <span class="log-type info">START</span>
+          <span class="log-message">Started shadow generation for 3 files</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-time">13:38:55</span>
+          <span class="log-type success">COMPLETE</span>
+          <span class="log-message">Project stats updated: 7 chapters, 26 files, 18:35 total</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple interactivity for demonstration
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.file-table th').forEach(th => {
+      th.addEventListener('click', () => {
+        console.log('Sort by:', th.textContent);
+      });
+    });
+  </script>
+</body>
+</html>

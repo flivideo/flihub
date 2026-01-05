@@ -162,6 +162,40 @@ export function MockupsPage() {
 
   return (
     <div className="space-y-8">
+      {/* Design System Explorations Link */}
+      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="text-4xl">🎨</div>
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-gray-800 mb-2">FliHub Design System Explorations</h2>
+            <p className="text-gray-600 mb-4">
+              View 4 different design approaches to solve UI inconsistencies across FliHub pages.
+              Each design system includes all 5 pages (Manage, Incoming, Recordings, Watch, Projects).
+            </p>
+            <div className="flex gap-3">
+              <a
+                href="/mocks/index.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                <span>🔗</span>
+                View Design Mockups
+              </a>
+              <a
+                href="/mocks/README.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-purple-300 text-purple-700 text-sm font-medium rounded-lg hover:bg-purple-50 transition-colors"
+              >
+                <span>📖</span>
+                Documentation
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Claude Code Integration - UI Concepts</h1>
         <p className="text-gray-600">Compare four approaches for showing API tips in FliHub</p>

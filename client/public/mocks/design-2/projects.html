@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects - FliHub Design-2 Dark Cinematic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Archivo+Black&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Dark Backgrounds */
+      --bg-void: #0a0a0a;
+      --bg-panel: #1a1a1a;
+      --bg-surface: #242424;
+      --bg-elevated: #2a2a2a;
+
+      /* Text */
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-tertiary: #737373;
+
+      /* Accent Colors */
+      --accent-electric: #0ea5e9;
+      --accent-neon: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-pink: #ec4899;
+      --accent-purple: #8b5cf6;
+
+      /* Glassmorphism */
+      --panel-glass: rgba(26, 26, 26, 0.85);
+      --glow-blur: 20px;
+
+      /* Fonts */
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-impact: 'Archivo Black', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 300;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .app-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .app-brand {
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 2px;
+    }
+
+    .nav-tab {
+      padding: 6px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+    }
+
+    .nav-tab:hover {
+      background: rgba(14, 165, 233, 0.1);
+      color: var(--accent-electric);
+    }
+
+    .nav-tab.active {
+      background: var(--accent-electric);
+      color: white;
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+    }
+
+    /* Layout */
+    .app-container {
+      position: relative;
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+
+    .main-content {
+      padding: 48px 64px;
+    }
+
+    /* Page Header */
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-neon));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+
+    /* Action Bar */
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .btn-primary {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--accent-electric), var(--accent-purple));
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 30px rgba(14, 165, 233, 0.4);
+      font-family: var(--font-body);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 50px rgba(14, 165, 233, 0.7);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+      font-family: var(--font-body);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: var(--text-primary);
+    }
+
+    /* Projects Table */
+    .projects-table {
+      background: var(--bg-surface);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 120px 1fr 140px 120px 180px 100px;
+      gap: 20px;
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .table-header-cell {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-tertiary);
+    }
+
+    .table-body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 140px 120px 180px 100px;
+      gap: 20px;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .table-row:last-child {
+      border-bottom: none;
+    }
+
+    .table-row:hover {
+      background: rgba(14, 165, 233, 0.05);
+      box-shadow: inset 0 0 40px rgba(14, 165, 233, 0.1);
+    }
+
+    /* Thumbnail Column */
+    .project-thumbnail {
+      width: 100px;
+      height: 56px;
+      background: linear-gradient(135deg, #1a1a2e, #0f0f1e);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .project-thumbnail::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.2), transparent);
+    }
+
+    /* Project Info */
+    .project-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .project-name {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .project-path {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+    }
+
+    /* Stats Column */
+    .stat-value {
+      font-family: var(--font-impact);
+      font-size: 16px;
+      color: var(--text-primary);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* Progress Ring */
+    .progress-ring-container {
+      position: relative;
+      width: 60px;
+      height: 60px;
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-circle {
+      transition: stroke-dashoffset 0.35s;
+      fill: none;
+      stroke-width: 4;
+    }
+
+    .progress-ring-bg {
+      stroke: rgba(255, 255, 255, 0.1);
+    }
+
+    .progress-ring-fill {
+      stroke: var(--accent-electric);
+      filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.8));
+    }
+
+    .progress-ring-fill.complete {
+      stroke: var(--accent-neon);
+      filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8));
+    }
+
+    .progress-ring-fill.warning {
+      stroke: var(--accent-amber);
+      filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8));
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Status Badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-neon);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.in-progress {
+      background: rgba(14, 165, 233, 0.2);
+      border-color: rgba(14, 165, 233, 0.3);
+      color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+    }
+
+    .status-badge.archived {
+      background: rgba(115, 115, 115, 0.2);
+      border-color: rgba(115, 115, 115, 0.3);
+      color: var(--text-tertiary);
+      box-shadow: 0 0 20px rgba(115, 115, 115, 0.1);
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    /* Action Menu */
+    .action-menu {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+
+    .action-btn:hover {
+      background: rgba(14, 165, 233, 0.2);
+      border-color: var(--accent-electric);
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div style="display: flex; align-items: center;">
+      <div class="app-title"><span class="app-brand">FliHub</span></div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab">Incoming</button>
+      <button class="nav-tab">Recordings</button>
+      <button class="nav-tab">Watch</button>
+      <button class="nav-tab">Inbox</button>
+      <button class="nav-tab">Assets</button>
+      <button class="nav-tab">Manage</button>
+      <button class="nav-tab active">Projects</button>
+    </nav>
+  </header>
+
+  <div class="app-container">
+    <main class="main-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">Video Projects</h1>
+        <p class="page-subtitle">Manage and organize your video recording projects</p>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <button class="btn-primary">+ New Project</button>
+        <button class="btn-secondary">Import Project</button>
+        <button class="btn-secondary">Open Finder</button>
+      </div>
+
+      <!-- Projects Table -->
+      <div class="projects-table">
+        <!-- Table Header -->
+        <div class="table-header">
+          <div class="table-header-cell">Preview</div>
+          <div class="table-header-cell">Project</div>
+          <div class="table-header-cell">Recordings</div>
+          <div class="table-header-cell">Duration</div>
+          <div class="table-header-cell">Progress</div>
+          <div class="table-header-cell">Actions</div>
+        </div>
+
+        <!-- Table Body -->
+        <div class="table-body">
+          <!-- Row 1 -->
+          <div class="table-row">
+            <div class="project-thumbnail">🎬</div>
+            <div class="project-info">
+              <div class="project-name">c05-12-days-of-claudmas-10</div>
+              <div class="project-path">~/Videos/FliHub/c05-12-days-of-claudmas-10</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">26</div>
+              <div class="stat-label">files</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">18:35</div>
+              <div class="stat-label">total</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="progress-ring-container">
+                <svg class="progress-ring" width="60" height="60">
+                  <circle class="progress-ring-circle progress-ring-bg" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                  <circle class="progress-ring-circle progress-ring-fill in-progress" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="49"></circle>
+                </svg>
+                <div class="progress-text">70%</div>
+              </div>
+              <div class="status-badge in-progress">
+                <span class="status-indicator"></span>
+                <span>In Progress</span>
+              </div>
+            </div>
+            <div class="action-menu">
+              <button class="action-btn">▶</button>
+              <button class="action-btn">⚙️</button>
+              <button class="action-btn">📁</button>
+            </div>
+          </div>
+
+          <!-- Row 2 -->
+          <div class="table-row">
+            <div class="project-thumbnail">🎬</div>
+            <div class="project-info">
+              <div class="project-name">c04-ai-workflows-masterclass</div>
+              <div class="project-path">~/Videos/FliHub/c04-ai-workflows-masterclass</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">42</div>
+              <div class="stat-label">files</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">32:18</div>
+              <div class="stat-label">total</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="progress-ring-container">
+                <svg class="progress-ring" width="60" height="60">
+                  <circle class="progress-ring-circle progress-ring-bg" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                  <circle class="progress-ring-circle progress-ring-fill complete" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                </svg>
+                <div class="progress-text">100%</div>
+              </div>
+              <div class="status-badge">
+                <span class="status-indicator"></span>
+                <span>Complete</span>
+              </div>
+            </div>
+            <div class="action-menu">
+              <button class="action-btn">▶</button>
+              <button class="action-btn">⚙️</button>
+              <button class="action-btn">📁</button>
+            </div>
+          </div>
+
+          <!-- Row 3 -->
+          <div class="table-row">
+            <div class="project-thumbnail">🎬</div>
+            <div class="project-info">
+              <div class="project-name">c03-flivideo-deep-dive</div>
+              <div class="project-path">~/Videos/FliHub/c03-flivideo-deep-dive</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">18</div>
+              <div class="stat-label">files</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">15:42</div>
+              <div class="stat-label">total</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="progress-ring-container">
+                <svg class="progress-ring" width="60" height="60">
+                  <circle class="progress-ring-circle progress-ring-bg" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                  <circle class="progress-ring-circle progress-ring-fill warning" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="98"></circle>
+                </svg>
+                <div class="progress-text">40%</div>
+              </div>
+              <div class="status-badge in-progress">
+                <span class="status-indicator"></span>
+                <span>In Progress</span>
+              </div>
+            </div>
+            <div class="action-menu">
+              <button class="action-btn">▶</button>
+              <button class="action-btn">⚙️</button>
+              <button class="action-btn">📁</button>
+            </div>
+          </div>
+
+          <!-- Row 4 -->
+          <div class="table-row">
+            <div class="project-thumbnail">🎬</div>
+            <div class="project-info">
+              <div class="project-name">c02-agent-workflow-basics</div>
+              <div class="project-path">~/Videos/FliHub/c02-agent-workflow-basics</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">35</div>
+              <div class="stat-label">files</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">28:56</div>
+              <div class="stat-label">total</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="progress-ring-container">
+                <svg class="progress-ring" width="60" height="60">
+                  <circle class="progress-ring-circle progress-ring-bg" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                  <circle class="progress-ring-circle progress-ring-fill complete" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                </svg>
+                <div class="progress-text">100%</div>
+              </div>
+              <div class="status-badge">
+                <span class="status-indicator"></span>
+                <span>Complete</span>
+              </div>
+            </div>
+            <div class="action-menu">
+              <button class="action-btn">▶</button>
+              <button class="action-btn">⚙️</button>
+              <button class="action-btn">📁</button>
+            </div>
+          </div>
+
+          <!-- Row 5 -->
+          <div class="table-row">
+            <div class="project-thumbnail">🎬</div>
+            <div class="project-info">
+              <div class="project-name">c01-intro-to-bmad</div>
+              <div class="project-path">~/Videos/FliHub/c01-intro-to-bmad</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">22</div>
+              <div class="stat-label">files</div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="stat-value">21:15</div>
+              <div class="stat-label">total</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div class="progress-ring-container">
+                <svg class="progress-ring" width="60" height="60">
+                  <circle class="progress-ring-circle progress-ring-bg" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                  <circle class="progress-ring-circle progress-ring-fill complete" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                </svg>
+                <div class="progress-text">100%</div>
+              </div>
+              <div class="status-badge archived">
+                <span class="status-indicator"></span>
+                <span>Archived</span>
+              </div>
+            </div>
+            <div class="action-menu">
+              <button class="action-btn">▶</button>
+              <button class="action-btn">⚙️</button>
+              <button class="action-btn">📁</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Row hover effects
+    document.querySelectorAll('.table-row').forEach(row => {
+      row.addEventListener('click', () => {
+        console.log('Navigate to project...');
+      });
+    });
+
+    // Action button clicks (prevent row click)
+    document.querySelectorAll('.action-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        console.log('Action clicked');
+      });
+    });
+  </script>
+</body>
+</html>

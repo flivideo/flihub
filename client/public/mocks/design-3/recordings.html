@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recordings - FliHub Design-3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Berkeley+Mono:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --text-secondary: #666666;
+      --accent: #0000ff;
+      --border: #e0e0e0;
+      --hover-bg: #f5f5f5;
+      --font-family: 'Berkeley Mono', 'JetBrains Mono', monospace;
+      --font-size-sm: 12px;
+      --font-size-base: 14px;
+      --font-size-lg: 18px;
+      --spacing-unit: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: var(--font-size-base);
+    }
+
+    .header {
+      height: 50px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .page-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+    }
+
+    .shortcut-hint {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    .recording-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: var(--font-size-base);
+    }
+
+    .recording-item:hover {
+      background: var(--hover-bg);
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-left: -8px;
+      margin-right: -8px;
+    }
+
+    .play-indicator {
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .play-indicator:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .recording-name {
+      flex: 1;
+      font-family: var(--font-family);
+      cursor: pointer;
+    }
+
+    .recording-name:hover {
+      color: var(--accent);
+    }
+
+    .recording-duration {
+      color: var(--text-secondary);
+      min-width: 50px;
+    }
+
+    .recording-size {
+      color: var(--text-secondary);
+      min-width: 80px;
+      text-align: right;
+    }
+
+    .recording-date {
+      color: var(--text-secondary);
+      min-width: 90px;
+      text-align: right;
+      font-size: var(--font-size-sm);
+    }
+
+    .status-badge {
+      border: 1px solid var(--text);
+      padding: 2px 6px;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+    }
+
+    .btn {
+      background: transparent;
+      border: 1px solid var(--text);
+      padding: 8px 16px;
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      cursor: pointer;
+      transition: all 0s;
+    }
+
+    .btn:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Command Palette Modal */
+    .cmd-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .cmd-overlay.active { display: flex; }
+
+    .cmd-palette {
+      background: var(--bg);
+      border: 2px solid var(--text);
+      width: 600px;
+      max-height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cmd-search {
+      border: none;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      outline: none;
+    }
+
+    .cmd-results {
+      overflow-y: auto;
+      max-height: 400px;
+    }
+
+    .cmd-category {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 12px 20px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cmd-item:hover,
+    .cmd-item.selected {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .cmd-item-name { flex: 1; }
+
+    .cmd-shortcut {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    .cmd-item:hover .cmd-shortcut,
+    .cmd-item.selected .cmd-shortcut {
+      color: var(--bg);
+    }
+
+    .keyboard-hints {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="page-title">Recordings</div>
+    <div class="shortcut-hint">CMD+K to search | Space to play | CMD+F filter</div>
+  </div>
+
+  <div class="content">
+    <div class="stats-bar">
+      <span>26 files</span>
+      <span>|</span>
+      <span>18:35 total</span>
+      <span>|</span>
+      <span>743.5 MB</span>
+      <span>|</span>
+      <span>26 active, 0 safe, 0 parked</span>
+    </div>
+
+    <div class="filter-bar">
+      <button class="btn">Show Safe</button>
+      <button class="btn">Show Parked</button>
+      <span style="flex: 1;"></span>
+      <button class="btn">Safe All</button>
+      <button class="btn">Park All</button>
+    </div>
+
+    <!-- Flat file list, no grouping -->
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">01-1-intro.mov</span>
+      <span class="recording-duration">36s</span>
+      <span class="recording-size">19.0 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">01-2-intro.mov</span>
+      <span class="recording-duration">18s</span>
+      <span class="recording-size">6.5 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">01-3-intro.mov</span>
+      <span class="recording-duration">30s</span>
+      <span class="recording-size">12.2 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">01-4-intro.mov</span>
+      <span class="recording-duration">1:05</span>
+      <span class="recording-size">31.4 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">01-5-intro.mov</span>
+      <span class="recording-duration">48s</span>
+      <span class="recording-size">25.7 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">02-1-overview.mov</span>
+      <span class="recording-duration">56s</span>
+      <span class="recording-size">35.6 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">02-2-overview.mov</span>
+      <span class="recording-duration">16s</span>
+      <span class="recording-size">8.6 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">02-3-generate-simple-visuals.mov</span>
+      <span class="recording-duration">2:49</span>
+      <span class="recording-size">83.6 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">02-4-generate-simple-visuals.mov</span>
+      <span class="recording-duration">1:22</span>
+      <span class="recording-size">44.7 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">02-5-generate-simple-visuals.mov</span>
+      <span class="recording-duration">1:07</span>
+      <span class="recording-size">39.6 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">03-1-generate-advanced-visuals.mov</span>
+      <span class="recording-duration">1:39</span>
+      <span class="recording-size">63.2 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">03-2-generate-advanced-visuals.mov</span>
+      <span class="recording-duration">44s</span>
+      <span class="recording-size">16.9 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+
+    <div class="recording-item">
+      <div class="play-indicator">▶</div>
+      <span class="recording-name">03-3-generate-advanced-visuals.mov</span>
+      <span class="recording-duration">2:34</span>
+      <span class="recording-size">118.8 MB</span>
+      <span class="recording-date">03/01/2026</span>
+      <span class="status-badge">T</span>
+    </div>
+  </div>
+
+  <!-- Command Palette -->
+  <div class="cmd-overlay" id="cmdPalette">
+    <div class="cmd-palette">
+      <input type="text" class="cmd-search" id="cmdSearch" placeholder="Type a command or filename..." autocomplete="off">
+      <div class="cmd-results" id="cmdResults">
+        <div class="cmd-category">ACTIONS</div>
+        <div class="cmd-item selected">
+          <span class="cmd-item-name">Play selected file</span>
+          <span class="cmd-shortcut">Space</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Safe all files</span>
+          <span class="cmd-shortcut">S</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Park all files</span>
+          <span class="cmd-shortcut">P</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Filter recordings</span>
+          <span class="cmd-shortcut">CMD+F</span>
+        </div>
+
+        <div class="cmd-category">FILES</div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">01-1-intro.mov</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">01-2-intro.mov</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">02-1-overview.mov</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">02-3-generate-simple-visuals.mov</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">03-1-generate-advanced-visuals.mov</span>
+        </div>
+
+        <div class="cmd-category">NAVIGATION</div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Incoming</span>
+          <span class="cmd-shortcut">1</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Watch</span>
+          <span class="cmd-shortcut">3</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Manage</span>
+          <span class="cmd-shortcut">8</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Chapter 1</span>
+          <span class="cmd-shortcut">#1</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Chapter 2</span>
+          <span class="cmd-shortcut">#2</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Hints -->
+  <div class="keyboard-hints">
+    CMD+K: Command | Space: Play | J/K: Navigate | CMD+F: Filter | ESC: Close
+  </div>
+
+  <script>
+    let selectedIndex = 0;
+
+    // Play button clicks
+    document.querySelectorAll('.play-indicator').forEach((btn, idx) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const name = btn.nextElementSibling.textContent;
+        alert(`Playing: ${name}`);
+      });
+    });
+
+    // Recording name clicks
+    document.querySelectorAll('.recording-name').forEach(name => {
+      name.addEventListener('click', () => {
+        alert(`Playing: ${name.textContent}`);
+      });
+    });
+
+    // Open command palette with CMD+K
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openCommandPalette();
+      }
+
+      if (e.key === 'Escape') {
+        closeCommandPalette();
+      }
+
+      // Keyboard shortcuts
+      if (!document.getElementById('cmdPalette').classList.contains('active')) {
+        if (e.key === ' ') {
+          e.preventDefault();
+          alert('Play first file');
+        } else if (e.key === 's') {
+          alert('Safe all files');
+        } else if (e.key === 'p') {
+          alert('Park all files');
+        }
+      }
+    });
+
+    function openCommandPalette() {
+      const palette = document.getElementById('cmdPalette');
+      palette.classList.add('active');
+      document.getElementById('cmdSearch').focus();
+    }
+
+    function closeCommandPalette() {
+      document.getElementById('cmdPalette').classList.remove('active');
+      document.getElementById('cmdSearch').value = '';
+      selectedIndex = 0;
+      filterCommands('');
+    }
+
+    // Command palette navigation
+    document.getElementById('cmdSearch').addEventListener('keydown', (e) => {
+      const items = document.querySelectorAll('.cmd-item:not([style*="display: none"])');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+        updateSelection(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, 0);
+        updateSelection(items);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        items[selectedIndex]?.click();
+        closeCommandPalette();
+      }
+    });
+
+    document.getElementById('cmdSearch').addEventListener('input', (e) => {
+      filterCommands(e.target.value.toLowerCase());
+    });
+
+    function updateSelection(items) {
+      items.forEach((item, idx) => {
+        item.classList.toggle('selected', idx === selectedIndex);
+      });
+    }
+
+    function filterCommands(query) {
+      const items = document.querySelectorAll('.cmd-item');
+      let visibleIndex = 0;
+
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        const matches = text.includes(query);
+        item.style.display = matches ? 'flex' : 'none';
+
+        if (matches && visibleIndex === selectedIndex) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+
+        if (matches) visibleIndex++;
+      });
+
+      selectedIndex = 0;
+    }
+
+    // Command palette item clicks
+    document.querySelectorAll('.cmd-item').forEach(item => {
+      item.addEventListener('click', () => {
+        alert(`Selected: ${item.querySelector('.cmd-item-name').textContent}`);
+      });
+    });
+  </script>
+</body>
+</html>

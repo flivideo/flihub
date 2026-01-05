@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - FliHub Design-3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Berkeley+Mono:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --text-secondary: #666666;
+      --accent: #0000ff;
+      --border: #e0e0e0;
+      --font-family: 'Berkeley Mono', 'JetBrains Mono', monospace;
+      --font-size-sm: 12px;
+      --font-size-base: 14px;
+      --font-size-lg: 18px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family);
+      background: #000000;
+      color: #ffffff;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    .video-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .video-placeholder {
+      width: 80%;
+      height: 80%;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #666666;
+      border: 1px solid #333333;
+    }
+
+    .controls-overlay {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.9);
+      border-top: 1px solid #333333;
+      padding: 16px 24px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .video-container:hover .controls-overlay,
+    .controls-overlay.visible {
+      opacity: 1;
+    }
+
+    .timeline {
+      width: 100%;
+      height: 4px;
+      background: #333333;
+      margin-bottom: 16px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .timeline-progress {
+      height: 100%;
+      background: var(--accent);
+      width: 30%;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: var(--font-size-base);
+    }
+
+    .control-btn {
+      background: transparent;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      padding: 6px 14px;
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      cursor: pointer;
+    }
+
+    .control-btn:hover {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    .time-display {
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      color: #ffffff;
+    }
+
+    .filename-display {
+      flex: 1;
+      font-family: var(--font-family);
+      font-size: var(--font-size-sm);
+      color: #666666;
+    }
+
+    .info-overlay {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      background: rgba(0, 0, 0, 0.9);
+      border: 1px solid #333333;
+      padding: 16px 20px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      font-size: var(--font-size-sm);
+      color: #ffffff;
+    }
+
+    .video-container:hover .info-overlay,
+    .info-overlay.visible {
+      opacity: 1;
+    }
+
+    .chapter-nav {
+      position: fixed;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.9);
+      border: 1px solid #333333;
+      padding: 16px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      max-width: 200px;
+    }
+
+    .video-container:hover .chapter-nav,
+    .chapter-nav.visible {
+      opacity: 1;
+    }
+
+    .chapter-item {
+      padding: 8px 0;
+      border-bottom: 1px solid #333333;
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      color: #666666;
+    }
+
+    .chapter-item:last-child {
+      border-bottom: none;
+    }
+
+    .chapter-item:hover {
+      color: #ffffff;
+    }
+
+    .chapter-item.active {
+      color: var(--accent);
+    }
+
+    /* Command Palette Modal */
+    .cmd-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .cmd-overlay.active { display: flex; }
+
+    .cmd-palette {
+      background: #000000;
+      border: 2px solid #ffffff;
+      width: 600px;
+      max-height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cmd-search {
+      border: none;
+      border-bottom: 1px solid #333333;
+      padding: 16px 20px;
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      outline: none;
+      background: #000000;
+      color: #ffffff;
+    }
+
+    .cmd-results {
+      overflow-y: auto;
+      max-height: 400px;
+    }
+
+    .cmd-category {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: #666666;
+      padding: 12px 20px 8px;
+      border-bottom: 1px solid #333333;
+    }
+
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 1px solid #333333;
+      color: #ffffff;
+    }
+
+    .cmd-item:hover,
+    .cmd-item.selected {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    .cmd-item-name { flex: 1; }
+
+    .cmd-shortcut {
+      font-size: var(--font-size-sm);
+      color: #666666;
+    }
+
+    .cmd-item:hover .cmd-shortcut,
+    .cmd-item.selected .cmd-shortcut {
+      color: #000000;
+    }
+
+    .keyboard-hints {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.9);
+      border: 1px solid #333333;
+      padding: 12px 16px;
+      font-size: var(--font-size-sm);
+      color: #666666;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .video-container:hover .keyboard-hints {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="video-container">
+    <!-- Video Placeholder -->
+    <div class="video-placeholder">
+      [Video: 01-1-intro.mov]
+    </div>
+
+    <!-- Info Overlay (top left) -->
+    <div class="info-overlay">
+      <div>01-1-intro.mov</div>
+      <div style="margin-top: 4px; color: #666666;">19.0 MB · 36s · Chapter 01</div>
+    </div>
+
+    <!-- Chapter Navigation (right side) -->
+    <div class="chapter-nav">
+      <div style="font-weight: 600; margin-bottom: 12px; color: #666666; font-size: 12px;">CHAPTERS</div>
+      <div class="chapter-item active">01 Intro</div>
+      <div class="chapter-item">02 Overview</div>
+      <div class="chapter-item">03 Advanced</div>
+      <div class="chapter-item">04 Steve Final</div>
+      <div class="chapter-item">05 N8n</div>
+      <div class="chapter-item">06 Outro</div>
+    </div>
+
+    <!-- Controls Overlay (bottom) -->
+    <div class="controls-overlay visible" id="controls">
+      <div class="timeline" onclick="seekVideo(event)">
+        <div class="timeline-progress" id="progress"></div>
+      </div>
+      <div class="controls-row">
+        <button class="control-btn" onclick="togglePlay()">Play</button>
+        <button class="control-btn" onclick="prevFile()">Prev</button>
+        <button class="control-btn" onclick="nextFile()">Next</button>
+        <span class="time-display">0:11 / 0:36</span>
+        <span class="filename-display">01-1-intro.mov</span>
+        <button class="control-btn" onclick="toggleFullscreen()">Full</button>
+      </div>
+    </div>
+
+    <!-- Keyboard Hints -->
+    <div class="keyboard-hints">
+      Space: Play/Pause | ←→: Seek | Shift+←→: Prev/Next | 1-9: Chapter | ESC: Exit
+    </div>
+  </div>
+
+  <!-- Command Palette -->
+  <div class="cmd-overlay" id="cmdPalette">
+    <div class="cmd-palette">
+      <input type="text" class="cmd-search" id="cmdSearch" placeholder="Type a command..." autocomplete="off">
+      <div class="cmd-results" id="cmdResults">
+        <div class="cmd-category">PLAYBACK</div>
+        <div class="cmd-item selected">
+          <span class="cmd-item-name">Play / Pause</span>
+          <span class="cmd-shortcut">Space</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Next file</span>
+          <span class="cmd-shortcut">Shift+→</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Previous file</span>
+          <span class="cmd-shortcut">Shift+←</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Toggle fullscreen</span>
+          <span class="cmd-shortcut">F</span>
+        </div>
+
+        <div class="cmd-category">CHAPTERS</div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Jump to Chapter 1</span>
+          <span class="cmd-shortcut">1</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Jump to Chapter 2</span>
+          <span class="cmd-shortcut">2</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Jump to Chapter 3</span>
+          <span class="cmd-shortcut">3</span>
+        </div>
+
+        <div class="cmd-category">NAVIGATION</div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Recordings</span>
+          <span class="cmd-shortcut">ESC</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Manage</span>
+          <span class="cmd-shortcut">8</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedIndex = 0;
+    let isPlaying = false;
+    let currentTime = 11;
+    let duration = 36;
+
+    // Hide controls after inactivity
+    let hideControlsTimeout;
+    document.querySelector('.video-container').addEventListener('mousemove', () => {
+      document.getElementById('controls').classList.add('visible');
+      clearTimeout(hideControlsTimeout);
+      hideControlsTimeout = setTimeout(() => {
+        document.getElementById('controls').classList.remove('visible');
+      }, 3000);
+    });
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const btn = event.target;
+      btn.textContent = isPlaying ? 'Pause' : 'Play';
+    }
+
+    function prevFile() {
+      alert('Previous file');
+    }
+
+    function nextFile() {
+      alert('Next file');
+    }
+
+    function seekVideo(e) {
+      const timeline = e.target.closest('.timeline');
+      const rect = timeline.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      document.getElementById('progress').style.width = `${percent * 100}%`;
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Open command palette with CMD+K
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openCommandPalette();
+      }
+
+      if (e.key === 'Escape') {
+        if (document.getElementById('cmdPalette').classList.contains('active')) {
+          closeCommandPalette();
+        } else {
+          alert('Exit to Recordings');
+        }
+      }
+
+      // Playback shortcuts
+      if (!document.getElementById('cmdPalette').classList.contains('active')) {
+        if (e.key === ' ') {
+          e.preventDefault();
+          togglePlay();
+        } else if (e.key === 'ArrowLeft' && e.shiftKey) {
+          prevFile();
+        } else if (e.key === 'ArrowRight' && e.shiftKey) {
+          nextFile();
+        } else if (e.key === 'f') {
+          toggleFullscreen();
+        } else if (e.key >= '1' && e.key <= '9') {
+          alert(`Jump to chapter ${e.key}`);
+        }
+      }
+    });
+
+    function openCommandPalette() {
+      const palette = document.getElementById('cmdPalette');
+      palette.classList.add('active');
+      document.getElementById('cmdSearch').focus();
+    }
+
+    function closeCommandPalette() {
+      document.getElementById('cmdPalette').classList.remove('active');
+      document.getElementById('cmdSearch').value = '';
+      selectedIndex = 0;
+      filterCommands('');
+    }
+
+    // Command palette navigation
+    document.getElementById('cmdSearch').addEventListener('keydown', (e) => {
+      const items = document.querySelectorAll('.cmd-item:not([style*="display: none"])');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+        updateSelection(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, 0);
+        updateSelection(items);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        items[selectedIndex]?.click();
+        closeCommandPalette();
+      }
+    });
+
+    document.getElementById('cmdSearch').addEventListener('input', (e) => {
+      filterCommands(e.target.value.toLowerCase());
+    });
+
+    function updateSelection(items) {
+      items.forEach((item, idx) => {
+        item.classList.toggle('selected', idx === selectedIndex);
+      });
+    }
+
+    function filterCommands(query) {
+      const items = document.querySelectorAll('.cmd-item');
+      let visibleIndex = 0;
+
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        const matches = text.includes(query);
+        item.style.display = matches ? 'flex' : 'none';
+
+        if (matches && visibleIndex === selectedIndex) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+
+        if (matches) visibleIndex++;
+      });
+
+      selectedIndex = 0;
+    }
+
+    // Command palette item clicks
+    document.querySelectorAll('.cmd-item').forEach(item => {
+      item.addEventListener('click', () => {
+        alert(`Selected: ${item.querySelector('.cmd-item-name').textContent}`);
+      });
+    });
+
+    // Chapter navigation
+    document.querySelectorAll('.chapter-item').forEach((item, idx) => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.chapter-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        alert(`Jump to chapter ${idx + 1}`);
+      });
+    });
+  </script>
+</body>
+</html>

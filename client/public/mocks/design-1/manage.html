@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage & Export - FliHub Design-1</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Layout */
+      --sidebar-left-width: 220px;
+      --sidebar-right-width: 280px;
+      --drawer-width: 400px;
+      --content-max-width: 1200px;
+      --header-height: 80px;
+
+      /* Colors */
+      --bg-app: #f8f9fa;
+      --bg-content: #ffffff;
+      --bg-sidebar: #ffffff;
+      --bg-drawer: #ffffff;
+      --border-subtle: #e5e7eb;
+      --border-medium: #d1d5db;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --accent-blue: #2563eb;
+      --accent-blue-light: #dbeafe;
+      --accent-green: #059669;
+      --accent-orange: #ea580c;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      --shadow-drawer: -4px 0 24px rgba(0, 0, 0, 0.12);
+
+      /* Typography */
+      --font-sans: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-app);
+      color: var(--text-primary);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* ==== HEADER ==== */
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: var(--bg-content);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 300;
+    }
+
+    .app-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .app-brand {
+      color: var(--accent-blue);
+    }
+
+    .project-name {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-left: 16px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-tab {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .nav-tab:hover {
+      background: var(--accent-blue-light);
+      color: var(--accent-blue);
+    }
+
+    .nav-tab.active {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    /* ==== LAYOUT ==== */
+    .app-container {
+      position: relative;
+      min-height: 100vh;
+      padding: var(--header-height) 0 40px;
+    }
+
+    /* Left Tools Sidebar */
+    .tools-sidebar {
+      position: fixed;
+      left: 0;
+      top: var(--header-height);
+      width: var(--sidebar-left-width);
+      height: calc(100vh - var(--header-height));
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      padding: 24px 16px;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    /* Right Chapter Panel */
+    .chapter-panel {
+      position: fixed;
+      right: 0;
+      top: var(--header-height);
+      width: var(--sidebar-right-width);
+      height: calc(100vh - var(--header-height));
+      background: var(--bg-sidebar);
+      border-left: 1px solid var(--border-subtle);
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .chapter-panel-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(to bottom, #fafafa, #ffffff);
+    }
+
+    .chapter-panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .chapter-panel-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .chapter-nav-list {
+      padding: 12px;
+    }
+
+    .chapter-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+    }
+
+    .chapter-nav-item:hover {
+      background: var(--accent-blue-light);
+    }
+
+    .chapter-nav-item.active {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    .chapter-nav-number {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      width: 24px;
+    }
+
+    .chapter-nav-item.active .chapter-nav-number {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .chapter-nav-name {
+      font-size: 13px;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .chapter-nav-count {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      background: rgba(0, 0, 0, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .chapter-nav-item.active .chapter-nav-count {
+      color: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Center Content */
+    .content-area {
+      max-width: var(--content-max-width);
+      margin: 0 auto;
+      padding: 40px;
+      margin-left: var(--sidebar-left-width);
+      margin-right: var(--sidebar-right-width);
+    }
+
+    /* Right Drawer (overlays chapter panel) */
+    .drawer-overlay {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: var(--drawer-width);
+      height: 100vh;
+      background: var(--bg-drawer);
+      border-left: 2px solid var(--accent-blue);
+      box-shadow: var(--shadow-drawer);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer-overlay.active {
+      transform: translateX(0);
+    }
+
+    /* ==== TOOLS SIDEBAR ==== */
+    .tool-section {
+      margin-bottom: 32px;
+    }
+
+    .tool-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+      padding: 0 8px;
+    }
+
+    .tool-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .tool-button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: left;
+      width: 100%;
+    }
+
+    .tool-button:hover {
+      background: var(--accent-blue-light);
+      color: var(--accent-blue);
+    }
+
+    .tool-button.active {
+      background: var(--accent-blue);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tool-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* ==== CONTENT ==== */
+    .selection-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      background: var(--bg-content);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+
+    .selection-count {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .selection-size {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .selection-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border-medium);
+    }
+
+    .clear-button {
+      padding: 6px 14px;
+      border: 1px solid var(--border-medium);
+      background: white;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .clear-button:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+      background: var(--accent-blue-light);
+    }
+
+    /* Chapter Groups */
+    .chapter-list {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .chapter-group {
+      background: var(--bg-content);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .chapter-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: linear-gradient(to bottom, #fafafa, #ffffff);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .chapter-number {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      width: 32px;
+    }
+
+    .chapter-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .chapter-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .chapter-select-all {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border: 1px solid var(--border-medium);
+      background: white;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chapter-select-all:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+      background: var(--accent-blue-light);
+    }
+
+    .file-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.1s ease;
+    }
+
+    .file-item:last-child {
+      border-bottom: none;
+    }
+
+    .file-item:hover {
+      background: #fafbfc;
+    }
+
+    .file-item.selected {
+      background: var(--accent-blue-light);
+    }
+
+    .file-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent-blue);
+    }
+
+    .file-name {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .file-size {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+      min-width: 80px;
+      text-align: right;
+    }
+
+    /* ==== DRAWER ==== */
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .drawer-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .drawer-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 20px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drawer-close:hover {
+      background: var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    .drawer-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-medium);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: var(--font-mono);
+      transition: all 0.15s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px var(--accent-blue-light);
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      display: flex;
+      align-items: start;
+      gap: 6px;
+    }
+
+    .drawer-actions {
+      display: flex;
+      gap: 12px;
+      padding: 20px 28px;
+      border-top: 1px solid var(--border-subtle);
+      background: #fafbfc;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      background: var(--accent-blue);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+      padding: 12px 20px;
+      border: 1px solid var(--border-medium);
+      background: white;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-secondary);
+      background: #fafbfc;
+    }
+
+    /* Toast */
+    .tool-toast {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      min-width: 320px;
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .toast-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div style="display: flex; align-items: center;">
+      <div class="app-title"><span class="app-brand">FliHub</span></div>
+      <div class="project-name">› c05-12-days-of-claudmas-10</div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab">Incoming</button>
+      <button class="nav-tab">Recordings</button>
+      <button class="nav-tab">Watch</button>
+      <button class="nav-tab">Transcripts</button>
+      <button class="nav-tab">Inbox</button>
+      <button class="nav-tab">Assets</button>
+      <button class="nav-tab">Thumbs</button>
+      <button class="nav-tab active">Manage</button>
+      <button class="nav-tab">Projects</button>
+    </nav>
+  </header>
+
+  <div class="app-container">
+    <!-- LEFT SIDEBAR - Tools -->
+    <aside class="tools-sidebar">
+      <div class="tool-section">
+        <div class="tool-section-title">Simple Tools</div>
+        <div class="tool-list">
+          <button class="tool-button" onclick="showToast('Regenerating Shadows...', '5 selected files')">
+            <span class="tool-icon">⚡</span>
+            Regen Shadows
+          </button>
+          <button class="tool-button" onclick="showToast('Regenerating Transcripts...', '5-10 minutes')">
+            <span class="tool-icon">⚡</span>
+            Regen Transcripts
+          </button>
+          <button class="tool-button" onclick="showToast('Regenerating Chapters...', '5 selected files')">
+            <span class="tool-icon">⚡</span>
+            Regen Chapters
+          </button>
+          <button class="tool-button" onclick="showToast('Regenerating All...', 'This may take 10-15 minutes')">
+            <span class="tool-icon">⚡</span>
+            Regen All
+          </button>
+        </div>
+      </div>
+
+      <div class="tool-section">
+        <div class="tool-section-title">Complex Tools</div>
+        <div class="tool-list">
+          <button class="tool-button active" onclick="toggleDrawer('rename')">
+            <span class="tool-icon">✏️</span>
+            Rename
+          </button>
+          <button class="tool-button" onclick="toggleDrawer('export')">
+            <span class="tool-icon">📤</span>
+            Export
+          </button>
+          <button class="tool-button" onclick="toggleDrawer('folders')">
+            <span class="tool-icon">📁</span>
+            Folders
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER CONTENT -->
+    <main class="content-area">
+      <!-- Selection Bar -->
+      <div class="selection-bar">
+        <span class="selection-count">5 of 26 selected</span>
+        <span class="selection-size">(94.7 MB)</span>
+        <span class="selection-divider"></span>
+        <span style="font-size: 13px; color: var(--text-secondary);">26 active, 0 parked</span>
+        <span class="selection-divider"></span>
+        <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); cursor: pointer;">
+          <input type="checkbox" style="margin: 0;">
+          Show Parked
+        </label>
+        <button class="clear-button" style="margin-left: auto;">Select All</button>
+        <button class="clear-button">Clear Selection</button>
+      </div>
+
+      <!-- Chapter Groups -->
+      <div class="chapter-list">
+        <div class="chapter-group">
+          <div class="chapter-header">
+            <span class="chapter-number">01</span>
+            <span class="chapter-title">Intro</span>
+            <span class="chapter-meta">5 files · 94.7 MB</span>
+            <button class="chapter-select-all">
+              <input type="checkbox" checked style="margin: 0;">
+              <span>Select #01</span>
+            </button>
+          </div>
+          <div class="file-list">
+            <div class="file-item selected">
+              <input type="checkbox" class="file-checkbox" checked>
+              <span class="file-name">01-1-intro.mov</span>
+              <span class="file-size">19.0 MB</span>
+            </div>
+            <div class="file-item selected">
+              <input type="checkbox" class="file-checkbox" checked>
+              <span class="file-name">01-2-intro.mov</span>
+              <span class="file-size">6.5 MB</span>
+            </div>
+            <div class="file-item selected">
+              <input type="checkbox" class="file-checkbox" checked>
+              <span class="file-name">01-3-intro.mov</span>
+              <span class="file-size">12.2 MB</span>
+            </div>
+            <div class="file-item selected">
+              <input type="checkbox" class="file-checkbox" checked>
+              <span class="file-name">01-4-intro.mov</span>
+              <span class="file-size">31.4 MB</span>
+            </div>
+            <div class="file-item selected">
+              <input type="checkbox" class="file-checkbox" checked>
+              <span class="file-name">01-5-intro.mov</span>
+              <span class="file-size">25.7 MB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chapter-group">
+          <div class="chapter-header">
+            <span class="chapter-number">02</span>
+            <span class="chapter-title">Overview</span>
+            <span class="chapter-meta">8 files · 268.5 MB</span>
+            <button class="chapter-select-all">
+              <input type="checkbox" style="margin: 0;">
+              <span>Select #02</span>
+            </button>
+          </div>
+          <div class="file-list">
+            <div class="file-item">
+              <input type="checkbox" class="file-checkbox">
+              <span class="file-name">02-1-overview.mov</span>
+              <span class="file-size">35.6 MB</span>
+            </div>
+            <div class="file-item">
+              <input type="checkbox" class="file-checkbox">
+              <span class="file-name">02-2-overview.mov</span>
+              <span class="file-size">8.6 MB</span>
+            </div>
+            <div class="file-item">
+              <input type="checkbox" class="file-checkbox">
+              <span class="file-name">02-3-generate-simple-visuals.mov</span>
+              <span class="file-size">83.6 MB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chapter-group">
+          <div class="chapter-header">
+            <span class="chapter-number">03</span>
+            <span class="chapter-title">Generate Advanced Visuals</span>
+            <span class="chapter-meta">3 files · 198.9 MB</span>
+            <button class="chapter-select-all">
+              <input type="checkbox" style="margin: 0;">
+              <span>Select #03</span>
+            </button>
+          </div>
+          <div class="file-list">
+            <div class="file-item">
+              <input type="checkbox" class="file-checkbox">
+              <span class="file-name">03-1-generate-advanced-visuals.mov</span>
+              <span class="file-size">63.2 MB</span>
+            </div>
+            <div class="file-item">
+              <input type="checkbox" class="file-checkbox">
+              <span class="file-name">03-2-generate-advanced-visuals.mov</span>
+              <span class="file-size">16.9 MB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR - Chapter Navigation -->
+    <aside class="chapter-panel">
+      <div class="chapter-panel-header">
+        <div class="chapter-panel-title">Chapters (7)</div>
+        <div class="chapter-panel-meta">Total: 18:35 · 26 files</div>
+      </div>
+      <div class="chapter-nav-list">
+        <div class="chapter-nav-item active">
+          <span class="chapter-nav-number">01</span>
+          <span class="chapter-nav-name">Intro</span>
+          <span class="chapter-nav-count">5</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">02</span>
+          <span class="chapter-nav-name">Overview</span>
+          <span class="chapter-nav-count">8</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">03</span>
+          <span class="chapter-nav-name">Generate Advanced...</span>
+          <span class="chapter-nav-count">3</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">04</span>
+          <span class="chapter-nav-name">Steve Final</span>
+          <span class="chapter-nav-count">1</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">05</span>
+          <span class="chapter-nav-name">N8n</span>
+          <span class="chapter-nav-count">3</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">06</span>
+          <span class="chapter-nav-name">Outro</span>
+          <span class="chapter-nav-count">4</span>
+        </div>
+        <div class="chapter-nav-item">
+          <span class="chapter-nav-number">07</span>
+          <span class="chapter-nav-name">Replacement Outro</span>
+          <span class="chapter-nav-count">2</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Toast Notification -->
+    <div class="tool-toast" id="toast">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div class="toast-spinner"></div>
+        <div>
+          <div style="font-weight: 600; margin-bottom: 4px;" id="toast-title">Processing...</div>
+          <div style="font-size: 13px; opacity: 0.8;" id="toast-subtitle">Please wait</div>
+        </div>
+      </div>
+      <button onclick="hideToast()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0 8px;">×</button>
+    </div>
+
+    <!-- RIGHT DRAWER - Rename Tool -->
+    <aside class="drawer-overlay active" id="drawer-rename">
+      <div class="drawer-header">
+        <h2 class="drawer-title">Rename Tool</h2>
+        <button class="drawer-close" onclick="closeDrawer()">×</button>
+      </div>
+
+      <div class="drawer-content">
+        <div class="form-group">
+          <label class="form-label">Rename 5 files to:</label>
+          <input type="text" class="form-input" placeholder="new-label" value="intro">
+          <p class="form-hint">
+            <span>⚠️</span>
+            <span>Transcripts will be regenerated (5-10 minutes). Chapter/sequence numbers will be preserved.</span>
+          </p>
+        </div>
+
+        <div style="padding: 16px; background: #f3f4f6; border-radius: 8px; margin-top: 24px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 8px;">PREVIEW</div>
+          <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px;">
+            <div>01-1-intro.mov → 01-1-intro.mov</div>
+            <div>01-2-intro.mov → 01-2-intro.mov</div>
+            <div>01-3-intro.mov → 01-3-intro.mov</div>
+            <div>01-4-intro.mov → 01-4-intro.mov</div>
+            <div>01-5-intro.mov → 01-5-intro.mov</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-actions">
+        <button class="btn-secondary" onclick="closeDrawer()">Cancel</button>
+        <button class="btn-primary">Apply Rename</button>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    function toggleDrawer(type) {
+      const drawer = document.getElementById('drawer-rename');
+
+      // Update active button
+      document.querySelectorAll('.tool-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.closest('.tool-button').classList.add('active');
+
+      drawer.classList.add('active');
+    }
+
+    function closeDrawer() {
+      const drawer = document.getElementById('drawer-rename');
+      drawer.classList.remove('active');
+
+      document.querySelectorAll('.tool-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+    }
+
+    function showToast(title, subtitle) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-title').textContent = title;
+      document.getElementById('toast-subtitle').textContent = subtitle;
+      toast.style.display = 'flex';
+
+      setTimeout(() => {
+        hideToast();
+      }, 3000);
+    }
+
+    function hideToast() {
+      document.getElementById('toast').style.display = 'none';
+    }
+
+    // File selection
+    document.querySelectorAll('.file-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        const fileItem = e.target.closest('.file-item');
+        if (e.target.checked) {
+          fileItem.classList.add('selected');
+        } else {
+          fileItem.classList.remove('selected');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

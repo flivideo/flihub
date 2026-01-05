@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recordings - FliHub Design-4: Dense Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      font-size: 11px;
+      line-height: 1.4;
+      background: #fafafa;
+      color: #111827;
+      overflow: hidden;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 220px 1fr 280px;
+      grid-template-rows: 1fr;
+      gap: 1px;
+      height: 100vh;
+      background: #d0d0d0;
+    }
+
+    .panel {
+      background: #ffffff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      background: #f0f0f0;
+      border-bottom: 1px solid #d0d0d0;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    /* Chapters Panel (Left) */
+    .chapters-panel {
+      grid-column: 1;
+    }
+
+    .chapter-item {
+      padding: 8px 10px;
+      margin-bottom: 4px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      border: 1px solid transparent;
+    }
+
+    .chapter-item:hover {
+      background: #f3f4f6;
+      border-color: #e5e7eb;
+    }
+
+    .chapter-item.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    .chapter-number {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .chapter-name {
+      font-size: 11px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .chapter-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      font-size: 9px;
+      color: #6b7280;
+    }
+
+    .chapter-item.active .chapter-stats {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .chapter-divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 12px 0;
+    }
+
+    /* Grid Panel (Center) */
+    .grid-panel {
+      grid-column: 2;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .video-card {
+      background: #fafafa;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .video-card:hover {
+      border-color: #2563eb;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+    }
+
+    .video-card.selected {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .video-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 32px;
+      position: relative;
+    }
+
+    .video-duration {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 9px;
+      font-weight: 600;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .video-info {
+      padding: 8px;
+    }
+
+    .video-name {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 10px;
+      color: #111827;
+      font-weight: 600;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .video-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .video-badges {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 2px 5px;
+      border-radius: 2px;
+      font-size: 8px;
+      font-weight: 600;
+    }
+
+    .badge-trans {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .badge-shadow {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .badge-favorite {
+      background: #fef3c7;
+      color: #f59e0b;
+    }
+
+    /* Timeline Panel (Right) */
+    .timeline-panel {
+      grid-column: 3;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .player-mini {
+      background: #000;
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 48px;
+      flex-shrink: 0;
+    }
+
+    .player-controls {
+      background: #f9fafb;
+      border-top: 1px solid #d0d0d0;
+      border-bottom: 1px solid #d0d0d0;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .control-btn {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #d0d0d0;
+      background: white;
+      border-radius: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .control-btn:hover {
+      background: #f3f4f6;
+      border-color: #2563eb;
+    }
+
+    .time-display {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 10px;
+      color: #374151;
+      margin-left: auto;
+    }
+
+    .timeline-viz {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .timeline-header {
+      font-size: 10px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .timeline-track {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 2px;
+      padding: 8px;
+      margin-bottom: 12px;
+    }
+
+    .timeline-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .timeline-bar {
+      height: 32px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .timeline-segment {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      background: #2563eb;
+      border-right: 1px solid #1d4ed8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: white;
+      font-weight: 600;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .timeline-segment:hover {
+      background: #1d4ed8;
+    }
+
+    .timeline-markers {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: #9ca3af;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .waveform {
+      height: 60px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 2px;
+      display: flex;
+      align-items: end;
+      gap: 1px;
+      padding: 4px;
+      margin-top: 12px;
+    }
+
+    .wave-bar {
+      flex: 1;
+      background: #9ca3af;
+      border-radius: 1px;
+      min-height: 4px;
+    }
+
+    .stats-panel {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 2px;
+      padding: 10px;
+      margin-top: 12px;
+    }
+
+    .stats-title {
+      font-size: 9px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+
+    .stats-label {
+      color: #6b7280;
+    }
+
+    .stats-value {
+      font-weight: 600;
+      color: #111827;
+      font-variant-numeric: tabular-nums;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f3f4f6;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #fafafa;
+      border-bottom: 1px solid #d0d0d0;
+      flex-shrink: 0;
+    }
+
+    .toolbar-btn {
+      padding: 4px 10px;
+      border: 1px solid #d0d0d0;
+      background: white;
+      font-size: 11px;
+      font-family: 'Roboto', sans-serif;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .toolbar-btn:hover {
+      background: #f3f4f6;
+      border-color: #2563eb;
+    }
+
+    .search-box {
+      flex: 1;
+      max-width: 250px;
+      padding: 4px 10px;
+      border: 1px solid #d0d0d0;
+      background: white;
+      font-size: 11px;
+      font-family: 'Roboto', sans-serif;
+      border-radius: 2px;
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Chapters Panel (Left) -->
+    <div class="panel chapters-panel">
+      <div class="panel-header">
+        <span>Chapters</span>
+        <span style="font-weight: 400; font-size: 10px;">7</span>
+      </div>
+      <div class="panel-content">
+        <div class="chapter-item active">
+          <div class="chapter-number">Chapter 01</div>
+          <div class="chapter-name">Intro</div>
+          <div class="chapter-stats">
+            <span>5 files</span>
+            <span>02:18</span>
+            <span>94.7 MB</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-item">
+          <div class="chapter-number">Chapter 02</div>
+          <div class="chapter-name">Overview</div>
+          <div class="chapter-stats">
+            <span>8 files</span>
+            <span>07:51</span>
+            <span>268.5 MB</span>
+            <span>88%</span>
+          </div>
+        </div>
+
+        <div class="chapter-item">
+          <div class="chapter-number">Chapter 03</div>
+          <div class="chapter-name">Generate Advanced Visuals</div>
+          <div class="chapter-stats">
+            <span>3 files</span>
+            <span>04:52</span>
+            <span>198.9 MB</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-item">
+          <div class="chapter-number">Chapter 04</div>
+          <div class="chapter-name">Steve Final</div>
+          <div class="chapter-stats">
+            <span>1 file</span>
+            <span>00:29</span>
+            <span>14.7 MB</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-item">
+          <div class="chapter-number">Chapter 05</div>
+          <div class="chapter-name">N8n</div>
+          <div class="chapter-stats">
+            <span>3 files</span>
+            <span>01:29</span>
+            <span>51.8 MB</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-item">
+          <div class="chapter-number">Chapter 06</div>
+          <div class="chapter-name">Outro</div>
+          <div class="chapter-stats">
+            <span>4 files</span>
+            <span>01:07</span>
+            <span>38.2 MB</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-item">
+          <div class="chapter-number">Chapter 07</div>
+          <div class="chapter-name">Replacement Outro</div>
+          <div class="chapter-stats">
+            <span>2 files</span>
+            <span>00:29</span>
+            <span>18.4 MB</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="chapter-divider"></div>
+
+        <div class="stats-panel">
+          <div class="stats-title">Project Totals</div>
+          <div class="stats-row">
+            <span class="stats-label">Total Files</span>
+            <span class="stats-value">26</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Duration</span>
+            <span class="stats-value">18:35</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Size</span>
+            <span class="stats-value">743.5 MB</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Transcribed</span>
+            <span class="stats-value">96%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid Panel (Center) -->
+    <div class="panel grid-panel">
+      <div class="panel-header">
+        <span>Chapter 01: Intro</span>
+        <span style="font-weight: 400; font-size: 10px;">5 files · 2:18 · 94.7 MB</span>
+      </div>
+      <div class="toolbar">
+        <button class="toolbar-btn">Grid</button>
+        <button class="toolbar-btn">List</button>
+        <button class="toolbar-btn">Timeline</button>
+        <span style="width: 1px; height: 16px; background: #d0d0d0;"></span>
+        <input type="text" class="search-box" placeholder="Search recordings...">
+        <button class="toolbar-btn" style="margin-left: auto;">Sort: Ch-Seq</button>
+      </div>
+      <div class="panel-content">
+        <div class="video-grid">
+          <div class="video-card selected">
+            <div class="video-thumb">
+              🎬
+              <div class="video-duration">00:36</div>
+            </div>
+            <div class="video-info">
+              <div class="video-name">01-1-intro.mov</div>
+              <div class="video-meta">
+                <span>19.0 MB</span>
+                <span>03/01 14:28</span>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-trans">✓ Trans</span>
+                <span class="badge badge-shadow">✓ Shadow</span>
+                <span class="badge badge-favorite">⭐</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <div class="video-thumb">
+              🎬
+              <div class="video-duration">00:18</div>
+            </div>
+            <div class="video-info">
+              <div class="video-name">01-2-intro.mov</div>
+              <div class="video-meta">
+                <span>6.5 MB</span>
+                <span>03/01 14:30</span>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-trans">✓ Trans</span>
+                <span class="badge badge-shadow">✓ Shadow</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <div class="video-thumb">
+              🎬
+              <div class="video-duration">00:22</div>
+            </div>
+            <div class="video-info">
+              <div class="video-name">01-3-intro.mov</div>
+              <div class="video-meta">
+                <span>12.2 MB</span>
+                <span>03/01 14:32</span>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-trans">✓ Trans</span>
+                <span class="badge badge-shadow">✓ Shadow</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <div class="video-thumb">
+              🎬
+              <div class="video-duration">01:12</div>
+            </div>
+            <div class="video-info">
+              <div class="video-name">01-4-intro.mov</div>
+              <div class="video-meta">
+                <span>31.4 MB</span>
+                <span>03/01 14:35</span>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-trans">✓ Trans</span>
+                <span class="badge badge-shadow">✓ Shadow</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-card">
+            <div class="video-thumb">
+              🎬
+              <div class="video-duration">00:50</div>
+            </div>
+            <div class="video-info">
+              <div class="video-name">01-5-intro.mov</div>
+              <div class="video-meta">
+                <span>25.7 MB</span>
+                <span>03/01 14:38</span>
+              </div>
+              <div class="video-badges">
+                <span class="badge badge-trans">✓ Trans</span>
+                <span class="badge badge-shadow">✓ Shadow</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline Panel (Right) -->
+    <div class="panel timeline-panel">
+      <div class="panel-header">
+        <span>Timeline & Player</span>
+        <span style="font-weight: 400; font-size: 10px;">01-1-intro.mov</span>
+      </div>
+
+      <div class="player-mini">▶</div>
+
+      <div class="player-controls">
+        <button class="control-btn">⏮</button>
+        <button class="control-btn">▶</button>
+        <button class="control-btn">⏭</button>
+        <button class="control-btn">⏸</button>
+        <span class="time-display">00:00 / 00:36</span>
+      </div>
+
+      <div class="timeline-viz">
+        <div class="timeline-header">Chapter 01 Timeline</div>
+
+        <div class="timeline-track">
+          <div class="timeline-label">Full Chapter (02:18)</div>
+          <div class="timeline-bar">
+            <div class="timeline-segment" style="left: 0%; width: 26%;" title="01-1-intro (00:36)">
+              01-1
+            </div>
+            <div class="timeline-segment" style="left: 26%; width: 13%;" title="01-2-intro (00:18)">
+              01-2
+            </div>
+            <div class="timeline-segment" style="left: 39%; width: 16%;" title="01-3-intro (00:22)">
+              01-3
+            </div>
+            <div class="timeline-segment" style="left: 55%; width: 52%;" title="01-4-intro (01:12)">
+              01-4
+            </div>
+            <div class="timeline-segment" style="left: 107%; width: 36%;" title="01-5-intro (00:50)">
+              01-5
+            </div>
+          </div>
+          <div class="timeline-markers">
+            <span>00:00</span>
+            <span>00:36</span>
+            <span>00:54</span>
+            <span>01:16</span>
+            <span>02:18</span>
+          </div>
+        </div>
+
+        <div class="timeline-header">Current File Waveform</div>
+        <div class="waveform">
+          <div class="wave-bar" style="height: 35%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 75%;"></div>
+          <div class="wave-bar" style="height: 90%;"></div>
+          <div class="wave-bar" style="height: 65%;"></div>
+          <div class="wave-bar" style="height: 45%;"></div>
+          <div class="wave-bar" style="height: 70%;"></div>
+          <div class="wave-bar" style="height: 85%;"></div>
+          <div class="wave-bar" style="height: 60%;"></div>
+          <div class="wave-bar" style="height: 40%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 75%;"></div>
+          <div class="wave-bar" style="height: 95%;"></div>
+          <div class="wave-bar" style="height: 70%;"></div>
+          <div class="wave-bar" style="height: 50%;"></div>
+          <div class="wave-bar" style="height: 65%;"></div>
+          <div class="wave-bar" style="height: 80%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 35%;"></div>
+          <div class="wave-bar" style="height: 45%;"></div>
+          <div class="wave-bar" style="height: 60%;"></div>
+          <div class="wave-bar" style="height: 75%;"></div>
+          <div class="wave-bar" style="height: 90%;"></div>
+          <div class="wave-bar" style="height: 65%;"></div>
+          <div class="wave-bar" style="height: 40%;"></div>
+          <div class="wave-bar" style="height: 55%;"></div>
+          <div class="wave-bar" style="height: 70%;"></div>
+          <div class="wave-bar" style="height: 50%;"></div>
+          <div class="wave-bar" style="height: 30%;"></div>
+          <div class="wave-bar" style="height: 45%;"></div>
+        </div>
+
+        <div class="stats-panel">
+          <div class="stats-title">File Details</div>
+          <div class="stats-row">
+            <span class="stats-label">Filename</span>
+            <span class="stats-value" style="font-family: 'Roboto Mono', monospace; font-size: 9px;">01-1-intro.mov</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Duration</span>
+            <span class="stats-value">00:36</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Size</span>
+            <span class="stats-value">19.0 MB</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Resolution</span>
+            <span class="stats-value">1920x1080</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Codec</span>
+            <span class="stats-value">H.264</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">FPS</span>
+            <span class="stats-value">30</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Bitrate</span>
+            <span class="stats-value">4.2 Mbps</span>
+          </div>
+        </div>
+
+        <div class="stats-panel">
+          <div class="stats-title">Processing Status</div>
+          <div class="stats-row">
+            <span class="stats-label">Transcript</span>
+            <span class="stats-value" style="color: #059669;">✓ Complete</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Shadow</span>
+            <span class="stats-value" style="color: #059669;">✓ Complete</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">Words</span>
+            <span class="stats-value">127</span>
+          </div>
+          <div class="stats-row">
+            <span class="stats-label">WPM</span>
+            <span class="stats-value">211</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Chapter selection
+    document.querySelectorAll('.chapter-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.chapter-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+
+    // Video card selection
+    document.querySelectorAll('.video-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.video-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+      });
+    });
+
+    // Timeline segment click
+    document.querySelectorAll('.timeline-segment').forEach(segment => {
+      segment.addEventListener('click', () => {
+        console.log('Jumped to:', segment.getAttribute('title'));
+      });
+    });
+  </script>
+</body>
+</html>

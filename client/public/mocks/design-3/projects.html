@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects - FliHub Design-3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Berkeley+Mono:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --text-secondary: #666666;
+      --accent: #0000ff;
+      --border: #e0e0e0;
+      --hover-bg: #f5f5f5;
+      --font-family: 'Berkeley Mono', 'JetBrains Mono', monospace;
+      --font-size-sm: 12px;
+      --font-size-base: 14px;
+      --font-size-lg: 18px;
+      --spacing-unit: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: var(--font-size-base);
+    }
+
+    .header {
+      height: 50px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .page-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+    }
+
+    .shortcut-hint {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    .projects-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .projects-table thead {
+      border-bottom: 1px solid var(--text);
+    }
+
+    .projects-table th {
+      text-align: left;
+      padding: 12px 8px;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .projects-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .projects-table tbody tr:hover {
+      background: var(--hover-bg);
+    }
+
+    .projects-table td {
+      padding: 12px 8px;
+      font-size: var(--font-size-base);
+    }
+
+    .project-name {
+      font-weight: 600;
+    }
+
+    .stage-badge {
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      font-size: var(--font-size-sm);
+      display: inline-block;
+    }
+
+    .stage-recording { border-color: var(--accent); color: var(--accent); }
+    .stage-editing { border-color: var(--text-secondary); }
+    .stage-final { border-color: var(--text); }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--text);
+    }
+
+    .btn {
+      background: transparent;
+      border: 1px solid var(--text);
+      padding: 8px 16px;
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      cursor: pointer;
+      transition: all 0s;
+    }
+
+    .btn:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    /* Command Palette Modal */
+    .cmd-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .cmd-overlay.active { display: flex; }
+
+    .cmd-palette {
+      background: var(--bg);
+      border: 2px solid var(--text);
+      width: 600px;
+      max-height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cmd-search {
+      border: none;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      font-family: var(--font-family);
+      font-size: var(--font-size-base);
+      outline: none;
+    }
+
+    .cmd-results {
+      overflow-y: auto;
+      max-height: 400px;
+    }
+
+    .cmd-category {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 12px 20px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cmd-item:hover,
+    .cmd-item.selected {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .cmd-item-name { flex: 1; }
+
+    .cmd-shortcut {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+
+    .cmd-item:hover .cmd-shortcut,
+    .cmd-item.selected .cmd-shortcut {
+      color: var(--bg);
+    }
+
+    .keyboard-hints {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="page-title">Projects</div>
+    <div class="shortcut-hint">CMD+K to search | CMD+1-9 to open</div>
+  </div>
+
+  <div class="content">
+    <div class="stats-bar">
+      <span>8 projects</span>
+      <span>|</span>
+      <span>3 recording, 2 editing, 3 final</span>
+      <span>|</span>
+      <span>~/dev/video-projects/v-appydave/</span>
+    </div>
+
+    <table class="projects-table">
+      <thead>
+        <tr>
+          <th>PROJECT</th>
+          <th>STAGE</th>
+          <th>FILES</th>
+          <th>DURATION</th>
+          <th>PROGRESS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr onclick="alert('Open: c05-12-days-of-claudmas-10')">
+          <td class="project-name">c05-12-days-of-claudmas-10</td>
+          <td><span class="stage-badge stage-recording">Recording</span></td>
+          <td>26</td>
+          <td>18:35</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 60%;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr onclick="alert('Open: c05-12-days-of-claudmas-09')">
+          <td class="project-name">c05-12-days-of-claudmas-09</td>
+          <td><span class="stage-badge stage-recording">Recording</span></td>
+          <td>18</td>
+          <td>12:42</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 45%;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr onclick="alert('Open: c05-12-days-of-claudmas-08')">
+          <td class="project-name">c05-12-days-of-claudmas-08</td>
+          <td><span class="stage-badge stage-editing">Editing</span></td>
+          <td>32</td>
+          <td>24:15</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 80%;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr onclick="alert('Open: c05-12-days-of-claudmas-07')">
+          <td class="project-name">c05-12-days-of-claudmas-07</td>
+          <td><span class="stage-badge stage-final">Final</span></td>
+          <td>28</td>
+          <td>19:48</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr onclick="alert('Open: c05-agent-workflow-builder-intro')">
+          <td class="project-name">c05-agent-workflow-builder-intro</td>
+          <td><span class="stage-badge stage-recording">Recording</span></td>
+          <td>14</td>
+          <td>9:23</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 30%;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr onclick="alert('Open: c05-bmad-method-overview')">
+          <td class="project-name">c05-bmad-method-overview</td>
+          <td><span class="stage-badge stage-editing">Editing</span></td>
+          <td>42</td>
+          <td>31:12</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 70%;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr onclick="alert('Open: c04-storyline-app-demo')">
+          <td class="project-name">c04-storyline-app-demo</td>
+          <td><span class="stage-badge stage-final">Final</span></td>
+          <td>36</td>
+          <td>22:45</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+          </td>
+        </tr>
+
+        <tr onclick="alert('Open: c04-flivideo-walkthrough')">
+          <td class="project-name">c04-flivideo-walkthrough</td>
+          <td><span class="stage-badge stage-final">Final</span></td>
+          <td>29</td>
+          <td>16:58</td>
+          <td>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Command Palette -->
+  <div class="cmd-overlay" id="cmdPalette">
+    <div class="cmd-palette">
+      <input type="text" class="cmd-search" id="cmdSearch" placeholder="Type project name or command..." autocomplete="off">
+      <div class="cmd-results" id="cmdResults">
+        <div class="cmd-category">PROJECTS</div>
+        <div class="cmd-item selected">
+          <span class="cmd-item-name">c05-12-days-of-claudmas-10</span>
+          <span class="cmd-shortcut">CMD+1</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">c05-12-days-of-claudmas-09</span>
+          <span class="cmd-shortcut">CMD+2</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">c05-12-days-of-claudmas-08</span>
+          <span class="cmd-shortcut">CMD+3</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">c05-agent-workflow-builder-intro</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">c05-bmad-method-overview</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">c04-storyline-app-demo</span>
+        </div>
+
+        <div class="cmd-category">ACTIONS</div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Create new project</span>
+          <span class="cmd-shortcut">N</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Open project folder</span>
+          <span class="cmd-shortcut">O</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Filter by stage</span>
+          <span class="cmd-shortcut">F</span>
+        </div>
+
+        <div class="cmd-category">NAVIGATION</div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Incoming</span>
+          <span class="cmd-shortcut">1</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Recordings</span>
+          <span class="cmd-shortcut">2</span>
+        </div>
+        <div class="cmd-item">
+          <span class="cmd-item-name">Go to Manage</span>
+          <span class="cmd-shortcut">8</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Hints -->
+  <div class="keyboard-hints">
+    CMD+K: Command | CMD+1-9: Open Project | N: New | O: Open Folder | ESC: Close
+  </div>
+
+  <script>
+    let selectedIndex = 0;
+
+    // Open command palette with CMD+K
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openCommandPalette();
+      }
+
+      if (e.key === 'Escape') {
+        closeCommandPalette();
+      }
+
+      // Quick project shortcuts
+      if ((e.metaKey || e.ctrlKey) && e.key >= '1' && e.key <= '9') {
+        e.preventDefault();
+        alert(`Open project ${e.key}`);
+      }
+
+      // Other shortcuts
+      if (!document.getElementById('cmdPalette').classList.contains('active')) {
+        if (e.key === 'n') {
+          alert('Create new project');
+        } else if (e.key === 'o') {
+          alert('Open project folder');
+        } else if (e.key === 'f') {
+          alert('Filter by stage');
+        }
+      }
+    });
+
+    function openCommandPalette() {
+      const palette = document.getElementById('cmdPalette');
+      palette.classList.add('active');
+      document.getElementById('cmdSearch').focus();
+    }
+
+    function closeCommandPalette() {
+      document.getElementById('cmdPalette').classList.remove('active');
+      document.getElementById('cmdSearch').value = '';
+      selectedIndex = 0;
+      filterCommands('');
+    }
+
+    // Command palette navigation
+    document.getElementById('cmdSearch').addEventListener('keydown', (e) => {
+      const items = document.querySelectorAll('.cmd-item:not([style*="display: none"])');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+        updateSelection(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, 0);
+        updateSelection(items);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        items[selectedIndex]?.click();
+        closeCommandPalette();
+      }
+    });
+
+    document.getElementById('cmdSearch').addEventListener('input', (e) => {
+      filterCommands(e.target.value.toLowerCase());
+    });
+
+    function updateSelection(items) {
+      items.forEach((item, idx) => {
+        item.classList.toggle('selected', idx === selectedIndex);
+      });
+    }
+
+    function filterCommands(query) {
+      const items = document.querySelectorAll('.cmd-item');
+      let visibleIndex = 0;
+
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        const matches = text.includes(query);
+        item.style.display = matches ? 'flex' : 'none';
+
+        if (matches && visibleIndex === selectedIndex) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+
+        if (matches) visibleIndex++;
+      });
+
+      selectedIndex = 0;
+    }
+
+    // Command palette item clicks
+    document.querySelectorAll('.cmd-item').forEach(item => {
+      item.addEventListener('click', () => {
+        alert(`Selected: ${item.querySelector('.cmd-item-name').textContent}`);
+      });
+    });
+  </script>
+</body>
+</html>

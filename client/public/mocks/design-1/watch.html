@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch - FliHub Design-1</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-right-width: 320px;
+      --header-height: 80px;
+      --bg-app: #f8f9fa;
+      --bg-content: #ffffff;
+      --border-subtle: #e5e7eb;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --accent-blue: #2563eb;
+      --accent-blue-light: #dbeafe;
+      --font-sans: 'DM Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans); background: var(--bg-app); color: var(--text-primary); }
+
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+      background: var(--bg-content); border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 300;
+    }
+    .app-title { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; }
+    .app-brand { color: var(--accent-blue); }
+    .project-name { font-size: 14px; color: var(--text-secondary); font-weight: 500; margin-left: 16px; }
+    .nav-tabs { display: flex; gap: 4px; }
+    .nav-tab {
+      padding: 8px 16px; border: none; background: transparent; color: var(--text-secondary);
+      font-size: 14px; font-weight: 500; font-family: var(--font-sans); border-radius: 6px; cursor: pointer; transition: all 0.15s;
+    }
+    .nav-tab:hover { background: var(--accent-blue-light); color: var(--accent-blue); }
+    .nav-tab.active { background: var(--accent-blue); color: white; }
+
+    .app-container { min-height: 100vh; padding: var(--header-height) 0 40px; }
+    .content-area { margin-right: var(--sidebar-right-width); padding: 40px; max-width: 1400px; margin-left: auto; }
+
+    .sidebar-panel {
+      position: fixed; right: 0; top: var(--header-height); width: var(--sidebar-right-width);
+      height: calc(100vh - var(--header-height)); background: var(--bg-content);
+      border-left: 1px solid var(--border-subtle); display: flex; flex-direction: column; z-index: 100;
+    }
+
+    .video-container {
+      background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 24px;
+      aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center;
+    }
+    .video-placeholder {
+      color: #666; font-size: 18px; display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .playback-controls {
+      background: var(--bg-content); border: 1px solid var(--border-subtle); border-radius: 8px;
+      padding: 16px 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+    }
+    .control-btn {
+      padding: 6px 12px; background: var(--accent-blue); color: white; border: none;
+      border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s;
+    }
+    .control-btn:hover { background: #1d4ed8; }
+    .control-btn.secondary {
+      background: white; border: 1px solid var(--border-subtle); color: var(--text-secondary);
+    }
+    .control-btn.secondary:hover { background: var(--accent-blue-light); color: var(--accent-blue); border-color: var(--accent-blue); }
+    .speed-selector { display: flex; gap: 4px; }
+    .speed-btn {
+      padding: 4px 10px; background: white; border: 1px solid var(--border-subtle);
+      color: var(--text-secondary); font-size: 12px; border-radius: 4px; cursor: pointer; transition: all 0.15s;
+    }
+    .speed-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+
+    .transcript-card {
+      background: var(--bg-content); border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 24px;
+    }
+    .transcript-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle);
+    }
+    .transcript-title { font-size: 15px; font-weight: 600; flex: 1; }
+    .transcript-badge {
+      padding: 4px 10px; background: #f3f4f6; border-radius: 4px;
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    }
+    .transcript-text {
+      font-size: 14px; line-height: 1.7; color: var(--text-secondary);
+    }
+
+    .panel-tabs {
+      display: flex; border-bottom: 1px solid var(--border-subtle);
+    }
+    .panel-tab {
+      flex: 1; padding: 14px 16px; background: transparent; border: none;
+      color: var(--text-secondary); font-size: 13px; font-weight: 600;
+      cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s;
+    }
+    .panel-tab:hover { color: var(--accent-blue); }
+    .panel-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+
+    .panel-content { flex: 1; overflow-y: auto; }
+    .segment-list { padding: 12px; }
+    .segment-item {
+      display: flex; align-items: start; gap: 10px; padding: 10px 12px;
+      border-radius: 6px; cursor: pointer; transition: all 0.15s; margin-bottom: 6px;
+    }
+    .segment-item:hover { background: var(--accent-blue-light); }
+    .segment-item.active { background: var(--accent-blue); color: white; }
+    .segment-icon {
+      width: 32px; height: 32px; background: rgba(0, 0, 0, 0.05);
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .segment-item.active .segment-icon { background: rgba(255, 255, 255, 0.2); }
+    .segment-details { flex: 1; min-width: 0; }
+    .segment-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+    .segment-meta { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
+    .segment-item.active .segment-meta { color: rgba(255, 255, 255, 0.7); }
+
+    .chapter-item {
+      padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .chapter-item:hover { background: var(--accent-blue-light); }
+    .chapter-item.active { background: var(--accent-blue); color: white; }
+    .chapter-number {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+      color: var(--text-tertiary); margin-bottom: 4px;
+    }
+    .chapter-item.active .chapter-number { color: rgba(255, 255, 255, 0.7); }
+    .chapter-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .chapter-stats { font-size: 11px; color: var(--text-tertiary); }
+    .chapter-item.active .chapter-stats { color: rgba(255, 255, 255, 0.7); }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div style="display: flex; align-items: center;">
+      <div class="app-title"><span class="app-brand">FliHub</span></div>
+      <div class="project-name">› c05-12-days-of-claudmas-10</div>
+    </div>
+    <nav class="nav-tabs">
+      <button class="nav-tab">Incoming</button>
+      <button class="nav-tab">Recordings</button>
+      <button class="nav-tab active">Watch</button>
+      <button class="nav-tab">Transcripts</button>
+      <button class="nav-tab">Inbox</button>
+      <button class="nav-tab">Assets</button>
+      <button class="nav-tab">Thumbs</button>
+      <button class="nav-tab">Manage</button>
+      <button class="nav-tab">Projects</button>
+    </nav>
+  </header>
+
+  <div class="app-container">
+    <main class="content-area">
+      <!-- Video Player -->
+      <div class="video-container">
+        <div class="video-placeholder">
+          <div style="font-size: 64px;">▶</div>
+          <div>07-1-replacement-outro.mov</div>
+          <div style="font-size: 14px; color: #999;">0:22 / 0:22 · (26/26)</div>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="playback-controls">
+        <button class="control-btn">← Prev</button>
+        <button class="control-btn">▶ Play</button>
+        <button class="control-btn">Next →</button>
+        <div style="width: 1px; height: 24px; background: var(--border-subtle);"></div>
+        <span style="font-size: 13px; color: var(--text-secondary);">Speed:</span>
+        <div class="speed-selector">
+          <button class="speed-btn">1x</button>
+          <button class="speed-btn">1.5x</button>
+          <button class="speed-btn">2x</button>
+          <button class="speed-btn active">2.5x</button>
+          <button class="speed-btn">3x</button>
+          <button class="speed-btn">4x</button>
+        </div>
+        <div style="width: 1px; height: 24px; background: var(--border-subtle); margin-left: 8px;"></div>
+        <span style="font-size: 13px; color: var(--text-secondary);">Size:</span>
+        <button class="speed-btn active">N</button>
+        <button class="speed-btn">L</button>
+        <div style="flex: 1;"></div>
+        <button class="control-btn secondary">Autoplay</button>
+        <button class="control-btn secondary">Auto Next</button>
+        <button class="control-btn" style="background: #059669;">Safe</button>
+        <button class="control-btn" style="background: #db2777;">Parked</button>
+      </div>
+
+      <!-- Transcript -->
+      <div class="transcript-card">
+        <div class="transcript-header">
+          <span class="transcript-title">Transcript Sync</span>
+          <span class="transcript-badge">▲</span>
+          <button class="control-btn secondary" style="padding: 4px 12px; font-size: 12px;">Phrase ↔︎</button>
+        </div>
+        <div class="transcript-text">
+          Actually, I had a little bit of an error in the end of the recording, I wasn't able to demonstrate the flows, but the main thing is that we've got the image generation working using NATN, we were using CHI provider and the model we were using was Nano, but the actual video generation we were using Gling AI. I'm Appy Dave, please like and subscribe, I'll see you in the next video.
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Sidebar - Chapters & Segments -->
+    <aside class="sidebar-panel">
+      <div class="panel-tabs">
+        <button class="panel-tab">Chapters</button>
+        <button class="panel-tab active">Segments</button>
+      </div>
+
+      <div class="panel-content">
+        <div style="padding: 12px; border-bottom: 1px solid var(--border-subtle); background: linear-gradient(to bottom, #fafafa, #ffffff);">
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-tertiary);">02 OVERVIEW</div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">8 segments</div>
+        </div>
+
+        <div class="segment-list">
+          <div class="segment-item">
+            <div class="segment-icon">🎬</div>
+            <div class="segment-details">
+              <div class="segment-title">02-1-overview.mov</div>
+              <div class="segment-meta">56s · 35.6 MB</div>
+            </div>
+          </div>
+
+          <div class="segment-item active">
+            <div class="segment-icon">🎬</div>
+            <div class="segment-details">
+              <div class="segment-title">02-2-overview.mov</div>
+              <div class="segment-meta">16s · 8.6 MB</div>
+            </div>
+          </div>
+
+          <div class="segment-item">
+            <div class="segment-icon">🎬</div>
+            <div class="segment-details">
+              <div class="segment-title">02-3-generate-simple-visuals.mov</div>
+              <div class="segment-meta">2:49 · 83.6 MB</div>
+            </div>
+          </div>
+
+          <div class="segment-item">
+            <div class="segment-icon">🎬</div>
+            <div class="segment-details">
+              <div class="segment-title">02-4-generate-simple-visuals.mov</div>
+              <div class="segment-meta">34s · 17.5 MB</div>
+            </div>
+          </div>
+
+          <div class="segment-item">
+            <div class="segment-icon">🎬</div>
+            <div class="segment-details">
+              <div class="segment-title">02-5-generate-simple-visuals.mov</div>
+              <div class="segment-meta">43s · 26.2 MB</div>
+            </div>
+          </div>
+
+          <div class="segment-item">
+            <div class="segment-icon">🎬</div>
+            <div class="segment-details">
+              <div class="segment-title">02-6-generate-simple-visuals.mov</div>
+              <div class="segment-meta">30s · 17.8 MB</div>
+            </div>
+          </div>
+
+          <div class="segment-item">
+            <div class="segment-icon">🎬</div>
+            <div class="segment-details">
+              <div class="segment-title">02-8-generate-simple-visuals.mov</div>
+              <div class="segment-meta">1:19 · 58.3 MB</div>
+            </div>
+          </div>
+
+          <div class="segment-item">
+            <div class="segment-icon">🎬</div>
+            <div class="segment-details">
+              <div class="segment-title">02-9-generate-simple-visuals.mov</div>
+              <div class="segment-meta">43s · 21.0 MB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    document.querySelectorAll('.panel-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+
+    document.querySelectorAll('.segment-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.segment-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
