@@ -32,7 +32,6 @@ export function ToolsSidebar({
         </div>
         <div className="flex flex-col gap-1">
           <ToolButton
-            icon="⚡"
             label="Regen Shadows"
             disabled={disabled}
             active={false}
@@ -42,7 +41,6 @@ export function ToolsSidebar({
               : `Regenerate shadows for all ${totalFiles}`)}
           />
           <ToolButton
-            icon="⚡"
             label="Regen Transcripts"
             disabled={disabled}
             active={false}
@@ -52,7 +50,6 @@ export function ToolsSidebar({
               : `Queue all ${totalFiles} for transcription`)}
           />
           <ToolButton
-            icon="⚡"
             label="Regen Chapters"
             disabled={disabled}
             active={false}
@@ -62,7 +59,6 @@ export function ToolsSidebar({
               : `Regenerate all chapter videos`)}
           />
           <ToolButton
-            icon="⚡"
             label="Regen All"
             disabled={disabled}
             active={false}
@@ -81,7 +77,6 @@ export function ToolsSidebar({
         </div>
         <div className="flex flex-col gap-1">
           <ToolButton
-            icon="⚙"
             label="Rename"
             disabled={selectedFiles.length === 0}
             active={activeTool === 'rename'}
@@ -91,7 +86,6 @@ export function ToolsSidebar({
               : `Rename ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}`}
           />
           <ToolButton
-            icon="⚙"
             label="Export"
             disabled={selectedFiles.length === 0}
             active={activeTool === 'export'}
@@ -101,7 +95,6 @@ export function ToolsSidebar({
               : `Export ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}`}
           />
           <ToolButton
-            icon="⚙"
             label="Folders"
             disabled={false}
             active={activeTool === 'folders'}
@@ -115,7 +108,6 @@ export function ToolsSidebar({
 }
 
 interface ToolButtonProps {
-  icon: string;
   label: string;
   disabled: boolean;
   active: boolean;
@@ -123,7 +115,7 @@ interface ToolButtonProps {
   tooltip: string;
 }
 
-function ToolButton({ icon, label, disabled, active, onClick, tooltip }: ToolButtonProps) {
+function ToolButton({ label, disabled, active, onClick, tooltip }: ToolButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -131,16 +123,15 @@ function ToolButton({ icon, label, disabled, active, onClick, tooltip }: ToolBut
       title={tooltip}
       className={`
         relative px-3 py-2 rounded-md text-left text-sm font-medium
-        transition-all duration-200
+        transition-all duration-200 border-l-2
         ${disabled
-          ? 'bg-transparent text-gray-300 cursor-not-allowed'
+          ? 'bg-transparent text-gray-300 cursor-not-allowed border-transparent'
           : active
-            ? 'bg-gray-100 text-blue-600 border-l-2 border-blue-600 pl-4'
-            : 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:pl-4'
+            ? 'bg-gray-100 text-blue-600 border-blue-600'
+            : 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 border-transparent hover:border-gray-300'
         }
       `}
     >
-      <span className="opacity-50 mr-2">{icon}</span>
       {label}
     </button>
   );

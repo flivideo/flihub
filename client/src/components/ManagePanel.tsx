@@ -21,7 +21,7 @@ import {
 } from '../hooks/useEditApi'
 import { useRecordingsSocket, getSocket } from '../hooks/useSocket'
 import { formatFileSize, formatChapterTitle } from '../utils/formatting'
-import { LoadingSpinner, ErrorMessage, ToolsSidebar, SlideOutDrawer, ConfirmationModal } from './shared'
+import { LoadingSpinner, ErrorMessage, ToolsSidebar, SlideOutDrawer, ConfirmationModal, ExportPanel } from './shared'
 import { extractTagsFromName } from '../../../shared/naming'
 import type { RecordingFile, EditFolderKey } from '../../../shared/types'
 
@@ -1181,10 +1181,12 @@ export function ManagePanel() {
           isOpen={activeTool === 'export'}
           title="Export Tool"
           onClose={() => setActiveTool(null)}
+          width="w-[560px]"
         >
-          <div className="text-gray-600">
-            Export functionality coming soon...
-          </div>
+          <ExportPanel
+            selectedFiles={Array.from(selectedFiles)}
+            selectedCount={selectedCount}
+          />
         </SlideOutDrawer>
 
         <SlideOutDrawer

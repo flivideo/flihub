@@ -664,6 +664,24 @@ export function useUpdateProjectDictionary() {
       }),
     onSuccess: (_, { projectCode }) => {
       queryClient.invalidateQueries({ queryKey: ['projectState', projectCode] })
+      queryClient.invalidateQueries({ queryKey: ['edit-prep'] }) // FR-136: Refresh combined dictionary
+    },
+  })
+}
+
+// FR-136: Update global dictionary
+export function useUpdateGlobalDictionary() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (words: string[]) =>
+      fetchApi('/api/config', {
+        method: 'POST',
+        body: JSON.stringify({ glingDictionary: words }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.config })
+      queryClient.invalidateQueries({ queryKey: ['edit-prep'] })
     },
   })
 }

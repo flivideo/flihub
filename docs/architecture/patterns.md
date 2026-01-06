@@ -275,3 +275,67 @@ openFolder({ folder: 'shadows', projectCode: project.code });
 - `images`, `thumbs`, `inbox` - Asset folders
 - `transcripts`, `final` - Output folders
 - `ecamm`, `downloads`, `project` - System folders
+
+## 11. Auto-save on Blur
+
+**Pattern:** For text input auto-save, save when user leaves the field (onBlur), not on every keystroke. Show subtle feedback, no success toasts.
+
+### Implementation
+
+```typescript
+// 1. Save handler (no debounce needed)
+const handleSave = () => {
+  if (!hasChanges) return
+
+  setSaving(true)
+  mutation.mutate(data, {
+    onSuccess: () => {
+      setSaving(false)  // ✅ Silent success
+    },
+    onError: () => {
+      toast.error('Failed to save thing')  // ✅ Show error toast
+      setSaving(false)
+    },
+  })
+}
+
+// 2. Attach to onBlur
+<textarea
+  value={text}
+  onChange={(e) => setText(e.target.value)}
+  onBlur={handleSave}  // ✅ Save when user leaves field
+/>
+
+// 3. Show "Saving..." indicator during save
+{saving && <span className="text-xs text-blue-600">Saving...</span>}
+```
+
+### Key Principles
+
+**Do:**
+- ✅ Save on `onBlur` (when user exits field)
+- ✅ Show "Saving..." indicator during save
+- ✅ Show error toast if save fails
+- ✅ Check if data changed before saving (avoid unnecessary API calls)
+
+**Don't:**
+- ❌ Save on every keystroke (noisy, triggers constantly while typing)
+- ❌ Show success toast (auto-save should be silent when it works)
+- ❌ Use debounced useEffect for text input (onBlur is cleaner)
+
+### Toast Conventions
+
+- **Auto-save:** No success toast, only error toast
+- **Explicit saves (button clicks):** Show success toast (`'Thing saved'`)
+
+### Rationale
+
+1. **onBlur vs debounced** - User controls when save happens (exit field), not a timer
+2. **Silent success** - Auto-save is expected to work; only announce failures
+3. **No keystroke noise** - Indicators don't flash while user is typing
+
+### Examples
+
+- **ExportPanel** - Global/Project dictionary (FR-136)
+- **ConfigPanel** - Explicit save button with success toast
+- **WatchPage** - Annotation save button with success toast

@@ -20,6 +20,8 @@ interface PrepData {
   }
   glingFilename: string
   glingDictionary: string[]
+  globalDictionary: string[] // FR-125
+  projectDictionary: string[] // FR-125
   recordings: { name: string; size: number }[]
   recordingsTotal: number
   editFolders: {

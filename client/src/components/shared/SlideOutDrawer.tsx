@@ -12,13 +12,14 @@ interface SlideOutDrawerProps {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  width?: string; // Optional width, defaults to w-[380px]
 }
 
-export function SlideOutDrawer({ isOpen, title, children, onClose }: SlideOutDrawerProps) {
+export function SlideOutDrawer({ isOpen, title, children, onClose, width = 'w-[380px]' }: SlideOutDrawerProps) {
   return (
     <div
       className={`
-        fixed top-32 right-0 bottom-0 w-[380px]
+        fixed top-32 right-0 bottom-0 ${width}
         bg-white border-l-2 border-blue-500
         shadow-xl
         transition-transform duration-300 ease-in-out

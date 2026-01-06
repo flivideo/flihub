@@ -3,6 +3,8 @@
  * Replaces window.confirm with a nicer UI
  */
 
+import { useEffect } from 'react';
+
 interface ChapterSettings {
   resolution: '720p' | '1080p';
   includeTitleSlides: boolean;
@@ -45,6 +47,18 @@ export function ConfirmationModal({
   onConfirm,
   onCancel,
 }: ConfirmationModalProps) {
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [onCancel]);
+
   // Determine button colors based on variant
   const buttonClasses = {
     primary: 'bg-blue-600 hover:bg-blue-700 text-white',
