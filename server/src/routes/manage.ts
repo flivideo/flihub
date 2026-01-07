@@ -33,12 +33,16 @@ export function createManageRoutes(
 
   /**
    * POST /api/manage/bulk-rename
-   * Bulk rename multiple recordings with a new label
+   * FR-138: Bulk rename multiple recordings with full control
    *
    * Body:
    * {
-   *   files: string[];      // Array of filenames to rename
-   *   newLabel: string;     // New label to apply
+   *   files: string[];              // Array of filenames to rename
+   *   chapter?: string;             // New chapter (01-99), optional = preserve from original
+   *   sequenceMode: 'preserve' | 'renumber';  // Preserve original sequences or renumber
+   *   sequenceStart?: number;       // Starting sequence (if renumber mode)
+   *   label: string;                // New label (formerly newLabel)
+   *   tags?: string[];              // Optional tags
    * }
    *
    * Returns:
@@ -52,7 +56,7 @@ export function createManageRoutes(
    */
   router.post('/bulk-rename', async (req, res) => {
     try {
-      const { files, newLabel } = req.body;
+      const { files, chapter, sequenceMode, sequenceStart, label, tags, newLabel } = req.body;
 
       if (!Array.isArray(files) || files.length === 0) {
         return res.json({
@@ -61,12 +65,17 @@ export function createManageRoutes(
         });
       }
 
-      if (!newLabel || typeof newLabel !== 'string') {
+      // Support both old API (newLabel) and new API (label) for backwards compatibility
+      const finalLabel = label || newLabel;
+      if (!finalLabel || typeof finalLabel !== 'string') {
         return res.json({
           success: false,
           error: 'Invalid label provided'
         });
       }
+
+      // Default sequenceMode to 'preserve' for backwards compatibility with old API
+      const finalSequenceMode = sequenceMode || 'preserve';
 
       const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
@@ -76,14 +85,15 @@ export function createManageRoutes(
       const renamed: Array<{ old: string; new: string }> = [];
       const errors: Array<{ file: string; error: string }> = [];
 
-      console.log(`[FR-131] Bulk rename: ${files.length} files with label "${newLabel}"`);
+      console.log(`[FR-138] Bulk rename: ${files.length} files with label "${finalLabel}", chapter=${chapter || 'preserve'}, mode=${finalSequenceMode}`);
 
       // Process each file
-      for (const oldFilename of files) {
+      for (let i = 0; i < files.length; i++) {
+        const oldFilename = files[i];
         try {
           // Parse the old filename
           const parsed = parseRecordingFilename(oldFilename);
-          if (!parsed.success) {
+          if (!parsed) {
             errors.push({
               file: oldFilename,
               error: 'Invalid filename format'
@@ -91,16 +101,28 @@ export function createManageRoutes(
             continue;
           }
 
-          // Build new filename with same chapter/sequence but new label
-          // Keep existing tags if any
+          // Determine new chapter (use provided chapter, or preserve original)
+          const newChapter = chapter || parsed.chapter;
+
+          // Determine new sequence
+          let newSequence: string;
+          if (finalSequenceMode === 'preserve') {
+            // Preserve original sequence
+            newSequence = parsed.sequence || '1';
+          } else {
+            // Renumber starting from sequenceStart
+            newSequence = String((sequenceStart || 1) + i);
+          }
+
+          // Build new filename
           const newFilename = buildRecordingFilename(
-            parsed.chapter!,
-            parsed.sequence!,
-            newLabel,
-            parsed.tags || []
+            newChapter,
+            newSequence,
+            finalLabel,
+            tags || []
           );
 
-          console.log(`[FR-131] Renaming: ${oldFilename} → ${newFilename}`);
+          console.log(`[FR-138] Renaming: ${oldFilename} → ${newFilename}`);
 
           // Use FR-130 rename logic (delete+regenerate pattern)
           const result = await renameRecording(
@@ -121,7 +143,7 @@ export function createManageRoutes(
             });
           }
         } catch (err) {
-          console.error(`[FR-131] Error renaming ${oldFilename}:`, err);
+          console.error(`[FR-138] Error renaming ${oldFilename}:`, err);
           errors.push({
             file: oldFilename,
             error: err instanceof Error ? err.message : String(err)
@@ -129,7 +151,7 @@ export function createManageRoutes(
         }
       }
 
-      console.log(`[FR-131] Bulk rename complete: ${renamed.length} renamed, ${errors.length} errors`);
+      console.log(`[FR-138] Bulk rename complete: ${renamed.length} renamed, ${errors.length} errors`);
 
       res.json({
         success: errors.length === 0,
@@ -139,7 +161,7 @@ export function createManageRoutes(
         errors: errors.length > 0 ? errors : undefined
       });
     } catch (err) {
-      console.error('[FR-131] Bulk rename error:', err);
+      console.error('[FR-138] Bulk rename error:', err);
       res.status(500).json({
         success: false,
         error: err instanceof Error ? err.message : 'Internal server error'
@@ -822,6 +844,324 @@ export function createManageRoutes(
 
     return results;
   }
+
+  /**
+   * POST /api/manage/rename-chapter
+   * FR-140: Rename all files in a chapter
+   *
+   * Body:
+   * {
+   *   oldChapter: string;  // "03"
+   *   newChapter: string;  // "02"
+   * }
+   *
+   * Returns:
+   * {
+   *   success: boolean;
+   *   filesRenamed: number;
+   *   error?: string;
+   * }
+   */
+  router.post('/rename-chapter', async (req, res) => {
+    try {
+      const { oldChapter, newChapter } = req.body;
+
+      if (!oldChapter || !newChapter) {
+        return res.json({
+          success: false,
+          error: 'oldChapter and newChapter are required'
+        });
+      }
+
+      const oldNum = parseInt(oldChapter, 10);
+      const newNum = parseInt(newChapter, 10);
+
+      if (isNaN(oldNum) || isNaN(newNum)) {
+        return res.json({
+          success: false,
+          error: 'Invalid chapter numbers'
+        });
+      }
+
+      if (oldNum < 1 || oldNum > 99 || newNum < 1 || newNum > 99) {
+        return res.json({
+          success: false,
+          error: 'Chapter numbers must be between 01 and 99'
+        });
+      }
+
+      if (oldNum === newNum) {
+        return res.json({
+          success: false,
+          error: 'Old and new chapter cannot be the same'
+        });
+      }
+
+      const config = getConfig();
+      const paths = getProjectPaths(expandPath(config.projectDirectory));
+      const recordingsDir = paths.recordings;
+      const activeJob = getActiveJob ? getActiveJob() : null;
+      const queue = getQueue ? getQueue() : [];
+
+      // Check if any transcription is active
+      if (activeJob) {
+        return res.json({
+          success: false,
+          error: 'Cannot rename chapters while transcription is in progress'
+        });
+      }
+
+      // Get all files in this chapter
+      const allFiles = await fs.readdir(recordingsDir);
+      const recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+
+      const chapterFiles = recordings.filter(f => {
+        const parsed = parseRecordingFilename(f);
+        return parsed && parsed.chapter === oldChapter;
+      });
+
+      if (chapterFiles.length === 0) {
+        return res.json({
+          success: false,
+          error: `No files found in chapter ${oldChapter}`
+        });
+      }
+
+      console.log(`[FR-140] Renaming chapter ${oldChapter} → ${newChapter} (${chapterFiles.length} files)`);
+
+      let renamedCount = 0;
+
+      // Rename each file
+      for (const oldFilename of chapterFiles) {
+        const parsed = parseRecordingFilename(oldFilename);
+        if (!parsed) continue;
+
+        // Build new filename with updated chapter
+        const newFilename = buildRecordingFilename(
+          newChapter,
+          parsed.sequence,
+          parsed.name
+        ) + path.extname(oldFilename);
+
+        console.log(`[FR-140]   ${oldFilename} → ${newFilename}`);
+
+        // Use FR-130 renameRecording (handles derivatives, state migration, etc.)
+        const result = await renameRecording(
+          oldFilename,
+          newFilename,
+          paths,
+          activeJob,
+          queue,
+          queueTranscription
+        );
+
+        if (result.success) {
+          renamedCount++;
+        }
+      }
+
+      // Emit Socket.io event
+      io.emit('recordings:changed');
+
+      console.log(`[FR-140] Rename chapter complete: ${renamedCount}/${chapterFiles.length} files`);
+
+      return res.json({
+        success: true,
+        filesRenamed: renamedCount
+      });
+    } catch (err) {
+      console.error('[FR-140] Rename chapter error:', err);
+      return res.status(500).json({
+        success: false,
+        error: err instanceof Error ? err.message : 'Failed to rename chapter'
+      });
+    }
+  });
+
+  /**
+   * POST /api/manage/swap-chapters
+   * FR-140: Swap two chapters
+   *
+   * Body:
+   * {
+   *   chapter1: string;  // "01"
+   *   chapter2: string;  // "06"
+   * }
+   *
+   * Returns:
+   * {
+   *   success: boolean;
+   *   filesSwapped: number;
+   *   error?: string;
+   * }
+   */
+  router.post('/swap-chapters', async (req, res) => {
+    try {
+      const { chapter1, chapter2 } = req.body;
+
+      if (!chapter1 || !chapter2) {
+        return res.json({
+          success: false,
+          error: 'chapter1 and chapter2 are required'
+        });
+      }
+
+      const ch1Num = parseInt(chapter1, 10);
+      const ch2Num = parseInt(chapter2, 10);
+
+      if (isNaN(ch1Num) || isNaN(ch2Num)) {
+        return res.json({
+          success: false,
+          error: 'Invalid chapter numbers'
+        });
+      }
+
+      if (ch1Num < 1 || ch1Num > 99 || ch2Num < 1 || ch2Num > 99) {
+        return res.json({
+          success: false,
+          error: 'Chapter numbers must be between 01 and 99'
+        });
+      }
+
+      if (ch1Num === ch2Num) {
+        return res.json({
+          success: false,
+          error: 'Cannot swap chapter with itself'
+        });
+      }
+
+      const config = getConfig();
+      const paths = getProjectPaths(expandPath(config.projectDirectory));
+      const recordingsDir = paths.recordings;
+      const activeJob = getActiveJob ? getActiveJob() : null;
+      const queue = getQueue ? getQueue() : [];
+
+      // Check if any transcription is active
+      if (activeJob) {
+        return res.json({
+          success: false,
+          error: 'Cannot swap chapters while transcription is in progress'
+        });
+      }
+
+      // Get all recording files
+      const allFiles = await fs.readdir(recordingsDir);
+      const recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+
+      console.log(`[FR-140] Swapping chapters ${chapter1} ↔ ${chapter2}`);
+
+      const tempChapter = '99'; // Temporary chapter for 3-phase swap
+      let swappedCount = 0;
+
+      // Phase 1: chapter1 → temp (99)
+      console.log(`[FR-140] Phase 1: ${chapter1} → ${tempChapter}`);
+      const ch1Files = recordings.filter(f => {
+        const parsed = parseRecordingFilename(f);
+        return parsed && parsed.chapter === chapter1;
+      });
+
+      for (const oldFilename of ch1Files) {
+        const parsed = parseRecordingFilename(oldFilename);
+        if (!parsed) continue;
+
+        const newFilename = buildRecordingFilename(
+          tempChapter,
+          parsed.sequence,
+          parsed.name
+        ) + path.extname(oldFilename);
+
+        const result = await renameRecording(
+          oldFilename,
+          newFilename,
+          paths,
+          activeJob,
+          queue,
+          queueTranscription
+        );
+
+        if (result.success) swappedCount++;
+      }
+
+      // Phase 2: chapter2 → chapter1
+      console.log(`[FR-140] Phase 2: ${chapter2} → ${chapter1}`);
+      const ch2Files = recordings.filter(f => {
+        const parsed = parseRecordingFilename(f);
+        return parsed && parsed.chapter === chapter2;
+      });
+
+      for (const oldFilename of ch2Files) {
+        const parsed = parseRecordingFilename(oldFilename);
+        if (!parsed) continue;
+
+        const newFilename = buildRecordingFilename(
+          chapter1,
+          parsed.sequence,
+          parsed.name
+        ) + path.extname(oldFilename);
+
+        const result = await renameRecording(
+          oldFilename,
+          newFilename,
+          paths,
+          activeJob,
+          queue,
+          queueTranscription
+        );
+
+        if (result.success) swappedCount++;
+      }
+
+      // Phase 3: temp (99) → chapter2
+      console.log(`[FR-140] Phase 3: ${tempChapter} → ${chapter2}`);
+
+      // Re-read directory to get updated filenames
+      const updatedFiles = await fs.readdir(recordingsDir);
+      const updatedRecordings = updatedFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+
+      const tempFiles = updatedRecordings.filter(f => {
+        const parsed = parseRecordingFilename(f);
+        return parsed && parsed.chapter === tempChapter;
+      });
+
+      for (const oldFilename of tempFiles) {
+        const parsed = parseRecordingFilename(oldFilename);
+        if (!parsed) continue;
+
+        const newFilename = buildRecordingFilename(
+          chapter2,
+          parsed.sequence,
+          parsed.name
+        ) + path.extname(oldFilename);
+
+        const result = await renameRecording(
+          oldFilename,
+          newFilename,
+          paths,
+          activeJob,
+          queue,
+          queueTranscription
+        );
+
+        if (result.success) swappedCount++;
+      }
+
+      // Emit Socket.io event
+      io.emit('recordings:changed');
+
+      console.log(`[FR-140] Swap complete: ${swappedCount} files renamed`);
+
+      return res.json({
+        success: true,
+        filesSwapped: swappedCount
+      });
+    } catch (err) {
+      console.error('[FR-140] Swap chapters error:', err);
+      return res.status(500).json({
+        success: false,
+        error: err instanceof Error ? err.message : 'Failed to swap chapters'
+      });
+    }
+  });
 
   return router;
 }
