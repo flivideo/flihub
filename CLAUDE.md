@@ -2,6 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
+---
+
+## ⚠️ TEMPORARY STATE REMINDER (2026-01-07)
+
+**Action Required:** Test FR-140 (Visual Chapter Management) when conversation resumes.
+
+**What to test:**
+1. Navigate to Manage panel
+2. Click "Renumber" tool in sidebar
+3. Verify visual chapter list displays correctly
+4. Test click-to-rename functionality
+5. Test auto-swap on collision
+6. Verify gap indicators show correctly
+
+**After testing:** Remove this entire "TEMPORARY STATE REMINDER" section from CLAUDE.md (lines 6-22).
+
+---
+
 ## Quick Reference
 
 - `/progress` - Get quick project status
