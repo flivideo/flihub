@@ -1,0 +1,10 @@
+# Exclude large documentation directories to prevent overwhelming Claude Code's JSON parser
+docs/prd/
+docs/architecture/
+docs/planning/
+docs/analysis/
+docs/testing/
+node_modules/
+.git/
+*.log
+*.jsonl
