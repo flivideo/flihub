@@ -1,0 +1,4177 @@
+{
+  "summary": {
+    "scanDate": "2026-01-06T11:10:10.181Z",
+    "projectsScanned": 46,
+    "projectsWithIssues": 32,
+    "totalIssues": 387,
+    "byType": {
+      "naming": 4,
+      "structural": 22,
+      "derivative": 361,
+      "state": 0
+    },
+    "bySeverity": {
+      "error": 14,
+      "warning": 2,
+      "info": 371
+    }
+  },
+  "results": [
+    {
+      "projectCode": "archived",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/archived",
+      "fileCount": 0,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "b59-n8n-digital-ocean",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b59-n8n-digital-ocean",
+      "fileCount": 16,
+      "discrepancies": [
+        {
+          "projectCode": "b59-n8n-digital-ocean",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b59-n8n-digital-ocean",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Chapter gaps detected",
+          "details": "Missing chapters: 02",
+          "suggestion": "Gaps may be intentional (deleted content). Use FR-140 if you want to fill them."
+        }
+      ]
+    },
+    {
+      "projectCode": "b64-bmad-claude-sdk",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b64-bmad-claude-sdk",
+      "fileCount": 88,
+      "discrepancies": [
+        {
+          "projectCode": "b64-bmad-claude-sdk",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b64-bmad-claude-sdk",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Chapter gaps detected",
+          "details": "Missing chapters: 31, 32, 33, 34, 35, 36, 37, 38, 39",
+          "suggestion": "Gaps may be intentional (deleted content). Use FR-140 if you want to fill them."
+        },
+        {
+          "projectCode": "b64-bmad-claude-sdk",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b64-bmad-claude-sdk",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Sequence gaps in chapter 04",
+          "details": "Missing sequences: 3",
+          "suggestion": "Use FR-138 Rename Tool with \"Renumber\" option to fill gaps"
+        },
+        {
+          "projectCode": "b64-bmad-claude-sdk",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b64-bmad-claude-sdk",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 16",
+          "details": "Files: 16-1-create-custom-agent.mov, 16-1-develop.1.3-create-html-client.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        },
+        {
+          "projectCode": "b64-bmad-claude-sdk",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b64-bmad-claude-sdk",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 40",
+          "details": "Files: 40-1-demonstration.mov, 40-1-talking-head.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        }
+      ]
+    },
+    {
+      "projectCode": "b65-guy-monroe-marketing-plan",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b65-guy-monroe-marketing-plan",
+      "fileCount": 26,
+      "discrepancies": [
+        {
+          "projectCode": "b65-guy-monroe-marketing-plan",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b65-guy-monroe-marketing-plan",
+          "type": "naming",
+          "severity": "error",
+          "issue": "Invalid name format",
+          "file": "03-1.mov",
+          "details": "Name \"\" must be kebab-case ()",
+          "suggestion": "Convert to lowercase and replace special chars with hyphens"
+        },
+        {
+          "projectCode": "b65-guy-monroe-marketing-plan",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b65-guy-monroe-marketing-plan",
+          "type": "naming",
+          "severity": "error",
+          "issue": "Invalid name format",
+          "file": "03-2.mov",
+          "details": "Name \"\" must be kebab-case ()",
+          "suggestion": "Convert to lowercase and replace special chars with hyphens"
+        }
+      ]
+    },
+    {
+      "projectCode": "b66-context-engineered-html-art",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+      "fileCount": 25,
+      "discrepancies": [
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "naming",
+          "severity": "error",
+          "issue": "Invalid name format",
+          "file": "10-2-requirement-documents+developer-agent.mov",
+          "details": "Name \"requirement-documents+developer-agent\" must be kebab-case ()",
+          "suggestion": "Convert to lowercase and replace special chars with hyphens"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-1-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-1-setup.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-1-system-prompt.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-2-system-prompt.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-3-system-prompt.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-1-research.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-2-research.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-1-community.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-1-tech-stack-analysis.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-2-tech-stack-analysis.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "08-1-build-style-guides.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "09-2-build-analyst-agent.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "09-3-build-analyst-agent.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "10-1-requirement-documents.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "10-2-requirement-documents+developer-agent.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "11-1-holistic-review-audit.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "11-2-tip-image-pasting-in-claude-for-mac.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "11-3-holistic-review-audit.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "12-1-first-generateion.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "12-2-first-generateion.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "13-1-run-all-animation-generations.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "13-2-run-all-animation-generations.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "13-3-run-all-animation-generations.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b66-context-engineered-html-art",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b66-context-engineered-html-art",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "14-1-outro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b67-vam-s3-staging",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b67-vam-s3-staging",
+      "fileCount": 2,
+      "discrepancies": [
+        {
+          "projectCode": "b67-vam-s3-staging",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b67-vam-s3-staging",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b67-vam-s3-staging",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b67-vam-s3-staging",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-1-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b68-claude-code-web",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b68-claude-code-web",
+      "fileCount": 18,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "b69-claude-code-with-codex",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+      "fileCount": 11,
+      "discrepancies": [
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-1-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-2-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-1-code-analysis.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-1-claude-code-analysis.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-2-claude-code-analysis.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-3-claude-code-analysis.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-4-claude-code-analysis.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-5-claude-code-analysis.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-1-outro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b69-claude-code-with-codex",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b69-claude-code-with-codex",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-2-outro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b70-ito.ai-doubled-productivity",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b70-ito.ai-doubled-productivity",
+      "fileCount": 14,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "b71-bmad-poem",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b71-bmad-poem",
+      "fileCount": 121,
+      "discrepancies": [
+        {
+          "projectCode": "b71-bmad-poem",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b71-bmad-poem",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Chapter gaps detected",
+          "details": "Missing chapters: 02",
+          "suggestion": "Gaps may be intentional (deleted content). Use FR-140 if you want to fill them."
+        },
+        {
+          "projectCode": "b71-bmad-poem",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b71-bmad-poem",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Sequence gaps in chapter 12",
+          "details": "Missing sequences: 33, 34, 35",
+          "suggestion": "Use FR-138 Rename Tool with \"Renumber\" option to fill gaps"
+        }
+      ]
+    },
+    {
+      "projectCode": "b72-opus-4.5-awesome",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+      "fileCount": 20,
+      "discrepancies": [
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-1-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-1-demostration.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-2-demonstration.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-3-demonstration.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-4-demonstration.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-1-refactor.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-2-refactor.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-3-refactor.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-4-refactor.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-5-refactor.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-6-refactor.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-7-refactor.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-8-refactor.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-9-refactor.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-1-recap.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-2-recap-stats.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-1-outro-cta.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-2-outro-endcards.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b72-opus-4.5-awesome",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-3-outro-endcards.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+      "fileCount": 17,
+      "discrepancies": [
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-2-open-in-finder.mov",
+          "details": "Shadow file not found: 04-2-open-in-finder.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-assets.mov",
+          "details": "Shadow file not found: 05-1-assets.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-2-assets.mov",
+          "details": "Shadow file not found: 05-2-assets.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-thumb.mov",
+          "details": "Shadow file not found: 06-1-thumb.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-2-thumb.mov",
+          "details": "Shadow file not found: 06-2-thumb.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-1-outro-RECAP.mov",
+          "details": "Shadow file not found: 07-1-outro-RECAP.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-2-outro-SKOOL.mov",
+          "details": "Shadow file not found: 07-2-outro-SKOOL.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-3-outro-ENDCARD.mov",
+          "details": "Shadow file not found: 07-3-outro-ENDCARD.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-4-outro-endcard-NEXT-VIDEO.mov",
+          "details": "Shadow file not found: 07-4-outro-endcard-NEXT-VIDEO.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-2-context.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-1-scenaro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-2-scenaro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-3-scenaro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-1-vibe-coding-opus-45.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-2-vibe-coding-opus-45.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-1-open-in-finder.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-2-open-in-finder.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-1-assets.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-2-assets.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-1-thumb.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-2-thumb.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-1-outro-RECAP.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-2-outro-SKOOL.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-3-outro-ENDCARD.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b73-vibe-code-ecamm-line-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b73-vibe-code-ecamm-line-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-4-outro-endcard-NEXT-VIDEO.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b74-claude-token-usage-tips",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+      "fileCount": 35,
+      "discrepancies": [
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Sequence gaps in chapter 04",
+          "details": "Missing sequences: 4",
+          "suggestion": "Use FR-138 Rename Tool with \"Renumber\" option to fill gaps"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Sequence gaps in chapter 06",
+          "details": "Missing sequences: 3",
+          "suggestion": "Use FR-138 Rename Tool with \"Renumber\" option to fill gaps"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-intro.mov",
+          "details": "Shadow file not found: 01-1-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-scenario.mov",
+          "details": "Shadow file not found: 02-1-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-2-scenario.mov",
+          "details": "Shadow file not found: 02-2-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-3-scenario.mov",
+          "details": "Shadow file not found: 02-3-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-4-scenario.mov",
+          "details": "Shadow file not found: 02-4-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-1-conversation-hygiene.mov",
+          "details": "Shadow file not found: 03-1-conversation-hygiene.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-2-conversation-hygiene.mov",
+          "details": "Shadow file not found: 03-2-conversation-hygiene.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-3-conversation-hygiene.mov",
+          "details": "Shadow file not found: 03-3-conversation-hygiene.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-4-conversation-hygiene.mov",
+          "details": "Shadow file not found: 03-4-conversation-hygiene.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-5-conversation-hygiene.mov",
+          "details": "Shadow file not found: 03-5-conversation-hygiene.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-6-conversation-hygiene.mov",
+          "details": "Shadow file not found: 03-6-conversation-hygiene.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-7-conversation-hygiene.mov",
+          "details": "Shadow file not found: 03-7-conversation-hygiene.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-8-conversation-hygiene.mov",
+          "details": "Shadow file not found: 03-8-conversation-hygiene.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-9-conversation-hygiene.mov",
+          "details": "Shadow file not found: 03-9-conversation-hygiene.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-1-front-load-claude.mov",
+          "details": "Shadow file not found: 04-1-front-load-claude.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-2-front-load-claude.mov",
+          "details": "Shadow file not found: 04-2-front-load-claude.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-3-front-load-claude.mov",
+          "details": "Shadow file not found: 04-3-front-load-claude.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-5-front-load-claude.mov",
+          "details": "Shadow file not found: 04-5-front-load-claude.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-reference-files-directly.mov",
+          "details": "Shadow file not found: 05-1-reference-files-directly.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-2-reference-files-directly.mov",
+          "details": "Shadow file not found: 05-2-reference-files-directly.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-context-commands.mov",
+          "details": "Shadow file not found: 06-1-context-commands.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-2-context-commands.mov",
+          "details": "Shadow file not found: 06-2-context-commands.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-4-context-commands.mov",
+          "details": "Shadow file not found: 06-4-context-commands.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-5-context-commands.mov",
+          "details": "Shadow file not found: 06-5-context-commands.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-6-context-commands.mov",
+          "details": "Shadow file not found: 06-6-context-commands.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-1-claude-skills.mov",
+          "details": "Shadow file not found: 07-1-claude-skills.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-2-claude-skills.mov",
+          "details": "Shadow file not found: 07-2-claude-skills.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-3-claude-skills.mov",
+          "details": "Shadow file not found: 07-3-claude-skills.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-4-claude-skills.mov",
+          "details": "Shadow file not found: 07-4-claude-skills.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-5-claude-skills.mov",
+          "details": "Shadow file not found: 07-5-claude-skills.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-6-claude-skills.mov",
+          "details": "Shadow file not found: 07-6-claude-skills.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-7-claude-skills.mov",
+          "details": "Shadow file not found: 07-7-claude-skills.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "08-1-dam-CTA.mov",
+          "details": "Shadow file not found: 08-1-dam-CTA.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-1-outro-RECAP.mov",
+          "details": "Shadow file not found: 09-1-outro-RECAP.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-2-outro-RECAP.mov",
+          "details": "Shadow file not found: 09-2-outro-RECAP.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-1-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-2-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-3-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-4-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-1-conversation-hygiene.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-2-conversation-hygiene.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-3-conversation-hygiene.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-4-conversation-hygiene.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-5-conversation-hygiene.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-6-conversation-hygiene.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-7-conversation-hygiene.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-8-conversation-hygiene.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-9-conversation-hygiene.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-1-front-load-claude.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-2-front-load-claude.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-3-front-load-claude.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-5-front-load-claude.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-1-reference-files-directly.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-2-reference-files-directly.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-1-context-commands.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-2-context-commands.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-4-context-commands.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-5-context-commands.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-6-context-commands.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-1-claude-skills.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-2-claude-skills.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-3-claude-skills.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-4-claude-skills.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-5-claude-skills.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-6-claude-skills.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-7-claude-skills.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "08-1-dam-CTA.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "09-1-outro-RECAP.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b74-claude-token-usage-tips",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b74-claude-token-usage-tips",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "09-2-outro-RECAP.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+      "fileCount": 25,
+      "discrepancies": [
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-intro.mov",
+          "details": "Shadow file not found: 01-1-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-2-intro.mov",
+          "details": "Shadow file not found: 01-2-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-3-intro.mov",
+          "details": "Shadow file not found: 01-3-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-scenario.mov",
+          "details": "Shadow file not found: 02-1-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-2-scenario.mov",
+          "details": "Shadow file not found: 02-2-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-1-agents.mov",
+          "details": "Shadow file not found: 03-1-agents.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-2-agents-PO.mov",
+          "details": "Shadow file not found: 03-2-agents-PO.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-3-agents-CTA-BMAD.mov",
+          "details": "Shadow file not found: 03-3-agents-CTA-BMAD.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-4-agents-DEV.mov",
+          "details": "Shadow file not found: 03-4-agents-DEV.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-1-implement-feature.mov",
+          "details": "Shadow file not found: 04-1-implement-feature.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-2-implement-feature.mov",
+          "details": "Shadow file not found: 04-2-implement-feature.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-3-implement-feature.mov",
+          "details": "Shadow file not found: 04-3-implement-feature.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-4-implement-feature.mov",
+          "details": "Shadow file not found: 04-4-implement-feature.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-5-implement-feature.mov",
+          "details": "Shadow file not found: 04-5-implement-feature.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-quick-brown-fox.mov",
+          "details": "Shadow file not found: 05-1-quick-brown-fox.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-2-quick-brown-fox.mov",
+          "details": "Shadow file not found: 05-2-quick-brown-fox.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-manual-trascribe-plus-chapters.mov",
+          "details": "Shadow file not found: 06-1-manual-trascribe-plus-chapters.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-1-chapter-test.mov",
+          "details": "Shadow file not found: 07-1-chapter-test.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-2-chapter-test.mov",
+          "details": "Shadow file not found: 07-2-chapter-test.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-3-chapter-test.mov",
+          "details": "Shadow file not found: 07-3-chapter-test.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-4-chapter-test.mov",
+          "details": "Shadow file not found: 07-4-chapter-test.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "08-1-review-chapter-test.mov",
+          "details": "Shadow file not found: 08-1-review-chapter-test.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "08-2-review-chapter-test.mov",
+          "details": "Shadow file not found: 08-2-review-chapter-test.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-1-outro-RECAP.mov",
+          "details": "Shadow file not found: 09-1-outro-RECAP.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-2-outro-ENDCARD.mov",
+          "details": "Shadow file not found: 09-2-outro-ENDCARD.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-2-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-3-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-1-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-2-scenario.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-1-agents.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-2-agents-PO.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-3-agents-CTA-BMAD.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "03-4-agents-DEV.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-1-implement-feature.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-2-implement-feature.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-3-implement-feature.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-4-implement-feature.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "04-5-implement-feature.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-1-quick-brown-fox.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-2-quick-brown-fox.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "06-1-manual-trascribe-plus-chapters.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-1-chapter-test.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-2-chapter-test.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-3-chapter-test.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "07-4-chapter-test.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "08-1-review-chapter-test.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "08-2-review-chapter-test.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "09-1-outro-RECAP.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b75-vibe-code-whisper-ai-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b75-vibe-code-whisper-ai-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "09-2-outro-ENDCARD.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+      "fileCount": 23,
+      "discrepancies": [
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-intro.mov",
+          "details": "Shadow file not found: 01-1-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-scenario.mov",
+          "details": "Shadow file not found: 02-1-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-2-scenario.mov",
+          "details": "Shadow file not found: 02-2-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-3-scenario.mov",
+          "details": "Shadow file not found: 02-3-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-4-scenario.mov",
+          "details": "Shadow file not found: 02-4-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-1-chapter-ux.mov",
+          "details": "Shadow file not found: 03-1-chapter-ux.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-2-chapter-ux.mov",
+          "details": "Shadow file not found: 03-2-chapter-ux.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-3-chapter-ux.mov",
+          "details": "Shadow file not found: 03-3-chapter-ux.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-4-chapter-ux.mov",
+          "details": "Shadow file not found: 03-4-chapter-ux.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-1-chapter-generation-enhancements.mov",
+          "details": "Shadow file not found: 04-1-chapter-generation-enhancements.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-2-chapter-generation-enhancements.mov",
+          "details": "Shadow file not found: 04-2-chapter-generation-enhancements.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-3-chapter-generation-enhancements.mov",
+          "details": "Shadow file not found: 04-3-chapter-generation-enhancements.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-4-chapter-generation-enhancements.mov",
+          "details": "Shadow file not found: 04-4-chapter-generation-enhancements.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-assess-specification.mov",
+          "details": "Shadow file not found: 05-1-assess-specification.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-2-assess-specification.mov",
+          "details": "Shadow file not found: 05-2-assess-specification.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-3-assess-specification.mov",
+          "details": "Shadow file not found: 05-3-assess-specification.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-4-assess-specification.mov",
+          "details": "Shadow file not found: 05-4-assess-specification.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-minor-improvements.mov",
+          "details": "Shadow file not found: 06-1-minor-improvements.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-2-minor-improvements.mov",
+          "details": "Shadow file not found: 06-2-minor-improvements.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-3-minor-improvements.mov",
+          "details": "Shadow file not found: 06-3-minor-improvements.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-1-polished-ux.mov",
+          "details": "Shadow file not found: 07-1-polished-ux.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-2-polished-ux.mov",
+          "details": "Shadow file not found: 07-2-polished-ux.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b76-vibe-code-auto-chapters-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b76-vibe-code-auto-chapters-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "08-1-outro-CTA.mov",
+          "details": "Shadow file not found: 08-1-outro-CTA.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "b77-vibe-marketing-info-page-5-minutes",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b77-vibe-marketing-info-page-5-minutes",
+      "fileCount": 2,
+      "discrepancies": [
+        {
+          "projectCode": "b77-vibe-marketing-info-page-5-minutes",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b77-vibe-marketing-info-page-5-minutes",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-one-take-video.mov",
+          "details": "Shadow file not found: 01-1-one-take-video.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b77-vibe-marketing-info-page-5-minutes",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b77-vibe-marketing-info-page-5-minutes",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-demo.mov",
+          "details": "Shadow file not found: 02-1-demo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b77-vibe-marketing-info-page-5-minutes",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b77-vibe-marketing-info-page-5-minutes",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-one-take-video.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        },
+        {
+          "projectCode": "b77-vibe-marketing-info-page-5-minutes",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b77-vibe-marketing-info-page-5-minutes",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "02-1-demo.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b80-claude-skills-custom-tools-ON-HOLD",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b80-claude-skills-custom-tools-ON-HOLD",
+      "fileCount": 1,
+      "discrepancies": [
+        {
+          "projectCode": "b80-claude-skills-custom-tools-ON-HOLD",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b80-claude-skills-custom-tools-ON-HOLD",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-intro.mov",
+          "details": "Shadow file not found: 01-1-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b80-claude-skills-custom-tools-ON-HOLD",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b80-claude-skills-custom-tools-ON-HOLD",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b81-dam-command-line",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+      "fileCount": 31,
+      "discrepancies": [
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-intro.mov",
+          "details": "Shadow file not found: 01-1-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-scenario.mov",
+          "details": "Shadow file not found: 02-1-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-2-scenario.mov",
+          "details": "Shadow file not found: 02-2-scenario.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-2-problem.mov",
+          "details": "Shadow file not found: 03-2-problem.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-3-problem.mov",
+          "details": "Shadow file not found: 03-3-problem.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-1-costs.mov",
+          "details": "Shadow file not found: 04-1-costs.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-2-costs.mov",
+          "details": "Shadow file not found: 04-2-costs.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-3-costs.mov",
+          "details": "Shadow file not found: 04-3-costs.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-better-stack.mov",
+          "details": "Shadow file not found: 05-1-better-stack.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-2-better-stack.mov",
+          "details": "Shadow file not found: 05-2-better-stack.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-3-better-stack.mov",
+          "details": "Shadow file not found: 05-3-better-stack.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-4-better-stack.mov",
+          "details": "Shadow file not found: 05-4-better-stack.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-flihub.mov",
+          "details": "Shadow file not found: 06-1-flihub.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-2-flihub.mov",
+          "details": "Shadow file not found: 06-2-flihub.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-3-flihub.mov",
+          "details": "Shadow file not found: 06-3-flihub.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-1-555-manifesto.mov",
+          "details": "Shadow file not found: 07-1-555-manifesto.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-2-555-manifesto.mov",
+          "details": "Shadow file not found: 07-2-555-manifesto.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "08-1-storylineapp-fli-video-dam.mov",
+          "details": "Shadow file not found: 08-1-storylineapp-fli-video-dam.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "08-2-storylineapp-fli-video-dam.mov",
+          "details": "Shadow file not found: 08-2-storylineapp-fli-video-dam.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "08-3-storylineapp-fli-video-dam.mov",
+          "details": "Shadow file not found: 08-3-storylineapp-fli-video-dam.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-1-dam-demo.mov",
+          "details": "Shadow file not found: 09-1-dam-demo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-2-dam-demo.mov",
+          "details": "Shadow file not found: 09-2-dam-demo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-3-dam-demo.mov",
+          "details": "Shadow file not found: 09-3-dam-demo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-4-dam-demo.mov",
+          "details": "Shadow file not found: 09-4-dam-demo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-5-dam-demo.mov",
+          "details": "Shadow file not found: 09-5-dam-demo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-6-dam-demo.mov",
+          "details": "Shadow file not found: 09-6-dam-demo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "09-7-dam-demo.mov",
+          "details": "Shadow file not found: 09-7-dam-demo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "10-1-repo-CTA.mov",
+          "details": "Shadow file not found: 10-1-repo-CTA.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "10-2-outro-RECAP.mov",
+          "details": "Shadow file not found: 10-2-outro-RECAP.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "10-3-outro-RECAP.mov",
+          "details": "Shadow file not found: 10-3-outro-RECAP.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b81-dam-command-line",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b81-dam-command-line",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "10-4-outro.mov",
+          "details": "Shadow file not found: 10-4-outro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "b82-dam-fli-video",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b82-dam-fli-video",
+      "fileCount": 0,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "b83-ecamm-application",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+      "fileCount": 20,
+      "discrepancies": [
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-intro.mov",
+          "details": "Shadow file not found: 01-1-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-2-intro.mov",
+          "details": "Shadow file not found: 01-2-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-3-intro.mov",
+          "details": "Shadow file not found: 01-3-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-4-intro.mov",
+          "details": "Shadow file not found: 01-4-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-who-am-i.mov",
+          "details": "Shadow file not found: 02-1-who-am-i.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-2-who-am-i.mov",
+          "details": "Shadow file not found: 02-2-who-am-i.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-3-who-am-i.mov",
+          "details": "Shadow file not found: 02-3-who-am-i.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-1-context-engineering.mov",
+          "details": "Shadow file not found: 03-1-context-engineering.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-2-context-engineering.mov",
+          "details": "Shadow file not found: 03-2-context-engineering.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-3-context-engineering.mov",
+          "details": "Shadow file not found: 03-3-context-engineering.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-1-asset-generation.mov",
+          "details": "Shadow file not found: 04-1-asset-generation.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-2-asset-generation.mov",
+          "details": "Shadow file not found: 04-2-asset-generation.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-3-asset-generation.mov",
+          "details": "Shadow file not found: 04-3-asset-generation.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-supporting-scripts.mov",
+          "details": "Shadow file not found: 05-1-supporting-scripts.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-2-supporting-scripts.mov",
+          "details": "Shadow file not found: 05-2-supporting-scripts.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-3-supporting-scripts.mov",
+          "details": "Shadow file not found: 05-3-supporting-scripts.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-outro-CTA.mov",
+          "details": "Shadow file not found: 06-1-outro-CTA.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-1-video-editing.mov",
+          "details": "Shadow file not found: 07-1-video-editing.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-2-video-editing.mov",
+          "details": "Shadow file not found: 07-2-video-editing.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b83-ecamm-application",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b83-ecamm-application",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-3-video-editing.mov",
+          "details": "Shadow file not found: 07-3-video-editing.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "b84-ecamm-application-presentation",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b84-ecamm-application-presentation",
+      "fileCount": 1,
+      "discrepancies": [
+        {
+          "projectCode": "b84-ecamm-application-presentation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b84-ecamm-application-presentation",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-ecamm-application.mov",
+          "details": "Shadow file not found: 01-1-ecamm-application.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b84-ecamm-application-presentation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b84-ecamm-application-presentation",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-ecamm-application.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b85-clauding-01",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b85-clauding-01",
+      "fileCount": 11,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "b87-12-days-of-claudmas-01",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b87-12-days-of-claudmas-01",
+      "fileCount": 39,
+      "discrepancies": [
+        {
+          "projectCode": "b87-12-days-of-claudmas-01",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b87-12-days-of-claudmas-01",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-intro.mov",
+          "details": "Shadow file not found: 01-1-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b87-12-days-of-claudmas-01",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b87-12-days-of-claudmas-01",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-setup.mov",
+          "details": "Shadow file not found: 02-1-setup.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b87-12-days-of-claudmas-01",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b87-12-days-of-claudmas-01",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-2-setup.mov",
+          "details": "Shadow file not found: 02-2-setup.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b87-12-days-of-claudmas-01",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b87-12-days-of-claudmas-01",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-3-setup.mov",
+          "details": "Shadow file not found: 02-3-setup.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b87-12-days-of-claudmas-01",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b87-12-days-of-claudmas-01",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-4-setup.mov",
+          "details": "Shadow file not found: 02-4-setup.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b87-12-days-of-claudmas-01",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b87-12-days-of-claudmas-01",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-5-setup.mov",
+          "details": "Shadow file not found: 02-5-setup.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b87-12-days-of-claudmas-01",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b87-12-days-of-claudmas-01",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-6-setup.mov",
+          "details": "Shadow file not found: 02-6-setup.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "b88-kybernesis.ai-unboxing",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b88-kybernesis.ai-unboxing",
+      "fileCount": 1,
+      "discrepancies": [
+        {
+          "projectCode": "b88-kybernesis.ai-unboxing",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b88-kybernesis.ai-unboxing",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "01-1-intro.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "b89-vibe-code-video-player-opus-4.5",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b89-vibe-code-video-player-opus-4.5",
+      "fileCount": 29,
+      "discrepancies": [
+        {
+          "projectCode": "b89-vibe-code-video-player-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b89-vibe-code-video-player-opus-4.5",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Sequence gaps in chapter 07",
+          "details": "Missing sequences: 2",
+          "suggestion": "Use FR-138 Rename Tool with \"Renumber\" option to fill gaps"
+        },
+        {
+          "projectCode": "b89-vibe-code-video-player-opus-4.5",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b89-vibe-code-video-player-opus-4.5",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-smart-player-more.mov",
+          "details": "Shadow file not found: 06-1-smart-player-more.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "b90-vibe-code-flideck-foundation",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b90-vibe-code-flideck-foundation",
+      "fileCount": 21,
+      "discrepancies": [
+        {
+          "projectCode": "b90-vibe-code-flideck-foundation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b90-vibe-code-flideck-foundation",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Sequence gaps in chapter 04",
+          "details": "Missing sequences: 5",
+          "suggestion": "Use FR-138 Rename Tool with \"Renumber\" option to fill gaps"
+        },
+        {
+          "projectCode": "b90-vibe-code-flideck-foundation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b90-vibe-code-flideck-foundation",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 08",
+          "details": "Files: 08-1-demo.mov, 08-1-setup-repo.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        },
+        {
+          "projectCode": "b90-vibe-code-flideck-foundation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b90-vibe-code-flideck-foundation",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-build-foundation.mov",
+          "details": "Shadow file not found: 06-1-build-foundation.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b90-vibe-code-flideck-foundation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b90-vibe-code-flideck-foundation",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-2-build-foundation.mov",
+          "details": "Shadow file not found: 06-2-build-foundation.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b90-vibe-code-flideck-foundation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b90-vibe-code-flideck-foundation",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "08-1-setup-repo.mov",
+          "details": "Shadow file not found: 08-1-setup-repo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "b91-vibe-code-flideck-build-a-presentation",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b91-vibe-code-flideck-build-a-presentation",
+      "fileCount": 20,
+      "discrepancies": [
+        {
+          "projectCode": "b91-vibe-code-flideck-build-a-presentation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b91-vibe-code-flideck-build-a-presentation",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-intro.mov",
+          "details": "Shadow file not found: 01-1-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b91-vibe-code-flideck-build-a-presentation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b91-vibe-code-flideck-build-a-presentation",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-what-to-build.mov",
+          "details": "Shadow file not found: 02-1-what-to-build.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b91-vibe-code-flideck-build-a-presentation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b91-vibe-code-flideck-build-a-presentation",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-2-what-to-build.mov",
+          "details": "Shadow file not found: 02-2-what-to-build.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b91-vibe-code-flideck-build-a-presentation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b91-vibe-code-flideck-build-a-presentation",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-outro.mov",
+          "details": "Shadow file not found: 06-1-outro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b91-vibe-code-flideck-build-a-presentation",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b91-vibe-code-flideck-build-a-presentation",
+          "type": "derivative",
+          "severity": "warning",
+          "issue": "Orphaned shadow file",
+          "file": "03-3-fr4-brand-identity.mp4",
+          "details": "Shadow exists but source recording not found",
+          "suggestion": "Delete orphaned shadow file to save disk space"
+        }
+      ]
+    },
+    {
+      "projectCode": "b92-vibe-code-flideck-build-a-presentation-part2",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b92-vibe-code-flideck-build-a-presentation-part2",
+      "fileCount": 0,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "b93-poem-epic-1",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+      "fileCount": 46,
+      "discrepancies": [
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-1-1.1-initialize-monorepo.mov",
+          "details": "Shadow file not found: 04-1-1.1-initialize-monorepo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-2-1.1-initialize-monorepo.mov",
+          "details": "Shadow file not found: 04-2-1.1-initialize-monorepo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-3-1.1-initialize-monorepo.mov",
+          "details": "Shadow file not found: 04-3-1.1-initialize-monorepo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-4-1.1-initialize-monorepo.mov",
+          "details": "Shadow file not found: 04-4-1.1-initialize-monorepo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-5-1.1-initialize-monorepo.mov",
+          "details": "Shadow file not found: 04-5-1.1-initialize-monorepo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-6-1.1-initialize-monorepo.mov",
+          "details": "Shadow file not found: 04-6-1.1-initialize-monorepo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-7-1.1-initialize-monorepo.mov",
+          "details": "Shadow file not found: 04-7-1.1-initialize-monorepo.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-1.2-poem-core.mov",
+          "details": "Shadow file not found: 05-1-1.2-poem-core.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-2-1.2-poem-core.mov",
+          "details": "Shadow file not found: 05-2-1.2-poem-core.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-3-1.2-poem-core.mov",
+          "details": "Shadow file not found: 05-3-1.2-poem-core.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-4-1.2-poem-core.mov",
+          "details": "Shadow file not found: 05-4-1.2-poem-core.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-5-1.2-poem-core.mov",
+          "details": "Shadow file not found: 05-5-1.2-poem-core.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-6-1.2-poem-core.mov",
+          "details": "Shadow file not found: 05-6-1.2-poem-core.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-1-1.3-poem-app.mov",
+          "details": "Shadow file not found: 06-1-1.3-poem-app.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-2-1.3-poem-app.mov",
+          "details": "Shadow file not found: 06-2-1.3-poem-app.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-3-1.3-poem-app.mov",
+          "details": "Shadow file not found: 06-3-1.3-poem-app.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-4-1.3-poem-app.mov",
+          "details": "Shadow file not found: 06-4-1.3-poem-app.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-5-1.3-poem-app.mov",
+          "details": "Shadow file not found: 06-5-1.3-poem-app.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-6-1.3-poem-app.mov",
+          "details": "Shadow file not found: 06-6-1.3-poem-app.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-7-1.3-poem-app.mov",
+          "details": "Shadow file not found: 06-7-1.3-poem-app.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "06-8-1.3-poem-app.mov",
+          "details": "Shadow file not found: 06-8-1.3-poem-app.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-1-1.4-npx-installer.mov",
+          "details": "Shadow file not found: 07-1-1.4-npx-installer.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-2-1.4-npx-installer.mov",
+          "details": "Shadow file not found: 07-2-1.4-npx-installer.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b93-poem-epic-1",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b93-poem-epic-1",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "07-3-1.4-npx-installer.mov",
+          "details": "Shadow file not found: 07-3-1.4-npx-installer.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "b94-bmad-reference-sheet",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b94-bmad-reference-sheet",
+      "fileCount": 32,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "b95-12-days-of-claudmas-02",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b95-12-days-of-claudmas-02",
+      "fileCount": 10,
+      "discrepancies": [
+        {
+          "projectCode": "b95-12-days-of-claudmas-02",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b95-12-days-of-claudmas-02",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-develop-frontend-ui.mov",
+          "details": "Shadow file not found: 05-1-develop-frontend-ui.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b95-12-days-of-claudmas-02",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b95-12-days-of-claudmas-02",
+          "type": "derivative",
+          "severity": "warning",
+          "issue": "Orphaned shadow file",
+          "file": "04-4-develop-claude-agent-sdk.mp4",
+          "details": "Shadow exists but source recording not found",
+          "suggestion": "Delete orphaned shadow file to save disk space"
+        }
+      ]
+    },
+    {
+      "projectCode": "b96-12-days-of-claudmas-03",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b96-12-days-of-claudmas-03",
+      "fileCount": 15,
+      "discrepancies": [
+        {
+          "projectCode": "b96-12-days-of-claudmas-03",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b96-12-days-of-claudmas-03",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 02",
+          "details": "Files: 02-1-minor-improvement.mov, 02-1-what-is-secondbrain.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        },
+        {
+          "projectCode": "b96-12-days-of-claudmas-03",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b96-12-days-of-claudmas-03",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 04",
+          "details": "Files: 04-1-second-brain-demo.mov, 04-1-second-brain-plan.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        }
+      ]
+    },
+    {
+      "projectCode": "b97-poem-epic-2",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b97-poem-epic-2",
+      "fileCount": 64,
+      "discrepancies": [
+        {
+          "projectCode": "b97-poem-epic-2",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b97-poem-epic-2",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 03",
+          "details": "Files: 03-1-2.1-configure-astro-server.mov, 03-1-epic-2.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        },
+        {
+          "projectCode": "b97-poem-epic-2",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b97-poem-epic-2",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 05",
+          "details": "Files: 05-1-2.2-implement-handlebars-overview.mov, 05-1-2.2-implement-handlebars.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        },
+        {
+          "projectCode": "b97-poem-epic-2",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b97-poem-epic-2",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 05",
+          "details": "Files: 05-2-2.2-implement-handlebars-overview.mov, 05-2-2.2-implement-handlebars.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        },
+        {
+          "projectCode": "b97-poem-epic-2",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b97-poem-epic-2",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 07",
+          "details": "Files: 07-1-2.3-handlebars-helpers-overview.mov, 07-1-extend-bmad-lightweight-backlog.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        },
+        {
+          "projectCode": "b97-poem-epic-2",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b97-poem-epic-2",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "08-14-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 08-14-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "b98-12-days-of-claudmas-04",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b98-12-days-of-claudmas-04",
+      "fileCount": 16,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "b99-12-days-of-claudmas-05",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+      "fileCount": 11,
+      "discrepancies": [
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Chapter gaps detected",
+          "details": "Missing chapters: 03",
+          "suggestion": "Gaps may be intentional (deleted content). Use FR-140 if you want to fill them."
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "01-1-intro.mov",
+          "details": "Shadow file not found: 01-1-intro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-planning.mov",
+          "details": "Shadow file not found: 02-1-planning.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-2-planning.mov",
+          "details": "Shadow file not found: 02-2-planning.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-3-planning.mov",
+          "details": "Shadow file not found: 02-3-planning.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-4-planning.mov",
+          "details": "Shadow file not found: 02-4-planning.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-1-development.mov",
+          "details": "Shadow file not found: 04-1-development.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-2-development.mov",
+          "details": "Shadow file not found: 04-2-development.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-3-development.mov",
+          "details": "Shadow file not found: 04-3-development.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-outro.mov",
+          "details": "Shadow file not found: 05-1-outro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-2-outro.mov",
+          "details": "Shadow file not found: 05-2-outro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "b99-12-days-of-claudmas-05",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/b99-12-days-of-claudmas-05",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-3-outro.mov",
+          "details": "Shadow file not found: 05-3-outro.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "c01-12-days-of-claudmas-06",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c01-12-days-of-claudmas-06",
+      "fileCount": 17,
+      "discrepancies": [
+        {
+          "projectCode": "c01-12-days-of-claudmas-06",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c01-12-days-of-claudmas-06",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Chapter gaps detected",
+          "details": "Missing chapters: 02, 03, 04",
+          "suggestion": "Gaps may be intentional (deleted content). Use FR-140 if you want to fill them."
+        }
+      ]
+    },
+    {
+      "projectCode": "c02-12-days-of-claudmas-07",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c02-12-days-of-claudmas-07",
+      "fileCount": 12,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "c03-12-days-of-claudmas-08",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c03-12-days-of-claudmas-08",
+      "fileCount": 21,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "c04-12-days-of-claudmas-09",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c04-12-days-of-claudmas-09",
+      "fileCount": 20,
+      "discrepancies": [
+        {
+          "projectCode": "c04-12-days-of-claudmas-09",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c04-12-days-of-claudmas-09",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "04-2-requirements.mov",
+          "details": "Shadow file not found: 04-2-requirements.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c04-12-days-of-claudmas-09",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c04-12-days-of-claudmas-09",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "05-1-debug.mov",
+          "details": "Shadow file not found: 05-1-debug.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "c05-12-days-of-claudmas-10",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c05-12-days-of-claudmas-10",
+      "fileCount": 26,
+      "discrepancies": [
+        {
+          "projectCode": "c05-12-days-of-claudmas-10",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c05-12-days-of-claudmas-10",
+          "type": "structural",
+          "severity": "info",
+          "issue": "Sequence gaps in chapter 02",
+          "details": "Missing sequences: 7",
+          "suggestion": "Use FR-138 Rename Tool with \"Renumber\" option to fill gaps"
+        },
+        {
+          "projectCode": "c05-12-days-of-claudmas-10",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c05-12-days-of-claudmas-10",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "05-1-n8n.mov",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "c06-12-days-of-claudmas-11",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c06-12-days-of-claudmas-11",
+      "fileCount": 33,
+      "discrepancies": [
+        {
+          "projectCode": "c06-12-days-of-claudmas-11",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c06-12-days-of-claudmas-11",
+          "type": "naming",
+          "severity": "error",
+          "issue": "Unparseable filename",
+          "file": "iceberg-1-1767536909595.mp4",
+          "details": "Filename does not match expected pattern: {chapter}-{sequence}-{label}-{tags}.mov",
+          "suggestion": "Rename file to match pattern or investigate why it exists"
+        },
+        {
+          "projectCode": "c06-12-days-of-claudmas-11",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c06-12-days-of-claudmas-11",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "iceberg-1-1767536909595.mp4",
+          "details": "Shadow file not found: iceberg-1-1767536909595.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c06-12-days-of-claudmas-11",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c06-12-days-of-claudmas-11",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing transcript",
+          "file": "iceberg-1-1767536909595.mp4",
+          "details": "Transcript not found (may be queued)",
+          "suggestion": "Use FR-136 Regen Transcripts tool or wait for queue"
+        }
+      ]
+    },
+    {
+      "projectCode": "c07-12-days-of-claudmas-12",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c07-12-days-of-claudmas-12",
+      "fileCount": 20,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "c08-12-days-of-claudmas-conclusion",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c08-12-days-of-claudmas-conclusion",
+      "fileCount": 0,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "c09-bmad-techdebt-tracker",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+      "fileCount": 18,
+      "discrepancies": [
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "structural",
+          "severity": "error",
+          "issue": "Duplicate sequence in chapter 02",
+          "details": "Files: 02-1-extend-bmad-lightweight-backlog-x.mov, 02-1-extend-bmad-lightweight-backlog.mov",
+          "suggestion": "Rename one file to use different sequence number"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-1-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-1-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-10-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-10-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-11-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-11-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-12-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-12-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-13-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-13-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-14-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-14-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-2-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-2-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-3-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-3-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-4-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-4-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-5-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-5-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-6-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-6-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-7-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-7-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-8-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-8-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "02-9-extend-bmad-lightweight-backlog.mov",
+          "details": "Shadow file not found: 02-9-extend-bmad-lightweight-backlog.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        },
+        {
+          "projectCode": "c09-bmad-techdebt-tracker",
+          "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c09-bmad-techdebt-tracker",
+          "type": "derivative",
+          "severity": "info",
+          "issue": "Missing shadow file",
+          "file": "03-1-extend-bmad-lightweight-backlog-OUTRO.mov",
+          "details": "Shadow file not found: 03-1-extend-bmad-lightweight-backlog-OUTRO.mp4",
+          "suggestion": "Use FR-136 Regen Shadows tool to regenerate"
+        }
+      ]
+    },
+    {
+      "projectCode": "c10-poem-epic-3",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c10-poem-epic-3",
+      "fileCount": 29,
+      "discrepancies": []
+    },
+    {
+      "projectCode": "c11-ux-ab-test-claude",
+      "projectPath": "/Users/davidcruwys/dev/video-projects/v-appydave/c11-ux-ab-test-claude",
+      "fileCount": 16,
+      "discrepancies": []
+    }
+  ]
+}
