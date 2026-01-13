@@ -5,14 +5,13 @@ import os from 'os';
 import fs from 'fs-extra';
 import type { Server } from 'socket.io';
 import { getProjectPaths } from '../../../shared/paths.js';
-import { parseRecordingFilename, buildRecordingFilename } from '../../../shared/naming.js';
+import { parseRecordingFilename, buildRecordingFilename, extractTagsFromName } from '../../../shared/naming.js';
 import { renameRecording } from '../utils/renameRecording.js';
 import { createShadowFile } from '../utils/shadowFiles.js';
 import { generateChapterRecording, groupRecordingsByChapter } from '../utils/chapterRecording.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
-import type { Config } from '../config.js';
-import type { TranscriptionJob, ServerToClientEvents, ClientToServerEvents, RecordingFile } from '../../../shared/types.js';
+import type { Config, TranscriptionJob, ServerToClientEvents, ClientToServerEvents, RecordingFile } from '../../../shared/types.js';
 
 /**
  * Create manage panel routes
@@ -420,13 +419,31 @@ export function createManageRoutes(
       // Build RecordingFile array for grouping
       const recordingFiles: RecordingFile[] = recordings.map(filename => {
         const parsed = parseRecordingFilename(filename);
+        if (!parsed) {
+          // Return a default object for invalid filenames
+          return {
+            filename,
+            path: path.join(recordingsDir, filename),
+            chapter: '00',
+            sequence: '0',
+            name: '',
+            tags: [],
+            folder: 'recordings' as const,
+            size: 0,
+            timestamp: new Date().toISOString(),
+            isSafe: false,
+            isParked: false,
+          };
+        }
+        const { tags } = extractTagsFromName(parsed.name);
         return {
           filename,
           path: path.join(recordingsDir, filename),
           chapter: parsed.chapter || '00',
           sequence: parsed.sequence || '0',
           name: parsed.name || '',
-          tags: parsed.tags || [],
+          tags,
+          folder: 'recordings' as const,
           size: 0, // Not needed for chapter generation
           timestamp: new Date().toISOString(),
           isSafe: false,
@@ -760,13 +777,31 @@ export function createManageRoutes(
 
     const recordingFiles: RecordingFile[] = recordings.map(filename => {
       const parsed = parseRecordingFilename(filename);
+      if (!parsed) {
+        // Return a default object for invalid filenames
+        return {
+          filename,
+          path: path.join(recordingsDir, filename),
+          chapter: '00',
+          sequence: '0',
+          name: '',
+          tags: [],
+          folder: 'recordings' as const,
+          size: 0,
+          timestamp: new Date().toISOString(),
+          isSafe: false,
+          isParked: false,
+        };
+      }
+      const { tags } = extractTagsFromName(parsed.name);
       return {
         filename,
         path: path.join(recordingsDir, filename),
         chapter: parsed.chapter || '00',
         sequence: parsed.sequence || '0',
         name: parsed.name || '',
-        tags: parsed.tags || [],
+        tags,
+        folder: 'recordings' as const,
         size: 0,
         timestamp: new Date().toISOString(),
         isSafe: false,

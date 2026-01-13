@@ -58,7 +58,7 @@ export class WatcherManager {
       const timeout = setTimeout(() => {
         try {
           console.log(`${config.name} change detected`);
-          // @ts-expect-error - dynamic event emission
+          // Dynamic event emission
           this.io.emit(config.event);
           console.log(`${config.name} event emitted successfully`);
         } catch (err) {
