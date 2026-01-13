@@ -162,8 +162,9 @@ export interface ParseOptions {
  */
 function stripTrailingTags(parts: string[]): string[] {
   const result = [...parts]
-  // Remove uppercase-only words from the end
-  while (result.length > 0 && /^[A-Z]+$/.test(result[result.length - 1])) {
+  // Remove uppercase-only words from the end (must contain at least one letter)
+  // Tags like CTA, 1ST, V2 are valid. Pure numbers like 1, 555 are not tags.
+  while (result.length > 0 && /^(?=.*[A-Z])[A-Z0-9]+$/.test(result[result.length - 1])) {
     result.pop()
   }
   return result
@@ -171,7 +172,7 @@ function stripTrailingTags(parts: string[]): string[] {
 
 /**
  * NFR-65: Extract uppercase tags from a kebab-case name
- * Tags are words that are entirely uppercase letters (A-Z), like CTA, TECHSTACK, API
+ * Tags are words that are entirely uppercase letters/numbers (A-Z, 0-9), like CTA, TECHSTACK, API, 1ST, V2
  *
  * @param name - kebab-case name (e.g., "intro-demo-CTA-SKOOL")
  * @returns Object with clean name and extracted tags
@@ -182,6 +183,9 @@ function stripTrailingTags(parts: string[]): string[] {
  *
  * extractTagsFromName("setup-bmad-TECHSTACK-API")
  * // { name: "setup-bmad", tags: ["TECHSTACK", "API"] }
+ *
+ * extractTagsFromName("demo-1ST-2ND")
+ * // { name: "demo", tags: ["1ST", "2ND"] }
  */
 export function extractTagsFromName(name: string): { name: string; tags: string[] } {
   if (!name) return { name: '', tags: [] }
@@ -191,7 +195,8 @@ export function extractTagsFromName(name: string): { name: string; tags: string[
   const nameParts: string[] = []
 
   for (const part of parts) {
-    if (/^[A-Z]+$/.test(part)) {
+    // Tags must contain at least one letter (not just numbers)
+    if (/^(?=.*[A-Z])[A-Z0-9]+$/.test(part)) {
       tags.push(part)
     } else {
       nameParts.push(part)

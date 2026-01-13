@@ -6,15 +6,220 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
-## Quick Summary - 2026-01-03
+## Quick Summary - 2026-01-06
 
-**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-126, FR-127, FR-128, FR-130, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
+**Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-126, FR-127, FR-128, FR-130, FR-136 (Core), FR-137, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
-**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
+**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), FR-132 (Dual Transcription), FR-133/134/135 (Manage panel enhancements), FR-138 (Rename Tool - partial), FR-139 (Folders Tool - blocked), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-140: Chapter Move & Cascade Renumbering
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-06 | Specification completed - Ready for development | - |
+
+**What was specified:**
+
+**PO Decision:** Move with automatic cascade (NOT gap compression)
+
+**Core Features:**
+1. **Move Chapter Down** - Fill gap (03→02 causes 05→04)
+2. **Move Chapter Up** - Create gap (03→05 causes 04→03)
+3. **Automatic Cascade** - Chapters between source/target shift automatically
+4. **Preview Panel** - Shows all affected chapters before execution
+5. **Descending Processing** - High to low prevents conflicts
+
+**Key Insight from User:**
+> "It's not 01,03,05 → 01,02,03. What it is, is that 03 can move up to 02, and everything below it should increase by one."
+
+**Technical:**
+- Reuses FR-130 delete+regenerate pattern
+- Reuses FR-137 SlideOutDrawer pattern
+- New cascade calculation algorithm
+- 2 new endpoints: preview + execute
+- Estimated: 4-6 hours, ~300-400 LOC
+
+**User Impact:**
+- Eliminates manual cascade calculation
+- One-click chapter reorganization
+- Addresses pain point from FR-138 testing
+- Preview prevents mistakes
+
+**Status:** Ready for developer handover (HIGH priority)
+
+---
+
+### FR-139: Folders Tool Specification
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-06 | PO Decision - Remove undefined button | - |
+
+**What was decided:**
+
+**PO Decision:** Remove the "Folders" button (Path A)
+
+**Rationale:**
+1. User couldn't remember what it was for
+2. User confused it with Export tool's folder management
+3. No clear use case after 6 months
+4. Better to remove than show "coming soon" indefinitely
+5. Focus development on defined features (FR-140)
+
+**Quote from user:**
+> "I don't really understand your questions related to folders tool. I don't even remember what it was about."
+
+**Implementation:**
+- Remove button from ToolsSidebar.tsx
+- Remove drawer from ManagePanel.tsx
+- Update `activeTool` type
+- Estimated: 30 minutes
+
+**Alternative paths rejected:**
+- Path B: Repurpose for FR-135 (FR-135 is LOW priority)
+- Path C: Define new feature (no clear use case)
+
+**Status:** Ready for developer (quick cleanup task)
+
+---
+
+### FR-136/137/138/139: Tool-Oriented Manage Panel & Sub-Requirements
+
+| Date | Change | Commit |
+|------|--------|--------|
+| 2026-01-06 | Documentation & Requirements Breakdown | - |
+
+**What was implemented (2026-01-04 to 2026-01-06):**
+
+**FR-136: Tool-Oriented Manage Panel (Core Architecture) - ✓ Complete**
+
+Implemented tool-oriented UI with vertical sidebar and slide-out drawers, superseding FR-131 Phase 2 approach.
+
+**Core Architecture:**
+- ToolsSidebar component (147 lines) - Vertical tool palette
+- SlideOutDrawer component (51 lines) - Reusable drawer with animations
+- Tool-oriented state management (activeTool, mutual exclusivity)
+- ESC/overlay close behaviors
+- Tool registration pattern
+
+**Simple Tools (4/4 Complete):**
+1. Regen Shadows - Immediate execution
+2. Regen Transcripts - Queue with count
+3. Regen Chapters - Confirmation modal with editable settings
+4. Regen All - Sequential with progress tracking
+
+**Export Tool (Complete):**
+- ExportPanel component (593 lines)
+- Gling prep UI (filename, dictionaries, folders)
+- FR-126 Manifest integration (Clean/Restore)
+- Edit folder creation/management
+- Auto-save pattern for dictionaries
+
+**Commits:**
+- `3809e30` - Export Tool drawer with Gling prep functionality (2026-01-06)
+- `5ba69b1` - ToolsSidebar backend connection + regen tools (2026-01-04)
+
+**Files Created (6):**
+- `client/src/components/shared/ToolsSidebar.tsx` (147 lines)
+- `client/src/components/shared/SlideOutDrawer.tsx` (51 lines)
+- `client/src/components/shared/ExportPanel.tsx` (593 lines)
+- `client/src/components/shared/RegenToolbar.tsx` (386 lines)
+- `client/src/components/shared/ConfirmationModal.tsx` (180 lines)
+- `client/src/components/shared/SelectionBadge.tsx` (30 lines)
+
+**Files Modified (4):**
+- `client/src/components/ManagePanel.tsx` - Tool integration
+- `server/src/routes/manage.ts` - Regen endpoints (+690 lines)
+- `shared/types.ts` - Socket.io event types
+- `server/src/index.ts` - Route wiring
+
+**FR-137: SlideOutDrawer Tool Pattern - ✓ Implemented (Documented Retroactively)**
+
+Created comprehensive documentation for the architectural pattern that was implemented as part of FR-136.
+
+**Documented:**
+- When to use slide-out vs modal vs inline
+- Standard drawer behaviors (ESC, overlay, mutual exclusivity)
+- Component APIs (SlideOutDrawer, ToolsSidebar)
+- State management patterns
+- Animation specifications (300ms slide, 200ms fade)
+- Width guidelines (380px default, 480px medium, 560px wide)
+- Code examples for adding new tools
+
+**File Created:**
+- `docs/prd/fr-137-slideout-drawer-pattern.md` (full pattern documentation)
+
+**FR-138: Rename Tool Specification - ⚠️ Partial (Needs Chapter/Sequence/Tags/Preview)**
+
+Created detailed specification for complete Rename tool implementation.
+
+**Current State (Basic):**
+- Single text input for label
+- Apply/Close buttons
+- Warning about transcript regeneration
+- Uses existing backend endpoint
+
+**Missing (Specified in FR-138):**
+- Chapter dropdown (01-99 with auto-detection)
+- Sequence numbering (preserve/renumber options)
+- Tags checkboxes (from config.availableTags + custom)
+- Preview section (shows before → after)
+- Pre-fill logic from selected files
+- Validation UI (real-time kebab-case validation)
+
+**File Created:**
+- `docs/prd/fr-138-rename-tool-specification.md` (complete field-by-field spec)
+
+**Estimated Effort:** 5-8 hours to complete
+
+**FR-139: Folders Tool Specification - ❌ Blocked (Needs Feature Definition)**
+
+Created placeholder PRD identifying that "Folders" tool has no specification.
+
+**Current State:**
+- Button exists in ToolsSidebar
+- Placeholder drawer: "Folder management functionality coming soon..."
+- No defined purpose
+
+**Options Identified:**
+1. Edit Folder Management (duplicate of Export tool)
+2. Recording Organization (requires architectural changes)
+3. Chapter Tools / FR-135 (rename button)
+4. Project Structure Validation (new utility)
+5. Remove button until feature defined
+
+**File Created:**
+- `docs/prd/fr-139-folders-tool-specification.md` (identifies gap, proposes options)
+
+**Requires:** Stakeholder decision on what "Folders" should do
+
+**Requirements Breakdown Created (2026-01-06):**
+
+Split FR-136 into four trackable requirements:
+- FR-136: Core Architecture (✓ Complete)
+- FR-137: SlideOutDrawer Pattern (✓ Documented)
+- FR-138: Rename Tool Full Spec (Partial)
+- FR-139: Folders Tool Definition (Blocked)
+
+**PO Lessons Learned:**
+1. "Press button, drawer opens" is NOT a specification
+2. Must document architectural patterns (not just implement)
+3. Split complex requirements into sub-requirements upfront
+4. Track partial completion properly
+5. Field-by-field specs required for forms (not just "rename panel")
+
+**User Impact:**
+- Tool-oriented workflow eliminates forced-rename UX
+- Consistent pattern for all tools (extensible)
+- Export tool fully functional with all Gling prep features
+- Rename tool functional but basic (enhancement optional)
+- Folders tool undefined (decision needed)
+
+---
 
 ### FR-131 Phase 2: Manage Panel Regeneration Toolbar & Chapter-Level Rename
 

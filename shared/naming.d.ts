@@ -83,7 +83,7 @@ export interface ParseOptions {
 }
 /**
  * NFR-65: Extract uppercase tags from a kebab-case name
- * Tags are words that are entirely uppercase letters (A-Z), like CTA, TECHSTACK, API
+ * Tags are words that are entirely uppercase letters/numbers (A-Z, 0-9), like CTA, TECHSTACK, API, 1ST, V2
  *
  * @param name - kebab-case name (e.g., "intro-demo-CTA-SKOOL")
  * @returns Object with clean name and extracted tags
@@ -94,6 +94,9 @@ export interface ParseOptions {
  *
  * extractTagsFromName("setup-bmad-TECHSTACK-API")
  * // { name: "setup-bmad", tags: ["TECHSTACK", "API"] }
+ *
+ * extractTagsFromName("demo-1ST-2ND")
+ * // { name: "demo", tags: ["1ST", "2ND"] }
  */
 export declare function extractTagsFromName(name: string): {
     name: string;

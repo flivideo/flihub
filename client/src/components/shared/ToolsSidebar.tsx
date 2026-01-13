@@ -11,7 +11,7 @@ interface ToolsSidebarProps {
   totalFiles: number;
   activeTool: string | null;
   onSimpleToolClick: (tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all') => void;
-  onComplexToolClick: (tool: 'rename' | 'export' | 'folders') => void;
+  onComplexToolClick: (tool: 'rename' | 'export' | 'renumber') => void;
 }
 
 export function ToolsSidebar({
@@ -95,11 +95,11 @@ export function ToolsSidebar({
               : `Export ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}`}
           />
           <ToolButton
-            label="Folders"
-            disabled={false}
-            active={activeTool === 'folders'}
-            onClick={() => onComplexToolClick('folders')}
-            tooltip="Manage edit folders"
+            label="Renumber"
+            disabled={disabled}
+            active={activeTool === 'renumber'}
+            onClick={() => onComplexToolClick('renumber')}
+            tooltip={disabled ? "No files" : "Move chapters with automatic cascade"}
           />
         </div>
       </div>

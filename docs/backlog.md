@@ -4,16 +4,28 @@ Requirements index for FliHub.
 
 **Archive:** Completed items moved to `archive/requirements-2025-q4.md`
 
+**Discovery Plan (2026-01-06):** 7-phase file management discovery complete - scanner analyzed 47 projects.
+
+**Scanner Correction (2026-01-06):** Scanner bugs fixed - accurate results: **391 issues** (not 1805). **NFR-141 withdrawn.** See `docs/planning/po-session-2026-01-06-scanner-correction.md`
+
+**Accurate Results:** 361 derivative (92%, INFO), 22 structural (6%, INFO), 8 naming (2%, ERROR). **App parser validated as correct.**
+
+**Priority Order:** FR-140 (HIGH - validated by data) → 8 manual fixes (15 min) → FR-134/133/135 (OPTIONAL future enhancements)
+
 ---
 
 ## Functional Requirements
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
-| FR-136 | [Tool-Oriented Manage Panel](prd/fr-136-tool-oriented-manage-panel.md) | 2026-01-04 | Pending (Redesign - Supersedes FR-131 P2 UI) |
-| FR-135 | [Chapter Tools (Move, Swap, Undo)](prd/fr-135-chapter-tools.md) | 2026-01-04 | Pending (Blocked by FR-131 P2 OR FR-136) |
-| FR-134 | [Inconsistency Detection & Auto-Fix](prd/fr-134-inconsistency-detection.md) | 2026-01-04 | Pending (Blocked by FR-131 P2 OR FR-136) |
-| FR-133 | [File Status Indicators](prd/fr-133-file-status-indicators.md) | 2026-01-04 | Pending (Blocked by FR-131 P2 OR FR-136) |
+| FR-140 | [Chapter Move & Cascade Renumbering](prd/fr-140-bulk-chapter-renumbering.md) | 2026-01-06 | 🟡 **HIGH** - Ready for development (22 chapter gaps validated) |
+| FR-139 | [Folders Tool Specification](prd/fr-139-folders-tool-specification.md) | 2026-01-06 | 🟢 Ready - Remove undefined button (30 min) |
+| FR-138 | [Rename Tool Specification](prd/fr-138-rename-tool-specification.md) | 2026-01-06 | ✓ Implemented (Validated - no updates needed) |
+| FR-137 | [SlideOutDrawer Tool Pattern](prd/fr-137-slideout-drawer-pattern.md) | 2026-01-06 | ✓ Implemented (Documented retroactively) |
+| FR-136 | [Tool-Oriented Manage Panel](prd/fr-136-tool-oriented-manage-panel.md) | 2026-01-04 | ✓ Complete (Core Architecture - See FR-137/138/139) |
+| FR-135 | [Chapter Tools (Move, Swap, Undo)](prd/fr-135-chapter-tools.md) | 2026-01-04 | 🟢 LOW - Ready but not urgent (No evidence of need) |
+| FR-134 | [Inconsistency Detection & Auto-Fix](prd/fr-134-inconsistency-detection.md) | 2026-01-04 | 🟢 LOW - Optional preventative warnings |
+| FR-133 | [File Status Indicators](prd/fr-133-file-status-indicators.md) | 2026-01-04 | 🟢 LOW - Optional visibility tool |
 | FR-132 | [Dual Transcription System with Progress Tracking](prd/fr-132-dual-transcription-progress.md) | 2026-01-03 | Pending |
 | FR-131 | [Manage Panel with Bulk Rename & Regen Toolbar](prd/fr-131-manage-panel-bulk-rename.md) | 2026-01-03 | Phase 1 ✓ / Phase 2 Pending - See FR-136 for alternative UI |
 | FR-130 | [Simplify Rename Logic (Delete+Regenerate)](prd/fr-130-simplify-rename-delete-regenerate.md) | 2026-01-03 | ✓ Implemented |
@@ -57,6 +69,7 @@ Requirements index for FliHub.
 
 | ID | Requirement | Added | Status |
 |----|-------------|-------|--------|
+| NFR-141 | [Lenient Tag Parser (Uppercase Conversion)](prd/nfr-141-lenient-tag-parser.md) | 2026-01-06 | ❌ **CANCELLED** - Based on incorrect scanner analysis (scanner bugs fixed, app parser validated as correct) |
 | NFR-87 | [Starred Projects Visual Update](prd/nfr-87-starred-projects-visual.md) | 2025-12-16 | Implemented |
 | NFR-86 | [Git Leak Detection](prd/nfr-86-git-leak-detection.md) | 2025-12-15 | Pending |
 | NFR-81 | [Project List Scanning Optimization](prd/nfr-81-project-list-optimization.md) | 2025-12-15 | Future |

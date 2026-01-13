@@ -1,11 +1,16 @@
 # FR-136: Tool-Oriented Manage Panel
 
-**Status:** Pending
+**Status:** Complete (Core Architecture) - See Sub-Requirements
 **Added:** 2026-01-04
-**Implemented:** -
+**Implemented:** 2026-01-04 to 2026-01-06
 **Dependencies:**
 - FR-131 Phase 1 (Manage panel foundation) - ✅ Implemented
 - **Supersedes:** FR-131 Phase 2 UI approach (regen toolbar + chapter rename)
+
+**Sub-Requirements:**
+- FR-137: SlideOutDrawer Tool Pattern - ✅ Implemented (documented 2026-01-06)
+- FR-138: Rename Tool Specification - ⚠️ Partial (basic input exists, needs full fields)
+- FR-139: Folders Tool Specification - ❌ Blocked (needs definition)
 
 **Design Mockups:**
 - Interactive: `/Users/davidcruwys/.claude/skills/frontend-design/manage-panel-redesign.html`
@@ -780,18 +785,135 @@ Export endpoints from FR-122/124:
 
 ## Completion Notes
 
-**Status:** Ready for implementation
+**Status:** Core architecture complete (2026-01-04 to 2026-01-06)
 
-**Next steps:**
-1. Decide: Implement FR-136 OR FR-131 Phase 2
-2. If FR-136: Follow migration path (7 days)
-3. If FR-131 P2: Note that FR-136 proposes alternative UI approach
-4. Consult with user for final design preference
+### What Was Delivered
 
-**Recommendation:** **Implement FR-136** (Variation 2: Vertical Sidebar)
+**✅ Core Architecture (Complete):**
+- ToolsSidebar component with vertical layout (147 lines)
+- SlideOutDrawer reusable component (51 lines)
+- Tool-oriented state management in ManagePanel
+- Mutual exclusivity pattern (one drawer at a time)
+- ESC/overlay close behaviors
+- Tool registration pattern established
+
+**✅ Simple Tools (4/4 Complete):**
+1. Regen Shadows - Immediate execution with toast
+2. Regen Transcripts - Queue with count display
+3. Regen Chapters - Confirmation modal with editable settings
+4. Regen All - Sequential execution with progress tracking
+
+**✅ Export Tool (Complete):**
+- Full ExportPanel component (593 lines)
+- Gling prep UI (filename, dictionaries, folders)
+- FR-126 Manifest integration (Clean/Restore)
+- Edit folder creation/management
+- All backend hooks wired up
+- Auto-save pattern for dictionaries
+
+**⚠️ Rename Tool (Partial):**
+- Basic input drawer exists (44 lines)
+- Missing: Chapter/Sequence/Tags/Preview (see FR-138)
+
+**❌ Folders Tool (Undefined):**
+- Placeholder only ("coming soon" message)
+- No specification exists (see FR-139)
+
+### Implementation Evidence
+
+**Commits:**
+- `3809e30` - Export Tool drawer with Gling prep (2026-01-06)
+- `5ba69b1` - ToolsSidebar backend connection + regen tools (2026-01-04)
+
+**Files Created:**
+- `client/src/components/shared/ToolsSidebar.tsx` (147 lines)
+- `client/src/components/shared/SlideOutDrawer.tsx` (51 lines)
+- `client/src/components/shared/ExportPanel.tsx` (593 lines)
+- `client/src/components/shared/RegenToolbar.tsx` (386 lines)
+- `client/src/components/shared/ConfirmationModal.tsx` (180 lines)
+- `client/src/components/shared/SelectionBadge.tsx` (30 lines)
+- `server/src/routes/manage.ts` - Regen endpoints (+690 lines)
+- `docs/architecture/shared-code-index.md` (169 lines)
+
+**Files Modified:**
+- `client/src/components/ManagePanel.tsx` - Tool integration
+- `shared/types.ts` - Socket.io event types
+- `server/src/index.ts` - Route wiring
+
+### Sub-Requirements Created (2026-01-06)
+
+**FR-137: SlideOutDrawer Tool Pattern**
+- Status: ✅ Implemented (documented retroactively)
+- Purpose: Document the architectural pattern
+- Reference: All drawer behaviors, state management, animations
+
+**FR-138: Rename Tool Specification**
+- Status: ⚠️ Partial (basic input exists, needs full implementation)
+- Missing: Chapter dropdown, Sequence controls, Tags, Preview
+- Estimated effort: 5-8 hours
+
+**FR-139: Folders Tool Specification**
+- Status: ❌ Blocked (needs feature definition)
+- Options: Remove button, repurpose for FR-135, or define new feature
+- Requires stakeholder input
+
+### What's Left
+
+**Immediate:**
+- Decide fate of Folders tool (FR-139)
+- Optionally: Complete Rename tool (FR-138)
+
+**Future:**
+- FR-133: File Status Indicators (will integrate into this UI)
+- FR-134: Inconsistency Detection (will integrate into this UI)
+- FR-135: Chapter Tools (might replace Folders tool)
+
+### Success Metrics Review
+
+**Completed:**
+- ✅ Vertical sidebar with tools implemented
+- ✅ Simple tools (4/4) execute immediately or with confirmation
+- ✅ Complex tools (1/3 fully, 1/3 partially, 1/3 undefined) show slide-out config panels
+- ✅ File selection area preserved
+- ✅ All FR-131 Phase 1 functionality works (bulk rename, export)
+- ✅ All FR-131 Phase 2 functionality works (regen operations)
+- ⚠️ Visual design partially matches mockups (professional but not dark theme)
+- ❌ Keyboard accessibility partially working (ESC works, tab navigation not tested)
+- ✅ Documentation updated (FR-137/138/139 created)
+
+**User Benefits Delivered:**
+- ✅ No forced rename workflow (tools are equal peers)
+- ✅ Clear tool palette (vertical sidebar)
+- ✅ Easy to discover operations (labeled buttons with tooltips)
+- ⚠️ Professional aesthetic (clean but not dark theme from mockups)
+- ✅ Consistent pattern for all tools (SlideOutDrawer)
+- ✅ Extensible for future features (proven with 3 tools)
+
+### Lessons Learned
+
+**PO Failures Identified:**
+1. ❌ Implemented complex features without detailed specs
+2. ❌ "Press button, drawer opens" is not a specification
+3. ❌ Didn't break down FR-136 into sub-requirements initially
+4. ❌ Didn't track partial completion properly
+5. ❌ No architectural pattern documentation (fixed with FR-137)
+
+**Corrective Actions:**
+- ✅ Created FR-137 (pattern documentation)
+- ✅ Created FR-138 (complete Rename spec with fields/validation/preview)
+- ✅ Created FR-139 (identified undefined feature)
+- ✅ Updated backlog to reflect reality
+- ✅ Updated FR-136 status to "Complete (Core)" with sub-requirements
+
+### Recommendation
+
+**FR-136 Core: COMPLETE** ✅
+
+Mark as complete with sub-requirements tracked separately. The core architecture is done and working. Remaining work (Rename enhancement, Folders definition) should be tracked as separate FRs.
 
 ---
 
-**Last updated:** 2026-01-04
+**Last updated:** 2026-01-06
 **Designer:** Claude (Frontend Design Skill)
 **Product Owner:** Claude (PO Mode)
+**Implemented:** Claude (Dev Mode) via commits 3809e30, 5ba69b1
