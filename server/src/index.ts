@@ -8,6 +8,7 @@ import fs from 'fs-extra';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { env } from './config/env.js';
+import { log } from './config/logger.js';
 import { createWatcher } from './watcher.js';
 import { createRoutes } from './routes/index.js';
 import { createAssetRoutes } from './routes/assets.js';
@@ -412,7 +413,7 @@ app.use(errorHandler);
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
+  log.info('Client connected', { socketId: socket.id });
 
   // Send current pending files to newly connected client
   pendingFiles.forEach((file) => {
@@ -420,7 +421,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    log.info('Client disconnected', { socketId: socket.id });
   });
 });
 
@@ -454,9 +455,12 @@ watcherManager.initAll(currentConfig);
 
 // Start server
 httpServer.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Watching directory: ${currentConfig.watchDirectory}`);
-  console.log(`Project directory: ${currentConfig.projectDirectory}`);
+  log.info('FliHub server started', {
+    port: PORT,
+    nodeEnv: env.NODE_ENV,
+    watchDirectory: currentConfig.watchDirectory,
+    projectDirectory: currentConfig.projectDirectory,
+  });
 });
 
 // Graceful shutdown handler

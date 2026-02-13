@@ -24,31 +24,7 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
   const renameMutation = useRenameChapter();
   const [newLabel, setNewLabel] = useState(chapterInfo.label);
 
-  // Handle keyboard shortcuts
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (
-        e.key === 'Enter' &&
-        !renameMutation.isPending &&
-        newLabel &&
-        newLabel !== chapterInfo.label
-      ) {
-        e.preventDefault();
-        handleRename();
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    },
-    [newLabel, chapterInfo.label, renameMutation.isPending, onClose]
-  );
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
-
-  const handleRename = async () => {
+  const handleRename = useCallback(async () => {
     if (!newLabel || newLabel === chapterInfo.label) {
       return;
     }
@@ -81,7 +57,31 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to rename');
     }
-  };
+  }, [newLabel, chapterInfo, renameMutation, onClose]);
+
+  // Handle keyboard shortcuts
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (
+        e.key === 'Enter' &&
+        !renameMutation.isPending &&
+        newLabel &&
+        newLabel !== chapterInfo.label
+      ) {
+        e.preventDefault();
+        handleRename();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    },
+    [newLabel, chapterInfo.label, renameMutation.isPending, onClose, handleRename]
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const hasChanges = newLabel && newLabel !== chapterInfo.label;
 
