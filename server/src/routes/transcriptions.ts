@@ -38,11 +38,24 @@ export function createTranscriptionRoutes(
 ) {
   const router = Router();
 
-  // Get transcripts directory path
+  // Get transcripts directory path (for current active project)
   function getTranscriptsDir(): string {
     const config = getConfig();
     const paths = getProjectPaths(expandPath(config.projectDirectory));
     return paths.transcripts;
+  }
+
+  // Derive transcripts directory from video path (cross-project safe)
+  // This ensures we check/save in the correct project folder, not the active one
+  function getTranscriptsDirFromVideoPath(videoPath: string): string {
+    const pathParts = videoPath.split(path.sep);
+    const recordingsIndex = pathParts.indexOf('recordings');
+    if (recordingsIndex > 0) {
+      const projectDir = pathParts.slice(0, recordingsIndex).join(path.sep);
+      return path.join(projectDir, 'recording-transcripts');
+    }
+    // Fallback to current config if path structure unexpected
+    return getTranscriptsDir();
   }
 
   // Check if transcript exists for a video (for status checks)
@@ -56,8 +69,11 @@ export function createTranscriptionRoutes(
 
   // FR-92: Check if transcript file exists (for skip logic)
   // FR-94: .txt is the primary format - only .txt counts as "transcribed"
-  function hasTranscriptFile(videoFilename: string): boolean {
-    const transcriptsDir = getTranscriptsDir();
+  // BUGFIX: Now accepts optional videoPath to check in correct project folder
+  function hasTranscriptFile(videoFilename: string, videoPath?: string): boolean {
+    const transcriptsDir = videoPath
+      ? getTranscriptsDirFromVideoPath(videoPath)
+      : getTranscriptsDir();
     const baseName = path.basename(videoFilename, path.extname(videoFilename));
     const txtPath = path.join(transcriptsDir, `${baseName}.txt`);
     return fs.existsSync(txtPath);
@@ -100,16 +116,7 @@ export function createTranscriptionRoutes(
 
     // FR-109: Derive transcripts dir from video path, not current config
     // This ensures transcripts go to the correct project even if user switches projects during queue
-    let transcriptsDir: string;
-    const pathParts = activeJob.videoPath.split(path.sep);
-    const recordingsIndex = pathParts.indexOf('recordings');
-    if (recordingsIndex > 0) {
-      const projectDir = pathParts.slice(0, recordingsIndex).join(path.sep);
-      transcriptsDir = path.join(projectDir, 'recording-transcripts');
-    } else {
-      // Fallback to current config if path structure unexpected
-      transcriptsDir = getTranscriptsDir();
-    }
+    const transcriptsDir = getTranscriptsDirFromVideoPath(activeJob.videoPath);
     fs.ensureDirSync(transcriptsDir);
 
     const pythonPath = expandPath(WHISPER_PYTHON);
@@ -286,8 +293,9 @@ export function createTranscriptionRoutes(
     const videoFilename = `${baseName}.mov`;
 
     // FR-92: Skip if transcript already exists (only check .txt, not .srt)
-    if (hasTranscriptFile(videoFilename)) {
-      console.log(`Transcript already exists for ${videoFilename}, skipping`);
+    // BUGFIX: Pass videoPath to check in correct project folder
+    if (hasTranscriptFile(videoFilename, videoPath)) {
+      console.log(`Transcript already exists for ${videoFilename} in ${videoPath}, skipping`);
       return null;
     }
 
@@ -706,8 +714,9 @@ export function createTranscriptionRoutes(
 
       // Count files without transcripts
       let pendingCount = 0;
-      for (const [baseName] of videoMap) {
-        if (!hasTranscriptFile(`${baseName}.mov`)) {
+      for (const [baseName, videoInfo] of videoMap) {
+        // BUGFIX: Pass video path to check in correct project folder
+        if (!hasTranscriptFile(`${baseName}.mov`, videoInfo.path)) {
           pendingCount++;
         }
       }

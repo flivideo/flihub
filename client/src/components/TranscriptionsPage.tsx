@@ -9,14 +9,19 @@ import { TranscriptionProgressBar } from './TranscriptionProgressBar'
 import { QUERY_KEYS } from '../constants/queryKeys'
 import { API_URL } from '../config'
 import { formatDuration, formatFileSize } from '../utils/formatting'
-import type { TranscriptionsResponse } from '../../../shared/types'
+import { useConfig } from '../hooks/useApi'
+import type { TranscriptionsResponse, QueryTranscript } from '../../../shared/types'
 
 export function TranscriptionsPage() {
   const queryClient = useQueryClient()
   const [streamingText, setStreamingText] = useState('')
   const [viewingTranscript, setViewingTranscript] = useState<string | null>(null)
 
-  // Fetch transcription state
+  // Get active project
+  const { data: config } = useConfig()
+  const activeProject = config?.activeProject
+
+  // Fetch transcription state (jobs)
   const { data, refetch } = useQuery<TranscriptionsResponse>({
     queryKey: QUERY_KEYS.transcriptions,
     queryFn: async () => {
@@ -24,6 +29,18 @@ export function TranscriptionsPage() {
       return res.json()
     },
     refetchInterval: 5000,  // Fallback polling
+  })
+
+  // Fetch transcript files for active project
+  const { data: transcriptsData } = useQuery<{ success: boolean; transcripts: QueryTranscript[] }>({
+    queryKey: ['project-transcripts', activeProject],
+    queryFn: async () => {
+      if (!activeProject) return { success: true, transcripts: [] }
+      const res = await fetch(`${API_URL}/api/query/projects/${activeProject}/transcripts`)
+      return res.json()
+    },
+    enabled: !!activeProject,
+    refetchInterval: 10000,  // Refresh every 10s
   })
 
   // Listen for socket events
@@ -41,6 +58,8 @@ export function TranscriptionsPage() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings })
       // FR-52: Invalidate project stats to update progress bar
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
+      // Invalidate project transcripts to update the list
+      queryClient.invalidateQueries({ queryKey: ['project-transcripts', activeProject] })
     }
 
     const handleError = () => {
@@ -73,28 +92,7 @@ export function TranscriptionsPage() {
   }, [refetch, queryClient])
 
   const { active, queue, recent } = data || { active: null, queue: [], recent: [] }
-
-  // Empty state - still show progress bar for project-wide status
-  if (!active && queue.length === 0 && recent.length === 0) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Transcriptions</h2>
-          <OpenFolderButton folder="transcripts" label="Transcripts" />
-        </div>
-
-        {/* FR-52: Progress bar shows even in empty state */}
-        <TranscriptionProgressBar transcriptionData={data} />
-
-        <div className="text-center text-gray-500 py-12 bg-white rounded-lg border border-gray-200">
-          <p className="text-lg mb-2">No active transcriptions</p>
-          <p className="text-sm">
-            Transcriptions start automatically when you rename recordings in the Incoming tab
-          </p>
-        </div>
-      </div>
-    )
-  }
+  const transcripts = transcriptsData?.transcripts || []
 
   return (
     <div className="space-y-6">
@@ -105,6 +103,51 @@ export function TranscriptionsPage() {
 
       {/* FR-52: Progress bar at top of page */}
       <TranscriptionProgressBar transcriptionData={data} />
+
+      {/* Transcript Files for Active Project */}
+      {activeProject && (
+        <section>
+          <h3 className="text-sm font-medium text-gray-500 mb-2">
+            PROJECT TRANSCRIPTS
+            <span className="text-gray-400 ml-1">
+              ({activeProject}) {transcripts.length > 0 && `- ${transcripts.length} files`}
+            </span>
+          </h3>
+          {transcripts.length === 0 ? (
+            <div className="bg-white border rounded-lg p-4 text-center text-gray-500">
+              <p className="text-sm">No transcripts yet</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Transcripts will appear here after you rename recordings
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white border rounded-lg divide-y">
+              {transcripts.map((transcript) => (
+                <div key={transcript.filename} className="p-3 flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3 flex-1">
+                    <span className="font-mono text-sm text-blue-600">
+                      {transcript.chapter}-{transcript.sequence}
+                    </span>
+                    <span className="text-sm text-gray-700">{transcript.name}</span>
+                    <span className="text-xs text-gray-400">{formatFileSize(transcript.size)}</span>
+                  </div>
+                  {transcript.preview && (
+                    <div className="text-xs text-gray-400 italic max-w-md truncate ml-4">
+                      {transcript.preview}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setViewingTranscript(transcript.filename.replace('.txt', '.mov'))}
+                    className="text-xs text-blue-600 hover:text-blue-700 px-2 py-1 hover:bg-blue-50 rounded ml-3"
+                  >
+                    View
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Active transcription */}
       {active && (
