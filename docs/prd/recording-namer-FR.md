@@ -1,11 +1,9 @@
-Bugs
-----
+## Bugs
 
 1. As the content creator, if I manually remove the Ecamm Live video from the hard drive, it should automatically get removed From the incoming file list, so that I know what files are really available for me to rename.
 2. As a content creator, if I see an incoming file from Ecamm Live in the web interface and I hit discard, it should remove it from the web interface and move it into the `-trash` directory (sibling to recordings), so that if I do need it back, I haven't lost it. (Note: Use `-trash` not `.trash` so it's visible in Finder)
 
-Functional Requirementents
---------------------------
+## Functional Requirementents
 
 1. As a Content Creator, when I start a new video project The chapter, segment and label should default to 01, 1 and intro so that I don't have to remember how to name the first video.
 2. As a content creator, when I finish recording a video and it comes into the incoming files list, it should automatically increment the segment number by one, So that I don't have to remember to change it and I don't accidentally overwrite an existing video.

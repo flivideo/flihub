@@ -13,6 +13,7 @@ http://localhost:5101/api
 All endpoints return JSON with consistent structure:
 
 **Success:**
+
 ```json
 {
   "success": true,
@@ -21,6 +22,7 @@ All endpoints return JSON with consistent structure:
 ```
 
 **Error:**
+
 ```json
 {
   "success": false,
@@ -29,6 +31,7 @@ All endpoints return JSON with consistent structure:
 ```
 
 **HTTP Status Codes:**
+
 - `200` - Success
 - `206` - Partial Content (video streaming)
 - `400` - Bad Request (validation error)
@@ -45,6 +48,7 @@ All endpoints return JSON with consistent structure:
 Get current server configuration.
 
 **Response:**
+
 ```json
 {
   "watchDirectory": "~/Movies/Ecamm Live",
@@ -62,6 +66,7 @@ Get current server configuration.
 Update server configuration.
 
 **Request:**
+
 ```json
 {
   "watchDirectory": "~/Movies/Ecamm Live",
@@ -80,6 +85,7 @@ Update server configuration.
 List pending files in watch directory (waiting to be renamed).
 
 **Response:**
+
 ```json
 {
   "files": [
@@ -99,6 +105,7 @@ List pending files in watch directory (waiting to be renamed).
 List all recordings in current project (includes shadows).
 
 **Response:**
+
 ```json
 {
   "recordings": [
@@ -128,6 +135,7 @@ List all recordings in current project (includes shadows).
 Calculate suggested naming for next recording.
 
 **Response:**
+
 ```json
 {
   "chapter": "10",
@@ -142,6 +150,7 @@ Calculate suggested naming for next recording.
 Rename and move a file to recordings folder.
 
 **Request:**
+
 ```json
 {
   "originalPath": "/path/to/Ecamm Live/Movie.mov",
@@ -153,6 +162,7 @@ Rename and move a file to recordings folder.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -172,6 +182,7 @@ Remove a file from pending list (discard without renaming).
 Move file to -trash directory.
 
 **Request:**
+
 ```json
 {
   "path": "/path/to/recordings/10-5-intro.mov"
@@ -183,12 +194,15 @@ Move file to -trash directory.
 Move file(s) to -safe folder (protected).
 
 **Request:**
+
 ```json
 {
   "files": ["10-5-intro.mov", "10-6-outro.mov"]
 }
 ```
+
 or
+
 ```json
 {
   "chapter": "10"
@@ -200,6 +214,7 @@ or
 Restore file(s) from -safe folder.
 
 **Request:**
+
 ```json
 {
   "files": ["10-5-intro.mov"]
@@ -211,6 +226,7 @@ Restore file(s) from -safe folder.
 Rename label for all files in a chapter.
 
 **Request:**
+
 ```json
 {
   "chapter": "10",
@@ -224,6 +240,7 @@ Rename label for all files in a chapter.
 Get recent renames for undo functionality.
 
 **Response:**
+
 ```json
 {
   "renames": [
@@ -243,6 +260,7 @@ Get recent renames for undo functionality.
 Undo a recent rename.
 
 **Request:**
+
 ```json
 {
   "id": "abc123"
@@ -258,6 +276,7 @@ Undo a recent rename.
 Get extended stats for all projects.
 
 **Response:**
+
 ```json
 {
   "projects": [
@@ -288,6 +307,7 @@ Get extended stats for all projects.
 Create a new project.
 
 **Request:**
+
 ```json
 {
   "code": "b73-new-project"
@@ -299,6 +319,7 @@ Create a new project.
 Update project priority (pin/unpin).
 
 **Request:**
+
 ```json
 {
   "priority": "pinned"
@@ -310,6 +331,7 @@ Update project priority (pin/unpin).
 Update project stage.
 
 **Request:**
+
 ```json
 {
   "stage": "first-edit"
@@ -327,6 +349,7 @@ Get final video and SRT info.
 Extract chapter timestamps from SRT.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -346,6 +369,7 @@ Extract chapter timestamps from SRT.
 Write file to inbox subfolder.
 
 **Request:**
+
 ```json
 {
   "subfolder": "raw",
@@ -363,6 +387,7 @@ Write file to inbox subfolder.
 Scan image source directory for pending images.
 
 **Response:**
+
 ```json
 {
   "images": [
@@ -382,6 +407,7 @@ Scan image source directory for pending images.
 List existing images in project.
 
 **Response:**
+
 ```json
 {
   "images": [
@@ -409,10 +435,12 @@ List existing images in project.
 Calculate next available image order.
 
 **Query Parameters:**
+
 - `chapter` - Chapter number
 - `sequence` - Sequence number
 
 **Response:**
+
 ```json
 {
   "chapter": "05",
@@ -427,6 +455,7 @@ Calculate next available image order.
 Assign an image to the project.
 
 **Request:**
+
 ```json
 {
   "sourcePath": "~/Downloads/screenshot.png",
@@ -451,6 +480,7 @@ Serve an image file (for previews).
 Create/update/delete a prompt file.
 
 **Request:**
+
 ```json
 {
   "chapter": "05",
@@ -467,6 +497,7 @@ Create/update/delete a prompt file.
 Save clipboard image to assets.
 
 **Request:**
+
 ```json
 {
   "imageData": "data:image/png;base64,...",
@@ -494,6 +525,7 @@ Preview images in a ZIP file.
 Import selected images from ZIP.
 
 **Request:**
+
 ```json
 {
   "zipFilename": "thumbnails.zip",
@@ -514,6 +546,7 @@ Serve a thumbnail image.
 Rename files to match new order.
 
 **Request:**
+
 ```json
 {
   "order": ["thumb2.png", "thumb1.png", "thumb3.png"]
@@ -533,6 +566,7 @@ Delete a thumbnail and renumber.
 Get all transcription state.
 
 **Response:**
+
 ```json
 {
   "active": {
@@ -556,6 +590,7 @@ Get all transcription state.
 Get status for specific file.
 
 **Response:**
+
 ```json
 {
   "filename": "10-5-intro.mov",
@@ -573,6 +608,7 @@ Get transcript content.
 **Query Parameter:** `format` - `txt` or `srt` (default: `txt`)
 
 **Response:**
+
 ```json
 {
   "filename": "10-5-intro.txt",
@@ -590,6 +626,7 @@ Get transcript content.
 Queue a transcription.
 
 **Request:**
+
 ```json
 {
   "videoPath": "/path/to/video.mov"
@@ -601,12 +638,15 @@ Queue a transcription.
 Queue all videos for transcription.
 
 **Request:**
+
 ```json
 {
   "scope": "project"
 }
 ```
+
 or
+
 ```json
 {
   "scope": "chapter",
@@ -619,6 +659,7 @@ or
 Combine all chapter transcripts.
 
 **Request:**
+
 ```json
 {
   "chapter": "10"
@@ -638,6 +679,7 @@ Get chapter recording configuration.
 Update chapter recording configuration.
 
 **Request:**
+
 ```json
 {
   "slideDuration": 3,
@@ -652,6 +694,7 @@ Update chapter recording configuration.
 Generate chapter recordings.
 
 **Request:**
+
 ```json
 {
   "chapter": "10"
@@ -671,11 +714,13 @@ Get generation status and existing recordings.
 Stream a video file with HTTP Range support.
 
 **Path Parameters:**
+
 - `projectCode` - Project code (e.g., `b72-project`)
 - `folder` - `recordings`, `-chapters`, `recording-shadows`
 - `filename` - Video filename
 
 **Headers:**
+
 - `Range: bytes=0-1024` - For seeking support
 
 ---
@@ -687,6 +732,7 @@ Stream a video file with HTTP Range support.
 Get shadow status for current project.
 
 **Response:**
+
 ```json
 {
   "currentProject": {
@@ -719,6 +765,7 @@ Generate shadows for all projects.
 Get first edit prep data.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -752,6 +799,7 @@ Copy from edits/prep to s3-staging/prep.
 Promote post version to publish.
 
 **Request:**
+
 ```json
 {
   "version": "v1"
@@ -767,6 +815,7 @@ Promote post version to publish.
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -782,6 +831,7 @@ Health check endpoint.
 Detect server's runtime environment.
 
 **Response:**
+
 ```json
 {
   "platform": "darwin",
@@ -796,6 +846,7 @@ Detect server's runtime environment.
 Open folder in file explorer.
 
 **Request:**
+
 ```json
 {
   "folder": "recordings",
@@ -810,6 +861,7 @@ Open folder in file explorer.
 Open file in default application.
 
 **Request:**
+
 ```json
 {
   "subfolder": "inbox/raw",
@@ -842,6 +894,7 @@ Get configuration metadata.
 List all projects with filtering.
 
 **Query Parameters:**
+
 - `filter` - `pinned`
 - `stage` - Filter by stage
 - `recent` - Number of recent projects
@@ -856,6 +909,7 @@ Get project detail.
 List recordings for a project.
 
 **Query Parameters:**
+
 - `chapter` - Filter by chapter
 - `missing-transcripts` - Only show files without transcripts
 - `format` - `text` for plain text output
@@ -885,6 +939,7 @@ List images for a project.
 Export combined project data.
 
 **Query Parameters:**
+
 - `include` - Comma-separated: `project,recordings,transcripts,chapters,images`
 - `format` - `text` for plain text output
 

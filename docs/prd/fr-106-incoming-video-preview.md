@@ -6,6 +6,7 @@
 ## Problem Statement
 
 Currently, to preview an incoming video before deciding to rename or discard it, users must:
+
 1. Open the file in Finder (leaves the app), OR
 2. Rename it → Go to Watch tab → Watch it → If unwanted: Return to Incoming → Undo → Delete
 
@@ -21,12 +22,12 @@ Enable video playback directly on the Incoming page so users can quickly preview
 
 ### Options Considered
 
-| Option | Description | Verdict |
-|--------|-------------|---------|
-| **Modal Video Player** | Full-screen overlay modal with video player | **SELECTED** |
-| Inline Expansion | FileCard expands to show embedded video | Too disruptive, limited space |
-| Side Panel | Video plays in sidebar while list visible | Complex layout, not used elsewhere |
-| New Tab/Page | Separate preview page | Too many clicks, loses context |
+| Option                 | Description                                 | Verdict                            |
+| ---------------------- | ------------------------------------------- | ---------------------------------- |
+| **Modal Video Player** | Full-screen overlay modal with video player | **SELECTED**                       |
+| Inline Expansion       | FileCard expands to show embedded video     | Too disruptive, limited space      |
+| Side Panel             | Video plays in sidebar while list visible   | Complex layout, not used elsewhere |
+| New Tab/Page           | Separate preview page                       | Too many clicks, loses context     |
 
 ### Why Modal?
 
@@ -58,6 +59,7 @@ Add a **Play button** to each FileCard:
 ```
 
 **Button Spec:**
+
 - Label: "▶ Preview" or just "▶" icon
 - Position: Left of Discard button (action group)
 - Style: Neutral gray, hover to blue (non-destructive action)
@@ -89,6 +91,7 @@ Add a **Play button** to each FileCard:
 ```
 
 **Modal Spec:**
+
 - Width: `max-w-4xl` (matches Watch page normal size, ~896px)
 - Max Height: `90vh` to ensure it fits on screen
 - Backdrop: `bg-black/60` with click-to-close
@@ -102,11 +105,13 @@ Add a **Play button** to each FileCard:
 Below the video, show:
 
 **Left side:**
+
 - Play/Pause toggle (▶/⏹)
 - Duration display (e.g., "1:23")
 - File size (e.g., "42MB")
 
 **Right side:**
+
 - Speed presets: 1x, 1.5x, 2x, 2.5x, 3x (buttons, default 2x)
 - Persist speed preference to localStorage (share with Watch page)
 
@@ -121,11 +126,13 @@ GET /api/video/incoming/:filename
 This endpoint streams files from the watch directory (ecamm folder).
 
 **Security:**
+
 - Validate filename (no path traversal)
 - Only serve `.mov` and `.mp4` files
 - Must be a file that exists in the watch directory
 
 **Implementation:**
+
 - Add to `server/src/routes/video.ts`
 - Use same Range request support as existing video endpoint
 - Get watch directory path from config
@@ -143,6 +150,7 @@ Add this new route handler AFTER the existing `/:projectCode/:folder/:filename` 
 **Important:** Route order matters in Express. The `/incoming/:filename` route must come AFTER the `/:projectCode/:folder/:filename` route because Express matches routes in order. If `/incoming/:filename` came first, requests like `/b85/recordings/video.mov` would incorrectly match with `incoming` as the filename.
 
 Find this pattern and add the new route after it:
+
 ```typescript
   });
 
@@ -151,88 +159,89 @@ Find this pattern and add the new route after it:
 ```
 
 ```typescript
-  /**
-   * FR-106: GET /incoming/:filename
-   * Stream an incoming video file from the watch directory
-   * Supports Range requests for seeking
-   */
-  router.get('/incoming/:filename', async (req: Request, res: Response) => {
-    const { filename } = req.params;
+/**
+ * FR-106: GET /incoming/:filename
+ * Stream an incoming video file from the watch directory
+ * Supports Range requests for seeking
+ */
+router.get('/incoming/:filename', async (req: Request, res: Response) => {
+  const { filename } = req.params;
 
-    // Security: Validate filename - no path traversal
-    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-      res.status(400).json({ success: false, error: 'Invalid filename' });
+  // Security: Validate filename - no path traversal
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    res.status(400).json({ success: false, error: 'Invalid filename' });
+    return;
+  }
+
+  // Only allow video files
+  const ext = path.extname(filename).toLowerCase();
+  if (!['.mov', '.mp4'].includes(ext)) {
+    res.status(400).json({ success: false, error: 'Invalid file type' });
+    return;
+  }
+
+  try {
+    const config = getConfig();
+    const watchDir = expandPath(config.watchDirectory);
+    const videoPath = path.join(watchDir, filename);
+
+    // Verify file exists
+    if (!(await fs.pathExists(videoPath))) {
+      res.status(404).json({ success: false, error: 'Video not found' });
       return;
     }
 
-    // Only allow video files
-    const ext = path.extname(filename).toLowerCase();
-    if (!['.mov', '.mp4'].includes(ext)) {
-      res.status(400).json({ success: false, error: 'Invalid file type' });
-      return;
-    }
+    // Get file stats
+    const stat = await fs.stat(videoPath);
+    const fileSize = stat.size;
 
-    try {
-      const config = getConfig();
-      const watchDir = expandPath(config.watchDirectory);
-      const videoPath = path.join(watchDir, filename);
+    // Determine MIME type
+    const contentType = VIDEO_MIME_TYPES[ext] || 'video/mp4';
 
-      // Verify file exists
-      if (!await fs.pathExists(videoPath)) {
-        res.status(404).json({ success: false, error: 'Video not found' });
+    // Handle Range requests for seeking
+    const range = req.headers.range;
+
+    if (range) {
+      // Parse Range header
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+      // Validate range
+      if (start >= fileSize || end >= fileSize) {
+        res.status(416).header('Content-Range', `bytes */${fileSize}`).end();
         return;
       }
 
-      // Get file stats
-      const stat = await fs.stat(videoPath);
-      const fileSize = stat.size;
+      const chunkSize = end - start + 1;
 
-      // Determine MIME type
-      const contentType = VIDEO_MIME_TYPES[ext] || 'video/mp4';
+      res.status(206);
+      res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Content-Length', chunkSize);
+      res.setHeader('Content-Type', contentType);
 
-      // Handle Range requests for seeking
-      const range = req.headers.range;
+      // Stream the requested chunk
+      const stream = fs.createReadStream(videoPath, { start, end });
+      stream.pipe(res);
+    } else {
+      // No Range header - serve entire file
+      res.setHeader('Content-Length', fileSize);
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Accept-Ranges', 'bytes');
 
-      if (range) {
-        // Parse Range header
-        const parts = range.replace(/bytes=/, '').split('-');
-        const start = parseInt(parts[0], 10);
-        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-
-        // Validate range
-        if (start >= fileSize || end >= fileSize) {
-          res.status(416).header('Content-Range', `bytes */${fileSize}`).end();
-          return;
-        }
-
-        const chunkSize = end - start + 1;
-
-        res.status(206);
-        res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
-        res.setHeader('Accept-Ranges', 'bytes');
-        res.setHeader('Content-Length', chunkSize);
-        res.setHeader('Content-Type', contentType);
-
-        // Stream the requested chunk
-        const stream = fs.createReadStream(videoPath, { start, end });
-        stream.pipe(res);
-      } else {
-        // No Range header - serve entire file
-        res.setHeader('Content-Length', fileSize);
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Accept-Ranges', 'bytes');
-
-        const stream = fs.createReadStream(videoPath);
-        stream.pipe(res);
-      }
-    } catch (error) {
-      console.error('Error streaming incoming video:', error);
-      res.status(500).json({ success: false, error: 'Failed to stream video' });
+      const stream = fs.createReadStream(videoPath);
+      stream.pipe(res);
     }
-  });
+  } catch (error) {
+    console.error('Error streaming incoming video:', error);
+    res.status(500).json({ success: false, error: 'Failed to stream video' });
+  }
+});
 ```
 
 **Key Points:**
+
 - Route: `/api/video/incoming/:filename`
 - Uses `config.watchDirectory` as base path (the ecamm dropbox folder)
 - Same Range request handling for seeking as existing endpoint
@@ -416,14 +425,14 @@ export function IncomingVideoModal({ file, onClose }: IncomingVideoModalProps) {
 **Step 3a: Add import at top of file (after existing imports, around line 7):**
 
 ```typescript
-import { IncomingVideoModal } from './IncomingVideoModal'
+import { IncomingVideoModal } from './IncomingVideoModal';
 ```
 
 **Step 3b: Add state variable (inside FileCard component, around line 33):**
 
 ```typescript
 // FR-106: State for video preview modal
-const [showPreview, setShowPreview] = useState(false)
+const [showPreview, setShowPreview] = useState(false);
 ```
 
 **Step 3c: Replace the button group section (lines 155-169) with this:**
@@ -472,6 +481,7 @@ const [showPreview, setShowPreview] = useState(false)
 ```
 
 **Complete FileCard.tsx diff summary:**
+
 1. Line 7: Add `import { IncomingVideoModal } from './IncomingVideoModal'`
 2. Line ~33: Add `const [showPreview, setShowPreview] = useState(false)`
 3. Lines 155-169: Replace button group to include Preview button
@@ -482,6 +492,7 @@ const [showPreview, setShowPreview] = useState(false)
 ## Implementation Checklist
 
 ### Backend
+
 - [ ] Add `/api/video/incoming/:filename` route in `server/src/routes/video.ts`
 - [ ] Validate filename (no path traversal, video files only)
 - [ ] Use `config.watchDirectory` as base path
@@ -489,6 +500,7 @@ const [showPreview, setShowPreview] = useState(false)
 - [ ] Test: Can stream a file from watch directory
 
 ### Frontend
+
 - [ ] Create `IncomingVideoModal.tsx` component
 - [ ] Video player with 16:9 aspect ratio
 - [ ] Speed controls (1x, 1.5x, 2x, 2.5x, 3x) - shared preference with Watch page
@@ -499,6 +511,7 @@ const [showPreview, setShowPreview] = useState(false)
 - [ ] Integrate modal with FileCard state
 
 ### Testing
+
 - [ ] Preview button appears on all incoming files
 - [ ] Modal opens with correct video
 - [ ] **Video autoplays when modal opens**
@@ -544,17 +557,20 @@ const [showPreview, setShowPreview] = useState(false)
 ## Completion Notes
 
 **What was done:**
+
 - Added `/api/video/incoming/:filename` endpoint to stream videos from watch directory
 - Created `IncomingVideoModal.tsx` component with video player, speed controls, and file info
 - Added Preview button (▶) to FileCard component
 - Integrated modal with FileCard state
 
 **Files changed:**
+
 - `server/src/routes/video.ts` (modified) - Added incoming video endpoint with Range support
 - `client/src/components/IncomingVideoModal.tsx` (new) - Video preview modal component
 - `client/src/components/FileCard.tsx` (modified) - Added Preview button and modal integration
 
 **Testing notes:**
+
 - Preview button appears on all incoming file cards
 - Modal opens with video autoplay
 - Speed controls work and persist to localStorage (shared with Watch page)

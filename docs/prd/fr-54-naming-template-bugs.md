@@ -52,6 +52,7 @@ Four related issues with the automatic naming template on the Incoming tab.
 ## Technical Notes
 
 Files modified:
+
 - `App.tsx` - `handleRenamed` function (no longer clears customTag)
 - `NamingControls.tsx` - input constraints updated
 - `shared/naming.ts` - `stripTrailingTags()` and `extractTagsFromName()` utilities added
@@ -61,6 +62,7 @@ Files modified:
 **Discovered 2026-01-01:** Code review revealed all 4 bugs were already fixed during previous development work. The fixes were applied incrementally but the PRD was not updated at the time.
 
 **Evidence of fixes:**
+
 1. App.tsx line 168: Comment explicitly references FR-54
 2. NamingControls.tsx line 114: Comment references FR-21/FR-54
 3. shared/naming.ts line 161: Comment references FR-54 for tag stripping

@@ -54,12 +54,14 @@ Dictionary:
 ### Part 4: Remove Project Dictionary from Config
 
 Since it moves to Export:
+
 - Remove "Project Dictionary Words" textarea from ConfigPanel
 - Keep "Global Dictionary Words" (that IS a global setting)
 
 ### Part 5: Remove EditPrep Modal
 
 EditPrep is fully redundant after FR-124. Remove:
+
 - Delete `EditPrepPage.tsx` component
 - Remove menu item from App.tsx
 - Clean up `useEditApi.ts` hooks (move needed ones to useApi.ts)
@@ -69,17 +71,20 @@ EditPrep is fully redundant after FR-124. Remove:
 ## Acceptance Criteria
 
 ### Must Have
+
 - [ ] Project dictionary editing in Export panel (Gling Prep section)
 - [ ] Three copy buttons: Global, Project, Combined
 - [ ] Remove project dictionary from Config panel
 - [ ] Remove EditPrep modal and menu item
 
 ### Should Have
+
 - [ ] Word counts displayed for each dictionary type
 - [ ] Combined count shows merged total (deduplicated)
 - [ ] Auto-save on blur for project words
 
 ### Nice to Have
+
 - [ ] Inline expandable textarea for editing
 - [ ] Visual distinction between global/project/combined
 
@@ -90,35 +95,37 @@ EditPrep is fully redundant after FR-124. Remove:
 ### Dictionary Data
 
 Update `/api/edit/prep` to return all three separately:
+
 ```json
 {
   "glingFilename": "b87-poem-epic-3",
   "globalDictionary": ["word1", "word2"],
   "projectDictionary": ["word3", "word4"],
-  "glingDictionary": ["word1", "word2", "word3", "word4"]  // Combined
+  "glingDictionary": ["word1", "word2", "word3", "word4"] // Combined
 }
 ```
 
 ### Project Dictionary Update
 
 Reuse existing endpoint:
+
 - `PATCH /api/projects/:code/state/dictionary` - Update project dictionary
 
 ### Files to Delete
 
-| File | Reason |
-|------|--------|
+| File                                     | Reason                         |
+| ---------------------------------------- | ------------------------------ |
 | `client/src/components/EditPrepPage.tsx` | Modal replaced by Export panel |
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `client/src/components/ExportPanel.tsx` | Add project dictionary editing, three copy buttons |
-| `client/src/components/ConfigPanel.tsx` | Remove project dictionary section |
-| `client/src/App.tsx` | Remove EditPrep menu item and modal state |
-| `server/src/routes/edit.ts` | Return split dictionaries (global, project, combined) |
-| `client/src/hooks/useEditApi.ts` | Move needed hooks, delete file if empty |
+| File                                    | Changes                                               |
+| --------------------------------------- | ----------------------------------------------------- |
+| `client/src/components/ExportPanel.tsx` | Add project dictionary editing, three copy buttons    |
+| `client/src/components/ConfigPanel.tsx` | Remove project dictionary section                     |
+| `client/src/App.tsx`                    | Remove EditPrep menu item and modal state             |
+| `server/src/routes/edit.ts`             | Return split dictionaries (global, project, combined) |
+| `client/src/hooks/useEditApi.ts`        | Move needed hooks, delete file if empty               |
 
 ---
 
@@ -127,6 +134,7 @@ Reuse existing endpoint:
 **Data migration:** None needed - project dictionary stays in `.flihub-state.json`
 
 **User impact:**
+
 - EditPrep menu item removed
 - Project dictionary editing moves to Export tab
 - More copy options available
@@ -169,16 +177,19 @@ Reuse existing endpoint:
    - Removed "Edit Prep" menu item from settings dropdown
 
 **Files changed:**
+
 - `client/src/components/ExportPanel.tsx` - Added project dictionary editing UI and handlers
 - `client/src/components/ConfigPanel.tsx` - Removed project dictionary section
 - `client/src/App.tsx` - Removed EditPrep references
 - `client/src/components/EditPrepPage.tsx` - DELETED
 
 **API changes:**
+
 - None required - `/api/edit/prep` already returns split dictionaries (globalDictionary, projectDictionary, glingDictionary)
 - Reuses existing `PATCH /api/projects/:code/state/dictionary` for updates
 
 **Testing notes:**
+
 1. Navigate to Export tab
 2. Click "Gling Prep Info" to expand
 3. Verify three dictionary sections display:

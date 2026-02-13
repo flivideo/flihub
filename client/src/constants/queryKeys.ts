@@ -10,8 +10,9 @@ export const QUERY_KEYS = {
   // FR-17: Image asset management
   incomingImages: ['assets', 'incoming'] as const,
   projectImages: ['assets', 'images'] as const,
-  nextImageOrder: (chapter: string, sequence: string) => ['assets', 'next-order', chapter, sequence] as const,
-  nextImageOrderPrefix: ['assets', 'next-order'] as const,  // For invalidating all next-order queries
+  nextImageOrder: (chapter: string, sequence: string) =>
+    ['assets', 'next-order', chapter, sequence] as const,
+  nextImageOrderPrefix: ['assets', 'next-order'] as const, // For invalidating all next-order queries
   // FR-22: Prompt management
   prompt: (filename: string) => ['assets', 'prompt', filename] as const,
   // FR-27: Thumbnail management
@@ -40,7 +41,8 @@ export const QUERY_KEYS = {
   // FR-59: Inbox management
   inbox: (code: string) => ['inbox', code] as const,
   // FR-64: Inbox file content
-  inboxFile: (code: string, subfolder: string, filename: string) => ['inbox-file', code, subfolder, filename] as const,
+  inboxFile: (code: string, subfolder: string, filename: string) =>
+    ['inbox-file', code, subfolder, filename] as const,
   // FR-58: Chapter recording management
   chapterRecordingConfig: ['chapter-recording-config'] as const,
   chapterRecordingStatus: ['chapter-recording-status'] as const,
@@ -52,4 +54,4 @@ export const QUERY_KEYS = {
   developerProjectState: ['developer', 'project-state'] as const,
   developerConfig: ['developer', 'config'] as const,
   developerTelemetry: ['developer', 'telemetry'] as const,
-} as const
+} as const;

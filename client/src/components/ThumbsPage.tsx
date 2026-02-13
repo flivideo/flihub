@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react'
-import { createPortal } from 'react-dom'
-import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
+import { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useZipFiles,
   useZipContents,
@@ -13,160 +13,169 @@ import {
   type ZipInfo,
   type ZipImagePreview,
   type ThumbInfo,
-} from '../hooks/useThumbsApi'
-import { QUERY_KEYS } from '../constants/queryKeys'
-import { useThumbsSocket } from '../hooks/useSocket'
-import { OpenFolderButton } from './shared'
-import { API_URL } from '../config'
-import { formatFileSize } from '../utils/formatting'
+} from '../hooks/useThumbsApi';
+import { QUERY_KEYS } from '../constants/queryKeys';
+import { useThumbsSocket } from '../hooks/useSocket';
+import { OpenFolderButton } from './shared';
+import { API_URL } from '../config';
+import { formatFileSize } from '../utils/formatting';
 
 // Thumbnail size options (reused pattern from AssetsPage)
-type ThumbnailSize = 'S' | 'M' | 'L' | 'XL'
+type ThumbnailSize = 'S' | 'M' | 'L' | 'XL';
 
 const THUMBNAIL_SIZES: Record<ThumbnailSize, { width: string; label: string }> = {
   S: { width: '80px', label: 'S' },
   M: { width: '120px', label: 'M' },
   L: { width: '180px', label: 'L' },
   XL: { width: '240px', label: 'XL' },
-}
+};
 
 // Preview data for Shift+Hover
 interface PreviewData {
-  src: string
-  name: string
-  x: number
-  y: number
+  src: string;
+  name: string;
+  x: number;
+  y: number;
 }
 
 export function ThumbsPage() {
-  const [thumbnailSize, setThumbnailSize] = useState<ThumbnailSize>('M')
-  const [selectedZip, setSelectedZip] = useState<string | null>(null)
-  const [selectedImages, setSelectedImages] = useState<string[]>([])
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
-  const [previewData, setPreviewData] = useState<PreviewData | null>(null)
+  const [thumbnailSize, setThumbnailSize] = useState<ThumbnailSize>('M');
+  const [selectedZip, setSelectedZip] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [previewData, setPreviewData] = useState<PreviewData | null>(null);
 
   // NFR-5: Subscribe to socket events for ZIP file changes only
   // (thumbs folder changes per project, so socket watching is unreliable)
-  useThumbsSocket()
+  useThumbsSocket();
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   // Queries
-  const { data: zipsData, isLoading: zipsLoading } = useZipFiles()
-  const { data: zipContentsData, isLoading: contentsLoading } = useZipContents(selectedZip)
-  const { data: thumbsData, isLoading: thumbsLoading } = useThumbs()
+  const { data: zipsData, isLoading: zipsLoading } = useZipFiles();
+  const { data: zipContentsData, isLoading: contentsLoading } = useZipContents(selectedZip);
+  const { data: thumbsData, isLoading: thumbsLoading } = useThumbs();
 
   // Mutations
-  const importMutation = useImportFromZip()
-  const reorderMutation = useReorderThumbs()
-  const deleteMutation = useDeleteThumb()
-  const deleteZipMutation = useDeleteZip()
+  const importMutation = useImportFromZip();
+  const reorderMutation = useReorderThumbs();
+  const deleteMutation = useDeleteThumb();
+  const deleteZipMutation = useDeleteZip();
 
-  const zips = zipsData?.zips || []
-  const zipImages = zipContentsData?.images || []
-  const thumbs = thumbsData?.thumbs || []
+  const zips = zipsData?.zips || [];
+  const zipImages = zipContentsData?.images || [];
+  const thumbs = thumbsData?.thumbs || [];
 
   // Handle ZIP selection
   const handlePreviewZip = useCallback((filename: string) => {
-    setSelectedZip(filename)
-    setSelectedImages([])
-  }, [])
+    setSelectedZip(filename);
+    setSelectedImages([]);
+  }, []);
 
   // Handle image selection (max 3)
   const handleImageToggle = useCallback((imageName: string) => {
     setSelectedImages((prev) => {
       if (prev.includes(imageName)) {
-        return prev.filter((n) => n !== imageName)
+        return prev.filter((n) => n !== imageName);
       }
       if (prev.length >= 3) {
-        toast.warning('Maximum 3 thumbnails allowed')
-        return prev
+        toast.warning('Maximum 3 thumbnails allowed');
+        return prev;
       }
-      return [...prev, imageName]
-    })
-  }, [])
+      return [...prev, imageName];
+    });
+  }, []);
 
   // Import selected images
   const handleImport = useCallback(async () => {
-    if (!selectedZip || selectedImages.length === 0) return
+    if (!selectedZip || selectedImages.length === 0) return;
 
     try {
       await importMutation.mutateAsync({
         zipFilename: selectedZip,
         selectedImages,
-      })
-      toast.success(`Imported ${selectedImages.length} thumbnail(s)`)
-      setSelectedZip(null)
-      setSelectedImages([])
+      });
+      toast.success(`Imported ${selectedImages.length} thumbnail(s)`);
+      setSelectedZip(null);
+      setSelectedImages([]);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Import failed')
+      toast.error(error instanceof Error ? error.message : 'Import failed');
     }
-  }, [selectedZip, selectedImages, importMutation])
+  }, [selectedZip, selectedImages, importMutation]);
 
   // Delete a thumbnail
-  const handleDelete = useCallback(async (filename: string) => {
-    try {
-      await deleteMutation.mutateAsync(filename)
-      toast.success('Thumbnail deleted')
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Delete failed')
-    }
-  }, [deleteMutation])
+  const handleDelete = useCallback(
+    async (filename: string) => {
+      try {
+        await deleteMutation.mutateAsync(filename);
+        toast.success('Thumbnail deleted');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Delete failed');
+      }
+    },
+    [deleteMutation]
+  );
 
   // Delete a ZIP file from Downloads
-  const handleDeleteZip = useCallback(async (filename: string) => {
-    try {
-      await deleteZipMutation.mutateAsync(filename)
-      toast.success('ZIP file deleted')
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Delete failed')
-    }
-  }, [deleteZipMutation])
+  const handleDeleteZip = useCallback(
+    async (filename: string) => {
+      try {
+        await deleteZipMutation.mutateAsync(filename);
+        toast.success('ZIP file deleted');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Delete failed');
+      }
+    },
+    [deleteZipMutation]
+  );
 
   // Drag and drop reordering
   const handleDragStart = useCallback((index: number) => {
-    setDraggedIndex(index)
-  }, [])
+    setDraggedIndex(index);
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-  }, [])
+    e.preventDefault();
+  }, []);
 
-  const handleDrop = useCallback(async (dropIndex: number) => {
-    if (draggedIndex === null || draggedIndex === dropIndex) {
-      setDraggedIndex(null)
-      return
-    }
+  const handleDrop = useCallback(
+    async (dropIndex: number) => {
+      if (draggedIndex === null || draggedIndex === dropIndex) {
+        setDraggedIndex(null);
+        return;
+      }
 
-    // Reorder the array
-    const newOrder = [...thumbs]
-    const [dragged] = newOrder.splice(draggedIndex, 1)
-    newOrder.splice(dropIndex, 0, dragged)
+      // Reorder the array
+      const newOrder = [...thumbs];
+      const [dragged] = newOrder.splice(draggedIndex, 1);
+      newOrder.splice(dropIndex, 0, dragged);
 
-    try {
-      await reorderMutation.mutateAsync(newOrder.map((t) => t.filename))
-      toast.success('Thumbnails reordered')
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Reorder failed')
-    }
+      try {
+        await reorderMutation.mutateAsync(newOrder.map((t) => t.filename));
+        toast.success('Thumbnails reordered');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Reorder failed');
+      }
 
-    setDraggedIndex(null)
-  }, [draggedIndex, thumbs, reorderMutation])
+      setDraggedIndex(null);
+    },
+    [draggedIndex, thumbs, reorderMutation]
+  );
 
   const handleDragEnd = useCallback(() => {
-    setDraggedIndex(null)
-  }, [])
+    setDraggedIndex(null);
+  }, []);
 
   // Shift+Hover preview handlers
   const handlePreviewEnter = useCallback((e: React.MouseEvent, src: string, name: string) => {
     if (e.shiftKey) {
-      setPreviewData({ src, name, x: e.clientX, y: e.clientY })
+      setPreviewData({ src, name, x: e.clientX, y: e.clientY });
     }
-  }, [])
+  }, []);
 
   const handlePreviewLeave = useCallback(() => {
-    setPreviewData(null)
-  }, [])
+    setPreviewData(null);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -190,8 +199,8 @@ export function ThumbsPage() {
         </div>
         <button
           onClick={() => {
-            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.thumbs })
-            queryClient.refetchQueries({ queryKey: QUERY_KEYS.thumbs })
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.thumbs });
+            queryClient.refetchQueries({ queryKey: QUERY_KEYS.thumbs });
           }}
           className="ml-auto px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
         >
@@ -234,11 +243,13 @@ export function ThumbsPage() {
                   alt={thumb.filename}
                   style={{ width: THUMBNAIL_SIZES[thumbnailSize].width }}
                   className="rounded object-cover cursor-pointer"
-                  onMouseEnter={(e) => handlePreviewEnter(
-                    e,
-                    `${API_URL}/api/thumbs/image/${encodeURIComponent(thumb.filename)}?t=${encodeURIComponent(thumb.timestamp)}`,
-                    thumb.filename
-                  )}
+                  onMouseEnter={(e) =>
+                    handlePreviewEnter(
+                      e,
+                      `${API_URL}/api/thumbs/image/${encodeURIComponent(thumb.filename)}?t=${encodeURIComponent(thumb.timestamp)}`,
+                      thumb.filename
+                    )
+                  }
                   onMouseLeave={handlePreviewLeave}
                 />
                 <div className="flex-1 min-w-0">
@@ -252,7 +263,12 @@ export function ThumbsPage() {
                   title="Delete thumbnail"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
                   </svg>
                 </button>
               </div>
@@ -273,9 +289,7 @@ export function ThumbsPage() {
         {zipsLoading ? (
           <p className="text-sm text-gray-500">Scanning Downloads folder...</p>
         ) : zips.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No ZIP files with images found in ~/Downloads
-          </p>
+          <p className="text-sm text-gray-500">No ZIP files with images found in ~/Downloads</p>
         ) : (
           <div className="space-y-2">
             {zips.map((zip: ZipInfo) => (
@@ -303,7 +317,12 @@ export function ThumbsPage() {
                     title="Delete ZIP file"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -320,17 +339,24 @@ export function ThumbsPage() {
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div>
                 <h3 className="font-medium text-gray-900">Select Thumbnails</h3>
-                <p className="text-sm text-gray-500">{selectedZip} &middot; Select up to 3 images</p>
+                <p className="text-sm text-gray-500">
+                  {selectedZip} &middot; Select up to 3 images
+                </p>
               </div>
               <button
                 onClick={() => {
-                  setSelectedZip(null)
-                  setSelectedImages([])
+                  setSelectedZip(null);
+                  setSelectedImages([]);
                 }}
                 className="p-2 text-gray-400 hover:text-gray-600"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -343,8 +369,8 @@ export function ThumbsPage() {
               ) : (
                 <div className="grid grid-cols-3 gap-4">
                   {zipImages.map((image: ZipImagePreview) => {
-                    const isSelected = selectedImages.includes(image.name)
-                    const selectionIndex = selectedImages.indexOf(image.name)
+                    const isSelected = selectedImages.includes(image.name);
+                    const selectionIndex = selectedImages.indexOf(image.name);
                     return (
                       <div
                         key={image.name}
@@ -372,21 +398,19 @@ export function ThumbsPage() {
                           <p className="text-xs text-gray-500">{formatFileSize(image.size)}</p>
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               )}
             </div>
 
             <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-              <p className="text-sm text-gray-600">
-                {selectedImages.length} of 3 selected
-              </p>
+              <p className="text-sm text-gray-600">{selectedImages.length} of 3 selected</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => {
-                    setSelectedZip(null)
-                    setSelectedImages([])
+                    setSelectedZip(null);
+                    setSelectedImages([]);
                   }}
                   className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded transition-colors"
                 >
@@ -397,7 +421,9 @@ export function ThumbsPage() {
                   disabled={selectedImages.length === 0 || importMutation.isPending}
                   className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {importMutation.isPending ? 'Importing...' : `Import ${selectedImages.length} Selected`}
+                  {importMutation.isPending
+                    ? 'Importing...'
+                    : `Import ${selectedImages.length} Selected`}
                 </button>
               </div>
             </div>
@@ -406,27 +432,28 @@ export function ThumbsPage() {
       )}
 
       {/* Shift+Hover Preview Overlay */}
-      {previewData && createPortal(
-        <div
-          className="fixed pointer-events-none z-[100]"
-          style={{
-            left: Math.min(previewData.x + 16, window.innerWidth - 520),
-            top: Math.min(previewData.y - 150, window.innerHeight - 350),
-          }}
-        >
-          <div className="bg-white rounded-lg shadow-2xl border border-gray-300 overflow-hidden">
-            <img
-              src={previewData.src}
-              alt={previewData.name}
-              className="max-w-[500px] max-h-[300px] object-contain"
-            />
-            <div className="px-3 py-2 bg-gray-50 border-t border-gray-200">
-              <p className="text-sm text-gray-700 truncate">{previewData.name}</p>
+      {previewData &&
+        createPortal(
+          <div
+            className="fixed pointer-events-none z-[100]"
+            style={{
+              left: Math.min(previewData.x + 16, window.innerWidth - 520),
+              top: Math.min(previewData.y - 150, window.innerHeight - 350),
+            }}
+          >
+            <div className="bg-white rounded-lg shadow-2xl border border-gray-300 overflow-hidden">
+              <img
+                src={previewData.src}
+                alt={previewData.name}
+                className="max-w-[500px] max-h-[300px] object-contain"
+              />
+              <div className="px-3 py-2 bg-gray-50 border-t border-gray-200">
+                <p className="text-sm text-gray-700 truncate">{previewData.name}</p>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </div>
-  )
+  );
 }

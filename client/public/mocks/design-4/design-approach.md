@@ -41,6 +41,7 @@ Complex grid system showing multiple views simultaneously:
 ```
 
 **Why multi-panel:**
+
 - See project, content, and details simultaneously
 - No context switching between views
 - Compare files side-by-side
@@ -52,6 +53,7 @@ Complex grid system showing multiple views simultaneously:
 Every panel is interactive:
 
 **Features:**
+
 - **Drag handles:** Resize any panel edge
 - **Collapse:** Double-click divider to collapse
 - **Undock:** Drag panel header to float
@@ -59,6 +61,7 @@ Every panel is interactive:
 - **Save layout:** Store panel configuration per project
 
 **Panel types:**
+
 - **Navigator:** Tree view of all content
 - **Content:** Main work area (video, files, etc.)
 - **Inspector:** Details of selected item
@@ -71,12 +74,14 @@ Every panel is interactive:
 Maximum data visible with minimal scrolling:
 
 **Typography:**
+
 - Small but readable: 11px base font
 - Compact line height: 1.4
 - Tabular numbers throughout
 - Abbreviations where sensible (Ch, Seq, Trans, etc.)
 
 **Layout techniques:**
+
 - Tables with many columns
 - Inline stats and badges
 - Icon-only buttons (with tooltips)
@@ -84,9 +89,11 @@ Maximum data visible with minimal scrolling:
 - Hover reveals additional details
 
 **Example - file row:**
+
 ```
 [▶] 01-1 intro.mov  36s  19MB  03/01  100% ✓ 🔒 ⭐
 ```
+
 Showing: Play, Ch-Seq, Name, Duration, Size, Date, Transcript%, Safe, Locked, Favorite
 
 ### 4. **Split-Screen Comparison**
@@ -94,6 +101,7 @@ Showing: Play, Ch-Seq, Name, Duration, Size, Date, Transcript%, Safe, Locked, Fa
 Compare any two items side-by-side:
 
 **Video comparison:**
+
 ```
 ┌────────────────┬────────────────┐
 │  01-1-intro    │  01-2-intro    │
@@ -104,6 +112,7 @@ Compare any two items side-by-side:
 ```
 
 **Transcript comparison:**
+
 ```
 ┌────────────────┬────────────────┐
 │  Version 1     │  Version 2     │
@@ -114,6 +123,7 @@ Compare any two items side-by-side:
 ```
 
 **Chapter comparison:**
+
 ```
 ┌────────────────┬────────────────┐
 │  Chapter 01    │  Chapter 02    │
@@ -128,6 +138,7 @@ Compare any two items side-by-side:
 Visual timeline shows project structure:
 
 **Horizontal timeline:**
+
 ```
 |00:00      |02:18       |10:10         |15:07|15:36|17:00 |18:13
 ├───────────┼────────────┼──────────────┼────┼────┼─────┼────┤
@@ -137,6 +148,7 @@ Visual timeline shows project structure:
 ```
 
 **Vertical timeline (activity log):**
+
 ```
 2026-01-05 14:32  Transcribed 01-5-intro.mov
 2026-01-05 14:30  Renamed 5 files to "intro"
@@ -145,6 +157,7 @@ Visual timeline shows project structure:
 ```
 
 **Waveform timeline:**
+
 ```
 Amplitude visualization for audio scrubbing
 ```
@@ -154,6 +167,7 @@ Amplitude visualization for audio scrubbing
 Live dashboard showing project health:
 
 **Project Stats Card:**
+
 ```
 ┌─────────────────────────┐
 │  PROJECT OVERVIEW       │
@@ -170,6 +184,7 @@ Live dashboard showing project health:
 ```
 
 **Processing Queue:**
+
 ```
 ┌─────────────────────────┐
 │  ACTIVE TASKS           │
@@ -182,6 +197,7 @@ Live dashboard showing project health:
 ```
 
 **Storage Usage:**
+
 ```
 ┌─────────────────────────┐
 │  STORAGE                │
@@ -200,6 +216,7 @@ Live dashboard showing project health:
 Advanced table controls:
 
 **Features:**
+
 - Click column header to sort
 - Multi-column sort (Shift+Click)
 - Filter row above headers
@@ -208,6 +225,7 @@ Advanced table controls:
 - Inline editing (double-click cell)
 
 **Table with all features:**
+
 ```
 ┌─[Filter: _______________]─────────────────┐
 │ ▼Ch  ▼Seq  ▼Name        ▼Dur  ▼Size  ▼%  │
@@ -224,32 +242,42 @@ Advanced table controls:
 ## Page-Specific Implementations
 
 ### Manage Page
+
 **Layout:** 4-panel grid
+
 - Left: File tree navigator
 - Center: File grid/table with bulk actions
 - Right: Inspector with selected file details
 - Bottom: Activity log and processing queue
 
 ### Incoming Page
+
 **Layout:** Split view
+
 - Top: Live preview of watch directory
 - Bottom-left: Naming form
 - Bottom-right: Recently imported files
 
 ### Recordings Page
+
 **Layout:** Triple pane
+
 - Left: Chapter list with stats
 - Center: Video grid with thumbnails
 - Right: Timeline visualization + player
 
 ### Watch Page
+
 **Layout:** Video + panels
+
 - Main: Large video player
 - Right: Tabbed panel (Transcript, Chapters, Segments)
 - Bottom: Timeline with waveform
 
 ### Projects Page
+
 **Layout:** Table + details
+
 - Main: Projects table (sortable, filterable)
 - Right: Selected project breakdown
 - Bottom: Project activity timeline
@@ -259,6 +287,7 @@ Advanced table controls:
 ## Visual Design Language
 
 **Colors:**
+
 - Background: #fafafa (light gray)
 - Panels: #ffffff (white)
 - Borders: #d0d0d0 (visible dividers)
@@ -268,18 +297,21 @@ Advanced table controls:
 - Warning: #f59e0b (orange)
 
 **Typography:**
+
 - Sans: "Roboto" (Google's data-dense font)
 - Mono: "Roboto Mono"
 - Size: 11px base (compact)
 - Weight: 400, 500, 700
 
 **Spacing:**
+
 - Panel padding: 12px
 - Row height: 28px (compact)
 - Section gaps: 16px
 - Icon size: 14px
 
 **Borders & Shadows:**
+
 - Panel borders: 1px solid #d0d0d0
 - Dividers: 1px solid #e0e0e0
 - Subtle shadows on floating panels
@@ -292,6 +324,7 @@ Advanced table controls:
 ### 1. **Saved Views**
 
 Create custom layouts:
+
 - "Editing Mode" - Video player + transcript
 - "Organization Mode" - File tree + table
 - "Review Mode" - Side-by-side comparison
@@ -300,6 +333,7 @@ Create custom layouts:
 ### 2. **Batch Operations Dashboard**
 
 Dedicated panel for bulk actions:
+
 ```
 ┌──────────────────────────────┐
 │  BATCH OPERATIONS            │
@@ -317,6 +351,7 @@ Dedicated panel for bulk actions:
 ### 3. **Smart Filters**
 
 Complex query builder:
+
 ```
 Chapter = 01 AND Duration > 30s
 OR
@@ -326,6 +361,7 @@ Name CONTAINS "intro" AND Size < 20MB
 ### 4. **Heatmaps**
 
 Visual density indicators:
+
 - File size heatmap by chapter
 - Duration distribution graph
 - Transcript completion matrix
@@ -334,6 +370,7 @@ Visual density indicators:
 ### 5. **Minimap**
 
 Page overview for quick navigation:
+
 ```
 ┌──────┐
 │▓▓▓▓▓▓│ ← Viewport
@@ -347,19 +384,20 @@ Page overview for quick navigation:
 
 ## Solving Inconsistencies
 
-| Inconsistency | Design-4 Solution |
-|--------------|-------------------|
-| Chapter navigation varies | Unified navigator panel on left, always visible |
-| Sidebar patterns differ | All panels follow same resizable pattern |
-| Tool access unclear | Dedicated tools panel, always accessible |
-| Layout shifts | Grid-based layout, panels resize but don't shift |
-| Interactive feedback | Dense hover states, inline editing everywhere |
+| Inconsistency             | Design-4 Solution                                |
+| ------------------------- | ------------------------------------------------ |
+| Chapter navigation varies | Unified navigator panel on left, always visible  |
+| Sidebar patterns differ   | All panels follow same resizable pattern         |
+| Tool access unclear       | Dedicated tools panel, always accessible         |
+| Layout shifts             | Grid-based layout, panels resize but don't shift |
+| Interactive feedback      | Dense hover states, inline editing everywhere    |
 
 ---
 
 ## Technical Implementation
 
 **CSS Grid:**
+
 ```css
 .dashboard {
   display: grid;
@@ -371,6 +409,7 @@ Page overview for quick navigation:
 ```
 
 **Panel resizing:**
+
 ```javascript
 // Draggable dividers
 const divider = document.querySelector('.divider');
@@ -378,11 +417,13 @@ divider.addEventListener('mousedown', startResize);
 ```
 
 **Data virtualization:**
+
 - Only render visible rows (1000+ file support)
 - Lazy load thumbnails
 - Paginate activity logs
 
 **Performance:**
+
 - Web workers for heavy computations
 - Debounced filter updates
 - Cached sort results
@@ -402,13 +443,13 @@ divider.addEventListener('mousedown', startResize);
 
 ## Comparison to Other Designs
 
-| Aspect | Design-1 | Design-2 | Design-3 | Design-4 |
-|--------|----------|----------|----------|----------|
-| Complexity | Medium | High | Low | Very High |
-| Info density | Medium | Low | Very Low | Maximum |
-| Panels | 3 fixed | Floating | 1 | 4-6 resizable |
-| Best for | General use | Video focus | Speed | Power users |
-| Learning curve | Easy | Medium | Hard (kbd) | Hard (features) |
+| Aspect         | Design-1    | Design-2    | Design-3   | Design-4        |
+| -------------- | ----------- | ----------- | ---------- | --------------- |
+| Complexity     | Medium      | High        | Low        | Very High       |
+| Info density   | Medium      | Low         | Very Low   | Maximum         |
+| Panels         | 3 fixed     | Floating    | 1          | 4-6 resizable   |
+| Best for       | General use | Video focus | Speed      | Power users     |
+| Learning curve | Easy        | Medium      | Hard (kbd) | Hard (features) |
 
 ---
 
@@ -425,6 +466,7 @@ divider.addEventListener('mousedown', startResize);
 ## User Types
 
 **Best for:**
+
 - Power users managing 100+ file projects
 - Users who want overview at a glance
 - Multi-monitor setups
@@ -432,6 +474,7 @@ divider.addEventListener('mousedown', startResize);
 - Professional video producers
 
 **Not ideal for:**
+
 - Beginners (overwhelming)
 - Small projects (overkill)
 - Mobile devices (too complex)
@@ -450,6 +493,7 @@ divider.addEventListener('mousedown', startResize);
 ---
 
 **Next Steps:**
+
 - Build resizable panel prototype
 - Test with large datasets (100+ files)
 - Create panel configuration system

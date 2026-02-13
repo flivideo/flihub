@@ -9,6 +9,7 @@
 ## Problem
 
 When clicking "New Chapter" button multiple times (accidentally or rapidly), the chapter number increments each time:
+
 - Start at chapter 03
 - Click "New Chapter" → 04
 - Click again → 05
@@ -28,8 +29,8 @@ This creates unintentional gaps in chapter numbering (e.g., 1, 2, 3, 5, 8, 9, 10
 
 ```typescript
 // App.tsx line 285-286
-const currentChapter = parseInt(prev.chapter || '01', 10)
-const nextChapter = String(Math.min(99, currentChapter + 1)).padStart(2, '0')
+const currentChapter = parseInt(prev.chapter || '01', 10);
+const nextChapter = String(Math.min(99, currentChapter + 1)).padStart(2, '0');
 ```
 
 Reads from state → easy to increment multiple times.
@@ -39,10 +40,10 @@ Reads from state → easy to increment multiple times.
 ```typescript
 // Calculate from highest recorded chapter in project
 const highestRecordedChapter = Math.max(
-  ...recordings.map(r => parseInt(r.chapter || '0', 10)),
+  ...recordings.map((r) => parseInt(r.chapter || '0', 10)),
   0
-)
-const nextChapter = String(Math.min(99, highestRecordedChapter + 1)).padStart(2, '0')
+);
+const nextChapter = String(Math.min(99, highestRecordedChapter + 1)).padStart(2, '0');
 ```
 
 - Click "New Chapter" once → goes to highest + 1
@@ -53,6 +54,7 @@ const nextChapter = String(Math.min(99, highestRecordedChapter + 1)).padStart(2,
 ### Intentional Skips
 
 To intentionally skip chapters (rare use case):
+
 - Manually type desired chapter number in the input field
 - Don't click "New Chapter"
 - Proceed with naming
@@ -76,11 +78,13 @@ To intentionally skip chapters (rare use case):
 **Function:** `handleNewChapter` (line 282-300)
 
 **Change:**
+
 1. Pass `recordings` data to the callback (or access via ref/context)
 2. Calculate highest chapter from recordings
 3. Set next chapter to highest + 1
 
 **Edge cases:**
+
 - No recordings yet → default to chapter 01
 - All recordings in safe → still count them for highest chapter
 - Recordings with non-numeric chapters → skip/ignore in calculation
@@ -106,18 +110,21 @@ To intentionally skip chapters (rare use case):
 ## Completion Notes
 
 **What was done:**
+
 - Added `useRecordings` hook to fetch project recordings data
 - Updated `handleNewChapter` to calculate next chapter from highest recorded chapter in project
 - Added `recordingsData` to the useCallback dependency array
 - Function is now idempotent - clicking multiple times stays on same value until a new file is recorded
 
 **Files changed:**
+
 - `client/src/App.tsx` (modified)
   - Added `useRecordings` to imports
   - Added `useRecordings()` hook call
   - Updated `handleNewChapter` logic to calculate from recordings
 
 **Testing notes:**
+
 1. Fresh project (no recordings): Click "New Chapter" → should be 01
 2. After recording chapter 03: Click "New Chapter" → should be 04
 3. Rapid clicks: Click "New Chapter" 5 times quickly → should stay at 04

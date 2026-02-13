@@ -43,7 +43,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
       const paths = getProjectPaths(projectPath);
       const transcripts: QueryTranscript[] = [];
 
-      if (!await fs.pathExists(paths.transcripts)) {
+      if (!(await fs.pathExists(paths.transcripts))) {
         // FR-53: ASCII format support for empty case
         if (req.query.format === 'text') {
           res.setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -65,7 +65,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
 
         // Extract name parts (remove tags)
         const nameParts = (parsed.name || '').split('-');
-        const nameWords = nameParts.filter(part => !/^[A-Z]+$/.test(part));
+        const nameWords = nameParts.filter((part) => !/^[A-Z]+$/.test(part));
 
         const transcript: QueryTranscript = {
           filename,
@@ -78,7 +78,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
         // Read content if requested
         // NFR-67: Using readFileSafe - returns null for missing file
         if (includeContent) {
-          transcript.content = await readFileSafe(filePath) ?? '';
+          transcript.content = (await readFileSafe(filePath)) ?? '';
         } else {
           // Preview: first ~100 chars
           const content = await readFileSafe(filePath);
@@ -104,13 +104,13 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
       let filtered = transcripts;
       if (chapterFilter && typeof chapterFilter === 'string') {
         const chapterNum = chapterFilter.padStart(2, '0');
-        filtered = filtered.filter(t => t.chapter === chapterNum || t.chapter === chapterFilter);
+        filtered = filtered.filter((t) => t.chapter === chapterNum || t.chapter === chapterFilter);
       }
 
       // FR-119: Apply segments filter (comma-delimited: "1,2,3")
       if (segmentsParam && typeof segmentsParam === 'string') {
-        const segments = segmentsParam.split(',').map(s => s.trim());
-        filtered = filtered.filter(t => segments.includes(t.sequence));
+        const segments = segmentsParam.split(',').map((s) => s.trim());
+        filtered = filtered.filter((t) => segments.includes(t.sequence));
       }
 
       // FR-53: ASCII format support
@@ -152,7 +152,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
 
       const filePath = path.join(paths.transcripts, filename);
 
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         res.status(404).json({ success: false, error: `Transcript not found: ${filename}` });
         return;
       }
@@ -163,7 +163,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
 
       // Extract name parts (remove tags)
       const nameParts = (parsed?.name || '').split('-');
-      const nameWords = nameParts.filter(part => !/^[A-Z]+$/.test(part));
+      const nameWords = nameParts.filter((part) => !/^[A-Z]+$/.test(part));
 
       res.json({
         success: true,
@@ -191,7 +191,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
     const projectPath = path.join(projectsDir, code);
 
     try {
-      if (!await fs.pathExists(projectPath)) {
+      if (!(await fs.pathExists(projectPath))) {
         res.status(404).json({ success: false, error: `Project not found: ${code}` });
         return;
       }
@@ -204,7 +204,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
 
       const filePath = path.join(paths.chapters, filename);
 
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         res.status(404).json({ success: false, error: `Chapter SRT not found: ${filename}` });
         return;
       }
@@ -233,7 +233,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
     const projectPath = path.join(projectsDir, code);
 
     try {
-      if (!await fs.pathExists(projectPath)) {
+      if (!(await fs.pathExists(projectPath))) {
         res.status(404).json({ success: false, error: `Project not found: ${code}` });
         return;
       }
@@ -246,7 +246,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
 
       const filePath = path.join(paths.transcripts, filename);
 
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         res.status(404).json({ success: false, error: `SRT not found: ${filename}` });
         return;
       }

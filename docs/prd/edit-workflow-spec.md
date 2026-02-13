@@ -3,6 +3,7 @@
 ## Overview
 
 A comprehensive edit workflow system covering three stages of video post-production:
+
 1. **Prep** - David's first edit (Gling output)
 2. **Post** - Jan's edited versions (returned via S3)
 3. **Publish** - Final selection for YouTube upload
@@ -14,6 +15,7 @@ This spec covers folder structure changes, two new UI pages (First Edit Prep, S3
 ## Problem Statement
 
 **Current workflow pain points:**
+
 1. No dedicated folder for David's Gling output (first edit)
 2. s3-staging is flat - mixes David's uploads with Jan's returns
 3. No visibility into what's uploaded vs downloaded vs pending
@@ -24,6 +26,7 @@ This spec covers folder structure changes, two new UI pages (First Edit Prep, S3
 8. System junk files (`.DS_Store`, `.Zone.Identifier`) clutter folders
 
 **Current s3-staging state (17 active projects):**
+
 - 12 "post/final" files from Jan
 - 3 junk files (Zone.Identifier, etc.)
 - ~42 prep files from David (mixed in flat structure)
@@ -81,6 +84,7 @@ Example: `b85-clauding-01.mp4`, `b85-clauding-01.srt`
 **No version suffix** - prep is typically one-time output from Gling.
 
 **Extra files** (CTAs, demos) use descriptive names:
+
 - `b85-clauding-01-outro.mp4`
 - `b85-clauding-01-demo.mp4`
 
@@ -117,7 +121,8 @@ Example: `b85-clauding-01.mp4`, `b85-clauding-01.srt`
 **Should be:** `b85 > Clauding 01`
 
 **Changes:**
-- Separator: ` - ` → ` > `
+
+- Separator: `-` → `>`
 - Project name: `kebab-case` → `Title Case`
 
 ---
@@ -217,6 +222,7 @@ Add to `server/config.json`:
 Get first edit prep data for current project.
 
 **Response:**
+
 ```json
 {
   "project": {
@@ -244,6 +250,7 @@ Get first edit prep data for current project.
 Create `edits/prep/` folder if it doesn't exist.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -333,11 +340,11 @@ Cog menu → "S3 Staging"
 
 ### Validation Rules
 
-| Condition | Warning |
-|-----------|---------|
+| Condition                       | Warning                                |
+| ------------------------------- | -------------------------------------- |
 | Post video without matching SRT | ⚠️ "v2 video has no matching SRT file" |
-| Prep files not yet uploaded | ⚠️ "Prep files not uploaded to S3" |
-| Post files in S3 not downloaded | ⚠️ "New files available from Jan" |
+| Prep files not yet uploaded     | ⚠️ "Prep files not uploaded to S3"     |
+| Post files in S3 not downloaded | ⚠️ "New files available from Jan"      |
 
 ### API Design
 
@@ -346,6 +353,7 @@ Cog menu → "S3 Staging"
 Get full S3 staging status for current project.
 
 **Response:**
+
 ```json
 {
   "project": "b85-clauding-01",
@@ -383,9 +391,7 @@ Get full S3 staging status for current project.
       "filesAvailable": 2,
       "needsDownload": false
     },
-    "warnings": [
-      { "type": "missing_srt", "file": "b85-clauding-01-v2.mp4" }
-    ]
+    "warnings": [{ "type": "missing_srt", "file": "b85-clauding-01-v2.mp4" }]
   },
   "publish": {
     "path": "edits/publish/",
@@ -399,6 +405,7 @@ Get full S3 staging status for current project.
 Copy files from `edits/prep/` to `s3-staging/prep/`.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -412,6 +419,7 @@ Copy files from `edits/prep/` to `s3-staging/prep/`.
 Promote a post version to publish (copies to `edits/publish/`, removes version suffix).
 
 **Request:**
+
 ```json
 {
   "version": "v1"
@@ -419,6 +427,7 @@ Promote a post version to publish (copies to `edits/publish/`, removes version s
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -434,13 +443,15 @@ Promote a post version to publish (copies to `edits/publish/`, removes version s
 Trigger DAM commands (upload, download, cleanup).
 
 **Request:**
+
 ```json
 {
-  "action": "upload"  // or "download", "cleanup-local", "cleanup-remote"
+  "action": "upload" // or "download", "cleanup-local", "cleanup-remote"
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -456,6 +467,7 @@ Trigger DAM commands (upload, download, cleanup).
 ### Junk Files to Delete
 
 Automatically delete on any folder scan:
+
 - `.DS_Store` (macOS)
 - `*.Zone.Identifier` (Windows)
 
@@ -498,13 +510,13 @@ S3 Staging page shows migration prompt if flat files detected:
 
 ### Migration Rules
 
-| Pattern | Destination | Example |
-|---------|-------------|---------|
-| `*-final*.mp4` | `post/` (rename to `-v{N}`) | `b64-final-v3.mp4` → `post/b64-bmad-claude-sdk-v3.mp4` |
-| `*-final.mp4` (no version) | `post/` (as `-v1`) | `b64-final.mp4` → `post/b64-bmad-claude-sdk-v1.mp4` |
-| `*.Zone.Identifier` | DELETE | |
-| `.DS_Store` | DELETE | |
-| Other `.mp4/.srt` | `prep/` | `b64-bmad-claude-sdk.mp4` → `prep/b64-bmad-claude-sdk.mp4` |
+| Pattern                    | Destination                 | Example                                                    |
+| -------------------------- | --------------------------- | ---------------------------------------------------------- |
+| `*-final*.mp4`             | `post/` (rename to `-v{N}`) | `b64-final-v3.mp4` → `post/b64-bmad-claude-sdk-v3.mp4`     |
+| `*-final.mp4` (no version) | `post/` (as `-v1`)          | `b64-final.mp4` → `post/b64-bmad-claude-sdk-v1.mp4`        |
+| `*.Zone.Identifier`        | DELETE                      |                                                            |
+| `.DS_Store`                | DELETE                      |                                                            |
+| Other `.mp4/.srt`          | `prep/`                     | `b64-bmad-claude-sdk.mp4` → `prep/b64-bmad-claude-sdk.mp4` |
 
 ### Preview Output
 
@@ -543,6 +555,7 @@ Proceed? [y/N]
 #### POST /api/s3-staging/migrate
 
 **Request:**
+
 ```json
 {
   "dryRun": true
@@ -550,21 +563,16 @@ Proceed? [y/N]
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "dryRun": true,
   "actions": {
     "delete": [".DS_Store"],
-    "toPrep": [
-      { "from": "b64-bmad-claude-sdk.mp4", "to": "prep/b64-bmad-claude-sdk.mp4" }
-    ],
-    "toPost": [
-      { "from": "b64-final-v3.mp4", "to": "post/b64-bmad-claude-sdk-v3.mp4" }
-    ],
-    "conflicts": [
-      { "file": "b64-final-v1.mp4", "reason": "Would overwrite existing v1" }
-    ]
+    "toPrep": [{ "from": "b64-bmad-claude-sdk.mp4", "to": "prep/b64-bmad-claude-sdk.mp4" }],
+    "toPost": [{ "from": "b64-final-v3.mp4", "to": "post/b64-bmad-claude-sdk-v3.mp4" }],
+    "conflicts": [{ "file": "b64-final-v1.mp4", "reason": "Would overwrite existing v1" }]
   }
 }
 ```
@@ -588,6 +596,7 @@ Proceed? [y/N]
 1. **Preserve subfolder structure:** When uploading `s3-staging/`, maintain `prep/` and `post/` subfolders in S3 bucket.
 
 2. **Subfolder-aware status:** `dam s3-status` should show:
+
    ```
    📊 S3 Sync Status for appydave/b85-clauding-01
 
@@ -603,6 +612,7 @@ Proceed? [y/N]
    ```
 
 3. **Subfolder-aware discovery:** `dam s3-discover` should show:
+
    ```
    🔍 S3 Discovery: v-appydave/b85-clauding-01
 
@@ -625,16 +635,19 @@ Proceed? [y/N]
 ## Implementation Phases
 
 ### Phase 1: Foundation
+
 - [ ] FR-A: Clipboard format fix (`b85 > Clauding 01`)
 - [ ] Config: Add `glingDictionary` to server config
 - [ ] Folder: Support `edits/prep/` and `edits/publish/` folders
 
 ### Phase 2: First Edit Prep
+
 - [ ] FR-B: First Edit Prep page (cog menu)
 - [ ] API: `/api/first-edit/prep`
 - [ ] API: `/api/first-edit/create-prep-folder`
 
 ### Phase 3: S3 Staging
+
 - [ ] FR-C: S3 Staging page (cog menu)
 - [ ] API: `/api/s3-staging/status`
 - [ ] API: `/api/s3-staging/sync-prep`
@@ -643,12 +656,14 @@ Proceed? [y/N]
 - [ ] Auto-cleanup junk files
 
 ### Phase 4: Migration
+
 - [ ] FR-D: Migration tool (CLI + UI)
 - [ ] API: `/api/s3-staging/migrate`
 - [ ] Preview mode
 - [ ] Conflict detection
 
 ### Phase 5: DAM Integration
+
 - [ ] DAM: Subfolder structure preservation
 - [ ] DAM: Subfolder-aware status/discovery
 - [ ] DAM: Selective cleanup by path
@@ -658,10 +673,12 @@ Proceed? [y/N]
 ## Acceptance Criteria
 
 ### Clipboard Fix
+
 - [ ] Project clipboard produces `b85 > Clauding 01` format
 - [ ] Title case applied to project name
 
 ### First Edit Prep
+
 - [ ] Gling filename copied to clipboard
 - [ ] Dictionary words copied to clipboard
 - [ ] Recordings listed with sizes
@@ -669,6 +686,7 @@ Proceed? [y/N]
 - [ ] Create prep folder works
 
 ### S3 Staging
+
 - [ ] Prep section shows source + staging + S3 status
 - [ ] Post section shows Jan's files with version detection
 - [ ] Missing SRT warning displayed
@@ -677,6 +695,7 @@ Proceed? [y/N]
 - [ ] DAM upload/download triggers work
 
 ### Migration
+
 - [ ] Preview shows planned actions
 - [ ] Junk files deleted
 - [ ] Final files moved to post/ with version rename
@@ -684,6 +703,7 @@ Proceed? [y/N]
 - [ ] Conflicts detected and reported
 
 ### Auto-Cleanup
+
 - [ ] .DS_Store deleted automatically
 - [ ] .Zone.Identifier deleted automatically
 
@@ -691,11 +711,11 @@ Proceed? [y/N]
 
 ## File References
 
-| File | Purpose |
-|------|---------|
-| `server/config.json` | Add `glingDictionary` array |
-| `server/src/routes/first-edit.ts` | New route file |
-| `server/src/routes/s3-staging.ts` | New route file |
-| `client/src/components/FirstEditPrepPage.tsx` | New page |
-| `client/src/components/S3StagingPage.tsx` | New page |
-| `server/src/scripts/migrate-staging.ts` | CLI migration tool |
+| File                                          | Purpose                     |
+| --------------------------------------------- | --------------------------- |
+| `server/config.json`                          | Add `glingDictionary` array |
+| `server/src/routes/first-edit.ts`             | New route file              |
+| `server/src/routes/s3-staging.ts`             | New route file              |
+| `client/src/components/FirstEditPrepPage.tsx` | New page                    |
+| `client/src/components/S3StagingPage.tsx`     | New page                    |
+| `server/src/scripts/migrate-staging.ts`       | CLI migration tool          |

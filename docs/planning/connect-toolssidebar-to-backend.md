@@ -22,7 +22,9 @@ useEffect(() => {
   const socket = getSocket();
 
   const handleShadowsProgress = (data: { current: number; total: number; filename: string }) => {
-    toast.loading(`Shadows: ${data.current}/${data.total} - ${data.filename}`, { id: 'shadows-progress' });
+    toast.loading(`Shadows: ${data.current}/${data.total} - ${data.filename}`, {
+      id: 'shadows-progress',
+    });
   };
 
   const handleShadowsComplete = (data: { completed: number; failed: number }) => {
@@ -35,7 +37,9 @@ useEffect(() => {
   };
 
   const handleChaptersProgress = (data: { current: number; total: number; chapter: string }) => {
-    toast.loading(`Chapters: ${data.current}/${data.total} - Chapter ${data.chapter}`, { id: 'chapters-progress' });
+    toast.loading(`Chapters: ${data.current}/${data.total} - Chapter ${data.chapter}`, {
+      id: 'chapters-progress',
+    });
   };
 
   const handleChaptersComplete = (data: { completed: number; failed: number }) => {
@@ -48,7 +52,9 @@ useEffect(() => {
   };
 
   const handleAllProgress = (data: { step: string; current: number; total: number }) => {
-    toast.loading(`Regen All: Step ${data.current}/${data.total} (${data.step})`, { id: 'all-progress' });
+    toast.loading(`Regen All: Step ${data.current}/${data.total} (${data.step})`, {
+      id: 'all-progress',
+    });
   };
 
   const handleAllComplete = () => {
@@ -75,8 +81,9 @@ useEffect(() => {
 ```
 
 **Add import at top:**
+
 ```typescript
-import { getSocket } from '../hooks/useSocket'
+import { getSocket } from '../hooks/useSocket';
 ```
 
 ---
@@ -86,28 +93,35 @@ import { getSocket } from '../hooks/useSocket'
 **Location:** `client/src/components/ManagePanel.tsx` line 318-320
 
 **Remove this:**
+
 ```typescript
-const handleSimpleToolClick = (tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all') => {
-  toast.info(`${tool} - coming soon`)
-}
+const handleSimpleToolClick = (
+  tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all'
+) => {
+  toast.info(`${tool} - coming soon`);
+};
 ```
 
 **Replace with:**
+
 ```typescript
-const handleSimpleToolClick = async (tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all') => {
+const handleSimpleToolClick = async (
+  tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all'
+) => {
   const selectedFilesArray = Array.from(selectedFiles);
 
   // Determine scope
   const targetFiles = selectedFilesArray.length > 0 ? selectedFilesArray : undefined;
-  const scope = selectedFilesArray.length > 0
-    ? `${selectedFilesArray.length} selected file${selectedFilesArray.length === 1 ? '' : 's'}`
-    : `all ${recordings?.length || 0} files`;
+  const scope =
+    selectedFilesArray.length > 0
+      ? `${selectedFilesArray.length} selected file${selectedFilesArray.length === 1 ? '' : 's'}`
+      : `all ${recordings?.length || 0} files`;
 
   // Build file list preview (max 3 files)
   let fileListPreview = '';
   if (selectedFilesArray.length > 0) {
     if (selectedFilesArray.length <= 3) {
-      fileListPreview = selectedFilesArray.map(f => `• ${f}`).join('\n');
+      fileListPreview = selectedFilesArray.map((f) => `• ${f}`).join('\n');
     } else {
       fileListPreview = `• ${selectedFilesArray.slice(0, 3).join('\n• ')}\n... and ${selectedFilesArray.length - 3} more`;
     }
@@ -115,9 +129,14 @@ const handleSimpleToolClick = async (tool: 'regen-shadows' | 'regen-transcripts'
 
   // Confirmation dialog
   const type = tool.replace('regen-', '');
-  const typeLabel = type === 'shadows' ? 'shadows' :
-                    type === 'transcripts' ? 'transcripts' :
-                    type === 'chapters' ? 'chapter videos' : 'all derivative files';
+  const typeLabel =
+    type === 'shadows'
+      ? 'shadows'
+      : type === 'transcripts'
+        ? 'transcripts'
+        : type === 'chapters'
+          ? 'chapter videos'
+          : 'all derivative files';
 
   let confirmMessage = `Regenerate ${typeLabel} for ${scope}?`;
 
@@ -128,7 +147,8 @@ const handleSimpleToolClick = async (tool: 'regen-shadows' | 'regen-transcripts'
   if (type === 'chapters') {
     confirmMessage += `\n\nThis may take 30-60 seconds per chapter.`;
   } else if (type === 'all') {
-    confirmMessage += `\n\nThis will:\n` +
+    confirmMessage +=
+      `\n\nThis will:\n` +
       `1. Regenerate shadows\n` +
       `2. Queue transcriptions\n` +
       `3. Regenerate chapter videos\n\n` +
@@ -141,9 +161,14 @@ const handleSimpleToolClick = async (tool: 'regen-shadows' | 'regen-transcripts'
   if (!confirmed) return;
 
   // Show start toast
-  const toastLabel = type === 'shadows' ? 'Shadow Files' :
-                     type === 'transcripts' ? 'Transcripts' :
-                     type === 'chapters' ? 'Chapter Videos' : 'All Files';
+  const toastLabel =
+    type === 'shadows'
+      ? 'Shadow Files'
+      : type === 'transcripts'
+        ? 'Transcripts'
+        : type === 'chapters'
+          ? 'Chapter Videos'
+          : 'All Files';
   toast.info(`Regenerating ${toastLabel}...`);
 
   try {
@@ -169,7 +194,9 @@ const handleSimpleToolClick = async (tool: 'regen-shadows' | 'regen-transcripts'
     // For shadows, chapters, and all - Socket.io events will handle progress/completion
   } catch (err) {
     console.error(`[Regen ${type}] Error:`, err);
-    toast.error(`Failed to regenerate ${type}: ${err instanceof Error ? err.message : String(err)}`);
+    toast.error(
+      `Failed to regenerate ${type}: ${err instanceof Error ? err.message : String(err)}`
+    );
   }
 };
 ```
@@ -181,13 +208,15 @@ const handleSimpleToolClick = async (tool: 'regen-shadows' | 'regen-transcripts'
 **Location:** Top of `client/src/components/ManagePanel.tsx`
 
 **Find this line (around line 22):**
+
 ```typescript
-import { useRecordingsSocket } from '../hooks/useSocket'
+import { useRecordingsSocket } from '../hooks/useSocket';
 ```
 
 **Change to:**
+
 ```typescript
-import { useRecordingsSocket, getSocket } from '../hooks/useSocket'
+import { useRecordingsSocket, getSocket } from '../hooks/useSocket';
 ```
 
 ---
@@ -210,6 +239,7 @@ import { useRecordingsSocket, getSocket } from '../hooks/useSocket'
 ## Expected Behavior After Fix
 
 ### Regen Shadows
+
 - Confirmation dialog: "Regenerate shadows for 3 selected files?"
 - Shows file list
 - Toast: "Regenerating Shadow Files..."
@@ -217,17 +247,20 @@ import { useRecordingsSocket, getSocket } from '../hooks/useSocket'
 - Completion toast: "Shadows: 3 regenerated"
 
 ### Regen Transcripts
+
 - Confirmation dialog: "Queue transcription for 3 selected files?"
 - Toast: "Queued 3 files for transcription"
 - Jobs appear in transcription queue
 
 ### Regen Chapters
+
 - Confirmation dialog with warning: "This may take 30-60 seconds per chapter"
 - Progress toast: "Chapters: 1/1 - Chapter 01"
 - Completion toast: "Chapters: 1 regenerated"
 - New chapter video in `recordings/-chapters/`
 
 ### Regen All
+
 - Confirmation dialog with 3-step explanation
 - Sequential progress through shadows → transcripts → chapters
 - Final toast: "All derivative files regenerated"

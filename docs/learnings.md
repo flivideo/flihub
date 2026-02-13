@@ -9,24 +9,28 @@ This document captures significant mistakes and lessons learned during developme
 **Incident:** Spent entire session debugging why annotation field wasn't loading, when the actual issue was editing the wrong file.
 
 **The Mistake:**
+
 - Client calls `/api/recordings` which is handled by `server/src/routes/index.ts:375`
 - I edited `server/src/routes/query/recordings.ts` (handles `/api/projects/:code/recordings`)
 - Added logging, debugging, type fixes - all in the wrong file
 - Wasted ~90 minutes before discovering the mistake
 
 **Why It Happened:**
+
 - Assumed there was only one recordings endpoint
 - Did a grep search, found `query/recordings.ts`, and started editing
 - Never verified which endpoint the client actually calls
 - Didn't check route mounting in server index
 
 **The Fix:**
+
 - 3 lines of code in the correct file (`server/src/routes/index.ts`)
 - Import `getRecordingAnnotation`
 - Call it for shadow and real recordings
 - Add to response objects
 
 **Lesson Learned:**
+
 1. **ALWAYS verify which endpoint the client calls FIRST**
    - Check the client hook to see exact endpoint path
    - Trace route mounting in server to find handler
@@ -40,6 +44,7 @@ This document captures significant mistakes and lessons learned during developme
    - Always check route mounting structure
 
 **Prevention:**
+
 - Before editing ANY API endpoint, verify:
   1. What exact path does the client call?
   2. Where is that route mounted in the server?

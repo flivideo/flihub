@@ -8,10 +8,10 @@ Move completed recordings to a `-safe` folder within the recordings directory, a
 
 ## Mental Model
 
-| Location | Meaning | When to use |
-|----------|---------|-------------|
-| `recordings/` | "Working on it" | Active recording session, current chapter |
-| `recordings/-safe/` | "Done for now" | Completed chapters, out of the way but accessible |
+| Location            | Meaning         | When to use                                       |
+| ------------------- | --------------- | ------------------------------------------------- |
+| `recordings/`       | "Working on it" | Active recording session, current chapter         |
+| `recordings/-safe/` | "Done for now"  | Completed chapters, out of the way but accessible |
 
 **Key insight:** This is NOT archive. This is staging within an active session. The creator may need to reference or restore these files while still recording the video.
 
@@ -48,16 +48,19 @@ Move completed recordings to a `-safe` folder within the recordings directory, a
 ### Recordings View - File Row
 
 Current:
+
 ```
 02-1-demo.mov   162.0 MB   10:37
 ```
 
 With safe action:
+
 ```
 02-1-demo.mov   162.0 MB   10:37   [→ Safe]
 ```
 
 **Button styling:**
+
 - Small, subtle button (not primary color)
 - Icon + text or just icon with tooltip
 - Appears on hover, or always visible (TBD based on visual noise)
@@ -67,16 +70,19 @@ With safe action:
 ### Recordings View - Chapter Heading
 
 Current:
+
 ```
 02 Demo
 ```
 
 With safe action:
+
 ```
 02 Demo  (4 files)   [→ Safe All]
 ```
 
 **Behavior:**
+
 - Shows file count for the chapter
 - "Safe All" moves all files in that chapter to `-safe/`
 - Button only appears for chapters with files in `recordings/` (not already safe)
@@ -95,6 +101,7 @@ With safe action:
 ```
 
 **Visual distinction for safe files:**
+
 - Muted/grayed text or background
 - "in safe" label on chapter heading instead of action button
 - `[← Restore]` action instead of `[→ Safe]`
@@ -135,6 +142,7 @@ With safe action:
 Move file(s) to safe folder.
 
 **Request:**
+
 ```json
 {
   "files": ["02-1-demo.mov", "02-2-demo.mov"]
@@ -142,6 +150,7 @@ Move file(s) to safe folder.
 ```
 
 Or for chapter-based:
+
 ```json
 {
   "chapter": "02"
@@ -149,6 +158,7 @@ Or for chapter-based:
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -162,6 +172,7 @@ Or for chapter-based:
 Restore file(s) from safe folder.
 
 **Request:**
+
 ```json
 {
   "files": ["01-1-intro.mov"]
@@ -169,6 +180,7 @@ Restore file(s) from safe folder.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -181,12 +193,12 @@ Restore file(s) from safe folder.
 
 ## Edge Cases
 
-| Scenario | Behavior |
-|----------|----------|
-| `-safe/` folder doesn't exist | Create it automatically on first move |
-| File already exists in `-safe/` | Overwrite with warning toast, or append suffix? (TBD) |
-| Move last file in chapter | Chapter heading disappears from active view |
-| Restore when file exists in recordings/ | Error toast: "File already exists in recordings" |
+| Scenario                                | Behavior                                              |
+| --------------------------------------- | ----------------------------------------------------- |
+| `-safe/` folder doesn't exist           | Create it automatically on first move                 |
+| File already exists in `-safe/`         | Overwrite with warning toast, or append suffix? (TBD) |
+| Move last file in chapter               | Chapter heading disappears from active view           |
+| Restore when file exists in recordings/ | Error toast: "File already exists in recordings"      |
 
 ---
 
@@ -211,8 +223,8 @@ Restore file(s) from safe folder.
 
 ```typescript
 // New mutations
-useMoveToSafe()      // POST /api/recordings/safe
-useRestoreFromSafe() // POST /api/recordings/restore
+useMoveToSafe(); // POST /api/recordings/safe
+useRestoreFromSafe(); // POST /api/recordings/restore
 ```
 
 ---

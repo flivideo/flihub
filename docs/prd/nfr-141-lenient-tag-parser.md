@@ -12,6 +12,7 @@
 ### Discovery Findings
 
 Scanner analysis of 47 production projects revealed:
+
 - **1422 tag validation errors** (79% of all issues)
 - **38 projects affected** (81% of all projects)
 - **Root cause:** Users typing lowercase tags when parser requires uppercase only
@@ -36,6 +37,7 @@ Scanner analysis of 47 production projects revealed:
 ```
 
 **Sample violations:**
+
 - `bmad` should be `BMAD` (207 instances in b64-bmad-claude-sdk)
 - `code`, `init` should be `CODE`, `INIT`
 - `project`, `brief` should be `PROJECT`, `BRIEF`
@@ -64,9 +66,7 @@ export function extractTagsFromName(nameWithTags: string): ParsedTags {
   for (const tag of tagList) {
     // STRICT: Must be uppercase only
     if (!NAMING_RULES.tags.pattern.test(tag)) {
-      throw new Error(
-        `Tag "${tag}" must be uppercase letters only (A-Z)`
-      );
+      throw new Error(`Tag "${tag}" must be uppercase letters only (A-Z)`);
     }
     tags.push(tag);
   }
@@ -106,9 +106,7 @@ export function extractTagsFromName(nameWithTags: string): ParsedTags {
 
     // Validate AFTER conversion (letters only)
     if (!/^[A-Z]+$/.test(normalizedTag)) {
-      throw new Error(
-        `Tag "${tag}" contains invalid characters. Tags must be letters only.`
-      );
+      throw new Error(`Tag "${tag}" contains invalid characters. Tags must be letters only.`);
     }
 
     tags.push(normalizedTag);
@@ -118,12 +116,14 @@ export function extractTagsFromName(nameWithTags: string): ParsedTags {
 ```
 
 **Pros:**
+
 - ✅ Fixes 1422 errors instantly (zero user action)
 - ✅ Backwards compatible
 - ✅ Matches user expectations
 - ✅ Simple code change
 
 **Cons:**
+
 - ⚠️ Silent conversion (but this is expected behavior)
 - ⚠️ Tags in filenames always uppercase (enforced convention)
 
@@ -134,9 +134,11 @@ export function extractTagsFromName(nameWithTags: string): ParsedTags {
 **Alternative:** Show error but suggest uppercase conversion
 
 **Pros:**
+
 - ✅ User explicitly confirms conversion
 
 **Cons:**
+
 - ❌ Still blocks operations
 - ❌ Tedious for 1422 errors
 - ❌ Doesn't match user expectations
@@ -154,7 +156,7 @@ Add CSS to prevent future lowercase input:
   type="text"
   value={customTag}
   onChange={(e) => setCustomTag(e.target.value)}
-  style={{ textTransform: 'uppercase' }}  // Auto-uppercase display
+  style={{ textTransform: 'uppercase' }} // Auto-uppercase display
   placeholder="Add custom tag (e.g., DEMO)"
   className="px-3 py-2 border rounded"
 />
@@ -328,6 +330,7 @@ describe('extractTagsFromName - lenient mode', () => {
 **Impact:** Low
 
 **Mitigation:**
+
 - Document behavior in help text
 - Show uppercase in preview before rename
 - Placeholder text shows uppercase examples
@@ -340,6 +343,7 @@ describe('extractTagsFromName - lenient mode', () => {
 **Impact:** Medium
 
 **Mitigation:**
+
 - Tag validation is encapsulated in `extractTagsFromName()`
 - All code uses this function (no direct tag parsing elsewhere)
 - Unit tests verify backwards compatibility
@@ -377,15 +381,17 @@ describe('extractTagsFromName - lenient mode', () => {
 **Question:** Should tags be case-sensitive?
 
 **Options:**
+
 - **A. Case-insensitive (convert to uppercase)** ← **RECOMMENDED**
 - B. Case-sensitive (strict uppercase only)
 
 **Recommendation:** Option A
+
 - Matches user expectations
 - Fixes 1422 existing errors
 - No breaking changes (uppercase enforced in output)
 
-**PO Decision:** [ ] Approve Option A | [ ] Approve Option B | [ ] Other: _______
+**PO Decision:** [ ] Approve Option A | [ ] Approve Option B | [ ] Other: **\_\_\_**
 
 ---
 

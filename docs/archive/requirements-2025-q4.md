@@ -8,73 +8,73 @@ Add new requirements here as they come up. They'll be categorized and prioritize
 
 ## Requirements
 
-| # | Requirement | Added | Status |
-|---|-------------|-------|--------|
-| 1 | FR-8: Good Take Algorithm (see below) | 2025-11-28 | ✅ v2 Implemented 2025-11-29 |
-| 2 | FR-9: Default port 5100 (see below) | 2025-11-28 | ✅ Implemented 2025-11-29 |
-| 3 | FR-10: Project List Panel (see below) | 2025-11-28 | ✅ Implemented 2025-11-29 |
-| 4 | FR-11: Project Selector/Switcher (see below) | 2025-11-28 | ✅ Implemented 2025-11-29 |
-| 5 | FR-12: Create New Project (see below) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 6 | FR-13: Common Names Quick-Select UI (see below) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 7 | FR-14: Recordings Asset View (see below) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 8 | FR-15: Move to Safe (see below) | 2025-11-29 | ✅ Implemented 2025-11-30 |
-| 9 | FR-16: Discard Remaining Files Prompt (see below) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 10 | FR-17: Image Asset Management Page (see spec) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 11 | FR-18: Image Duplicate Detection (see spec) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 12 | FR-19: Image Variant Support (A/B/C) (see spec) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 13 | UX Improvements: I-2, R-1 to R-5, P-1, P-3, C-1 to C-4 (see ux-improvements.md) | 2025-11-29 | Pending |
-| 14 | FR-20: Image Quick Preview (Shift+Hover) (see below) | 2025-11-30 | ✅ Implemented 2025-11-30 |
-| 15 | FR-21: Custom Tag Input (see below) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 16 | FR-22: Image Prompt Creation (see spec) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 17 | FR-23: Thumbnail Size Toggle (see below) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 18 | FR-24: Image Source Directory in Config (see below) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 19 | FR-25: Assigned Assets Row Cleanup (see below) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 20 | FR-26: Paired Asset Display with Prompt Preview (see below) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 21 | FR-27: YouTube Thumbnails Page (see spec) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 22 | FR-28: Server Connection Indicator (see below) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 23 | FR-29: Open Folder in Finder (see below) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 24 | FR-30: Video Transcription (see spec) | 2025-12-02 | ✅ Implemented 2025-12-03 |
-| 25 | FR-31: Enhanced Project View with DAM Integration (see spec) | 2025-12-02 | Pending |
-| 26 | FR-32: Improved Project List Columns (see below) | 2025-12-03 | ✅ Implemented 2025-12-03 |
-| 27 | FR-33: Final Video & SRT Reference (see below) | 2025-12-03 | ✅ Implemented 2025-12-03 |
-| 28 | FR-34: Chapter Timestamp Extraction (see spec) | 2025-12-03 | ✅ Phase 2 Done - Phase 3 Pending |
-| 29 | FR-35: Fix Chapter Grouping Logic + Total Duration (see below) | 2025-12-03 | ✅ Implemented 2025-12-10 |
-| 30 | FR-52: Transcription Progress Bar (see below) | 2025-12-05 | ✅ Implemented 2025-12-05 |
-| 31 | FR-53: ASCII Report Formatter (see below) | 2025-12-07 | ✅ Implemented 2025-12-07 |
-| 32 | FR-54: Naming Template Bugs (see below) | 2025-12-10 | Pending |
-| 33 | FR-55: Video-Level Transcript Export (see below) | 2025-12-12 | ✅ Implemented 2025-12-13 |
-| 34 | FR-56: Chapter Navigation Panel (see below) | 2025-12-12 | ✅ Implemented 2025-12-13 |
-| 35 | FR-57: Parallelize ffprobe Calls (see below) | 2025-12-13 | ✅ Implemented 2025-12-13 |
-| 36 | FR-58: Chapter Recordings (see spec) | 2025-12-13 | ✅ Implemented 2025-12-14, Fixed 2025-12-15 |
-| 37 | FR-59: Inbox Tab (see below) | 2025-12-14 | ✅ Implemented 2025-12-14 |
-| 38 | FR-60: FliHub Skill Updates (see below) | 2025-12-14 | ✅ Implemented 2025-12-14 |
-| 39 | FR-61: Project Resolution Endpoint (see below) | 2025-12-14 | ✅ Implemented 2025-12-14 |
-| 40 | FR-62: Rename to FliHub (see below) | 2025-12-14 | ✅ Implemented 2025-12-14 |
-| 41 | FR-63: Terminal Quick-Open Button (see below) | 2025-12-14 | ✅ Implemented 2025-12-14 |
-| 42 | FR-64: Inbox File Viewer (see below) | 2025-12-14 | ✅ Implemented 2025-12-14 |
-| 43 | NFR-65: Extract Shared Server Utilities (see below) | 2025-12-14 | Pending |
-| 44 | NFR-66: Consolidate TypeScript Response Types (see below) | 2025-12-14 | Pending |
-| 45 | NFR-67: Standardize Server Error Handling (see below) | 2025-12-14 | Pending |
-| 46 | NFR-68: Split Query Routes into Sub-Modules (see below) | 2025-12-14 | Pending |
-| 47 | FR-69: Header Dropdown Menus (see below) | 2025-12-14 | Pending |
-| 48 | FR-71: Watch Page Enhancements (see below) | 2025-12-15 | Pending |
-| 49 | FR-72: Fix Chapter Recording Codec Mismatch (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 50 | FR-73: Template Visibility Rules (see below) | 2025-12-15 | Pending |
-| 51 | FR-74: Dual Transcript Output - TXT + SRT (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 52 | FR-75: Transcript Sync Highlighting - Segments (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 53 | FR-76: Chapter SRT Generation (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 54 | FR-77: Transcript Sync Highlighting - Chapters (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 55 | FR-78: Transcript Stats Require SRT (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 56 | NFR-79: Tech Debt Exploration (see below) | 2025-12-15 | ✅ Completed 2025-12-15 |
-| 57 | FR-80: Enhanced Project List & Stage Model (see below) | 2025-12-15 | Pending |
-| 58 | NFR-81: Project List Scanning Optimization (see below) | 2025-12-15 | Future |
-| 59 | FR-82: Project List UX Fixes (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 60 | FR-83: Shadow Recording System (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 61 | FR-84: Cross-Platform Setup Guide (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 62 | NFR-85: File Watcher Additions (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 63 | NFR-86: Git Leak Detection (see below) | 2025-12-15 | Pending |
-| 64 | FR-87: GitHub Repo Link in Cog Menu (see below) | 2025-12-15 | ✅ Implemented 2025-12-15 |
-| 65 | FR-88: Shadow Fallback in Recordings UI (see below) | 2025-12-15 | Pending |
+| #   | Requirement                                                                     | Added      | Status                                      |
+| --- | ------------------------------------------------------------------------------- | ---------- | ------------------------------------------- |
+| 1   | FR-8: Good Take Algorithm (see below)                                           | 2025-11-28 | ✅ v2 Implemented 2025-11-29                |
+| 2   | FR-9: Default port 5100 (see below)                                             | 2025-11-28 | ✅ Implemented 2025-11-29                   |
+| 3   | FR-10: Project List Panel (see below)                                           | 2025-11-28 | ✅ Implemented 2025-11-29                   |
+| 4   | FR-11: Project Selector/Switcher (see below)                                    | 2025-11-28 | ✅ Implemented 2025-11-29                   |
+| 5   | FR-12: Create New Project (see below)                                           | 2025-11-29 | ✅ Implemented 2025-11-29                   |
+| 6   | FR-13: Common Names Quick-Select UI (see below)                                 | 2025-11-29 | ✅ Implemented 2025-11-29                   |
+| 7   | FR-14: Recordings Asset View (see below)                                        | 2025-11-29 | ✅ Implemented 2025-11-29                   |
+| 8   | FR-15: Move to Safe (see below)                                                 | 2025-11-29 | ✅ Implemented 2025-11-30                   |
+| 9   | FR-16: Discard Remaining Files Prompt (see below)                               | 2025-11-29 | ✅ Implemented 2025-11-29                   |
+| 10  | FR-17: Image Asset Management Page (see spec)                                   | 2025-11-29 | ✅ Implemented 2025-11-29                   |
+| 11  | FR-18: Image Duplicate Detection (see spec)                                     | 2025-11-29 | ✅ Implemented 2025-11-29                   |
+| 12  | FR-19: Image Variant Support (A/B/C) (see spec)                                 | 2025-11-29 | ✅ Implemented 2025-11-29                   |
+| 13  | UX Improvements: I-2, R-1 to R-5, P-1, P-3, C-1 to C-4 (see ux-improvements.md) | 2025-11-29 | Pending                                     |
+| 14  | FR-20: Image Quick Preview (Shift+Hover) (see below)                            | 2025-11-30 | ✅ Implemented 2025-11-30                   |
+| 15  | FR-21: Custom Tag Input (see below)                                             | 2025-12-01 | ✅ Implemented 2025-12-01                   |
+| 16  | FR-22: Image Prompt Creation (see spec)                                         | 2025-12-01 | ✅ Implemented 2025-12-01                   |
+| 17  | FR-23: Thumbnail Size Toggle (see below)                                        | 2025-12-01 | ✅ Implemented 2025-12-01                   |
+| 18  | FR-24: Image Source Directory in Config (see below)                             | 2025-12-01 | ✅ Implemented 2025-12-01                   |
+| 19  | FR-25: Assigned Assets Row Cleanup (see below)                                  | 2025-12-01 | ✅ Implemented 2025-12-01                   |
+| 20  | FR-26: Paired Asset Display with Prompt Preview (see below)                     | 2025-12-01 | ✅ Implemented 2025-12-01                   |
+| 21  | FR-27: YouTube Thumbnails Page (see spec)                                       | 2025-12-01 | ✅ Implemented 2025-12-01                   |
+| 22  | FR-28: Server Connection Indicator (see below)                                  | 2025-12-01 | ✅ Implemented 2025-12-01                   |
+| 23  | FR-29: Open Folder in Finder (see below)                                        | 2025-12-01 | ✅ Implemented 2025-12-01                   |
+| 24  | FR-30: Video Transcription (see spec)                                           | 2025-12-02 | ✅ Implemented 2025-12-03                   |
+| 25  | FR-31: Enhanced Project View with DAM Integration (see spec)                    | 2025-12-02 | Pending                                     |
+| 26  | FR-32: Improved Project List Columns (see below)                                | 2025-12-03 | ✅ Implemented 2025-12-03                   |
+| 27  | FR-33: Final Video & SRT Reference (see below)                                  | 2025-12-03 | ✅ Implemented 2025-12-03                   |
+| 28  | FR-34: Chapter Timestamp Extraction (see spec)                                  | 2025-12-03 | ✅ Phase 2 Done - Phase 3 Pending           |
+| 29  | FR-35: Fix Chapter Grouping Logic + Total Duration (see below)                  | 2025-12-03 | ✅ Implemented 2025-12-10                   |
+| 30  | FR-52: Transcription Progress Bar (see below)                                   | 2025-12-05 | ✅ Implemented 2025-12-05                   |
+| 31  | FR-53: ASCII Report Formatter (see below)                                       | 2025-12-07 | ✅ Implemented 2025-12-07                   |
+| 32  | FR-54: Naming Template Bugs (see below)                                         | 2025-12-10 | Pending                                     |
+| 33  | FR-55: Video-Level Transcript Export (see below)                                | 2025-12-12 | ✅ Implemented 2025-12-13                   |
+| 34  | FR-56: Chapter Navigation Panel (see below)                                     | 2025-12-12 | ✅ Implemented 2025-12-13                   |
+| 35  | FR-57: Parallelize ffprobe Calls (see below)                                    | 2025-12-13 | ✅ Implemented 2025-12-13                   |
+| 36  | FR-58: Chapter Recordings (see spec)                                            | 2025-12-13 | ✅ Implemented 2025-12-14, Fixed 2025-12-15 |
+| 37  | FR-59: Inbox Tab (see below)                                                    | 2025-12-14 | ✅ Implemented 2025-12-14                   |
+| 38  | FR-60: FliHub Skill Updates (see below)                                         | 2025-12-14 | ✅ Implemented 2025-12-14                   |
+| 39  | FR-61: Project Resolution Endpoint (see below)                                  | 2025-12-14 | ✅ Implemented 2025-12-14                   |
+| 40  | FR-62: Rename to FliHub (see below)                                             | 2025-12-14 | ✅ Implemented 2025-12-14                   |
+| 41  | FR-63: Terminal Quick-Open Button (see below)                                   | 2025-12-14 | ✅ Implemented 2025-12-14                   |
+| 42  | FR-64: Inbox File Viewer (see below)                                            | 2025-12-14 | ✅ Implemented 2025-12-14                   |
+| 43  | NFR-65: Extract Shared Server Utilities (see below)                             | 2025-12-14 | Pending                                     |
+| 44  | NFR-66: Consolidate TypeScript Response Types (see below)                       | 2025-12-14 | Pending                                     |
+| 45  | NFR-67: Standardize Server Error Handling (see below)                           | 2025-12-14 | Pending                                     |
+| 46  | NFR-68: Split Query Routes into Sub-Modules (see below)                         | 2025-12-14 | Pending                                     |
+| 47  | FR-69: Header Dropdown Menus (see below)                                        | 2025-12-14 | Pending                                     |
+| 48  | FR-71: Watch Page Enhancements (see below)                                      | 2025-12-15 | Pending                                     |
+| 49  | FR-72: Fix Chapter Recording Codec Mismatch (see below)                         | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 50  | FR-73: Template Visibility Rules (see below)                                    | 2025-12-15 | Pending                                     |
+| 51  | FR-74: Dual Transcript Output - TXT + SRT (see below)                           | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 52  | FR-75: Transcript Sync Highlighting - Segments (see below)                      | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 53  | FR-76: Chapter SRT Generation (see below)                                       | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 54  | FR-77: Transcript Sync Highlighting - Chapters (see below)                      | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 55  | FR-78: Transcript Stats Require SRT (see below)                                 | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 56  | NFR-79: Tech Debt Exploration (see below)                                       | 2025-12-15 | ✅ Completed 2025-12-15                     |
+| 57  | FR-80: Enhanced Project List & Stage Model (see below)                          | 2025-12-15 | Pending                                     |
+| 58  | NFR-81: Project List Scanning Optimization (see below)                          | 2025-12-15 | Future                                      |
+| 59  | FR-82: Project List UX Fixes (see below)                                        | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 60  | FR-83: Shadow Recording System (see below)                                      | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 61  | FR-84: Cross-Platform Setup Guide (see below)                                   | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 62  | NFR-85: File Watcher Additions (see below)                                      | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 63  | NFR-86: Git Leak Detection (see below)                                          | 2025-12-15 | Pending                                     |
+| 64  | FR-87: GitHub Repo Link in Cog Menu (see below)                                 | 2025-12-15 | ✅ Implemented 2025-12-15                   |
+| 65  | FR-88: Shadow Fallback in Recordings UI (see below)                             | 2025-12-15 | Pending                                     |
 
 ---
 
@@ -83,6 +83,7 @@ Add new requirements here as they come up. They'll be categorized and prioritize
 **Bug:** Shadow-only recordings don't appear in the Recordings list or Watch page.
 
 **Reproduction:**
+
 1. Create recordings in a project (e.g., b88 with 01-1, 01-2, 01-3)
 2. Generate shadows (creates 240p .mp4 files in `recording-shadows/`)
 3. Delete a real recording (e.g., delete `recordings/01-3-name.mov`)
@@ -98,15 +99,18 @@ Note: The Query API (`routes/query/recordings.ts`) already has unified scanning 
 #### Requirements
 
 **Recordings list:**
+
 - Shadow-only files appear in the list with `isShadow: true`
 - Real files with shadows show `hasShadow: true`
 - Visual indicator: 👻 for shadow-only, 📹👻 for real+shadow, 📹 for real-only
 
 **Watch page:**
+
 - When clicking a shadow-only recording, play the shadow video from `recording-shadows/` folder
 - Shadow videos use `.mp4` extension (not `.mov`)
 
 **Files to modify:**
+
 - `server/src/routes/index.ts` - GET /api/recordings endpoint (~line 346)
 
 **Reference implementation:** See `server/src/routes/query/recordings.ts` for unified scanning pattern
@@ -170,6 +174,7 @@ Add a new item to the cog menu (top right corner):
 #### Deliverable
 
 Report back with:
+
 - Current hook setup (if any)
 - Recommended tool
 - Implementation steps
@@ -186,12 +191,12 @@ Report back with:
 
 WatcherManager (NFR-6) provides a solid centralized watcher system. However, some folders aren't watched, causing stale UI:
 
-| Folder | Currently Watched | Impact |
-|--------|-------------------|--------|
-| `recording-transcripts/` | ❌ No | Transcript % doesn't update when transcripts created |
-| `assets/thumbs/` | ⚠️ Partial (ZIP only) | Direct file changes not detected |
-| `recordings/-chapters/` | ❌ No | Low priority - UI triggers refresh |
-| `-final/` | ❌ No | Low priority |
+| Folder                   | Currently Watched     | Impact                                               |
+| ------------------------ | --------------------- | ---------------------------------------------------- |
+| `recording-transcripts/` | ❌ No                 | Transcript % doesn't update when transcripts created |
+| `assets/thumbs/`         | ⚠️ Partial (ZIP only) | Direct file changes not detected                     |
+| `recordings/-chapters/`  | ❌ No                 | Low priority - UI triggers refresh                   |
+| `-final/`                | ❌ No                 | Low priority                                         |
 
 ---
 
@@ -226,6 +231,7 @@ Not doing - current separation works fine. Ecamm watcher needs special `awaitWri
 #### Implementation Pattern
 
 Follow existing WatcherManager pattern:
+
 1. Add `startXxxWatcher()` method
 2. Call from `initAll()` and `updateFromConfig()`
 3. Emit socket event on change
@@ -249,15 +255,15 @@ FliHub infers project state from the filesystem. Video files (`.mov`, `.mp4`) ar
 
 #### Why Video Shadows (Not Text Placeholders)
 
-| Feature | Text Placeholder | Video Shadow |
-|---------|------------------|--------------|
-| See file list | ✅ | ✅ |
-| See duration/metadata | ✅ | ✅ |
-| Watch preview | ❌ | ✅ |
-| Transcript sync highlighting | ❌ | ✅ |
-| Click-to-seek | ❌ | ✅ |
-| Transcribe from shadow | ❌ | ✅ |
-| Chapter generation | ❌ | ⚠️ Low quality but works |
+| Feature                      | Text Placeholder | Video Shadow             |
+| ---------------------------- | ---------------- | ------------------------ |
+| See file list                | ✅               | ✅                       |
+| See duration/metadata        | ✅               | ✅                       |
+| Watch preview                | ❌               | ✅                       |
+| Transcript sync highlighting | ❌               | ✅                       |
+| Click-to-seek                | ❌               | ✅                       |
+| Transcribe from shadow       | ❌               | ✅                       |
+| Chapter generation           | ❌               | ⚠️ Low quality but works |
 
 Video shadows give Jan a **fully functional experience** for review and collaboration.
 
@@ -268,12 +274,14 @@ Video shadows give Jan a **fully functional experience** for review and collabor
 **Location:** `recordings-shadow/` directory (sibling to `recordings/`)
 
 **Naming:** Same base name, `.mp4` extension:
+
 ```
 recordings/01-1-intro.mov              ← Original (18 GB project, gitignored)
 recordings-shadow/01-1-intro.mp4       ← Shadow (240p, ~1 GB project, shareable)
 ```
 
 **FFmpeg settings** (based on chapter recording pattern):
+
 ```bash
 ffmpeg -i input.mov \
   -vf "scale=-2:240" \
@@ -294,12 +302,13 @@ ffmpeg -i input.mov \
 
 #### Part 2: Size Estimates
 
-| Resolution | Per Minute | 2-Hour Project | vs Original |
-|------------|-----------|----------------|-------------|
-| Original (1080p) | ~150 MB | ~18 GB | 100% |
-| Shadow (240p) | ~5-10 MB | ~600 MB - 1.2 GB | ~5% |
+| Resolution       | Per Minute | 2-Hour Project   | vs Original |
+| ---------------- | ---------- | ---------------- | ----------- |
+| Original (1080p) | ~150 MB    | ~18 GB           | 100%        |
+| Shadow (240p)    | ~5-10 MB   | ~600 MB - 1.2 GB | ~5%         |
 
 **Storage approach:** Shadows are `.gitignore`'d like originals. Share via:
+
 - S3 (existing Jan collaboration mechanism)
 - Dropbox / external drive
 - DAM system (future)
@@ -314,27 +323,28 @@ The system merges files from both directories:
 
 ```typescript
 function getRecordings(projectPath: string) {
-  const realFiles = scan('recordings/')           // .mov, .mp4 (full res)
-  const shadowFiles = scan('recordings-shadow/')  // .mp4 (240p)
+  const realFiles = scan('recordings/'); // .mov, .mp4 (full res)
+  const shadowFiles = scan('recordings-shadow/'); // .mp4 (240p)
 
   // Build unified list, real takes precedence
-  const unified = new Map()
+  const unified = new Map();
 
   for (const shadow of shadowFiles) {
-    const baseName = shadow.replace('.mp4', '')
-    unified.set(baseName, { type: 'shadow', file: shadow })
+    const baseName = shadow.replace('.mp4', '');
+    unified.set(baseName, { type: 'shadow', file: shadow });
   }
 
   for (const real of realFiles) {
-    const baseName = real.replace(/\.(mov|mp4)$/, '')
-    unified.set(baseName, { type: 'real', file: real })
+    const baseName = real.replace(/\.(mov|mp4)$/, '');
+    unified.set(baseName, { type: 'real', file: real });
   }
 
-  return unified
+  return unified;
 }
 ```
 
 **Result:**
+
 - David (has real files): Sees real files, shadows ignored
 - Jan (has shadow files): Sees shadows, full functionality
 
@@ -344,15 +354,16 @@ function getRecordings(projectPath: string) {
 
 **Ghost icon 👻** for shadow-only files:
 
-| Context | Real File | Shadow File |
-|---------|-----------|-------------|
-| Recordings list | 📹 Normal | 👻 Ghost icon |
-| Watch page | Full quality | Preview quality (plays normally) |
-| Transcript sync | ✅ Works | ✅ Works |
-| Transcription | ✅ Full quality | ✅ Works (audio intact) |
-| Chapter generation | ✅ Full quality | ⚠️ Works but low quality output |
+| Context            | Real File       | Shadow File                      |
+| ------------------ | --------------- | -------------------------------- |
+| Recordings list    | 📹 Normal       | 👻 Ghost icon                    |
+| Watch page         | Full quality    | Preview quality (plays normally) |
+| Transcript sync    | ✅ Works        | ✅ Works                         |
+| Transcription      | ✅ Full quality | ✅ Works (audio intact)          |
+| Chapter generation | ✅ Full quality | ⚠️ Works but low quality output  |
 
 **Recordings list example:**
+
 ```
 ┌──────────────────────────────────────────────────────┐
 │  Chapter 01: Intro                                    │
@@ -364,6 +375,7 @@ function getRecordings(projectPath: string) {
 ```
 
 **Watch page (shadow):**
+
 - Video plays normally (just lower quality)
 - Optional: Show "Preview Quality" badge in corner
 - Transcript sync highlighting works fully
@@ -396,6 +408,7 @@ function getRecordings(projectPath: string) {
 ```
 
 **Process:**
+
 1. Scan `recordings/` for `.mov`/`.mp4` files
 2. For each file without a corresponding shadow in `recordings-shadow/`:
    - Transcode to 240p using FFmpeg
@@ -445,15 +458,15 @@ recordings-shadow/-safe/01-1-intro.mp4       ← Shadow safe file
 
 #### Files to Modify/Create
 
-| File | Changes |
-|------|---------|
-| `server/src/utils/scanning.ts` | Unified scanning (real + shadow) |
-| `server/src/utils/shadowVideos.ts` | New - FFmpeg transcoding logic |
-| `server/src/routes/shadows.ts` | New - API endpoints |
-| `client/src/components/ConfigPanel.tsx` | Shadow generation UI, watch dir status |
-| `client/src/components/RecordingsView.tsx` | Ghost icon 👻 for shadows |
-| `client/src/components/WatchPage.tsx` | Optional "Preview Quality" badge |
-| `shared/types.ts` | Add `isShadow: boolean` to recording types |
+| File                                       | Changes                                    |
+| ------------------------------------------ | ------------------------------------------ |
+| `server/src/utils/scanning.ts`             | Unified scanning (real + shadow)           |
+| `server/src/utils/shadowVideos.ts`         | New - FFmpeg transcoding logic             |
+| `server/src/routes/shadows.ts`             | New - API endpoints                        |
+| `client/src/components/ConfigPanel.tsx`    | Shadow generation UI, watch dir status     |
+| `client/src/components/RecordingsView.tsx` | Ghost icon 👻 for shadows                  |
+| `client/src/components/WatchPage.tsx`      | Optional "Preview Quality" badge           |
+| `shared/types.ts`                          | Add `isShadow: boolean` to recording types |
 
 ---
 
@@ -476,6 +489,7 @@ GET /api/shadows/status
 ```
 
 **Socket events:**
+
 - `shadows:progress` - `{ file: string, percent: number }`
 - `shadows:complete` - `{ file: string, size: number }`
 - `shadows:error` - `{ file: string, error: string }`
@@ -566,18 +580,20 @@ GET /api/shadows/status
 **Problem:** The three indicator icons (📥🖼🎬) use basic `title` attributes. The green tick (✅) has rich hover tooltips with detailed info - the indicators should match.
 
 **Current:**
+
 - Native browser tooltip: "Has inbox files - click to view"
 - No counts or details
 
 **Required:** Match the `FinalMediaCell` pattern (lines 75-119 in `ProjectsPanel.tsx`):
 
-| Icon | Hover Tooltip Content |
-|------|----------------------|
-| 📥 Inbox | "Inbox: 5 files" or "Inbox: empty" |
-| 🖼 Assets | "Assets: 8 images, 3 prompts" or "Assets: empty" |
-| 🎬 Chapters | "Chapters: 4 videos" or "Chapters: empty" |
+| Icon        | Hover Tooltip Content                            |
+| ----------- | ------------------------------------------------ |
+| 📥 Inbox    | "Inbox: 5 files" or "Inbox: empty"               |
+| 🖼 Assets   | "Assets: 8 images, 3 prompts" or "Assets: empty" |
+| 🎬 Chapters | "Chapters: 4 videos" or "Chapters: empty"        |
 
 **Implementation:** Create `IndicatorCell` component similar to `FinalMediaCell`:
+
 - State for `showTooltip`
 - `onMouseEnter`/`onMouseLeave` handlers
 - Absolute positioned tooltip div
@@ -602,10 +618,10 @@ Empty:                    ← all blank
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `server/src/utils/scanning.ts` | Investigate/fix `getTranscriptSyncStatus()` |
-| `client/src/components/ProjectsPanel.tsx` | Add rich tooltips, blank empty indicators |
+| File                                      | Changes                                     |
+| ----------------------------------------- | ------------------------------------------- |
+| `server/src/utils/scanning.ts`            | Investigate/fix `getTranscriptSyncStatus()` |
+| `client/src/components/ProjectsPanel.tsx` | Add rich tooltips, blank empty indicators   |
 
 ---
 
@@ -616,15 +632,15 @@ The server may need to return counts for the tooltips:
 ```typescript
 interface ProjectStats {
   // Existing
-  hasInbox: boolean
-  hasAssets: boolean
-  hasChapters: boolean
+  hasInbox: boolean;
+  hasAssets: boolean;
+  hasChapters: boolean;
 
   // New (for tooltips)
-  inboxCount?: number
-  assetImageCount?: number
-  assetPromptCount?: number
-  chapterVideoCount?: number
+  inboxCount?: number;
+  assetImageCount?: number;
+  assetPromptCount?: number;
+  chapterVideoCount?: number;
 }
 ```
 
@@ -642,11 +658,11 @@ Or the client can derive counts from existing data if available.
 
 Add three clickable icon indicators to each project row:
 
-| Indicator | Shows | Click Action |
-|-----------|-------|--------------|
-| 📥 Inbox | Has files in `inbox/` | Navigate to Inbox tab |
-| 🖼 Assets | Has files in `assets/images/` or `assets/prompts/` | Navigate to Assets tab |
-| 🎬 Chapters | Has files in `recordings/-chapters/` | Navigate to Chapters tab |
+| Indicator   | Shows                                              | Click Action             |
+| ----------- | -------------------------------------------------- | ------------------------ |
+| 📥 Inbox    | Has files in `inbox/`                              | Navigate to Inbox tab    |
+| 🖼 Assets   | Has files in `assets/images/` or `assets/prompts/` | Navigate to Assets tab   |
+| 🎬 Chapters | Has files in `recordings/-chapters/`               | Navigate to Chapters tab |
 
 Icons should be visually distinct (filled vs outline, or colored vs grey) to show presence/absence.
 
@@ -656,18 +672,19 @@ Icons should be visually distinct (filled vs outline, or colored vs grey) to sho
 
 Replace current `record`, `edit`, `done` with workflow-aligned stages:
 
-| Stage | When | Trigger |
-|-------|------|---------|
-| `planning` | Project created | Auto (default for new projects) |
-| `recording` | First recording added | Auto |
-| `first-edit` | Done recording, doing Gling cuts | Manual |
-| `second-edit` | Sent to Jan for graphics/overlays | Manual (may trigger S3 upload in future) |
-| `review` | Jan done, user reviewing | Manual |
-| `ready-to-publish` | Signed off, needs publishing | Manual |
-| `published` | On YouTube | Manual |
-| `archived` | On NAS, completely done | Manual (future DAM integration) |
+| Stage              | When                              | Trigger                                  |
+| ------------------ | --------------------------------- | ---------------------------------------- |
+| `planning`         | Project created                   | Auto (default for new projects)          |
+| `recording`        | First recording added             | Auto                                     |
+| `first-edit`       | Done recording, doing Gling cuts  | Manual                                   |
+| `second-edit`      | Sent to Jan for graphics/overlays | Manual (may trigger S3 upload in future) |
+| `review`           | Jan done, user reviewing          | Manual                                   |
+| `ready-to-publish` | Signed off, needs publishing      | Manual                                   |
+| `published`        | On YouTube                        | Manual                                   |
+| `archived`         | On NAS, completely done           | Manual (future DAM integration)          |
 
 **Auto-triggers:**
+
 - `planning` → `recording`: When first recording file appears in project
 - All others: Manual stage change by user
 
@@ -703,6 +720,7 @@ Alternative: dropdown on hover/click if cycling becomes tedious.
 #### Migration
 
 Map existing values:
+
 - `record` → `recording`
 - `edit` → `first-edit`
 - `done` → `published`
@@ -713,12 +731,12 @@ Or prompt user to re-select for affected projects.
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `server/src/utils/scanning.ts` | Add inbox/assets/chapters detection to project scan |
-| `shared/types.ts` | Update ProjectStage type |
+| File                                      | Changes                                                    |
+| ----------------------------------------- | ---------------------------------------------------------- |
+| `server/src/utils/scanning.ts`            | Add inbox/assets/chapters detection to project scan        |
+| `shared/types.ts`                         | Update ProjectStage type                                   |
 | `client/src/components/ProjectsPanel.tsx` | Add indicators with click navigation, update stage display |
-| `server/config.json` | Add `projectStages` array, migrate existing values |
+| `server/config.json`                      | Add `projectStages` array, migrate existing values         |
 
 ---
 
@@ -755,6 +773,7 @@ Location: `server/src/routes/transcriptions.ts:12-16`
 Known issue: Global mutable state for transcription queue. Lost on server restart.
 
 Questions to answer:
+
 - How significant is this in practice?
 - What happens if server restarts mid-transcription?
 - Is there a simple fix (persist to file)? Or is this fine as-is?
@@ -771,12 +790,14 @@ Known issue: 1355 lines, 20+ state variables. Complex but functional.
 **NOT in scope:** UX redesign (that's separate, PO not ready)
 
 **In scope:** Code-level quick wins that don't change behavior:
+
 - Can any logic be extracted to custom hooks?
 - Are there obvious component extractions that don't require UX decisions?
 - Any dead code or unused state?
 - Any performance issues (unnecessary re-renders)?
 
 Questions to answer:
+
 - List 3-5 quick wins that could be done safely
 - Estimate effort for each (small/medium)
 - Any that are risky without tests?
@@ -786,6 +807,7 @@ Questions to answer:
 **3. General Code Health Scan**
 
 While investigating the above, note any other tech debt observed:
+
 - Large files that could be split
 - Duplicated logic across files
 - Inconsistent patterns
@@ -824,6 +846,7 @@ A handover document with:
 #### What Happens Next
 
 PO receives findings and:
+
 1. Creates new FRs for items worth fixing
 2. Updates existing NFRs if they overlap (e.g., NFR-65/66/67)
 3. Deprecates any FRs that are no longer relevant
@@ -833,11 +856,11 @@ PO receives findings and:
 
 #### Files to Review
 
-| File | Why |
-|------|-----|
-| `server/src/routes/transcriptions.ts` | Transcription queue state |
-| `client/src/components/AssetsPage.tsx` | Large complex component |
-| Any others that catch your eye | General health |
+| File                                   | Why                       |
+| -------------------------------------- | ------------------------- |
+| `server/src/routes/transcriptions.ts`  | Transcription queue state |
+| `client/src/components/AssetsPage.tsx` | Large complex component   |
+| Any others that catch your eye         | General health            |
 
 ---
 
@@ -854,12 +877,12 @@ PO receives findings and:
 
 **1. Transcription Queue**
 
-| Aspect | Finding |
-|--------|---------|
-| Current state | Global mutable state: `queue`, `activeJob`, `recentJobs`, `activeProcess` in `transcriptions.ts:12-16` |
-| Risk level | **Low** |
+| Aspect                  | Finding                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Current state           | Global mutable state: `queue`, `activeJob`, `recentJobs`, `activeProcess` in `transcriptions.ts:12-16`                                            |
+| Risk level              | **Low**                                                                                                                                           |
 | What happens on restart | Queue and active job are lost. BUT: system checks for existing transcripts before processing, duplicates are skipped, no data corruption possible |
-| Recommendation | **Accept** - Current design is safe. Transcripts are saved to disk, duplicate detection prevents re-processing, user can re-queue on restart |
+| Recommendation          | **Accept** - Current design is safe. Transcripts are saved to disk, duplicate detection prevents re-processing, user can re-queue on restart      |
 
 Optional improvement (if desired): Persist queue to `server/.transcription-queue.json`. Effort: ~30 mins. Not necessary for current use case.
 
@@ -869,13 +892,13 @@ Optional improvement (if desired): Persist queue to `server/.transcription-queue
 
 Actual state: 8 `useState` calls, 6 `useMemo` calls (not 20+ as originally noted).
 
-| Quick Win | Description | Effort | Risk |
-|-----------|-------------|--------|------|
-| 1. ~~Extract `toKebabCase`~~ | ~~Duplicated in AssetsPage + RenameLabelModal~~ | ~~Small~~ | ~~Low~~ |
-| 2. Extract `useChapterNavigation` hook | Lines 226-290: goToPrev/NextChapter, goToPrev/NextSequence + chapterMap logic (~70 lines) | Small | Low |
-| 3. Extract `usePersistedState` hook | Lines 105-138: localStorage persistence pattern (also used for size toggles) | Small | Low |
-| 4. Extract windowed recordings logic | Lines 293-326: windowedRecordings useMemo. Could be `useWindowedRecordings()` | Small | Low |
-| 5. Extract `PairedAsset` grouping | Lines 1033-1087: IIFE that builds pairedAssets Map | Medium | Low |
+| Quick Win                              | Description                                                                               | Effort    | Risk    |
+| -------------------------------------- | ----------------------------------------------------------------------------------------- | --------- | ------- |
+| 1. ~~Extract `toKebabCase`~~           | ~~Duplicated in AssetsPage + RenameLabelModal~~                                           | ~~Small~~ | ~~Low~~ |
+| 2. Extract `useChapterNavigation` hook | Lines 226-290: goToPrev/NextChapter, goToPrev/NextSequence + chapterMap logic (~70 lines) | Small     | Low     |
+| 3. Extract `usePersistedState` hook    | Lines 105-138: localStorage persistence pattern (also used for size toggles)              | Small     | Low     |
+| 4. Extract windowed recordings logic   | Lines 293-326: windowedRecordings useMemo. Could be `useWindowedRecordings()`             | Small     | Low     |
+| 5. Extract `PairedAsset` grouping      | Lines 1033-1087: IIFE that builds pairedAssets Map                                        | Medium    | Low     |
 
 **Quick Win #1 completed:** `toKebabCase` extracted to `client/src/utils/formatting.ts` (commit 2ce9743).
 
@@ -889,24 +912,24 @@ Actual state: 8 `useState` calls, 6 `useMemo` calls (not 20+ as originally noted
 
 **3. Other Observations**
 
-| Observation | Details |
-|-------------|---------|
-| Large files | `routes/index.ts` (857 lines), `routes/assets.ts` (798 lines) - could split by domain but not urgent |
-| Duplicated pattern | `getProjectPaths(expandPath(config.projectDirectory))` appears 23 times - could extract helper |
-| Error responses | 60+ `res.status(500).json()` with varying formats - already tracked in NFR-67 |
-| Similar in-memory pattern | `routes/index.ts:28-30` has `recentRenames[]` - same low-risk pattern as transcription queue |
+| Observation               | Details                                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Large files               | `routes/index.ts` (857 lines), `routes/assets.ts` (798 lines) - could split by domain but not urgent |
+| Duplicated pattern        | `getProjectPaths(expandPath(config.projectDirectory))` appears 23 times - could extract helper       |
+| Error responses           | 60+ `res.status(500).json()` with varying formats - already tracked in NFR-67                        |
+| Similar in-memory pattern | `routes/index.ts:28-30` has `recentRenames[]` - same low-risk pattern as transcription queue         |
 
 ---
 
 **4. Prioritized Recommendations**
 
-| Priority | Item | Notes |
-|----------|------|-------|
-| ~~1~~ | ~~Extract `toKebabCase`~~ | ✅ Done |
-| 2 | Extract `useChapterNavigation` hook | Removes ~70 lines from AssetsPage |
-| 3 | Extract `usePersistedState` hook | Reusable pattern |
-| 4 | Complete NFR-67 (error handling) | Already in backlog |
-| 5 | Consider project path helper | Low priority, reduces boilerplate |
+| Priority | Item                                | Notes                             |
+| -------- | ----------------------------------- | --------------------------------- |
+| ~~1~~    | ~~Extract `toKebabCase`~~           | ✅ Done                           |
+| 2        | Extract `useChapterNavigation` hook | Removes ~70 lines from AssetsPage |
+| 3        | Extract `usePersistedState` hook    | Reusable pattern                  |
+| 4        | Complete NFR-67 (error handling)    | Already in backlog                |
+| 5        | Consider project path helper        | Low priority, reduces boilerplate |
 
 ---
 
@@ -927,6 +950,7 @@ FR-80 adds inbox/assets/chapters indicators to the project list. Currently, the 
 #### Options to Consider
 
 **Option A: Live Scan (Current Pattern)**
+
 ```
 User opens Projects page
 → For each project, server scans:
@@ -935,10 +959,12 @@ User opens Projects page
    - Does /-chapters have videos?
 → Returns indicators
 ```
+
 - **Pro:** Always accurate
 - **Con:** Slower with 30+ projects (many directory reads)
 
 **Option B: Cached Metadata**
+
 ```
 project.json stores:
 {
@@ -947,11 +973,14 @@ project.json stores:
   "hasChapters": true
 }
 ```
+
 Server updates these when files change (via watchers).
+
 - **Pro:** Instant project list load
 - **Con:** Could get stale if watchers miss something
 
 **Option C: Hybrid**
+
 - Live scan on first load, cache results for session
 - Watchers update cache in real-time
 - Background refresh periodically
@@ -963,6 +992,7 @@ Server updates these when files change (via watchers).
 Not needed for FR-80 initial implementation. Start with live scan (Option A).
 
 Revisit if:
+
 - Project list becomes noticeably slow
 - User has 30+ active projects
 - Scanning latency exceeds 500ms
@@ -990,16 +1020,21 @@ FR-74 changed the transcription system to require both `.txt` AND `.srt` for a t
 Update `getTranscriptSyncStatus()` in `server/src/utils/scanning.ts` to require both files for "matched" status.
 
 **Current (line 77-79):**
+
 ```typescript
-const transcriptFiles = transcriptDirFiles
-  .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+const transcriptFiles = transcriptDirFiles.filter(
+  (f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt')
+);
 ```
 
 **New:**
+
 ```typescript
 // A transcript is "matched" only if both .txt and .srt exist
-const txtFiles = transcriptDirFiles.filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'));
-const srtFiles = transcriptDirFiles.filter(f => f.endsWith('.srt'));
+const txtFiles = transcriptDirFiles.filter(
+  (f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt')
+);
+const srtFiles = transcriptDirFiles.filter((f) => f.endsWith('.srt'));
 // Match logic: recording has BOTH .txt and .srt
 ```
 
@@ -1011,8 +1046,8 @@ const srtFiles = transcriptDirFiles.filter(f => f.endsWith('.srt'));
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                           | Changes                                                  |
+| ------------------------------ | -------------------------------------------------------- |
 | `server/src/utils/scanning.ts` | Update getTranscriptSyncStatus() to check for both files |
 
 #### Acceptance Criteria
@@ -1069,8 +1104,8 @@ help you build better AI workflows.
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                                  | Changes                        |
+| ------------------------------------- | ------------------------------ |
 | `server/src/routes/transcriptions.ts` | Add SRT output to whisper call |
 
 #### Acceptance Criteria
@@ -1110,10 +1145,10 @@ On the Watch page, display transcript panel below/beside video. As video plays, 
 
 Toggle between granularity levels:
 
-| Mode | Behavior |
-|------|----------|
-| **Word** (default) | Individual words highlight as spoken |
-| **Phrase** | Entire SRT entry (typically 2-4 seconds) highlights |
+| Mode               | Behavior                                            |
+| ------------------ | --------------------------------------------------- |
+| **Word** (default) | Individual words highlight as spoken                |
+| **Phrase**         | Entire SRT entry (typically 2-4 seconds) highlights |
 
 Toggle button in UI: `[Word ↔ Phrase]`
 
@@ -1129,11 +1164,11 @@ Toggle button in UI: `[Word ↔ Phrase]`
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                                  | Changes                                               |
+| ------------------------------------- | ----------------------------------------------------- |
 | `client/src/components/WatchPage.tsx` | Add transcript panel, SRT parsing, highlighting logic |
-| `client/src/hooks/useApi.ts` | Hook to fetch SRT content |
-| `server/src/routes/query.ts` | Endpoint to serve SRT file content |
+| `client/src/hooks/useApi.ts`          | Hook to fetch SRT content                             |
+| `server/src/routes/query.ts`          | Endpoint to serve SRT file content                    |
 
 #### Acceptance Criteria
 
@@ -1161,18 +1196,19 @@ Chapter videos concatenate multiple segments. Each segment has its own zero-base
 
 **Change to FR-58:** Make purple title slides **optional** (toggle, off by default).
 
-| Setting | Behavior |
-|---------|----------|
-| Slides OFF (default) | Chapter video is pure concatenation of segments |
-| Slides ON | Purple title slides between segments (current behavior) |
+| Setting              | Behavior                                                |
+| -------------------- | ------------------------------------------------------- |
+| Slides OFF (default) | Chapter video is pure concatenation of segments         |
+| Slides ON            | Purple title slides between segments (current behavior) |
 
 **Why:** Slides complicate timing calculation and may not be needed once transcript highlighting shows chapter transitions visually.
 
 **Config addition:**
+
 ```json
 {
   "chapterRecordings": {
-    "includeTitleSlides": false,  // NEW - default false
+    "includeTitleSlides": false, // NEW - default false
     "slideDuration": 1.0,
     "resolution": "720p"
   }
@@ -1184,6 +1220,7 @@ Chapter videos concatenate multiple segments. Each segment has its own zero-base
 When generating chapter video, also generate `{chapter}-{label}.srt`:
 
 **Without slides (simple):**
+
 ```
 Segment 1 SRT times + 0
 Segment 2 SRT times + segment1.duration
@@ -1192,6 +1229,7 @@ Segment 3 SRT times + segment1.duration + segment2.duration
 ```
 
 **With slides (if enabled):**
+
 ```
 Segment 1 SRT times + slideDuration
 Segment 2 SRT times + slideDuration + segment1.duration + slideDuration
@@ -1210,10 +1248,10 @@ recordings/-chapters/
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                                   | Changes                           |
+| -------------------------------------- | --------------------------------- |
 | `server/src/utils/chapterRecording.ts` | Add SRT generation, slides toggle |
-| `server/config.json` | Add `includeTitleSlides` option |
+| `server/config.json`                   | Add `includeTitleSlides` option   |
 
 #### Acceptance Criteria
 
@@ -1238,10 +1276,10 @@ Extends FR-75 to detect when playing a chapter video and use the chapter SRT ins
 
 #### Detection Logic
 
-| Video Source | SRT Source |
-|--------------|------------|
-| `recordings/01-1-intro.mov` | `recording-transcripts/01-1-intro.srt` |
-| `recordings/-chapters/01-intro.mov` | `recordings/-chapters/01-intro.srt` |
+| Video Source                        | SRT Source                             |
+| ----------------------------------- | -------------------------------------- |
+| `recordings/01-1-intro.mov`         | `recording-transcripts/01-1-intro.srt` |
+| `recordings/-chapters/01-intro.mov` | `recordings/-chapters/01-intro.srt`    |
 
 #### UI Enhancement
 
@@ -1259,8 +1297,8 @@ When playing chapter video, transcript panel could show chapter markers:
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                                  | Changes                                |
+| ------------------------------------- | -------------------------------------- |
 | `client/src/components/WatchPage.tsx` | Detect chapter video, load chapter SRT |
 
 #### Acceptance Criteria
@@ -1322,6 +1360,7 @@ Add `showInChapters` property to each template in the config. The UI filters tem
 ```
 
 **Rules:**
+
 - `showInChapters: [1, 2, 3, 4]` — Only show in chapters 1-4
 - `showInChapters: "all"` — Show in all chapters (default if omitted)
 - Numbers are chapter integers (1 = "01", 10 = "10")
@@ -1337,11 +1376,13 @@ Add missing **"scenario"** template — a common early-chapter recording type th
 #### UI Behavior
 
 On the Incoming tab:
+
 1. Determine current chapter from the chapter selector or most recent recording
 2. Filter `commonNames` to only show templates where current chapter matches `showInChapters`
 3. Templates with `showInChapters: "all"` or no `showInChapters` always appear
 
 **Example:**
+
 - Chapter 01 selected → Show: intro, scenario, demo, summary, outro (5 buttons)
 - Chapter 10 selected → Show: demo, summary, outro (3 buttons)
 
@@ -1349,12 +1390,12 @@ On the Incoming tab:
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `server/config.json` | Add `showInChapters` to templates, add "scenario" |
-| `shared/types.ts` | Update CommonName interface |
-| `client/src/components/IncomingPage.tsx` | Filter templates by chapter |
-| `client/src/components/ConfigPage.tsx` | (Optional) UI to edit visibility rules |
+| File                                     | Changes                                           |
+| ---------------------------------------- | ------------------------------------------------- |
+| `server/config.json`                     | Add `showInChapters` to templates, add "scenario" |
+| `shared/types.ts`                        | Update CommonName interface                       |
+| `client/src/components/IncomingPage.tsx` | Filter templates by chapter                       |
+| `client/src/components/ConfigPage.tsx`   | (Optional) UI to edit visibility rules            |
 
 ---
 
@@ -1376,6 +1417,7 @@ On the Incoming tab:
 #### The Bug
 
 FR-58 (Chapter Recordings) produces corrupted output:
+
 - **Voice pitch changes** - audio sounds wrong
 - **Video freezes** after a few seconds
 - Essentially unwatchable output
@@ -1386,13 +1428,13 @@ The current implementation uses FFmpeg's **concat demuxer** (`-f concat`) which 
 
 **The mismatch:**
 
-| Parameter | Title Slides (generated) | Ecamm Recordings |
-|-----------|--------------------------|------------------|
-| Video codec | H.264 (libx264) | ProRes (likely) |
-| Frame rate | FFmpeg default (~25fps) | Ecamm setting (30/60fps) |
-| Audio codec | AAC | PCM or AAC |
-| Sample rate | FFmpeg default (44.1kHz?) | 48kHz (video standard) |
-| Pixel format | yuv420p (H.264 default) | yuv422p10le (ProRes) |
+| Parameter    | Title Slides (generated)  | Ecamm Recordings         |
+| ------------ | ------------------------- | ------------------------ |
+| Video codec  | H.264 (libx264)           | ProRes (likely)          |
+| Frame rate   | FFmpeg default (~25fps)   | Ecamm setting (30/60fps) |
+| Audio codec  | AAC                       | PCM or AAC               |
+| Sample rate  | FFmpeg default (44.1kHz?) | 48kHz (video standard)   |
+| Pixel format | yuv420p (H.264 default)   | yuv422p10le (ProRes)     |
 
 When concat demuxer encounters mismatched streams, it produces the exact symptoms described.
 
@@ -1403,12 +1445,14 @@ When concat demuxer encounters mismatched streams, it produces the exact symptom
 Replace the concat **demuxer** with the concat **filter**. The filter properly re-encodes all inputs through a unified pipeline, handling codec/framerate/samplerate differences automatically.
 
 **Current approach** (`chapterRecording.ts:166-183`):
+
 ```bash
 # Concat demuxer - requires identical streams
 ffmpeg -f concat -safe 0 -i concat.txt -vf scale=... -c:v libx264 output.mov
 ```
 
 **Fixed approach:**
+
 ```bash
 # Concat filter - handles different inputs properly
 ffmpeg \
@@ -1431,6 +1475,7 @@ ffmpeg \
 4. **Keep existing code** - Title slide generation, file naming, progress events all stay the same
 
 **Example for 3 segments:**
+
 ```bash
 ffmpeg \
   -i slide1.mov -i seg1.mov \
@@ -1446,8 +1491,8 @@ ffmpeg \
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                                   | Changes                                |
+| -------------------------------------- | -------------------------------------- |
 | `server/src/utils/chapterRecording.ts` | Replace `concatenateVideos()` function |
 
 ---
@@ -1481,6 +1526,7 @@ The header currently has several standalone elements:
 ```
 
 **Issues:**
+
 - Multiple small buttons cluttering the header
 - Config and Mockups are tabs, but Config also has a gear icon
 - Clipboard buttons don't indicate what they copy
@@ -1543,6 +1589,7 @@ Proposed: b86-claudemas-01-jump ▼  [···]
 ```
 
 **Nav changes:**
+
 - Config removed from nav (moved to gear menu)
 - Mockups removed from nav (moved to gear menu, or removed after design finalized)
 
@@ -1550,12 +1597,12 @@ Proposed: b86-claudemas-01-jump ▼  [···]
 
 #### Implementation Notes
 
-| Component | Change |
-|-----------|--------|
-| `App.tsx` | Replace gear button with dropdown trigger |
-| `App.tsx` | Replace clipboard buttons with single dropdown trigger |
-| New component | `HeaderDropdown.tsx` - reusable dropdown component |
-| Nav bar | Remove Config tab, optionally remove Mockups |
+| Component     | Change                                                 |
+| ------------- | ------------------------------------------------------ |
+| `App.tsx`     | Replace gear button with dropdown trigger              |
+| `App.tsx`     | Replace clipboard buttons with single dropdown trigger |
+| New component | `HeaderDropdown.tsx` - reusable dropdown component     |
+| Nav bar       | Remove Config tab, optionally remove Mockups           |
 
 ---
 
@@ -1581,6 +1628,7 @@ Proposed: b86-claudemas-01-jump ▼  [···]
 The Watch page (FR-70) was recently implemented with a cascading chapter/segment panel. This FR enhances the playback experience based on real usage feedback.
 
 **Current state:**
+
 - Video player shows "Select a recording to play" on page load
 - Native browser controls (max 2x visible, though up to 16x is supported)
 - Video container is constrained by the page's central container width
@@ -1589,26 +1637,28 @@ The Watch page (FR-70) was recently implemented with a cascading chapter/segment
 
 #### Requirements
 
-| # | Requirement | Priority |
-|---|-------------|----------|
-| 1 | Auto-select last recording on page load | High |
-| 2 | Default playback speed to 2x | High |
-| 3 | Custom speed control with presets | Medium |
-| 4 | Video size toggle (Normal / Large / Extra Large) | Medium |
-| 5 | Transcript panel below video | High |
-| 6 | Persist preferences in localStorage | Low |
+| #   | Requirement                                      | Priority |
+| --- | ------------------------------------------------ | -------- |
+| 1   | Auto-select last recording on page load          | High     |
+| 2   | Default playback speed to 2x                     | High     |
+| 3   | Custom speed control with presets                | Medium   |
+| 4   | Video size toggle (Normal / Large / Extra Large) | Medium   |
+| 5   | Transcript panel below video                     | High     |
+| 6   | Persist preferences in localStorage              | Low      |
 
 ---
 
 #### 1. Auto-Select Last Recording
 
 **Behavior:**
+
 - On page load, automatically select and load the most recent named recording
 - "Most recent" = highest chapter number, then highest sequence number
 - Example: If recordings are `01-1-intro`, `01-2-intro`, `10-1-demo`, select `10-1-demo`
 - Do NOT auto-play - just pre-load so user can hit play
 
 **Why last recording:**
+
 - After a recording session, user often wants to review what they just captured
 - Eliminates the "Select a recording" empty state on fresh load
 - Chapter panel still shows full structure for navigation
@@ -1618,10 +1668,12 @@ The Watch page (FR-70) was recently implemented with a cascading chapter/segment
 #### 2. Default to 2x Playback Speed
 
 **Behavior:**
+
 - When a video loads, set `playbackRate = 2.0`
 - Apply to all videos (segments and chapter recordings)
 
 **Technical note:**
+
 - HTML5 video supports 0.07x to 16x
 - Audio is muted by browser outside ~0.25x to 4x range
 - 2x is a good default - fast review with audio intact
@@ -1645,16 +1697,17 @@ The Watch page (FR-70) was recently implemented with a cascading chapter/segment
 
 **Presets:**
 
-| Speed | Audio | Use Case |
-|-------|-------|----------|
-| 1x | ✓ | Normal playback |
-| 1.5x | ✓ | Slightly faster review |
-| 2x | ✓ | Quick review (default) |
-| 2.5x | ✓ | Fast review |
-| 3x | ✓ | Rapid scan |
-| 4x | ✓ (edge) | Maximum with audio |
+| Speed | Audio    | Use Case               |
+| ----- | -------- | ---------------------- |
+| 1x    | ✓        | Normal playback        |
+| 1.5x  | ✓        | Slightly faster review |
+| 2x    | ✓        | Quick review (default) |
+| 2.5x  | ✓        | Fast review            |
+| 3x    | ✓        | Rapid scan             |
+| 4x    | ✓ (edge) | Maximum with audio     |
 
 **Optional "turbo" speeds** (audio muted):
+
 - 6x, 8x, 10x - for visual-only scanning
 - Show muted indicator when speed > 4x
 
@@ -1664,11 +1717,11 @@ The Watch page (FR-70) was recently implemented with a cascading chapter/segment
 
 **Concept:** Offer 3 size options instead of just making the video bigger. Default to Normal since the transcript panel needs screen space too.
 
-| Size | Description | Use Case |
-|------|-------------|----------|
-| **Normal** | Current size (default) | Balanced view with transcript panel |
-| **Large** | Wider video | Focus on video, less transcript |
-| **Extra Large** | Maximum width | Immersive viewing, minimal UI |
+| Size            | Description            | Use Case                            |
+| --------------- | ---------------------- | ----------------------------------- |
+| **Normal**      | Current size (default) | Balanced view with transcript panel |
+| **Large**       | Wider video            | Focus on video, less transcript     |
+| **Extra Large** | Maximum width          | Immersive viewing, minimal UI       |
 
 **UI:** Size toggle near the speed controls
 
@@ -1711,6 +1764,7 @@ Extra Large:
 ```
 
 **UX rationale:**
+
 - Start at Normal because transcript panel is valuable for review
 - User can expand if they want more immersive video
 - Both video AND transcript scale together
@@ -1740,6 +1794,7 @@ Extra Large:
 ```
 
 **Design requirements:**
+
 - Clean, readable typography (good font size, line height, contrast)
 - Scrollable if transcript is long
 - Collapsible (for when user just wants video)
@@ -1747,16 +1802,18 @@ Extra Large:
 
 **Two video types to handle:**
 
-| Video Type | Transcript Source | Display |
-|------------|-------------------|---------|
-| **Segment** | `recording-transcripts/{segment}.txt` | Single transcript file |
-| **Chapter** | Multiple segment transcripts | Combined, with segment separators |
+| Video Type  | Transcript Source                     | Display                           |
+| ----------- | ------------------------------------- | --------------------------------- |
+| **Segment** | `recording-transcripts/{segment}.txt` | Single transcript file            |
+| **Chapter** | Multiple segment transcripts          | Combined, with segment separators |
 
 **Segment transcript:**
+
 - Load from `recording-transcripts/01-1-intro.txt`
 - Display as plain text, well formatted
 
 **Chapter transcript:**
+
 - Chapter videos combine multiple segments (e.g., `01-intro.mov` from `01-1`, `01-2`, `01-3`)
 - Show all segment transcripts in order
 - Add subtle separators between segments
@@ -1783,11 +1840,11 @@ Extra Large:
 
 **Panel states:**
 
-| State | Behavior |
-|-------|----------|
-| **Expanded** (default) | Shows transcript, scrollable |
-| **Collapsed** | Just header bar, click to expand |
-| **No transcript** | Shows "No transcript available" message |
+| State                  | Behavior                                |
+| ---------------------- | --------------------------------------- |
+| **Expanded** (default) | Shows transcript, scrollable            |
+| **Collapsed**          | Just header bar, click to expand        |
+| **No transcript**      | Shows "No transcript available" message |
 
 **Future enhancement:** Sync transcript with video playback (highlight current section). Not in this FR.
 
@@ -1796,6 +1853,7 @@ Extra Large:
 #### 6. Persist Preferences
 
 **Behavior:**
+
 - Store selected speed AND size in localStorage
 - On next visit, restore saved preferences
 - Keys:
@@ -1840,29 +1898,34 @@ Extra Large:
 #### Technical Notes
 
 **HTML5 playbackRate:**
+
 - Range: 0.07x to 16x (browser-enforced)
 - Audio muted outside ~0.25x to 4x (browser-dependent)
 - Set via: `videoRef.current.playbackRate = 2.0`
 
 **Auto-select logic:**
+
 ```typescript
 // Find most recent recording (highest chapter, then highest sequence)
 const mostRecent = recordings
-  .filter(r => r.folder !== 'safe')
+  .filter((r) => r.folder !== 'safe')
   .sort((a, b) => {
-    const chapterDiff = parseInt(b.chapter) - parseInt(a.chapter)
-    if (chapterDiff !== 0) return chapterDiff
-    return parseInt(b.sequence) - parseInt(a.sequence)
-  })[0]
+    const chapterDiff = parseInt(b.chapter) - parseInt(a.chapter);
+    if (chapterDiff !== 0) return chapterDiff;
+    return parseInt(b.sequence) - parseInt(a.sequence);
+  })[0];
 ```
 
 **Transcript loading:**
+
 ```typescript
 // For segment video
-const segmentTranscript = await fetch(`/api/query/projects/${code}/transcripts/${segmentName}`)
+const segmentTranscript = await fetch(`/api/query/projects/${code}/transcripts/${segmentName}`);
 
 // For chapter video - need to load all segment transcripts for that chapter
-const chapterTranscripts = await fetch(`/api/query/projects/${code}/transcripts?chapter=${chapterNum}&include=content`)
+const chapterTranscripts = await fetch(
+  `/api/query/projects/${code}/transcripts?chapter=${chapterNum}&include=content`
+);
 ```
 
 ---
@@ -1870,6 +1933,7 @@ const chapterTranscripts = await fetch(`/api/query/projects/${code}/transcripts?
 #### Related Brainstorming Ideas
 
 From brainstorming notes (Video Watch Page):
+
 - **Auto-advance:** Should it auto-play next segment when one finishes? (Future consideration)
 - **Transcript sync:** Highlight current section as video plays (Future enhancement - not in this FR)
 - **Safe videos:** Currently excluded - could be included with toggle
@@ -1879,6 +1943,7 @@ From brainstorming notes (Video Watch Page):
 #### Acceptance Criteria
 
 **Auto-select & Speed:**
+
 - [ ] Watch page auto-loads the most recent recording on page load
 - [ ] "Most recent" = highest chapter, then highest sequence
 - [ ] Videos default to 2x playback speed
@@ -1887,12 +1952,14 @@ From brainstorming notes (Video Watch Page):
 - [ ] Current speed is visually indicated (highlighted/selected)
 
 **Size toggle:**
+
 - [ ] Size toggle shows 3 options: Normal, Large, Extra Large
 - [ ] Default size is Normal
 - [ ] Video and transcript panel scale together when size changes
 - [ ] Video remains centered at all sizes
 
 **Transcript panel:**
+
 - [ ] Transcript panel appears below video player
 - [ ] Panel has readable typography (good font size, line height)
 - [ ] Panel is scrollable if content is long
@@ -1902,10 +1969,12 @@ From brainstorming notes (Video Watch Page):
 - [ ] Shows "No transcript available" message when transcript not found
 
 **Persistence:**
+
 - [ ] Speed preference persists across page loads (localStorage)
 - [ ] Size preference persists across page loads (localStorage)
 
 **Integration:**
+
 - [ ] Chapter panel still works correctly with all video sizes
 - [ ] Transcript loads correctly when switching videos
 
@@ -1920,6 +1989,7 @@ From brainstorming notes (Video Watch Page):
 #### Part 1: New Resolve Endpoint
 
 Currently, to find a project by prefix (e.g., `b86`), external systems must:
+
 1. Know the video-projects path
 2. Run `ls | grep b86`
 3. Parse the result
@@ -1931,6 +2001,7 @@ GET /api/query/projects/resolve?q=b86
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -1944,12 +2015,12 @@ GET /api/query/projects/resolve?q=b86
 
 **Edge cases:**
 
-| Scenario | Response |
-|----------|----------|
-| Exact match (`b86-claudemas-01-jump`) | Return that project |
-| Prefix match (`b86`) | Return first matching project |
-| Multiple matches (`b8`) | Return first match (alphabetically) |
-| No match | `{ "success": false, "error": "No project found matching 'xyz'" }` |
+| Scenario                              | Response                                                           |
+| ------------------------------------- | ------------------------------------------------------------------ |
+| Exact match (`b86-claudemas-01-jump`) | Return that project                                                |
+| Prefix match (`b86`)                  | Return first matching project                                      |
+| Multiple matches (`b8`)               | Return first match (alphabetically)                                |
+| No match                              | `{ "success": false, "error": "No project found matching 'xyz'" }` |
 
 ---
 
@@ -1958,6 +2029,7 @@ GET /api/query/projects/resolve?q=b86
 Enhance existing projects endpoint to include `brand` and `path` fields:
 
 **Current response:**
+
 ```json
 {
   "success": true,
@@ -1974,6 +2046,7 @@ Enhance existing projects endpoint to include `brand` and `path` fields:
 ```
 
 **Enhanced response:**
+
 ```json
 {
   "success": true,
@@ -2010,6 +2083,7 @@ High - low effort, big improvement for Brand David skill integration.
 #### The Problem
 
 The app was originally called "Recording Namer" when it just renamed recording files. It now handles:
+
 - Video project management
 - Assets (images, prompts, thumbnails)
 - Transcripts and chapters
@@ -2071,6 +2145,7 @@ Example: `/Users/davidcruwys/dev/video-projects/v-appydave/b86-claudemas-01-jump
 ```
 
 **Button styling:**
+
 - Small black/dark button
 - Terminal icon (e.g., `>_` or monospace style)
 - Tooltip: "Copy project path"
@@ -2079,10 +2154,10 @@ Example: `/Users/davidcruwys/dev/video-projects/v-appydave/b86-claudemas-01-jump
 
 #### Why Not Open iTerm Directly?
 
-| Option | Pros | Cons |
-|--------|------|------|
-| Copy path | Simple, cross-platform | Extra paste step |
-| Open iTerm | One click | macOS only, may need AppleScript |
+| Option     | Pros                   | Cons                             |
+| ---------- | ---------------------- | -------------------------------- |
+| Copy path  | Simple, cross-platform | Extra paste step                 |
+| Open iTerm | One click              | macOS only, may need AppleScript |
 
 **Decision:** Start with copy path. Can enhance to direct iTerm open later if needed.
 
@@ -2112,12 +2187,12 @@ project/
 
 #### Key Concepts
 
-| Folder | Purpose | Labeled? |
-|--------|---------|----------|
-| `inbox/` | Staging area for incoming content | No |
-| `assets/images/` | Images aligned to video parts | Yes |
-| `assets/thumbs/` | YouTube thumbnails | Yes |
-| `assets/resources/` | Other finalized resources | Yes (Phase 2) |
+| Folder              | Purpose                           | Labeled?      |
+| ------------------- | --------------------------------- | ------------- |
+| `inbox/`            | Staging area for incoming content | No            |
+| `assets/images/`    | Images aligned to video parts     | Yes           |
+| `assets/thumbs/`    | YouTube thumbnails                | Yes           |
+| `assets/resources/` | Other finalized resources         | Yes (Phase 2) |
 
 **Inbox = unlabeled staging; assets = labeled/finalized content**
 
@@ -2165,6 +2240,7 @@ New tab in FliHub alongside Recordings, Assets, Thumbnails.
 ```
 
 **Key elements:**
+
 - Group headers with file count + total size (like chapter rows)
 - Files indented under their group
 - Empty groups shown but minimal
@@ -2174,10 +2250,10 @@ New tab in FliHub alongside Recordings, Assets, Thumbnails.
 
 #### API Endpoints
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | `/api/query/projects/:code/inbox` | List inbox contents |
-| POST | `/api/projects/:code/inbox/write` | Write file to inbox |
+| Method | Endpoint                          | Purpose             |
+| ------ | --------------------------------- | ------------------- |
+| GET    | `/api/query/projects/:code/inbox` | List inbox contents |
+| POST   | `/api/projects/:code/inbox/write` | Write file to inbox |
 
 ---
 
@@ -2195,19 +2271,19 @@ Resources in `assets/resources/` are **parked for now**. The Assets page needs U
 
 #### Skill Changes
 
-| Current | New | Notes |
-|---------|-----|-------|
+| Current           | New      | Notes              |
+| ----------------- | -------- | ------------------ |
 | `querying-flihub` | `flihub` | Rename for clarity |
 
 ---
 
 #### New Commands
 
-| Command | Purpose |
-|---------|---------|
-| `health` | Check if FliHub server is running (uses existing health endpoint) |
-| `write --target inbox` | Write content to project inbox |
-| `write --target resources` | Write to resources (Phase 2, after inbox works) |
+| Command                    | Purpose                                                           |
+| -------------------------- | ----------------------------------------------------------------- |
+| `health`                   | Check if FliHub server is running (uses existing health endpoint) |
+| `write --target inbox`     | Write content to project inbox                                    |
+| `write --target resources` | Write to resources (Phase 2, after inbox works)                   |
 
 ---
 
@@ -2237,6 +2313,7 @@ GET /api/health
 #### The Problem
 
 On the Recordings page, when scrolling through many recordings:
+
 - Can't see how many chapters exist
 - Can't see the overall structure
 - Have to scroll up/down to find specific chapters
@@ -2247,6 +2324,7 @@ On the Recordings page, when scrolling through many recordings:
 #### Solution: Fixed Sidebar Panel
 
 A table-of-contents style panel on the right side that:
+
 - Lists all chapters with timestamps
 - Shows chapter TITLE only (no video codes like "04")
 - Stays fixed while the main content scrolls
@@ -2285,12 +2363,12 @@ A table-of-contents style panel on the right side that:
 
 #### Panel Contents
 
-| Element | Description |
-|---------|-------------|
-| Header | "CHAPTERS (24)" - count of chapters |
-| Chapter list | Timestamp + Title for each chapter |
+| Element           | Description                                       |
+| ----------------- | ------------------------------------------------- |
+| Header            | "CHAPTERS (24)" - count of chapters               |
+| Chapter list      | Timestamp + Title for each chapter                |
 | Current indicator | `◀` or highlight showing which chapter is in view |
-| Copy button | Copies YouTube-format chapter list to clipboard |
+| Copy button       | Copies YouTube-format chapter list to clipboard   |
 
 ---
 
@@ -2301,6 +2379,7 @@ A table-of-contents style panel on the right side that:
 **Don't show:** `0:00  01 Introduction` (no video codes)
 
 The chapter title comes from the recording name, converted to Title Case with codes stripped:
+
 - `01-1-poem-planning.mov` → "Poem Planning"
 - `04-2-setup-bmad-TECHSTACK.mov` → "Setup Bmad" (tags stripped)
 
@@ -2308,18 +2387,19 @@ The chapter title comes from the recording name, converted to Title Case with co
 
 #### Behavior
 
-| Action | Result |
-|--------|--------|
-| Scroll recordings | Panel stays fixed, current chapter indicator updates |
-| Click chapter in panel | Scrolls main content to that chapter |
-| Click Copy button | Copies YouTube-format chapter list to clipboard |
-| Resize window | Panel collapses on narrow screens (responsive) |
+| Action                 | Result                                               |
+| ---------------------- | ---------------------------------------------------- |
+| Scroll recordings      | Panel stays fixed, current chapter indicator updates |
+| Click chapter in panel | Scrolls main content to that chapter                 |
+| Click Copy button      | Copies YouTube-format chapter list to clipboard      |
+| Resize window          | Panel collapses on narrow screens (responsive)       |
 
 ---
 
 #### Copy Output Format
 
 YouTube-ready:
+
 ```
 0:00 Introduction
 2:15 Setting up the Environment
@@ -2333,16 +2413,19 @@ YouTube-ready:
 #### Technical Notes
 
 **Layout:**
+
 - CSS Grid or Flexbox with `position: sticky` for panel
 - Panel width: ~250-300px
 - Main content: remaining width
 
 **Current chapter detection:**
+
 - Use Intersection Observer API
 - Track which chapter heading is currently in viewport
 - Update panel indicator accordingly
 
 **Responsive:**
+
 - On narrow screens (<1200px?), hide panel or make it collapsible
 - Could add toggle button to show/hide
 
@@ -2350,11 +2433,11 @@ YouTube-ready:
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                                       | Changes                           |
+| ------------------------------------------ | --------------------------------- |
 | `client/src/components/RecordingsView.tsx` | Add sidebar panel, layout changes |
-| `client/src/components/ChapterPanel.tsx` | New component for the sidebar |
-| `client/src/styles/` | Layout CSS for fixed sidebar |
+| `client/src/components/ChapterPanel.tsx`   | New component for the sidebar     |
+| `client/src/styles/`                       | Layout CSS for fixed sidebar      |
 
 ---
 
@@ -2380,6 +2463,7 @@ YouTube-ready:
 #### Context
 
 Currently on the Recordings page:
+
 - Each chapter has `📋 All` and `Combine` buttons for chapter-level transcripts
 - These are rarely used (transcription is automatic)
 - There's no way to get the ENTIRE video's transcript in one click
@@ -2453,6 +2537,7 @@ Chapter 2: Setting up the Environment
 ```
 
 **Notes:**
+
 - Chapter headers use TITLE (not video codes) - same as FR-56
 - Each chapter's transcript is the combined text from all sequences
 - Blank line between chapters for readability
@@ -2461,27 +2546,30 @@ Chapter 2: Setting up the Environment
 
 #### Behavior
 
-| Action | Result |
-|--------|--------|
-| Click `[📄 Transcript]` button | Modal opens with combined transcript |
-| Click `[📋 Copy]` | Copies entire transcript to clipboard, toast confirmation |
-| Click `[✕]` or outside modal | Modal closes |
-| Press Escape | Modal closes |
+| Action                         | Result                                                    |
+| ------------------------------ | --------------------------------------------------------- |
+| Click `[📄 Transcript]` button | Modal opens with combined transcript                      |
+| Click `[📋 Copy]`              | Copies entire transcript to clipboard, toast confirmation |
+| Click `[✕]` or outside modal   | Modal closes                                              |
+| Press Escape                   | Modal closes                                              |
 
 ---
 
 #### Technical Notes
 
 **Data source:**
+
 - Use existing transcript data (same as chapter-level Combine)
 - Combine all chapters in order
 - Already have the text in `recording-transcripts/` folder
 
 **API:**
+
 - May need new endpoint: `GET /api/projects/:code/transcript/combined`
 - Or extend existing transcript endpoint with `?combined=true`
 
 **Ordering:**
+
 - Chapters sorted by number (01, 02, 03...)
 - Within chapter, sequences sorted (01-1, 01-2, 01-3...)
 
@@ -2489,11 +2577,11 @@ Chapter 2: Setting up the Environment
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `client/src/components/RecordingsView.tsx` | Add Transcript button in header |
-| `client/src/components/TranscriptModal.tsx` | New modal component |
-| `server/src/routes/transcripts.ts` | Add combined endpoint (if needed) |
+| File                                        | Changes                           |
+| ------------------------------------------- | --------------------------------- |
+| `client/src/components/RecordingsView.tsx`  | Add Transcript button in header   |
+| `client/src/components/TranscriptModal.tsx` | New modal component               |
+| `server/src/routes/transcripts.ts`          | Add combined endpoint (if needed) |
 
 ---
 
@@ -2519,10 +2607,10 @@ Chapter 2: Setting up the Environment
 
 `GET /api/recordings` calls ffprobe for each file **sequentially** (await inside for-loop).
 
-| Files | Current Behavior | Impact |
-|-------|------------------|--------|
-| 118 files | 118 × sequential ffprobe | 5+ second delays |
-| Each ffprobe | ~50ms | Adds up linearly |
+| Files        | Current Behavior         | Impact           |
+| ------------ | ------------------------ | ---------------- |
+| 118 files    | 118 × sequential ffprobe | 5+ second delays |
+| Each ffprobe | ~50ms                    | Adds up linearly |
 
 **Location:** `server/src/routes/index.ts:398-416`
 
@@ -2530,7 +2618,7 @@ Chapter 2: Setting up the Environment
 // CURRENT: Sequential (slow)
 for (const entry of entries) {
   if (entry.isFile()) {
-    const recording = await processFile(filePath, 'recordings');  // ← blocks
+    const recording = await processFile(filePath, 'recordings'); // ← blocks
     if (recording) recordings.push(recording);
   }
 }
@@ -2545,12 +2633,10 @@ Run all ffprobe calls simultaneously using `Promise.all`.
 ```typescript
 // NEW: Parallel (fast)
 const recordingPaths = entries
-  .filter(e => e.isFile())
-  .map(e => path.join(paths.recordings, e.name));
+  .filter((e) => e.isFile())
+  .map((e) => path.join(paths.recordings, e.name));
 
-const results = await Promise.all(
-  recordingPaths.map(fp => processFile(fp, 'recordings'))
-);
+const results = await Promise.all(recordingPaths.map((fp) => processFile(fp, 'recordings')));
 
 recordings.push(...results.filter(Boolean));
 ```
@@ -2562,6 +2648,7 @@ recordings.push(...results.filter(Boolean));
 #### Why Not Caching?
 
 We considered caching durations in a per-project JSON file, but:
+
 1. FliHub is currently stateless (no per-project config files exist)
 2. Per-project JSON files will cause git merge conflicts when team shares via GitHub
 3. Parallelization is simpler and sufficient for the performance goal
@@ -2572,8 +2659,8 @@ See brainstorming notes for full architectural discussion on per-project state.
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                         | Changes                                                        |
+| ---------------------------- | -------------------------------------------------------------- |
 | `server/src/routes/index.ts` | Refactor loops at lines 398-404 and 408-416 to use Promise.all |
 
 ---
@@ -2602,6 +2689,7 @@ See brainstorming notes for full architectural discussion on per-project state.
 **Root cause:** `App.tsx:121-127` - `handleRenamed` explicitly sets `customTag: ''`
 
 **Fix:**
+
 - Remove `customTag: ''` from `handleRenamed`
 - Add a small "×" clear button next to the custom tag input
 
@@ -2640,6 +2728,7 @@ See brainstorming notes for full architectural discussion on per-project state.
 **Root cause:** `NamingControls.tsx:157` - Input width is `w-16` (64px), too narrow for multiple tags.
 
 **Fix:**
+
 - Widen input to `w-24` or `w-32`
 - The `sanitizeCustomTag` function already converts spaces/commas to dashes, so `TAG1 TAG2` → `TAG1-TAG2` should work
 - Update placeholder to hint at format: `"TAG"` or `"TAG1-TAG2"`
@@ -2648,11 +2737,11 @@ See brainstorming notes for full architectural discussion on per-project state.
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `client/src/App.tsx` | Remove `customTag: ''` from `handleRenamed` |
-| `client/src/components/NamingControls.tsx` | Sequence maxLength, custom tag width, clear button |
-| `shared/naming.ts` | Strip tags from name in `parseRecordingFilename` or `calculateSuggestedNaming` |
+| File                                       | Changes                                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------ |
+| `client/src/App.tsx`                       | Remove `customTag: ''` from `handleRenamed`                                    |
+| `client/src/components/NamingControls.tsx` | Sequence maxLength, custom tag width, clear button                             |
+| `shared/naming.ts`                         | Strip tags from name in `parseRecordingFilename` or `calculateSuggestedNaming` |
 
 ---
 
@@ -2677,6 +2766,7 @@ See brainstorming notes for full architectural discussion on per-project state.
 NFR-8 (Project Data Query API) provides structured JSON endpoints for querying project data. While JSON is great for programmatic access, it's hard to read in terminal output or when feeding context to LLMs.
 
 **Inspiration:** The DAM tool in `appydave-tools` uses excellent terminal formatting:
+
 - ASCII tables with column alignment
 - Emoji status indicators (✅ ❌ ⚠️)
 - Contextual headers and summary footers
@@ -2690,15 +2780,15 @@ NFR-8 (Project Data Query API) provides structured JSON endpoints for querying p
 
 When `format=text` is specified, return `Content-Type: text/plain` with formatted ASCII output instead of JSON.
 
-| Endpoint | ASCII Report |
-|----------|--------------|
-| `GET /api/query/projects?format=text` | Project list table |
-| `GET /api/query/projects/:code?format=text` | Project summary |
-| `GET /api/query/projects/:code/recordings?format=text` | Recordings table |
-| `GET /api/query/projects/:code/transcripts?format=text` | Transcripts table |
-| `GET /api/query/projects/:code/chapters?format=text` | Chapter list (YouTube-ready) |
-| `GET /api/query/projects/:code/images?format=text` | Images table |
-| `GET /api/query/projects/:code/export?format=text` | Full project report |
+| Endpoint                                                | ASCII Report                 |
+| ------------------------------------------------------- | ---------------------------- |
+| `GET /api/query/projects?format=text`                   | Project list table           |
+| `GET /api/query/projects/:code?format=text`             | Project summary              |
+| `GET /api/query/projects/:code/recordings?format=text`  | Recordings table             |
+| `GET /api/query/projects/:code/transcripts?format=text` | Transcripts table            |
+| `GET /api/query/projects/:code/chapters?format=text`    | Chapter list (YouTube-ready) |
+| `GET /api/query/projects/:code/images?format=text`      | Images table                 |
+| `GET /api/query/projects/:code/export?format=text`      | Full project report          |
 
 **Default:** Without `?format=text`, endpoints continue returning JSON (backward compatible).
 
@@ -2865,11 +2955,13 @@ The existing `flihub` skill in `.claude/skills/flihub.md` should document the `?
 #### Technical Notes
 
 **Implementation location:**
+
 - Formatter utilities: `server/src/utils/formatters.ts`
 - Report generators: `server/src/utils/reporters.ts` (or inline in routes)
 - Skill update: `.claude/skills/flihub.md`
 
 **Response handling:**
+
 ```typescript
 // In route handler
 if (req.query.format === 'text') {
@@ -2881,6 +2973,7 @@ res.json({ success: true, projects });
 ```
 
 **Emoji compatibility:**
+
 - Terminal emojis work in most modern terminals (iTerm2, VS Code, etc.)
 - Fallback to ASCII if needed: `[OK]` instead of `✅`
 
@@ -2905,6 +2998,7 @@ res.json({ success: true, projects });
 **As a content creator**, I want to see an overall progress summary at the top of the Transcriptions page, so I can quickly understand how much transcription work is complete vs remaining.
 
 **Implementation:**
+
 - Progress bar component showing project-wide transcription status
 - Visual bar with percentage (e.g., "12/15 files (80%)")
 - Status chips: ✓ complete | ⏳ active | 📋 queued | ⚠ missing
@@ -2924,12 +3018,13 @@ res.json({ success: true, projects });
 
 Two states only (simple toggle):
 
-| State | Icon | Meaning |
-|-------|------|---------|
-| Pinned | 📌 | Important, keep at top of list |
-| Normal | (blank) | Default state |
+| State  | Icon    | Meaning                        |
+| ------ | ------- | ------------------------------ |
+| Pinned | 📌      | Important, keep at top of list |
+| Normal | (blank) | Default state                  |
 
 **Behaviour:**
+
 - Click to toggle: blank ↔ 📌
 - Multiple projects can be 📌
 - Priority state persisted (see Data Storage below)
@@ -2951,33 +3046,35 @@ Two states only (simple toggle):
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-| Column | Width | Content |
-|--------|-------|---------|
-| Priority | ~24px | 📌 / blank (clickable to toggle) |
-| Project Code | flex | `b75-vibe-code-whisper` |
-| Stage | ~50px | `REC` `EDIT` `DONE` `-` |
-| Ch | ~30px | Unique chapter count |
-| Files | ~45px | Recordings + Safe combined |
-| 📄 | ~45px | Transcription % (or `-`) |
-| ⓘ | ~24px | Hover for stats popup |
+| Column       | Width | Content                          |
+| ------------ | ----- | -------------------------------- |
+| Priority     | ~24px | 📌 / blank (clickable to toggle) |
+| Project Code | flex  | `b75-vibe-code-whisper`          |
+| Stage        | ~50px | `REC` `EDIT` `DONE` `-`          |
+| Ch           | ~30px | Unique chapter count             |
+| Files        | ~45px | Recordings + Safe combined       |
+| 📄           | ~45px | Transcription % (or `-`)         |
+| ⓘ            | ~24px | Hover for stats popup            |
 
 ---
 
 #### Stage Values
 
-| Badge | Colour | Condition |
-|-------|--------|-----------|
-| `-` | Gray | 0 files |
-| `REC` | Blue | Recording phase |
-| `EDIT` | Yellow | Editing phase |
-| `DONE` | Green | Published/complete |
+| Badge  | Colour | Condition          |
+| ------ | ------ | ------------------ |
+| `-`    | Gray   | 0 files            |
+| `REC`  | Blue   | Recording phase    |
+| `EDIT` | Yellow | Editing phase      |
+| `DONE` | Green  | Published/complete |
 
 **Auto-detection (default):**
+
 - 0 files → `-`
 - Has files, < 100% transcribed → `REC`
 - 100% transcribed → `EDIT`
 
 **Manual override:**
+
 - Click the stage badge to cycle: `REC` → `EDIT` → `DONE` → (auto)
 - Clicking past `DONE` returns to auto-detection
 - Manual stages show a subtle ring indicator
@@ -2996,12 +3093,12 @@ Two states only (simple toggle):
 
 Formula: `(transcripts count) / (recordings + safe count) * 100`
 
-| Value | Display |
-|-------|---------|
-| No files | `-` |
-| 0% | `0%` |
-| 1-99% | `XX%` |
-| 100% | `100%` (or ✓) |
+| Value    | Display       |
+| -------- | ------------- |
+| No files | `-`           |
+| 0%       | `0%`          |
+| 1-99%    | `XX%`         |
+| 100%     | `100%` (or ✓) |
 
 ---
 
@@ -3027,6 +3124,7 @@ On hover, show tooltip/popover with extended stats:
 ```
 
 **Stats to include:**
+
 - Created date (folder creation or earliest file)
 - Last edit (most recent file modification)
 - Total duration (sum of all video durations, if available)
@@ -3082,17 +3180,17 @@ Simple array of pinned project codes. Absent = not pinned.
 └────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-*Pinned projects at top (ascending), then normal projects (ascending). Blue row = selected.*
+_Pinned projects at top (ascending), then normal projects (ascending). Blue row = selected._
 
 ---
 
 #### Interactions
 
-| Action | Target | Result |
-|--------|--------|--------|
-| Click | Priority cell (📌/blank) | Toggle pinned state |
-| Click | Row (anywhere else) | Switch to project |
-| Hover | ⓘ icon | Show stats popup |
+| Action | Target                   | Result              |
+| ------ | ------------------------ | ------------------- |
+| Click  | Priority cell (📌/blank) | Toggle pinned state |
+| Click  | Row (anywhere else)      | Switch to project   |
+| Hover  | ⓘ icon                   | Show stats popup    |
 
 ---
 
@@ -3129,15 +3227,18 @@ Simple array of pinned project codes. Absent = not pinned.
    - Remove from display to reduce clutter
 
 **Keep as-is:**
+
 - Blue/yellow left border - indicates chapter grouping (images within same video segment)
 - Prompt text area display - already shows when prompt exists
 
 **Mockup (before):**
+
 ```
 [thumb]  10-6-john-product-manager  10-6-1a-bigpicture  [↑label]  3.0 MB  29/11/2025
 ```
 
 **Mockup (after):**
+
 ```
 [thumb]  10-6-john-product-manager  10-6-1a-bigpicture.png  [A]  3.0 MB
 ```
@@ -3151,6 +3252,7 @@ Simple array of pinned project codes. Absent = not pinned.
 **As a content creator**, I want images and their prompts shown on a single row, so I can see the relationship between them.
 
 **Features:**
+
 - Images and prompts with same base filename grouped on one row
 - Prompt text displays inline in multi-line text area (height scales with thumbnail size)
 - Shift+Hover on prompt text shows full content in modal overlay with line breaks preserved
@@ -3167,6 +3269,7 @@ Simple array of pinned project codes. Absent = not pinned.
 **As a content creator**, I want to see and edit the Image Source Directory in the Config screen, so I can change where incoming images are scanned from.
 
 **Implementation:**
+
 - Added "Image Watch Directory" field to ConfigPanel
 - Same validation as other path fields (must start with ~ or /)
 - Renamed existing labels for clarity:
@@ -3175,6 +3278,7 @@ Simple array of pinned project codes. Absent = not pinned.
 - Show with collapsed path (using `~`)
 
 **UI:**
+
 ```
 Watch Directory:        [~/ecamm_________________]
                         Directory where Ecamm Live saves recordings
@@ -3189,6 +3293,7 @@ Image Source Directory: [~/Downloads_____________]
 ```
 
 **Technical notes:**
+
 - Add `imageSourceDirectory` to ConfigPanel state
 - Include in `useUpdateConfig` mutation
 - Already exists in backend config handling
@@ -3200,6 +3305,7 @@ Image Source Directory: [~/Downloads_____________]
 **As a content creator**, I want to change the thumbnail size in the Assets page, so I can scan through many images quickly (small) or see more detail (large/extra-large).
 
 **Applies to:**
+
 - Incoming images grid
 - Assigned images list
 
@@ -3213,20 +3319,22 @@ INCOMING IMAGES (~/Downloads)                    [S] [M] [L] [XL]
 
 **Sizes:**
 
-| Size | Thumbnail | Use case |
-|------|-----------|----------|
-| S (Small) | ~80px | Quick scan, see many at once |
-| M (Medium) | ~120px | Balanced view |
-| L (Large) | ~160px | Current default, good detail |
-| XL (Extra Large) | ~240px | Maximum detail without Shift+Hover |
+| Size             | Thumbnail | Use case                           |
+| ---------------- | --------- | ---------------------------------- |
+| S (Small)        | ~80px     | Quick scan, see many at once       |
+| M (Medium)       | ~120px    | Balanced view                      |
+| L (Large)        | ~160px    | Current default, good detail       |
+| XL (Extra Large) | ~240px    | Maximum detail without Shift+Hover |
 
 **Behavior:**
+
 - Default: Large (L)
 - Clicking a size button applies to both Incoming and Assigned grids
 - Persist selection in localStorage (remembers across sessions)
 - Active size button highlighted
 
 **Mockup:**
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  INCOMING IMAGES (~/Downloads)              [S] [M] [L] [XL]    │
@@ -3245,6 +3353,7 @@ INCOMING IMAGES (~/Downloads)                    [S] [M] [L] [XL]
 ```
 
 **Technical notes:**
+
 - Frontend only, no backend changes
 - Store size preference in localStorage
 - Apply size via CSS class or inline style on thumbnail container
@@ -3268,6 +3377,7 @@ Tags: [CTA] [SKOOL]  [ENDCARD]  [_______]
 ```
 
 **Behavior:**
+
 - Small text input field after existing tag buttons
 - Placeholder: "custom" (or similar)
 - Type text, press Enter or blur → converts to UPPERCASE and adds to filename
@@ -3277,16 +3387,19 @@ Tags: [CTA] [SKOOL]  [ENDCARD]  [_______]
 - Treated same as other tags in filename output
 
 **Visual styling:**
+
 - Input field: subtle, doesn't draw attention
 - No special styling needed once in filename - it's just another tag
 
 **Example:**
+
 ```
 Input: "sponsor note"
 Filename: 03-15-demo-CTA-SPONSOR-NOTE.mov
 ```
 
 **Technical notes:**
+
 - Frontend only - no backend changes
 - Add to existing tags array before building filename
 - Sanitize input: uppercase, replace spaces/commas with dashes, strip invalid chars
@@ -3302,6 +3415,7 @@ Filename: 03-15-demo-CTA-SPONSOR-NOTE.mov
 **As a content creator**, when multiple recordings are in the incoming files list, I want the "likely good take" highlighting to correctly identify the best recording.
 
 **v2 Implementation (commit db85daf):**
+
 - Files < 5MB treated as junk (always white)
 - First substantial file (≥5MB) = baseline
 - Most recent substantial file = best take (green)
@@ -3325,6 +3439,7 @@ Filename: 03-15-demo-CTA-SPONSOR-NOTE.mov
 **As a content creator**, I want the application to run on predictable ports, so I can access Recording Namer without conflicts with other dev apps.
 
 **Port scheme:**
+
 - Client (Vite): 5100
 - Server (Express): 5101
 
@@ -3337,20 +3452,24 @@ Filename: 03-15-demo-CTA-SPONSOR-NOTE.mov
 **As a content creator**, I want to see a panel listing all available AppyDave video projects, so I can understand what projects exist before needing to switch between them.
 
 **Context:**
+
 - Projects are managed by DAM (Digital Asset Management) tool
 - Specifically AppyDave brand projects (e.g., `v-appydave/b72-opus-awesome/`)
 - Simpler first step before building project switching
 
 **Requirements:**
+
 - Scan available projects using DAM integration
 - Display read-only list of projects with codes/names
 - Show basic info (project code, maybe file count or last modified)
 
 **Integration:**
+
 - Use existing DAM skill/tool for project discovery
 - Project path pattern: `/dev/video-projects/v-appydave/{project-code}/`
 
 **UI:**
+
 - New panel/section in the UI (togglable like Config panel)
 - List view of available projects
 
@@ -3363,11 +3482,13 @@ Filename: 03-15-demo-CTA-SPONSOR-NOTE.mov
 **Depends on:** FR-10 (Project List Panel)
 
 **Requirements:**
+
 - Click on a project code in the project list to switch to it
 - Switching updates the target directory in config to `{project-path}/recordings/`
 - Persist selected project across sessions
 
 **UI:**
+
 - Clickable project codes in the Projects panel
 - Visual indication of currently selected project
 - Show current project name prominently in header or footer
@@ -3379,6 +3500,7 @@ Filename: 03-15-demo-CTA-SPONSOR-NOTE.mov
 **As a content creator**, I want to create a new video project from the Recording Namer, so I can start a new project without leaving the application.
 
 **Requirements:**
+
 - Input field for project code (e.g., "b73-new-topic")
 - Create project folder at `~/dev/video-projects/v-appydave/{project-code}/`
 - Create `recordings/` subdirectory inside the project
@@ -3386,6 +3508,7 @@ Filename: 03-15-demo-CTA-SPONSOR-NOTE.mov
 - Validate project code format (kebab-case, starts with b-number pattern)
 
 **UI:**
+
 - "New Project" button in Projects panel
 - Modal or inline form for entering project code
 - Success/error feedback via toast
@@ -3396,20 +3519,20 @@ Filename: 03-15-demo-CTA-SPONSOR-NOTE.mov
 
 ## Non-Functional Requirements
 
-| # | Requirement | Added | Status |
-|---|-------------|-------|--------|
-| 1 | NFR-1: Dynamic CORS origins (see below) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 2 | NFR-2: Configurable tags via JSON (see below) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 3 | NFR-3: Configurable common names with rules (see below) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 4 | NFR-4: Rename "subsequence" to "sequence" (see below) | 2025-11-29 | ✅ Implemented 2025-11-29 |
-| 5 | NFR-5: Extend Socket Infrastructure (see below) | 2025-12-01 | ✅ Implemented 2025-12-01 |
-| 6 | NFR-6: Codebase Refactor (see below) | 2025-12-01 | ✅ Implemented 2025-12-03 |
-| 7 | NFR-7: Show Recording Duration (see below) | 2025-12-02 | ✅ Implemented 2025-12-02 |
-| 8 | NFR-8: Project Data Query API (see spec) | 2025-12-06 | ✅ Implemented 2025-12-06 |
-| 9 | NFR-9: Extract getProjectStats() utility (see below) | 2025-12-13 | Pending |
-| 10 | NFR-10: Consolidate formatting utilities (see below) | 2025-12-13 | Pending |
-| 11 | NFR-11: Extract file scanning utilities (see below) | 2025-12-13 | Pending |
-| 12 | NFR-12: Extract API_URL config (see below) | 2025-12-13 | Pending |
+| #   | Requirement                                             | Added      | Status                    |
+| --- | ------------------------------------------------------- | ---------- | ------------------------- |
+| 1   | NFR-1: Dynamic CORS origins (see below)                 | 2025-11-29 | ✅ Implemented 2025-11-29 |
+| 2   | NFR-2: Configurable tags via JSON (see below)           | 2025-11-29 | ✅ Implemented 2025-11-29 |
+| 3   | NFR-3: Configurable common names with rules (see below) | 2025-11-29 | ✅ Implemented 2025-11-29 |
+| 4   | NFR-4: Rename "subsequence" to "sequence" (see below)   | 2025-11-29 | ✅ Implemented 2025-11-29 |
+| 5   | NFR-5: Extend Socket Infrastructure (see below)         | 2025-12-01 | ✅ Implemented 2025-12-01 |
+| 6   | NFR-6: Codebase Refactor (see below)                    | 2025-12-01 | ✅ Implemented 2025-12-03 |
+| 7   | NFR-7: Show Recording Duration (see below)              | 2025-12-02 | ✅ Implemented 2025-12-02 |
+| 8   | NFR-8: Project Data Query API (see spec)                | 2025-12-06 | ✅ Implemented 2025-12-06 |
+| 9   | NFR-9: Extract getProjectStats() utility (see below)    | 2025-12-13 | Pending                   |
+| 10  | NFR-10: Consolidate formatting utilities (see below)    | 2025-12-13 | Pending                   |
+| 11  | NFR-11: Extract file scanning utilities (see below)     | 2025-12-13 | Pending                   |
+| 12  | NFR-12: Extract API_URL config (see below)              | 2025-12-13 | Pending                   |
 
 ---
 
@@ -3422,6 +3545,7 @@ Filename: 03-15-demo-CTA-SPONSOR-NOTE.mov
 #### The Problem
 
 The following logic is duplicated at lines ~307, ~410, and ~984 in `server/src/routes/query.ts`:
+
 - `countMovFiles()` - counting recordings
 - `getTranscriptSyncStatus()` - checking transcript sync
 - Stage detection logic
@@ -3445,17 +3569,17 @@ interface ProjectStats {
   totalDuration: number | null;
 }
 
-async function getProjectStats(projectPath: string): Promise<ProjectStats>
+async function getProjectStats(projectPath: string): Promise<ProjectStats>;
 ```
 
 ---
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `server/src/routes/query.ts` | Extract function, replace 3 call sites |
-| `server/src/utils/projectStats.ts` | New file with extracted function |
+| File                               | Changes                                |
+| ---------------------------------- | -------------------------------------- |
+| `server/src/routes/query.ts`       | Extract function, replace 3 call sites |
+| `server/src/utils/projectStats.ts` | New file with extracted function       |
 
 ---
 
@@ -3486,9 +3610,9 @@ async function getProjectStats(projectPath: string): Promise<ProjectStats>
 
 Formatting functions are scattered across the codebase:
 
-| Function | Locations |
-|----------|-----------|
-| `formatFileSize()` | `utils/`, `ProjectStatsPopup`, `ThumbsPage` |
+| Function             | Locations                                                                    |
+| -------------------- | ---------------------------------------------------------------------------- |
+| `formatFileSize()`   | `utils/`, `ProjectStatsPopup`, `ThumbsPage`                                  |
 | Timestamp formatting | `RecordingsView`, `AssetsPage`, `ProjectStatsPopup` (all slightly different) |
 
 There's already a `client/src/utils/formatting.ts` that should be the single source.
@@ -3505,13 +3629,13 @@ There's already a `client/src/utils/formatting.ts` that should be the single sou
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `client/src/utils/formatting.ts` | Add any missing formatters |
-| `client/src/components/ProjectStatsPopup.tsx` | Use shared formatter |
-| `client/src/components/ThumbsPage.tsx` | Use shared formatter |
-| `client/src/components/RecordingsView.tsx` | Use shared formatter |
-| `client/src/components/AssetsPage.tsx` | Use shared formatter |
+| File                                          | Changes                    |
+| --------------------------------------------- | -------------------------- |
+| `client/src/utils/formatting.ts`              | Add any missing formatters |
+| `client/src/components/ProjectStatsPopup.tsx` | Use shared formatter       |
+| `client/src/components/ThumbsPage.tsx`        | Use shared formatter       |
+| `client/src/components/RecordingsView.tsx`    | Use shared formatter       |
+| `client/src/components/AssetsPage.tsx`        | Use shared formatter       |
 
 ---
 
@@ -3532,9 +3656,10 @@ There's already a `client/src/utils/formatting.ts` that should be the single sou
 #### The Problem
 
 `query.ts`, `index.ts`, and `projects.ts` all have similar patterns:
+
 ```typescript
 const entries = await fs.readdir(dir, { withFileTypes: true });
-const files = entries.filter(e => e.isFile() && e.name.endsWith('.mov'));
+const files = entries.filter((e) => e.isFile() && e.name.endsWith('.mov'));
 ```
 
 ---
@@ -3544,21 +3669,21 @@ const files = entries.filter(e => e.isFile() && e.name.endsWith('.mov'));
 Create `server/src/utils/scanning.ts` with reusable functions:
 
 ```typescript
-async function scanMovFiles(dir: string): Promise<string[]>
-async function scanImageFiles(dir: string): Promise<string[]>
-async function scanDirectory(dir: string, options: ScanOptions): Promise<FileEntry[]>
+async function scanMovFiles(dir: string): Promise<string[]>;
+async function scanImageFiles(dir: string): Promise<string[]>;
+async function scanDirectory(dir: string, options: ScanOptions): Promise<FileEntry[]>;
 ```
 
 ---
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `server/src/utils/scanning.ts` | New file with scanning utilities |
-| `server/src/routes/query.ts` | Use scanning utils |
-| `server/src/routes/index.ts` | Use scanning utils |
-| `server/src/routes/projects.ts` | Use scanning utils |
+| File                            | Changes                          |
+| ------------------------------- | -------------------------------- |
+| `server/src/utils/scanning.ts`  | New file with scanning utilities |
+| `server/src/routes/query.ts`    | Use scanning utils               |
+| `server/src/routes/index.ts`    | Use scanning utils               |
+| `server/src/routes/projects.ts` | Use scanning utils               |
 
 ---
 
@@ -3579,6 +3704,7 @@ async function scanDirectory(dir: string, options: ScanOptions): Promise<FileEnt
 #### The Problem
 
 Every component that makes API calls has:
+
 ```typescript
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5101';
 ```
@@ -3596,6 +3722,7 @@ export const WS_URL = API_URL.replace(/^http/, 'ws');
 ```
 
 Import everywhere:
+
 ```typescript
 import { API_URL } from '../config';
 ```
@@ -3604,9 +3731,9 @@ import { API_URL } from '../config';
 
 #### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `client/src/config.ts` | New file |
+| File                        | Changes            |
+| --------------------------- | ------------------ |
+| `client/src/config.ts`      | New file           |
 | All components with API_URL | Import from config |
 
 ---
@@ -3624,6 +3751,7 @@ import { API_URL } from '../config';
 **As a developer**, I want CORS origins to be configured dynamically rather than hardcoded, so the codebase is easier to maintain when ports change.
 
 **Options:**
+
 - Use `origin: true` in development (reflects requesting origin)
 - Use environment variable: `CORS_ORIGINS=http://localhost:5100`
 - Configure Vite to proxy API requests (eliminates CORS entirely)
@@ -3648,6 +3776,7 @@ import { API_URL } from '../config';
    - `ENDCARD` - Only relevant for outros, auto-suggested when "outro" selected
 
 **Proposed config structure:**
+
 ```json
 {
   "availableTags": ["CTA", "SKOOL"],
@@ -3661,11 +3790,13 @@ import { API_URL } from '../config';
 ```
 
 **UI Behavior:**
+
 - Global tags (CTA, SKOOL) always shown as checkboxes
 - When "outro" is selected, ENDCARD appears as additional option (or auto-checks)
 - All tags remain available, `suggestTags` just adds/pre-selects extras
 
 **Notes:**
+
 - Tags displayed in UPPERCASE for visual distinction
 - Tags are NOT included when merging chapters (chapter names only use the name component)
 
@@ -3678,6 +3809,7 @@ import { API_URL } from '../config';
 **Proposed location:** `server/config.json` (same file as tags)
 
 **Proposed format:**
+
 ```json
 {
   "commonNames": [
@@ -3695,6 +3827,7 @@ import { API_URL } from '../config';
 ```
 
 **Rules:**
+
 - `minChapter` - Only show when chapter >= value (e.g., outro after chapter 4)
 - `maxChapter` - Only show when chapter <= value (e.g., intro only chapters 1-2)
 - No rules = always available
@@ -3719,16 +3852,19 @@ import { API_URL } from '../config';
 **As a content creator**, I want to see common names as small pill buttons below the name field, so I can quickly select a name without typing.
 
 **Requirements:**
+
 - Display as small pill/chip buttons below the name input field
 - Clicking a pill fills in the name field with that value
 - Only show pills that pass the rules engine (based on current chapter)
 - Only show pills when sequence = 1 (name is locked after sequence 1)
 
 **UI behavior:**
+
 - Sequence = 1: Name field editable, pill buttons visible
 - Sequence > 1: Name field read-only (inherited from sequence 1), no pills shown
 
 **Visual:**
+
 ```
 Name: [_______________]
 [intro] [scenario] [demo] [recap]   <- small pills, only when seq=1
@@ -3741,6 +3877,7 @@ Name: [_______________]
 **As a content creator**, I want a separate page/tab showing all recordings in the current project, so I can see what assets I have without leaving the app.
 
 **Requirements:**
+
 - New page/view accessible via tab or navigation
 - Shows files from both `recordings/` and `.safe/` folders
 - Groups files by chapter with visual separators
@@ -3748,11 +3885,13 @@ Name: [_______________]
 - Toggle setting to show/hide chapter separators (useful for smaller projects)
 
 **File display:**
+
 - Filename, size, date
 - Visual indication of which folder (recordings vs .safe)
 - Possibly show "good take" indicators per chapter
 
 **Chapter grouping example:**
+
 ```
 ——[ 01 intro ]——————————————————
   01-1-intro.mov     14.1 MB
@@ -3767,6 +3906,7 @@ Name: [_______________]
 ```
 
 **Navigation:**
+
 - Consider tabs: "Incoming" (current main view) | "Recordings" (this new view)
 - Or simple toggle/button in header
 
@@ -3779,16 +3919,19 @@ Name: [_______________]
 **As a content creator**, I want to move completed recordings to a `-safe` folder, so I can focus on the current chapter while keeping finished chapters accessible.
 
 **Mental Model:**
+
 - `recordings/` = "Working on it" (active recording session)
 - `recordings/-safe/` = "Done, but still in this session" (out of the way, but accessible)
 
 **Typical Workflow:**
+
 1. Record chapter 01, rename files → they sit in `recordings/`
 2. Record chapter 02, rename files → now chapter 01 clutters the view
 3. Move all of chapter 01 to `-safe/` → focus on chapter 02
 4. Continue until video is complete
 
 **Requirements:**
+
 - Per-file action: `[→ Safe]` button on each file row
 - Per-chapter action: `[→ Safe All]` button on chapter heading
 - Moves files from `recordings/` to `recordings/-safe/`
@@ -3797,6 +3940,7 @@ Name: [_______________]
 - Restore action: `[← Restore]` on safe file rows (when "Show safe" is on)
 
 **Folder structure:**
+
 ```
 project/
 ├── -trash/              <- discarded files (sibling to recordings)
@@ -3815,10 +3959,12 @@ project/
 **As a content creator**, after renaming a file when other incoming files remain, I want to be prompted to discard them, so I don't have to manually click Discard on each one.
 
 **Trigger:**
+
 - After a successful rename
 - When there are still 1+ files remaining in the incoming list
 
 **UI:**
+
 - Simple modal dialog appears after rename completes
 - Message: "Discard remaining X file(s)?" (or similar)
 - Two buttons: "Yes" / "No"
@@ -3826,6 +3972,7 @@ project/
 - No: Dismiss modal, leave files in list
 
 **Example flow:**
+
 1. User has 4 incoming files
 2. User renames file #3 (the good take)
 3. Modal appears: "Discard remaining 3 files?"
@@ -3833,6 +3980,7 @@ project/
 5. Files 1, 2, 4 are moved to `.trash/`
 
 **Technical notes:**
+
 - First modal dialog in the app - may need to add a modal component/library
 - Consider using existing toast library (sonner) or simple custom modal
 - Keep it lightweight - no need for a heavy modal framework
@@ -3844,6 +3992,7 @@ project/
 **Full specification:** `docs/recording-namer/image-asset-management-spec.md`
 
 **FR-17: Image Asset Management Page**
+
 - New "Assets" page for assigning images from Downloads to project
 - Scan `~/Downloads` for incoming images (png, jpg, webp)
 - Thumbnail grid display
@@ -3851,16 +4000,19 @@ project/
 - Move and rename to `assets/images/` folder
 
 **FR-18: Image Duplicate Detection**
+
 - Detect duplicate images by file hash (MD5)
 - Show warning when duplicates found
 - Auto-hide or badge duplicates in grid
 
 **FR-19: Image Variant Support (A/B/C)**
+
 - Optional variant letter (a-z) in filename
 - For A/B testing alternatives for video editor
 - Example: `05-3-2a-workflow.png`, `05-3-2b-workflow.png`
 
 **Naming convention:**
+
 ```
 {chapter}-{seq}-{imgOrder}{variant}-{label}.{ext}
 Example: 05-3-1a-workflow-diagram.png
@@ -3873,6 +4025,7 @@ Example: 05-3-1a-workflow-diagram.png
 **As a content creator**, I want the field called "sequence" (or "SEQ") instead of "subsequence", for clearer terminology.
 
 **Changes required:**
+
 - UI labels: "Subsequence" → "Sequence" (or "Seq")
 - Variable names: `subsequence` → `sequence`
 - API/types: Update `RenameRequest`, `SuggestedNaming`, etc.
@@ -3886,16 +4039,19 @@ Example: 05-3-1a-workflow-diagram.png
 **As a content creator**, I want to see the duration of each incoming recording, so I can quickly identify short junk takes vs substantial recordings.
 
 **Current display:**
+
 ```
 Movie on 2025-12-01 at 14.32.mov    14.1 MB    Dec 1, 14:32
 ```
 
 **Proposed display:**
+
 ```
 Movie on 2025-12-01 at 14.32.mov    2:34    14.1 MB    Dec 1, 14:32
 ```
 
 **Duration format:**
+
 - Under 1 minute: `0:45` (seconds)
 - 1-59 minutes: `2:34` (min:sec)
 - 60+ minutes: `1:02:34` (hr:min:sec)
@@ -3910,6 +4066,7 @@ ffprobe -v quiet -show_entries format=duration -of csv=p=0 "file.mov"
 ```
 
 **Backend:**
+
 ```typescript
 import { exec } from 'child_process';
 
@@ -3928,6 +4085,7 @@ function getVideoDuration(filePath: string): Promise<number | null> {
 ```
 
 **Utility function:**
+
 ```typescript
 // shared/formatting.ts or client/src/utils/formatting.ts
 export function formatDuration(seconds: number): string {
@@ -3945,20 +4103,23 @@ export function formatDuration(seconds: number): string {
 **API change:**
 
 Add `duration` field to file response:
+
 ```typescript
 interface IncomingFile {
   filename: string;
   size: number;
   mtime: string;
-  duration?: number;  // seconds, null if unavailable
+  duration?: number; // seconds, null if unavailable
 }
 ```
 
 **Prerequisite:**
+
 - `ffprobe` must be installed (`brew install ffmpeg`)
 - If not available, duration shows as `-` or is omitted
 
 **UI placement:**
+
 - After filename, before file size
 - Slightly muted color (like the timestamp)
 
@@ -3974,15 +4135,16 @@ interface IncomingFile {
 
 Create `client/src/components/shared/` with extracted components:
 
-| Component | Currently Used In | Notes |
-|-----------|-------------------|-------|
-| `<SizeToggle />` | AssetsPage, ThumbsPage | S/M/L/XL buttons with localStorage persistence |
-| `<HoverPreview />` | AssetsPage (images, prompts), ThumbsPage | Shift+Hover large preview pattern |
-| `<OpenFolderButton />` | Config, Incoming, Recordings, Assets, Thumbs | Already exists, move to shared/ |
-| `<SectionHeader />` | All pages | Consistent heading with optional icon buttons |
-| `<DeleteButton />` | Thumbs, ZIPs, potentially others | Delete with confirmation pattern |
+| Component              | Currently Used In                            | Notes                                          |
+| ---------------------- | -------------------------------------------- | ---------------------------------------------- |
+| `<SizeToggle />`       | AssetsPage, ThumbsPage                       | S/M/L/XL buttons with localStorage persistence |
+| `<HoverPreview />`     | AssetsPage (images, prompts), ThumbsPage     | Shift+Hover large preview pattern              |
+| `<OpenFolderButton />` | Config, Incoming, Recordings, Assets, Thumbs | Already exists, move to shared/                |
+| `<SectionHeader />`    | All pages                                    | Consistent heading with optional icon buttons  |
+| `<DeleteButton />`     | Thumbs, ZIPs, potentially others             | Delete with confirmation pattern               |
 
 **Acceptance criteria:**
+
 - [ ] `components/shared/` directory exists
 - [ ] Each component has consistent props interface
 - [ ] All pages updated to use shared components
@@ -3995,6 +4157,7 @@ Create `client/src/components/shared/` with extracted components:
 **Problem:** `targetDirectory` currently points to `recordings/` folder, but the true project root is the parent. This makes derived paths unnecessarily complex.
 
 **Current (wrong):**
+
 ```
 targetDirectory: ~/dev/video-projects/v-appydave/b64-project/recordings
                                                             ↑ pointing here
@@ -4006,6 +4169,7 @@ Derived paths require going UP:
 ```
 
 **Proposed (correct):**
+
 ```
 projectDirectory: ~/dev/video-projects/v-appydave/b64-project
                                                   ↑ pointing here
@@ -4019,6 +4183,7 @@ Derived paths go DOWN:
 ```
 
 **Changes required:**
+
 - [ ] Rename config key: `targetDirectory` → `projectDirectory`
 - [ ] Update Config UI label: "Target Project Directory" (already correct!)
 - [ ] Create `getProjectPaths(projectDirectory)` utility (see below)
@@ -4033,13 +4198,13 @@ Create `shared/paths.ts` (used by both client and server):
 
 ```typescript
 export interface ProjectPaths {
-  project: string;      // ~/dev/video-projects/v-appydave/b64-project
-  recordings: string;   // .../recordings
-  safe: string;         // .../recordings/-safe
-  trash: string;        // .../-trash
-  assets: string;       // .../assets
-  images: string;       // .../assets/images
-  thumbs: string;       // .../assets/thumbs
+  project: string; // ~/dev/video-projects/v-appydave/b64-project
+  recordings: string; // .../recordings
+  safe: string; // .../recordings/-safe
+  trash: string; // .../-trash
+  assets: string; // .../assets
+  images: string; // .../assets/images
+  thumbs: string; // .../assets/thumbs
 }
 
 export function getProjectPaths(projectDirectory: string): ProjectPaths {
@@ -4056,6 +4221,7 @@ export function getProjectPaths(projectDirectory: string): ProjectPaths {
 ```
 
 **Acceptance criteria:**
+
 - [ ] Single source of truth for all project paths
 - [ ] No hardcoded path segments scattered in routes
 - [ ] `open-folder` endpoint uses this utility
@@ -4090,6 +4256,7 @@ class WatcherManager {
 ```
 
 **Acceptance criteria:**
+
 - [ ] All watchers managed through single class
 - [ ] Proper cleanup on project switch
 - [ ] Clear distinction: global watchers vs project-specific watchers
@@ -4133,6 +4300,7 @@ socket.on('thumbs:changed', () => {
 ```
 
 **Acceptance criteria:**
+
 - [ ] All query keys defined in one file
 - [ ] All `useQuery` calls reference `queryKeys.xxx`
 - [ ] Socket event handlers use same keys for invalidation
@@ -4153,24 +4321,23 @@ Establish consistent page structure across all pages:
     actions={<OpenFolderButton folder="ecamm" />}
   />
 
-  <div className="page-content">
-    {/* page-specific content */}
-  </div>
+  <div className="page-content">{/* page-specific content */}</div>
 </div>
 ```
 
 **Audit each page:**
 
-| Page | Has SectionHeader? | Consistent styling? | Actions aligned? |
-|------|-------------------|---------------------|------------------|
-| Incoming | ? | ? | ? |
-| Recordings | ? | ? | ? |
-| Assets | ? | ? | ? |
-| Thumbs | ? | ? | ? |
-| Projects | ? | ? | ? |
-| Config | ? | ? | ? |
+| Page       | Has SectionHeader? | Consistent styling? | Actions aligned? |
+| ---------- | ------------------ | ------------------- | ---------------- |
+| Incoming   | ?                  | ?                   | ?                |
+| Recordings | ?                  | ?                   | ?                |
+| Assets     | ?                  | ?                   | ?                |
+| Thumbs     | ?                  | ?                   | ?                |
+| Projects   | ?                  | ?                   | ?                |
+| Config     | ?                  | ?                   | ?                |
 
 **Acceptance criteria:**
+
 - [ ] All pages use `<SectionHeader />` component
 - [ ] Consistent heading hierarchy (h1, h2, etc.)
 - [ ] Action buttons (📁, refresh, etc.) positioned consistently
@@ -4183,6 +4350,7 @@ Establish consistent page structure across all pages:
 Audit and standardize error handling across all route files:
 
 **Standard response format:**
+
 ```typescript
 // Success
 res.json({ success: true, data: { ... } });
@@ -4192,6 +4360,7 @@ res.status(4xx).json({ success: false, error: 'Human-readable message' });
 ```
 
 **Middleware pattern:**
+
 ```typescript
 // server/src/middleware/errorHandler.ts
 export function asyncHandler(fn: RequestHandler) {
@@ -4207,6 +4376,7 @@ export function errorHandler(err, req, res, next) {
 ```
 
 **Acceptance criteria:**
+
 - [ ] All routes use consistent response format
 - [ ] Async errors caught properly
 - [ ] Client-side error handling consistent (toast on error)
@@ -4218,15 +4388,18 @@ export function errorHandler(err, req, res, next) {
 Establish `/api/system/` as the pattern for non-CRUD operations:
 
 **Current:**
+
 - `POST /api/system/open-folder`
 
 **Future candidates:**
+
 - `POST /api/system/open-file` - open file in default app
 - `POST /api/system/reveal-file` - reveal specific file in Finder
 - `POST /api/system/transcribe` - transcription service (future)
 - `GET /api/system/health` - server health check
 
 **Acceptance criteria:**
+
 - [ ] Document the `/api/system/` pattern
 - [ ] Security considerations documented (local-only, no arbitrary paths)
 
@@ -4234,16 +4407,16 @@ Establish `/api/system/` as the pattern for non-CRUD operations:
 
 ### Refactor Checklist Summary
 
-| Area | Priority | Effort |
-|------|----------|--------|
-| Fix target directory → project directory | High | Medium |
-| Centralize path derivation | High | Low |
-| Shared components library | High | Medium |
-| Centralize query keys | Medium | Low |
-| Centralize watcher management | Medium | Medium |
-| Consistent page layout | Medium | Medium |
-| Consistent error handling | Low | Low |
-| Document system routes pattern | Low | Low |
+| Area                                     | Priority | Effort |
+| ---------------------------------------- | -------- | ------ |
+| Fix target directory → project directory | High     | Medium |
+| Centralize path derivation               | High     | Low    |
+| Shared components library                | High     | Medium |
+| Centralize query keys                    | Medium   | Low    |
+| Centralize watcher management            | Medium   | Medium |
+| Consistent page layout                   | Medium   | Medium |
+| Consistent error handling                | Low      | Low    |
+| Document system routes pattern           | Low      | Low    |
 
 ---
 
@@ -4253,11 +4426,11 @@ Establish `/api/system/` as the pattern for non-CRUD operations:
 
 **Items:** #5, #7, #8
 
-| Task | Description |
-|------|-------------|
-| Centralize Query Keys | Move all inline query key strings to `client/src/constants/queryKeys.ts`. Update all `useQuery`/`useMutation` calls to reference the constants. |
-| Consistent Error Handling | Audit routes for consistent `{ success, data/error }` response format. Add `asyncHandler` wrapper if missing. |
-| Document System Routes | Add comments/docs for `/api/system/` pattern and security considerations. |
+| Task                      | Description                                                                                                                                     |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Centralize Query Keys     | Move all inline query key strings to `client/src/constants/queryKeys.ts`. Update all `useQuery`/`useMutation` calls to reference the constants. |
+| Consistent Error Handling | Audit routes for consistent `{ success, data/error }` response format. Add `asyncHandler` wrapper if missing.                                   |
+| Document System Routes    | Add comments/docs for `/api/system/` pattern and security considerations.                                                                       |
 
 **Risk:** Low - no behavior change, just organization.
 
@@ -4267,12 +4440,13 @@ Establish `/api/system/` as the pattern for non-CRUD operations:
 
 **Items:** #2, #3
 
-| Task | Description |
-|------|-------------|
-| Fix targetDirectory → projectDirectory | Rename config key. Update Config UI. Add migration to strip `/recordings` from existing configs on load. |
-| Centralize Path Derivation | Ensure `shared/paths.ts` has `getProjectPaths()` returning all derived paths. Update all routes to use it. Remove scattered `path.join(..., '..', ...)` calls. |
+| Task                                   | Description                                                                                                                                                    |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fix targetDirectory → projectDirectory | Rename config key. Update Config UI. Add migration to strip `/recordings` from existing configs on load.                                                       |
+| Centralize Path Derivation             | Ensure `shared/paths.ts` has `getProjectPaths()` returning all derived paths. Update all routes to use it. Remove scattered `path.join(..., '..', ...)` calls. |
 
 **Risk:** Medium-High - breaking change to config structure. Test thoroughly:
+
 - Project switching still works
 - All file operations go to correct folders
 - Config migration handles existing setups
@@ -4283,11 +4457,11 @@ Establish `/api/system/` as the pattern for non-CRUD operations:
 
 **Items:** #1, #4, #6
 
-| Task | Description |
-|------|-------------|
-| Shared Components Library | Extract `SizeToggle`, `HoverPreview`, `SectionHeader`, `DeleteButton` to `client/src/components/shared/`. Update all pages to use them. |
-| Centralize Watcher Management | Create `WatcherManager` class. Move all chokidar setup into it. Clear separation of global vs project watchers. |
-| Consistent Page Layout | Audit all pages for consistent `SectionHeader` usage, heading hierarchy, action button placement. |
+| Task                          | Description                                                                                                                             |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared Components Library     | Extract `SizeToggle`, `HoverPreview`, `SectionHeader`, `DeleteButton` to `client/src/components/shared/`. Update all pages to use them. |
+| Centralize Watcher Management | Create `WatcherManager` class. Move all chokidar setup into it. Clear separation of global vs project watchers.                         |
+| Consistent Page Layout        | Audit all pages for consistent `SectionHeader` usage, heading hierarchy, action button placement.                                       |
 
 **Risk:** Low - refactoring with no behavior change.
 
@@ -4300,20 +4474,21 @@ Establish `/api/system/` as the pattern for non-CRUD operations:
 **Context:**
 
 The app has a working Socket.io system for the Incoming recordings feature:
+
 - Server emits `file:new`, `file:deleted` when recordings appear/disappear
 - Client listens and updates UI in real-time with toast notifications
 - Typed events in `shared/types.ts` (`ServerToClientEvents`)
 
 However, newer features use polling or require manual refresh:
 
-| Feature | Current Method | User Impact |
-|---------|----------------|-------------|
-| FR-27: Thumbs - ZIP list | Polling (5s) | Delayed updates when downloading ZIPs |
-| FR-27: Thumbs - Current thumbnails | Polling (3s) | Delayed updates after import |
-| FR-17: Assets - Incoming images | No refresh | Must manually refresh or navigate away |
-| FR-17: Assets - Assigned images | No refresh | Must manually refresh after assign |
-| FR-14: Recordings view | No refresh | Must manually refresh after rename |
-| FR-10: Projects list | No refresh | Must manually refresh after project changes |
+| Feature                            | Current Method | User Impact                                 |
+| ---------------------------------- | -------------- | ------------------------------------------- |
+| FR-27: Thumbs - ZIP list           | Polling (5s)   | Delayed updates when downloading ZIPs       |
+| FR-27: Thumbs - Current thumbnails | Polling (3s)   | Delayed updates after import                |
+| FR-17: Assets - Incoming images    | No refresh     | Must manually refresh or navigate away      |
+| FR-17: Assets - Assigned images    | No refresh     | Must manually refresh after assign          |
+| FR-14: Recordings view             | No refresh     | Must manually refresh after rename          |
+| FR-10: Projects list               | No refresh     | Must manually refresh after project changes |
 
 **Proposed Solution:**
 
@@ -4347,6 +4522,7 @@ Extend the socket system with new events:
    - Can be implemented incrementally per feature
 
 **Priority:**
+
 - FR-27 (Thumbs) has active polling that should be replaced first
 - Other features can be addressed as time permits
 
@@ -4358,15 +4534,15 @@ Extend the socket system with new events:
 
 **Folders to support:**
 
-| Folder | Config Key | Example Path |
-|--------|------------|--------------|
-| Ecamm Watch | `watchDirectory` | `~/Movies/Ecamm Live Recordings` |
-| Downloads | `imageSourceDirectory` | `~/Downloads` |
-| Recordings | `targetDirectory` | `~/dev/video-projects/v-appydave/b64-.../recordings` |
-| Images | derived | `{targetDirectory}/../assets/images` |
-| Thumbnails | derived | `{targetDirectory}/../assets/thumbs` |
-| Trash | derived | `{targetDirectory}/../-trash` |
-| Safe | derived | `{targetDirectory}/-safe` |
+| Folder      | Config Key             | Example Path                                         |
+| ----------- | ---------------------- | ---------------------------------------------------- |
+| Ecamm Watch | `watchDirectory`       | `~/Movies/Ecamm Live Recordings`                     |
+| Downloads   | `imageSourceDirectory` | `~/Downloads`                                        |
+| Recordings  | `targetDirectory`      | `~/dev/video-projects/v-appydave/b64-.../recordings` |
+| Images      | derived                | `{targetDirectory}/../assets/images`                 |
+| Thumbnails  | derived                | `{targetDirectory}/../assets/thumbs`                 |
+| Trash       | derived                | `{targetDirectory}/../-trash`                        |
+| Safe        | derived                | `{targetDirectory}/-safe`                            |
 
 **UI - Folder icon button:**
 
@@ -4405,14 +4581,14 @@ Thumbs page:
 
 **Locations summary:**
 
-| Page | Folders Available |
-|------|-------------------|
-| Config | Ecamm Watch, Target (Recordings), Image Source (Downloads) |
-| Incoming | Ecamm Watch |
-| Recordings | Recordings, Safe |
-| Assets | Downloads (incoming), Images (assigned) |
-| Thumbs | Downloads (ZIPs), Thumbnails |
-| Projects | (optional) Project root folder |
+| Page       | Folders Available                                          |
+| ---------- | ---------------------------------------------------------- |
+| Config     | Ecamm Watch, Target (Recordings), Image Source (Downloads) |
+| Incoming   | Ecamm Watch                                                |
+| Recordings | Recordings, Safe                                           |
+| Assets     | Downloads (incoming), Images (assigned)                    |
+| Thumbs     | Downloads (ZIPs), Thumbnails                               |
+| Projects   | (optional) Project root folder                             |
 
 **API:**
 
@@ -4438,11 +4614,13 @@ exec(`open "${expandedPath}"`, (error) => {
 ```
 
 **Security considerations:**
+
 - Only allow predefined folder keys (not arbitrary paths)
 - Validate folder exists before opening
 - Log folder open requests
 
 **Technical notes:**
+
 - macOS: `open /path/to/folder`
 - Windows (future): `explorer /path/to/folder`
 - Linux (future): `xdg-open /path/to/folder`
@@ -4455,6 +4633,7 @@ exec(`open "${expandedPath}"`, (error) => {
 **As a content creator**, I want to see at a glance whether the app is connected to the server, so I know if real-time updates are working.
 
 **Requirements:**
+
 - Unobtrusive indicator - visible but not attention-grabbing
 - Shows connection state: connected / disconnected / reconnecting
 - Does NOT go in the main navigation bar
@@ -4488,18 +4667,20 @@ Footer approach:
 
 **States:**
 
-| State | Color | Tooltip | When |
-|-------|-------|---------|------|
-| Connected | 🟢 Green | "Connected" | Socket connected, real-time updates active |
-| Disconnected | 🔴 Red | "Disconnected" | Socket lost, no real-time updates |
-| Reconnecting | 🟡 Yellow | "Reconnecting..." | Attempting to reconnect |
+| State        | Color     | Tooltip           | When                                       |
+| ------------ | --------- | ----------------- | ------------------------------------------ |
+| Connected    | 🟢 Green  | "Connected"       | Socket connected, real-time updates active |
+| Disconnected | 🔴 Red    | "Disconnected"    | Socket lost, no real-time updates          |
+| Reconnecting | 🟡 Yellow | "Reconnecting..." | Attempting to reconnect                    |
 
 **Behavior:**
+
 - On disconnect: indicator turns red, app continues to work (API calls still function)
 - On reconnect: indicator turns green, toast notification: "Reconnected"
 - No modal or blocking UI - just visual feedback
 
 **Technical notes:**
+
 - Use socket connection state from `useSocket` hook
 - Socket.io provides `connect`, `disconnect`, `reconnect` events
 - Consider adding `reconnect_attempt` for the yellow state
@@ -4511,28 +4692,33 @@ Footer approach:
 **As a content creator**, I want to quickly preview images at a larger size by holding Shift and hovering over thumbnails, so I can inspect image details without clicking through to a modal.
 
 **Applies to:**
+
 - Incoming images grid (Assets page)
 - Assigned images list (Assets page)
 
 **Interaction:**
+
 1. Hold Shift key
 2. Hover over any image thumbnail
 3. Large preview appears as tooltip-style overlay near the cursor
 4. Release Shift OR move mouse away → preview disappears instantly
 
 **Preview content:**
+
 - Large image (~600px)
 - Filename
 - File size
 - Timestamp
 
 **Behavior:**
+
 - Preview appears instantly (no delay)
 - Preview positions itself to stay within viewport (below/beside thumbnail)
 - Preview follows which thumbnail is hovered while Shift is held
 - Works on both incoming and assigned image grids
 
 **Mockup:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  INCOMING IMAGES                                             │
@@ -4557,6 +4743,7 @@ Footer approach:
 ```
 
 **Technical notes:**
+
 - Track Shift key state globally via keydown/keyup events
 - Use React state to track which image is being previewed
 - Position preview using mouse coordinates, clamped to viewport
@@ -4574,15 +4761,16 @@ Footer approach:
 
 After recording, there are multiple video processing stages:
 
-| Stage | Who | Tool | Output |
-|-------|-----|------|--------|
-| Recording | David | Ecamm Live | Raw recordings (`recordings/`) |
-| Transcription | David | Whisper | Raw transcripts (`recording-transcripts/`) |
-| Edit Pass 1 | David | Gling.AI | Edited video + SRT |
-| Edit Pass 2 | Jan | DaVinci Resolve | Polished video (versioned) |
-| Publishing | David | YouTube | Final published version |
+| Stage         | Who   | Tool            | Output                                     |
+| ------------- | ----- | --------------- | ------------------------------------------ |
+| Recording     | David | Ecamm Live      | Raw recordings (`recordings/`)             |
+| Transcription | David | Whisper         | Raw transcripts (`recording-transcripts/`) |
+| Edit Pass 1   | David | Gling.AI        | Edited video + SRT                         |
+| Edit Pass 2   | Jan   | DaVinci Resolve | Polished video (versioned)                 |
+| Publishing    | David | YouTube         | Final published version                    |
 
 **The gap:** Recording Namer currently has no reference to the "final" video or SRT. This prevents:
+
 - Automatic chapter timestamp extraction (matching chapter names to SRT)
 - Asset placement timing hints for editor
 - YouTube description generation with accurate timestamps
@@ -4595,14 +4783,15 @@ From analysis of 13 projects (b59-b75):
 
 **Where final videos end up (inconsistent):**
 
-| Pattern | Frequency | Example |
-|---------|-----------|---------|
-| `final/{code}.mp4` | 2 projects | `final/b64-bmad-claude-sdk.mp4` |
-| `s3-staging/{code}-final-v*.mp4` | 9 projects | `s3-staging/b64-final-v4.mp4` |
-| Project root `{code}.mp4` | 2 projects | `b71-context-engineering.mp4` |
-| Project root `*.srt` | 4 projects | `b71-context-engineering.srt` |
+| Pattern                          | Frequency  | Example                         |
+| -------------------------------- | ---------- | ------------------------------- |
+| `final/{code}.mp4`               | 2 projects | `final/b64-bmad-claude-sdk.mp4` |
+| `s3-staging/{code}-final-v*.mp4` | 9 projects | `s3-staging/b64-final-v4.mp4`   |
+| Project root `{code}.mp4`        | 2 projects | `b71-context-engineering.mp4`   |
+| Project root `*.srt`             | 4 projects | `b71-context-engineering.srt`   |
 
 **The `final/` folder pattern (b64):**
+
 ```
 final/
 ├── b64-bmad-claude-sdk.mp4      (4.4 GB - THE final)
@@ -4614,11 +4803,13 @@ final/
 
 This is the DAM exchange point between David and Jan:
 
-*Outbound (David → Jan):*
+_Outbound (David → Jan):_
+
 - Gling.AI exports: `{code}.mp4`, `{code}.srt`
 - Additional segments: `{descriptive-name}.mp4` (when extra footage needed)
 
-*Inbound (Jan → David):*
+_Inbound (Jan → David):_
+
 - Versioned finals: `{code}-final.mp4`, `{code}-final-v1.mp4`, `{code}-final-v2.mp4`, etc.
 
 ---
@@ -4643,6 +4834,7 @@ Final SRT detection priority:
 ```
 
 **Version detection:**
+
 - For patterns like `b64-final-v4.mp4`, extract version number
 - Select highest version as "latest"
 - If no version number, treat as v0
@@ -4671,6 +4863,7 @@ Add to existing stats popup (FR-32):
 ```
 
 **States:**
+
 - `✅` = File found
 - `❌` = Not found
 - `⚠️ v3` = Multiple versions, showing v3 (latest)
@@ -4684,14 +4877,15 @@ GET /api/projects/:code/final
 ```
 
 **Response:**
+
 ```typescript
 interface FinalMediaResponse {
   success: boolean;
   video?: {
-    path: string;           // Absolute path
-    filename: string;       // Just the filename
-    size: number;           // Bytes
-    version?: number;       // Extracted version number (1, 2, 3...)
+    path: string; // Absolute path
+    filename: string; // Just the filename
+    size: number; // Bytes
+    version?: number; // Extracted version number (1, 2, 3...)
     location: 'final' | 's3-staging' | 'root';
   };
   srt?: {
@@ -4700,7 +4894,8 @@ interface FinalMediaResponse {
     size: number;
     location: 'final' | 's3-staging' | 'root';
   };
-  additionalSegments?: {    // For multiple Gling exports
+  additionalSegments?: {
+    // For multiple Gling exports
     filename: string;
     size: number;
     hasSrt: boolean;
@@ -4713,10 +4908,12 @@ interface FinalMediaResponse {
 **4. Handle multiple Gling exports**
 
 Gling.AI cannot import additional footage after starting edits. When David needs more content:
+
 - Export main video: `b64-bmad-claude-sdk.mp4`
 - Export additional segments: `b64-outro.mp4`, `talking-head.mp4`
 
 **Display:**
+
 - Primary video shown as "Final Video"
 - Additional segments listed separately: "+ 3 additional segments"
 - Each segment may have its own SRT
@@ -4727,8 +4924,8 @@ Gling.AI cannot import additional footage after starting edits. When David needs
 
 Add to FR-29 (Open Folder in Finder):
 
-| Page | Location | Opens |
-|------|----------|-------|
+| Page     | Location        | Opens                                        |
+| -------- | --------------- | -------------------------------------------- |
 | Projects | Stats popup (ⓘ) | `final/` folder (or s3-staging if no final/) |
 
 ---
@@ -4760,6 +4957,7 @@ These are documented for future FR-34/FR-35:
 ```
 
 **New column: 🎬 (Final)**
+
 - `✅` = Final video found
 - `❌` = No final video yet
 - Clicking ⓘ shows full details (path, size, version, SRT status)
@@ -4771,8 +4969,11 @@ These are documented for future FR-34/FR-35:
 **Detection algorithm:**
 
 ```typescript
-async function detectFinalMedia(projectPath: string, projectCode: string): Promise<FinalMediaResponse> {
-  const locations = ['final', 's3-staging', ''];  // '' = project root
+async function detectFinalMedia(
+  projectPath: string,
+  projectCode: string
+): Promise<FinalMediaResponse> {
+  const locations = ['final', 's3-staging', '']; // '' = project root
 
   for (const loc of locations) {
     const searchPath = loc ? path.join(projectPath, loc) : projectPath;
@@ -4795,12 +4996,16 @@ async function detectFinalMedia(projectPath: string, projectCode: string): Promi
           version: latestVideo.version,
           location: loc || 'root',
         },
-        srt: matchingSrt ? { /* ... */ } : undefined,
+        srt: matchingSrt
+          ? {
+              /* ... */
+            }
+          : undefined,
       };
     }
   }
 
-  return { success: true };  // No final video found (yet)
+  return { success: true }; // No final video found (yet)
 }
 
 function findLatestVersion(videos: string[]): { path: string; version?: number } {
@@ -4810,6 +5015,7 @@ function findLatestVersion(videos: string[]): { path: string; version?: number }
 ```
 
 **Version regex:**
+
 ```typescript
 const versionMatch = filename.match(/-v(\d+)\.[^.]+$/);
 const version = versionMatch ? parseInt(versionMatch[1], 10) : undefined;
@@ -4854,22 +5060,24 @@ Copy to clipboard, paste into YouTube description.
 
 #### Input Data Available
 
-| Source | Data | Example |
-|--------|------|---------|
-| Recording filenames | Chapter names | `01-intro`, `02-scenario`, `03-setup-bmad` |
-| Final SRT (from FR-33) | Timestamped text | `00:02:34,500 --> 00:02:38,200` |
-| Recording transcripts | Raw chapter text | `recording-transcripts/01-1-intro.txt` |
+| Source                 | Data             | Example                                    |
+| ---------------------- | ---------------- | ------------------------------------------ |
+| Recording filenames    | Chapter names    | `01-intro`, `02-scenario`, `03-setup-bmad` |
+| Final SRT (from FR-33) | Timestamped text | `00:02:34,500 --> 00:02:38,200`            |
+| Recording transcripts  | Raw chapter text | `recording-transcripts/01-1-intro.txt`     |
 
 ---
 
 #### The Matching Problem
 
 **Easy case:** Chapter name appears literally in SRT
+
 - Recording: `03-setup-bmad.mov`
 - First words of chapter: "Let's set up BMAD"
 - Find in SRT → extract timestamp
 
 **Harder case:** Edited/rephrased content
+
 - Recording transcript: "Um, so let's uh set up BMAD now"
 - Final SRT: "Let's set up BMAD now"
 - Need fuzzy matching
@@ -4879,22 +5087,27 @@ Copy to clipboard, paste into YouTube description.
 #### Requirements
 
 **1. Parse final SRT**
+
 - Read SRT file detected by FR-33
 - Extract all timestamped segments
 
 **2. Get chapter list**
+
 - Scan recording filenames OR recording-transcripts folder
 - Extract unique chapter numbers and names: `01-intro`, `02-scenario`, etc.
 
 **3. Match chapters to SRT timestamps**
+
 - For each chapter, find where it starts in the SRT
 - Return timestamp with confidence level
 
 **4. Generate YouTube chapter format**
+
 - Format: `MM:SS Title` or `HH:MM:SS Title` for longer videos
 - Title derived from chapter name (intro → Intro, setup-bmad → Setting up BMAD)
 
 **5. UI: Copy to clipboard**
+
 - Button in Projects panel or new Chapters section
 - One click → formatted chapter list in clipboard
 - Toast confirmation
@@ -4914,18 +5127,21 @@ Copy to clipboard, paste into YouTube description.
 The matching step can be implemented multiple ways. Developer should evaluate:
 
 **Option A: Algorithmic**
+
 - Longest common subsequence
 - First N words of each chapter → search in SRT
 - Fast, free, deterministic
 - May fail on heavily edited content
 
 **Option B: LLM-Assisted**
+
 - Use Claude to match chapter text to SRT segments
 - More robust for fuzzy matching
 - Reference: `~/dev/ad/appydave-app-a-day/007-bmad-claude-sdk/docs/claude-agent-sdk-reference.md`
 - This doc shows how to make simple LLM calls from the server
 
 **Option C: Hybrid**
+
 - Try algorithmic first
 - Fall back to LLM for low-confidence matches
 - Best of both: fast when easy, robust when hard
@@ -4966,6 +5182,7 @@ The matching step can be implemented multiple ways. Developer should evaluate:
 ```
 
 Status indicators:
+
 - ✅ High confidence match
 - ⚠️ Low confidence (may need manual check)
 - ❌ Not found in SRT
@@ -4979,21 +5196,22 @@ GET /api/projects/:code/chapters
 ```
 
 **Response:**
+
 ```typescript
 interface ChapterMatch {
-  chapter: number;           // 1, 2, 3...
-  name: string;              // "intro", "setup-bmad"
-  displayName: string;       // "Intro", "Setting up BMAD"
-  timestamp?: string;        // "02:34" or null if not found
+  chapter: number; // 1, 2, 3...
+  name: string; // "intro", "setup-bmad"
+  displayName: string; // "Intro", "Setting up BMAD"
+  timestamp?: string; // "02:34" or null if not found
   timestampSeconds?: number; // 154
-  confidence: number;        // 0-100
+  confidence: number; // 0-100
   status: 'matched' | 'low_confidence' | 'not_found';
 }
 
 interface ChaptersResponse {
   success: boolean;
   chapters: ChapterMatch[];
-  formatted: string;         // Ready-to-copy YouTube format
+  formatted: string; // Ready-to-copy YouTube format
 }
 ```
 
@@ -5001,12 +5219,12 @@ interface ChaptersResponse {
 
 #### Edge Cases
 
-| Case | Handling |
-|------|----------|
-| No SRT file | Show message: "No SRT file found" |
-| No recordings | Show message: "No chapters detected" |
-| Chapter not in SRT | Mark as `not_found`, exclude from output |
-| Multiple matches | Take first match (chapters are sequential) |
+| Case               | Handling                                      |
+| ------------------ | --------------------------------------------- |
+| No SRT file        | Show message: "No SRT file found"             |
+| No recordings      | Show message: "No chapters detected"          |
+| Chapter not in SRT | Mark as `not_found`, exclude from output      |
+| Multiple matches   | Take first match (chapters are sequential)    |
 | Very short chapter | May have been cut entirely - mark `not_found` |
 
 ---
@@ -5023,12 +5241,14 @@ interface ChaptersResponse {
 #### Reference Materials
 
 **Claude Agent SDK (for LLM option):**
+
 - Location: `~/dev/ad/appydave-app-a-day/007-bmad-claude-sdk/docs/claude-agent-sdk-reference.md`
 - Shows stateless pattern (~12 lines) for simple LLM calls
 - Uses `claude-haiku-4-5` for fast/cheap operations
 - Already proven to work in David's codebase
 
 **SRT Format:**
+
 ```
 1
 00:00:02,500 --> 00:00:05,200
@@ -5044,6 +5264,7 @@ Today we're going to set up the project.
 #### Acceptance Criteria
 
 **Phase 1 (MVP) - ✅ Complete:**
+
 - [x] Parse SRT file from FR-33 detection
 - [x] Extract chapter list from recordings/transcripts
 - [x] Match chapters to SRT with confidence scoring
@@ -5052,6 +5273,7 @@ Today we're going to set up the project.
 - [x] Low-confidence matches visually flagged
 
 **Phase 2+ - See spec file for details:**
+
 - [ ] UI improvements (3-state colors, match explanations)
 - [ ] Algorithm improvements (proper text similarity library)
 - [ ] LLM fallback for semantic matching
@@ -5063,6 +5285,7 @@ Today we're going to set up the project.
 **See:** `chapter-extraction-spec.md`
 
 The spec file contains:
+
 - Implementation phases with acceptance criteria
 - Algorithm documentation with diagrams
 - Known issues discovered during b64 testing
@@ -5110,12 +5333,14 @@ These should all be single chapter groups, not split.
 #### Expected Result
 
 **Before (broken):**
+
 ```
 20 Claude Sdk Configuration (1 file)
 20 Claude Sdk Configuration AUTHENTICATED (2 files)
 ```
 
 **After (fixed):**
+
 ```
 20 Claude Sdk Configuration (3 files)
     20-1-claude-sdk-configuration.mov
@@ -5128,18 +5353,20 @@ These should all be single chapter groups, not split.
 #### Implementation
 
 **Grouping logic:**
+
 ```typescript
 // Extract chapter number only for grouping
 const chapterNumber = parseInt(filename.split('-')[0], 10);
 
 // Group all files with same chapter number together
-const groups = groupBy(files, f => getChapterNumber(f.filename));
+const groups = groupBy(files, (f) => getChapterNumber(f.filename));
 ```
 
 **Display name logic:**
+
 ```typescript
 // Find first file in chapter (sequence 1)
-const firstFile = chapterFiles.find(f => getSequence(f.filename) === 1) || chapterFiles[0];
+const firstFile = chapterFiles.find((f) => getSequence(f.filename) === 1) || chapterFiles[0];
 
 // Extract name portion: "08-1-voz-boy-baker" → "voz-boy-baker"
 const namePortion = extractName(firstFile.filename);
@@ -5147,7 +5374,7 @@ const namePortion = extractName(firstFile.filename);
 // Remove tags (uppercase words)
 const displayName = namePortion
   .split('-')
-  .filter(word => word !== word.toUpperCase()) // Remove fully uppercase words
+  .filter((word) => word !== word.toUpperCase()) // Remove fully uppercase words
   .join('-');
 
 // Title case for display: "voz-boy-baker" → "Voz Boy Baker"
@@ -5168,11 +5395,13 @@ const chapterTitle = toTitleCase(displayName);
 Show total video duration in two locations on the Recordings page:
 
 **Location 1 - Header area** (near the file count):
+
 ```
 83 files (6 active, 77 safe) | 1h 23m 45s
 ```
 
 **Location 2 - Footer**:
+
 ```
 Total: 1h 23m 45s
 ```
@@ -5217,10 +5446,12 @@ Total: 1h 23m 45s
 #### Files Modified
 
 **Server:**
+
 - `server/src/routes/query.ts` - GET /api/query/projects/:code/inbox/:subfolder/:filename
 - `server/src/routes/system.ts` - POST /api/system/open-file
 
 **Client:**
+
 - `client/src/components/shared/FileViewerModal.tsx` - NEW
 - `client/src/components/shared/index.ts` - export
 - `client/src/components/TranscriptModal.tsx` - refactored to use FileViewerModal
@@ -5229,6 +5460,7 @@ Total: 1h 23m 45s
 - `client/src/hooks/useOpenFolder.ts` - 'inbox' to FolderKey
 
 **Shared:**
+
 - `shared/types.ts` - FileContentResponse interface
 - `client/src/constants/queryKeys.ts` - inboxFile query key
 
@@ -5265,11 +5497,11 @@ Total: 1h 23m 45s
 
 #### Types to Consolidate
 
-| Type | Current Location |
-|------|------------------|
-| InboxFile, InboxSubfolder | query.ts AND useApi.ts |
-| SafeResponse, RestoreResponse | useApi.ts only |
-| Query types (QueryRecording, etc.) | query.ts only |
+| Type                               | Current Location       |
+| ---------------------------------- | ---------------------- |
+| InboxFile, InboxSubfolder          | query.ts AND useApi.ts |
+| SafeResponse, RestoreResponse      | useApi.ts only         |
+| Query types (QueryRecording, etc.) | query.ts only          |
 
 #### Acceptance Criteria
 

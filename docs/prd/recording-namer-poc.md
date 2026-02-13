@@ -36,12 +36,14 @@ A minimal web app to:
 ## Tech Stack
 
 **Server:**
+
 - Express + TypeScript
 - chokidar - File watching
 - Socket.io - Push events to client
 - fs-extra - File operations
 
 **Client:**
+
 - React + Vite + TypeScript
 - TailwindCSS
 - Socket.io-client - Receive file events
@@ -51,9 +53,9 @@ A minimal web app to:
 
 They solve different problems:
 
-| Tool | Purpose | Use For |
-|------|---------|---------|
-| Socket.io | Real-time push from server | New file detection events |
+| Tool           | Purpose                    | Use For                                |
+| -------------- | -------------------------- | -------------------------------------- |
+| Socket.io      | Real-time push from server | New file detection events              |
 | TanStack Query | Request/response + caching | API calls (config, rename, list files) |
 
 Socket.io pushes "new file detected" events. TanStack Query handles the rename mutations and caches file lists.
@@ -154,22 +156,21 @@ recording-namer-poc/
 Tailwind v4 is configured differently from v3. **Do NOT create a `tailwind.config.js` file.**
 
 **vite.config.ts:**
+
 ```ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
-})
+  plugins: [react(), tailwindcss()],
+});
 ```
 
 **src/index.css:**
+
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 ```
 
 That's it. No PostCSS config, no content array, no autoprefixer. Tailwind v4 auto-detects your files.
@@ -180,7 +181,7 @@ Add `<Toaster />` to your App root, then call `toast()` from anywhere:
 
 ```tsx
 // App.tsx
-import { Toaster } from 'sonner'
+import { Toaster } from 'sonner';
 
 function App() {
   return (
@@ -188,19 +189,20 @@ function App() {
       <Toaster position="top-right" />
       {/* rest of app */}
     </>
-  )
+  );
 }
 
 // Anywhere in app
-import { toast } from 'sonner'
+import { toast } from 'sonner';
 
-toast.success('File renamed successfully')
-toast.error('Rename failed: file not found')
+toast.success('File renamed successfully');
+toast.error('Rename failed: file not found');
 ```
 
 ### Environment Variables
 
 **Server `.env`:**
+
 ```
 PORT=3001
 WATCH_DIR=~/Movies/Ecamm Live/
@@ -208,16 +210,17 @@ TARGET_DIR=/path/to/project/recordings/
 ```
 
 **Client `.env`:**
+
 ```
 VITE_API_URL=http://localhost:3001
 ```
 
 ### Port Configuration
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| Server (Express + Socket.io) | 3001 | API + WebSocket |
-| Client (Vite dev server) | 5173 | React app (default Vite port) |
+| Service                      | Port | Purpose                       |
+| ---------------------------- | ---- | ----------------------------- |
+| Server (Express + Socket.io) | 3001 | API + WebSocket               |
+| Client (Vite dev server)     | 5173 | React app (default Vite port) |
 
 ---
 
@@ -229,18 +232,20 @@ Target directories use project codes from Stage 2:
 {Sequence}-{ChannelCode}-{ProjectName}
 ```
 
-| Component | Description | Example |
-|-----------|-------------|---------|
-| Sequence | Alphanumeric, `a00`→`a99`→`b00` | `a27`, `b03` |
-| ChannelCode | Optional channel identifier | `xmen`, `tldr` |
-| ProjectName | Kebab-case description | `my-video-project` |
+| Component   | Description                     | Example            |
+| ----------- | ------------------------------- | ------------------ |
+| Sequence    | Alphanumeric, `a00`→`a99`→`b00` | `a27`, `b03`       |
+| ChannelCode | Optional channel identifier     | `xmen`, `tldr`     |
+| ProjectName | Kebab-case description          | `my-video-project` |
 
 **Examples:**
+
 - `a27-xmen-my-video-project`
 - `a27-my-video-project` (no channel code)
 - `b03-claude-code-tutorial`
 
 **Full target path:**
+
 ```
 /Volumes/Expansion/Sync/tube-channels/video-projects/a27-my-video-project/recordings/
 ```
@@ -255,14 +260,15 @@ From Stage 2 docs:
 {ChapterSequence}-{Subsequence}-{ChapterName}-{Tag1}-{Tag2}.mov
 ```
 
-| Component | Description | Example |
-|-----------|-------------|---------|
-| ChapterSequence | Zero-padded chapter number | `01`, `02`, `03` |
-| Subsequence | Take/part within chapter (only if multiple) | `1`, `2` |
-| ChapterName | Descriptive name | `intro`, `content`, `outro` |
-| Tags | Optional pre-configured variations | `cta`, `endcards` |
+| Component       | Description                                 | Example                     |
+| --------------- | ------------------------------------------- | --------------------------- |
+| ChapterSequence | Zero-padded chapter number                  | `01`, `02`, `03`            |
+| Subsequence     | Take/part within chapter (only if multiple) | `1`, `2`                    |
+| ChapterName     | Descriptive name                            | `intro`, `content`, `outro` |
+| Tags            | Optional pre-configured variations          | `cta`, `endcards`           |
 
 **Examples:**
+
 - `01-intro.mov` (single take)
 - `02-1-content.mov` (first take)
 - `02-2-content.mov` (second take)
@@ -272,9 +278,9 @@ From Stage 2 docs:
 
 Tags must be from this predefined list to enable automatic parsing:
 
-| Tag | Description |
-|-----|-------------|
-| `cta` | Call to Action segment |
+| Tag        | Description                      |
+| ---------- | -------------------------------- |
+| `cta`      | Call to Action segment           |
 | `endcards` | End screen with video references |
 
 Additional tags can be added to configuration as needed.
@@ -309,15 +315,19 @@ Server renames & moves to:
 ## API Endpoints
 
 ### `GET /api/config`
+
 Returns current watch/target directories.
 
 ### `POST /api/config`
+
 Update watch/target directories.
 
 ### `GET /api/files`
+
 List pending files (not yet renamed).
 
 ### `POST /api/rename`
+
 Rename and move a file.
 
 ```json
@@ -336,11 +346,11 @@ Rename and move a file.
 
 ### Server → Client
 
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `file:new` | `{ path, filename, timestamp }` | New file detected |
-| `file:renamed` | `{ oldPath, newPath }` | File successfully renamed |
-| `file:error` | `{ path, error }` | Rename failed |
+| Event          | Payload                         | Description               |
+| -------------- | ------------------------------- | ------------------------- |
+| `file:new`     | `{ path, filename, timestamp }` | New file detected         |
+| `file:renamed` | `{ oldPath, newPath }`          | File successfully renamed |
+| `file:error`   | `{ path, error }`               | Rename failed             |
 
 ---
 
@@ -404,16 +414,17 @@ npm run dev
 
 ### Input Validation
 
-| Field | Rule |
-|-------|------|
-| ChapterSequence | Must be 2-digit number (`01`-`99`) |
-| Subsequence | Optional, single digit (`1`-`9`) |
-| ChapterName | Lowercase, alphanumeric, hyphens only. No spaces or special characters. Max 50 chars. |
-| Tags | Must match pre-configured list |
+| Field           | Rule                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------- |
+| ChapterSequence | Must be 2-digit number (`01`-`99`)                                                    |
+| Subsequence     | Optional, single digit (`1`-`9`)                                                      |
+| ChapterName     | Lowercase, alphanumeric, hyphens only. No spaces or special characters. Max 50 chars. |
+| Tags            | Must match pre-configured list                                                        |
 
 ### Filename Conflicts
 
 If target filename already exists:
+
 1. **Warn user** - Show conflict in UI
 2. **Suggest increment** - Offer next available subsequence (e.g., `02-1-content.mov` → `02-2-content.mov`)
 3. **User decides** - Overwrite, rename, or cancel
@@ -421,6 +432,7 @@ If target filename already exists:
 ### Invalid Characters
 
 ChapterName input is sanitized:
+
 - Spaces → hyphens
 - Uppercase → lowercase
 - Special characters → removed
@@ -456,24 +468,24 @@ For PoC: Simply skip files user doesn't want - no trash implementation required.
 
 ### Default Values & Auto-Increment
 
-| ID | User Story | Status |
-|----|------------|--------|
-| FR-1 | As a content creator, when I start a new video project, the chapter, subsequence, and name should default to `01`, `1`, and `intro` so that I don't have to remember how to name the first video. | ✅ Done |
+| ID   | User Story                                                                                                                                                                                                       | Status  |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| FR-1 | As a content creator, when I start a new video project, the chapter, subsequence, and name should default to `01`, `1`, and `intro` so that I don't have to remember how to name the first video.                | ✅ Done |
 | FR-2 | As a content creator, when I finish recording a video and it appears in the incoming files list, the subsequence should automatically increment by one so that I don't accidentally overwrite an existing video. | ✅ Done |
 | FR-3 | As a content creator, I should have a "New Chapter" button that increments the chapter number, resets subsequence to `1`, and clears the name field so that it's easy to change chapters with consistent naming. | ✅ Done |
-| FR-4 | As a content creator, I should be able to open the application pointed at a folder and when the folder changes, it recalculates what the next chapter ID, segment ID and name should be. | ✅ Done |
+| FR-4 | As a content creator, I should be able to open the application pointed at a folder and when the folder changes, it recalculates what the next chapter ID, segment ID and name should be.                         | ✅ Done |
 
 ### File Management
 
-| ID | User Story | Status |
-|----|------------|--------|
+| ID   | User Story                                                                                                                                                                                                       | Status  |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | FR-5 | As a content creator, if I manually delete the Ecamm Live video from the hard drive, it should automatically be removed from the incoming files list so that I know what files are actually available to rename. | ✅ Done |
-| FR-6 | As a content creator, if I click "Discard" on an incoming file, it should be removed from the UI and moved to a `.trash/` directory in my target project folder so that I can recover it if needed. | ✅ Done |
+| FR-6 | As a content creator, if I click "Discard" on an incoming file, it should be removed from the UI and moved to a `.trash/` directory in my target project folder so that I can recover it if needed.              | ✅ Done |
 
 ### File Metadata & Visual Cues
 
-| ID | User Story | Status |
-|----|------------|--------|
+| ID   | User Story                                                                                                                                                                                                                                                                                                                                                      | Status  |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | FR-7 | As a content creator, when a video appears in the incoming files list, I should see its file size and duration so that I can quickly identify which recordings are real takes versus quick discards. The likely "good take" (largest/longest recent file) should be visually highlighted so I can focus on the right file when multiple recordings are pending. | ✅ Done |
 
 ---

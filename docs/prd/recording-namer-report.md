@@ -8,13 +8,13 @@
 
 ## Development Phases
 
-| # | Phase | Coding Time |
-|---|-------|-------------|
-| 1 | Initial PoC Build | 10 min |
-| 2 | Bug Fix: Dynamic Config | 2 min |
-| 3 | 5 Feature Requests (FR-1 to FR-5) | 3 min |
-| 4 | FR-4 Enhancement: Auto-detect files | 4 min |
-| 5 | Bug Fix: Config Persistence | 2 min |
+| #   | Phase                               | Coding Time |
+| --- | ----------------------------------- | ----------- |
+| 1   | Initial PoC Build                   | 10 min      |
+| 2   | Bug Fix: Dynamic Config             | 2 min       |
+| 3   | 5 Feature Requests (FR-1 to FR-5)   | 3 min       |
+| 4   | FR-4 Enhancement: Auto-detect files | 4 min       |
+| 5   | Bug Fix: Config Persistence         | 2 min       |
 
 ## ⏱️ Total Coding Time: **21 minutes**
 
@@ -22,22 +22,22 @@
 
 ## Tech Stack
 
-| Layer | Technologies |
-|-------|-------------|
-| **Server** | Express 5, Socket.io, chokidar, fs-extra, TypeScript |
+| Layer      | Technologies                                           |
+| ---------- | ------------------------------------------------------ |
+| **Server** | Express 5, Socket.io, chokidar, fs-extra, TypeScript   |
 | **Client** | React 19, Vite, TailwindCSS v4, TanStack Query, Sonner |
-| **Shared** | TypeScript interfaces, NPM Workspaces monorepo |
+| **Shared** | TypeScript interfaces, NPM Workspaces monorepo         |
 
 ---
 
 ## Files Created
 
-| Location | Count | Key Files |
-|----------|-------|-----------|
-| `server/` | 7 | index.ts, watcher.ts, routes/index.ts |
-| `client/` | 10 | App.tsx, FileCard.tsx, NamingControls.tsx, useSocket.ts, useApi.ts |
-| `shared/` | 1 | types.ts |
-| **Total** | **18** | |
+| Location  | Count  | Key Files                                                          |
+| --------- | ------ | ------------------------------------------------------------------ |
+| `server/` | 7      | index.ts, watcher.ts, routes/index.ts                              |
+| `client/` | 10     | App.tsx, FileCard.tsx, NamingControls.tsx, useSocket.ts, useApi.ts |
+| `shared/` | 1      | types.ts                                                           |
+| **Total** | **18** |                                                                    |
 
 ---
 

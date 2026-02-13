@@ -49,7 +49,22 @@ import type { Config, EnvironmentResponse } from '../../../shared/types.js';
  * Valid folder keys that can be opened.
  * This whitelist prevents arbitrary path execution.
  */
-type FolderKey = 'ecamm' | 'downloads' | 'recordings' | 'safe' | 'trash' | 'images' | 'thumbs' | 'transcripts' | 'project' | 'final' | 's3Staging' | 'inbox' | 'shadows' | 'chapters' | 'edit-1st';
+type FolderKey =
+  | 'ecamm'
+  | 'downloads'
+  | 'recordings'
+  | 'safe'
+  | 'trash'
+  | 'images'
+  | 'thumbs'
+  | 'transcripts'
+  | 'project'
+  | 'final'
+  | 's3Staging'
+  | 'inbox'
+  | 'shadows'
+  | 'chapters'
+  | 'edit-1st';
 
 /**
  * FR-89 Part 3: Cross-platform file explorer opener
@@ -79,8 +94,9 @@ function openInFileExplorer(folderPath: string): Promise<void> {
         break;
       case 'linux':
         // FR-101: Detect WSL (has Microsoft in /proc/version)
-        const isWSLExplorer = fs.existsSync('/proc/version') &&
-                      fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
+        const isWSLExplorer =
+          fs.existsSync('/proc/version') &&
+          fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
         console.log(`[FR-106] isWSL: ${isWSLExplorer}`);
 
         if (isWSLExplorer) {
@@ -139,8 +155,9 @@ function openInDefaultApp(filePath: string): Promise<void> {
         break;
       case 'linux':
         // FR-101: Detect WSL (has Microsoft in /proc/version)
-        const isWSLApp = fs.existsSync('/proc/version') &&
-                      fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
+        const isWSLApp =
+          fs.existsSync('/proc/version') &&
+          fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
         console.log(`[FR-106] isWSL: ${isWSLApp}`);
 
         if (isWSLApp) {
@@ -309,7 +326,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
     }
 
     // Check folder exists
-    if (!await fs.pathExists(folderPath)) {
+    if (!(await fs.pathExists(folderPath))) {
       res.status(404).json({ success: false, error: `Folder does not exist: ${folderPath}` });
       return;
     }
@@ -386,7 +403,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
     }
 
     // Check file exists
-    if (!await fs.pathExists(filePath)) {
+    if (!(await fs.pathExists(filePath))) {
       res.status(404).json({ success: false, error: `File does not exist: ${filename}` });
       return;
     }
@@ -429,23 +446,19 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
     }
 
     // Security whitelist: Only allow opening specific FliHub-managed files
-    const allowedFiles = [
-      'config.json',
-      '.flihub-state.json',
-      'transcription-telemetry.jsonl',
-    ];
+    const allowedFiles = ['config.json', '.flihub-state.json', 'transcription-telemetry.jsonl'];
 
     const filename = path.basename(filePath);
     if (!allowedFiles.includes(filename)) {
       res.status(403).json({
         success: false,
-        error: `Opening ${filename} is not allowed. Only FliHub-managed files can be opened.`
+        error: `Opening ${filename} is not allowed. Only FliHub-managed files can be opened.`,
       });
       return;
     }
 
     // Check file exists
-    if (!await fs.pathExists(filePath)) {
+    if (!(await fs.pathExists(filePath))) {
       res.status(404).json({ success: false, error: `File does not exist: ${filePath}` });
       return;
     }

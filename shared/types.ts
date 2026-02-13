@@ -4,42 +4,42 @@ export interface FileInfo {
   path: string;
   filename: string;
   timestamp: string;
-  size: number;      // File size in bytes
+  size: number; // File size in bytes
   duration?: number; // Video duration in seconds (if available)
 }
 
 // FR-73: Chapter filter for common names
 export interface ChapterFilter {
-  min?: number;  // Show if chapter >= min
-  max?: number;  // Show if chapter <= max
+  min?: number; // Show if chapter >= min
+  max?: number; // Show if chapter <= max
 }
 
 // NFR-3: Common name configuration with optional rules
 export interface CommonName {
-  name: string;              // Display name and value (e.g., "intro")
-  autoSequence?: boolean;    // Reset sequence to 1 when selected (default: false)
-  suggestTags?: string[];    // Auto-suggest these tags when selected
-  chapterFilter?: 'all' | ChapterFilter;  // FR-73: Chapter visibility filter (default: 'all')
+  name: string; // Display name and value (e.g., "intro")
+  autoSequence?: boolean; // Reset sequence to 1 when selected (default: false)
+  suggestTags?: string[]; // Auto-suggest these tags when selected
+  chapterFilter?: 'all' | ChapterFilter; // FR-73: Chapter visibility filter (default: 'all')
 }
 
 export interface Config {
   watchDirectory: string;
   // FR-89 Part 5: Split projectDirectory into root + active project
   // Old field (deprecated, migrated on load):
-  projectDirectory: string;  // NFR-6: Renamed from targetDirectory - points to project root
+  projectDirectory: string; // NFR-6: Renamed from targetDirectory - points to project root
   // New fields:
-  projectsRootDirectory?: string;  // FR-89: Root directory containing all projects (e.g., ~/dev/video-projects/v-appydave)
-  activeProject?: string;          // FR-89: Currently selected project folder name (e.g., b67)
+  projectsRootDirectory?: string; // FR-89: Root directory containing all projects (e.g., ~/dev/video-projects/v-appydave)
+  activeProject?: string; // FR-89: Currently selected project folder name (e.g., b67)
   fileExtensions: string[];
-  availableTags: string[];   // NFR-2: Configurable tags
+  availableTags: string[]; // NFR-2: Configurable tags
   commonNames: CommonName[]; // NFR-3: Quick-select common names
   imageSourceDirectory: string; // FR-17: Source for incoming images (default: ~/Downloads)
   projectPriorities?: Record<string, 'pinned'>; // FR-32: Pinned projects (absent = normal)
   projectStageOverrides?: Record<string, ProjectStage>; // FR-80: Manual stage overrides (absent = auto-detect)
   projectStages?: ProjectStage[]; // FR-80: Configurable stage list (defaults to DEFAULT_PROJECT_STAGES)
-  chapterRecordings?: ChapterRecordingConfig;  // FR-58: Chapter recording settings
-  shadowResolution?: number;  // FR-89 Part 6: Shadow video resolution (default: 240)
-  glingDictionary?: string[];  // FR-102: Custom dictionary words for Gling transcription
+  chapterRecordings?: ChapterRecordingConfig; // FR-58: Chapter recording settings
+  shadowResolution?: number; // FR-89 Part 6: Shadow video resolution (default: 240)
+  glingDictionary?: string[]; // FR-102: Custom dictionary words for Gling transcription
 }
 
 export interface RenameRequest {
@@ -70,10 +70,10 @@ export interface SuggestedNaming {
 
 // FR-10: Project info for project list panel
 export interface ProjectInfo {
-  code: string;           // e.g., "b72-opus-awesome"
-  path: string;           // Full path to project folder
-  fileCount: number;      // Number of .mov files in recordings/
-  lastModified: string;   // ISO timestamp of most recent file
+  code: string; // e.g., "b72-opus-awesome"
+  path: string; // Full path to project folder
+  fileCount: number; // Number of .mov files in recordings/
+  lastModified: string; // ISO timestamp of most recent file
 }
 
 // FR-32: Extended project stats for improved project list
@@ -107,19 +107,19 @@ export const DEFAULT_PROJECT_STAGES: ProjectStage[] = [
 
 // FR-80: Stage display labels for UI
 export const STAGE_LABELS: Record<ProjectStage, string> = {
-  'planning': 'Plan',
-  'recording': 'REC',
+  planning: 'Plan',
+  recording: 'REC',
   'first-edit': '1st Edit',
   'second-edit': '2nd Edit',
-  'review': 'Review',
+  review: 'Review',
   'ready-to-publish': 'Ready',
-  'published': 'Published',
-  'archived': 'Archived',
+  published: 'Published',
+  archived: 'Archived',
 };
 
 // FR-48: Transcript sync status for validation & diagnostics
 export interface TranscriptSyncStatus {
-  matched: number;              // Recordings with matching transcript
+  matched: number; // Recordings with matching transcript
   missingTranscripts: string[]; // Recording filenames without transcript
   orphanedTranscripts: string[]; // Transcript filenames without recording
 }
@@ -127,7 +127,7 @@ export interface TranscriptSyncStatus {
 // FR-48: Detailed transcript sync response
 export interface TranscriptSyncResponse {
   success: boolean;
-  matched: string[];            // Filenames that match (recording with transcript)
+  matched: string[]; // Filenames that match (recording with transcript)
   missingTranscripts: string[]; // Recordings without transcript
   orphanedTranscripts: string[]; // Transcripts without recording
 }
@@ -140,14 +140,14 @@ export interface ProjectStats {
   priority: ProjectPriority;
 
   // Counts (FR-111: recordingsCount and safeCount removed, safe status is per-file)
-  totalFiles: number;         // All files in recordings/
+  totalFiles: number; // All files in recordings/
 
   // Chapters
-  chapterCount: number;       // Unique chapter numbers
+  chapterCount: number; // Unique chapter numbers
 
   // Transcripts - FR-48: Enhanced with sync status
-  transcriptCount: number;    // Individual transcripts (excludes *-chapter.txt) - now equals matched count
-  transcriptPercent: number;  // (matched / totalFiles) * 100
+  transcriptCount: number; // Individual transcripts (excludes *-chapter.txt) - now equals matched count
+  transcriptPercent: number; // (matched / totalFiles) * 100
   transcriptSync: {
     matched: number;
     missingCount: number;
@@ -158,21 +158,21 @@ export interface ProjectStats {
   stage: ProjectStage;
 
   // For stats popup
-  createdAt: string | null;      // Folder creation time
-  lastModified: string | null;   // Most recent file timestamp
-  totalDuration: number | null;  // Sum of video durations in seconds (optional)
-  imageCount: number;            // Files in assets/images/
-  thumbCount: number;            // Files in assets/thumbs/
+  createdAt: string | null; // Folder creation time
+  lastModified: string | null; // Most recent file timestamp
+  totalDuration: number | null; // Sum of video durations in seconds (optional)
+  imageCount: number; // Files in assets/images/
+  thumbCount: number; // Files in assets/thumbs/
 
   // FR-80/FR-82: Content indicators with counts for tooltips
-  hasInbox: boolean;             // Has files in inbox/
-  hasAssets: boolean;            // Has files in assets/images/ or assets/prompts/
-  hasChapters: boolean;          // Has .mov files in recordings/-chapters/
-  inboxCount: number;            // FR-82: File count in inbox/ (for tooltip)
-  chapterVideoCount: number;     // FR-82: .mov count in recordings/-chapters/ (for tooltip)
+  hasInbox: boolean; // Has files in inbox/
+  hasAssets: boolean; // Has files in assets/images/ or assets/prompts/
+  hasChapters: boolean; // Has .mov files in recordings/-chapters/
+  inboxCount: number; // FR-82: File count in inbox/ (for tooltip)
+  chapterVideoCount: number; // FR-82: .mov count in recordings/-chapters/ (for tooltip)
 
   // FR-83: Shadow recordings
-  shadowCount: number;           // Shadow files in recording-shadows/
+  shadowCount: number; // Shadow files in recording-shadows/
 }
 
 // FR-14: Recording file info for asset view
@@ -181,18 +181,18 @@ export interface RecordingFile {
   path: string;
   size: number;
   timestamp: string;
-  duration?: number;      // FR-36: Video duration in seconds (if available)
-  chapter: string;        // Parsed from filename (e.g., "01")
-  sequence: string;       // Parsed from filename (e.g., "1")
-  name: string;           // Parsed from filename (e.g., "intro")
-  tags: string[];         // Parsed from filename
-  folder: 'recordings';   // FR-111: Always 'recordings' now (safe uses isSafe flag)
-  isSafe: boolean;        // FR-111: True if hidden from active view (from state file)
-  isParked: boolean;      // FR-120: True if parked (excluded from this edit)
-  annotation?: string;    // FR-123: Optional note explaining why parked
-  isShadow?: boolean;     // FR-83: True if shadow-only (no real recording)
-  hasShadow?: boolean;    // FR-83: True if this recording has a shadow file
-  shadowSize?: number | null;  // FR-95: Shadow file size in bytes (null if no shadow)
+  duration?: number; // FR-36: Video duration in seconds (if available)
+  chapter: string; // Parsed from filename (e.g., "01")
+  sequence: string; // Parsed from filename (e.g., "1")
+  name: string; // Parsed from filename (e.g., "intro")
+  tags: string[]; // Parsed from filename
+  folder: 'recordings'; // FR-111: Always 'recordings' now (safe uses isSafe flag)
+  isSafe: boolean; // FR-111: True if hidden from active view (from state file)
+  isParked: boolean; // FR-120: True if parked (excluded from this edit)
+  annotation?: string; // FR-123: Optional note explaining why parked
+  isShadow?: boolean; // FR-83: True if shadow-only (no real recording)
+  hasShadow?: boolean; // FR-83: True if this recording has a shadow file
+  shadowSize?: number | null; // FR-95: Shadow file size in bytes (null if no shadow)
 }
 
 // FR-83: Shadow generation API responses
@@ -226,13 +226,13 @@ export interface ShadowGenerateAllResponse {
 
 // FR-17: Image info for incoming images from Downloads
 export interface ImageInfo {
-  path: string;           // Full path to image
-  filename: string;       // Just the filename
-  size: number;           // Size in bytes
-  timestamp: string;      // ISO timestamp
-  hash: string;           // MD5 hash for duplicate detection
-  isDuplicate?: boolean;  // True if this is a duplicate of another image
-  duplicateOf?: string;   // Path to the original if this is a duplicate
+  path: string; // Full path to image
+  filename: string; // Just the filename
+  size: number; // Size in bytes
+  timestamp: string; // ISO timestamp
+  hash: string; // MD5 hash for duplicate detection
+  isDuplicate?: boolean; // True if this is a duplicate of another image
+  duplicateOf?: string; // Path to the original if this is a duplicate
 }
 
 // FR-17: Image asset (parsed from filename in assets/images/)
@@ -241,22 +241,22 @@ export interface ImageAsset {
   filename: string;
   size: number;
   timestamp: string;
-  chapter: string;        // 2 digits (01-99)
-  sequence: string;       // 1 digit (1-9)
-  imageOrder: string;     // 1 digit (1-9)
+  chapter: string; // 2 digits (01-99)
+  sequence: string; // 1 digit (1-9)
+  imageOrder: string; // 1 digit (1-9)
   variant: string | null; // Single letter (a-z) or null
-  label: string;          // kebab-case description
-  type?: 'image';         // FR-22: Optional type to distinguish from prompts
+  label: string; // kebab-case description
+  type?: 'image'; // FR-22: Optional type to distinguish from prompts
 }
 
 // FR-17: Request to assign an image
 export interface AssignImageRequest {
-  sourcePath: string;     // Path to image in Downloads
-  chapter: string;        // 2 digits
-  sequence: string;       // 1 digit
-  imageOrder: string;     // 1 digit
+  sourcePath: string; // Path to image in Downloads
+  chapter: string; // 2 digits
+  sequence: string; // 1 digit
+  imageOrder: string; // 1 digit
   variant: string | null; // a-z or null
-  label: string;          // kebab-case label
+  label: string; // kebab-case label
 }
 
 // FR-17: Response from assign image
@@ -287,8 +287,8 @@ export interface PromptAsset {
   variant: string | null;
   label: string;
   type: 'prompt';
-  content?: string;         // Full prompt text (for Shift+Hover preview)
-  contentPreview?: string;  // First ~50 chars of content (for inline display)
+  content?: string; // Full prompt text (for Shift+Hover preview)
+  contentPreview?: string; // First ~50 chars of content (for inline display)
 }
 
 // FR-22: Request to save a prompt
@@ -306,7 +306,7 @@ export interface SavePromptResponse {
   success: boolean;
   path: string;
   filename: string;
-  created: boolean;  // true if new file, false if updated
+  created: boolean; // true if new file, false if updated
   deleted?: boolean; // FR-38: true if file was deleted (empty content)
   error?: string;
 }
@@ -325,35 +325,51 @@ export interface LoadPromptResponse {
 // Socket.io event types
 export interface ServerToClientEvents {
   'file:new': (file: FileInfo) => void;
-  'file:deleted': (data: { path: string }) => void;  // FR-4: file deleted from disk
+  'file:deleted': (data: { path: string }) => void; // FR-4: file deleted from disk
   'file:renamed': (data: { oldPath: string; newPath: string }) => void;
   'file:error': (data: { path: string; error: string }) => void;
   // NFR-5: Real-time updates
-  'thumbs:changed': () => void;           // Thumb imported/deleted/reordered
-  'thumbs:zip-added': () => void;         // New ZIP detected in Downloads
-  'assets:incoming-changed': () => void;  // New/deleted image in source directory
-  'assets:assigned-changed': () => void;  // Image assigned/deleted in assets/images
-  'recordings:changed': () => void;       // Recording renamed/moved/deleted
-  'projects:changed': () => void;         // Project folder changed
-  'inbox:changed': () => void;            // FR-59: Inbox file added/removed
-  'transcripts:changed': () => void;      // NFR-85: Transcript added/removed/changed
+  'thumbs:changed': () => void; // Thumb imported/deleted/reordered
+  'thumbs:zip-added': () => void; // New ZIP detected in Downloads
+  'assets:incoming-changed': () => void; // New/deleted image in source directory
+  'assets:assigned-changed': () => void; // Image assigned/deleted in assets/images
+  'recordings:changed': () => void; // Recording renamed/moved/deleted
+  'projects:changed': () => void; // Project folder changed
+  'inbox:changed': () => void; // FR-59: Inbox file added/removed
+  'transcripts:changed': () => void; // NFR-85: Transcript added/removed/changed
   // FR-58: Chapter recording events
   'chapters:generating': (data: { chapter: string; total: number; current: number }) => void;
-  'chapters:generated': (data: { chapter: string; outputFile: string; srtFile?: string }) => void;  // FR-76: srtFile added
+  'chapters:generated': (data: { chapter: string; outputFile: string; srtFile?: string }) => void; // FR-76: srtFile added
   'chapters:complete': (data: { generated: string[]; errors?: string[] }) => void;
   // FR-30: Transcription events
   'transcription:queued': (job: { jobId: string; videoPath: string; position: number }) => void;
   'transcription:started': (job: { jobId: string; videoPath: string }) => void;
   'transcription:progress': (data: { jobId: string; text: string }) => void;
-  'transcription:complete': (job: { jobId: string; videoPath: string; transcriptPath: string }) => void;
+  'transcription:complete': (job: {
+    jobId: string;
+    videoPath: string;
+    transcriptPath: string;
+  }) => void;
   'transcription:error': (job: { jobId: string; videoPath: string; error: string }) => void;
   // FR-131 Phase 2: Regeneration events
   'regen:shadows:progress': (data: { current: number; total: number; filename: string }) => void;
-  'regen:shadows:complete': (data: { completed: number; failed: number; errors?: Array<{ file: string; error: string }> }) => void;
+  'regen:shadows:complete': (data: {
+    completed: number;
+    failed: number;
+    errors?: Array<{ file: string; error: string }>;
+  }) => void;
   'regen:chapters:progress': (data: { current: number; total: number; chapter: string }) => void;
-  'regen:chapters:complete': (data: { completed: number; failed: number; errors?: Array<{ chapter: string; error: string }> }) => void;
+  'regen:chapters:complete': (data: {
+    completed: number;
+    failed: number;
+    errors?: Array<{ chapter: string; error: string }>;
+  }) => void;
   'regen:all:started': () => void;
-  'regen:all:progress': (data: { step: 'shadows' | 'transcripts' | 'chapters'; current: number; total: number }) => void;
+  'regen:all:progress': (data: {
+    step: 'shadows' | 'transcripts' | 'chapters';
+    current: number;
+    total: number;
+  }) => void;
   'regen:all:complete': (data: { shadows: any; transcripts: any; chapters: any }) => void;
   'regen:all:error': (data: { error: string }) => void;
 }
@@ -371,27 +387,27 @@ export interface TranscriptionJob {
   videoPath: string;
   videoFilename: string;
   status: TranscriptionStatus;
-  duration?: number;      // FR-36: Video duration in seconds
-  size?: number;          // FR-36: File size in bytes
-  queuedAt?: string;      // ISO timestamp
-  startedAt?: string;     // ISO timestamp
-  completedAt?: string;   // ISO timestamp
-  error?: string;         // Error message if failed
-  streamedText?: string;  // Accumulated text during transcription
+  duration?: number; // FR-36: Video duration in seconds
+  size?: number; // FR-36: File size in bytes
+  queuedAt?: string; // ISO timestamp
+  startedAt?: string; // ISO timestamp
+  completedAt?: string; // ISO timestamp
+  error?: string; // Error message if failed
+  streamedText?: string; // Accumulated text during transcription
 }
 
 // FR-30: API response for transcription status
 export interface TranscriptionsResponse {
   active: TranscriptionJob | null;
   queue: TranscriptionJob[];
-  recent: TranscriptionJob[];  // Last 5 completed/failed
+  recent: TranscriptionJob[]; // Last 5 completed/failed
 }
 
 // FR-30: Single file transcription status
 export interface TranscriptionStatusResponse {
   filename: string;
   status: TranscriptionStatus;
-  transcriptPath?: string;  // Path to .txt file if complete
+  transcriptPath?: string; // Path to .txt file if complete
 }
 
 // FR-30: Transcript content response
@@ -445,38 +461,38 @@ export type ChapterMatchStatus = 'matched' | 'low_confidence' | 'not_found';
 
 // A single match candidate for a chapter
 export interface ChapterMatchCandidate {
-  timestamp: string;         // "02:34" format
-  timestampSeconds: number;  // 154 (seconds from start)
-  confidence: number;        // 0-100
-  matchedText: string;       // SRT text that was matched (for verification)
-  matchMethod: 'phrase' | 'partial' | 'keyword';  // How it was matched
+  timestamp: string; // "02:34" format
+  timestampSeconds: number; // 154 (seconds from start)
+  confidence: number; // 0-100
+  matchedText: string; // SRT text that was matched (for verification)
+  matchMethod: 'phrase' | 'partial' | 'keyword'; // How it was matched
 }
 
 export interface ChapterMatch {
-  chapter: number;           // 1, 2, 3...
-  name: string;              // "intro", "setup-bmad"
-  displayName: string;       // "Intro", "Setting up BMAD"
-  timestamp?: string;        // "02:34" or null if not found
+  chapter: number; // 1, 2, 3...
+  name: string; // "intro", "setup-bmad"
+  displayName: string; // "Intro", "Setting up BMAD"
+  timestamp?: string; // "02:34" or null if not found
   timestampSeconds?: number; // 154 (seconds from start)
-  confidence: number;        // 0-100
+  confidence: number; // 0-100
   status: ChapterMatchStatus;
   // New fields for verification UI
-  matchedText?: string;      // SRT text that was matched
+  matchedText?: string; // SRT text that was matched
   transcriptSnippet?: string; // First ~100 chars of transcript for comparison
-  alternatives?: ChapterMatchCandidate[];  // Other potential matches
-  matchReason?: string;      // Human-readable reason, e.g., "Matched 7 words at position 0"
+  alternatives?: ChapterMatchCandidate[]; // Other potential matches
+  matchReason?: string; // Human-readable reason, e.g., "Matched 7 words at position 0"
 }
 
 export interface ChaptersResponse {
   success: boolean;
   chapters: ChapterMatch[];
-  formatted: string;         // Ready-to-copy YouTube format
+  formatted: string; // Ready-to-copy YouTube format
   error?: string;
   stats?: {
-    elapsedMs: number;       // Time taken in milliseconds
-    srtSegments: number;     // Number of SRT segments parsed
-    chaptersFound: number;   // Chapters successfully matched
-    chaptersTotal: number;   // Total chapters processed
+    elapsedMs: number; // Time taken in milliseconds
+    srtSegments: number; // Number of SRT segments parsed
+    chaptersFound: number; // Chapters successfully matched
+    chaptersTotal: number; // Total chapters processed
   };
 }
 
@@ -486,14 +502,15 @@ export interface ChaptersResponse {
 export interface ChapterVerifyRequest {
   chapter: number;
   name: string;
-  transcriptSnippet: string;      // First ~200 chars of transcript
-  currentMatch?: {                // Current algorithmic match (if any)
+  transcriptSnippet: string; // First ~200 chars of transcript
+  currentMatch?: {
+    // Current algorithmic match (if any)
     timestamp: string;
     confidence: number;
     matchedText: string;
   };
-  alternatives?: ChapterMatchCandidate[];  // Other potential matches
-  userHint?: string;              // User-provided context (e.g., "first 15s were cut")
+  alternatives?: ChapterMatchCandidate[]; // Other potential matches
+  userHint?: string; // User-provided context (e.g., "first 15s were cut")
 }
 
 // LLM's verification response
@@ -503,10 +520,10 @@ export interface ChapterVerifyResponse {
   name: string;
   recommendation: {
     action: 'use_current' | 'use_alternative' | 'manual_timestamp' | 'skip';
-    timestamp?: string;           // Recommended timestamp
+    timestamp?: string; // Recommended timestamp
     timestampSeconds?: number;
-    confidence: number;           // LLM's confidence in recommendation
-    reasoning: string;            // Explanation for the user
+    confidence: number; // LLM's confidence in recommendation
+    reasoning: string; // Explanation for the user
   };
   error?: string;
 }
@@ -515,11 +532,11 @@ export interface ChapterVerifyResponse {
 export interface ChapterOverride {
   chapter: number;
   name: string;
-  action: 'override' | 'skip';    // 'override' = use custom timestamp, 'skip' = exclude from output
-  timestamp?: string;             // Manual timestamp (if action is 'override')
+  action: 'override' | 'skip'; // 'override' = use custom timestamp, 'skip' = exclude from output
+  timestamp?: string; // Manual timestamp (if action is 'override')
   timestampSeconds?: number;
-  reason?: string;                // User's note (e.g., "chapter was cut from final video")
-  createdAt: string;              // ISO timestamp
+  reason?: string; // User's note (e.g., "chapter was cut from final video")
+  createdAt: string; // ISO timestamp
 }
 
 // Request to set a chapter override
@@ -527,7 +544,7 @@ export interface SetChapterOverrideRequest {
   chapter: number;
   name: string;
   action: 'override' | 'skip';
-  timestamp?: string;             // Required if action is 'override'
+  timestamp?: string; // Required if action is 'override'
   reason?: string;
 }
 
@@ -540,23 +557,23 @@ export interface SetChapterOverrideResponse {
 
 // FR-58: Chapter Recording Configuration
 export interface ChapterRecordingConfig {
-  slideDuration: number;  // Seconds to show title slide (e.g., 1.0)
-  resolution: '720p' | '1080p';  // Output resolution
-  autoGenerate: boolean;  // Auto-generate on new chapter
-  includeTitleSlides?: boolean;  // FR-76: Include purple title slides (default: false)
+  slideDuration: number; // Seconds to show title slide (e.g., 1.0)
+  resolution: '720p' | '1080p'; // Output resolution
+  autoGenerate: boolean; // Auto-generate on new chapter
+  includeTitleSlides?: boolean; // FR-76: Include purple title slides (default: false)
 }
 
 // FR-58: Chapter Recording Request
 export interface ChapterRecordingRequest {
-  chapter?: string;        // Specific chapter to generate, or all if omitted
-  slideDuration?: number;  // Override config slide duration
-  resolution?: string;     // Override config resolution
+  chapter?: string; // Specific chapter to generate, or all if omitted
+  slideDuration?: number; // Override config slide duration
+  resolution?: string; // Override config resolution
 }
 
 // FR-58: Chapter Recording Response
 export interface ChapterRecordingResponse {
   success: boolean;
-  generated: string[];     // List of generated files
+  generated: string[]; // List of generated files
   errors?: string[];
   error?: string;
 }
@@ -576,8 +593,8 @@ export interface ChapterGenerationProgress {
 // Query API: Project summary (list view)
 export interface QueryProjectSummary {
   code: string;
-  brand: string;  // FR-61: Brand derived from v-appydave -> appydave
-  path: string;   // FR-61: Full project path
+  brand: string; // FR-61: Brand derived from v-appydave -> appydave
+  path: string; // FR-61: Full project path
   stage: ProjectStage;
   priority: ProjectPriority;
   stats: {
@@ -628,16 +645,16 @@ export interface QueryRecording {
   sequence: string;
   name: string;
   tags: string[];
-  folder: 'recordings';           // FR-111: Always 'recordings' now
-  isSafe: boolean;                // FR-111: True if hidden from active view
-  isParked: boolean;              // FR-120: True if parked (excluded from this edit)
-  annotation?: string;            // FR-123: Optional note explaining why parked
+  folder: 'recordings'; // FR-111: Always 'recordings' now
+  isSafe: boolean; // FR-111: True if hidden from active view
+  isParked: boolean; // FR-120: True if parked (excluded from this edit)
+  annotation?: string; // FR-123: Optional note explaining why parked
   size: number;
   duration: number | null;
   hasTranscript: boolean;
-  isShadow?: boolean;   // FR-83: True if shadow-only (no real recording)
-  hasShadow?: boolean;  // FR-83: True if this recording has a shadow file
-  shadowSize?: number | null;  // FR-95: Shadow file size in bytes (null if no shadow)
+  isShadow?: boolean; // FR-83: True if shadow-only (no real recording)
+  hasShadow?: boolean; // FR-83: True if this recording has a shadow file
+  shadowSize?: number | null; // FR-95: Shadow file size in bytes (null if no shadow)
 }
 
 // Query API: Transcript info
@@ -783,9 +800,9 @@ export interface EnvironmentResponse {
   isWSL: boolean;
   pathFormat: 'windows' | 'linux';
   guidance: {
-    nativeFiles: string;    // e.g., '/home/jan/...' or 'C:\\...'
-    windowsFiles: string;   // e.g., '/mnt/c/...' or 'C:\\...'
-    wslFiles: string;       // e.g., '/home/jan/...' or '\\\\wsl$\\...'
+    nativeFiles: string; // e.g., '/home/jan/...' or 'C:\\...'
+    windowsFiles: string; // e.g., '/mnt/c/...' or 'C:\\...'
+    wslFiles: string; // e.g., '/home/jan/...' or '\\\\wsl$\\...'
   };
 }
 
@@ -795,17 +812,17 @@ export interface EnvironmentResponse {
 
 // State for a single recording
 export interface RecordingState {
-  safe?: boolean;           // True = hidden from active view
-  parked?: boolean;         // FR-120: True = excluded from this edit (good content, not for this video)
-  annotation?: string;      // FR-123: Optional note explaining why parked (e.g., "Too technical for YouTube")
-  stage?: string;           // Future: per-recording stage (recording, first-edit, review, etc.)
+  safe?: boolean; // True = hidden from active view
+  parked?: boolean; // FR-120: True = excluded from this edit (good content, not for this video)
+  annotation?: string; // FR-123: Optional note explaining why parked (e.g., "Too technical for YouTube")
+  stage?: string; // Future: per-recording stage (recording, first-edit, review, etc.)
 }
 
 // Full project state file schema
 export interface ProjectState {
   version: 1;
-  recordings: Record<string, RecordingState>;  // Keyed by filename (e.g., "01-1-intro.mov")
-  glingDictionary?: string[];  // FR-118: Project-specific dictionary words
+  recordings: Record<string, RecordingState>; // Keyed by filename (e.g., "01-1-intro.mov")
+  glingDictionary?: string[]; // FR-118: Project-specific dictionary words
   editManifest?: EditManifest; // FR-126: Edit folder manifest tracking
 }
 
@@ -827,16 +844,16 @@ export interface UpdateProjectStateRequest {
 
 // Single file entry in manifest
 export interface EditManifestFile {
-  filename: string;       // e.g., "01-1-intro.mov"
-  sourceHash: string;     // SHA-256 hash of first 1MB from recordings/
-  copiedAt: string;       // ISO timestamp when copied
-  sourceSize: number;     // File size in bytes
+  filename: string; // e.g., "01-1-intro.mov"
+  sourceHash: string; // SHA-256 hash of first 1MB from recordings/
+  copiedAt: string; // ISO timestamp when copied
+  sourceSize: number; // File size in bytes
 }
 
 // Manifest for one edit folder
 export interface EditFolderManifest {
-  lastCopied: string | null;  // ISO timestamp of most recent copy operation
-  files: EditManifestFile[];  // Files tracked in this folder
+  lastCopied: string | null; // ISO timestamp of most recent copy operation
+  files: EditManifestFile[]; // Files tracked in this folder
 }
 
 // All edit folder manifests
@@ -852,8 +869,8 @@ export type EditFolderKey = 'edit-1st' | 'edit-2nd' | 'edit-final';
 // Manifest validation status for each file
 export interface ManifestFileStatus {
   filename: string;
-  status: 'present' | 'missing' | 'changed';  // present = exists and hash matches, missing = doesn't exist, changed = exists but hash mismatch
-  sourceSize?: number;  // Size if present
+  status: 'present' | 'missing' | 'changed'; // present = exists and hash matches, missing = doesn't exist, changed = exists but hash mismatch
+  sourceSize?: number; // Size if present
   currentHash?: string; // Current hash if present
 }
 
@@ -862,12 +879,12 @@ export type ManifestStatus = 'present' | 'cleaned' | 'changed' | 'missing' | 'no
 
 export interface ManifestStatusDetail {
   status: ManifestStatus;
-  manifestedFiles: number;      // Total files in manifest
-  presentFiles: number;          // Files that exist in edit folder
-  missingFiles: number;          // Files deleted from edit folder
-  changedFiles: number;          // Files with hash mismatch
-  totalSize: number;             // Total size of all manifested files (from recordings/)
-  fileDetails?: ManifestFileStatus[];  // Per-file status (for warnings)
+  manifestedFiles: number; // Total files in manifest
+  presentFiles: number; // Files that exist in edit folder
+  missingFiles: number; // Files deleted from edit folder
+  changedFiles: number; // Files with hash mismatch
+  totalSize: number; // Total size of all manifested files (from recordings/)
+  fileDetails?: ManifestFileStatus[]; // Per-file status (for warnings)
 }
 
 // API response for manifest status check
@@ -882,10 +899,10 @@ export interface ManifestStatusResponse {
 export interface CleanEditFolderResponse {
   success: boolean;
   folder: EditFolderKey;
-  deleted: string[];      // Files deleted from edit folder
+  deleted: string[]; // Files deleted from edit folder
   deletedCount: number;
-  spaceSaved: number;     // Bytes freed
-  preserved: string[];    // Files in folder that were NOT deleted (not in manifest)
+  spaceSaved: number; // Bytes freed
+  preserved: string[]; // Files in folder that were NOT deleted (not in manifest)
   error?: string;
 }
 
@@ -893,8 +910,8 @@ export interface CleanEditFolderResponse {
 export interface RestoreEditFolderResponse {
   success: boolean;
   folder: EditFolderKey;
-  restored: string[];     // Files copied back
+  restored: string[]; // Files copied back
   restoredCount: number;
-  warnings?: string[];    // Hash mismatch warnings
+  warnings?: string[]; // Hash mismatch warnings
   error?: string;
 }

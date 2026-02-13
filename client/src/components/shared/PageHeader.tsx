@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from 'react';
 
 interface PageHeaderProps {
-  title: string
-  children?: ReactNode  // For additional controls like OpenFolderButton
+  title: string;
+  children?: ReactNode; // For additional controls like OpenFolderButton
 }
 
 export function PageHeader({ title, children }: PageHeaderProps) {
@@ -11,5 +11,5 @@ export function PageHeader({ title, children }: PageHeaderProps) {
       <h2 className="text-lg font-medium text-gray-700">{title}</h2>
       {children}
     </div>
-  )
+  );
 }

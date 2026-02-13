@@ -2,7 +2,18 @@ import { Router, Request, Response } from 'express';
 import fs from 'fs-extra';
 import path from 'path';
 import crypto from 'crypto';
-import type { Config, ImageInfo, ImageAsset, AssignImageRequest, AssignImageResponse, NextImageOrderResponse, PromptAsset, SavePromptRequest, SavePromptResponse, LoadPromptResponse } from '../../../shared/types.js';
+import type {
+  Config,
+  ImageInfo,
+  ImageAsset,
+  AssignImageRequest,
+  AssignImageResponse,
+  NextImageOrderResponse,
+  PromptAsset,
+  SavePromptRequest,
+  SavePromptResponse,
+  LoadPromptResponse,
+} from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { readFileSafe } from '../utils/filesystem.js';
@@ -34,14 +45,14 @@ export function createAssetRoutes(config: Config): Router {
     try {
       const imageSourceDir = expandPath(config.imageSourceDirectory);
 
-      if (!await fs.pathExists(imageSourceDir)) {
+      if (!(await fs.pathExists(imageSourceDir))) {
         res.json({ images: [], duplicates: [] });
         return;
       }
 
       const entries = await fs.readdir(imageSourceDir, { withFileTypes: true });
-      const imageFiles = entries.filter(e =>
-        e.isFile() && IMAGE_EXTENSIONS.includes(path.extname(e.name).toLowerCase())
+      const imageFiles = entries.filter(
+        (e) => e.isFile() && IMAGE_EXTENSIONS.includes(path.extname(e.name).toLowerCase())
       );
 
       // Calculate hashes and build image info
@@ -97,7 +108,7 @@ export function createAssetRoutes(config: Config): Router {
     try {
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
-      if (!await fs.pathExists(paths.images)) {
+      if (!(await fs.pathExists(paths.images))) {
         res.json({ images: [], prompts: [] });
         return;
       }
@@ -215,7 +226,8 @@ export function createAssetRoutes(config: Config): Router {
 
   // POST /api/assets/assign - Assign (rename and move) an image to the project
   router.post('/assign', async (req: Request, res: Response) => {
-    const { sourcePath, chapter, sequence, imageOrder, variant, label }: AssignImageRequest = req.body;
+    const { sourcePath, chapter, sequence, imageOrder, variant, label }: AssignImageRequest =
+      req.body;
 
     // Validate inputs
     if (!sourcePath || !chapter || !sequence || !imageOrder || !label) {
@@ -223,7 +235,8 @@ export function createAssetRoutes(config: Config): Router {
         success: false,
         oldPath: sourcePath || '',
         newPath: '',
-        error: 'Missing required fields: sourcePath, chapter, sequence, imageOrder, and label are required',
+        error:
+          'Missing required fields: sourcePath, chapter, sequence, imageOrder, and label are required',
       } as AssignImageResponse);
       return;
     }
@@ -286,7 +299,7 @@ export function createAssetRoutes(config: Config): Router {
 
     try {
       // Check if source file exists
-      if (!await fs.pathExists(sourcePath)) {
+      if (!(await fs.pathExists(sourcePath))) {
         res.status(404).json({
           success: false,
           oldPath: sourcePath,
@@ -299,7 +312,14 @@ export function createAssetRoutes(config: Config): Router {
       // Build new filename
       // NFR-6: Using projectDirectory with getProjectPaths()
       const extension = path.extname(sourcePath).toLowerCase();
-      const newFilename = buildImageFilename(chapter, sequence, imageOrder, variant, label, extension);
+      const newFilename = buildImageFilename(
+        chapter,
+        sequence,
+        imageOrder,
+        variant,
+        label,
+        extension
+      );
 
       // Determine target directory
       const paths = getProjectPaths(expandPath(config.projectDirectory));
@@ -345,7 +365,7 @@ export function createAssetRoutes(config: Config): Router {
     const filePath = decodeURIComponent(req.params.encodedPath);
 
     try {
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         res.json({ success: true, message: 'File already removed' });
         return;
       }
@@ -370,7 +390,7 @@ export function createAssetRoutes(config: Config): Router {
     const filePath = decodeURIComponent(req.params.encodedPath);
 
     try {
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         res.status(404).json({ success: false, error: 'Image not found' });
         return;
       }
@@ -500,7 +520,7 @@ export function createAssetRoutes(config: Config): Router {
             path: filePath,
             filename,
             created: false,
-            deleted: true,  // Extra flag to indicate deletion
+            deleted: true, // Extra flag to indicate deletion
           });
         } else {
           // Nothing to delete
@@ -558,7 +578,7 @@ export function createAssetRoutes(config: Config): Router {
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const filePath = path.join(paths.images, filename);
 
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         res.status(404).json({ success: false, error: 'Prompt file not found' });
         return;
       }
@@ -600,7 +620,7 @@ export function createAssetRoutes(config: Config): Router {
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const filePath = path.join(paths.images, filename);
 
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         // File doesn't exist - consider it a success (idempotent)
         res.json({ success: true, filename, deleted: false });
         return;
@@ -636,7 +656,7 @@ export function createAssetRoutes(config: Config): Router {
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const filePath = path.join(paths.images, filename);
 
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         // File doesn't exist - consider it a success (idempotent)
         res.json({ success: true, filename, deleted: false });
         return;
@@ -679,7 +699,12 @@ export function createAssetRoutes(config: Config): Router {
       return;
     }
     if (!chapter || !sequence || !imageOrder || !label) {
-      res.status(400).json({ success: false, error: 'Missing required fields: chapter, sequence, imageOrder, label' });
+      res
+        .status(400)
+        .json({
+          success: false,
+          error: 'Missing required fields: chapter, sequence, imageOrder, label',
+        });
       return;
     }
 
@@ -711,7 +736,14 @@ export function createAssetRoutes(config: Config): Router {
       const buffer = Buffer.from(base64Data, 'base64');
 
       // Build filename
-      const filename = buildImageFilename(chapter, sequence, imageOrder, variant || null, label, ext);
+      const filename = buildImageFilename(
+        chapter,
+        sequence,
+        imageOrder,
+        variant || null,
+        label,
+        ext
+      );
 
       // Get target path
       const paths = getProjectPaths(expandPath(config.projectDirectory));
@@ -762,10 +794,7 @@ export function createAssetRoutes(config: Config): Router {
 
       // Generate timestamp-based filename: clip-2024-12-04-143052.png
       const now = new Date();
-      const timestamp = now.toISOString()
-        .replace(/[-:]/g, '')
-        .replace('T', '-')
-        .slice(0, 15);  // YYYYMMDD-HHMMSS
+      const timestamp = now.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15); // YYYYMMDD-HHMMSS
       const filename = `clip-${timestamp}${ext}`;
 
       // Get incoming folder path

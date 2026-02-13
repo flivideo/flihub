@@ -184,7 +184,7 @@ export class WatcherManager {
       pattern: paths.inbox,
       event: 'inbox:changed',
       debounceMs: 300,
-      depth: 2,  // Watch inbox/ and one level of subfolders
+      depth: 2, // Watch inbox/ and one level of subfolders
       ignored: /(^|[\/\\])\../,
       watchEvents: ['add', 'unlink', 'addDir', 'unlinkDir'],
     });
@@ -229,9 +229,9 @@ export class WatcherManager {
       this.startAssignedImagesWatcher(newConfig.projectDirectory);
       this.startRecordingsWatcher(newConfig.projectDirectory);
       this.startProjectsWatcher(newConfig.projectDirectory);
-      this.startInboxWatcher(newConfig.projectDirectory);  // FR-59
-      this.startTranscriptsWatcher(newConfig.projectDirectory);  // NFR-85
-      this.startThumbsWatcher(newConfig.projectDirectory);  // NFR-85
+      this.startInboxWatcher(newConfig.projectDirectory); // FR-59
+      this.startTranscriptsWatcher(newConfig.projectDirectory); // NFR-85
+      this.startThumbsWatcher(newConfig.projectDirectory); // NFR-85
     }
 
     // Restart incoming images watcher if source directory changed
@@ -249,9 +249,9 @@ export class WatcherManager {
     this.startAssignedImagesWatcher(config.projectDirectory);
     this.startRecordingsWatcher(config.projectDirectory);
     this.startProjectsWatcher(config.projectDirectory);
-    this.startInboxWatcher(config.projectDirectory);  // FR-59
-    this.startTranscriptsWatcher(config.projectDirectory);  // NFR-85
-    this.startThumbsWatcher(config.projectDirectory);  // NFR-85
+    this.startInboxWatcher(config.projectDirectory); // FR-59
+    this.startTranscriptsWatcher(config.projectDirectory); // NFR-85
+    this.startThumbsWatcher(config.projectDirectory); // NFR-85
   }
 
   /**
@@ -267,8 +267,13 @@ export class WatcherManager {
   /**
    * FR-90: Get info about all active watchers
    */
-  getWatcherInfo(): Array<{ name: string; pattern: string | string[]; status: 'active' | 'error' }> {
-    const info: Array<{ name: string; pattern: string | string[]; status: 'active' | 'error' }> = [];
+  getWatcherInfo(): Array<{
+    name: string;
+    pattern: string | string[];
+    status: 'active' | 'error';
+  }> {
+    const info: Array<{ name: string; pattern: string | string[]; status: 'active' | 'error' }> =
+      [];
 
     for (const [name, watcher] of this.watchers) {
       // Get the watched paths from chokidar

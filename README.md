@@ -25,15 +25,15 @@ Open http://localhost:5101
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Architecture](docs/architecture.md) | Full stack overview, Socket.io, server/client details |
-| [API Reference](docs/api-reference.md) | Complete REST API endpoint documentation |
-| [Socket Protocol](docs/socket-protocol.md) | Real-time WebSocket events and payloads |
-| [Codebase Patterns](docs/patterns.md) | Code conventions and established patterns |
-| [Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
-| [Cross-Platform Setup](docs/cross-platform-setup.md) | Setup guide for Windows users and collaborators |
-| [CLAUDE.md](CLAUDE.md) | AI assistant instructions |
+| Document                                             | Description                                           |
+| ---------------------------------------------------- | ----------------------------------------------------- |
+| [Architecture](docs/architecture.md)                 | Full stack overview, Socket.io, server/client details |
+| [API Reference](docs/api-reference.md)               | Complete REST API endpoint documentation              |
+| [Socket Protocol](docs/socket-protocol.md)           | Real-time WebSocket events and payloads               |
+| [Codebase Patterns](docs/patterns.md)                | Code conventions and established patterns             |
+| [Troubleshooting](docs/troubleshooting.md)           | Common issues and solutions                           |
+| [Cross-Platform Setup](docs/cross-platform-setup.md) | Setup guide for Windows users and collaborators       |
+| [CLAUDE.md](CLAUDE.md)                               | AI assistant instructions                             |
 
 ## Architecture
 

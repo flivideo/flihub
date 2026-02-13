@@ -9,6 +9,7 @@ When you click the regen buttons, you see "coming soon" - but the functionality 
 ### What's Fully Implemented ✅
 
 **Backend (server/src/routes/manage.ts):**
+
 - ✅ `/api/manage/regen-shadows` (lines 161-255) - WORKING
 - ✅ `/api/manage/regen-transcripts` (lines 274-335) - WORKING
 - ✅ `/api/manage/regen-chapters` (lines 352-470) - WORKING
@@ -18,6 +19,7 @@ When you click the regen buttons, you see "coming soon" - but the functionality 
 - ✅ Error handling
 
 **Frontend Component (client/src/components/shared/RegenToolbar.tsx):**
+
 - ✅ All 4 buttons working
 - ✅ Calls the backend endpoints
 - ✅ Shows progress bars
@@ -37,6 +39,7 @@ const handleSimpleToolClick = (tool: 'regen-shadows' | ...) => {
 ```
 
 **What's happening:**
+
 1. Your screenshot shows **ToolsSidebar** (FR-136 vertical sidebar design)
 2. ToolsSidebar buttons call `handleSimpleToolClick` (line 960)
 3. `handleSimpleToolClick` is a stub that just shows "coming soon"
@@ -45,12 +48,14 @@ const handleSimpleToolClick = (tool: 'regen-shadows' | ...) => {
 ### Two Different UIs Exist
 
 **Option 1: RegenToolbar (FR-131 Phase 2 style)**
+
 - File: `client/src/components/shared/RegenToolbar.tsx`
 - Status: ✅ FULLY WORKING
 - Design: Horizontal toolbar with collapsible section
 - Currently: NOT being used in ManagePanel
 
 **Option 2: ToolsSidebar (FR-136 style)**
+
 - File: `client/src/components/shared/ToolsSidebar.tsx`
 - Status: ❌ UI only, buttons call stub functions
 - Design: Vertical sidebar (your screenshot)
@@ -63,6 +68,7 @@ const handleSimpleToolClick = (tool: 'regen-shadows' | ...) => {
 Replace ToolsSidebar with RegenToolbar in ManagePanel.tsx:
 
 **Remove (line 956-963):**
+
 ```typescript
 <ToolsSidebar
   selectedFiles={Array.from(selectedFiles)}
@@ -74,6 +80,7 @@ Replace ToolsSidebar with RegenToolbar in ManagePanel.tsx:
 ```
 
 **Add instead:**
+
 ```typescript
 <RegenToolbar
   projectCode={config?.projectCode || ''}
@@ -98,21 +105,24 @@ const handleSimpleToolClick = async (tool: string) => {
   // Call the backend endpoints
   // Show progress
   // Listen to Socket.io events
-}
+};
 ```
 
 ## What About Export?
 
 **Export functionality:**
+
 - ❌ Line 1017: "Export functionality coming soon..."
 - The old export code exists (FR-122/124/125) but needs to be wired up to the new UI
 
 **Location of old export code:**
+
 - Edit prep: `useEditPrep()` hook (line 77)
 - Create folders: `createFolders()` (line 78)
 - Gling prep UI exists below (lines 643-895)
 
 **The issue:** Export is scattered throughout the ManagePanel. It needs to be:
+
 1. Extracted into an "ExportConfig" component
 2. Shown in the slide-out drawer (like Rename)
 3. Triggered by clicking "Export" tool button
@@ -120,6 +130,7 @@ const handleSimpleToolClick = async (tool: string) => {
 ## Summary
 
 ### What Actually Works Right Now:
+
 1. ✅ Bulk rename (you can test this safely)
 2. ✅ Backend regen endpoints (all 4)
 3. ✅ RegenToolbar component (just not being used)
@@ -127,11 +138,13 @@ const handleSimpleToolClick = async (tool: string) => {
 5. ✅ Progress tracking via Socket.io
 
 ### What Doesn't Work:
+
 1. ❌ ToolsSidebar regen buttons (stub functions)
 2. ❌ Export tool (not wired up to new UI)
 3. ❌ Folder creation tool (coming soon)
 
 ### Why You're Confused:
+
 - Two different UI approaches were created (RegenToolbar vs ToolsSidebar)
 - The one being used (ToolsSidebar) has stub functions
 - The one that works (RegenToolbar) isn't being used
@@ -139,16 +152,19 @@ const handleSimpleToolClick = async (tool: string) => {
 ## Recommendation
 
 **Immediate (5 minutes):**
+
 - Replace ToolsSidebar with RegenToolbar
 - Test regen shadows on 2-3 files
 - Verify shadows regenerate correctly
 
 **Then (2-3 hours):**
+
 - Extract export functionality into ExportConfig component
 - Wire up Export tool in slide-out drawer
 - Test full workflow
 
 **Or:**
+
 - Go back to FR-131 Phase 2 design (simpler, already working)
 - Defer FR-136 vertical sidebar until later
 

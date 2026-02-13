@@ -6,13 +6,13 @@ Track server stability problems, root causes, and fixes applied.
 
 ## Issue Categories
 
-| Category | Description |
-|----------|-------------|
+| Category                 | Description                                             |
+| ------------------------ | ------------------------------------------------------- |
 | Child Process Management | Spawned subprocesses (Whisper, ffmpeg) lifecycle issues |
-| Port Conflicts | EADDRINUSE errors, orphaned processes holding ports |
-| Graceful Shutdown | Clean termination of server and child processes |
-| File Watchers | Nodemon restarts, chokidar issues |
-| Resource Leaks | Memory, file handles, connections |
+| Port Conflicts           | EADDRINUSE errors, orphaned processes holding ports     |
+| Graceful Shutdown        | Clean termination of server and child processes         |
+| File Watchers            | Nodemon restarts, chokidar issues                       |
+| Resource Leaks           | Memory, file handles, connections                       |
 
 ---
 
@@ -24,12 +24,12 @@ Track server stability problems, root causes, and fixes applied.
 
 **Root Cause:** Multiple compounding issues:
 
-| Issue | Description |
-|-------|-------------|
-| No SIGTERM handler | Nodemon sends SIGTERM, code only handled SIGINT |
-| Orphaned Whisper process | Active transcription not killed on shutdown |
-| No port cleanup | Server crashes if port already in use |
-| Nodemon watches too much | Telemetry file changes triggered restarts |
+| Issue                    | Description                                     |
+| ------------------------ | ----------------------------------------------- |
+| No SIGTERM handler       | Nodemon sends SIGTERM, code only handled SIGINT |
+| Orphaned Whisper process | Active transcription not killed on shutdown     |
+| No port cleanup          | Server crashes if port already in use           |
+| Nodemon watches too much | Telemetry file changes triggered restarts       |
 
 **Trigger:** Code edit to `telemetry.ts` while transcription was running caused nodemon to restart. Old server didn't clean up properly, new server couldn't bind to port.
 
@@ -51,6 +51,7 @@ Track server stability problems, root causes, and fixes applied.
    - Now ignores: `config.json`, `transcription-telemetry.json`, `*.log`
 
 **Files Changed:**
+
 - `server/src/routes/transcriptions.ts`
 - `server/src/index.ts`
 - `server/package.json`
@@ -66,6 +67,7 @@ Track server stability problems, root causes, and fixes applied.
 **Root Cause:** FR-98 incorrectly assumed Whisper accepts multiple `--output_format` values. It only accepts one: `txt`, `srt`, `json`, `vtt`, `tsv`, or `all`.
 
 **Bad code:**
+
 ```
 '--output_format', 'txt', 'srt', 'json'
 ```
@@ -73,6 +75,7 @@ Track server stability problems, root causes, and fixes applied.
 **Fix:** Changed to `--output_format all` then delete unwanted `.vtt` and `.tsv` files after completion.
 
 **Files Changed:**
+
 - `server/src/routes/transcriptions.ts`
 
 **Status:** Fixed
@@ -84,6 +87,7 @@ Track server stability problems, root causes, and fixes applied.
 **Symptom:** Server crashes immediately after logging "transcripts change detected". No error message visible.
 
 **Pattern:**
+
 ```
 transcripts change detected
 [nodemon] app crashed
@@ -91,14 +95,14 @@ transcripts change detected
 
 **Investigation So Far:**
 
-| Checked | Finding |
-|---------|---------|
-| WatcherManager debounce/emit code | Looks correct, added try-catch |
-| Socket event types | 'transcripts:changed' properly defined |
-| Transcription completion flow | Normal - cleanup, telemetry async |
-| videoDuration utility | Handles errors, won't throw |
-| telemetry utility | Has try-catch, won't throw |
-| nodemon ignore patterns | Telemetry file already ignored |
+| Checked                           | Finding                                |
+| --------------------------------- | -------------------------------------- |
+| WatcherManager debounce/emit code | Looks correct, added try-catch         |
+| Socket event types                | 'transcripts:changed' properly defined |
+| Transcription completion flow     | Normal - cleanup, telemetry async      |
+| videoDuration utility             | Handles errors, won't throw            |
+| telemetry utility                 | Has try-catch, won't throw             |
+| nodemon ignore patterns           | Telemetry file already ignored         |
 
 **Potential Causes:**
 
@@ -117,12 +121,14 @@ transcripts change detected
    - `unhandledRejection` handler for promise errors
 
 **Files Changed:**
+
 - `server/src/WatcherManager.ts`
 - `server/src/index.ts`
 
 **Status:** Under Investigation - diagnostic logging added
 
 **Next Steps:**
+
 - Run transcription again to capture actual error
 - Check if "event emitted successfully" logs before crash
 - Examine full error output with new handlers
@@ -154,11 +160,11 @@ transcripts change detected
 
 ## Known Limitations
 
-| Limitation | Impact | Mitigation |
-|------------|--------|------------|
-| Transcription queue not persisted | Lost on crash | Manual re-queue via UI |
-| Single transcription at a time | Slow for many files | By design (CPU intensive) |
-| No ffmpeg process tracking | Shadow gen could orphan | Future: add similar cleanup |
+| Limitation                        | Impact                  | Mitigation                  |
+| --------------------------------- | ----------------------- | --------------------------- |
+| Transcription queue not persisted | Lost on crash           | Manual re-queue via UI      |
+| Single transcription at a time    | Slow for many files     | By design (CPU intensive)   |
+| No ffmpeg process tracking        | Shadow gen could orphan | Future: add similar cleanup |
 
 ---
 

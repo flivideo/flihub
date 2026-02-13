@@ -9,6 +9,7 @@ Add the ability to create image prompts directly in the Assets page. Prompts are
 ## Problem Statement
 
 **Current workflow (creator does everything):**
+
 1. Write prompt mentally or in notes
 2. Open DALI 3, paste prompt, generate image
 3. Download image to Downloads
@@ -17,11 +18,13 @@ Add the ability to create image prompts directly in the Assets page. Prompts are
 6. Collaborator uses image in edit
 
 **Pain points:**
+
 - Time-consuming for creator
 - Creator's tooling (DALI 3) is less powerful than collaborator's (Higs Field, Halo)
 - Collaborator is better at image generation
 
 **Proposed workflow (delegation):**
+
 1. Creator writes prompt in app
 2. Save prompt → `assets/images/05-3-1-demo.txt`
 3. DAM sync to collaborator
@@ -40,6 +43,7 @@ Prompts follow the same naming as images:
 ```
 
 **Examples:**
+
 ```
 05-3-1-demo.txt                    # Prompt for demo image
 05-3-1-demo.png                    # Corresponding image (created by collaborator)
@@ -80,11 +84,13 @@ Add "Image Prompt" text area below the existing Label field:
 ```
 
 **Field details:**
+
 - Multi-line text area (4-6 rows default, expandable)
 - Placeholder: "Describe the image you want generated..."
 - No character limit
 
 **Save Prompt button:**
+
 - Disabled when Image Prompt is empty
 - Enabled when Image Prompt has text (and Label is filled)
 - On click: saves `.txt` file to `assets/images/`
@@ -105,6 +111,7 @@ ASSIGNED ASSETS                                          15 items
 ```
 
 **Visual indicators:**
+
 - 📷 or image icon for `.png/.jpg/.webp`
 - 📝 or text icon for `.txt`
 - For prompts: show first ~50 chars of content (truncated)
@@ -114,12 +121,14 @@ ASSIGNED ASSETS                                          15 items
 ### Editing Existing Prompts
 
 **Click on a prompt row:**
+
 1. Loads the prompt content into the Image Prompt text area
 2. Populates Chapter, Sequence, Image #, Variant, Label from filename
 3. Save Prompt button becomes "Update Prompt"
 4. Allows editing and re-saving
 
 **Cancel editing:**
+
 - Click elsewhere or clear the text area
 - Returns to "create new" mode
 
@@ -166,6 +175,7 @@ ASSIGNED ASSETS                                          15 items
 Create or update a prompt file.
 
 **Request:**
+
 ```json
 {
   "chapter": "05",
@@ -178,12 +188,13 @@ Create or update a prompt file.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
   "path": "/path/to/project/assets/images/05-3-2-workflow-diagram.txt",
   "filename": "05-3-2-workflow-diagram.txt",
-  "created": true  // or false if updated
+  "created": true // or false if updated
 }
 ```
 
@@ -192,6 +203,7 @@ Create or update a prompt file.
 Read a prompt file's content for editing.
 
 **Response:**
+
 ```json
 {
   "filename": "05-3-2-workflow-diagram.txt",
@@ -223,13 +235,13 @@ for YouTube tutorial video.
 
 ## Edge Cases
 
-| Scenario | Behavior |
-|----------|----------|
-| Save with no Label | Button disabled, Label is required |
-| Save with no Prompt text | Button disabled |
-| File already exists | Overwrite with confirmation toast |
-| `assets/images/` doesn't exist | Create directory automatically |
-| Invalid characters in Label | Sanitize (same as image labels) |
+| Scenario                       | Behavior                           |
+| ------------------------------ | ---------------------------------- |
+| Save with no Label             | Button disabled, Label is required |
+| Save with no Prompt text       | Button disabled                    |
+| File already exists            | Overwrite with confirmation toast  |
+| `assets/images/` doesn't exist | Create directory automatically     |
+| Invalid characters in Label    | Sanitize (same as image labels)    |
 
 ---
 

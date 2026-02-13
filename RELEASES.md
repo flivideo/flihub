@@ -3,6 +3,7 @@
 User-facing release history documenting the complete development journey.
 
 **Versioning:** Semantic versioning (MAJOR.MINOR.PATCH)
+
 - v0.x.x = Pre-1.0 development (evolving rapidly)
 - Future v1.0.0 = Stable release (likely after BMAD rebuild)
 
@@ -217,12 +218,14 @@ These versions are documented from the changelog but cannot be git-tagged since 
 **Theme:** LLM context endpoints for external tools
 
 **Features:**
+
 - Read-only JSON endpoints under `/api/query/` prefix
 - `GET /api/query/projects`, `/api/query/projects/:code/recordings`, etc.
 - ASCII text formatting with `?format=text` parameter
 - DAM-style formatting: emoji indicators, human-readable sizes
 
 **Learnings:**
+
 - Separate read API from write API for safety
 - ASCII format useful for CLI tools and LLM context
 
@@ -233,6 +236,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 **Theme:** Whisper AI integration
 
 **Features:**
+
 - Auto-transcribe on file rename (queued automatically)
 - Job queue with status tracking (queued → transcribing → complete/error)
 - New Transcriptions tab showing active job, queue, history
@@ -243,6 +247,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 - Socket.io streaming progress updates
 
 **Learnings:**
+
 - Folder naming: `recording-transcripts/` clarifies these are pre-edit transcripts
 - Queue system prevents overload when batch-transcribing
 - Progress feedback essential for long-running operations
@@ -254,6 +259,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 **Theme:** YouTube thumbnail workflow
 
 **Features:**
+
 - New "Thumbs" page in navigation
 - Scan ~/Downloads for ZIP files containing images
 - Preview ZIP contents, select up to 3 images
@@ -263,6 +269,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 - Size toggle (S/M/L/XL) for previews
 
 **Learnings:**
+
 - ZIP import pattern useful for batch operations
 - Drag-to-reorder with auto-rename = intuitive UX
 - Thumbs folder changes per project, so manual refresh vs. watcher
@@ -274,6 +281,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 **Theme:** Image management linked to video segments
 
 **Features:**
+
 - Assets page with incoming images grid and assigned images list
 - Assignment Controls: chapter, sequence, image order, variant, label
 - Image naming: `{chapter}-{seq}-{imgOrder}{variant}-{label}.{ext}`
@@ -283,6 +291,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 - Click any asset to populate assignment controls
 
 **Learnings:**
+
 - Assets linked to segments via naming convention
 - Prompts as `.txt` files = simple, version-controllable
 - Paired display pattern for related files
@@ -294,6 +303,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 **Theme:** Enhanced recordings management
 
 **Features:**
+
 - New tab with chapter groupings
 - Group by chapter NUMBER only (not chapter + name)
 - Safe folder (`-safe/` inside recordings) for unwanted takes
@@ -303,6 +313,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 - Total duration display
 
 **Learnings:**
+
 - Safe folder inside recordings keeps related files together
 - Chapter grouping by number only - names vary between segments
 - Don't delete - move to safe (recoverable)
@@ -314,6 +325,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 **Theme:** Multi-project support
 
 **Features:**
+
 - Project list panel showing all AppyDave projects
 - Click to switch active project
 - Create new project with b-code format (b64, b65, etc.)
@@ -321,6 +333,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 - Project selector dropdown
 
 **Learnings:**
+
 - b-code format matches existing AppyDave video numbering
 - Project codes are simple identifiers, full name is separate
 - Allow periods (for names like `b73-opus-4.5-awesome`)
@@ -332,6 +345,7 @@ These versions are documented from the changelog but cannot be git-tagged since 
 **Theme:** The foundation - watch and rename
 
 **Features:**
+
 - Watch for Ecamm Live recordings in configured directory
 - File cards showing: filename, duration, size, timestamp
 - Naming controls: chapter, sequence, name, tags
@@ -344,12 +358,14 @@ These versions are documented from the changelog but cannot be git-tagged since 
 - Real-time updates via Socket.io file watcher
 
 **Key Decisions:**
+
 - Naming convention: `{chapter}-{sequence}-{name}-{tags}` - proven from manual workflow
 - Tags uppercase: CTA, SKOOL, RECAP - visual distinction
 - Trash not delete - recoverable mistakes
 - Ecamm-first: Built for Ecamm Live workflow (other recorders could come later)
 
 **Learnings:**
+
 - Good Take Algorithm v2: First version failed with baseline files. 5MB threshold identifies substantial takes
 - File watcher + Socket.io = instant UI updates
 - Config as state: Single `config.json` stores user preferences
@@ -358,21 +374,21 @@ These versions are documented from the changelog but cannot be git-tagged since 
 
 ## Version History Summary
 
-| Version | Date | Theme | Git Tagged? |
-|---------|------|-------|-------------|
-| v0.13.0 | 2025-12-17 | Edit Workflow | ✓ |
-| v0.12.0 | 2025-12-16 | Windows/WSL Support | ✓ |
-| v0.11.0 | 2025-12-15 | Shadow System | ✓ |
-| v0.10.0 | 2025-12-14-15 | Watch Page | ✓ |
-| v0.9.0 | 2025-12-14 | Inbox + Chapters | ✓ |
-| v0.8.0 | 2025-12-13 | Initial Git Commit | ✓ |
-| v0.7.0 | Dec 6-7 | Query API | - |
-| v0.6.0 | Dec 3-5 | Transcription | - |
-| v0.5.0 | Dec 1 | Thumbnails | - |
-| v0.4.0 | Nov 30 - Dec 1 | Assets | - |
-| v0.3.0 | Nov 29-30 | Recordings View | - |
-| v0.2.0 | Nov 29 | Projects | - |
-| v0.1.0 | Nov 28-29 | Incoming → Recordings | - |
+| Version | Date           | Theme                 | Git Tagged? |
+| ------- | -------------- | --------------------- | ----------- |
+| v0.13.0 | 2025-12-17     | Edit Workflow         | ✓           |
+| v0.12.0 | 2025-12-16     | Windows/WSL Support   | ✓           |
+| v0.11.0 | 2025-12-15     | Shadow System         | ✓           |
+| v0.10.0 | 2025-12-14-15  | Watch Page            | ✓           |
+| v0.9.0  | 2025-12-14     | Inbox + Chapters      | ✓           |
+| v0.8.0  | 2025-12-13     | Initial Git Commit    | ✓           |
+| v0.7.0  | Dec 6-7        | Query API             | -           |
+| v0.6.0  | Dec 3-5        | Transcription         | -           |
+| v0.5.0  | Dec 1          | Thumbnails            | -           |
+| v0.4.0  | Nov 30 - Dec 1 | Assets                | -           |
+| v0.3.0  | Nov 29-30      | Recordings View       | -           |
+| v0.2.0  | Nov 29         | Projects              | -           |
+| v0.1.0  | Nov 28-29      | Incoming → Recordings | -           |
 
 ---
 
@@ -391,6 +407,7 @@ FliHub development coincided with testing Claude Opus 4.5:
 ### Velocity
 
 19 days from first feature (Nov 28) to v0.13.0 (Dec 17):
+
 - 100+ functional requirements
 - Full collaboration workflow established
 - Cross-platform support

@@ -10,10 +10,10 @@ This directory contains historical documentation that has been archived to reduc
 
 ## Archived Files
 
-| File | Date Range | Description |
-|------|------------|-------------|
+| File                      | Date Range   | Description                           |
+| ------------------------- | ------------ | ------------------------------------- |
 | `requirements-2025-q4.md` | Nov-Dec 2025 | Completed requirements (FR/NFR specs) |
-| `changelog-2025-q4.md` | Nov-Dec 2025 | Implementation history for Q4 2025 |
+| `changelog-2025-q4.md`    | Nov-Dec 2025 | Implementation history for Q4 2025    |
 
 ## Finding Historical Information
 

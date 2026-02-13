@@ -4,7 +4,13 @@ import path from 'path';
 import fs from 'fs-extra';
 import { spawn, ChildProcess } from 'child_process';
 import type { Server } from 'socket.io';
-import type { ServerToClientEvents, ClientToServerEvents, TranscriptionJob, TranscriptionStatus, Config } from '../../../shared/types.js';
+import type {
+  ServerToClientEvents,
+  ClientToServerEvents,
+  TranscriptionJob,
+  TranscriptionStatus,
+  Config,
+} from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
@@ -13,7 +19,7 @@ import { appendTelemetryEntry } from '../utils/telemetry.js';
 // In-memory state
 let queue: TranscriptionJob[] = [];
 let activeJob: TranscriptionJob | null = null;
-let recentJobs: TranscriptionJob[] = [];  // Keep last 5
+let recentJobs: TranscriptionJob[] = []; // Keep last 5
 let activeProcess: ChildProcess | null = null;
 
 // Config (could move to server config.json in future)
@@ -91,10 +97,10 @@ export function createTranscriptionRoutes(
     if (activeJob && getBaseName(activeJob.videoFilename) === baseName) return 'transcribing';
 
     // Check if queued (compare base names)
-    if (queue.some(j => getBaseName(j.videoFilename) === baseName)) return 'queued';
+    if (queue.some((j) => getBaseName(j.videoFilename) === baseName)) return 'queued';
 
     // Check if failed recently (compare base names)
-    const recent = recentJobs.find(j => getBaseName(j.videoFilename) === baseName);
+    const recent = recentJobs.find((j) => getBaseName(j.videoFilename) === baseName);
     if (recent?.status === 'error') return 'error';
 
     return 'none';
@@ -141,12 +147,17 @@ export function createTranscriptionRoutes(
     // FR-98: Use 'all' format then delete unwanted vtt/tsv files after completion
     // (Whisper only accepts a single format argument, not multiple)
     activeProcess = spawn(pythonPath, [
-      '-m', 'whisper',
+      '-m',
+      'whisper',
       videoPath,
-      '--model', WHISPER_MODEL,
-      '--language', WHISPER_LANGUAGE,
-      '--output_format', 'all',
-      '--output_dir', transcriptsDir,
+      '--model',
+      WHISPER_MODEL,
+      '--language',
+      WHISPER_LANGUAGE,
+      '--output_format',
+      'all',
+      '--output_dir',
+      transcriptsDir,
     ]);
 
     const currentJobId = activeJob.jobId;
@@ -214,25 +225,27 @@ export function createTranscriptionRoutes(
         const project = recordingsIndex > 0 ? pathParts[recordingsIndex - 1] : 'unknown';
 
         // FR-99: Log telemetry (file uses .jsonl extension to avoid triggering nodemon)
-        getVideoDuration(completedPath).then(videoDuration => {
-          const duration = videoDuration ?? 0;
-          const ratio = duration > 0 ? transcriptionDurationSec / duration : 0;
-          appendTelemetryEntry({
-            startTimestamp,
-            endTimestamp,
-            project,
-            filename: completedFilename,
-            path: completedPath,
-            videoDurationSec: duration,
-            transcriptionDurationSec,
-            ratio,
-            fileSizeBytes: videoFileSizeBytes,
-            model: WHISPER_MODEL,
-            success: true,
+        getVideoDuration(completedPath)
+          .then((videoDuration) => {
+            const duration = videoDuration ?? 0;
+            const ratio = duration > 0 ? transcriptionDurationSec / duration : 0;
+            appendTelemetryEntry({
+              startTimestamp,
+              endTimestamp,
+              project,
+              filename: completedFilename,
+              path: completedPath,
+              videoDurationSec: duration,
+              transcriptionDurationSec,
+              ratio,
+              fileSizeBytes: videoFileSizeBytes,
+              model: WHISPER_MODEL,
+              success: true,
+            });
+          })
+          .catch((err) => {
+            console.error('Error getting video duration for telemetry:', err);
           });
-        }).catch(err => {
-          console.error('Error getting video duration for telemetry:', err);
-        });
       } else {
         activeJob.status = 'error';
         activeJob.error = `Whisper exited with code ${code}`;
@@ -246,9 +259,9 @@ export function createTranscriptionRoutes(
 
       // FR-94: Move to recent, deduping by base name first
       const completedBaseName = getBaseName(activeJob.videoFilename);
-      recentJobs = recentJobs.filter(j => getBaseName(j.videoFilename) !== completedBaseName);
+      recentJobs = recentJobs.filter((j) => getBaseName(j.videoFilename) !== completedBaseName);
       recentJobs.unshift(activeJob);
-      recentJobs = recentJobs.slice(0, 5);  // Keep last 5
+      recentJobs = recentJobs.slice(0, 5); // Keep last 5
 
       activeJob = null;
       activeProcess = null;
@@ -272,7 +285,7 @@ export function createTranscriptionRoutes(
 
         // FR-94: Move to recent, deduping by base name first
         const errorBaseName = getBaseName(activeJob.videoFilename);
-        recentJobs = recentJobs.filter(j => getBaseName(j.videoFilename) !== errorBaseName);
+        recentJobs = recentJobs.filter((j) => getBaseName(j.videoFilename) !== errorBaseName);
         recentJobs.unshift(activeJob);
         recentJobs = recentJobs.slice(0, 5);
 
@@ -305,14 +318,14 @@ export function createTranscriptionRoutes(
       console.log(`${videoFilename} is already being transcribed`);
       return activeJob;
     }
-    const existing = queue.find(j => getBaseName(j.videoFilename) === baseName);
+    const existing = queue.find((j) => getBaseName(j.videoFilename) === baseName);
     if (existing) {
       console.log(`${videoFilename} is already in queue`);
       return existing;
     }
 
     // FR-94: Skip if already in recent (prevents re-queuing just-completed jobs)
-    const inRecent = recentJobs.find(j => getBaseName(j.videoFilename) === baseName);
+    const inRecent = recentJobs.find((j) => getBaseName(j.videoFilename) === baseName);
     if (inRecent && inRecent.status === 'complete') {
       console.log(`${videoFilename} was recently transcribed, skipping`);
       return null;
@@ -332,7 +345,7 @@ export function createTranscriptionRoutes(
     const job: TranscriptionJob = {
       jobId: generateJobId(),
       videoPath,
-      videoFilename,  // FR-94: Now normalized to .mov extension
+      videoFilename, // FR-94: Now normalized to .mov extension
       status: 'queued',
       duration,
       size,
@@ -469,7 +482,9 @@ export function createTranscriptionRoutes(
       }
 
       await fs.remove(transcriptPath);
-      console.log(`Deleted orphaned transcript: ${transcriptFilename}${project ? ` (project: ${project})` : ''}`);
+      console.log(
+        `Deleted orphaned transcript: ${transcriptFilename}${project ? ` (project: ${project})` : ''}`
+      );
       res.json({ success: true, filename: transcriptFilename, deleted: true });
     } catch (error) {
       console.error('Error deleting transcript:', error);
@@ -512,7 +527,7 @@ export function createTranscriptionRoutes(
         const files = await fs.readdir(transcriptsDir);
         // Match files like "07-1-intro.txt", "07-2-demo.txt" but not "07-chapter.txt"
         const chapterPattern = new RegExp(`^${chapter}-\\d+-.*\\.txt$`);
-        transcriptCount = files.filter(f => chapterPattern.test(f)).length;
+        transcriptCount = files.filter((f) => chapterPattern.test(f)).length;
       }
 
       res.json({
@@ -550,7 +565,7 @@ export function createTranscriptionRoutes(
       // Match files like "07-1-intro.txt" but not "07-chapter.txt"
       const chapterPattern = new RegExp(`^${chapter}-(\\d+)-(.+)\\.txt$`);
       const transcriptFiles = files
-        .filter(f => chapterPattern.test(f))
+        .filter((f) => chapterPattern.test(f))
         .sort((a, b) => {
           // Sort by sequence number
           const seqA = parseInt(a.match(chapterPattern)?.[1] || '0', 10);
@@ -577,7 +592,9 @@ export function createTranscriptionRoutes(
       // Write combined file
       await fs.writeFile(combinedPath, combinedContent, 'utf-8');
 
-      console.log(`Created combined transcript: ${chapter}-chapter.txt (${transcriptFiles.length} files)`);
+      console.log(
+        `Created combined transcript: ${chapter}-chapter.txt (${transcriptFiles.length} files)`
+      );
 
       res.json({
         success: true,
@@ -639,7 +656,7 @@ export function createTranscriptionRoutes(
       }
 
       // Convert map to array of paths
-      const videoFiles = Array.from(videoMap.values()).map(v => v.path);
+      const videoFiles = Array.from(videoMap.values()).map((v) => v.path);
 
       // Queue transcription for each file that doesn't have a transcript
       const queued: string[] = [];
@@ -654,7 +671,9 @@ export function createTranscriptionRoutes(
         }
       }
 
-      console.log(`Queue-all (${scope}${chapter ? ` chapter ${chapter}` : ''}): queued ${queued.length}, skipped ${skipped.length}`);
+      console.log(
+        `Queue-all (${scope}${chapter ? ` chapter ${chapter}` : ''}): queued ${queued.length}, skipped ${skipped.length}`
+      );
 
       res.json({
         success: true,
@@ -767,8 +786,9 @@ export function createTranscriptionRoutes(
       }
 
       // Sort chapters and build response
-      const sortedChapters = Array.from(chapterMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b));
+      const sortedChapters = Array.from(chapterMap.entries()).sort(([a], [b]) =>
+        a.localeCompare(b)
+      );
 
       const chapters = sortedChapters.map(([chapter, transcripts]) => {
         // Sort by sequence within chapter
@@ -778,7 +798,7 @@ export function createTranscriptionRoutes(
         const title = transcripts[0]?.name || '';
 
         // Combine all transcript content
-        const content = transcripts.map(t => t.content).join('\n\n');
+        const content = transcripts.map((t) => t.content).join('\n\n');
 
         return { chapter, title, content };
       });

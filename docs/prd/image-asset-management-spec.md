@@ -9,6 +9,7 @@ A new "Assets" page in the Recording Namer app for assigning and organizing imag
 ## Problem Statement
 
 Images are generated in external systems and downloaded to `~/Downloads`. They need to be:
+
 1. Assigned to specific video chapters/sequences
 2. Named consistently with the project naming scheme
 3. Moved to the project's `assets/images/` folder
@@ -22,16 +23,17 @@ Images are generated in external systems and downloaded to `~/Downloads`. They n
 {chapter}-{seq}-{imgOrder}{variant}-{label}.{ext}
 ```
 
-| Component | Format | Description |
-|-----------|--------|-------------|
-| chapter | 2 digits | Chapter number (01-99) |
-| seq | 1 digit | Sequence within chapter (1-9), matches video sequence |
-| imgOrder | 1 digit | Image order within chapter-seq (1-9) |
-| variant | letter (optional) | A/B testing variant (a-z), omit if no variants |
-| label | kebab-case | Descriptive label |
-| ext | png/jpg/webp | Original file extension preserved |
+| Component | Format            | Description                                           |
+| --------- | ----------------- | ----------------------------------------------------- |
+| chapter   | 2 digits          | Chapter number (01-99)                                |
+| seq       | 1 digit           | Sequence within chapter (1-9), matches video sequence |
+| imgOrder  | 1 digit           | Image order within chapter-seq (1-9)                  |
+| variant   | letter (optional) | A/B testing variant (a-z), omit if no variants        |
+| label     | kebab-case        | Descriptive label                                     |
+| ext       | png/jpg/webp      | Original file extension preserved                     |
 
 **Examples:**
+
 ```
 05-3-1-demonstration-overview.png     # First image for chapter 05, seq 3
 05-3-2a-workflow-diagram.png          # Second image, variant A
@@ -70,9 +72,11 @@ Supported file extensions: `.png`, `.jpg`, `.jpeg`, `.webp`
 ## Backend API
 
 ### GET /api/assets/incoming
+
 Scan image source directory for pending images.
 
 **Response:**
+
 ```json
 {
   "images": [
@@ -81,19 +85,19 @@ Scan image source directory for pending images.
       "filename": "ChatGPT Image Nov 29, 2025, 09_22_59 AM.png",
       "size": 3140257,
       "timestamp": "2025-11-29T09:22:59.000Z",
-      "hash": "8d2d7498..."  // For duplicate detection
+      "hash": "8d2d7498..." // For duplicate detection
     }
   ],
-  "duplicates": [
-    { "keep": "..._09_33_48 AM.png", "duplicate": "..._09_33_50 AM.png" }
-  ]
+  "duplicates": [{ "keep": "..._09_33_48 AM.png", "duplicate": "..._09_33_50 AM.png" }]
 }
 ```
 
 ### GET /api/assets/images
+
 List existing images in project's `assets/images/` folder.
 
 **Response:**
+
 ```json
 {
   "images": [
@@ -111,9 +115,11 @@ List existing images in project's `assets/images/` folder.
 ```
 
 ### GET /api/assets/next-image-order?chapter=05&sequence=3
+
 Calculate next available image order for a chapter-sequence.
 
 **Response:**
+
 ```json
 {
   "chapter": "05",
@@ -124,21 +130,24 @@ Calculate next available image order for a chapter-sequence.
 ```
 
 ### POST /api/assets/assign
+
 Assign (rename and move) an image to the project.
 
 **Request:**
+
 ```json
 {
   "sourcePath": "/Users/.../Downloads/ChatGPT Image....png",
   "chapter": "05",
   "sequence": "3",
   "imageOrder": "1",
-  "variant": "a",  // optional, null if no variant
+  "variant": "a", // optional, null if no variant
   "label": "workflow-diagram"
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -148,6 +157,7 @@ Assign (rename and move) an image to the project.
 ```
 
 ### DELETE /api/assets/incoming/:encodedPath
+
 Remove an image from incoming (move to trash or delete).
 
 ---
@@ -155,6 +165,7 @@ Remove an image from incoming (move to trash or delete).
 ## Frontend - Assets Page
 
 ### Navigation
+
 - Add "Assets" button/tab to header alongside "Projects" and "Config"
 - Route: `/assets` or toggle panel
 
@@ -199,6 +210,7 @@ Remove an image from incoming (move to trash or delete).
 10. Repeat for remaining images
 
 ### Duplicate Handling
+
 - Detect duplicates by file hash (MD5)
 - Show warning: "1 duplicate detected"
 - Auto-hide duplicates from grid (or show with "Duplicate" badge)
@@ -272,6 +284,7 @@ Remove an image from incoming (move to trash or delete).
 ## Test Data
 
 Current images in `~/Downloads`:
+
 - 13 PNG files from ChatGPT
 - 12 unique (1 duplicate pair: 09_33_48 and 09_33_50)
 - Sizes: 2.7MB - 3.3MB

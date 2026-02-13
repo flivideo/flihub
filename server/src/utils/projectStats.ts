@@ -33,11 +33,11 @@ function migrateOldStage(oldStage: string | undefined): ProjectStage | undefined
   if (!oldStage) return undefined;
 
   const migration: Record<string, ProjectStage> = {
-    'record': 'recording',
-    'recording': 'recording',
-    'edit': 'first-edit',
-    'editing': 'first-edit',
-    'done': 'published',
+    record: 'recording',
+    recording: 'recording',
+    edit: 'first-edit',
+    editing: 'first-edit',
+    done: 'published',
   };
 
   return migration[oldStage] || (oldStage as ProjectStage);
@@ -114,9 +114,8 @@ export async function getProjectStatsRaw(
 
   // Transcript sync status (FR-111: Only recordings/)
   const transcriptSync = await getTranscriptSyncStatus(recordingsDir, transcriptsDir);
-  const transcriptPercent = totalFiles > 0
-    ? Math.round((transcriptSync.matched / totalFiles) * 100)
-    : 0;
+  const transcriptPercent =
+    totalFiles > 0 ? Math.round((transcriptSync.matched / totalFiles) * 100) : 0;
 
   // Chapter count (FR-111: Only recordings/)
   const chapterCount = await countUniqueChapters(recordingsDir);
@@ -138,8 +137,11 @@ export async function getProjectStatsRaw(
 
   // FR-80: Determine stage (check for manual override first)
   // Use projectStageOverrides (new) or fall back to legacy projectStages
-  const manualStage = config.projectStageOverrides?.[code] ||
-    migrateOldStage(config.projectStages?.[code as keyof typeof config.projectStages] as string | undefined);
+  const manualStage =
+    config.projectStageOverrides?.[code] ||
+    migrateOldStage(
+      config.projectStages?.[code as keyof typeof config.projectStages] as string | undefined
+    );
 
   let stage: ProjectStage;
   if (manualStage) {

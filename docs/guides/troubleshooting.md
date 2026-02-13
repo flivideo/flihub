@@ -31,10 +31,12 @@ cat server/config.json
 ### Server Won't Start (Port in Use)
 
 **Symptoms:**
+
 - `EADDRINUSE: address already in use :::5101`
 - Previous instance still holding port
 
 **Solution:**
+
 ```bash
 # Kill process on port
 lsof -ti:5101 | xargs kill -9
@@ -51,10 +53,12 @@ The server includes automatic port cleanup, but may fail after crashes.
 ### Server Crashes During Transcription
 
 **Symptoms:**
+
 - Server crashes when editing code while transcription running
 - Orphaned Whisper processes
 
 **Solution:**
+
 1. Wait for transcription to complete before editing code
 2. Kill orphaned processes:
    ```bash
@@ -67,11 +71,13 @@ The server includes automatic port cleanup, but may fail after crashes.
 ### Server Slow/Unresponsive
 
 **Causes:**
+
 - Too many files in project (1000+)
 - Large transcription model
 - Memory leaks from crashes
 
 **Solutions:**
+
 - Archive completed projects to separate location
 - Use smaller Whisper model: `WHISPER_MODEL = 'small'` in transcriptions.ts
 - Restart server periodically
@@ -83,11 +89,13 @@ The server includes automatic port cleanup, but may fail after crashes.
 ### Invalid JSON in config.json
 
 **Symptoms:**
+
 - Server starts with defaults
 - Config changes don't persist
 
 **Solution:**
 Validate JSON syntax. Common errors:
+
 - Trailing commas
 - Missing quotes
 - Unescaped backslashes
@@ -103,6 +111,7 @@ Validate JSON syntax. Common errors:
 ### Path Not Found Warnings
 
 **Symptoms:**
+
 - Projects list empty
 - Recording files not detected
 - "Path not found" in Config panel
@@ -110,6 +119,7 @@ Validate JSON syntax. Common errors:
 **Solutions:**
 
 1. **Verify paths exist:**
+
    ```bash
    ls -la ~/dev/video-projects/v-appydave
    ```
@@ -127,10 +137,12 @@ Validate JSON syntax. Common errors:
 ### Old Config Format
 
 **Symptoms:**
+
 - `targetDirectory` or `projectDirectory` errors
 
 **Solution:**
 Server auto-migrates, but manually update if needed:
+
 ```json
 {
   "projectsRootDirectory": "~/dev/video-projects/v-appydave",
@@ -145,12 +157,14 @@ Server auto-migrates, but manually update if needed:
 ### All Transcriptions Fail
 
 **Symptoms:**
+
 - Error: `unrecognized arguments: srt json`
 - Whisper exits with non-zero code
 
 **Causes & Solutions:**
 
 1. **Whisper not installed:**
+
    ```bash
    pip install openai-whisper
    whisper --version
@@ -158,8 +172,9 @@ Server auto-migrates, but manually update if needed:
 
 2. **Wrong Python path:**
    Check `WHISPER_PYTHON` in `transcriptions.ts`:
+
    ```typescript
-   WHISPER_PYTHON = '~/.pyenv/versions/3.11.12/bin/python'
+   WHISPER_PYTHON = '~/.pyenv/versions/3.11.12/bin/python';
    ```
 
 3. **Permission issues:**
@@ -171,12 +186,14 @@ Server auto-migrates, but manually update if needed:
 ### Transcript Not Found
 
 **Symptoms:**
+
 - Video exists but "no transcript" shown
 - Transcript count mismatch
 
 **Cause:** Filename mismatch
 
 **Solution:** Transcript filename must match video exactly:
+
 - Video: `10-5-intro-CTA.mov`
 - Transcript: `10-5-intro-CTA.txt` (not `10-5-intro.txt`)
 
@@ -195,23 +212,27 @@ Server auto-migrates, but manually update if needed:
 ### Shadows Not Generating
 
 **Symptoms:**
+
 - "Shadow not available locally" for all files
 - Shadow count shows 0
 
 **Causes & Solutions:**
 
 1. **FFmpeg not installed:**
+
    ```bash
    ffmpeg -version
    # Install: brew install ffmpeg (Mac)
    ```
 
 2. **Source files not found:**
+
    ```bash
    ls project/recordings/*.mov
    ```
 
 3. **Directory doesn't exist:**
+
    ```bash
    mkdir -p project/recording-shadows
    ```
@@ -231,6 +252,7 @@ Server auto-migrates, but manually update if needed:
 ### UI Not Updating
 
 **Symptoms:**
+
 - Changes not reflected until page refresh
 - Stale data displayed
 
@@ -241,6 +263,7 @@ Server auto-migrates, but manually update if needed:
    - Browser console: Network → WS → check Socket.io connection
 
 2. **Verify server running:**
+
    ```bash
    curl http://localhost:5101/api/system/health
    ```
@@ -256,11 +279,13 @@ Server auto-migrates, but manually update if needed:
 **Symptom:** `EMFILE: too many open files`
 
 **Solution:**
+
 ```bash
 ulimit -n 8192
 ```
 
 Or add to `/etc/security/limits.conf`:
+
 ```
 * soft nofile 8192
 * hard nofile 8192
@@ -281,6 +306,7 @@ Or add to `/etc/security/limits.conf`:
 **Cause:** FFmpeg not installed or can't read file
 
 **Solution:**
+
 ```bash
 ffmpeg -version
 ffprobe /path/to/video.mov
@@ -301,11 +327,13 @@ ffprobe /path/to/video.mov
 **Solutions:**
 
 1. **Check Node version:**
+
    ```bash
    node --version  # >= 18 required
    ```
 
 2. **Reinstall dependencies:**
+
    ```bash
    rm -rf node_modules
    npm install
@@ -321,6 +349,7 @@ ffprobe /path/to/video.mov
 **Cause:** Workspace dependencies not linked
 
 **Solution:**
+
 ```bash
 npm install  # From root directory
 ```
@@ -332,6 +361,7 @@ npm install  # From root directory
 ### Mac
 
 Usually works out of box. Check:
+
 - Python permissions: `chmod 755 ~/.pyenv/...`
 - Ecamm Live folder exists: `~/Movies/Ecamm Live/`
 
@@ -362,6 +392,7 @@ Most common issues:
 When reporting issues, include:
 
 1. **Environment:**
+
    ```bash
    node --version
    npm --version
@@ -370,9 +401,11 @@ When reporting issues, include:
    ```
 
 2. **Configuration:**
+
    ```bash
    cat server/config.json
    ```
+
    (Redact sensitive paths)
 
 3. **Error message:** Full text from console
@@ -385,12 +418,12 @@ When reporting issues, include:
 
 ## Common Error Messages
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `EADDRINUSE` | Port 5101 in use | Kill existing process |
-| `ENOENT` | File/directory not found | Check path exists |
-| `EACCES` | Permission denied | `chmod` or run as admin |
-| `EMFILE` | Too many open files | Increase `ulimit` |
-| `unrecognized arguments` | Wrong Whisper args | Update transcriptions.ts |
-| `CORS error` | Cross-origin blocked | Check server CORS config |
-| `Cannot find module` | Missing dependency | `npm install` |
+| Error                    | Cause                    | Solution                 |
+| ------------------------ | ------------------------ | ------------------------ |
+| `EADDRINUSE`             | Port 5101 in use         | Kill existing process    |
+| `ENOENT`                 | File/directory not found | Check path exists        |
+| `EACCES`                 | Permission denied        | `chmod` or run as admin  |
+| `EMFILE`                 | Too many open files      | Increase `ulimit`        |
+| `unrecognized arguments` | Wrong Whisper args       | Update transcriptions.ts |
+| `CORS error`             | Cross-origin blocked     | Check server CORS config |
+| `Cannot find module`     | Missing dependency       | `npm install`            |

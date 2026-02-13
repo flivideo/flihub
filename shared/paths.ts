@@ -6,27 +6,27 @@
  * going up (..) to reach other directories.
  */
 
-import path from 'path'
+import path from 'path';
 
 export interface ProjectPaths {
-  project: string       // Project root (e.g., ~/dev/video-projects/v-appydave/b64-project)
-  recordings: string    // recordings/
-  safe: string          // recordings/-safe/
-  chapters: string      // recordings/-chapters/ (FR-58) - combined chapter preview videos
-  trash: string         // -trash/
-  assets: string        // assets/
-  images: string        // assets/images/
-  thumbs: string        // assets/thumbs/
-  transcripts: string   // recording-transcripts/ (FR-30) - raw transcripts, not final edited transcript
-  final: string         // final/ (FR-33) - final video and SRT after all editing
-  s3Staging: string     // s3-staging/ (FR-33) - DAM exchange point with editor
+  project: string; // Project root (e.g., ~/dev/video-projects/v-appydave/b64-project)
+  recordings: string; // recordings/
+  safe: string; // recordings/-safe/
+  chapters: string; // recordings/-chapters/ (FR-58) - combined chapter preview videos
+  trash: string; // -trash/
+  assets: string; // assets/
+  images: string; // assets/images/
+  thumbs: string; // assets/thumbs/
+  transcripts: string; // recording-transcripts/ (FR-30) - raw transcripts, not final edited transcript
+  final: string; // final/ (FR-33) - final video and SRT after all editing
+  s3Staging: string; // s3-staging/ (FR-33) - DAM exchange point with editor
   // FR-59: Inbox folders for unlabeled incoming content
-  inbox: string         // inbox/
-  inboxRaw: string      // inbox/raw/
-  inboxDataset: string  // inbox/dataset/
-  inboxPresentation: string  // inbox/presentation/
+  inbox: string; // inbox/
+  inboxRaw: string; // inbox/raw/
+  inboxDataset: string; // inbox/dataset/
+  inboxPresentation: string; // inbox/presentation/
   // FR-111: Per-project state file
-  stateFile: string     // .flihub-state.json
+  stateFile: string; // .flihub-state.json
 }
 
 /**
@@ -38,7 +38,7 @@ export function getProjectPaths(projectDirectory: string): ProjectPaths {
     project: projectDirectory,
     recordings: path.join(projectDirectory, 'recordings'),
     safe: path.join(projectDirectory, 'recordings', '-safe'),
-    chapters: path.join(projectDirectory, 'recordings', '-chapters'),  // FR-58
+    chapters: path.join(projectDirectory, 'recordings', '-chapters'), // FR-58
     trash: path.join(projectDirectory, '-trash'),
     assets: path.join(projectDirectory, 'assets'),
     images: path.join(projectDirectory, 'assets', 'images'),
@@ -53,7 +53,7 @@ export function getProjectPaths(projectDirectory: string): ProjectPaths {
     inboxPresentation: path.join(projectDirectory, 'inbox', 'presentation'),
     // FR-111: Per-project state file
     stateFile: path.join(projectDirectory, '.flihub-state.json'),
-  }
+  };
 }
 
 /**
@@ -61,5 +61,5 @@ export function getProjectPaths(projectDirectory: string): ProjectPaths {
  * Strips trailing /recordings from the path
  */
 export function migrateTargetToProject(targetDirectory: string): string {
-  return targetDirectory.replace(/\/recordings\/?$/, '')
+  return targetDirectory.replace(/\/recordings\/?$/, '');
 }

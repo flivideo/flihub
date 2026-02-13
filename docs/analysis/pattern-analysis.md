@@ -19,12 +19,12 @@
 
 ### Impact Assessment
 
-| Issue | Projects | Files | Severity | User Pain | Fix Effort | Priority |
-|-------|----------|-------|----------|-----------|------------|----------|
-| Lowercase tags | 38 | ~1400 | ERROR | ⭐⭐⭐⭐⭐ High | 🔧🔧 Medium | 🔴 **CRITICAL** |
-| Missing derivatives | 26 | 361 | INFO | ⭐⭐ Low | 🔧 Low | 🟢 Low |
-| Chapter gaps | 12 | 22 | INFO | ⭐⭐⭐ Medium | 🔧🔧🔧 High | 🟡 Medium |
-| Sequence gaps | ~5 | ~10 | INFO | ⭐ Very Low | 🔧🔧 Medium | 🟢 Low |
+| Issue               | Projects | Files | Severity | User Pain       | Fix Effort  | Priority        |
+| ------------------- | -------- | ----- | -------- | --------------- | ----------- | --------------- |
+| Lowercase tags      | 38       | ~1400 | ERROR    | ⭐⭐⭐⭐⭐ High | 🔧🔧 Medium | 🔴 **CRITICAL** |
+| Missing derivatives | 26       | 361   | INFO     | ⭐⭐ Low        | 🔧 Low      | 🟢 Low          |
+| Chapter gaps        | 12       | 22    | INFO     | ⭐⭐⭐ Medium   | 🔧🔧🔧 High | 🟡 Medium       |
+| Sequence gaps       | ~5       | ~10   | INFO     | ⭐ Very Low     | 🔧🔧 Medium | 🟢 Low          |
 
 **Recommendation:** Address tag case issue FIRST - it affects 81% of projects and is causing the majority of validation errors.
 
@@ -40,6 +40,7 @@
 ### Evidence
 
 From `discrepancies.json`:
+
 - **1422 tag-related errors** across 38 projects
 - Common violations:
   - `bmad` → should be `BMAD`
@@ -68,6 +69,7 @@ From `discrepancies.json`:
 4. **Unclear expectations** - Users don't know tags must be uppercase
 
 **Historical context:**
+
 - Original naming convention document says tags are "uppercase" but didn't enforce
 - Parser added strict validation later
 - Existing projects created before strict validation
@@ -80,16 +82,19 @@ From `discrepancies.json`:
 **Change:** Accept lowercase tags, convert to uppercase automatically
 
 **Pros:**
+
 - ✅ Fixes 1422 errors instantly (zero user action required)
 - ✅ Backwards compatible with existing files
 - ✅ Matches user expectations (intuitive behavior)
 - ✅ Simple code change (one function)
 
 **Cons:**
+
 - ⚠️ Silent conversion might surprise users
 - ⚠️ Tags in filenames become uppercase even if typed lowercase
 
 **Implementation:**
+
 ```typescript
 // In shared/naming.ts - extractTagsFromName()
 // BEFORE: Reject lowercase
@@ -111,15 +116,18 @@ tag = tag.toUpperCase();
 **Change:** Add `text-transform: uppercase` to tag inputs in FR-138
 
 **Pros:**
+
 - ✅ Prevents future violations
 - ✅ Clear visual feedback
 
 **Cons:**
+
 - ❌ Doesn't fix 1422 existing errors
 - ❌ Requires manual bulk rename to fix old files
 - ❌ Users still need to understand the rule
 
 **Implementation:**
+
 ```tsx
 // In RenamePanel.tsx
 <input
@@ -139,10 +147,12 @@ tag = tag.toUpperCase();
 **Change:** Create script to rename all files with lowercase tags → uppercase
 
 **Pros:**
+
 - ✅ Fixes all 1422 errors in one operation
 - ✅ One-time migration
 
 **Cons:**
+
 - ❌ Requires regenerating all transcripts (~1400 × 10 min = 230 hours!)
 - ❌ Risk of breaking references
 - ❌ Doesn't prevent future violations
@@ -274,29 +284,29 @@ Already created as pending requirement. Implementation options:
 
 ### By Frequency
 
-| Issue | Count | % of Total |
-|-------|-------|------------|
-| Invalid tag format | 1422 | 79% |
-| Missing derivatives | 361 | 20% |
-| Chapter gaps | 22 | 1% |
-| Sequence gaps | ~10 | <1% |
+| Issue               | Count | % of Total |
+| ------------------- | ----- | ---------- |
+| Invalid tag format  | 1422  | 79%        |
+| Missing derivatives | 361   | 20%        |
+| Chapter gaps        | 22    | 1%         |
+| Sequence gaps       | ~10   | <1%        |
 
 ### By Severity
 
-| Severity | Count | % of Total |
-|----------|-------|------------|
-| ❌ Error | 1432 | 79% |
-| ⚠️ Warning | 2 | <1% |
-| 🔍 Info | 371 | 21% |
+| Severity   | Count | % of Total |
+| ---------- | ----- | ---------- |
+| ❌ Error   | 1432  | 79%        |
+| ⚠️ Warning | 2     | <1%        |
+| 🔍 Info    | 371   | 21%        |
 
 ### By Type
 
-| Type | Count | % of Total |
-|------|-------|------------|
-| Naming | 1422 | 79% |
-| Derivative | 361 | 20% |
-| Structural | 22 | 1% |
-| State | 0 | 0% |
+| Type       | Count | % of Total |
+| ---------- | ----- | ---------- |
+| Naming     | 1422  | 79%        |
+| Derivative | 361   | 20%        |
+| Structural | 22    | 1%         |
+| State      | 0     | 0%         |
 
 ---
 
@@ -304,12 +314,12 @@ Already created as pending requirement. Implementation options:
 
 **Formula:** `Priority Score = (Projects Affected × User Pain × 10) / Fix Effort`
 
-| Issue | Projects | Pain (1-5) | Effort (1-5) | Score | Priority |
-|-------|----------|------------|--------------|-------|----------|
-| Lowercase tags | 38 | 5 | 2 | 95 | 🔴 **CRITICAL** |
-| Chapter gaps | 12 | 3 | 3 | 12 | 🟡 Medium |
-| Missing derivatives | 26 | 2 | 1 | 52 | 🟢 Low |
-| Sequence gaps | 5 | 1 | 2 | 2.5 | 🟢 Low |
+| Issue               | Projects | Pain (1-5) | Effort (1-5) | Score | Priority        |
+| ------------------- | -------- | ---------- | ------------ | ----- | --------------- |
+| Lowercase tags      | 38       | 5          | 2            | 95    | 🔴 **CRITICAL** |
+| Chapter gaps        | 12       | 3          | 3            | 12    | 🟡 Medium       |
+| Missing derivatives | 26       | 2          | 1            | 52    | 🟢 Low          |
+| Sequence gaps       | 5        | 1          | 2            | 2.5   | 🟢 Low          |
 
 ---
 
@@ -404,12 +414,12 @@ Already created as pending requirement. Implementation options:
 
 **From `naming-decisions.md`:**
 
-| Decision | Scanner Finding | Validation |
-|----------|-----------------|------------|
-| Decision 1: Chapter gaps | 12 projects affected, INFO level | ✅ Correct - gaps are benign but common |
-| Decision 2: Sequence gaps | ~5 projects affected, INFO level | ✅ Correct - rare and benign |
-| Decision 9: Missing derivatives | 26 projects affected, INFO level | ✅ Correct - not blocking |
-| Tag case rule | **NOT DOCUMENTED IN DECISIONS** | ❌ **MISSING** - should add Decision 11 |
+| Decision                        | Scanner Finding                  | Validation                              |
+| ------------------------------- | -------------------------------- | --------------------------------------- |
+| Decision 1: Chapter gaps        | 12 projects affected, INFO level | ✅ Correct - gaps are benign but common |
+| Decision 2: Sequence gaps       | ~5 projects affected, INFO level | ✅ Correct - rare and benign            |
+| Decision 9: Missing derivatives | 26 projects affected, INFO level | ✅ Correct - not blocking               |
+| Tag case rule                   | **NOT DOCUMENTED IN DECISIONS**  | ❌ **MISSING** - should add Decision 11 |
 
 **Action:** Add **Decision 11: Tag Case Sensitivity** to naming-decisions.md
 

@@ -18,28 +18,37 @@ Two related issues:
 ## Part 1: Watch Page Segment Bug
 
 ### Symptoms
+
 - User moved files from chapters 01-08 to `-safe` folder
 - Chapters 09-10 (NOT in safe) appear in Watch chapter list
 - But hovering chapters 09-10 doesn't show segments in the segment panel
 
 ### Investigation Needed
+
 1. Check if React Query cache is stale (socket event might not have fired)
 2. Check if `hoveredChapter.files` is empty when it shouldn't be
 3. Add debug logging to trace data flow
 
 ### Debug Steps
+
 ```typescript
 // In WatchPage.tsx, add temporary logging:
-console.log('chapters:', chapters.map(c => ({ key: c.chapterKey, fileCount: c.files.length })))
-console.log('hoveredChapter:', hoveredChapter?.chapterKey, hoveredChapter?.files.length)
+console.log(
+  'chapters:',
+  chapters.map((c) => ({ key: c.chapterKey, fileCount: c.files.length }))
+);
+console.log('hoveredChapter:', hoveredChapter?.chapterKey, hoveredChapter?.files.length);
 ```
 
 ### Possible Fix
+
 If cache issue:
+
 - Force refetch on page load
 - Add manual refresh button to Watch page
 
 If data issue:
+
 - Trace `groupByChapterWithTiming()` logic
 - Check if filter at line 90 is too aggressive
 
@@ -50,12 +59,14 @@ If data issue:
 ### Current Problem
 
 When files are physically moved to `recordings/-safe/`:
+
 - **Transcripts appear orphaned** - `01-1-intro.txt` exists but `01-1-intro.mov` is "missing"
 - **Shadows become disconnected** - Shadow file exists for a "missing" recording
 - **Chapter videos become stale** - Combined video references files that moved
 - **Relationships break** - Filename-based matching fails across folders
 
 ### Current Architecture
+
 ```
 recordings/
   09-1-demo.mov          ← visible (active)
@@ -124,15 +135,15 @@ recording-shadows/
 
 ### Implementation Changes
 
-| Area | Current | New |
-|------|---------|-----|
-| **Safe command** | `mv file recordings/-safe/` | Toggle flag in state file |
-| **Restore command** | `mv file recordings/` | Toggle flag off |
-| **Recordings list** | Scan both folders | Scan one folder + filter by state |
-| **Watch page** | `filter(r => r.folder !== 'safe')` | `filter(r => !state[r].safe)` |
-| **Transcript orphan check** | Check recordings/ only | No change (files in same place) |
-| **Shadow matching** | Same filename | No change (files in same place) |
-| **DAM sync** | Exclude `-safe/` folder | Read state file, exclude safe files |
+| Area                        | Current                            | New                                 |
+| --------------------------- | ---------------------------------- | ----------------------------------- |
+| **Safe command**            | `mv file recordings/-safe/`        | Toggle flag in state file           |
+| **Restore command**         | `mv file recordings/`              | Toggle flag off                     |
+| **Recordings list**         | Scan both folders                  | Scan one folder + filter by state   |
+| **Watch page**              | `filter(r => r.folder !== 'safe')` | `filter(r => !state[r].safe)`       |
+| **Transcript orphan check** | Check recordings/ only             | No change (files in same place)     |
+| **Shadow matching**         | Same filename                      | No change (files in same place)     |
+| **DAM sync**                | Exclude `-safe/` folder            | Read state file, exclude safe files |
 
 ### UI Changes
 
@@ -163,6 +174,7 @@ This complements the per-project stage (FR-110) with per-recording granularity.
 ## Implementation Order
 
 ### Phase 1: Bug Fix (Immediate) ✓ COMPLETE
+
 - ~~Investigate Watch page segment bug~~
 - ~~Add debug logging~~
 - ~~Fix caching issue if found~~
@@ -170,6 +182,7 @@ This complements the per-project stage (FR-110) with per-recording granularity.
 **Root Cause Found:** CSS layout issue, not caching. The parent container for the cascading panels had no explicit width (only 288px from chapter panel). The segment panel at `right-72` was outside the parent's bounds, so mouse movement triggered `onMouseLeave`.
 
 **Fix Applied:**
+
 - Added `w-[544px]` to parent (wide enough for both panels: 288px + 256px)
 - Added `pointer-events-none` to parent, `pointer-events-auto` to children
 - Added `absolute right-0 top-0` to chapter panel
@@ -179,6 +192,7 @@ This complements the per-project stage (FR-110) with per-recording granularity.
 **Goal:** Create infrastructure for reading/writing `.flihub-state.json` without changing existing safe functionality.
 
 #### Acceptance Criteria
+
 - [x] State file reader returns typed object with safe recordings
 - [x] State file writer persists changes to disk
 - [x] State file added to project paths (`shared/paths.ts`)
@@ -188,6 +202,7 @@ This complements the per-project stage (FR-110) with per-recording granularity.
 - [x] Existing `-safe` folder behavior unchanged (Phase 3 will migrate)
 
 **Files Created/Modified:**
+
 - `shared/paths.ts` - Added `stateFile` path to `ProjectPaths` interface
 - `shared/types.ts` - Added `RecordingState`, `ProjectState`, `ProjectStateResponse`, `UpdateProjectStateRequest`
 - `server/src/utils/projectState.ts` - NEW: State file utilities (read, write, merge, helpers)
@@ -197,6 +212,7 @@ This complements the per-project stage (FR-110) with per-recording granularity.
 #### API Contract
 
 **GET /api/projects/:code/state**
+
 ```typescript
 // Response
 {
@@ -212,6 +228,7 @@ This complements the per-project stage (FR-110) with per-recording granularity.
 ```
 
 **POST /api/projects/:code/state**
+
 ```typescript
 // Request body
 {
@@ -225,6 +242,7 @@ This complements the per-project stage (FR-110) with per-recording granularity.
 ```
 
 #### Default Behavior
+
 - If `.flihub-state.json` doesn't exist → return `{ version: 1, recordings: {} }`
 - If state file is corrupt JSON → log warning, return empty state
 - If recording not in state → treat as `{ safe: false }` (active by default)
@@ -232,6 +250,7 @@ This complements the per-project stage (FR-110) with per-recording granularity.
 #### Implementation Details
 
 **New file:** `server/src/utils/projectState.ts`
+
 ```typescript
 interface RecordingState {
   safe?: boolean;
@@ -243,12 +262,13 @@ interface ProjectState {
   recordings: Record<string, RecordingState>;
 }
 
-export function readProjectState(projectDir: string): ProjectState
-export function writeProjectState(projectDir: string, state: ProjectState): void
-export function isRecordingSafe(state: ProjectState, filename: string): boolean
+export function readProjectState(projectDir: string): ProjectState;
+export function writeProjectState(projectDir: string, state: ProjectState): void;
+export function isRecordingSafe(state: ProjectState, filename: string): boolean;
 ```
 
 **Updated:** `shared/paths.ts`
+
 ```typescript
 export interface ProjectPaths {
   // ... existing paths
@@ -257,10 +277,12 @@ export interface ProjectPaths {
 ```
 
 **New routes:** `server/src/routes/state.ts`
+
 - `GET /api/projects/:code/state` - Read state file
 - `POST /api/projects/:code/state` - Write state file (full replace)
 
 #### Files to Create/Modify
+
 - `server/src/utils/projectState.ts` - NEW: State file utilities
 - `server/src/routes/state.ts` - NEW: State API endpoints
 - `shared/paths.ts` - Add stateFile path
@@ -307,10 +329,11 @@ export interface ProjectPaths {
  *
  * Returns: { migrated: number, errors: string[] }
  */
-export async function migrateSafeFolder(projectDir: string): Promise<MigrationResult>
+export async function migrateSafeFolder(projectDir: string): Promise<MigrationResult>;
 ```
 
 **Key operations:**
+
 - Read current state file (or create empty)
 - For each file in `recordings/-safe/`:
   - Move to `recordings/`
@@ -324,6 +347,7 @@ export async function migrateSafeFolder(projectDir: string): Promise<MigrationRe
 - Log migration summary
 
 **Error handling:**
+
 - If file already exists in recordings → skip with warning
 - If move fails → collect error, continue with others
 - If state write fails → rollback moves (transaction-style)
@@ -349,7 +373,7 @@ router.post('/recordings/safe', async (req: Request, res: Response) => {
     // Find all .mov files in recordings/ matching chapter
     const paths = getProjectPaths(expandPath(config.projectDirectory));
     const entries = await fs.readdir(paths.recordings);
-    filesToMark = entries.filter(name => {
+    filesToMark = entries.filter((name) => {
       const parsed = parseRecordingFilename(name);
       return parsed && parsed.chapter === chapter;
     });
@@ -400,8 +424,8 @@ const isSafe = isRecordingSafe(state, entry.name);
 return {
   filename: entry.name,
   // ... other fields
-  folder: 'recordings',  // FR-111: Always 'recordings' now
-  isSafe,  // FR-111 Phase 3: NEW field from state
+  folder: 'recordings', // FR-111: Always 'recordings' now
+  isSafe, // FR-111 Phase 3: NEW field from state
 };
 ```
 
@@ -412,10 +436,10 @@ return {
 
 ```typescript
 // Before (line 90):
-const activeRecordings = recordings.filter(r => r.folder !== 'safe')
+const activeRecordings = recordings.filter((r) => r.folder !== 'safe');
 
 // After (FR-111 Phase 3):
-const activeRecordings = recordings.filter(r => !r.isSafe)
+const activeRecordings = recordings.filter((r) => !r.isSafe);
 ```
 
 **Remove:** All `shadowFolder` logic (lines 232, 250, 373, 401, 448) - shadows are always in `recording-shadows/` now
@@ -439,23 +463,18 @@ const activeRecordings = recordings.filter(r => !r.isSafe)
 // Before:
 export async function getTranscriptSyncStatus(
   recordingsDir: string,
-  safeDir: string,  // REMOVE
+  safeDir: string, // REMOVE
   transcriptsDir: string
-)
+);
 
 // After:
-export async function getTranscriptSyncStatus(
-  recordingsDir: string,
-  transcriptsDir: string
-)
+export async function getTranscriptSyncStatus(recordingsDir: string, transcriptsDir: string);
 
 // Body change:
 const recordingFiles: string[] = [];
 // REMOVED: for (const dir of [recordingsDir, safeDir])
 const files = await readDirSafe(recordingsDir);
-recordingFiles.push(
-  ...files.filter(f => f.endsWith('.mov')).map(f => f.replace('.mov', ''))
-);
+recordingFiles.push(...files.filter((f) => f.endsWith('.mov')).map((f) => f.replace('.mov', '')));
 ```
 
 **8. Update Chapter Counting** (`server/src/utils/scanning.ts`)
@@ -467,11 +486,11 @@ recordingFiles.push(
 // Before:
 export async function countUniqueChapters(
   recordingsDir: string,
-  safeDir: string  // REMOVE
-)
+  safeDir: string // REMOVE
+);
 
 // After:
-export async function countUniqueChapters(recordingsDir: string)
+export async function countUniqueChapters(recordingsDir: string);
 
 // Body change:
 const chapters = new Set<string>();
@@ -494,9 +513,10 @@ for (const file of files) {
 
 **Current:** `folder: 'recordings' | 'safe'`
 **New:**
+
 ```typescript
-folder: 'recordings'  // Always recordings now
-isSafe: boolean       // NEW: From state file
+folder: 'recordings'; // Always recordings now
+isSafe: boolean; // NEW: From state file
 ```
 
 **11. Server Startup Integration** (`server/src/index.ts`)
@@ -528,9 +548,11 @@ async function startServer() {
 #### Files to Create/Modify
 
 **Create:**
+
 - `server/src/utils/safeMigration.ts` - Migration script
 
 **Modify:**
+
 - `server/src/routes/index.ts` - Safe/Restore commands, recordings list
 - `server/src/utils/scanning.ts` - Remove safeDir params from functions
 - `shared/paths.ts` - Remove `safe` field
@@ -544,6 +566,7 @@ async function startServer() {
 **Complete Reference Map:**
 
 Files using `paths.safe` (14 locations):
+
 - `server/src/WatcherManager.ts` - Watcher pattern
 - `server/src/routes/index.ts` (6 locations) - Safe/restore commands, recordings list
 - `server/src/routes/query/projects.ts` (3 locations) - Project stats
@@ -553,13 +576,16 @@ Files using `paths.safe` (14 locations):
 - `server/src/routes/system.ts` - System paths API
 
 Files using `safeDir` (21 locations total, including shadows):
+
 - All of the above plus shadow-related files
 
 Files calling `getTranscriptSyncStatus` or `countUniqueChapters`:
+
 - `server/src/utils/projectStats.ts` (2 calls)
 - `server/src/routes/query/projects.ts` (2 calls)
 
 Client files checking `folder === 'safe'` or `folder !== 'safe'`:
+
 - `client/src/components/WatchPage.tsx` (8 locations)
 - `client/src/components/RecordingsView.tsx` (7 locations)
 - `client/src/components/RenameLabelModal.tsx` (2 locations)
@@ -567,6 +593,7 @@ Client files checking `folder === 'safe'` or `folder !== 'safe'`:
 #### Testing Steps
 
 **Manual Testing:**
+
 1. Create test project with files in `recordings/-safe/`
 2. Start server, verify migration runs
 3. Check `.flihub-state.json` created with correct flags
@@ -580,6 +607,7 @@ Client files checking `folder === 'safe'` or `folder !== 'safe'`:
 11. Restart server → migration should NOT run again
 
 **Edge Cases:**
+
 - Empty `-safe/` folder → no errors
 - File exists in both recordings/ and -safe/ → skip with warning
 - Shadow exists but recording doesn't → move shadow anyway
@@ -589,11 +617,13 @@ Client files checking `folder === 'safe'` or `folder !== 'safe'`:
 #### Migration Safety
 
 **Rollback strategy:**
+
 - Keep backup of state file before writing
 - If state write fails, move files back to `-safe/`
 - Log all operations for debugging
 
 **Non-destructive:**
+
 - Migration only runs if `-safe/` exists
 - After migration, `-safe/` deleted (empty)
 - If user has backup, they can manually restore
@@ -608,6 +638,7 @@ Client files checking `folder === 'safe'` or `folder !== 'safe'`:
 #### Developer Quick Start Checklist
 
 **Step 1: Create Migration Script**
+
 - [ ] Create `server/src/utils/safeMigration.ts`
 - [ ] Implement `migrateSafeFolder()` function
 - [ ] Add `MigrationResult` type
@@ -615,6 +646,7 @@ Client files checking `folder === 'safe'` or `folder !== 'safe'`:
 - [ ] Add rollback on error
 
 **Step 2: Update Backend Routes**
+
 - [ ] `server/src/routes/index.ts` - Rewrite safe/restore commands (lines 649-789)
 - [ ] `server/src/routes/index.ts` - Update recordings list (lines 370-547)
 - [ ] `server/src/routes/query/projects.ts` - Remove paths.safe (3 locations)
@@ -624,29 +656,35 @@ Client files checking `folder === 'safe'` or `folder !== 'safe'`:
 - [ ] `server/src/routes/system.ts` - Remove paths.safe from system paths
 
 **Step 3: Update Scanning Utilities**
+
 - [ ] `server/src/utils/scanning.ts` - Remove `safeDir` param from `getTranscriptSyncStatus()`
 - [ ] `server/src/utils/scanning.ts` - Remove `safeDir` param from `countUniqueChapters()`
 - [ ] `server/src/utils/projectStats.ts` - Update function calls (2 locations)
 
 **Step 4: Update Shared Types**
+
 - [ ] `shared/types.ts` - Change `folder: 'recordings' | 'safe'` to `folder: 'recordings'`
 - [ ] `shared/types.ts` - Add `isSafe: boolean` to `RecordingFile`
 - [ ] `shared/paths.ts` - Remove `safe` field from `ProjectPaths`
 
 **Step 5: Update Client Components**
+
 - [ ] `client/src/components/WatchPage.tsx` - Replace 8 folder checks with `isSafe`
 - [ ] `client/src/components/RecordingsView.tsx` - Replace 7 folder checks with `isSafe`
 - [ ] `client/src/components/RenameLabelModal.tsx` - Replace 2 folder checks with `isSafe`
 
 **Step 6: Update Watcher**
+
 - [ ] `server/src/WatcherManager.ts` - Remove `paths.safe` from watch pattern
 
 **Step 7: Server Startup**
+
 - [ ] `server/src/index.ts` - Add migration check on startup
 - [ ] Import `migrateSafeFolder`
 - [ ] Call migration before server starts if `-safe/` exists
 
 **Step 8: Testing**
+
 - [ ] Manual test with existing `-safe/` folder
 - [ ] Verify migration logs
 - [ ] Test safe/restore UI buttons
@@ -672,6 +710,7 @@ Client files checking `folder === 'safe'` or `folder !== 'safe'`:
 #### UI Mockup (ASCII Art)
 
 **Watch Page Controls Bar:**
+
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │ Watch                                                                │
@@ -683,6 +722,7 @@ Client files checking `folder === 'safe'` or `folder !== 'safe'`:
 ```
 
 **Chapter Panel (when showSafe is checked):**
+
 ```
 ┌─────────────────────────────────────────┐
 │  09 - Active Chapter                    │
@@ -701,6 +741,7 @@ Client files checking `folder === 'safe'` or `folder !== 'safe'`:
 ```
 
 **Chapter Panel (when showSafe is unchecked - current behavior):**
+
 ```
 ┌─────────────────────────────────────────┐
 │  09 - Active Chapter                    │
@@ -726,24 +767,25 @@ const STORAGE_KEYS = {
   size: 'flihub:watch:videoSize',
   autoplay: 'flihub:watch:autoplay',
   autonext: 'flihub:watch:autonext',
-  showSafe: 'flihub:watch:showSafe',  // NEW
-}
+  showSafe: 'flihub:watch:showSafe', // NEW
+};
 
 // Add state (around line 176 with other useState calls)
 const [showSafe, setShowSafe] = useState(() => {
-  const stored = localStorage.getItem(STORAGE_KEYS.showSafe)
-  return stored ? JSON.parse(stored) : false  // Default: hide safe files
-})
+  const stored = localStorage.getItem(STORAGE_KEYS.showSafe);
+  return stored ? JSON.parse(stored) : false; // Default: hide safe files
+});
 
 // Add effect to persist toggle state (around line 212 with other effects)
 useEffect(() => {
-  localStorage.setItem(STORAGE_KEYS.showSafe, JSON.stringify(showSafe))
-}, [showSafe])
+  localStorage.setItem(STORAGE_KEYS.showSafe, JSON.stringify(showSafe));
+}, [showSafe]);
 ```
 
 **2. Update Chapter Filtering** (`client/src/components/WatchPage.tsx`)
 
 Current code at line 86-90:
+
 ```typescript
 function groupByChapterWithTiming(recordings: RecordingFile[]): ChapterGroup[] {
   const groups = new Map<string, { files: RecordingFile[]; totalDuration: number }>()
@@ -753,6 +795,7 @@ function groupByChapterWithTiming(recordings: RecordingFile[]): ChapterGroup[] {
 ```
 
 Update to:
+
 ```typescript
 function groupByChapterWithTiming(
   recordings: RecordingFile[],
@@ -769,23 +812,22 @@ function groupByChapterWithTiming(
 **3. Update Function Calls**
 
 Find all calls to `groupByChapterWithTiming()` (around line 263):
+
 ```typescript
 // Before:
-const chapters = useMemo(
-  () => groupByChapterWithTiming(recordings),
-  [recordings]
-)
+const chapters = useMemo(() => groupByChapterWithTiming(recordings), [recordings]);
 
 // After:
 const chapters = useMemo(
   () => groupByChapterWithTiming(recordings, showSafe),
-  [recordings, showSafe]  // Add showSafe to deps
-)
+  [recordings, showSafe] // Add showSafe to deps
+);
 ```
 
 **4. Add Toggle to UI** (`client/src/components/WatchPage.tsx`)
 
 Find the controls section (around line 295, after the autoplay/autonext toggles):
+
 ```typescript
 {/* FR-111 Phase 4: Show safe toggle */}
 <span className="text-gray-300">|</span>
@@ -803,6 +845,7 @@ Find the controls section (around line 295, after the autoplay/autonext toggles)
 **5. Add Visual Indicators for Safe Files**
 
 In the chapter file list rendering (around line 377-430 in the chapter panel):
+
 ```typescript
 {chapter.files.map((file) => (
   <div
@@ -880,21 +923,25 @@ In the chapter file list rendering (around line 377-430 in the chapter panel):
 #### Design Notes
 
 **Toggle Position:**
+
 - Place after autoplay/autonext toggles, before end of controls bar
 - Same styling as RecordingsView (line 547-555)
 - Separated by `|` divider
 
 **Visual Treatment:**
+
 - Background: `bg-yellow-50` (idle) → `bg-yellow-100` (hover)
 - Badge: `bg-yellow-200 text-yellow-800`
 - Same yellow theme as RecordingsView uses for safe files
 
 **Default Behavior:**
+
 - Default to `false` (unchecked) to maintain current UX
 - Users who want to see safe files must explicitly enable
 - State persists across sessions via localStorage
 
 ### Phase 5: Per-Recording Stage (Optional)
+
 - Add stage field to state schema
 - UI for per-recording stage
 
@@ -903,9 +950,11 @@ In the chapter file list rendering (around line 377-430 in the chapter panel):
 ## Files to Change
 
 **Phase 1 (Bug Fix):**
+
 - `client/src/components/WatchPage.tsx` - Debug logging, possible fix
 
 **Phase 2-3 (State Architecture):**
+
 - `shared/paths.ts` - Add `stateFile` path
 - `server/src/utils/projectState.ts` - NEW: State file reader/writer
 - `server/src/routes/index.ts` - Update recordings endpoint

@@ -16,6 +16,7 @@ Path expansion bug - `expandPath()` was missing, causing folders to be created a
 **Enhancements bundled with fix:**
 
 1. **New folder structure:**
+
    ```
    project/
    ├── edit-1st/      # First edit prep (Gling cuts)
@@ -28,15 +29,18 @@ Path expansion bug - `expandPath()` was missing, causing folders to be created a
 3. **Naming convention** - Renamed from "first-edit/edits" to "edit" (singular) for consistency with "recording"
 
 **Files renamed:**
+
 - `server/src/routes/first-edit.ts` -> `server/src/routes/edit.ts`
 - `client/src/hooks/useFirstEditApi.ts` -> `client/src/hooks/useEditApi.ts`
 - `client/src/components/FirstEditPrepPage.tsx` -> `client/src/components/EditPrepPage.tsx`
 
 **Files modified:**
+
 - `server/src/index.ts` - Import + route `/api/edit`
 - `client/src/App.tsx` - Imports, state, menu label
 
 **API changes:**
+
 - `GET /api/edit/prep` - Returns `editFolders: { allExist, folders: [{name, exists}] }`
 - `POST /api/edit/create-folders` - Creates all three edit folders
 
@@ -44,19 +48,21 @@ Path expansion bug - `expandPath()` was missing, causing folders to be created a
 
 ### FR-117: Hover UX Improvements
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-31 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-31 | Implemented | -      |
 
 **What was built:**
 Improved hover interactions across the app to reduce flicker and prevent "whack-a-mole" behavior.
 
 **Part A: Tooltip Delays (Projects Page)**
+
 - All indicator tooltips (📥 Inbox, 🖼 Assets, 🎬 Chapters, % Transcripts, 🎬 Final) now have 150ms leave delay
 - Visual anchors (tooltip arrows) added pointing to trigger element
 - Reduces flicker when moving mouse across multiple indicators
 
 **Part B: Chapter Panel Hover (Watch Page)**
+
 - 250ms enter delay on chapter hover - prevents accidental panel switches
 - 200ms leave delay keeps segment panel visible while moving toward it
 - `lockCurrentChapter()` - entering segment panel cancels any pending chapter switches
@@ -65,9 +71,11 @@ Improved hover interactions across the app to reduce flicker and prevent "whack-
 **Key insight:** The fix required canceling pending enter timers when mouse reaches destination (segment panel), not just delaying the enter.
 
 **Files created:**
+
 - `client/src/hooks/useDelayedHover.ts` - Reusable hooks: `useDelayedHover`, `useDelayedHoverValue`
 
 **Files modified:**
+
 - `client/src/components/WatchPage.tsx` - Chapter hover delays, `lockCurrentChapter` on segment panel enter
 - `client/src/components/ProjectsPanel.tsx` - 5 indicator components updated with delayed hover
 
@@ -75,14 +83,15 @@ Improved hover interactions across the app to reduce flicker and prevent "whack-
 
 ### FR-116: Incoming Page - Quick Config Access
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-31 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-31 | Implemented | -      |
 
 **What was built:**
 Quick access to common names configuration from the Incoming page.
 
 **Features:**
+
 - ⚙+ button added after common name pills on Incoming page
 - Clicking navigates to Config tab and auto-focuses new "Common Names" section
 - Common Names section added to Config page with:
@@ -92,6 +101,7 @@ Quick access to common names configuration from the Incoming page.
 - Changes persist on Save
 
 **Files modified:**
+
 - `client/src/App.tsx` - state, navigation callback
 - `client/src/components/NamingControls.tsx` - ⚙+ button
 - `client/src/components/ConfigPanel.tsx` - Common Names section
@@ -102,12 +112,12 @@ Quick access to common names configuration from the Incoming page.
 
 ### FR-111: Safe Architecture Rework (Phase 1-4)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-26 | Phase 1 implemented | - |
-| 2025-12-26 | Phase 2 implemented | - |
-| 2025-12-26 | Phase 3 implemented | - |
-| 2025-12-26 | Phase 4 implemented | - |
+| Date       | Change              | Commit |
+| ---------- | ------------------- | ------ |
+| 2025-12-26 | Phase 1 implemented | -      |
+| 2025-12-26 | Phase 2 implemented | -      |
+| 2025-12-26 | Phase 3 implemented | -      |
+| 2025-12-26 | Phase 4 implemented | -      |
 
 **Phase 1 - What was fixed:**
 Watch page segment panel not showing when hovering chapters 09-10 after moving other files to safe.
@@ -116,21 +126,25 @@ Watch page segment panel not showing when hovering chapters 09-10 after moving o
 CSS layout issue - the parent container for the cascading panels had no explicit width, so it was only as wide as the chapter panel (288px). The segment panel, positioned at `right-72` (288px from the parent's right edge), was outside the parent's bounds. When the mouse moved from the chapter panel toward the segment panel, it exited the parent container, triggering `onMouseLeave → setHoveredChapter(null)`.
 
 **Fix applied:**
+
 - Added `w-[544px]` to parent container (288px + 256px for both panels)
 - Added `pointer-events-none` to parent, `pointer-events-auto` to children
 - Added `absolute right-0 top-0` to chapter panel
 
 **Files modified:**
+
 - `client/src/components/WatchPage.tsx`
 
 **Phase 2 - State File Foundation:**
 Created infrastructure for `.flihub-state.json` per-project state files.
 
 **New API endpoints:**
+
 - `GET /api/projects/:code/state` - Read project state
 - `POST /api/projects/:code/state` - Update project state (merge with existing)
 
 **Files created/modified:**
+
 - `shared/paths.ts` - Added `stateFile` path
 - `shared/types.ts` - Added `RecordingState`, `ProjectState`, `ProjectStateResponse`, `UpdateProjectStateRequest`
 - `server/src/utils/projectState.ts` - NEW: State file utilities
@@ -141,17 +155,20 @@ Created infrastructure for `.flihub-state.json` per-project state files.
 Replaced physical `-safe/` folder moves with state-based flags.
 
 **Migration script:** `server/src/utils/safeMigration.ts`
+
 - `migrateSafeFolder()` - Moves files from `-safe/` back to `recordings/`, updates state file
 - `needsMigration()` - Checks if project has files to migrate
 - Runs automatically on server startup if `-safe/` folder detected
 
 **Architecture changes:**
+
 - `RecordingFile.folder` now always `'recordings'` (removed `'safe'` option)
 - Added `RecordingFile.isSafe: boolean` flag
 - Removed `recordingsCount` and `safeCount` from ProjectStats (use `isSafe` filter instead)
 - Safe/Restore buttons toggle state flag instead of moving files
 
 **Files created/modified:**
+
 - `server/src/utils/safeMigration.ts` - NEW: Migration utilities
 - `shared/types.ts` - Changed folder type, added isSafe flag
 - `server/src/routes/index.ts` - Safe/Restore now toggle state flags
@@ -165,16 +182,19 @@ Replaced physical `-safe/` folder moves with state-based flags.
 Added "Show safe" toggle to Watch page.
 
 **Changes:**
+
 - Added `showSafe` state with localStorage persistence (default: false)
 - Updated `groupByChapterWithTiming()` to filter based on toggle
 - Added yellow "Safe" button in controls bar
 - Safe files show yellow background + border + SAFE badge when visible
 
 **Additional cleanup:**
+
 - `ProjectStatsPopup.tsx` - Replaced `recordingsCount/safeCount` with `totalFiles`
 - `RecordingsView.tsx` - Updated `editingChapter` type to use `isSafe`
 
 **Files modified:**
+
 - `client/src/components/WatchPage.tsx`
 - `client/src/components/ProjectStatsPopup.tsx`
 - `client/src/components/RecordingsView.tsx`
@@ -185,25 +205,28 @@ Added "Show safe" toggle to Watch page.
 
 ### FR-110: Project Stage Persistence & Dropdown
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-26 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-26 | Implemented | -      |
 
 **What was fixed:**
 Two issues with project stage management.
 
 **Bug Fix - Persistence:**
+
 - `saveConfig()` wasn't including `projectStageOverrides`
 - Stage changes were lost on server restart
 - Same pattern as FR-108
 
 **Enhancement - Dropdown UI:**
+
 - Replaced click-to-cycle with dropdown menu
 - Shows all 8 stages with colored dots
 - "Auto" option to reset to auto-detection
 - Current stage has checkmark indicator
 
 **Files modified:**
+
 - `server/src/index.ts` - Added projectStageOverrides to saveConfig()
 - `client/src/components/ProjectsPanel.tsx` - StageCell dropdown, removed cycle code
 
@@ -211,44 +234,49 @@ Two issues with project stage management.
 
 ### FR-109: Transcript Management Bugs
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-26 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-26 | Implemented | -      |
 
 **What was fixed:**
 Two related bugs causing orphaned transcripts to accumulate.
 
 **Bug 1 - Delete returns 404:**
+
 - `path.extname()` broke on filenames with dots (e.g., `23-1-develop.2.4-setup`)
 - The last dot was treated as a file extension, corrupting the filename
 - Fix: Filename param is already a base name, just append `.txt` directly
 
 **Bug 2 - Transcripts save to wrong project:**
+
 - Output dir used current config's `projectDirectory` instead of the video's project
 - When switching projects during queue processing, transcripts went to wrong folder
 - Fix: Derive `transcriptsDir` from `activeJob.videoPath` by finding `recordings/` and going up one level
 
 **Files modified:**
+
 - `server/src/routes/transcriptions.ts` (lines 101-112, 429-431)
 
 ---
 
 ### FR-108: Gling Dictionary Not Saving
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-26 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-26 | Implemented | -      |
 
 **What was fixed:**
 Config save pipeline was dropping the `glingDictionary` field at every step - the UI sent it but the server never extracted, processed, or persisted it.
 
 **Root cause:**
 Three locations all needed to handle the field:
+
 1. POST route didn't extract it from request body
 2. `updateConfig()` didn't process it
 3. `saveConfig()` didn't include it in the saved object
 
 **Files modified:**
+
 - `server/src/routes/index.ts` - Added glingDictionary to destructure and pass-through
 - `server/src/index.ts` - Added to saveConfig() toSave object and updateConfig() handling
 
@@ -256,20 +284,22 @@ Three locations all needed to handle the field:
 
 ### FR-107: Chapter Input Auto-Focus & Glow Animation
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-23 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-23 | Implemented | -      |
 
 **What was built:**
 Small UX enhancement for the Naming Template. When user clicks "New Chapter" button, the **Name** input field automatically receives focus with a pulsing blue glow animation (500ms).
 
 **Features:**
+
 - Auto-focus on Name input (not Chapter) when "New Chapter" clicked
 - Custom CSS `glow-pulse` keyframe animation with pulsing box-shadow
 - Animation only triggers on chapter change, not manual focus or initial mount
 - Helps prevent users from forgetting to update the chapter name
 
 **Files modified:**
+
 - `client/src/components/NamingControls.tsx` - Added useRef, useState, useEffect for focus/glow
 - `client/src/index.css` - Added `@keyframes glow-pulse` and `.animate-glow-pulse` class
 
@@ -277,14 +307,15 @@ Small UX enhancement for the Naming Template. When user clicks "New Chapter" but
 
 ### FR-105: S3 DAM Integration
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-18 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-18 | Implemented | -      |
 
 **What was built:**
 S3 DAM Integration adds Upload/Download buttons to the S3 Staging modal that execute DAM CLI commands for S3 sync operations.
 
 **Features:**
+
 - PREP section: S3 status display (uploaded/not uploaded/out of sync), [Upload to S3] button, [View] button
 - POST section: S3 status display (new files available/all downloaded), [Download from S3] button
 - CLEANUP section: Local staging size display with [Clean Local] button, S3 size with [Clean S3] button
@@ -293,12 +324,14 @@ S3 DAM Integration adds Upload/Download buttons to the S3 Staging modal that exe
 - All buttons disabled during active DAM operations
 
 **API Endpoints:**
+
 - `GET /api/s3-staging/s3-status` - Get S3 bucket status via `dam s3-status`
 - `POST /api/s3-staging/dam` - Execute DAM command (upload/download/cleanup-s3/status)
 - `DELETE /api/s3-staging/local` - Delete all local staging files
 - `GET /api/s3-staging/local-size` - Get local staging size
 
 **DAM Commands Used:**
+
 - `dam s3-up {brand} {project}` - Upload prep files to S3
 - `dam s3-down {brand} {project}` - Download post files from S3
 - `dam s3-cleanup {brand} {project}` - Delete S3 files for project
@@ -308,6 +341,7 @@ S3 DAM Integration adds Upload/Download buttons to the S3 Staging modal that exe
 Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `appydave`
 
 **Files created/modified:**
+
 - `server/src/routes/s3-staging.ts` - Added DAM command execution, S3 status, local cleanup endpoints
 - `client/src/hooks/useS3StagingApi.ts` - Added useS3Status, useDamCommand, useCleanLocal, useLocalSize hooks
 - `client/src/components/S3StagingPage.tsx` - Added S3 status displays, DAM buttons, CLEANUP section
@@ -318,13 +352,14 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### FR-94: Transcription Progress State Bugs
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-16 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-16 | Implemented | -      |
 
 **Root cause:** Broken Whisper command with two `--output_format` flags - only `.srt` files were created, so `.txt` checks failed everywhere.
 
 **Changes:**
+
 - Fixed Whisper to use `--output_format all` (creates both .txt and .srt)
 - Standardized ALL transcript checks to use `.txt` only
 - Removed shadow folder from transcription scanning
@@ -332,6 +367,7 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 - Added TXT/SRT toggle in transcript viewer modal
 
 **Files:**
+
 - `server/src/routes/transcriptions.ts`
 - `server/src/utils/scanning.ts`
 - `server/src/routes/query/recordings.ts`
@@ -344,16 +380,18 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### NFR-87: Starred Projects Visual Update
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-16 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-16 | Implemented | -      |
 
 **Changes:**
+
 - Icon: 📌 → ⭐ (Projects panel + header dropdown)
 - Tooltips: "Pinned (click to unpin)" → "Starred (click to unstar)"
 - Sort order: Changed from "starred first" to natural code order (b40, b41, b42...)
 
 **Files:**
+
 - `client/src/components/ProjectsPanel.tsx`
 - `client/src/App.tsx`
 - `server/src/routes/projects.ts`
@@ -363,23 +401,26 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### FR-92: Transcribe All Re-Transcribes Existing Files
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change      | Commit  |
+| ---------- | ----------- | ------- |
 | 2025-12-16 | Implemented | b7762ff |
 
 **Root cause:** FR-74 changed `getTranscriptPath()` to require BOTH .txt AND .srt files, but older transcripts only have .txt.
 
 **Changes:**
+
 - Created `hasTranscriptFile()` function that only checks for .txt existence
 - Updated `queueTranscription()` skip logic to use new function
 - `getTranscriptPath()` left unchanged (still requires both for "complete" status)
 
 **Bonus - UI Enhancement:**
+
 - New endpoint: `GET /api/transcriptions/pending-count` returns `{ pendingCount, totalCount }`
 - Button now shows count: "🎙️ Transcribe 3" instead of "Transcribe All"
 - Button disabled when no pending files, shows "All Transcribed"
 
 **Files:**
+
 - `server/src/routes/transcriptions.ts` - New `hasTranscriptFile()`, updated skip logic, new endpoint
 - `client/src/hooks/useApi.ts` - Hook for pending count
 - `client/src/constants/queryKeys.ts` - New query key
@@ -389,11 +430,12 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### FR-89: Cross-Platform Path Support (Partial)
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                   | Commit  |
+| ---------- | ------------------------ | ------- |
 | 2025-12-16 | Parts 1b & 2 implemented | b7762ff |
 
 **Parts completed:**
+
 - Part 1b: Tilde expansion - already implemented
 - Part 2: Path existence indicators - fixed for Windows UNC paths
 
@@ -409,11 +451,12 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### FR-91: Fix Video Size Toggle
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-16 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-16 | Implemented | -      |
 
 **Changes:**
+
 - Removed XL option, simplified to N (Normal) and L (Large) only
 - Fixed Large mode to properly break out of container constraints
 - Large now renders noticeably bigger than Normal
@@ -424,16 +467,18 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### FR-90: Show All Active Watchers
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-16 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-16 | Implemented | -      |
 
 **Changes:**
+
 - Added `GET /api/system/watchers` endpoint to expose all active watchers
 - Config panel now displays all watchers (Ecamm, Downloads, project folders)
 - Shows green dot for active watchers
 
 **Files:**
+
 - `server/src/routes/system.ts` - New watchers endpoint
 - `client/src/components/ConfigPanel.tsx` - Watchers display UI
 
@@ -441,17 +486,19 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### FR-88: Shadow Fallback in Recordings UI
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-16 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-16 | Implemented | -      |
 
 **Changes:**
+
 - Watch page now falls back to shadow video when real video fails to load
 - Segment icons show both playing state AND shadow status (e.g., ▶ 👻)
 - Added `handleVideoError` callback for automatic fallback
 - Added `sourceFile` reference to VideoMeta interface
 
 **Files:**
+
 - `client/src/components/WatchPage.tsx` - Shadow fallback logic, icon updates
 
 **Also fixed:** New Chapter button now preserves previous name instead of clearing it
@@ -460,11 +507,12 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### FR-87: GitHub Repo Link in Cog Menu
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-15 | Implemented | -      |
 
 **Changes:**
+
 - Added "GitHub" link with 🔗 icon → `https://github.com/flivideo/flihub`
 - Added "Video Projects" link with 🔗 icon → `https://github.com/appydave-video-projects/v-appydave`
 - Both grouped below a divider, separate from config/mockups
@@ -475,21 +523,24 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### NFR-85: File Watcher Additions
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2025-12-15 | Implemented | -      |
 
 **Features:**
+
 - Added transcripts watcher (`recording-transcripts/`) for real-time transcript UI updates
 - Added thumbs watcher (`assets/thumbs/`) for real-time thumbnail UI updates
 - Added Refresh button to ProjectsPanel header (manual cache invalidation)
 
 **Tech debt fixed during implementation:**
+
 - Renamed `projectStats` → `projects` throughout codebase (queries, hooks, endpoints)
 - Deleted dead code: `server/src/utils/projectStats.ts` (functionality already in `routes/query/projects.ts`)
 - Fixed query key bug: Refresh button was invalidating wrong key (`projectStats` instead of `projects`)
 
 **Files modified:**
+
 - `server/src/WatcherManager.ts` - Added transcripts and thumbs watchers
 - `client/src/components/ProjectsPanel.tsx` - Added Refresh button
 - `client/src/hooks/useApi.ts` - Renamed hooks
@@ -500,13 +551,14 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### FR-84: Cross-Platform Setup Guide
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Documentation written | - |
+| Date       | Change                | Commit |
+| ---------- | --------------------- | ------ |
+| 2025-12-15 | Documentation written | -      |
 
 **Created:** `/docs/cross-platform-setup.md`
 
 **Sections:**
+
 - Prerequisites (Node.js, Git, FFmpeg, WhisperAI)
 - Installation steps
 - Configuration for recipients (watch dir, project dir)
@@ -523,20 +575,22 @@ Brand is extracted from project path: `/video-projects/v-appydave/b85-...` → `
 
 ### FR-83: Shadow Recording System
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Full implementation | - |
-| 2025-12-15 | Extended with folder access, status indicators, watcher | - |
+| Date       | Change                                                  | Commit |
+| ---------- | ------------------------------------------------------- | ------ |
+| 2025-12-15 | Full implementation                                     | -      |
+| 2025-12-15 | Extended with folder access, status indicators, watcher | -      |
 
 **What was built:**
 Shadow files are lightweight `.txt` placeholders that mirror video recordings, allowing collaborators without video files to see project structure.
 
 **Implementation decisions (changed from spec):**
+
 - Folder naming: `recording-shadows/` (not `recordings-shadow/`) to match `recording-transcripts/` convention
 - Display: Shadow count as numeric column in project list (not icon indicator) - easier to compare "88 files, 88 shadows"
 - Auto-generation: Shadows created automatically when recordings are renamed
 
 **Features:**
+
 - Unified scanning merges `recordings/` + `recording-shadows/`
 - Ghost icon 👻 for shadow-only files in recordings list
 - Watch page shows "Video not available locally" for shadows
@@ -544,6 +598,7 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
 - Project list: Shadow count column
 
 **Session 2 additions:**
+
 - Unified folder access: Open-folder API extended to work with any project, added shadows and chapters folder keys
 - Recording status indicators (three states):
   - 📹 Real only (original recording, no shadow)
@@ -557,10 +612,12 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
   - Status cells (Transcript %, Final) → read-only with tooltips
 
 **Files created:**
+
 - `server/src/utils/shadowFiles.ts` - Core shadow utilities
 - `server/src/routes/shadows.ts` - API endpoints
 
 **Files modified:**
+
 - `shared/types.ts` - Shadow types and `shadowCount` on ProjectStats
 - `server/src/routes/index.ts` - Auto-generate on rename
 - `server/src/routes/query/recordings.ts` - Unified scanning
@@ -576,6 +633,7 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
 - `client/src/hooks/useOpenFolder.ts` - Updated for new folder keys
 
 **Bugs fixed during implementation:**
+
 - Config page watch directory status wasn't updating after save - added `refetchShadowStatus()` after config save
 
 **Note:** Original spec proposed video shadows (240p mp4), but implemented as text placeholders first. Video shadows can be added later if needed.
@@ -584,25 +642,29 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
 
 ### FR-82: Project List UX Fixes
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | All parts implemented | - |
+| Date       | Change                | Commit |
+| ---------- | --------------------- | ------ |
+| 2025-12-15 | All parts implemented | -      |
 
 **Bug fix:**
+
 - Transcript percentage was showing 0% everywhere
 - Root cause: FR-78 changed logic to require both `.txt` AND `.srt`, but this was too strict
 - Fix: Now counts `.txt` files as valid transcripts (SRT is optional)
 - Verified: b71-bmad-poem now shows 100% (118 matched)
 
 **UX improvements:**
+
 - Rich tooltips on indicator icons (📥🖼🎬) - hover shows count (e.g., "Inbox - 3 items")
 - Empty indicators now blank (not faded icons)
 - Stage badge tooltips with descriptions (e.g., "Actively recording video segments")
 
 **API additions:**
+
 - `inboxCount` and `chapterVideoCount` fields added to project stats
 
 **Files modified:**
+
 - `server/src/utils/scanning.ts` - transcript logic fix + indicator counts
 - `server/src/utils/projectStats.ts` - added count fields
 - `server/src/routes/projects.ts` - include counts in API response
@@ -613,17 +675,17 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
 
 ### NFR-79: Tech Debt Exploration
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                                              | Commit  |
+| ---------- | --------------------------------------------------- | ------- |
 | 2025-12-15 | Investigation complete, toKebabCase extraction done | 2ce9743 |
 
 **Findings:**
 
-| Area | Result |
-|------|--------|
-| Transcription queue | **Accept** - Low risk, safe design |
-| AssetsPage quick wins | 4 remaining (hooks extraction), all Small/Low risk |
-| General code health | Large route files noted, error handling already in NFR-67 |
+| Area                  | Result                                                    |
+| --------------------- | --------------------------------------------------------- |
+| Transcription queue   | **Accept** - Low risk, safe design                        |
+| AssetsPage quick wins | 4 remaining (hooks extraction), all Small/Low risk        |
+| General code health   | Large route files noted, error handling already in NFR-67 |
 
 **Implemented:** Extracted `toKebabCase` to `client/src/utils/formatting.ts`
 
@@ -633,27 +695,30 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
 
 ### FR-78: Transcript Stats Require SRT
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Stats now require both TXT and SRT for "complete" | - |
+| Date       | Change                                            | Commit |
+| ---------- | ------------------------------------------------- | ------ |
+| 2025-12-15 | Stats now require both TXT and SRT for "complete" | -      |
 
 **Change:**
+
 - `getTranscriptSyncStatus()` updated to require both `.txt` AND `.srt` for a transcript to count as "matched"
 - Creates intersection of txt and srt file sets
 - Aligns with FR-74's definition of "complete"
 
 **Files modified:**
+
 - `server/src/utils/scanning.ts:75-105` - Updated matching logic with comment
 
 ---
 
 ### FR-77: Transcript Sync Highlighting (Chapters)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Chapter videos now have synchronized transcript highlighting | - |
+| Date       | Change                                                       | Commit |
+| ---------- | ------------------------------------------------------------ | ------ |
+| 2025-12-15 | Chapter videos now have synchronized transcript highlighting | -      |
 
 **Features:**
+
 - Chapter videos show word/phrase highlighting (same as segments)
 - Uses chapter SRT with correct timing offsets
 - Click-to-seek works within chapter video
@@ -661,6 +726,7 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
 - Error guidance if chapter SRT missing
 
 **Files created/modified:**
+
 - `server/src/routes/query/transcripts.ts` - Added `GET /chapters/:chapterName/srt` endpoint
 - `client/src/components/TranscriptSyncPanel.tsx` - Added `chapterName` prop
 - `client/src/components/WatchPage.tsx` - Unified transcript panel for segments and chapters
@@ -672,11 +738,12 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
 
 ### FR-76: Chapter SRT Generation
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Chapter videos now generate matching SRT files | - |
+| Date       | Change                                         | Commit |
+| ---------- | ---------------------------------------------- | ------ |
+| 2025-12-15 | Chapter videos now generate matching SRT files | -      |
 
 **Features:**
+
 - Reads each segment's `.srt` from `recording-transcripts/`
 - Calculates timing offsets based on segment durations
 - With slides ON: adds slideDuration before each segment's offset
@@ -685,6 +752,7 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
 - SRT entries renumbered sequentially
 
 **Config page additions:**
+
 - Include purple title slides (checkbox)
 - Slide duration (seconds)
 - Default resolution (720p/1080p)
@@ -692,6 +760,7 @@ Shadow files are lightweight `.txt` placeholders that mirror video recordings, a
 - Defaults pre-populate the Chapter Recording modal
 
 **Output:**
+
 ```
 recordings/-chapters/
 ├── 01-intro.mov     ← video
@@ -699,6 +768,7 @@ recordings/-chapters/
 ```
 
 **Files modified:**
+
 - `server/src/utils/chapterRecording.ts` - SRT generation logic
 - `server/src/routes/chapters.ts` - passes transcriptsDir option
 - `client/src/components/ConfigPanel.tsx` - chapter recording defaults UI
@@ -708,21 +778,24 @@ recordings/-chapters/
 
 ### FR-75: Transcript Sync Highlighting (Segments)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Added real-time transcript highlighting to Watch page | - |
+| Date       | Change                                                | Commit |
+| ---------- | ----------------------------------------------------- | ------ |
+| 2025-12-15 | Added real-time transcript highlighting to Watch page | -      |
 
 **Features:**
+
 - Words/phrases highlight as video plays
 - Toggle between Word and Phrase modes (persists to localStorage)
 - Click any word to seek video to that timestamp
 - Auto-scrolls to keep highlighted text visible
 
 **Files created:**
+
 - `client/src/utils/srt.ts` - SRT parsing utilities
 - `client/src/components/TranscriptSyncPanel.tsx` - Highlighting panel component
 
 **Files modified:**
+
 - `client/src/components/WatchPage.tsx` - Integration with video timeupdate
 - `server/src/routes/query/transcripts.ts` - GET endpoint for SRT content
 
@@ -732,16 +805,18 @@ recordings/-chapters/
 
 ### FR-74: Dual Transcript Output (TXT + SRT)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Whisper now outputs both TXT and SRT files | - |
+| Date       | Change                                     | Commit |
+| ---------- | ------------------------------------------ | ------ |
+| 2025-12-15 | Whisper now outputs both TXT and SRT files | -      |
 
 **Changes:**
+
 - Added `--output_format srt` alongside existing txt format
 - Updated `getTranscriptPath()` to require BOTH `.txt` and `.srt` for "complete" status
 - Legacy txt-only transcripts will re-transcribe when "Transcribe All" is clicked
 
 **Files modified:**
+
 - `server/src/routes/transcriptions.ts`
 
 **Note:** This enables FR-75/FR-77 (transcript sync highlighting).
@@ -750,19 +825,21 @@ recordings/-chapters/
 
 ### FR-72: Fix Chapter Recording Codec Mismatch
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Fixed corrupted chapter recordings | - |
+| Date       | Change                             | Commit |
+| ---------- | ---------------------------------- | ------ |
+| 2025-12-15 | Fixed corrupted chapter recordings | -      |
 
 **Problem:** Generated chapter recordings were corrupted - audio pitch wrong, video freezing after a few seconds.
 
 **Root causes fixed:**
+
 1. Title slide audio was only 0.1s (beep duration) - now full slide duration with beep at start
 2. Used wrong FFmpeg concat method (demuxer requires identical streams) - switched to concat filter (re-encodes but reliable)
 3. Unicode arrow `→` rendered as box on some systems - simplified slide text
 4. Chapter videos returned 404 in Watch page - fixed path (`-chapters` is inside `recordings/`)
 
 **Slide text simplified to:**
+
 ```
 Segment 1
 intro
@@ -771,6 +848,7 @@ intro
 ```
 
 **Files modified:**
+
 - `server/src/utils/chapterRecording.ts` - concat filter approach, audio fix, text simplification
 - `server/src/routes/video.ts` - fixed chapter video path resolution
 
@@ -778,53 +856,59 @@ intro
 
 ### Watch Page Playback Controls (Bonus)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-15 | Added playback controls and toggles | - |
+| Date       | Change                              | Commit |
+| ---------- | ----------------------------------- | ------ |
+| 2025-12-15 | Added playback controls and toggles | -      |
 
 **Note:** These are UX enhancements beyond FR-71 scope.
 
 **Button layout (left to right):**
 
-| Button | State | Color | Function |
-|--------|-------|-------|----------|
-| Play/Stop | Stopped | Blue | Click to play video |
-| Play/Stop | Playing | Red | Click to pause video |
-| Autoplay | OFF/ON | Gray/Green | Auto-starts videos when clicked in panel |
-| Auto Next | OFF/ON | Gray/Green | Auto-advances to next segment when video ends |
+| Button    | State   | Color      | Function                                      |
+| --------- | ------- | ---------- | --------------------------------------------- |
+| Play/Stop | Stopped | Blue       | Click to play video                           |
+| Play/Stop | Playing | Red        | Click to pause video                          |
+| Autoplay  | OFF/ON  | Gray/Green | Auto-starts videos when clicked in panel      |
+| Auto Next | OFF/ON  | Gray/Green | Auto-advances to next segment when video ends |
 
 **Behavior:**
+
 - Play/Stop button disabled until a video is selected
 - Play/Stop directly controls the current video
 - Autoplay and Auto Next are toggles that persist in localStorage
 
 **Files modified:**
+
 - `client/src/components/WatchPage.tsx`
 
 ---
 
 ### FR-61, FR-62, FR-63: Project Resolution, Rename, Terminal Button
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-14 | Implemented all three features together | - |
+| Date       | Change                                  | Commit |
+| ---------- | --------------------------------------- | ------ |
+| 2025-12-14 | Implemented all three features together | -      |
 
 **FR-61: Project Resolution + Enhanced Project List**
+
 - New resolve endpoint: `GET /api/query/projects/resolve?q=b86`
 - Returns full code, brand, and filesystem path
 - Enhanced projects list now includes `brand` and `path` fields
 - Brand derived from folder: `v-appydave` → `appydave`
 
 **FR-62: Rename to FliHub**
+
 - Header text changed from "Recording Namer" to "FliHub"
 - Browser tab title was already "FliHub"
 
 **FR-63: Terminal Quick-Open Button**
+
 - New `>_` button in header next to clipboard button
 - Copies full project path to clipboard
 - Dark styling, tooltip "Copy project path"
 
 **Files modified:**
+
 - `server/src/routes/query.ts` - resolve endpoint, brand/path fields
 - `client/src/App.tsx` - header rename, copy path button
 - `~/.claude/skills/flihub/SKILL.md` - documentation update
@@ -834,11 +918,12 @@ intro
 
 ### FR-60: FliHub Skill Updates
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-14 | Updated FliHub skill with health and write commands | - |
+| Date       | Change                                              | Commit |
+| ---------- | --------------------------------------------------- | ------ |
+| 2025-12-14 | Updated FliHub skill with health and write commands | -      |
 
 **Changes:**
+
 - Renamed skill folder: `querying-flihub` → `flihub`
 - Updated SKILL.md with new name, health check, and write commands
 - Created `health-command.md` - documents GET /api/system/health
@@ -847,6 +932,7 @@ intro
 **Skill location:** `~/.claude/skills/flihub/`
 
 **Files in skill:**
+
 - `SKILL.md` - main skill file (updated)
 - `health-command.md` - new
 - `write-command.md` - new
@@ -856,11 +942,12 @@ intro
 
 ### FR-59: Inbox Tab
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-14 | Implemented Inbox tab with dynamic folder scanning | - |
+| Date       | Change                                             | Commit |
+| ---------- | -------------------------------------------------- | ------ |
+| 2025-12-14 | Implemented Inbox tab with dynamic folder scanning | -      |
 
 **Features:**
+
 - New Inbox tab (positioned after Recordings, before Assets)
 - Dynamic folder scanning (any folder in `inbox/` appears automatically)
 - Root-level files shown under `(root)` group
@@ -871,9 +958,11 @@ intro
 - Write API for programmatic file creation
 
 **Files created:**
+
 - `client/src/components/InboxPage.tsx`
 
 **Files modified:**
+
 - `shared/paths.ts` - inbox path definitions
 - `shared/types.ts` - inbox:changed socket event
 - `server/src/routes/query.ts` - GET /api/query/projects/:code/inbox
@@ -889,19 +978,22 @@ intro
 
 ### FR-57: Parallelize ffprobe Calls
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-13 | Implemented parallel ffprobe calls | - |
+| Date       | Change                             | Commit |
+| ---------- | ---------------------------------- | ------ |
+| 2025-12-13 | Implemented parallel ffprobe calls | -      |
 
 **Performance improvement:**
+
 - Before: 8-9 seconds (118 files × ~50ms sequential)
 - After: ~1 second (all in parallel)
 
 **Changes:**
+
 - Both `recordings/` and `safe/` folder loops now use `Promise.all`
 - Added TypeScript type guard for filter
 
 **Files modified:**
+
 - `server/src/routes/index.ts:395-415`
 
 **Decision:** Stayed stateless - parallelization was sufficient, no caching needed. See brainstorming notes for full architectural discussion.
@@ -910,12 +1002,13 @@ intro
 
 ### FR-55 & FR-56: Video Transcript Export + Chapter Navigation Panel
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-13 | Implemented both features together | - |
-| 2025-12-13 | FR-56 polish: chapter numbers, right-aligned timestamps, active state consistency | - |
+| Date       | Change                                                                            | Commit |
+| ---------- | --------------------------------------------------------------------------------- | ------ |
+| 2025-12-13 | Implemented both features together                                                | -      |
+| 2025-12-13 | FR-56 polish: chapter numbers, right-aligned timestamps, active state consistency | -      |
 
 **FR-56: Chapter Navigation Panel**
+
 - Slide-out panel from right edge (hover to expand)
 - Vertical "Chapters (24)" tab visible on right side
 - Chapter list with YouTube-format timestamps
@@ -924,6 +1017,7 @@ intro
 - "Copy for YouTube" button
 
 **FR-55: Video-Level Transcript Export**
+
 - 📄 Transcript button in Recordings header
 - Modal with combined transcript for entire video
 - Chapter headings toggle (checkbox in modal)
@@ -931,14 +1025,17 @@ intro
   - Unchecked: Raw transcript text only
 
 **Other changes:**
+
 - Removed "Chapters" checkbox toggle from Recordings header
 - Added shared `formatChapterTitle()` utility
 
 **Files created:**
+
 - `client/src/components/ChapterPanel.tsx`
 - `client/src/components/VideoTranscriptModal.tsx`
 
 **Files modified:**
+
 - `client/src/components/RecordingsView.tsx` - slide-out panel, transcript button
 - `client/src/utils/formatting.ts` - formatChapterTitle utility
 - `client/src/constants/queryKeys.ts` - combinedTranscript key
@@ -950,28 +1047,31 @@ intro
 
 ### FR-35: Fix Chapter Grouping Logic + Total Duration
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-10 | Implemented chapter grouping fix and total duration display | - |
+| Date       | Change                                                      | Commit |
+| ---------- | ----------------------------------------------------------- | ------ |
+| 2025-12-10 | Implemented chapter grouping fix and total duration display | -      |
 
 **Features:**
+
 - Group recordings by chapter NUMBER only (not number + name)
 - Display name from sequence 1 file with uppercase tags stripped
 - Total duration in header: `83 files (6 active, 77 safe) | 1h 23m 45s`
 - Total duration in footer: `Total: 1h 23m 45s`
 
 **Files modified:**
+
 - `client/src/components/RecordingsView.tsx` - groupByChapter(), getChapterDisplayName(), totalDuration
 
 ---
 
 ### FR-53: ASCII Report Formatter
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-07 | Implemented `?format=text` support for all NFR-8 query endpoints | - |
+| Date       | Change                                                           | Commit |
+| ---------- | ---------------------------------------------------------------- | ------ |
+| 2025-12-07 | Implemented `?format=text` support for all NFR-8 query endpoints | -      |
 
 **Features:**
+
 - All 7 query endpoints support `?format=text` parameter
 - Returns `Content-Type: text/plain` with formatted ASCII reports
 - DAM-style formatting: emoji indicators, human-readable sizes, relative times
@@ -979,10 +1079,12 @@ intro
 - Report generators for projects, recordings, transcripts, chapters, images, export
 
 **Files created:**
+
 - `server/src/utils/formatters.ts` - Core formatting utilities
 - `server/src/utils/reporters.ts` - Report generators
 
 **Files modified:**
+
 - `server/src/routes/query.ts` - Added format=text handling
 - `~/.claude/skills/querying-flihub/SKILL.md` - Updated with format=text docs
 
@@ -990,18 +1092,18 @@ intro
 
 ### FR-5: Trash Folder
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-29 | Initial: `.trash` folder for discarded files | earlier |
+| Date       | Change                                               | Commit  |
+| ---------- | ---------------------------------------------------- | ------- |
+| 2025-11-29 | Initial: `.trash` folder for discarded files         | earlier |
 | 2025-11-29 | Fix: Renamed `.trash` → `-trash` (visible in Finder) | db85daf |
 
 ---
 
 ### FR-8: Good Take Algorithm
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-28 | Initial: Recency-weighted scoring algorithm | earlier |
+| Date       | Change                                         | Commit  |
+| ---------- | ---------------------------------------------- | ------- |
+| 2025-11-28 | Initial: Recency-weighted scoring algorithm    | earlier |
 | 2025-11-29 | Rewrite: Baseline-aware algorithm, <5MB = junk | db85daf |
 
 **Notes:** v1 algorithm failed when baseline file existed with smaller junk files. v2 uses 5MB threshold to identify substantial takes.
@@ -1010,35 +1112,35 @@ intro
 
 ### FR-9: Default Port
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                            | Commit  |
+| ---------- | --------------------------------- | ------- |
 | 2025-11-29 | Changed Vite default port to 5100 | earlier |
 
 ---
 
 ### FR-10: Project List Panel
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-29 | Initial: Panel showing AppyDave projects | earlier |
-| 2025-11-29 | UI: Removed max-height scroll, full page display | - |
+| Date       | Change                                           | Commit  |
+| ---------- | ------------------------------------------------ | ------- |
+| 2025-11-29 | Initial: Panel showing AppyDave projects         | earlier |
+| 2025-11-29 | UI: Removed max-height scroll, full page display | -       |
 
 ---
 
 ### FR-11: Project Selector/Switcher
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                                            | Commit  |
+| ---------- | ------------------------------------------------- | ------- |
 | 2025-11-29 | Initial: Click project to switch target directory | earlier |
 
 ---
 
 ### FR-12: Create New Project
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-29 | Initial: Create project with kebab-case code | earlier |
-| 2025-11-30 | Fix: Allow periods in project names (e.g., `b73-opus-4.5-awesomer`) | - |
+| Date       | Change                                                              | Commit  |
+| ---------- | ------------------------------------------------------------------- | ------- |
+| 2025-11-29 | Initial: Create project with kebab-case code                        | earlier |
+| 2025-11-30 | Fix: Allow periods in project names (e.g., `b73-opus-4.5-awesomer`) | -       |
 
 **Bug fix:** Project names with periods were rejected. Updated validation pattern to allow periods alongside letters, numbers, and hyphens.
 
@@ -1046,30 +1148,31 @@ intro
 
 ### FR-13: Common Names Quick-Select UI
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-29 | Initial: Pill buttons below name field | - |
+| Date       | Change                                 | Commit |
+| ---------- | -------------------------------------- | ------ |
+| 2025-11-29 | Initial: Pill buttons below name field | -      |
 
 ---
 
 ### FR-14: Recordings Asset View
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-29 | Initial: New tab with chapter groupings | - |
-| 2025-11-29 | Fix: `-safe` folder path (was sibling, now inside recordings/) | - |
-| 2025-11-29 | Fix: Chapter name parsing only strips known tags from config | - |
-| 2025-11-29 | UI: Toggle buttons for "Show safe" and "Chapter headings" | - |
+| Date       | Change                                                         | Commit |
+| ---------- | -------------------------------------------------------------- | ------ |
+| 2025-11-29 | Initial: New tab with chapter groupings                        | -      |
+| 2025-11-29 | Fix: `-safe` folder path (was sibling, now inside recordings/) | -      |
+| 2025-11-29 | Fix: Chapter name parsing only strips known tags from config   | -      |
+| 2025-11-29 | UI: Toggle buttons for "Show safe" and "Chapter headings"      | -      |
 
 ---
 
 ### FR-15: Move to Safe
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-30 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-11-30 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Per-file action: `[→ Safe]` button on each file row
 - Per-chapter action: `[→ Safe All]` button on chapter headings
 - Restore action: `[← Restore]` button on safe file rows (when "Show safe" toggle is on)
@@ -1077,6 +1180,7 @@ intro
 - Toast feedback after each move/restore action
 
 **Backend endpoints:**
+
 - `POST /api/recordings/safe` - Move files to `-safe/` folder (by filename or by chapter)
 - `POST /api/recordings/restore` - Restore files from `-safe/` back to recordings
 
@@ -1084,20 +1188,21 @@ intro
 
 ### FR-16: Discard Remaining Files Prompt
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-29 | Initial: Modal after rename when files remain | earlier |
+| Date       | Change                                               | Commit  |
+| ---------- | ---------------------------------------------------- | ------- |
+| 2025-11-29 | Initial: Modal after rename when files remain        | earlier |
 | 2025-11-29 | Added: "Discard All" button in Incoming Files header | db85daf |
 
 ---
 
 ### FR-20: Image Quick Preview (Shift+Hover)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-30 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-11-30 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Shift+Hover preview: Hold Shift and hover over any image thumbnail for large 600px preview
 - Applies to: Both incoming images grid and assigned images list on Assets page
 - Preview content: Large image, filename, file size, timestamp
@@ -1109,11 +1214,12 @@ intro
 
 ### FR-21: Custom Tag Input
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-01 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-01 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Small inline text input after tag buttons
 - Type text, converts to UPPERCASE in filename
 - Spaces/commas become dashes
@@ -1123,11 +1229,12 @@ intro
 
 ### FR-22: Image Prompt Creation
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                       | Commit  |
+| ---------- | ---------------------------- | ------- |
 | 2025-12-01 | Initial: Full implementation | ed666ae |
 
 **Features:**
+
 - Added "Image Prompt" textarea in Assignment Controls for creating `.txt` prompt files
 - Prompts follow same naming convention as images: `{chapter}-{seq}-{imgOrder}{variant}-{label}.txt`
 - Backend endpoints: `POST /api/assets/prompt` and `GET /api/assets/prompt/:filename`
@@ -1136,6 +1243,7 @@ intro
 - Click prompt preview box to edit existing prompts
 
 **Minor UX Enhancement:**
+
 - Clicking any assigned asset (image or prompt) populates the Assignment Controls
 - Toast notification confirms: "Controls set to 10-6-a "bigpicture""
 - Use case: See an image, click it, type a prompt to regenerate it
@@ -1144,11 +1252,12 @@ intro
 
 ### FR-24: Image Source Directory in Config
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-01 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-01 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Added "Image Watch Directory" field to ConfigPanel
 - Same validation as other path fields (must start with ~ or /)
 - Renamed existing labels for clarity:
@@ -1159,11 +1268,12 @@ intro
 
 ### FR-25: Assigned Assets Row Cleanup
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-01 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-01 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Removed `[↑ label]` button (redundant since clicking any row populates all controls)
 - Added variant badge with colors: `[A]` green, `[B]` yellow, `[C]` blue
 - Added file extension to filename display (e.g., `10-6-1a-bigpicture.png`)
@@ -1174,11 +1284,12 @@ intro
 
 ### FR-26: Paired Asset Display with Prompt Preview
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-01 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-01 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Images and prompts with same base filename grouped on one row
 - Prompt text displays inline in multi-line text area (height scales with thumbnail size)
 - Shift+Hover on prompt text shows full content in modal overlay with line breaks preserved
@@ -1190,11 +1301,12 @@ intro
 
 ### FR-27: YouTube Thumbnails Page
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-01 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-01 | Initial: Full implementation | -      |
 
 **Features:**
+
 - New "Thumbs" page in navigation
 - Scan ~/Downloads for ZIP files containing images
 - Preview ZIP contents, select up to 3 images
@@ -1211,11 +1323,12 @@ intro
 
 ### FR-28: Server Connection Indicator
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                       | Commit  |
+| ---------- | ---------------------------- | ------- |
 | 2025-12-01 | Initial: Full implementation | 5cf9758 |
 
 **Features:**
+
 - Footer bar with connection status indicator (bottom-right)
 - Green dot = Connected
 - Red dot = Disconnected
@@ -1226,11 +1339,12 @@ intro
 
 ### FR-29: Open Folder in Finder
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                       | Commit  |
+| ---------- | ---------------------------- | ------- |
 | 2025-12-01 | Initial: Full implementation | 0fe2336 |
 
 **Features:**
+
 - Folder icon (📁) buttons throughout the app to open folders in macOS Finder
 - Backend: `POST /api/system/open-folder` endpoint using macOS `open` command
 - Error handling: Shows toast if folder doesn't exist
@@ -1238,27 +1352,28 @@ intro
 
 **Button locations:**
 
-| Page | Location | Opens |
-|------|----------|-------|
-| Config | Next to Ecamm Watch Directory | Ecamm recordings folder |
-| Config | Next to Target Directory | Current project recordings folder |
-| Config | Next to Image Watch Directory | Downloads folder |
-| Incoming | Section header | Ecamm recordings folder |
-| Recordings | Section header | Recordings + Safe folders |
-| Assets | Incoming Images header | Downloads folder |
-| Assets | Assigned Assets header | Project assets/images folder |
-| Thumbs | Current Thumbnails header | Project assets/thumbs folder |
-| Thumbs | Import from ZIP header | Downloads folder |
+| Page       | Location                      | Opens                             |
+| ---------- | ----------------------------- | --------------------------------- |
+| Config     | Next to Ecamm Watch Directory | Ecamm recordings folder           |
+| Config     | Next to Target Directory      | Current project recordings folder |
+| Config     | Next to Image Watch Directory | Downloads folder                  |
+| Incoming   | Section header                | Ecamm recordings folder           |
+| Recordings | Section header                | Recordings + Safe folders         |
+| Assets     | Incoming Images header        | Downloads folder                  |
+| Assets     | Assigned Assets header        | Project assets/images folder      |
+| Thumbs     | Current Thumbnails header     | Project assets/thumbs folder      |
+| Thumbs     | Import from ZIP header        | Downloads folder                  |
 
 ---
 
 ### FR-30: Video Transcription
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-03 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-03 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Whisper AI integration with streaming progress via Socket.io
 - Auto-triggers on file rename (queues transcription automatically)
 - Job queue with status tracking (queued → transcribing → complete/error)
@@ -1269,6 +1384,7 @@ intro
 - "Transcribe All" buttons at project and chapter level
 
 **Files created:**
+
 - `client/src/components/TranscriptionsPage.tsx`
 - `client/src/components/TranscriptModal.tsx`
 - `server/src/routes/transcriptions.ts`
@@ -1279,19 +1395,21 @@ intro
 
 ### NFR-6: Codebase Refactor
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-03 | NFR-6a: Quick wins - error handling, query keys, system routes docs | 69e1515 |
+| Date       | Change                                                               | Commit  |
+| ---------- | -------------------------------------------------------------------- | ------- |
+| 2025-12-03 | NFR-6a: Quick wins - error handling, query keys, system routes docs  | 69e1515 |
 | 2025-12-03 | NFR-6c: UI consistency - shared components, transcript badge cleanup | f5066df |
 
 **Note:** NFR-6b (Path Architecture) was already implemented in earlier work - `projectDirectory` config model and `getProjectPaths()` were in place.
 
 **NFR-6a Features:**
+
 - Query keys already centralized in `client/src/constants/queryKeys.ts` (verified)
 - Fixed ~14 error responses to include `success: false`
 - Added comprehensive JSDoc to `server/src/routes/system.ts` documenting `/api/system/` pattern and security
 
 **NFR-6c Features:**
+
 - Created `client/src/components/shared/` with 6 components:
   - `OpenFolderButton.tsx` (moved from root)
   - `SizeToggle.tsx` (new)
@@ -1306,11 +1424,11 @@ intro
 
 ### FR-32: Improved Project List Columns
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-03 | Initial: Full implementation | - |
-| 2025-12-04 | Fix: Query key mismatch - new/renamed projects now refresh list | - |
-| 2025-12-04 | Fix: Invalid projects now shown in "Issues" section (not filtered out) | - |
+| Date       | Change                                                                 | Commit |
+| ---------- | ---------------------------------------------------------------------- | ------ |
+| 2025-12-03 | Initial: Full implementation                                           | -      |
+| 2025-12-04 | Fix: Query key mismatch - new/renamed projects now refresh list        | -      |
+| 2025-12-04 | Fix: Invalid projects now shown in "Issues" section (not filtered out) | -      |
 
 **Bug fixes (2025-12-04):**
 
@@ -1319,12 +1437,14 @@ intro
 2. **Silent filter removed** - Client-side regex was filtering out any project not matching `b##-...` pattern. This filter wasn't in the spec. Instead of filtering, invalid projects now appear in a third "Issues" section below Normal projects, separated by `border-gray-300`.
 
 **Future UX considerations (documented, not implemented):**
+
 - Warning badges on issue projects
 - Tooltips explaining why project is flagged
 - Rename project action
 - Hide/archive capability
 
 **Features:**
+
 - Priority: Simple 📌 pin toggle (click to pin/unpin)
 - Sorting: Projects now sort by code ascending (b67, b68...), pinned first
 - Stage click-to-cycle: Click badge to cycle - → REC → EDIT → DONE → auto
@@ -1332,10 +1452,12 @@ intro
 - Files count now includes recordings + safe combined
 
 **Files created:**
+
 - `client/src/components/ProjectStatsPopup.tsx`
 - `server/src/routes/projects.ts` (new endpoints)
 
 **Files modified:**
+
 - `client/src/components/ProjectsPanel.tsx` (new table layout)
 - `shared/types.ts` (added ProjectStats types)
 
@@ -1343,11 +1465,12 @@ intro
 
 ### FR-33: Final Video & SRT Reference
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-03 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-03 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Auto-detection of final video and SRT files for each project
 - Detection priority: `final/` → `s3-staging/` → project root
 - Version extraction from filenames (e.g., `b64-final-v3.mp4` → v3)
@@ -1357,9 +1480,11 @@ intro
 - Open folder button for final/s3-staging folders
 
 **Files created:**
+
 - `server/src/utils/finalMedia.ts`
 
 **Files modified:**
+
 - `shared/paths.ts` (added `final`, `s3Staging` to ProjectPaths)
 - `shared/types.ts` (added FinalMediaResponse types)
 - `server/src/routes/projects.ts` (added GET /:code/final endpoint)
@@ -1373,17 +1498,19 @@ intro
 
 ### NFR-7: Show Recording Duration
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-02 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-02 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Video duration displayed on incoming files list (between filename and file size)
 - Format: `0:45` (under 1 min), `2:34` (1-59 min), `1:02:34` (60+ min)
 - Uses `ffprobe` to extract duration without scanning entire file
 - Graceful degradation: shows `-` if ffprobe not installed
 
 **Files:**
+
 - `server/src/utils/videoDuration.ts` (new)
 - `server/src/watcher.ts` (modified)
 - `client/src/utils/formatting.ts` (modified - added `formatDuration`)
@@ -1393,11 +1520,12 @@ intro
 
 ### NFR-5: Extend Socket Infrastructure
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                       | Commit  |
+| ---------- | ---------------------------- | ------- |
 | 2025-12-01 | Initial: Full implementation | 5cf9758 |
 
 **Features:**
+
 - Replaced polling with socket-based updates using chokidar file watchers
 - ZIP file downloads now update instantly
 - Assets, recordings, and projects panels get real-time updates
@@ -1406,6 +1534,7 @@ intro
 **Note:** Thumbs folder watcher disabled (changes per project) - uses manual refresh button.
 
 **Bug fixes during implementation:**
+
 - Fixed browser image caching: thumbnails now refresh correctly using timestamp cache-busting
 - Fixed ZIP watcher not detecting new downloads
 
@@ -1413,45 +1542,46 @@ intro
 
 ### NFR-1: Dynamic CORS Origins
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-29 | Changed from hardcoded ports to `origin: true` | - |
+| Date       | Change                                         | Commit |
+| ---------- | ---------------------------------------------- | ------ |
+| 2025-11-29 | Changed from hardcoded ports to `origin: true` | -      |
 
 ---
 
 ### NFR-2: Configurable Tags via JSON
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-11-29 | Initial: Tags in config.json | earlier |
+| Date       | Change                                                                           | Commit  |
+| ---------- | -------------------------------------------------------------------------------- | ------- |
+| 2025-11-29 | Initial: Tags in config.json                                                     | earlier |
 | 2025-11-29 | Fix: Separated global tags (`availableTags`) from suggested tags (`suggestTags`) | 88abf0e |
-| 2025-11-29 | Fix: suggestTags only makes tags available, doesn't auto-select | db85daf |
+| 2025-11-29 | Fix: suggestTags only makes tags available, doesn't auto-select                  | db85daf |
 
 ---
 
 ### NFR-3: Configurable Common Names
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                                          | Commit  |
+| ---------- | ----------------------------------------------- | ------- |
 | 2025-11-29 | Initial: Common names with rules in config.json | earlier |
 
 ---
 
 ### NFR-4: Rename Subsequence to Sequence
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                             | Commit  |
+| ---------- | ---------------------------------- | ------- |
 | 2025-11-29 | Renamed throughout codebase and UI | 504b68f |
 
 ---
 
 ### FR-52: Transcription Progress Bar
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-05 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-05 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Progress bar at top of Transcriptions page showing project-wide status
 - Visual bar with percentage display (e.g., "12/15 files (80%)")
 - Status chips showing: ✓ complete | ⏳ active | 📋 queued | ⚠ missing
@@ -1461,9 +1591,11 @@ intro
 - Works with empty state (no active/queued/recent jobs)
 
 **Files created:**
+
 - `client/src/components/TranscriptionProgressBar.tsx`
 
 **Files modified:**
+
 - `client/src/components/TranscriptionsPage.tsx` (added import and integration)
 
 ---
@@ -1472,26 +1604,27 @@ intro
 
 Code cleanup removing duplication:
 
-| Change | From → To |
-|--------|-----------|
-| `formatFileSize` | FileCard, RecordingsView → `utils/formatting.ts` |
-| `buildPreviewFilename` | FileCard, NamingControls → `utils/naming.ts` |
-| `expandPath` | routes, watcher → `server/utils/pathUtils.ts` |
-| Best-take algorithm | App.tsx → `hooks/useBestTake.ts` |
-| File discard logic | App.tsx → `utils/fileActions.ts` |
-| Query keys | useApi.ts → `constants/queryKeys.ts` |
-| Magic numbers | Inline → `shared/constants.ts` |
-| Unused hook | Removed `useDiscardFile` from useApi.ts |
+| Change                 | From → To                                        |
+| ---------------------- | ------------------------------------------------ |
+| `formatFileSize`       | FileCard, RecordingsView → `utils/formatting.ts` |
+| `buildPreviewFilename` | FileCard, NamingControls → `utils/naming.ts`     |
+| `expandPath`           | routes, watcher → `server/utils/pathUtils.ts`    |
+| Best-take algorithm    | App.tsx → `hooks/useBestTake.ts`                 |
+| File discard logic     | App.tsx → `utils/fileActions.ts`                 |
+| Query keys             | useApi.ts → `constants/queryKeys.ts`             |
+| Magic numbers          | Inline → `shared/constants.ts`                   |
+| Unused hook            | Removed `useDiscardFile` from useApi.ts          |
 
 ---
 
 ### NFR-8: Project Data Query API
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2025-12-06 | Initial: Full implementation | - |
+| Date       | Change                       | Commit |
+| ---------- | ---------------------------- | ------ |
+| 2025-12-06 | Initial: Full implementation | -      |
 
 **Features:**
+
 - Read-only JSON endpoints under `/api/query/` prefix for LLM context and external tools
 - `GET /api/query/config` - System metadata (stages, priorities, filters, tags, names)
 - `GET /api/query/projects` - List with `?filter=pinned`, `?stage=X`, `?recent=N`
@@ -1504,9 +1637,11 @@ Code cleanup removing duplication:
 - Request logging with `[Query API]` prefix
 
 **Files created:**
+
 - `flihub/server/src/routes/query.ts`
 
 **Files modified:**
+
 - `flihub/server/src/index.ts` (route registration)
 
 **Spec:** `project-data-query-spec.md`
@@ -1515,29 +1650,29 @@ Code cleanup removing duplication:
 
 ## Miscellaneous Changes
 
-| Date | Change |
-|------|--------|
-| 2025-11-29 | File timestamp uses actual mtime (not detection time) |
+| Date       | Change                                                                  |
+| ---------- | ----------------------------------------------------------------------- |
+| 2025-11-29 | File timestamp uses actual mtime (not detection time)                   |
 | 2025-11-29 | Header navigation: moved to header as text links (saves vertical space) |
 
 ---
 
 ## Document Index
 
-| Document | Purpose |
-|----------|---------|
-| `backlog.md` | FR/NFR list with status |
-| `recording-namer-FR.md` | Original functional requirements (FR-1 to FR-10) |
-| `changelog.md` | What changed and when (this file) |
-| `implementation-notes.md` | Learnings, decisions, gotchas |
-| `good-take-algorithm.md` | FR-8 algorithm details and test cases |
-| `move-to-safe-spec.md` | FR-15 full specification |
-| `image-asset-management-spec.md` | FR-17/18/19 full specification |
-| `image-prompt-spec.md` | FR-22 full specification |
-| `youtube-thumbnails-spec.md` | FR-27 full specification |
-| `video-transcription-spec.md` | FR-30 full specification |
-| `enhanced-project-view-spec.md` | FR-31 full specification (includes DAM reference) |
-| `chapter-extraction-spec.md` | FR-34 full specification |
-| `project-data-query-spec.md` | NFR-8 full specification |
-| `ux-improvements.md` | UX improvement items |
-| `assets-page-mockup.md` | Assets page UI mockups |
+| Document                         | Purpose                                           |
+| -------------------------------- | ------------------------------------------------- |
+| `backlog.md`                     | FR/NFR list with status                           |
+| `recording-namer-FR.md`          | Original functional requirements (FR-1 to FR-10)  |
+| `changelog.md`                   | What changed and when (this file)                 |
+| `implementation-notes.md`        | Learnings, decisions, gotchas                     |
+| `good-take-algorithm.md`         | FR-8 algorithm details and test cases             |
+| `move-to-safe-spec.md`           | FR-15 full specification                          |
+| `image-asset-management-spec.md` | FR-17/18/19 full specification                    |
+| `image-prompt-spec.md`           | FR-22 full specification                          |
+| `youtube-thumbnails-spec.md`     | FR-27 full specification                          |
+| `video-transcription-spec.md`    | FR-30 full specification                          |
+| `enhanced-project-view-spec.md`  | FR-31 full specification (includes DAM reference) |
+| `chapter-extraction-spec.md`     | FR-34 full specification                          |
+| `project-data-query-spec.md`     | NFR-8 full specification                          |
+| `ux-improvements.md`             | UX improvement items                              |
+| `assets-page-mockup.md`          | Assets page UI mockups                            |

@@ -17,9 +17,11 @@ As a FliHub user, I want hover interactions to feel stable and predictable so I 
 Two hover-related UX issues have been identified:
 
 ### Issue 1: Projects Page - Floating Tooltips
+
 The status tooltips (info popup, stage descriptions) float loosely and can feel disconnected from their trigger elements. When moving the mouse, tooltips can disappear unexpectedly.
 
 ### Issue 2: Recordings/Watch Page - Chapter Hover "Whack-a-Mole"
+
 On the Watch page, hovering over chapters to see segments triggers panel appearances that can be hard to target. The segment panel may disappear before the user can interact with it.
 
 ---
@@ -35,6 +37,7 @@ Make tooltips feel more connected to their trigger elements:
 3. **Connected Hit Area** - Extend hoverable area between trigger and tooltip
 
 #### Current vs Improved
+
 ```
 Current:                          Improved:
 
@@ -57,6 +60,7 @@ Fix the segment panel hover sensitivity:
 4. **Sticky While Interacting** - Panel stays if mouse is moving toward it
 
 #### Hover Zone Diagram
+
 ```
 ┌──────────────────┐
 │   Chapter Panel  │ ← Hover zone extends...
@@ -78,6 +82,7 @@ Fix the segment panel hover sensitivity:
 ### Part A Implementation
 
 **Option 1: CSS-only (preferred)**
+
 ```css
 /* Add hover bridge with pseudo-element */
 .tooltip-trigger {
@@ -94,6 +99,7 @@ Fix the segment panel hover sensitivity:
 ```
 
 **Option 2: JavaScript delay**
+
 ```typescript
 const [isHovered, setIsHovered] = useState(false);
 const leaveTimer = useRef<number>();
@@ -111,20 +117,23 @@ const handleMouseLeave = () => {
 ### Part B Implementation
 
 **Existing Code Location**
+
 - `client/src/components/WatchPage.tsx` - Chapter/segment hover panels
 
 **Key Changes**
+
 - Add `onMouseEnter`/`onMouseLeave` to parent container (not just panels)
 - Use `setTimeout` for delayed state changes
 - Consider using `pointer-events` CSS to create continuous hover zones
 
 **State Machine Approach**
+
 ```typescript
 type HoverState =
   | { type: 'idle' }
-  | { type: 'hovering-chapter', chapter: string }
-  | { type: 'moving-to-segment', chapter: string }
-  | { type: 'hovering-segment', chapter: string };
+  | { type: 'hovering-chapter'; chapter: string }
+  | { type: 'moving-to-segment'; chapter: string }
+  | { type: 'hovering-segment'; chapter: string };
 ```
 
 ---
@@ -132,11 +141,13 @@ type HoverState =
 ## Acceptance Criteria
 
 ### Part A: Tooltips
+
 - [ ] ProjectStatsPopup has visual anchor (arrow/pointer)
 - [ ] Stage tooltips stay visible briefly after mouse leaves
 - [ ] Can move mouse from trigger to tooltip without it disappearing
 
 ### Part B: Chapter Hover
+
 - [ ] Segment panel appears smoothly (slight delay prevents flicker)
 - [ ] Segment panel stays visible while moving mouse toward it
 - [ ] Can click items in segment panel reliably
@@ -147,10 +158,12 @@ type HoverState =
 ## Files to Modify
 
 ### Part A
+
 - `client/src/components/ProjectStatsPopup.tsx`
 - `client/src/components/ProjectsPanel.tsx` (stage tooltip)
 
 ### Part B
+
 - `client/src/components/WatchPage.tsx` (chapter/segment panels)
 
 ---

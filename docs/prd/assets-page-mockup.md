@@ -107,6 +107,7 @@ Active tab highlighted with underline or background color.
 ```
 
 **Behavior:**
+
 - Chapter/Sequence pre-filled from current naming state
 - Image # auto-calculated based on existing files
 - When variant selected: `05-3-2a-workflow-diagram.png`
@@ -133,6 +134,7 @@ Active tab highlighted with underline or background color.
 ```
 
 **States:**
+
 - Default: White background
 - Hover: Light blue border
 - Selected (for bulk?): Blue background (future)
@@ -257,14 +259,14 @@ Assigning two versions of same diagram:
 
 ## Color Scheme (consistent with existing app)
 
-| Element | Color |
-|---------|-------|
-| Background | `#f9fafb` (gray-50) |
-| Cards | `#ffffff` white with `#e5e7eb` border |
-| Primary button (Assign) | `#3b82f6` blue-500 |
-| Danger button (Delete) | `#ef4444` red-500 |
-| Duplicate badge | `#f59e0b` amber-500 |
-| Success toast | `#22c55e` green-500 |
+| Element                 | Color                                 |
+| ----------------------- | ------------------------------------- |
+| Background              | `#f9fafb` (gray-50)                   |
+| Cards                   | `#ffffff` white with `#e5e7eb` border |
+| Primary button (Assign) | `#3b82f6` blue-500                    |
+| Danger button (Delete)  | `#ef4444` red-500                     |
+| Duplicate badge         | `#f59e0b` amber-500                   |
+| Success toast           | `#22c55e` green-500                   |
 
 ---
 
@@ -279,6 +281,7 @@ Assigning two versions of same diagram:
 ## Empty States
 
 **No incoming images:**
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │ INCOMING IMAGES (~/Downloads)                            [Refresh]  │
@@ -294,6 +297,7 @@ Assigning two versions of same diagram:
 ```
 
 **No assigned images:**
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │ ASSIGNED IMAGES (assets/images/)                          0 images  │

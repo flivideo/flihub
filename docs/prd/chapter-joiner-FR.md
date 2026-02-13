@@ -7,6 +7,7 @@ As a content creator, I want to quickly join all video segments from a specific 
 ## User Story
 
 As a content creator, when I'm working on a video project with multiple chapters and segments, I want to select a chapter and have all its segments automatically joined into a single preview video, so I can:
+
 - Review the chapter as a continuous flow
 - Check pacing and transitions between segments
 - Quickly assess if reshoots are needed
@@ -17,6 +18,7 @@ As a content creator, when I'm working on a video project with multiple chapters
 Files follow the pattern: `{chapter}-{segment}-{name}[-{tags}].mov`
 
 Examples:
+
 - `01-1-intro.mov`
 - `01-2-main-content.mov`
 - `01-3-demo.mov`
@@ -33,6 +35,7 @@ Examples:
 **FR-JOIN-3:** As a content creator, the joined output file should be saved to a `.chapters/` subfolder (sibling to `.trash/`, one level up from recordings) with the naming pattern `{chapter}-{name-from-first-segment}.mov`, so joined files are organized separately from source files.
 
 Example:
+
 - Source: `recordings/01-1-intro.mov`, `recordings/01-2-content.mov`, `recordings/01-3-outro.mov`
 - Output: `.chapters/01-intro.mov` (name taken from first segment)
 
@@ -82,6 +85,7 @@ project-folder/
 ## CLI Alternative
 
 If implemented as CLI first:
+
 ```bash
 flivideo-join --chapter 01 --project /path/to/project
 flivideo-join --chapter 02 --dry-run  # Preview what would be joined

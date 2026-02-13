@@ -1,14 +1,14 @@
 // FR-42: Modal for pasting images from clipboard
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback } from 'react';
 
 interface ClipboardPasteModalProps {
-  imageData: string  // Base64 data URL
-  previewFilename: string
-  onAssign: () => void
-  onSaveToIncoming: () => void
-  onCancel: () => void
-  isAssigning: boolean
-  isSavingToIncoming: boolean
+  imageData: string; // Base64 data URL
+  previewFilename: string;
+  onAssign: () => void;
+  onSaveToIncoming: () => void;
+  onCancel: () => void;
+  isAssigning: boolean;
+  isSavingToIncoming: boolean;
 }
 
 export function ClipboardPasteModal({
@@ -21,31 +21,32 @@ export function ClipboardPasteModal({
   isSavingToIncoming,
 }: ClipboardPasteModalProps) {
   // Handle Enter key for primary action
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !isAssigning && !isSavingToIncoming) {
-      e.preventDefault()
-      onAssign()
-    } else if (e.key === 'Escape') {
-      e.preventDefault()
-      onCancel()
-    }
-  }, [onAssign, onCancel, isAssigning, isSavingToIncoming])
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && !isAssigning && !isSavingToIncoming) {
+        e.preventDefault();
+        onAssign();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onCancel();
+      }
+    },
+    [onAssign, onCancel, isAssigning, isSavingToIncoming]
+  );
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [handleKeyDown])
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
-  const isPending = isAssigning || isSavingToIncoming
+  const isPending = isAssigning || isSavingToIncoming;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Paste Image from Clipboard
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900">Paste Image from Clipboard</h3>
         </div>
 
         {/* Content */}
@@ -60,9 +61,7 @@ export function ClipboardPasteModal({
           </div>
 
           {/* Filename Preview */}
-          <div className="text-sm text-gray-600 mb-2">
-            Will be saved as:
-          </div>
+          <div className="text-sm text-gray-600 mb-2">Will be saved as:</div>
           <div className="font-mono text-sm bg-gray-50 px-3 py-2 rounded border border-gray-200 text-gray-800">
             {previewFilename || 'Set chapter/sequence/label first'}
           </div>
@@ -101,5 +100,5 @@ export function ClipboardPasteModal({
         </div>
       </div>
     </div>
-  )
+  );
 }

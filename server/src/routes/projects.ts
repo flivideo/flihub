@@ -35,7 +35,11 @@ export function createProjectRoutes(
   const router = Router();
 
   // NFR-9: Helper to convert raw stats to ProjectStats format
-  async function getProjectStats(projectPath: string, code: string, config: Config): Promise<ProjectStats> {
+  async function getProjectStats(
+    projectPath: string,
+    code: string,
+    config: Config
+  ): Promise<ProjectStats> {
     const raw = await getProjectStatsRaw(projectPath, code, config);
 
     // FR-111: recordingsCount and safeCount removed (safe status is per-file)
@@ -76,18 +80,19 @@ export function createProjectRoutes(
 
     try {
       // Check if projects directory exists
-      if (!await fs.pathExists(projectsDir)) {
+      if (!(await fs.pathExists(projectsDir))) {
         res.json({ projects: [], error: 'Projects directory not found' });
         return;
       }
 
       const entries = await fs.readdir(projectsDir, { withFileTypes: true });
       // Bug fix: Filter out system folders (hidden, -trash, -safe, archived)
-      const folders = entries.filter(e =>
-        e.isDirectory() &&
-        !e.name.startsWith('.') &&     // hidden folders
-        !e.name.startsWith('-') &&     // system folders (-trash, -safe)
-        e.name !== 'archived'          // archive folder
+      const folders = entries.filter(
+        (e) =>
+          e.isDirectory() &&
+          !e.name.startsWith('.') && // hidden folders
+          !e.name.startsWith('-') && // system folders (-trash, -safe)
+          e.name !== 'archived' // archive folder
       );
 
       const stats: ProjectStats[] = [];
@@ -114,7 +119,9 @@ export function createProjectRoutes(
     const { priority } = req.body;
 
     if (!['pinned', 'normal'].includes(priority)) {
-      res.status(400).json({ success: false, error: 'Invalid priority value. Use "pinned" or "normal".' });
+      res
+        .status(400)
+        .json({ success: false, error: 'Invalid priority value. Use "pinned" or "normal".' });
       return;
     }
 
@@ -159,14 +166,21 @@ export function createProjectRoutes(
 
     // FR-80: Valid stages from the new workflow model + 'auto' for reset
     const validStages = [
-      'planning', 'recording', 'first-edit', 'second-edit',
-      'review', 'ready-to-publish', 'published', 'archived', 'auto'
+      'planning',
+      'recording',
+      'first-edit',
+      'second-edit',
+      'review',
+      'ready-to-publish',
+      'published',
+      'archived',
+      'auto',
     ];
 
     if (!validStages.includes(stage)) {
       res.status(400).json({
         success: false,
-        error: `Invalid stage. Valid values: ${validStages.join(', ')}`
+        error: `Invalid stage. Valid values: ${validStages.join(', ')}`,
       });
       return;
     }
@@ -203,7 +217,7 @@ export function createProjectRoutes(
     const projectPath = path.join(projectsDir, code);
 
     // Verify project exists
-    if (!await fs.pathExists(projectPath)) {
+    if (!(await fs.pathExists(projectPath))) {
       res.status(404).json({ success: false, error: `Project not found: ${code}` });
       return;
     }
@@ -214,21 +228,21 @@ export function createProjectRoutes(
     // FR-111: Only scan recordings/ (no more -safe folder)
     const files = await readDirSafe(recordingsDir);
     const recordingFiles = files
-      .filter(f => f.endsWith('.mov'))
-      .map(f => f.replace('.mov', ''))
+      .filter((f) => f.endsWith('.mov'))
+      .map((f) => f.replace('.mov', ''));
 
     // Get all .txt files (base names, exclude *-chapter.txt)
     const transcriptDirFiles = await readDirSafe(transcriptsDir);
     const transcriptFiles = transcriptDirFiles
-      .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
-      .map(f => f.replace('.txt', ''));
+      .filter((f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+      .map((f) => f.replace('.txt', ''));
 
     const recordingSet = new Set(recordingFiles);
     const transcriptSet = new Set(transcriptFiles);
 
-    const matched = recordingFiles.filter(r => transcriptSet.has(r));
-    const missingTranscripts = recordingFiles.filter(r => !transcriptSet.has(r));
-    const orphanedTranscripts = transcriptFiles.filter(t => !recordingSet.has(t));
+    const matched = recordingFiles.filter((r) => transcriptSet.has(r));
+    const missingTranscripts = recordingFiles.filter((r) => !transcriptSet.has(r));
+    const orphanedTranscripts = transcriptFiles.filter((t) => !recordingSet.has(t));
 
     const response: TranscriptSyncResponse = {
       success: true,
@@ -247,7 +261,7 @@ export function createProjectRoutes(
     const projectPath = path.join(projectsDir, code);
 
     // Verify project exists
-    if (!await fs.pathExists(projectPath)) {
+    if (!(await fs.pathExists(projectPath))) {
       res.status(404).json({ success: false, error: `Project not found: ${code}` });
       return;
     }
@@ -268,8 +282,10 @@ export function createProjectRoutes(
     const projectPath = path.join(projectsDir, code);
 
     // Verify project exists
-    if (!await fs.pathExists(projectPath)) {
-      res.status(404).json({ success: false, error: `Project not found: ${code}`, chapters: [], formatted: '' });
+    if (!(await fs.pathExists(projectPath))) {
+      res
+        .status(404)
+        .json({ success: false, error: `Project not found: ${code}`, chapters: [], formatted: '' });
       return;
     }
 
@@ -292,7 +308,9 @@ export function createProjectRoutes(
       res.json(result);
     } catch (error) {
       console.error(`Error extracting chapters for ${code}:`, error);
-      res.status(500).json({ success: false, error: 'Failed to extract chapters', chapters: [], formatted: '' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to extract chapters', chapters: [], formatted: '' });
     }
   });
 
@@ -310,9 +328,13 @@ export function createProjectRoutes(
     }
 
     try {
-      console.log(`LLM verification requested for ${code} chapter ${verifyRequest.chapter}: ${verifyRequest.name}`);
+      console.log(
+        `LLM verification requested for ${code} chapter ${verifyRequest.chapter}: ${verifyRequest.name}`
+      );
       const result = await verifyChapterWithLLM(verifyRequest);
-      console.log(`LLM verification result: ${result.recommendation.action} (${result.recommendation.confidence}%)`);
+      console.log(
+        `LLM verification result: ${result.recommendation.action} (${result.recommendation.confidence}%)`
+      );
       res.json(result);
     } catch (error) {
       console.error(`Error verifying chapter for ${code}:`, error);
@@ -406,7 +428,7 @@ export function createProjectRoutes(
 
       // Remove existing override for this chapter/name combo
       overrides = overrides.filter(
-        o => !(o.chapter === overrideRequest.chapter && o.name === overrideRequest.name)
+        (o) => !(o.chapter === overrideRequest.chapter && o.name === overrideRequest.name)
       );
 
       // Add new override
@@ -418,7 +440,9 @@ export function createProjectRoutes(
       // Save
       await fs.writeJson(overridesPath, overrides, { spaces: 2 });
 
-      console.log(`Set override for ${code} chapter ${overrideRequest.chapter}: ${overrideRequest.action}`);
+      console.log(
+        `Set override for ${code} chapter ${overrideRequest.chapter}: ${overrideRequest.action}`
+      );
       res.json({ success: true, override: newOverride });
     } catch (error) {
       console.error(`Error setting override for ${code}:`, error);
@@ -436,7 +460,7 @@ export function createProjectRoutes(
     const overridesPath = path.join(projectPath, '.chapter-overrides.json');
 
     try {
-      if (!await fs.pathExists(overridesPath)) {
+      if (!(await fs.pathExists(overridesPath))) {
         res.json({ success: true, message: 'No overrides file exists' });
         return;
       }
@@ -444,9 +468,7 @@ export function createProjectRoutes(
       let overrides: ChapterOverride[] = await fs.readJson(overridesPath);
       const initialLength = overrides.length;
 
-      overrides = overrides.filter(
-        o => !(o.chapter === chapterNum && o.name === name)
-      );
+      overrides = overrides.filter((o) => !(o.chapter === chapterNum && o.name === name));
 
       if (overrides.length === initialLength) {
         res.status(404).json({ success: false, error: 'Override not found' });
@@ -496,7 +518,7 @@ export function createProjectRoutes(
     const projectPath = path.join(projectsDir, code);
 
     // Verify project exists
-    if (!await fs.pathExists(projectPath)) {
+    if (!(await fs.pathExists(projectPath))) {
       res.status(404).json({ success: false, error: `Project not found: ${code}` });
       return;
     }

@@ -9,197 +9,196 @@
  * - Validation
  */
 
-import { useState, useMemo, useEffect } from 'react'
-import { toast } from 'sonner'
-import { useConfig } from '../../hooks/useApi'
-import { parseRecordingFilename, extractTagsFromName, validateLabel, formatChapter } from '../../../../shared/naming'
+import { useState, useMemo, useEffect } from 'react';
+import { toast } from 'sonner';
+import { useConfig } from '../../hooks/useApi';
+import {
+  parseRecordingFilename,
+  extractTagsFromName,
+  validateLabel,
+  formatChapter,
+} from '../../../../shared/naming';
 
 interface RenamePanelProps {
-  selectedFiles: string[]
-  onClose: () => void
-  onSuccess: () => void
+  selectedFiles: string[];
+  onClose: () => void;
+  onSuccess: () => void;
 }
 
 interface PreviewItem {
-  from: string
-  to: string
-  valid: boolean
-  warning?: string
+  from: string;
+  to: string;
+  valid: boolean;
+  warning?: string;
 }
 
 export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelProps) {
-  const { data: config } = useConfig()
+  const { data: config } = useConfig();
 
   // State
-  const [chapter, setChapter] = useState('')
-  const [sequenceMode, setSequenceMode] = useState<'preserve' | 'renumber'>('renumber')
-  const [sequenceStart, setSequenceStart] = useState(1)
-  const [label, setLabel] = useState('')
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set())
-  const [customTag, setCustomTag] = useState('')
-  const [showCustomTagInput, setShowCustomTagInput] = useState(false)
-  const [isRenaming, setIsRenaming] = useState(false)
-  const [chaptersInfo, setChaptersInfo] = useState<string | null>(null)
+  const [chapter, setChapter] = useState('');
+  const [sequenceMode, setSequenceMode] = useState<'preserve' | 'renumber'>('renumber');
+  const [sequenceStart, setSequenceStart] = useState(1);
+  const [label, setLabel] = useState('');
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [customTag, setCustomTag] = useState('');
+  const [showCustomTagInput, setShowCustomTagInput] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [chaptersInfo, setChaptersInfo] = useState<string | null>(null);
 
   // Pre-fill tags only (NOT chapter - user must choose explicitly)
   useEffect(() => {
-    if (selectedFiles.length === 0) return
+    if (selectedFiles.length === 0) return;
 
     // Detect which chapters are in selection (for info message only)
-    const chaptersSet = new Set<string>()
-    selectedFiles.forEach(f => {
-      const parsed = parseRecordingFilename(f)
+    const chaptersSet = new Set<string>();
+    selectedFiles.forEach((f) => {
+      const parsed = parseRecordingFilename(f);
       if (parsed) {
-        chaptersSet.add(parsed.chapter)
+        chaptersSet.add(parsed.chapter);
       }
-    })
+    });
 
-    const chapters = Array.from(chaptersSet).sort()
+    const chapters = Array.from(chaptersSet).sort();
 
     if (chapters.length === 1) {
       // Single chapter - show simple info
-      setChaptersInfo(`ℹ️ All files are from chapter ${chapters[0]}`)
+      setChaptersInfo(`ℹ️ All files are from chapter ${chapters[0]}`);
     } else if (chapters.length > 1) {
       // Multiple chapters - show info message
-      setChaptersInfo(`ℹ️ Selected files from chapters: ${chapters.join(', ')}`)
+      setChaptersInfo(`ℹ️ Selected files from chapters: ${chapters.join(', ')}`);
     } else {
-      setChaptersInfo(null)
+      setChaptersInfo(null);
     }
 
     // Detect tags from first file
-    const firstFile = selectedFiles[0]
+    const firstFile = selectedFiles[0];
     if (firstFile) {
-      const nameWithTags = firstFile.replace('.mov', '')
-      const { tags } = extractTagsFromName(nameWithTags)
-      setSelectedTags(new Set(tags))
+      const nameWithTags = firstFile.replace('.mov', '');
+      const { tags } = extractTagsFromName(nameWithTags);
+      setSelectedTags(new Set(tags));
     }
-  }, [selectedFiles])
+  }, [selectedFiles]);
 
   // Generate chapter options (01-99)
   const chapterOptions = useMemo(() => {
-    const options = []
+    const options = [];
     for (let i = 1; i <= 99; i++) {
-      options.push(formatChapter(i))
+      options.push(formatChapter(i));
     }
-    return options
-  }, [])
+    return options;
+  }, []);
 
   // Validation
   const labelError = useMemo(() => {
-    if (!label) return null
-    return validateLabel(label)
-  }, [label])
+    if (!label) return null;
+    return validateLabel(label);
+  }, [label]);
 
   const isValid = useMemo(() => {
-    return (
-      chapter &&
-      label.trim() !== '' &&
-      !labelError &&
-      selectedFiles.length > 0
-    )
-  }, [chapter, label, labelError, selectedFiles.length])
+    return chapter && label.trim() !== '' && !labelError && selectedFiles.length > 0;
+  }, [chapter, label, labelError, selectedFiles.length]);
 
   // Preview generation
   const preview = useMemo((): PreviewItem[] => {
-    if (!label || !chapter) return []
+    if (!label || !chapter) return [];
 
     return selectedFiles.map((filename, index) => {
-      const parsed = parseRecordingFilename(filename)
+      const parsed = parseRecordingFilename(filename);
       if (!parsed) {
         return {
           from: filename,
           to: filename,
           valid: false,
-          warning: 'Invalid filename format'
-        }
+          warning: 'Invalid filename format',
+        };
       }
 
       // Determine new sequence
-      const newSequence = sequenceMode === 'preserve'
-        ? parsed.sequence || '1'
-        : String(sequenceStart + index)
+      const newSequence =
+        sequenceMode === 'preserve' ? parsed.sequence || '1' : String(sequenceStart + index);
 
       // Build new filename
-      const tags = Array.from(selectedTags)
-      const tagSuffix = tags.length > 0 ? `-${tags.join('-')}` : ''
-      const newFilename = `${chapter}-${newSequence}-${label}${tagSuffix}.mov`
+      const tags = Array.from(selectedTags);
+      const tagSuffix = tags.length > 0 ? `-${tags.join('-')}` : '';
+      const newFilename = `${chapter}-${newSequence}-${label}${tagSuffix}.mov`;
 
       return {
         from: filename,
         to: newFilename,
-        valid: true
-      }
-    })
-  }, [selectedFiles, chapter, sequenceMode, sequenceStart, label, selectedTags])
+        valid: true,
+      };
+    });
+  }, [selectedFiles, chapter, sequenceMode, sequenceStart, label, selectedTags]);
 
   // Calculate estimated transcript time
   const estimatedTime = useMemo(() => {
-    const minutes = selectedFiles.length * 10
-    return minutes
-  }, [selectedFiles.length])
+    const minutes = selectedFiles.length * 10;
+    return minutes;
+  }, [selectedFiles.length]);
 
   // Toggle tag selection
   const toggleTag = (tag: string) => {
-    setSelectedTags(prev => {
-      const next = new Set(prev)
+    setSelectedTags((prev) => {
+      const next = new Set(prev);
       if (next.has(tag)) {
-        next.delete(tag)
+        next.delete(tag);
       } else {
         if (next.size >= 5) {
-          toast.error('Maximum 5 tags allowed')
-          return prev
+          toast.error('Maximum 5 tags allowed');
+          return prev;
         }
-        next.add(tag)
+        next.add(tag);
       }
-      return next
-    })
-  }
+      return next;
+    });
+  };
 
   // Add custom tag
   const addCustomTag = () => {
-    const trimmed = customTag.trim()
-    if (!trimmed) return
+    const trimmed = customTag.trim();
+    if (!trimmed) return;
 
     // Validate uppercase only
     if (!/^[A-Z]+$/.test(trimmed)) {
-      toast.error('Tags must be uppercase letters only')
-      return
+      toast.error('Tags must be uppercase letters only');
+      return;
     }
 
     if (trimmed.length > 10) {
-      toast.error('Tag must be 10 characters or less')
-      return
+      toast.error('Tag must be 10 characters or less');
+      return;
     }
 
     if (selectedTags.has(trimmed)) {
-      toast.error('Tag already added')
-      return
+      toast.error('Tag already added');
+      return;
     }
 
     if (selectedTags.size >= 5) {
-      toast.error('Maximum 5 tags allowed')
-      return
+      toast.error('Maximum 5 tags allowed');
+      return;
     }
 
-    setSelectedTags(prev => new Set([...prev, trimmed]))
-    setCustomTag('')
-    setShowCustomTagInput(false)
-  }
+    setSelectedTags((prev) => new Set([...prev, trimmed]));
+    setCustomTag('');
+    setShowCustomTagInput(false);
+  };
 
   // Remove tag
   const removeTag = (tag: string) => {
-    setSelectedTags(prev => {
-      const next = new Set(prev)
-      next.delete(tag)
-      return next
-    })
-  }
+    setSelectedTags((prev) => {
+      const next = new Set(prev);
+      next.delete(tag);
+      return next;
+    });
+  };
 
   // Handle rename submission
   const handleRename = async () => {
-    if (!isValid) return
+    if (!isValid) return;
 
-    setIsRenaming(true)
+    setIsRenaming(true);
     try {
       const response = await fetch('http://localhost:5101/api/manage/bulk-rename', {
         method: 'POST',
@@ -210,38 +209,38 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
           sequenceMode,
           sequenceStart: sequenceMode === 'renumber' ? sequenceStart : undefined,
           label,
-          tags: Array.from(selectedTags)
-        })
-      })
+          tags: Array.from(selectedTags),
+        }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (data.success) {
         toast.success(`Renamed ${data.renamedCount} file${data.renamedCount !== 1 ? 's' : ''}`, {
-          duration: 5000
-        })
+          duration: 5000,
+        });
         if (data.transcriptionQueued) {
           toast.info('Transcriptions queued (view progress in Transcriptions tab)', {
-            duration: 5000
-          })
+            duration: 5000,
+          });
         }
-        onSuccess()
-        onClose()
+        onSuccess();
+        onClose();
       } else {
-        toast.error(data.error || 'Failed to rename files')
+        toast.error(data.error || 'Failed to rename files');
         if (data.errors && data.errors.length > 0) {
-          console.error('Rename errors:', data.errors)
+          console.error('Rename errors:', data.errors);
         }
       }
     } catch (err) {
-      console.error('[RenamePanel] Error:', err)
-      toast.error('Failed to rename files')
+      console.error('[RenamePanel] Error:', err);
+      toast.error('Failed to rename files');
     } finally {
-      setIsRenaming(false)
+      setIsRenaming(false);
     }
-  }
+  };
 
-  const availableTags = config?.availableTags || []
+  const availableTags = config?.availableTags || [];
 
   return (
     <div className="space-y-4">
@@ -252,9 +251,7 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
 
       {/* Chapter Dropdown */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Chapter Number
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Chapter Number</label>
         <select
           value={chapter}
           onChange={(e) => setChapter(e.target.value)}
@@ -262,20 +259,18 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
           disabled={isRenaming}
         >
           <option value="">Select chapter...</option>
-          {chapterOptions.map(ch => (
-            <option key={ch} value={ch}>{ch}</option>
+          {chapterOptions.map((ch) => (
+            <option key={ch} value={ch}>
+              {ch}
+            </option>
           ))}
         </select>
-        {chaptersInfo && (
-          <p className="mt-1 text-xs text-blue-600">{chaptersInfo}</p>
-        )}
+        {chaptersInfo && <p className="mt-1 text-xs text-blue-600">{chaptersInfo}</p>}
       </div>
 
       {/* Sequence Numbering */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Sequence Numbering
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Sequence Numbering</label>
         <div className="space-y-2">
           <label className="flex items-start gap-2 cursor-pointer">
             <input
@@ -288,7 +283,8 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
             <div className="flex-1">
               <div className="text-sm text-gray-700">Preserve original numbers</div>
               <div className="text-xs text-gray-500">
-                ({chapter || '05'}-2 → {chapter || '05'}-2, {chapter || '05'}-5 → {chapter || '05'}-5)
+                ({chapter || '05'}-2 → {chapter || '05'}-2, {chapter || '05'}-5 → {chapter || '05'}
+                -5)
               </div>
             </div>
           </label>
@@ -308,13 +304,16 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
                   min="1"
                   max="999"
                   value={sequenceStart}
-                  onChange={(e) => setSequenceStart(Math.max(1, Math.min(999, parseInt(e.target.value) || 1)))}
+                  onChange={(e) =>
+                    setSequenceStart(Math.max(1, Math.min(999, parseInt(e.target.value) || 1)))
+                  }
                   disabled={isRenaming || sequenceMode !== 'renumber'}
                   className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
                 />
               </div>
               <div className="text-xs text-gray-500">
-                ({chapter || '05'}-2 → {chapter || '05'}-{sequenceStart}, {chapter || '05'}-5 → {chapter || '05'}-{sequenceStart + 1})
+                ({chapter || '05'}-2 → {chapter || '05'}-{sequenceStart}, {chapter || '05'}-5 →{' '}
+                {chapter || '05'}-{sequenceStart + 1})
               </div>
             </div>
           </label>
@@ -323,9 +322,7 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
 
       {/* Name (Label) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Name (Label)
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Name (Label)</label>
         <input
           type="text"
           value={label}
@@ -337,7 +334,7 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
           }`}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && isValid && !isRenaming) {
-              handleRename()
+              handleRename();
             }
           }}
         />
@@ -350,12 +347,10 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
 
       {/* Tags (Optional) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Tags (Optional)
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Tags (Optional)</label>
         <div className="flex flex-wrap gap-2">
-          {availableTags.map(tag => {
-            const isSelected = selectedTags.has(tag)
+          {availableTags.map((tag) => {
+            const isSelected = selectedTags.has(tag);
             return (
               <label
                 key={tag}
@@ -374,16 +369,16 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
                 />
                 <span className="text-sm font-medium">{tag}</span>
               </label>
-            )
+            );
           })}
         </div>
 
         {/* Custom tags display */}
-        {Array.from(selectedTags).filter(tag => !availableTags.includes(tag)).length > 0 && (
+        {Array.from(selectedTags).filter((tag) => !availableTags.includes(tag)).length > 0 && (
           <div className="mt-2 flex flex-wrap gap-2">
             {Array.from(selectedTags)
-              .filter(tag => !availableTags.includes(tag))
-              .map(tag => (
+              .filter((tag) => !availableTags.includes(tag))
+              .map((tag) => (
                 <div
                   key={tag}
                   className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 border border-purple-300 rounded text-sm"
@@ -423,10 +418,10 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
               className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  addCustomTag()
+                  addCustomTag();
                 } else if (e.key === 'Escape') {
-                  setCustomTag('')
-                  setShowCustomTagInput(false)
+                  setCustomTag('');
+                  setShowCustomTagInput(false);
                 }
               }}
               autoFocus
@@ -440,8 +435,8 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
             </button>
             <button
               onClick={() => {
-                setCustomTag('')
-                setShowCustomTagInput(false)
+                setCustomTag('');
+                setShowCustomTagInput(false);
               }}
               disabled={isRenaming}
               className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
@@ -450,9 +445,7 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
             </button>
           </div>
         )}
-        <p className="mt-1 text-xs text-gray-500">
-          {selectedTags.size}/5 tags selected
-        </p>
+        <p className="mt-1 text-xs text-gray-500">{selectedTags.size}/5 tags selected</p>
       </div>
 
       {/* Preview Section */}
@@ -512,5 +505,5 @@ export function RenamePanel({ selectedFiles, onClose, onSuccess }: RenamePanelPr
         </button>
       </div>
     </div>
-  )
+  );
 }

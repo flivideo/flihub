@@ -140,7 +140,7 @@ export function chapterDivider(chapterNum: number, name: string, width = 80): st
 export function toTitleCase(str: string): string {
   return str
     .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
 

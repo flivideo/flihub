@@ -5,6 +5,7 @@
 We resolved all 25 TypeScript build errors that were preventing the server from compiling. The fixes are now committed to the `main` branch (commit `f3506fd`).
 
 ### Changes Made:
+
 1. **TypeScript Configuration** - Removed `rootDir` restriction in `server/tsconfig.json` to allow imports from the sibling `shared/` directory
 2. **Type Safety** - Fixed null handling and type mismatches in `server/src/routes/manage.ts`
 3. **Type Declarations** - Added missing TypeScript definitions for the `string-comparisons` package
@@ -40,6 +41,7 @@ npm run build
 ```
 
 **Expected output:**
+
 - Server builds cleanly (no errors)
 - Client may show some warnings about unused variables (non-blocking)
 
@@ -65,6 +67,7 @@ Create or verify `server/config.json` exists with your paths:
 **Important**: Use Linux paths (WSL2 format), not Windows paths.
 
 Example WSL2 paths:
+
 - Windows: `C:\Users\Jan\Videos` → WSL2: `/mnt/c/Users/Jan/Videos`
 - Or use native WSL paths: `/home/jan/videos`
 
@@ -75,6 +78,7 @@ npm run dev
 ```
 
 This starts:
+
 - **Server** (Express + Socket.io) on `http://localhost:5101`
 - **Client** (React + Vite) on `http://localhost:5173` (or another port if 5173 is taken)
 
@@ -95,25 +99,33 @@ This starts:
 ## Troubleshooting Common WSL2 Issues
 
 ### Issue: "Cannot find module" errors
+
 **Solution**: Run `npm install` again to ensure all dependencies are installed.
 
 ### Issue: Permission denied on file watching
+
 **Solution**: Ensure your `watchDirectory` and `projectDirectory` have proper permissions:
+
 ```bash
 chmod -R 755 /path/to/your/directories
 ```
 
 ### Issue: Port already in use
+
 **Solution**:
+
 - Check what's using the port: `lsof -i :5101` or `lsof -i :5173`
 - Kill the process: `kill -9 <PID>`
 - Or change ports in `server/src/index.ts` (5101) and `vite.config.ts` (5173)
 
 ### Issue: File watcher not detecting changes
+
 **Solution**: WSL2 has limitations with Windows filesystem watching. Keep your project files in native WSL filesystem (`/home/jan/...`) rather than `/mnt/c/...` for best performance.
 
 ### Issue: "ENOSPC: System limit for number of file watchers reached"
+
 **Solution**: Increase the inotify watch limit:
+
 ```bash
 echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
@@ -145,6 +157,7 @@ flihub/
 ```
 
 **Key Concepts:**
+
 - **Recordings**: Named as `{chapter}-{sequence}-{name}-{tags}.mov`
   - Example: `10-5-intro-CTA.mov`
 - **Real-time updates**: Socket.io events notify client of file changes
@@ -154,14 +167,14 @@ flihub/
 
 ## Development Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start both server and client in dev mode |
-| `npm run dev -w server` | Start only the server |
-| `npm run dev -w client` | Start only the client |
-| `npm run build` | Build both server and client for production |
-| `npm run build -w server` | Build only the server |
-| `npm test` | Run tests (if configured) |
+| Command                   | Description                                 |
+| ------------------------- | ------------------------------------------- |
+| `npm run dev`             | Start both server and client in dev mode    |
+| `npm run dev -w server`   | Start only the server                       |
+| `npm run dev -w client`   | Start only the client                       |
+| `npm run build`           | Build both server and client for production |
+| `npm run build -w server` | Build only the server                       |
+| `npm test`                | Run tests (if configured)                   |
 
 ---
 
@@ -190,6 +203,7 @@ If you hit issues:
 ## Summary
 
 The TypeScript build errors are **fixed and committed**. You should be able to:
+
 1. Pull the latest code
 2. Run `npm install`
 3. Run `npm run build` (succeeds)

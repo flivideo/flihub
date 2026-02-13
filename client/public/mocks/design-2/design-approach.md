@@ -29,6 +29,7 @@ Background hierarchy:
 ```
 
 **Why dark works for video:**
+
 - Reduces eye strain during long sessions
 - Makes video content pop with higher contrast
 - Professional editing suite aesthetic
@@ -46,6 +47,7 @@ Every page prioritizes video content:
 **Projects page:** Video thumbnails in table rows
 
 **Pattern:**
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │  Minimal Header (60px, translucent)                │
@@ -72,6 +74,7 @@ Instead of fixed sidebars, floating panels with glassmorphism:
 **Shadow:** Deep, dramatic shadows for depth
 
 **Panel types:**
+
 - **Overlay panels:** Appear on hover, auto-hide
 - **Floating toolbars:** Draggable, dockable
 - **Context menus:** Radial or arc-based
@@ -88,6 +91,7 @@ Dark backgrounds need punchy accents:
 **Playback:** Purple gradient (#8b5cf6 → #d946ef)
 
 **Usage:**
+
 - Glowing buttons with subtle animation
 - Neon borders on active elements
 - Vibrant progress indicators
@@ -101,6 +105,7 @@ Dark backgrounds need punchy accents:
 **Emphasis:** "Archivo Black" - Bold, impactful for stats
 
 **Sizes:**
+
 - Keep text slightly larger than design-1 (dark reduces readability)
 - Higher contrast ratios (WCAG AAA on dark)
 - Subtle text shadows for depth
@@ -116,10 +121,16 @@ Dark themes benefit from smooth, cinematic motion:
 **Timeline playhead:** Animated with easing
 
 **Signature effect:** Glow pulse on active video
+
 ```css
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.5); }
-  50% { box-shadow: 0 0 40px rgba(14, 165, 233, 0.8); }
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(14, 165, 233, 0.8);
+  }
 }
 ```
 
@@ -136,6 +147,7 @@ Replace right sidebar chapters with bottom timeline:
 ```
 
 **Features:**
+
 - Scrubbing timeline shows video thumbnails
 - Chapter markers with hover labels
 - Waveform visualization behind timeline
@@ -147,29 +159,34 @@ Replace right sidebar chapters with bottom timeline:
 ## Page-Specific Implementations
 
 ### Manage Page
+
 - **Left:** Floating toolbar (auto-hide, glass effect)
 - **Center:** Grid of video thumbnails with filename overlays
 - **Bottom:** Timeline showing all files in sequence
 - **Interaction:** Hover thumbnail to preview/scrub
 
 ### Incoming Page
+
 - **Top:** Full-width preview of last recording
 - **Center:** Naming form overlaid on video
 - **Bottom:** Timeline of existing chapters (context)
 
 ### Recordings Page
+
 - **Center:** Large thumbnail grid (4 columns)
 - **Hover:** Video preview plays automatically
 - **Bottom:** Expanded timeline with waveforms
 - **Filter:** Floating panel, top-right
 
 ### Watch Page
+
 - **Full-screen video** with minimal chrome
 - **Controls:** Floating, translucent, auto-hide
 - **Timeline:** Bottom-docked, always visible
 - **Transcript:** Overlay panel (toggle with T key)
 
 ### Projects Page
+
 - **Table rows:** Include thumbnail preview column
 - **Hover:** Row highlights with glow effect
 - **Stats:** Vibrant colored progress rings
@@ -180,6 +197,7 @@ Replace right sidebar chapters with bottom timeline:
 ## Visual Design Language
 
 **Glassmorphism:**
+
 ```css
 .glass-panel {
   background: rgba(26, 26, 26, 0.85);
@@ -190,6 +208,7 @@ Replace right sidebar chapters with bottom timeline:
 ```
 
 **Glow Effects:**
+
 ```css
 .glow-primary {
   box-shadow:
@@ -200,6 +219,7 @@ Replace right sidebar chapters with bottom timeline:
 ```
 
 **Depth Layers:**
+
 - Background: -100 (darkest)
 - Video surface: 0 (content plane)
 - Floating panels: +100 (above content)
@@ -207,6 +227,7 @@ Replace right sidebar chapters with bottom timeline:
 - Tooltips: +300 (always visible)
 
 **Border Radius:**
+
 - Small elements: 8px
 - Panels: 16px
 - Video containers: 12px
@@ -217,19 +238,20 @@ Replace right sidebar chapters with bottom timeline:
 
 ## Solving Inconsistencies
 
-| Inconsistency | Design-2 Solution |
-|--------------|-------------------|
-| Chapter navigation varies | Bottom timeline, consistent across all pages |
-| Sidebar patterns differ | Floating glass panels, appear/disappear contextually |
-| Tool access unclear | Floating toolbar with radial menu on right-click |
-| Layout shifts | Fixed viewport, panels overlay (never push content) |
-| Interactive feedback | Glow effects, smooth animations, haptic feel |
+| Inconsistency             | Design-2 Solution                                    |
+| ------------------------- | ---------------------------------------------------- |
+| Chapter navigation varies | Bottom timeline, consistent across all pages         |
+| Sidebar patterns differ   | Floating glass panels, appear/disappear contextually |
+| Tool access unclear       | Floating toolbar with radial menu on right-click     |
+| Layout shifts             | Fixed viewport, panels overlay (never push content)  |
+| Interactive feedback      | Glow effects, smooth animations, haptic feel         |
 
 ---
 
 ## Technical Implementation
 
 **CSS Variables:**
+
 ```css
 --bg-void: #0a0a0a;
 --bg-panel: #1a1a1a;
@@ -248,12 +270,14 @@ Replace right sidebar chapters with bottom timeline:
 ```
 
 **Responsive Breakpoints:**
+
 - Desktop (1920px+): Full cinematic experience
 - Laptop (1440px-1919px): Compact timeline
 - Tablet (1024px-1439px): Hide floating panels, drawer-based
 - Mobile (< 1024px): Single column, bottom nav
 
 **Performance:**
+
 - Use `will-change` for animated elements
 - Lazy-load video thumbnails
 - Debounce scrubbing events
@@ -274,14 +298,14 @@ Replace right sidebar chapters with bottom timeline:
 
 ## Comparison to Design-1
 
-| Aspect | Design-1 | Design-2 |
-|--------|----------|----------|
-| Theme | Light, clean | Dark, cinematic |
-| Layout | Tri-column, fixed | Floating, overlay |
-| Chapter nav | Right sidebar | Bottom timeline |
-| Focus | File management | Video immersion |
-| Aesthetic | Professional, minimal | Premium, dramatic |
-| Motion | Subtle transitions | Cinematic animations |
+| Aspect      | Design-1              | Design-2             |
+| ----------- | --------------------- | -------------------- |
+| Theme       | Light, clean          | Dark, cinematic      |
+| Layout      | Tri-column, fixed     | Floating, overlay    |
+| Chapter nav | Right sidebar         | Bottom timeline      |
+| Focus       | File management       | Video immersion      |
+| Aesthetic   | Professional, minimal | Premium, dramatic    |
+| Motion      | Subtle transitions    | Cinematic animations |
 
 ---
 
@@ -296,6 +320,7 @@ Replace right sidebar chapters with bottom timeline:
 ---
 
 **Next Steps:**
+
 - Create HTML mockups demonstrating glass panels
 - Test video thumbnail performance
 - Prototype timeline scrubbing interaction

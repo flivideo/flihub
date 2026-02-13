@@ -17,6 +17,7 @@ The Gling Dictionary field in the Configuration panel does not persist when the 
 The POST `/api/config` route handler in `server/src/routes/index.ts` does not extract or pass through the `glingDictionary` field from the request body to the `updateConfig()` function.
 
 **Current code (lines 100-119):**
+
 ```typescript
 router.post('/config', (req: Request, res: Response) => {
   const {
@@ -46,16 +47,18 @@ router.post('/config', (req: Request, res: Response) => {
 ## Evidence
 
 1. **Field exists in TypeScript types** (`shared/types.ts:35`):
+
    ```typescript
    glingDictionary?: string[];  // FR-102: Custom dictionary words for Gling transcription
    ```
 
 2. **UI sends the field** (`client/src/components/ConfigPanel.tsx:374-380`):
+
    ```typescript
    await updateConfig.mutateAsync({
      // ...other fields...
      glingDictionary: dictWords,
-   })
+   });
    ```
 
 3. **saveConfig() supports it** (`server/src/index.ts:164-192`):
@@ -81,7 +84,7 @@ router.post('/config', (req: Request, res: Response) => {
     activeProject,
     imageSourceDirectory,
     shadowResolution,
-    glingDictionary,  // ADD THIS
+    glingDictionary, // ADD THIS
   } = req.body;
   const updatedConfig = updateConfig({
     watchDirectory,
@@ -90,7 +93,7 @@ router.post('/config', (req: Request, res: Response) => {
     activeProject,
     imageSourceDirectory,
     shadowResolution,
-    glingDictionary,  // ADD THIS
+    glingDictionary, // ADD THIS
   });
   console.log('Config updated:', updatedConfig);
   res.json(updatedConfig);
@@ -161,15 +164,18 @@ function updateConfig(newConfig: Partial<Config>): Config {
 ## Completion Notes
 
 **What was done:**
+
 - Added `glingDictionary` to POST `/api/config` route destructuring and pass-through
 - Added `glingDictionary` to `saveConfig()` toSave object with fallback to empty array
 - Added `glingDictionary` handling in `updateConfig()` function
 
 **Files changed:**
+
 - `server/src/routes/index.ts` (modified) - lines 108, 117
 - `server/src/index.ts` (modified) - lines 174, 264-265
 
 **Testing notes:**
+
 1. Open Configuration panel
 2. Enter custom words in "Gling Dictionary Words" field
 3. Click Save

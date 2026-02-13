@@ -14,10 +14,12 @@
 The 7-phase discovery plan revealed critical insights that change FR priorities:
 
 **Critical Finding:** 79% of all issues (1422 errors) are tag case violations affecting 38 projects (81%)
+
 - Users type lowercase tags (`bmad`, `code`, `init`) but parser requires strict uppercase
 - **NFR-141** (Lenient Tag Parser) addresses this - blocks FR-138 full implementation
 
 **Key Insight:** FR-138 is already ✅ **Complete** and doesn't need updates based on discovery
+
 - Implemented with chapter/sequence/tags/preview (2026-01-06)
 - Tag case issue is a parser problem, not a UI problem
 - FR-138 already has `textTransform: uppercase` for tag inputs
@@ -25,11 +27,13 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 ### Recommended Action
 
 **Priority 0 (BLOCKER):** NFR-141 must be implemented before any FR work
+
 - Fixes 79% of all issues instantly
 - 1.5 hours effort
 - Zero dependencies
 
 **Priority 1:** FR-140 (Bulk Chapter Renumbering)
+
 - Addresses chapter gaps found in 12 projects (26%)
 - User explicitly requested during FR-138 testing
 - Needs scope definition from PO
@@ -46,6 +50,7 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 **Completion Notes Section:** Lines 660-767 show full implementation
 
 **What was implemented:**
+
 - Chapter dropdown (01-99) with auto-detection
 - Sequence numbering (preserve/renumber)
 - Label input with real-time kebab-case validation
@@ -55,6 +60,7 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 - Full validation and pre-fill logic
 
 **Discovery findings impact:** ❌ None
+
 - Tag case issue is in `shared/naming.ts` parser (NFR-141), not FR-138 UI
 - FR-138 already has `textTransform: uppercase` for tag inputs (line 159 in PRD spec)
 - All acceptance criteria met (10/10 ✓)
@@ -69,11 +75,13 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 **Discovery findings impact:** ✅ Validates need
 
 **Evidence from discovery:**
+
 - 22 chapter gaps found across 12 projects (26%)
 - Pattern analysis confirms user pain point
 - User explicitly requested during FR-138 testing: "I don't see chapter 2, so it feels like I've got to move chapter 2 up to chapter 3"
 
 **Questions needing PO answers (from PRD):**
+
 1. **Scope:** Renumber all chapters in project, or just selected files?
 2. **Modes:**
    - Fill gaps only (01, 03, 05 → 01, 02, 03)?
@@ -95,12 +103,14 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 **Discovery findings impact:** ❌ None - no evidence of need in scanner results
 
 **PRD Quality:** ✅ Excellent (800+ lines, comprehensive spec)
+
 - Full specification with acceptance criteria
 - Three features: Move to Chapter, Swap Chapters, Undo Last Move
 - Cascade algorithm, preview system, atomic rollback
 - Estimated effort: 10-15 days
 
 **Discovery findings:** No evidence users need this
+
 - 0 issues related to needing to move files between chapters
 - 0 issues related to needing to swap chapters
 - Feature is well-specified but data doesn't show user pain
@@ -115,16 +125,19 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 **Discovery findings impact:** ⚠️ Mixed
 
 **What FR-134 covers:**
-1. Label mismatch detection (user types "Chapter 5" but files are 04-*)
+
+1. Label mismatch detection (user types "Chapter 5" but files are 04-\*)
 2. Mixed chapters warning (files from multiple chapters selected)
 3. Chapter gap detection (warning banner)
 
 **Discovery findings:**
+
 - Chapter gaps found (22 instances) - ✅ validates Feature 3
 - Label mismatches: Not detected by scanner (would be runtime issue)
 - Mixed chapters: Not detected by scanner (would be runtime issue)
 
 **Recommendation:** Medium priority - useful warnings but not critical
+
 - Gap detection is nice-to-have (FR-140 is the fix)
 - Label mismatch and mixed warnings are preventative (good UX)
 - Estimated effort: 3-5 days
@@ -137,18 +150,21 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 **Discovery findings impact:** ❌ None
 
 **What FR-133 covers:**
+
 - Badge system showing derivative file status (✓/⚠️/✗)
 - Hover tooltips with breakdown (shadows, transcripts, chapters, manifest)
 - Stale file warnings (derivative older than recording)
 - Groq accuracy warnings (< 97%)
 
 **Discovery findings:**
+
 - 361 derivative issues found (20% of total)
 - But these are INFO-level, not errors
 - Missing transcripts queue automatically
 - Missing shadows regenerate on demand (FR-136 regen buttons exist)
 
 **Recommendation:** Low priority - nice-to-have visibility tool
+
 - Data shows missing derivatives aren't blocking users
 - FR-136 already provides "Regen Shadows" / "Regen Transcripts" buttons
 - Estimated effort: 5-8 days
@@ -161,16 +177,19 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 **Discovery findings impact:** ❌ None
 
 **Current state:**
+
 - Button exists with "coming soon" placeholder (3 lines)
 - No spec, no purpose defined
 - Wasting UI real estate
 
 **Options identified in PRD:**
+
 1. **Remove button** (30 min) - simplest
 2. **Repurpose for FR-135** (rename to "Chapter Tools") - future-proof
 3. **Define new feature** - requires stakeholder input
 
 **Recommendation:** Remove button or repurpose for FR-135
+
 - No discovery data supports a "Folders" tool
 - If keeping, rename to "Chapter Tools" for FR-135 future use
 
@@ -183,17 +202,20 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 **Discovery findings impact:** ✅ This IS the discovery
 
 **Evidence:**
+
 - 1422 tag validation errors (79% of ALL issues)
 - 38 projects affected (81%)
 - Root cause: Lowercase tags rejected by strict parser
 
 **Solution:** Accept lowercase, convert to uppercase automatically
+
 - ✅ Fixes 1422 errors instantly (zero user action)
 - ✅ Matches user expectations
 - ✅ Backwards compatible
 - ✅ Simple code change (1 hour effort)
 
 **Why this blocks FRs:**
+
 - FR-138 already implemented with tag inputs
 - Users will encounter 1422 validation errors when using FR-138
 - Must fix parser before users can successfully rename files with tags
@@ -206,11 +228,12 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 
 ### Priority 0: BLOCKER (Must fix before any FR work)
 
-| # | Requirement | Type | Effort | Impact | Status | Ready? |
-|---|-------------|------|--------|--------|--------|--------|
-| 1 | **NFR-141: Lenient Tag Parser** | NFR | 1.5h | Fixes 79% of issues | Needs PO approval | ⚠️ Needs Decision 11 |
+| #   | Requirement                     | Type | Effort | Impact              | Status            | Ready?               |
+| --- | ------------------------------- | ---- | ------ | ------------------- | ----------------- | -------------------- |
+| 1   | **NFR-141: Lenient Tag Parser** | NFR  | 1.5h   | Fixes 79% of issues | Needs PO approval | ⚠️ Needs Decision 11 |
 
 **PO Action Required:** Approve Decision 11 (Tag Case Sensitivity)
+
 - Recommended: Option A (Case-insensitive, auto-uppercase)
 - Documented in: `docs/architecture/naming-decisions.md` lines 586-636
 
@@ -218,11 +241,12 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 
 ### Priority 1: HIGH (User-requested, data-validated)
 
-| # | Requirement | Type | Effort | Impact | Status | Ready? |
-|---|-------------|------|--------|--------|--------|--------|
-| 2 | **FR-140: Bulk Chapter Renumbering** | FR | 7h | 12 projects (26%) | Needs scope definition | ❌ Not ready |
+| #   | Requirement                          | Type | Effort | Impact            | Status                 | Ready?       |
+| --- | ------------------------------------ | ---- | ------ | ----------------- | ---------------------- | ------------ |
+| 2   | **FR-140: Bulk Chapter Renumbering** | FR   | 7h     | 12 projects (26%) | Needs scope definition | ❌ Not ready |
 
 **PO Action Required:** Define FR-140 scope
+
 1. Which modes? Fill gaps / Shift chapters / Both?
 2. UI approach? New tool / Extend rename?
 3. Preview requirements?
@@ -233,11 +257,12 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 
 ### Priority 2: MEDIUM (Nice-to-have, preventative UX)
 
-| # | Requirement | Type | Effort | Impact | Status | Ready? |
-|---|-------------|------|--------|--------|--------|--------|
-| 3 | **FR-134: Inconsistency Detection** | FR | 3-5 days | Preventative warnings | Pending | ✅ Ready (PRD complete) |
+| #   | Requirement                         | Type | Effort   | Impact                | Status  | Ready?                  |
+| --- | ----------------------------------- | ---- | -------- | --------------------- | ------- | ----------------------- |
+| 3   | **FR-134: Inconsistency Detection** | FR   | 3-5 days | Preventative warnings | Pending | ✅ Ready (PRD complete) |
 
 **Why medium priority:**
+
 - Gap detection useful but FR-140 is the actual fix
 - Label mismatch warning is good UX but not critical
 - Comprehensive PRD (lines 1-421)
@@ -246,12 +271,13 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 
 ### Priority 3: LOW (Data doesn't support need)
 
-| # | Requirement | Type | Effort | Impact | Status | Ready? |
-|---|-------------|------|--------|--------|--------|--------|
-| 4 | **FR-135: Chapter Tools** | FR | 10-15 days | No evidence of need | Pending | ✅ Ready (PRD complete) |
-| 5 | **FR-133: File Status Indicators** | FR | 5-8 days | Visibility tool | Pending | ✅ Ready (PRD complete) |
+| #   | Requirement                        | Type | Effort     | Impact              | Status  | Ready?                  |
+| --- | ---------------------------------- | ---- | ---------- | ------------------- | ------- | ----------------------- |
+| 4   | **FR-135: Chapter Tools**          | FR   | 10-15 days | No evidence of need | Pending | ✅ Ready (PRD complete) |
+| 5   | **FR-133: File Status Indicators** | FR   | 5-8 days   | Visibility tool     | Pending | ✅ Ready (PRD complete) |
 
 **Why low priority:**
+
 - FR-135: Comprehensive spec (800+ lines) but 0 scanner issues show need
 - FR-133: Nice-to-have visibility, but FR-136 regen buttons already solve missing derivatives
 - Both well-specified but not urgent
@@ -260,11 +286,12 @@ The 7-phase discovery plan revealed critical insights that change FR priorities:
 
 ### Priority 4: UNDEFINED (Remove or define)
 
-| # | Requirement | Type | Effort | Impact | Status | Ready? |
-|---|-------------|------|--------|--------|--------|--------|
-| 6 | **FR-139: Folders Tool** | FR | 30min-15days | Unknown | Blocked | ❌ Needs definition |
+| #   | Requirement              | Type | Effort       | Impact  | Status  | Ready?              |
+| --- | ------------------------ | ---- | ------------ | ------- | ------- | ------------------- |
+| 6   | **FR-139: Folders Tool** | FR   | 30min-15days | Unknown | Blocked | ❌ Needs definition |
 
 **PO Action Required:** Choose path:
+
 - **Path A:** Remove button (30 min) - simplest
 - **Path B:** Rename to "Chapter Tools" for FR-135 future use (1 hour)
 - **Path C:** Define new feature (unknown effort)

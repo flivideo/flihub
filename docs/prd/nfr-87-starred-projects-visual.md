@@ -17,6 +17,7 @@ The "pinned projects" section uses a pin icon (📌). We want to visually rebran
 ## Solution
 
 Visual-only change:
+
 - Change the visual icon from 📌 to ⭐
 - Update any UI labels from "Pinned" to "Starred" (display only)
 - **Do NOT rename** code variables, config keys, or data structures
@@ -24,10 +25,12 @@ Visual-only change:
 ## Scope
 
 **Change:**
+
 - Icon: 📌 → ⭐
 - UI text: "Pinned" → "Starred" (if displayed anywhere)
 
 **Do NOT change:**
+
 - `pinnedProjects` array in config
 - Any variable names, function names, or type definitions
 - API endpoints or data structures

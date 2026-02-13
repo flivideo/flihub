@@ -1,16 +1,14 @@
 interface DiscardModalProps {
-  remainingCount: number
-  onConfirm: () => void
-  onCancel: () => void
+  remainingCount: number;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
 export function DiscardModal({ remainingCount, onConfirm, onCancel }: DiscardModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-sm mx-4 shadow-xl">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Discard remaining files?
-        </h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Discard remaining files?</h3>
         <p className="text-sm text-gray-600 mb-4">
           {remainingCount === 1
             ? 'There is 1 file remaining. Move it to trash?'
@@ -32,5 +30,5 @@ export function DiscardModal({ remainingCount, onConfirm, onCancel }: DiscardMod
         </div>
       </div>
     </div>
-  )
+  );
 }

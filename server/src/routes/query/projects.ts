@@ -25,10 +25,7 @@ import {
   getTranscriptSyncStatus,
   getProjectIndicators,
 } from '../../utils/scanning.js';
-import {
-  formatProjectsReport,
-  formatProjectDetail,
-} from '../../utils/reporters.js';
+import { formatProjectsReport, formatProjectDetail } from '../../utils/reporters.js';
 import type {
   Config,
   ProjectPriority,
@@ -46,12 +43,12 @@ function migrateOldStage(oldStage: string | undefined): ProjectStage | undefined
   if (!oldStage) return undefined;
 
   const migration: Record<string, ProjectStage> = {
-    'record': 'recording',
-    'recording': 'recording',
-    'edit': 'first-edit',
-    'editing': 'first-edit',
-    'done': 'published',
-    'none': 'planning',
+    record: 'recording',
+    recording: 'recording',
+    edit: 'first-edit',
+    editing: 'first-edit',
+    done: 'published',
+    none: 'planning',
   };
 
   return migration[oldStage] || (oldStage as ProjectStage);
@@ -61,19 +58,20 @@ function migrateOldStage(oldStage: string | undefined): ProjectStage | undefined
 async function getProjectFolders(): Promise<string[]> {
   const projectsDir = expandPath(PROJECTS_ROOT);
 
-  if (!await fs.pathExists(projectsDir)) {
+  if (!(await fs.pathExists(projectsDir))) {
     return [];
   }
 
   const entries = await fs.readdir(projectsDir, { withFileTypes: true });
   return entries
-    .filter(e =>
-      e.isDirectory() &&
-      !e.name.startsWith('.') &&
-      !e.name.startsWith('-') &&
-      e.name !== 'archived'
+    .filter(
+      (e) =>
+        e.isDirectory() &&
+        !e.name.startsWith('.') &&
+        !e.name.startsWith('-') &&
+        e.name !== 'archived'
     )
-    .map(e => e.name);
+    .map((e) => e.name);
 }
 
 export function createProjectsRoutes(getConfig: () => Config): Router {
@@ -95,7 +93,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
       const projectsDir = expandPath(PROJECTS_ROOT);
 
       // Find projects matching the prefix
-      const matches = folders.filter(code => code.startsWith(q)).sort();
+      const matches = folders.filter((code) => code.startsWith(q)).sort();
 
       if (matches.length === 0) {
         res.status(404).json({ success: false, error: `No project found matching: ${q}` });
@@ -146,9 +144,8 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
 
         // Transcript sync (FR-111: Only recordings/)
         const syncStatus = await getTranscriptSyncStatus(paths.recordings, paths.transcripts);
-        const transcriptPercent = totalFiles > 0
-          ? Math.round((syncStatus.matched / totalFiles) * 100)
-          : 0;
+        const transcriptPercent =
+          totalFiles > 0 ? Math.round((syncStatus.matched / totalFiles) * 100) : 0;
 
         // Assets
         const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
@@ -163,8 +160,11 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
 
         // FR-80: Stage (manual override or auto-detect)
         // Use projectStageOverrides (new) or fall back to legacy projectStages
-        const manualStage = config.projectStageOverrides?.[code] ||
-          migrateOldStage(config.projectStages?.[code as keyof typeof config.projectStages] as string | undefined);
+        const manualStage =
+          config.projectStageOverrides?.[code] ||
+          migrateOldStage(
+            config.projectStages?.[code as keyof typeof config.projectStages] as string | undefined
+          );
 
         let projectStage: ProjectStage;
         if (manualStage) {
@@ -210,11 +210,11 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
       let filtered = projects;
 
       if (filter === 'pinned') {
-        filtered = filtered.filter(p => p.priority === 'pinned');
+        filtered = filtered.filter((p) => p.priority === 'pinned');
       }
 
       if (stage && typeof stage === 'string') {
-        filtered = filtered.filter(p => p.stage === stage);
+        filtered = filtered.filter((p) => p.stage === stage);
       }
 
       // NFR-87: Sort by project code only (natural order) - stars just mark interest
@@ -264,7 +264,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
 
       const paths = getProjectPaths(projectPath);
 
-      if (!await fs.pathExists(paths.transcripts)) {
+      if (!(await fs.pathExists(paths.transcripts))) {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         return res.send('');
       }
@@ -298,7 +298,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
       });
 
       // Combine all transcripts with double newlines between them
-      const combinedText = transcriptFiles.map(t => t.content).join('\n\n');
+      const combinedText = transcriptFiles.map((t) => t.content).join('\n\n');
 
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       res.send(combinedText);
@@ -335,7 +335,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
         stage: raw.stage,
         priority: raw.priority,
         stats: {
-          recordings: raw.totalFiles,  // FR-111: All files are in recordings/
+          recordings: raw.totalFiles, // FR-111: All files are in recordings/
           chapters: raw.chapterCount,
           transcripts: {
             matched: raw.transcriptSync.matched,

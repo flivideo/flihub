@@ -26,7 +26,10 @@ export function createQueryRoutes(getConfig: () => Config): Router {
 
   // Request logging middleware for all query endpoints
   router.use((req, _res, next) => {
-    const query = Object.keys(req.query).length > 0 ? `?${new URLSearchParams(req.query as Record<string, string>)}` : '';
+    const query =
+      Object.keys(req.query).length > 0
+        ? `?${new URLSearchParams(req.query as Record<string, string>)}`
+        : '';
     console.log(`[Query API] ${req.method} ${req.path}${query}`);
     next();
   });
@@ -42,7 +45,7 @@ export function createQueryRoutes(getConfig: () => Config): Router {
       filters: ['pinned'],
       stageFilters: ['none', 'recording', 'editing', 'done'],
       availableTags: config.availableTags || [],
-      commonNames: (config.commonNames || []).map(cn => cn.name),
+      commonNames: (config.commonNames || []).map((cn) => cn.name),
     });
   });
 

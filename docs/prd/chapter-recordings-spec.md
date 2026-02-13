@@ -40,10 +40,12 @@ recordings/
 `{chapter}-{label}.mov`
 
 Where:
+
 - `chapter` = 2-digit chapter number (01, 03, etc.)
 - `label` = First label from the chapter (from segment 1), could be multi-word
 
 **Examples:**
+
 - `01-intro.mov`
 - `03-agent-mary.mov`
 - `10-setup-environment.mov`
@@ -63,6 +65,7 @@ Each chapter recording is structured as:
 ### Title Slides
 
 **Visual:**
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
@@ -118,6 +121,7 @@ On the Recordings page, add a button:
 ```
 
 **Button behavior:**
+
 - Click → Shows options modal (see below)
 - Generates chapter recordings for all chapters (or selected chapter?)
 
@@ -146,10 +150,12 @@ On the Recordings page, add a button:
 ### Auto-Generate Option
 
 When "Auto-generate when creating new chapter" is checked:
+
 - Pressing the "New Chapter" button triggers generation of the **previous** chapter
 - Does NOT auto-generate for the last chapter (no "new chapter" follows outro)
 
 **Example flow:**
+
 1. User is working on chapter 3
 2. User clicks "New Chapter" (to start chapter 4)
 3. System automatically generates `03-scenario.mov` in `-chapters/`
@@ -170,11 +176,11 @@ Store in `server/config.json`:
 }
 ```
 
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| `slideDuration` | float | 1.0 | Seconds to show each title slide |
-| `resolution` | string | "720p" | "720p" or "1080p" |
-| `autoGenerate` | boolean | false | Auto-generate on new chapter |
+| Setting         | Type    | Default | Description                      |
+| --------------- | ------- | ------- | -------------------------------- |
+| `slideDuration` | float   | 1.0     | Seconds to show each title slide |
+| `resolution`    | string  | "720p"  | "720p" or "1080p"                |
+| `autoGenerate`  | boolean | false   | Auto-generate on new chapter     |
 
 ---
 
@@ -244,25 +250,25 @@ Response: {
 
 ## Edge Cases
 
-| Case | Behavior |
-|------|----------|
-| Chapter has only 1 segment | Still generate with single slide + segment |
-| Segment missing duration | Use ffprobe to get it (already parallelized) |
-| Chapter already has recording | Overwrite existing file |
-| FFmpeg not installed | Error message, graceful failure |
-| Generation in progress | Disable button, show progress |
+| Case                          | Behavior                                     |
+| ----------------------------- | -------------------------------------------- |
+| Chapter has only 1 segment    | Still generate with single slide + segment   |
+| Segment missing duration      | Use ffprobe to get it (already parallelized) |
+| Chapter already has recording | Overwrite existing file                      |
+| FFmpeg not installed          | Error message, graceful failure              |
+| Generation in progress        | Disable button, show progress                |
 
 ---
 
 ## Files to Create/Modify
 
-| File | Changes |
-|------|---------|
-| `server/src/routes/chapters.ts` | New: chapter recording generation endpoint |
-| `server/src/utils/chapterRecording.ts` | New: FFmpeg generation logic |
-| `client/src/components/ChapterRecordingModal.tsx` | New: options modal |
-| `client/src/components/RecordingsView.tsx` | Add trigger button |
-| `server/config.json` | Add chapterRecordings settings |
+| File                                              | Changes                                    |
+| ------------------------------------------------- | ------------------------------------------ |
+| `server/src/routes/chapters.ts`                   | New: chapter recording generation endpoint |
+| `server/src/utils/chapterRecording.ts`            | New: FFmpeg generation logic               |
+| `client/src/components/ChapterRecordingModal.tsx` | New: options modal                         |
+| `client/src/components/RecordingsView.tsx`        | Add trigger button                         |
+| `server/config.json`                              | Add chapterRecordings settings             |
 
 ---
 
@@ -291,6 +297,7 @@ Decisions made during planning (2025-12-14):
 **Decision:** Simple spinner with chapter-level status updates, not streaming frame progress.
 
 **Rationale:**
+
 - Chapter generation is fast (seconds per chapter)
 - Streaming FFmpeg progress adds unnecessary complexity
 - Emit socket events at chapter boundaries: "Generating chapter 01..." → "Generating chapter 03..."
@@ -301,6 +308,7 @@ Decisions made during planning (2025-12-14):
 **Decision:** Use FFmpeg's default font handling (no custom fonts).
 
 **Rationale:**
+
 - FFmpeg `drawtext` uses system fonts automatically (Helvetica on macOS)
 - Avoids bundling font files or cross-platform path issues
 - Slides are functional markers, not branded content
@@ -311,6 +319,7 @@ Decisions made during planning (2025-12-14):
 **Decision:** Generate beep with FFmpeg's built-in audio synthesis.
 
 **Rationale:**
+
 - Zero dependencies - no audio file to bundle
 - Consistent across all systems
 - Easy to tweak frequency/duration without replacing files

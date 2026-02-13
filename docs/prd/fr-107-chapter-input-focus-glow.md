@@ -10,6 +10,7 @@ When users click the "New Chapter" button in the Chapter Recording modal, the ch
 ## Goal
 
 Improve the UX when creating a new chapter by:
+
 1. Auto-focusing the chapter name input field when "New Chapter" is clicked
 2. Adding a brief pulsed glow animation as visual feedback that the field is ready for input
 
@@ -34,6 +35,7 @@ This helps prevent workflow errors where users forget to rename the chapter.
 **Action:** The chapter name input field receives focus automatically
 
 **Expected Behavior:**
+
 - Cursor appears in the input field immediately
 - User can start typing the chapter name without clicking the field
 - Existing text (if any) remains selected or cursor moves to end
@@ -41,12 +43,14 @@ This helps prevent workflow errors where users forget to rename the chapter.
 ### 2. Glow Animation
 
 **Visual Effect:**
+
 - Brief pulsed glow animation around the input field border
 - Duration: 300-500ms
 - Style: Subtle blue glow (matching FliHub's primary blue color scheme)
 - Timing: Runs once when field receives focus from "New Chapter" button
 
 **Animation Spec:**
+
 ```
 Initial state: Normal border (gray)
      ↓
@@ -58,6 +62,7 @@ Initial state: Normal border (gray)
 ```
 
 **Implementation Notes:**
+
 - Use CSS animation or Tailwind CSS animation utilities
 - Should feel responsive, not distracting
 - Glow color: `ring-blue-400` or similar Tailwind ring color
@@ -68,6 +73,7 @@ Initial state: Normal border (gray)
 **File:** `client/src/components/ChapterRecordingModal.tsx` (or wherever the Chapter Recording modal is implemented)
 
 **Changes Required:**
+
 1. Add `useRef` for the chapter name input
 2. Add `useEffect` or click handler to focus the input when "New Chapter" is clicked
 3. Add temporary CSS class with glow animation
@@ -105,7 +111,8 @@ const handleNewChapter = () => {
 
 ```css
 @keyframes glow-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
   }
   50% {
@@ -125,17 +132,20 @@ Choose based on existing codebase patterns.
 ## Acceptance Criteria
 
 ### Functional
+
 - [ ] Clicking "New Chapter" automatically focuses the chapter name input
 - [ ] User can immediately start typing without additional clicks
 - [ ] Focus behavior works consistently across browsers (Chrome, Firefox, Safari)
 
 ### Visual
+
 - [ ] Input field shows a brief blue glow animation (300-500ms)
 - [ ] Animation feels smooth and responsive, not jarring
 - [ ] Glow color matches FliHub's blue theme
 - [ ] Animation does not repeat on subsequent manual focus (only on "New Chapter" click)
 
 ### Edge Cases
+
 - [ ] Works when modal first opens
 - [ ] Works when creating multiple chapters in sequence
 - [ ] Does not interfere with keyboard navigation (Tab key)
@@ -146,12 +156,14 @@ Choose based on existing codebase patterns.
 ## UX Impact
 
 **Positive:**
+
 - Reduces cognitive load - users don't need to remember to click the input
 - Provides immediate visual feedback that the field is active
 - Prevents errors from forgetting to update the chapter name
 - Makes the interaction feel polished and responsive
 
 **Minimal Risk:**
+
 - Very small change with low risk of breaking existing functionality
 - Animation is brief and subtle - won't annoy users
 
@@ -169,6 +181,7 @@ Choose based on existing codebase patterns.
 **Status:** Complete
 
 **What was done:**
+
 - Added `useRef` hook for **name** input field (not chapter - name is what users edit)
 - Added `useState` hook for glow animation state
 - Added `useEffect` that detects chapter changes and triggers focus + glow animation
@@ -176,10 +189,12 @@ Choose based on existing codebase patterns.
 - Animation runs for 500ms when New Chapter button is clicked
 
 **Files changed:**
+
 - `client/src/components/NamingControls.tsx` (modified - added ref, state, effect)
 - `client/src/index.css` (modified - added `glow-pulse` keyframe animation)
 
 **Testing notes:**
+
 - Click "New Chapter" button → **Name** input automatically receives focus
 - Blue pulsing glow appears around input field for 500ms
 - Animation only triggers on chapter changes (not on manual focus or initial mount)

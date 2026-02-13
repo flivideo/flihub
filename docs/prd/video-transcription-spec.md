@@ -9,12 +9,14 @@ Automatic transcription of video recordings using local Whisper AI. When a recor
 ## Problem Statement
 
 **Current workflow:**
+
 1. Record video, rename in app
 2. Later, manually run transcription command in terminal
 3. Manually move transcript to correct location
 4. No visibility into transcription progress
 
 **Proposed workflow:**
+
 1. Record video, rename in app
 2. Transcription starts automatically in background
 3. Watch progress in real-time on Transcriptions tab
@@ -39,6 +41,7 @@ project/
 ```
 
 **Key decisions:**
+
 - `recording-transcripts/` is a sibling folder to `recordings/`
 - Name makes clear these are raw recording transcripts (pre-edit), NOT final video transcripts
 - Transcripts do NOT move when videos move to `-safe/`
@@ -57,6 +60,7 @@ Some projects already have a `transcripts/` folder that needs renaming:
 ```
 
 **Server startup migration:**
+
 - On server start, check each known project for `transcripts/` folder
 - If found and `recording-transcripts/` doesn't exist, rename it
 - Log the migration: "Migrated transcripts/ to recording-transcripts/ in {project}"
@@ -66,6 +70,7 @@ Some projects already have a `transcripts/` folder that needs renaming:
 ## Trigger: Automatic on Rename
 
 When a file is successfully renamed and moved to `recordings/`:
+
 1. Check if transcript already exists
 2. If not, queue transcription job
 3. Start background transcription process
@@ -79,6 +84,7 @@ When a file is successfully renamed and moved to `recordings/`:
 ### Navigation
 
 Add "Transcriptions" to header navigation:
+
 ```
 [Incoming] [Recordings] [Transcriptions] [Assets] [Thumbs] [Projects] [Config]
 ```
@@ -112,6 +118,7 @@ Transcription failed:
 ```
 
 **Click behaviors:**
+
 - `[📄]` - Opens modal with transcript text
 - `[📁]` - Opens `recording-transcripts/` folder in Finder
 - `[⏳ Transcribing...]` - Navigates to Transcriptions tab
@@ -160,11 +167,13 @@ A dedicated page showing transcription activity with real-time streaming output:
 ```
 
 **Sections:**
+
 1. **Active Transcription** - Currently running job with live streaming text
 2. **Queue** - Pending jobs waiting to start
 3. **Recent** - Last 5 completed/failed transcriptions
 
 **Live streaming:**
+
 - Whisper outputs text incrementally as it processes
 - Server captures stdout and streams via socket
 - Frontend displays text appearing in real-time
@@ -196,6 +205,7 @@ When clicking `[📄]` on a completed transcript:
 ```
 
 **Actions:**
+
 - `[📋]` - Copy to clipboard
 - `[📁]` - Open transcripts folder in Finder
 - `[✕]` - Close modal
@@ -211,6 +221,7 @@ Using local Whisper via command line:
 ```
 
 **Configuration:**
+
 - Python path: `~/.pyenv/versions/3.11.12/bin/python`
 - Model: `medium` (balance of speed/quality)
 - Language: `en` (English)
@@ -232,7 +243,19 @@ function transcribeVideo(videoPath: string, outputDir: string, io: Server) {
 
   const process = spawn(
     '~/.pyenv/versions/3.11.12/bin/python',
-    ['-m', 'whisper', videoPath, '--model', 'medium', '--language', 'en', '--output_format', 'txt', '--output_dir', outputDir],
+    [
+      '-m',
+      'whisper',
+      videoPath,
+      '--model',
+      'medium',
+      '--language',
+      'en',
+      '--output_format',
+      'txt',
+      '--output_dir',
+      outputDir,
+    ],
     { shell: true }
   );
 
@@ -275,7 +298,7 @@ function transcribeVideo(videoPath: string, outputDir: string, io: Server) {
 ```typescript
 // In Transcriptions page
 socket.on('transcription:progress', ({ jobId, text }) => {
-  setStreamingText(prev => prev + text);
+  setStreamingText((prev) => prev + text);
 });
 
 socket.on('transcription:complete', ({ jobId }) => {
@@ -293,6 +316,7 @@ socket.on('transcription:complete', ({ jobId }) => {
 Get transcription status for all recordings.
 
 **Response:**
+
 ```json
 {
   "active": {
@@ -301,9 +325,7 @@ Get transcription status for all recordings.
     "startedAt": "2025-12-02T10:30:00Z",
     "streamedText": "So in this video..."
   },
-  "queue": [
-    { "jobId": "def456", "videoPath": "/path/to/08-1-intro.mov", "queuedAt": "..." }
-  ],
+  "queue": [{ "jobId": "def456", "videoPath": "/path/to/08-1-intro.mov", "queuedAt": "..." }],
   "recent": [
     { "videoPath": "...", "status": "complete", "completedAt": "...", "duration": 154 },
     { "videoPath": "...", "status": "error", "error": "...", "completedAt": "..." }
@@ -316,10 +338,11 @@ Get transcription status for all recordings.
 Get transcription status for a specific recording.
 
 **Response:**
+
 ```json
 {
   "filename": "07-5-outro-endcard.mov",
-  "status": "complete",  // "none" | "queued" | "transcribing" | "complete" | "error"
+  "status": "complete", // "none" | "queued" | "transcribing" | "complete" | "error"
   "transcriptPath": "/path/to/recording-transcripts/07-5-outro-endcard.txt"
 }
 ```
@@ -329,6 +352,7 @@ Get transcription status for a specific recording.
 Get transcript content.
 
 **Response:**
+
 ```json
 {
   "filename": "07-5-outro-endcard.txt",
@@ -341,6 +365,7 @@ Get transcript content.
 Manually queue a transcription (for retries or manual trigger).
 
 **Request:**
+
 ```json
 {
   "videoPath": "/path/to/recording.mov"
@@ -362,27 +387,27 @@ Since transcription is resource-intensive:
 
 ## Edge Cases
 
-| Scenario | Behavior |
-|----------|----------|
-| Transcript already exists | Skip transcription, show as complete |
-| Video deleted while transcribing | Cancel job, remove from queue |
+| Scenario                            | Behavior                                            |
+| ----------------------------------- | --------------------------------------------------- |
+| Transcript already exists           | Skip transcription, show as complete                |
+| Video deleted while transcribing    | Cancel job, remove from queue                       |
 | Server restart during transcription | Job is lost, shows as "none" status, user can retry |
-| Whisper not installed | Show error state, toast notification |
-| Corrupt/unreadable video | Show error state on that file |
-| Very long video (60+ min) | Works, just takes longer |
-| Multiple files renamed quickly | All queue up, process one at a time |
+| Whisper not installed               | Show error state, toast notification                |
+| Corrupt/unreadable video            | Show error state on that file                       |
+| Very long video (60+ min)           | Works, just takes longer                            |
+| Multiple files renamed quickly      | All queue up, process one at a time                 |
 
 ---
 
 ## States Summary
 
-| Status | Icon | Recording Row | Transcriptions Tab |
-|--------|------|---------------|-------------------|
-| None | - | `[No transcript]` | Not shown |
-| Queued | ⏳ | `[⏳ Queued]` | In Queue section |
-| Transcribing | ⏳ | `[⏳ Transcribing...]` | Active section with live text |
-| Complete | 📄 | `[📄] [📁]` | In Recent section |
-| Error | ❌ | `[❌ Failed]` | In Recent section with error |
+| Status       | Icon | Recording Row          | Transcriptions Tab            |
+| ------------ | ---- | ---------------------- | ----------------------------- |
+| None         | -    | `[No transcript]`      | Not shown                     |
+| Queued       | ⏳   | `[⏳ Queued]`          | In Queue section              |
+| Transcribing | ⏳   | `[⏳ Transcribing...]` | Active section with live text |
+| Complete     | 📄   | `[📄] [📁]`            | In Recent section             |
+| Error        | ❌   | `[❌ Failed]`          | In Recent section with error  |
 
 ---
 
@@ -405,6 +430,7 @@ Since transcription is resource-intensive:
 ### Config Considerations
 
 May need to add to config:
+
 ```json
 {
   "transcription": {

@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import { env } from './config/env.js';
 import { createWatcher } from './watcher.js';
 import { createRoutes } from './routes/index.js';
 import { createAssetRoutes } from './routes/assets.js';
@@ -28,14 +29,19 @@ import { migrateTargetToProject } from '../../shared/paths.js';
 import { migrateSafeFolder, needsMigration } from './utils/safeMigration.js';
 import { WatcherManager } from './WatcherManager.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import type { ServerToClientEvents, ClientToServerEvents, FileInfo, Config } from '../../shared/types.js';
+import type {
+  ServerToClientEvents,
+  ClientToServerEvents,
+  FileInfo,
+  Config,
+} from '../../shared/types.js';
 import type { FSWatcher } from 'chokidar';
 
 // Load environment variables
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
-const PORT = process.env.PORT || 5101;
+const PORT = env.PORT;
 const CONFIG_FILE = path.join(__dirname, '..', 'config.json');
 
 // Attempt to kill any process using our port (handles orphaned processes after crash)
@@ -73,14 +79,14 @@ const httpServer = createServer(app);
 // NFR-1: Dynamic CORS - allow any localhost origin in development
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
-    origin: true,  // Reflects requesting origin (safe for local dev)
+    origin: true, // Reflects requesting origin (safe for local dev)
     methods: ['GET', 'POST'],
   },
 });
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));  // FR-42: Increased limit for base64 clipboard images
+app.use(express.json({ limit: '10mb' })); // FR-42: Increased limit for base64 clipboard images
 
 // In-memory store for pending files
 const pendingFiles: Map<string, FileInfo> = new Map();
@@ -91,19 +97,20 @@ const pendingFiles: Map<string, FileInfo> = new Map();
 function loadConfig(): Config {
   const defaults: Config = {
     watchDirectory: process.env.WATCH_DIR || '~/Movies/Ecamm Live/',
-    projectDirectory: '/tmp/project/',  // Derived from root + active
+    projectDirectory: '/tmp/project/', // Derived from root + active
     projectsRootDirectory: '~/dev/video-projects/v-appydave',
     activeProject: '',
     fileExtensions: ['.mov'],
-    availableTags: ['CTA', 'SKOOL'],  // NFR-2: Global tags (always visible)
-    commonNames: [  // NFR-3: Default common names with rules
+    availableTags: ['CTA', 'SKOOL'], // NFR-2: Global tags (always visible)
+    commonNames: [
+      // NFR-3: Default common names with rules
       { name: 'intro', autoSequence: true },
       { name: 'demo' },
       { name: 'summary' },
-      { name: 'outro', suggestTags: ['ENDCARD'] },  // suggestTags appear only for this name
+      { name: 'outro', suggestTags: ['ENDCARD'] }, // suggestTags appear only for this name
     ],
-    imageSourceDirectory: process.env.IMAGE_SOURCE_DIR || '~/Downloads',  // FR-17
-    shadowResolution: 240,  // FR-89 Part 6: Default shadow resolution
+    imageSourceDirectory: process.env.IMAGE_SOURCE_DIR || '~/Downloads', // FR-17
+    shadowResolution: 240, // FR-89 Part 6: Default shadow resolution
   };
 
   try {
@@ -126,16 +133,18 @@ function loadConfig(): Config {
         console.log('Migrating projectDirectory to split format...');
         saved.projectsRootDirectory = path.dirname(saved.projectDirectory);
         saved.activeProject = path.basename(saved.projectDirectory);
-        delete saved.projectDirectory;  // Remove old field
+        delete saved.projectDirectory; // Remove old field
         needsSave = true;
-        console.log(`Migration complete: root=${saved.projectsRootDirectory}, active=${saved.activeProject}`);
+        console.log(
+          `Migration complete: root=${saved.projectsRootDirectory}, active=${saved.activeProject}`
+        );
       }
 
       // FR-89 Part 5: Derive projectDirectory from root + active (for backward compatibility)
       if (saved.projectsRootDirectory && saved.activeProject) {
         saved.projectDirectory = path.join(saved.projectsRootDirectory, saved.activeProject);
       } else if (saved.projectsRootDirectory) {
-        saved.projectDirectory = saved.projectsRootDirectory;  // No active project yet
+        saved.projectDirectory = saved.projectsRootDirectory; // No active project yet
       }
 
       // Save migrated config if format changed
@@ -173,10 +182,10 @@ function saveConfig(config: Config): void {
       // FR-89 Part 5: Save split format
       projectsRootDirectory: config.projectsRootDirectory,
       activeProject: config.activeProject || '',
-      availableTags: config.availableTags,   // NFR-2: Persist tags
-      commonNames: config.commonNames,        // NFR-3: Persist common names
-      imageSourceDirectory: config.imageSourceDirectory,  // FR-17: Persist image source
-      glingDictionary: config.glingDictionary || [],  // FR-108: Persist Gling dictionary
+      availableTags: config.availableTags, // NFR-2: Persist tags
+      commonNames: config.commonNames, // NFR-3: Persist common names
+      imageSourceDirectory: config.imageSourceDirectory, // FR-17: Persist image source
+      glingDictionary: config.glingDictionary || [], // FR-108: Persist Gling dictionary
     };
     // FR-32: Only save projectPriorities if it has values
     if (config.projectPriorities && Object.keys(config.projectPriorities).length > 0) {
@@ -247,10 +256,12 @@ function startWatcher(watchDir: string): void {
 // FR-89 Part 5: Handles projectsRootDirectory + activeProject
 function updateConfig(newConfig: Partial<Config>): Config {
   const oldConfig = { ...currentConfig };
-  const watchDirChanged = newConfig.watchDirectory && newConfig.watchDirectory !== currentConfig.watchDirectory;
+  const watchDirChanged =
+    newConfig.watchDirectory && newConfig.watchDirectory !== currentConfig.watchDirectory;
 
   if (newConfig.watchDirectory) currentConfig.watchDirectory = newConfig.watchDirectory;
-  if (newConfig.imageSourceDirectory) currentConfig.imageSourceDirectory = newConfig.imageSourceDirectory;
+  if (newConfig.imageSourceDirectory)
+    currentConfig.imageSourceDirectory = newConfig.imageSourceDirectory;
 
   // FR-89 Part 5: Handle split project directory fields
   if (newConfig.projectsRootDirectory !== undefined) {
@@ -262,16 +273,21 @@ function updateConfig(newConfig: Partial<Config>): Config {
 
   // FR-89 Part 5: Derive projectDirectory from root + active (for backward compatibility)
   if (currentConfig.projectsRootDirectory && currentConfig.activeProject) {
-    currentConfig.projectDirectory = path.join(currentConfig.projectsRootDirectory, currentConfig.activeProject);
+    currentConfig.projectDirectory = path.join(
+      currentConfig.projectsRootDirectory,
+      currentConfig.activeProject
+    );
   } else if (currentConfig.projectsRootDirectory) {
     currentConfig.projectDirectory = currentConfig.projectsRootDirectory;
   }
 
   // FR-89 Part 6: Handle shadow resolution
-  if (newConfig.shadowResolution !== undefined) currentConfig.shadowResolution = newConfig.shadowResolution;
+  if (newConfig.shadowResolution !== undefined)
+    currentConfig.shadowResolution = newConfig.shadowResolution;
 
   // FR-108: Handle Gling dictionary
-  if (newConfig.glingDictionary !== undefined) currentConfig.glingDictionary = newConfig.glingDictionary;
+  if (newConfig.glingDictionary !== undefined)
+    currentConfig.glingDictionary = newConfig.glingDictionary;
 
   // FR-116: Handle common names
   if (newConfig.commonNames !== undefined) currentConfig.commonNames = newConfig.commonNames;
@@ -292,16 +308,27 @@ function updateConfig(newConfig: Partial<Config>): Config {
 
 // FR-30: Setup transcription routes (must be before main routes to get queueTranscription)
 // FR-130: Also get queue getters for rename conflict detection
-const { router: transcriptionRoutes, queueTranscription, killActiveProcess, getActiveJob, getQueue } = createTranscriptionRoutes(
-  () => currentConfig,
-  io
-);
+const {
+  router: transcriptionRoutes,
+  queueTranscription,
+  killActiveProcess,
+  getActiveJob,
+  getQueue,
+} = createTranscriptionRoutes(() => currentConfig, io);
 app.use('/api/transcriptions', transcriptionRoutes);
 
 // Setup routes with config update callback and transcription queue function
 // FR-130: Also pass queue getters for rename conflict detection
 // Socket.IO for real-time state updates (park/unpark)
-const routes = createRoutes(pendingFiles, currentConfig, updateConfig, queueTranscription, getActiveJob, getQueue, io);
+const routes = createRoutes(
+  pendingFiles,
+  currentConfig,
+  updateConfig,
+  queueTranscription,
+  getActiveJob,
+  getQueue,
+  io
+);
 app.use('/api', routes);
 
 // FR-17: Setup asset routes for image management
@@ -359,7 +386,13 @@ const exportRoutes = createExportRoutes(() => currentConfig);
 app.use('/api/export', exportRoutes);
 
 // FR-131: Setup manage panel routes (bulk operations + Phase 2 regen)
-const manageRoutes = createManageRoutes(() => currentConfig, io, queueTranscription, getActiveJob, getQueue);
+const manageRoutes = createManageRoutes(
+  () => currentConfig,
+  io,
+  queueTranscription,
+  getActiveJob,
+  getQueue
+);
 app.use('/api/manage', manageRoutes);
 
 // FR-103: Setup S3 staging routes
@@ -401,7 +434,9 @@ export { io, pendingFiles };
       if (await needsMigration(currentConfig.projectDirectory)) {
         console.log('[FR-111] Starting safe folder migration...');
         const result = await migrateSafeFolder(currentConfig.projectDirectory);
-        console.log(`[FR-111] Migration complete: ${result.migrated} files, ${result.shadowsMigrated} shadows`);
+        console.log(
+          `[FR-111] Migration complete: ${result.migrated} files, ${result.shadowsMigrated} shadows`
+        );
         if (result.errors.length > 0) {
           console.warn('[FR-111] Migration warnings:', result.errors);
         }

@@ -29,6 +29,7 @@ Error handling inconsistent - some errors silently swallowed.
 ## Technical Notes
 
 Patterns to replace:
+
 ```typescript
 // Bad: silent catch
 try {

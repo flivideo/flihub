@@ -9,6 +9,7 @@ A dedicated page for managing YouTube thumbnail options. Thumbnails are typicall
 ## Problem Statement
 
 **Current workflow:**
+
 1. Design thumbnails in Canva (usually 3-4 options)
 2. Download as ZIP (Canva bundles multiple exports)
 3. Manually extract ZIP
@@ -16,6 +17,7 @@ A dedicated page for managing YouTube thumbnail options. Thumbnails are typicall
 5. Manually move to project's `assets/thumbs/` folder
 
 **Pain points:**
+
 - Manual extraction and renaming is tedious
 - No easy way to preview and compare options
 - No easy way to reorder after deciding
@@ -41,6 +43,7 @@ project/
 ## Naming Convention
 
 Simple sequential naming:
+
 ```
 thumb-1.jpg
 thumb-2.jpg
@@ -59,6 +62,7 @@ thumb-3.jpg
 ### Navigation
 
 Add "Thumbs" to header navigation:
+
 ```
 [Incoming] [Recordings] [Assets] [Thumbs] [Projects] [Config]
 ```
@@ -124,6 +128,7 @@ Click "Preview →" to see what's inside:
 ```
 
 **Behavior:**
+
 - Show all images in ZIP as thumbnail list
 - Checkbox to select/deselect
 - Max 3 selection enforced (disable checkbox when 3 selected)
@@ -132,6 +137,7 @@ Click "Preview →" to see what's inside:
 ### Step 3: Import
 
 Click "Import Selected":
+
 1. Extract selected images from ZIP to temp location
 2. Rename to `thumb-1.jpg`, `thumb-2.jpg`, `thumb-3.jpg` (based on selection order)
 3. Move to `assets/thumbs/`
@@ -159,6 +165,7 @@ Click "Import Selected":
   - Others shift accordingly
 
 **Example:**
+
 ```
 Before drag:          After dropping thumb-3 to top:
 thumb-1.jpg           thumb-1.jpg (was thumb-3)
@@ -182,6 +189,7 @@ thumb-3.jpg           thumb-3.jpg (was thumb-2)
 List ZIP files in Downloads that contain images.
 
 **Response:**
+
 ```json
 {
   "zips": [
@@ -200,6 +208,7 @@ List ZIP files in Downloads that contain images.
 List images inside a ZIP file.
 
 **Response:**
+
 ```json
 {
   "filename": "b64-thumbnail.zip",
@@ -217,6 +226,7 @@ List images inside a ZIP file.
 Import selected images from ZIP.
 
 **Request:**
+
 ```json
 {
   "zipPath": "/Users/.../Downloads/b64-thumbnail.zip",
@@ -226,6 +236,7 @@ Import selected images from ZIP.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -238,6 +249,7 @@ Import selected images from ZIP.
 List current thumbnails.
 
 **Response:**
+
 ```json
 {
   "thumbs": [
@@ -253,6 +265,7 @@ List current thumbnails.
 Reorder thumbnails.
 
 **Request:**
+
 ```json
 {
   "order": ["thumb-3.jpg", "thumb-1.jpg", "thumb-2.jpg"]
@@ -260,6 +273,7 @@ Reorder thumbnails.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -272,6 +286,7 @@ Reorder thumbnails.
 Delete a thumbnail.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -284,6 +299,7 @@ Delete a thumbnail.
 Delete a ZIP file from Downloads folder.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -292,6 +308,7 @@ Delete a ZIP file from Downloads folder.
 ```
 
 **Use cases:**
+
 - Clean up after import (if user chose not to delete during import)
 - Remove unwanted/old ZIP files cluttering Downloads
 - Manual cleanup when ZIP is no longer needed
@@ -300,16 +317,16 @@ Delete a ZIP file from Downloads folder.
 
 ## Edge Cases
 
-| Scenario | Behavior |
-|----------|----------|
-| No ZIP files in Downloads | Show "No ZIP files found" message |
-| ZIP has no images | Don't show in list, or show with warning |
-| ZIP has < 3 images | Allow import of all |
-| ZIP has > 3 images | Only allow selecting 3 |
-| `assets/thumbs/` doesn't exist | Create on first import |
-| Thumbnails already exist | Prompt to replace or add? (TBD) |
-| Reorder with only 1 thumb | No drag handle needed |
-| Delete last thumbnail | Show empty state |
+| Scenario                       | Behavior                                 |
+| ------------------------------ | ---------------------------------------- |
+| No ZIP files in Downloads      | Show "No ZIP files found" message        |
+| ZIP has no images              | Don't show in list, or show with warning |
+| ZIP has < 3 images             | Allow import of all                      |
+| ZIP has > 3 images             | Only allow selecting 3                   |
+| `assets/thumbs/` doesn't exist | Create on first import                   |
+| Thumbnails already exist       | Prompt to replace or add? (TBD)          |
+| Reorder with only 1 thumb      | No drag handle needed                    |
+| Delete last thumbnail          | Show empty state                         |
 
 ---
 

@@ -142,10 +142,12 @@ export function formatProjectsReport(projects: ProjectSummary[]): string {
   }
 
   // Footer
-  const pinnedCount = projects.filter(p => p.priority === 'pinned').length;
+  const pinnedCount = projects.filter((p) => p.priority === 'pinned').length;
   const totalRecordings = projects.reduce((sum, p) => sum + p.stats.recordings, 0);
   lines.push('');
-  lines.push(`Total: ${projects.length} projects | ${pinnedCount} pinned | ${totalRecordings} recordings`);
+  lines.push(
+    `Total: ${projects.length} projects | ${pinnedCount} pinned | ${totalRecordings} recordings`
+  );
 
   return lines.join('\n');
 }
@@ -170,9 +172,8 @@ export function formatProjectDetail(project: ProjectDetail): string {
   // FR-111: safe count removed (safe status is per-file)
   const totalRecordings = project.stats.recordings;
   const totalTranscripts = project.stats.transcripts.matched;
-  const transcriptPercent = totalRecordings > 0
-    ? Math.round((totalTranscripts / totalRecordings) * 100)
-    : 0;
+  const transcriptPercent =
+    totalRecordings > 0 ? Math.round((totalTranscripts / totalRecordings) * 100) : 0;
 
   lines.push(`Recordings:     ${project.stats.recordings}`);
   lines.push(`Chapters:       ${project.stats.chapters}`);
@@ -189,7 +190,9 @@ export function formatProjectDetail(project: ProjectDetail): string {
   lines.push(divider('─', 30));
 
   if (project.finalMedia?.video) {
-    lines.push(`Video:   ${STATUS.OK} ${project.finalMedia.video.filename} (${formatSize(project.finalMedia.video.size)})`);
+    lines.push(
+      `Video:   ${STATUS.OK} ${project.finalMedia.video.filename} (${formatSize(project.finalMedia.video.size)})`
+    );
   } else {
     lines.push(`Video:   ${STATUS.ERROR} Not found`);
   }
@@ -273,7 +276,9 @@ export function formatRecordingsReport(recordings: Recording[], projectCode: str
   lines.push(
     `Total: ${recordings.length} recordings | ${formatSize(totalSize)} | ${formatDuration(totalDuration)} duration`
   );
-  lines.push(`Transcripts: ${transcriptCount}/${recordings.length} (${formatPercent((transcriptCount / recordings.length) * 100)})`);
+  lines.push(
+    `Transcripts: ${transcriptCount}/${recordings.length} (${formatPercent((transcriptCount / recordings.length) * 100)})`
+  );
 
   return lines.join('\n');
 }
@@ -317,7 +322,11 @@ export function formatTranscriptsReport(transcripts: Transcript[], projectCode: 
 // CHAPTERS REPORT (YouTube-ready)
 // ============================================
 
-export function formatChaptersReport(chapters: Chapter[], projectCode: string, formatted: string): string {
+export function formatChaptersReport(
+  chapters: Chapter[],
+  projectCode: string,
+  formatted: string
+): string {
   const lines: string[] = [];
 
   // Header
@@ -337,7 +346,7 @@ export function formatChaptersReport(chapters: Chapter[], projectCode: string, f
   // Footer
   lines.push('');
   lines.push(divider('─', 30));
-  const hasTimestamps = chapters.filter(c => c.timestamp).length;
+  const hasTimestamps = chapters.filter((c) => c.timestamp).length;
   if (hasTimestamps === chapters.length) {
     lines.push(`${chapters.length} chapters | Ready for YouTube description`);
   } else {
@@ -367,12 +376,7 @@ export function formatImagesReport(images: Image[], projectCode: string): string
 
   for (const img of images) {
     const variant = img.variant ? ` [${img.variant.toUpperCase()}]` : '';
-    const row = [
-      img.filename + variant,
-      img.chapter,
-      img.sequence,
-      formatSize(img.size),
-    ];
+    const row = [img.filename + variant, img.chapter, img.sequence, formatSize(img.size)];
     lines.push(formatRowWithWidths(row, widths));
 
     totalSize += img.size;
@@ -415,8 +419,8 @@ export function formatExportReport(data: ExportData, projectCode: string): strin
     lines.push('');
     lines.push(divider('─', 80));
     const formatted = data.chapters
-      .filter(ch => ch.timestamp)
-      .map(ch => `${ch.timestamp} ${ch.displayName}`)
+      .filter((ch) => ch.timestamp)
+      .map((ch) => `${ch.timestamp} ${ch.displayName}`)
       .join('\n');
     lines.push(formatChaptersReport(data.chapters, projectCode, formatted));
   }

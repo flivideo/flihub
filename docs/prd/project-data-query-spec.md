@@ -7,6 +7,7 @@
 ## Context
 
 FliVideo has rich project data spread across the filesystem:
+
 - Projects with stats and stages
 - Recordings with parsed naming components
 - Transcripts linked to recordings
@@ -14,6 +15,7 @@ FliVideo has rich project data spread across the filesystem:
 - Chapters (dynamically generated from recordings + final SRT)
 
 Currently this data is only accessible through the web UI. To enable:
+
 - **LLM context feeding** (e.g., "summarize this project", "generate chapter descriptions")
 - **External tools** (e.g., Claude Code FliNamer skill)
 - **Future import/export**
@@ -34,6 +36,7 @@ GET /api/query/projects?recent=5
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -71,6 +74,7 @@ GET /api/query/config
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -94,6 +98,7 @@ GET /api/query/projects/:code
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -132,6 +137,7 @@ GET /api/query/projects/:code/recordings?missing-transcripts=true
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -163,6 +169,7 @@ GET /api/query/projects/:code/transcripts/:recording-name
 ```
 
 **Response (list, without content):**
+
 ```json
 {
   "success": true,
@@ -180,6 +187,7 @@ GET /api/query/projects/:code/transcripts/:recording-name
 ```
 
 **Response (with content):**
+
 ```json
 {
   "success": true,
@@ -196,6 +204,7 @@ GET /api/query/projects/:code/transcripts/:recording-name
 ```
 
 **Response (single transcript):**
+
 ```json
 {
   "success": true,
@@ -220,6 +229,7 @@ GET /api/query/projects/:code/chapters
 **Note:** Chapters are dynamically generated (not persisted). This endpoint runs the chapter detection logic.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -257,6 +267,7 @@ GET /api/query/projects/:code/images?chapter=5
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -289,15 +300,26 @@ Returns combined data in single response for LLM context:
 {
   "success": true,
   "exportedAt": "2025-12-06T10:30:00Z",
-  "project": { /* project detail */ },
-  "recordings": [ /* all recordings */ ],
-  "transcripts": [ /* with content */ ],
-  "chapters": [ /* with timestamps */ ],
-  "images": [ /* all images */ ]
+  "project": {
+    /* project detail */
+  },
+  "recordings": [
+    /* all recordings */
+  ],
+  "transcripts": [
+    /* with content */
+  ],
+  "chapters": [
+    /* with timestamps */
+  ],
+  "images": [
+    /* all images */
+  ]
 }
 ```
 
 **Query params:**
+
 - `include=X,Y,Z` - Only include specified sections
 - Default: all sections
 
@@ -323,10 +345,10 @@ All query endpoints under `/api/query/` prefix to distinguish from existing CRUD
 
 ## Relationship to Existing Endpoints
 
-| Existing | Purpose | Query Equivalent |
-|----------|---------|------------------|
-| `GET /api/projects` | UI project list | `GET /api/query/projects` (richer data) |
-| `GET /api/projects/:code/stats` | UI stats popup | `GET /api/query/projects/:code` |
+| Existing                           | Purpose               | Query Equivalent                         |
+| ---------------------------------- | --------------------- | ---------------------------------------- |
+| `GET /api/projects`                | UI project list       | `GET /api/query/projects` (richer data)  |
+| `GET /api/projects/:code/stats`    | UI stats popup        | `GET /api/query/projects/:code`          |
 | `GET /api/projects/:code/chapters` | UI chapter extraction | `GET /api/query/projects/:code/chapters` |
 
 **Note:** Query endpoints may reuse existing logic but return more structured/complete data for external consumption.

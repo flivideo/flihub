@@ -5,87 +5,92 @@
  * Cloned from IncomingVideoModal with video URL pointing to recordings folder.
  */
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { API_URL } from '../config'
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { API_URL } from '../config';
 
 // Speed presets (shared with WatchPage and IncomingVideoModal)
-const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3]
-const DEFAULT_SPEED = 2
+const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3];
+const DEFAULT_SPEED = 2;
 
 // localStorage key (shared with WatchPage and IncomingVideoModal for consistency)
-const SPEED_STORAGE_KEY = 'flihub:watch:playbackSpeed'
+const SPEED_STORAGE_KEY = 'flihub:watch:playbackSpeed';
 
 interface RecordingVideoModalProps {
-  filename: string
-  duration?: number
-  size?: number
-  onClose: () => void
+  filename: string;
+  duration?: number;
+  size?: number;
+  onClose: () => void;
 }
 
-export function RecordingVideoModal({ filename, duration, size, onClose }: RecordingVideoModalProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
+export function RecordingVideoModal({
+  filename,
+  duration,
+  size,
+  onClose,
+}: RecordingVideoModalProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(() => {
-    const saved = localStorage.getItem(SPEED_STORAGE_KEY)
-    return saved ? parseFloat(saved) : DEFAULT_SPEED
-  })
+    const saved = localStorage.getItem(SPEED_STORAGE_KEY);
+    return saved ? parseFloat(saved) : DEFAULT_SPEED;
+  });
 
   // Build video URL - points to recordings folder instead of incoming folder
-  const videoUrl = `${API_URL}/api/video/recordings/${encodeURIComponent(filename)}`
+  const videoUrl = `${API_URL}/api/video/recordings/${encodeURIComponent(filename)}`;
 
   // Apply playback speed
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.playbackRate = playbackSpeed
+      videoRef.current.playbackRate = playbackSpeed;
     }
-  }, [playbackSpeed])
+  }, [playbackSpeed]);
 
   // Handle speed change
   const handleSpeedChange = useCallback((speed: number) => {
-    setPlaybackSpeed(speed)
-    localStorage.setItem(SPEED_STORAGE_KEY, speed.toString())
+    setPlaybackSpeed(speed);
+    localStorage.setItem(SPEED_STORAGE_KEY, speed.toString());
     if (videoRef.current) {
-      videoRef.current.playbackRate = speed
+      videoRef.current.playbackRate = speed;
     }
-  }, [])
+  }, []);
 
   // Handle play/pause toggle
   const handlePlayPause = useCallback(() => {
-    if (!videoRef.current) return
+    if (!videoRef.current) return;
     if (isPlaying) {
-      videoRef.current.pause()
+      videoRef.current.pause();
     } else {
-      videoRef.current.play()
+      videoRef.current.play();
     }
-  }, [isPlaying])
+  }, [isPlaying]);
 
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose()
+        onClose();
       }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   // Format duration helper
   const formatDuration = (seconds?: number) => {
-    if (seconds == null) return '--:--'
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
+    if (seconds == null) return '--:--';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Format file size helper
   const formatFileSize = (bytes?: number) => {
-    if (bytes == null) return '--'
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
-  }
+    if (bytes == null) return '--';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  };
 
   return (
     <div
@@ -94,7 +99,7 @@ export function RecordingVideoModal({ filename, duration, size, onClose }: Recor
     >
       <div
         className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col mx-4 overflow-hidden"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
@@ -107,7 +112,12 @@ export function RecordingVideoModal({ filename, duration, size, onClose }: Recor
             title="Close (Escape)"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -122,7 +132,7 @@ export function RecordingVideoModal({ filename, duration, size, onClose }: Recor
             className="w-full h-full object-contain"
             onLoadedMetadata={() => {
               if (videoRef.current) {
-                videoRef.current.playbackRate = playbackSpeed
+                videoRef.current.playbackRate = playbackSpeed;
               }
             }}
             onPlay={() => setIsPlaying(true)}
@@ -138,21 +148,15 @@ export function RecordingVideoModal({ filename, duration, size, onClose }: Recor
             <button
               onClick={handlePlayPause}
               className={`text-lg transition-colors ${
-                isPlaying
-                  ? 'text-red-500 hover:text-red-600'
-                  : 'text-blue-500 hover:text-blue-600'
+                isPlaying ? 'text-red-500 hover:text-red-600' : 'text-blue-500 hover:text-blue-600'
               }`}
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? '⏹' : '▶'}
             </button>
-            <span className="font-mono text-sm text-gray-600">
-              {formatDuration(duration)}
-            </span>
+            <span className="font-mono text-sm text-gray-600">{formatDuration(duration)}</span>
             <span className="text-sm text-gray-400">|</span>
-            <span className="text-sm text-gray-600">
-              {formatFileSize(size)}
-            </span>
+            <span className="text-sm text-gray-600">{formatFileSize(size)}</span>
           </div>
 
           {/* Right: Speed Controls */}
@@ -177,5 +181,5 @@ export function RecordingVideoModal({ filename, duration, size, onClose }: Recor
         </div>
       </div>
     </div>
-  )
+  );
 }

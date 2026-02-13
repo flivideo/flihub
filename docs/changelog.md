@@ -18,15 +18,16 @@ Track what was implemented, fixed, or changed and when.
 
 ### FR-140: Chapter Move & Cascade Renumbering
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-06 | Specification completed - Ready for development | - |
+| Date       | Change                                          | Commit |
+| ---------- | ----------------------------------------------- | ------ |
+| 2026-01-06 | Specification completed - Ready for development | -      |
 
 **What was specified:**
 
 **PO Decision:** Move with automatic cascade (NOT gap compression)
 
 **Core Features:**
+
 1. **Move Chapter Down** - Fill gap (03→02 causes 05→04)
 2. **Move Chapter Up** - Create gap (03→05 causes 04→03)
 3. **Automatic Cascade** - Chapters between source/target shift automatically
@@ -34,9 +35,11 @@ Track what was implemented, fixed, or changed and when.
 5. **Descending Processing** - High to low prevents conflicts
 
 **Key Insight from User:**
+
 > "It's not 01,03,05 → 01,02,03. What it is, is that 03 can move up to 02, and everything below it should increase by one."
 
 **Technical:**
+
 - Reuses FR-130 delete+regenerate pattern
 - Reuses FR-137 SlideOutDrawer pattern
 - New cascade calculation algorithm
@@ -44,6 +47,7 @@ Track what was implemented, fixed, or changed and when.
 - Estimated: 4-6 hours, ~300-400 LOC
 
 **User Impact:**
+
 - Eliminates manual cascade calculation
 - One-click chapter reorganization
 - Addresses pain point from FR-138 testing
@@ -55,15 +59,16 @@ Track what was implemented, fixed, or changed and when.
 
 ### FR-139: Folders Tool Specification
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-06 | PO Decision - Remove undefined button | - |
+| Date       | Change                                | Commit |
+| ---------- | ------------------------------------- | ------ |
+| 2026-01-06 | PO Decision - Remove undefined button | -      |
 
 **What was decided:**
 
 **PO Decision:** Remove the "Folders" button (Path A)
 
 **Rationale:**
+
 1. User couldn't remember what it was for
 2. User confused it with Export tool's folder management
 3. No clear use case after 6 months
@@ -71,15 +76,18 @@ Track what was implemented, fixed, or changed and when.
 5. Focus development on defined features (FR-140)
 
 **Quote from user:**
+
 > "I don't really understand your questions related to folders tool. I don't even remember what it was about."
 
 **Implementation:**
+
 - Remove button from ToolsSidebar.tsx
 - Remove drawer from ManagePanel.tsx
 - Update `activeTool` type
 - Estimated: 30 minutes
 
 **Alternative paths rejected:**
+
 - Path B: Repurpose for FR-135 (FR-135 is LOW priority)
 - Path C: Define new feature (no clear use case)
 
@@ -89,9 +97,9 @@ Track what was implemented, fixed, or changed and when.
 
 ### FR-136/137/138/139: Tool-Oriented Manage Panel & Sub-Requirements
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-06 | Documentation & Requirements Breakdown | - |
+| Date       | Change                                 | Commit |
+| ---------- | -------------------------------------- | ------ |
+| 2026-01-06 | Documentation & Requirements Breakdown | -      |
 
 **What was implemented (2026-01-04 to 2026-01-06):**
 
@@ -100,6 +108,7 @@ Track what was implemented, fixed, or changed and when.
 Implemented tool-oriented UI with vertical sidebar and slide-out drawers, superseding FR-131 Phase 2 approach.
 
 **Core Architecture:**
+
 - ToolsSidebar component (147 lines) - Vertical tool palette
 - SlideOutDrawer component (51 lines) - Reusable drawer with animations
 - Tool-oriented state management (activeTool, mutual exclusivity)
@@ -107,12 +116,14 @@ Implemented tool-oriented UI with vertical sidebar and slide-out drawers, supers
 - Tool registration pattern
 
 **Simple Tools (4/4 Complete):**
+
 1. Regen Shadows - Immediate execution
 2. Regen Transcripts - Queue with count
 3. Regen Chapters - Confirmation modal with editable settings
 4. Regen All - Sequential with progress tracking
 
 **Export Tool (Complete):**
+
 - ExportPanel component (593 lines)
 - Gling prep UI (filename, dictionaries, folders)
 - FR-126 Manifest integration (Clean/Restore)
@@ -120,10 +131,12 @@ Implemented tool-oriented UI with vertical sidebar and slide-out drawers, supers
 - Auto-save pattern for dictionaries
 
 **Commits:**
+
 - `3809e30` - Export Tool drawer with Gling prep functionality (2026-01-06)
 - `5ba69b1` - ToolsSidebar backend connection + regen tools (2026-01-04)
 
 **Files Created (6):**
+
 - `client/src/components/shared/ToolsSidebar.tsx` (147 lines)
 - `client/src/components/shared/SlideOutDrawer.tsx` (51 lines)
 - `client/src/components/shared/ExportPanel.tsx` (593 lines)
@@ -132,6 +145,7 @@ Implemented tool-oriented UI with vertical sidebar and slide-out drawers, supers
 - `client/src/components/shared/SelectionBadge.tsx` (30 lines)
 
 **Files Modified (4):**
+
 - `client/src/components/ManagePanel.tsx` - Tool integration
 - `server/src/routes/manage.ts` - Regen endpoints (+690 lines)
 - `shared/types.ts` - Socket.io event types
@@ -142,6 +156,7 @@ Implemented tool-oriented UI with vertical sidebar and slide-out drawers, supers
 Created comprehensive documentation for the architectural pattern that was implemented as part of FR-136.
 
 **Documented:**
+
 - When to use slide-out vs modal vs inline
 - Standard drawer behaviors (ESC, overlay, mutual exclusivity)
 - Component APIs (SlideOutDrawer, ToolsSidebar)
@@ -151,6 +166,7 @@ Created comprehensive documentation for the architectural pattern that was imple
 - Code examples for adding new tools
 
 **File Created:**
+
 - `docs/prd/fr-137-slideout-drawer-pattern.md` (full pattern documentation)
 
 **FR-138: Rename Tool Specification - ⚠️ Partial (Needs Chapter/Sequence/Tags/Preview)**
@@ -158,12 +174,14 @@ Created comprehensive documentation for the architectural pattern that was imple
 Created detailed specification for complete Rename tool implementation.
 
 **Current State (Basic):**
+
 - Single text input for label
 - Apply/Close buttons
 - Warning about transcript regeneration
 - Uses existing backend endpoint
 
 **Missing (Specified in FR-138):**
+
 - Chapter dropdown (01-99 with auto-detection)
 - Sequence numbering (preserve/renumber options)
 - Tags checkboxes (from config.availableTags + custom)
@@ -172,6 +190,7 @@ Created detailed specification for complete Rename tool implementation.
 - Validation UI (real-time kebab-case validation)
 
 **File Created:**
+
 - `docs/prd/fr-138-rename-tool-specification.md` (complete field-by-field spec)
 
 **Estimated Effort:** 5-8 hours to complete
@@ -181,11 +200,13 @@ Created detailed specification for complete Rename tool implementation.
 Created placeholder PRD identifying that "Folders" tool has no specification.
 
 **Current State:**
+
 - Button exists in ToolsSidebar
 - Placeholder drawer: "Folder management functionality coming soon..."
 - No defined purpose
 
 **Options Identified:**
+
 1. Edit Folder Management (duplicate of Export tool)
 2. Recording Organization (requires architectural changes)
 3. Chapter Tools / FR-135 (rename button)
@@ -193,6 +214,7 @@ Created placeholder PRD identifying that "Folders" tool has no specification.
 5. Remove button until feature defined
 
 **File Created:**
+
 - `docs/prd/fr-139-folders-tool-specification.md` (identifies gap, proposes options)
 
 **Requires:** Stakeholder decision on what "Folders" should do
@@ -200,12 +222,14 @@ Created placeholder PRD identifying that "Folders" tool has no specification.
 **Requirements Breakdown Created (2026-01-06):**
 
 Split FR-136 into four trackable requirements:
+
 - FR-136: Core Architecture (✓ Complete)
 - FR-137: SlideOutDrawer Pattern (✓ Documented)
 - FR-138: Rename Tool Full Spec (Partial)
 - FR-139: Folders Tool Definition (Blocked)
 
 **PO Lessons Learned:**
+
 1. "Press button, drawer opens" is NOT a specification
 2. Must document architectural patterns (not just implement)
 3. Split complex requirements into sub-requirements upfront
@@ -213,6 +237,7 @@ Split FR-136 into four trackable requirements:
 5. Field-by-field specs required for forms (not just "rename panel")
 
 **User Impact:**
+
 - Tool-oriented workflow eliminates forced-rename UX
 - Consistent pattern for all tools (extensible)
 - Export tool fully functional with all Gling prep features
@@ -223,9 +248,9 @@ Split FR-136 into four trackable requirements:
 
 ### FR-131 Phase 2: Manage Panel Regeneration Toolbar & Chapter-Level Rename
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-04 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-04 | Implemented | -      |
 
 **What was built:**
 Completed FR-131 Phase 2 with three major features: Regeneration Toolbar (4 buttons), Chapter-Level Rename dropdown, and Shared Code Documentation.
@@ -257,12 +282,14 @@ Added collapsible toolbar with 4 buttons to regenerate derivative files:
 **Backend Implementation:**
 
 **New Routes:**
+
 - `POST /api/manage/regen-shadows` - Regenerate shadow files
 - `POST /api/manage/regen-transcripts` - Queue transcriptions
 - `POST /api/manage/regen-chapters` - Regenerate chapter videos (async)
 - `POST /api/manage/regen-all` - Regenerate all (async, sequential)
 
 **Helper Functions:**
+
 - `regenerateShadowsInternal()` - Shadow regeneration logic
 - `regenerateTranscriptsInternal()` - Transcript queuing logic
 - `regenerateChaptersInternal()` - Chapter regeneration logic
@@ -270,6 +297,7 @@ Added collapsible toolbar with 4 buttons to regenerate derivative files:
 - `regenerateChaptersAsync()` - Async chapter generation with progress
 
 **Socket.io Events (added to `shared/types.ts`):**
+
 - `regen:shadows:complete` - Shadow regeneration complete
 - `regen:chapters:progress` - Chapter-by-chapter progress
 - `regen:chapters:complete` - All chapters complete
@@ -281,6 +309,7 @@ Added collapsible toolbar with 4 buttons to regenerate derivative files:
 **Frontend Implementation:**
 
 **New Component:**
+
 - `client/src/components/shared/RegenToolbar.tsx` (280 lines)
   - Collapsible toolbar (localStorage persists state)
   - Confirmation dialogs for expensive operations
@@ -290,6 +319,7 @@ Added collapsible toolbar with 4 buttons to regenerate derivative files:
 **Feature 2: Chapter-Level Rename**
 
 Added dropdown to rename all files in a chapter at once:
+
 - Select chapter from dropdown (shows file count)
 - Input new label (pre-fills current chapter label)
 - "Rename Ch XX" button
@@ -298,6 +328,7 @@ Added dropdown to rename all files in a chapter at once:
 - Confirmation dialog with file count
 
 **UI Location:**
+
 - Inside bulk rename section in ManagePanel
 - Separated by border with "Or rename by chapter:" header
 - Appears only when files are selected (same condition as bulk rename)
@@ -307,9 +338,11 @@ Added dropdown to rename all files in a chapter at once:
 Created comprehensive documentation for shared code between RecordingsView and ManagePanel:
 
 **New File:**
+
 - `docs/architecture/shared-code-index.md` (300+ lines)
 
 **Contents:**
+
 - Decision rules (when to share code vs keep separate)
 - Client-side shared hooks (useRecordings, useConfig, useRecordingsSocket)
 - Client-side shared components (LoadingSpinner, ErrorMessage, RegenToolbar)
@@ -320,10 +353,12 @@ Created comprehensive documentation for shared code between RecordingsView and M
 - Future refactoring opportunities
 
 **Files Created (3):**
+
 - `client/src/components/shared/RegenToolbar.tsx` (280 lines)
 - `docs/architecture/shared-code-index.md` (300+ lines)
 
 **Files Modified (4):**
+
 - `server/src/routes/manage.ts` (+480 lines) - 4 regen endpoints + helper functions
 - `server/src/index.ts` (1 line) - Pass `io` to createManageRoutes
 - `client/src/components/ManagePanel.tsx` (+80 lines) - RegenToolbar + chapter rename
@@ -332,6 +367,7 @@ Created comprehensive documentation for shared code between RecordingsView and M
 **Total LOC:** ~850 lines
 
 **UX Enhancements:**
+
 - Collapsible toolbar (saves screen space)
 - Real-time progress updates (no page refresh needed)
 - Confirmation dialogs prevent accidental operations
@@ -340,18 +376,21 @@ Created comprehensive documentation for shared code between RecordingsView and M
 - Disabled state during operations (prevents double-clicks)
 
 **Testing:**
+
 - Backend endpoints compile successfully
 - Socket.io event types validated
 - Frontend component integrates into ManagePanel
 - Chapter rename reuses existing bulk rename logic (already tested)
 
 **User Impact:**
+
 - Quick regeneration of derivative files without manual deletion
 - Faster workflow for chapter-level renaming
 - Clear documentation for future developers
 - Real-time feedback during long operations
 
 **Ready to Test:**
+
 - Start dev server (`npm run dev`)
 - Navigate to Manage panel
 - Test regen buttons with a real project
@@ -362,19 +401,21 @@ Created comprehensive documentation for shared code between RecordingsView and M
 
 ### FR-130: Simplify Rename Logic (Delete+Regenerate)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-03 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-03 | Implemented | -      |
 
 **What was built:**
 Simplified rename logic using delete+regenerate pattern instead of complex multi-directory renaming. Three critical bugs discovered and fixed during implementation.
 
 **Three-Phase Algorithm:**
+
 1. **Delete derivable files** - Shadows, transcripts (all 5 formats), chapter videos
 2. **Rename core files** - Recording file, state key migration, manifest updates
 3. **Regenerate derivables** - Shadow files (instant), transcriptions (queued)
 
 **Core Features:**
+
 - **State migration** - Preserves parked, annotation, safe flags when renaming
 - **Manifest updates** - Updates FR-126 manifest filename references
 - **Queue check** - Prevents rename during active transcription
@@ -383,23 +424,27 @@ Simplified rename logic using delete+regenerate pattern instead of complex multi
 **CRITICAL BUGS FOUND & FIXED:**
 
 **Bug 1: Shadow Files Wrong Extension**
+
 - **Problem:** Code tried to delete `.txt` shadow files, but shadows are `.mp4` files
 - **Impact:** Old shadow files were never deleted, causing duplicate entries in UI
 - **Fix:** Changed deletion target from `.txt` to `.mp4`
 - **Evidence:** `[FR-130] Deleted: 04-1-steve-showcase-test.mp4`
 
 **Bug 2: Incomplete Transcript Deletion**
+
 - **Problem:** Whisper creates 5 file types (`.txt`, `.srt`, `.json`, `.vtt`, `.tsv`), but only 2 were deleted
 - **Impact:** Orphaned `.json`, `.vtt`, `.tsv` files remained after rename
 - **Fix:** Now deletes all 5 transcript file types
 - **Evidence:** `[FR-130] Deleted: 04-1-steve-showcase-test.txt/srt`
 
 **Bug 3: FR-111 Architecture Mismatch**
+
 - **Problem:** Code assumed physical `-safe` folders (old architecture), but FR-111 Phase 3 migrated to state-based flags
 - **Impact:** Code tried to access non-existent `-safe` subfolders
 - **Fix:** Updated to FR-111 Phase 3 - all files stay in main folders, safe is just metadata
 
 **Bug 4: Socket.IO Events Missing (CRITICAL)**
+
 - **Problem:** Park/unpark/safe/restore endpoints wrote state files but didn't emit Socket.IO events
 - **Impact:** Developer Tools (FR-127) showed stale data, users had to refresh page to see state changes
 - **Fix:** Added `io.emit('recordings:changed')` to all four endpoints + created `useDeveloperSocket()` hook
@@ -407,15 +452,18 @@ Simplified rename logic using delete+regenerate pattern instead of complex multi
 - **Result:** Real-time state updates now work - Developer Tools auto-refreshes on park/unpark/safe operations
 
 **Code Improvements:**
+
 - Rename endpoint: 152 → 139 lines (9% reduction in route code)
 - New utility: 240 lines of clean, testable functions
 - No special case handling (delete+regenerate is uniform)
 - Reuses existing systems (shadows, transcription queue, state management)
 
 **Files created:**
+
 - `server/src/utils/renameRecording.ts` (240 lines) - New utility with 6 exported functions
 
 **Files modified:**
+
 - `server/src/routes/transcriptions.ts` - Added `getActiveJob()` and `getQueue()` getters
 - `server/src/index.ts` - Queue getter integration + pass `io` to routes
 - `server/src/routes/index.ts` - Replaced rename-chapter endpoint (152 → 139 lines) + Socket.IO events for park/unpark/safe/restore
@@ -424,6 +472,7 @@ Simplified rename logic using delete+regenerate pattern instead of complex multi
 - `client/src/App.tsx` - Added `useDeveloperSocket()` at app level (always active)
 
 **UX Changes:**
+
 - Yellow warning banner: "⚠️ Transcripts will be regenerated (5-10 minutes)"
 - Enhanced toast notifications:
   - Single file: "Renamed to {filename}" + "Transcription queued (view progress in Transcriptions tab)"
@@ -432,6 +481,7 @@ Simplified rename logic using delete+regenerate pattern instead of complex multi
 
 **Testing Results:**
 Verified working:
+
 - ✅ Shadow deletion: `.mp4` files correctly deleted
 - ✅ Transcript deletion: All 5 file types (`.txt`, `.srt`, `.json`, `.vtt`, `.tsv`) deleted
 - ✅ Shadow regeneration: New `.mp4` created with correct name
@@ -444,10 +494,12 @@ Verified working:
 
 **Verification:**
 Use FR-127 Developer Tools (⚙️ → 🔍) to inspect `.flihub-state.json`:
+
 - `recordings[newFilename]` - Verify parked/annotation/safe preserved
 - `editManifest[folder].files[]` - Verify filename updated
 
 **Next steps for user:**
+
 1. Verify state preservation (park + annotate → rename → confirm preserved)
 2. Verify manifest updates (export → rename → check FR-127 Dev Tools)
 3. User acceptance testing with real project data
@@ -457,14 +509,15 @@ Use FR-127 Developer Tools (⚙️ → 🔍) to inspect `.flihub-state.json`:
 
 ### FR-128: Recording Quick Preview
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-03 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-03 | Implemented | -      |
 
 **What was built:**
 Added a play button (▶) to each recording row on the Recordings page that opens a video preview modal with playback speed controls.
 
 **Core Features:**
+
 - **Play Button**
   - Positioned at left side of each recording row (before filename)
   - Blue ▶ icon with hover state
@@ -494,24 +547,29 @@ Added a play button (▶) to each recording row on the Recordings page that open
   - Click overlay (dark background) closes modal
 
 **Files created:**
+
 - `client/src/components/RecordingVideoModal.tsx` (196 lines)
 
 **Files modified:**
+
 - `client/src/components/RecordingsView.tsx` - Added play button, modal state, component render
 - `server/src/routes/video.ts` - Added `GET /api/video/recordings/:filename` endpoint
 
 **API Endpoint:**
+
 - `GET /api/video/recordings/:filename` - Serves video from project recordings folder with Range request support
 
 **Implementation time:** ~2 hours (matched estimate)
 
 **User impact:**
+
 - Quick video preview without leaving Recordings page
 - Consistent UX with Incoming page preview
 - Faster decision-making during recording review
 - No navigation required for spot-checks
 
 **Complements:**
+
 - FR-106: Incoming Video Preview (same modal pattern)
 - FR-71: Watch Page (alternative deep-review workflow)
 - FR-88: Shadow Fallback (disabled state for shadow files)
@@ -520,14 +578,15 @@ Added a play button (▶) to each recording row on the Recordings page that open
 
 ### FR-127: Developer Drawer (Data Files Viewer)
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change      | Commit  |
+| ---------- | ----------- | ------- |
 | 2026-01-03 | Implemented | 7f5462c |
 
 **What was built:**
 Professional developer tools drawer with Monaco Editor integration for viewing and debugging internal JSON files without leaving FliHub.
 
 **Core Features:**
+
 - Monaco Editor integration (VSCode's actual editor)
   - Perfect syntax highlighting (VSCode Dark+ theme)
   - Collapsible JSON sections with +/- icons
@@ -552,10 +611,12 @@ Professional developer tools drawer with Monaco Editor integration for viewing a
   - Sticky action bar always visible while scrolling
 
 **Access:**
+
 - Cog menu (⚙️) → 🔍 Developer Tools
 - Escape key closes drawer
 
 **Use Cases:**
+
 - Debug application state
 - Verify FR-126 manifest creation
 - Inspect configuration
@@ -563,10 +624,12 @@ Professional developer tools drawer with Monaco Editor integration for viewing a
 - Support debugging
 
 **Files created:**
+
 - `client/src/components/DeveloperDrawer.tsx` (307 lines)
 - `server/src/routes/developer.ts` (195 lines)
 
 **Files modified:**
+
 - `server/src/index.ts` - Registered developer routes
 - `server/src/routes/system.ts` - Added `POST /api/system/open-file-by-path`
 - `client/src/App.tsx` - Drawer state, menu item, component render
@@ -574,15 +637,18 @@ Professional developer tools drawer with Monaco Editor integration for viewing a
 - `client/src/constants/queryKeys.ts` - Developer query keys
 
 **API Endpoints:**
+
 - `GET /api/developer/project-state` - Returns `.flihub-state.json`
 - `GET /api/developer/config` - Returns `config.json`
 - `GET /api/developer/telemetry` - Returns `transcription-telemetry.jsonl`
 - `POST /api/system/open-file-by-path` - Opens file in default editor
 
 **Dependencies:**
+
 - `@monaco-editor/react` - VSCode editor component
 
 **Design Iterations:**
+
 1. Custom JSON viewer ❌
 2. @uiw/react-json-view ❌
 3. react-json-view-lite ❌
@@ -591,6 +657,7 @@ Professional developer tools drawer with Monaco Editor integration for viewing a
 **Time:** ~6-7 hours (within 5-7 hour estimate)
 
 **User impact:**
+
 - Developers can debug state without leaving app
 - Exactly matches VSCode's JSON viewing experience
 - Essential tool for FR-126 manifest verification
@@ -600,14 +667,15 @@ Professional developer tools drawer with Monaco Editor integration for viewing a
 
 ### FR-126: Edit Folder Manifest & Cleanup
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change      | Commit  |
+| ---------- | ----------- | ------- |
 | 2026-01-03 | Implemented | 5229de0 |
 
 **What was built:**
 Manifest-based copy tracking system with clean/restore operations to save disk space after exporting files to Gling.
 
 **Core Features:**
+
 1. **Manifest Creation** (automatic during copy)
    - Tracks which files were copied to edit folders
    - SHA-256 hash of first 1MB (fast change detection)
@@ -627,18 +695,21 @@ Manifest-based copy tracking system with clean/restore operations to save disk s
    - Atomic operation (all or nothing)
 
 **Status Indicators:**
+
 - 🟢 Present (X.X GB) - Source files exist in edit folder
 - 🔴 Cleaned - Source files deleted, ready to restore
 - ⚠️ Changed (N files) - Originals modified since copy
 - ❌ Missing (N files) - Originals no longer exist
 
 **Example workflow:**
+
 1. Copy 12 files to Gling → Edit → Clean (saves 2.4 GB)
 2. Gling crashes or session closes
 3. Restore with 1 click → Continue editing
 4. No need to remember which files were selected
 
 **Files created:**
+
 - `server/src/utils/editManifest.ts` (230 lines)
   - `calculateFileHash()` - SHA-256 hash
   - `createManifest()` - Generate manifest
@@ -647,6 +718,7 @@ Manifest-based copy tracking system with clean/restore operations to save disk s
   - `restoreEditFolder()` - Re-copy from recordings
 
 **Files modified:**
+
 - `shared/types.ts` (+90 lines) - Manifest types
 - `server/src/utils/projectState.ts` (+28 lines) - Manifest helpers
 - `server/src/routes/export.ts` (+180 lines) - New endpoints
@@ -654,12 +726,14 @@ Manifest-based copy tracking system with clean/restore operations to save disk s
 - `client/src/components/ExportPanel.tsx` (+105 lines) - UI
 
 **API Endpoints:**
+
 - `GET /api/export/manifest-status/:folder` - Returns status
 - `POST /api/export/clean-edit-folder` - Delete source files
 - `POST /api/export/restore-edit-folder` - Restore from manifest
 - Enhanced: `POST /api/export/copy-to-gling` - Creates manifest
 
 **Value:**
+
 - Disk space savings: 2-10 GB per project during editing
 - Safe: Originals never touched in recordings/
 - Manifest provides audit trail
@@ -667,6 +741,7 @@ Manifest-based copy tracking system with clean/restore operations to save disk s
 - Gling outputs automatically preserved
 
 **Critical bug fixed during development:**
+
 - Missing .js extension in imports (TypeScript ES modules)
 - Wrong fs API usage (callback-based vs. promise-based)
 - Missing type annotations
@@ -679,14 +754,15 @@ Users can now verify manifest creation by opening Developer Tools and inspecting
 
 ### FR-119: API Documentation & Testing Page
 
-| Date | Change | Commit |
-|------|--------|--------|
+| Date       | Change                | Commit  |
+| ---------- | --------------------- | ------- |
 | 2026-01-02 | Implemented (Phase 3) | 7a8c5a1 |
 
 **What was built:**
 Interactive API Explorer with 36 documented endpoints, auto-populate features, and short code resolution.
 
 **Phase 3: Interactive API Explorer UI**
+
 - New "API Explorer" accessible from Cog menu (⚙ → 🔌 API Explorer)
 - Two-column layout: endpoint list (left) + request/response panel (right)
 - 36 endpoints across 7 groups (180% of minimum 20 requirement)
@@ -700,6 +776,7 @@ Interactive API Explorer with 36 documented endpoints, auto-populate features, a
   - State (2 endpoints)
 
 **Core Features:**
+
 - Collapsible endpoint groups with expand/collapse
 - HTTP method color coding (GET=green, POST=blue, PUT=yellow, DELETE=red)
 - Smart parameter forms (dropdowns for enums, text/number inputs)
@@ -709,12 +786,14 @@ Interactive API Explorer with 36 documented endpoints, auto-populate features, a
 - "Copy Response" copies JSON to clipboard
 
 **Bonus Feature 1: Auto-populate Current Project**
+
 - Project code parameters auto-filled with active project
 - Eliminates repetitive typing for `:code` parameters
 - Still manually editable for testing other projects
 - Applies to: GET/POST/PUT endpoints with `:code` path param
 
 **Bonus Feature 2: Short Code Resolution**
+
 - All endpoints accept short codes (e.g., "c10") OR full codes (e.g., "c10-poem-epic-3")
 - Resolution logic: Exact match → Prefix match → 404
 - New utility: `server/src/utils/projectResolver.ts`
@@ -724,33 +803,39 @@ Interactive API Explorer with 36 documented endpoints, auto-populate features, a
   - 4 specialized routes (transcriptions.ts, chapters.ts, s3-staging.ts, shadows.ts)
 
 **Bonus Feature 3: Comma-delimited Segments Filter**
+
 - New `segments` parameter for transcripts endpoint
 - Usage: `GET /api/query/projects/:code/transcripts?segments=1,2,3`
 - Returns only recordings matching specified segment numbers
 - Example: `segments=1,5,10` returns all X-1, X-5, X-10 recordings
 
 **UX Polish:**
+
 - Required parameters pre-filled with example values
 - Optional parameters empty with placeholder hints
 - Enum parameter simplification (include: "content" dropdown)
 - Error messages displayed clearly
 
 **Files created:**
+
 - `client/src/components/ApiExplorer.tsx` (418 lines)
 - `shared/apiRegistry.ts` (650 lines) - 36 endpoint definitions
 - `server/src/utils/projectResolver.ts` (82 lines) - Short code resolution
 
 **Files modified:**
+
 - `client/src/App.tsx` - Navigation integration (Cog menu + tab routing)
 - 13 route files with short code resolution
 - `docs/prd/fr-119-api-documentation-testing.md` - Completion notes
 
 **Git commit:**
+
 - Hash: 7a8c5a1
 - Message: "feat(FR-119): API Explorer with auto-populate and short code support"
 - Stats: 13 files changed, 1,850 insertions(+), 67 deletions(-)
 
 **User impact:**
+
 - Developers can test APIs without Postman/curl
 - Auto-populate saves typing for project-specific endpoints
 - Short codes (c10) work everywhere, not just full codes
@@ -762,19 +847,21 @@ Interactive API Explorer with 36 documented endpoints, auto-populate features, a
 
 ### FR-123: Watch Panel Enhancements
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-02 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-02 | Implemented | -      |
 
 **What was built:**
 Unified Watch panel controls with park/unpark actions and per-segment annotations for better video review workflow.
 
 **Part 1: Consolidated Navigation**
+
 - Moved Previous/Next buttons from above video to controls bar below
 - Clean single-line layout: [← Prev] [▶ Play] [→ Next] filename (X/Y) [tags] [toggles]
 - All controls in one visual location (better UX)
 
 **Part 2: Park/Unpark in Watch Panel**
+
 - Park button added to controls bar (between navigation and filename)
 - Visual states:
   - Active: Gray "Park →" button
@@ -783,6 +870,7 @@ Unified Watch panel controls with park/unpark actions and per-segment annotation
 - Uses existing FR-120 mutations
 
 **Part 3: Per-Segment Annotations**
+
 - Optional note field appears when recording is parked
 - Edit/save/cancel workflow
 - Stored in `.flihub-state.json` under `recordings[filename].annotation`
@@ -790,6 +878,7 @@ Unified Watch panel controls with park/unpark actions and per-segment annotation
 - Real-time updates via Socket.io
 
 **Example annotation in state file:**
+
 ```json
 {
   "recordings": {
@@ -802,6 +891,7 @@ Unified Watch panel controls with park/unpark actions and per-segment annotation
 ```
 
 **Files modified:**
+
 - `shared/types.ts` - Added `annotation?: string` to RecordingState, RecordingFile, QueryRecording
 - `server/src/utils/projectState.ts` - Added `getRecordingAnnotation()` helper
 - `server/src/routes/index.ts` - Added annotation to recordings endpoint
@@ -811,6 +901,7 @@ Unified Watch panel controls with park/unpark actions and per-segment annotation
 - `client/src/components/WatchPage.tsx` - Full UI implementation
 
 **UX Benefits:**
+
 - Single eye position for all controls (no more jumping between top/bottom)
 - Make park decisions while watching (instead of switching to Recordings panel)
 - Capture reasoning immediately ("why did I park this?")
@@ -820,14 +911,15 @@ Unified Watch panel controls with park/unpark actions and per-segment annotation
 
 ### FR-125: Config & EditPrep Consolidation
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-02 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-02 | Implemented | -      |
 
 **What was built:**
 Consolidated Gling preparation features into Export panel with split dictionary display and inline project dictionary editing.
 
 **Features:**
+
 - Split dictionary display: Global (config.json) / Project (.flihub-state.json) / Combined (merged)
 - Three copy buttons for each dictionary type
 - Inline project dictionary editing with Save/Cancel buttons
@@ -835,16 +927,19 @@ Consolidated Gling preparation features into Export panel with split dictionary 
 - EditPrep modal deleted (redundant after FR-124)
 
 **Files modified:**
+
 - `client/src/components/ExportPanel.tsx` - Added dictionary split display, editing, 3 copy buttons
 - `client/src/components/ConfigPanel.tsx` - Removed project dictionary section
 - `client/src/App.tsx` - Removed EditPrep menu item and modal
 
 **Files deleted:**
+
 - `client/src/components/EditPrepPage.tsx` - No longer needed
 
 **API changes:** None - existing endpoints work as-is
 
 **User impact:**
+
 - One location for all Gling prep (Export panel)
 - More flexible dictionary copying (can copy global/project separately)
 - Cleaner Config page (only global settings)
@@ -853,14 +948,15 @@ Consolidated Gling preparation features into Export panel with split dictionary 
 
 ### FR-124: Export Panel Enhancements
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-02 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-02 | Implemented | -      |
 
 **What was built:**
 Smart folder creation, edit folders management, and Gling prep info in Export panel.
 
 **Features:**
+
 - Smart Open/Create button (detects folder existence, prevents errors)
 - Edit Folders section with ✓/○ status indicators
 - Individual Create/Open buttons per folder
@@ -870,6 +966,7 @@ Smart folder creation, edit folders management, and Gling prep info in Export pa
 - Dictionary words with count and copy button
 
 **Files modified:**
+
 - `server/src/routes/edit.ts` - Single folder creation endpoint
 - `client/src/components/ExportPanel.tsx` - UI enhancements
 - `client/src/hooks/useEditApi.ts` - Single folder mutation hook
@@ -880,18 +977,20 @@ Smart folder creation, edit folders management, and Gling prep info in Export pa
 
 ### FR-122: Export Panel
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-02 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-02 | Implemented | -      |
 
 **What was built:**
 New "Export" tab for preparing recordings for Gling AI, with file selection and copy operations.
 
 **Files created:**
+
 - `client/src/components/ExportPanel.tsx`
 - `server/src/routes/export.ts`
 
 **Features:**
+
 - Show Parked toggle (default: OFF)
 - File selection with checkboxes (non-parked selected by default)
 - Chapter-level Select/Deselect All buttons
@@ -908,14 +1007,15 @@ New "Export" tab for preparing recordings for Gling AI, with file selection and 
 
 ### FR-121: Parked State in Watch Panel
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-02 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-02 | Implemented | -      |
 
 **What was built:**
 PARKED badge and filtering for Watch panel, matching FR-120's pink styling.
 
 **Changes to WatchPage.tsx:**
+
 - State: `showParked` with localStorage persistence
 - Filtering: `groupByChapterWithTiming`, `sortedRecordings`, `mostRecentRecording` respect toggle
 - UI: Pink row styling (`bg-pink-50`), PARKED badge, toggle button next to Safe
@@ -926,25 +1026,28 @@ PARKED badge and filtering for Watch panel, matching FR-120's pink styling.
 
 ### FR-120: Parked Recording State
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-02 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-02 | Implemented | -      |
 
 **What was built:**
 Third recording state "Parked" for clips that are good content but not for this edit.
 
 **Backend:**
+
 - Types: Added `parked?: boolean` to RecordingState, `isParked: boolean` to RecordingFile/QueryRecording
 - State management: `isRecordingParked()`, `setRecordingParked()`, `getParkedRecordings()`
 - API routes: `POST /api/recordings/park`, `POST /api/recordings/unpark`
 - Query endpoints return `isParked` flag
 
 **Frontend:**
+
 - API hooks: `useParkRecording()`, `useUnparkRecording()`
 - RecordingsView: Pink background (`bg-pink-50`), show/hide toggle, per-file and chapter-level actions
 - Stats display: "(X active, Y safe, Z parked)"
 
 **Files modified:**
+
 - `shared/types.ts`
 - `server/src/utils/projectState.ts`
 - `server/src/routes/index.ts`
@@ -957,20 +1060,22 @@ Third recording state "Parked" for clips that are good content but not for this 
 
 ### FR-73: Template Visibility Rules
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-02 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-02 | Implemented | -      |
 
 **What was built:**
 Chapter-based filtering for common name templates, plus Config UI for editing filter rules.
 
 **Part 1: Filtering Logic**
+
 - Added `ChapterFilter` interface to `shared/types.ts`
 - Extended `CommonName` with `chapterFilter?: 'all' | ChapterFilter`
 - Template pills on Incoming page now filter by current chapter value
 - Support for `"all"`, `{ max }`, `{ min }`, `{ min, max }` filters
 
 **Part 2: Config UI**
+
 - Refactored Common Names from pills to rows
 - Each row: ▲/▼ reorder, name, dropdown, custom inputs (if needed), delete
 - Dropdown presets: All chapters, Early (1-4), Late (10+), Custom
@@ -979,6 +1084,7 @@ Chapter-based filtering for common name templates, plus Config UI for editing fi
 **Bonus:** ▲/▼ reorder buttons to control display order on Incoming page
 
 **Files modified:**
+
 - `shared/types.ts` - ChapterFilter type, extended CommonName
 - `client/src/components/NamingControls.tsx` - Filter function, useMemo for filtered list
 - `client/src/components/ConfigPanel.tsx` - Row-based Common Names UI with dropdowns
@@ -987,16 +1093,18 @@ Chapter-based filtering for common name templates, plus Config UI for editing fi
 
 ### FR-69: Header Dropdown Menus (Discovered Already Implemented)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-01 | Discovered already implemented during backlog audit | - |
+| Date       | Change                                              | Commit |
+| ---------- | --------------------------------------------------- | ------ |
+| 2026-01-01 | Discovered already implemented during backlog audit | -      |
 
 **What was discovered:**
 HeaderDropdown component exists with FR-69 comments. Used in App.tsx for:
+
 - Settings dropdown (gear icon) - Config, Mockups
 - Project actions dropdown (ellipsis) - Copy for Calendar, Copy Path, Open in Finder
 
 **Files:**
+
 - `client/src/components/HeaderDropdown.tsx` (created)
 - `client/src/App.tsx` (uses HeaderDropdown)
 
@@ -1004,9 +1112,9 @@ HeaderDropdown component exists with FR-69 comments. Used in App.tsx for:
 
 ### FR-80: Enhanced Project List & Stage Model (Discovered Already Implemented)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-01 | Discovered implemented via FR-82 during backlog audit | - |
+| Date       | Change                                                | Commit |
+| ---------- | ----------------------------------------------------- | ------ |
+| 2026-01-01 | Discovered implemented via FR-82 during backlog audit | -      |
 
 **What was discovered:**
 All FR-80 functionality was implemented as part of FR-82: Project List UX Fixes (2025-12-15).
@@ -1022,9 +1130,9 @@ See FR-82 changelog entry for full implementation details.
 
 ### FR-118: Project-Specific Gling Dictionary
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-02 | Implemented | - |
+| Date       | Change      | Commit |
+| ---------- | ----------- | ------ |
+| 2026-01-02 | Implemented | -      |
 
 **What was built:**
 Project-specific dictionary words that merge with global dictionary, plus UX improvements for dictionary management.
@@ -1047,6 +1155,7 @@ Project-specific dictionary words that merge with global dictionary, plus UX imp
    - Updated help text to indicate auto-save behavior
 
 **Files modified:**
+
 - `shared/types.ts` - Added glingDictionary to ProjectState
 - `server/src/utils/projectState.ts` - Updated write + added helper
 - `server/src/routes/state.ts` - Added PATCH dictionary endpoint
@@ -1058,14 +1167,15 @@ Project-specific dictionary words that merge with global dictionary, plus UX imp
 
 ### FR-54: Naming Template Bugs (Discovered Already Fixed)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-01 | Discovered all 4 bugs already fixed during code review | - |
+| Date       | Change                                                 | Commit |
+| ---------- | ------------------------------------------------------ | ------ |
+| 2026-01-01 | Discovered all 4 bugs already fixed during code review | -      |
 
 **What was discovered:**
 Code review revealed all 4 naming template bugs had been fixed incrementally during previous development work. The PRD was not updated at the time.
 
 **Bugs confirmed fixed:**
+
 1. **Custom tag cleared after rename** - `handleRenamed` in App.tsx no longer clears customTag
 2. **Tags appearing in suggested name** - `stripTrailingTags()` in shared/naming.ts removes uppercase tags
 3. **Sequence limited to single digit** - Input now accepts 3 digits (slice(0, 3), maxLength={3})
@@ -1077,9 +1187,9 @@ Code review revealed all 4 naming template bugs had been fixed incrementally dur
 
 ### FR-114: Projects Page - Transcript Quick Access (Phase 1)
 
-| Date | Change | Commit |
-|------|--------|--------|
-| 2026-01-01 | Phase 1 Implemented | - |
+| Date       | Change              | Commit |
+| ---------- | ------------------- | ------ |
+| 2026-01-01 | Phase 1 Implemented | -      |
 
 **What was built:**
 One-click transcript copy from the Projects panel.
@@ -1094,9 +1204,11 @@ One-click transcript copy from the Projects panel.
    - On click: fetches transcript -> copies to clipboard -> shows toast with char count
 
 **Bug fix during implementation:**
+
 - Had to use `API_URL` (`http://localhost:5101`) instead of relative URL, since Vite dev server doesn't proxy API requests to the backend.
 
 **Files modified:**
+
 - `server/src/routes/query/projects.ts` - New transcript text endpoint
 - `client/src/components/ProjectsPanel.tsx` - Copy button per row
 
@@ -1107,4 +1219,4 @@ One-click transcript copy from the Projects panel.
 ### FR-113: Edit Prep Path Fix & Folder Restructure
 
 | Date | Change | Commit |
-|------|--------|--------|
+| ---- | ------ | ------ |

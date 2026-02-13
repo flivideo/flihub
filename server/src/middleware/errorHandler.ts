@@ -37,12 +37,7 @@ export function asyncHandler(
  * Global error handler middleware
  * Must be registered after all routes
  */
-export function errorHandler(
-  err: Error,
-  req: Request,
-  res: Response,
-  _next: NextFunction
-): void {
+export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction): void {
   // Log error for debugging
   console.error(`[Error] ${req.method} ${req.path}:`, err.message);
 
@@ -58,8 +53,9 @@ export function errorHandler(
   // Handle unexpected errors
   res.status(500).json({
     success: false,
-    error: process.env.NODE_ENV === 'production'
-      ? 'Internal server error'
-      : err.message || 'Unknown error occurred',
+    error:
+      process.env.NODE_ENV === 'production'
+        ? 'Internal server error'
+        : err.message || 'Unknown error occurred',
   });
 }

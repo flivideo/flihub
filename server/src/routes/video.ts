@@ -51,7 +51,12 @@ export function createVideoRoutes(getConfig: () => Config): Router {
     }
 
     // FR-83: Allow recordings, chapters, and shadow folders
-    const allowedFolders = ['recordings', '-chapters', 'recording-shadows', 'recording-shadows-safe'];
+    const allowedFolders = [
+      'recordings',
+      '-chapters',
+      'recording-shadows',
+      'recording-shadows-safe',
+    ];
     if (!allowedFolders.includes(folder)) {
       res.status(400).json({ success: false, error: 'Invalid folder' });
       return;
@@ -73,7 +78,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       const videoPath = path.join(projectsDir, projectCode, actualFolder, filename);
 
       // Verify file exists
-      if (!await fs.pathExists(videoPath)) {
+      if (!(await fs.pathExists(videoPath))) {
         res.status(404).json({ success: false, error: 'Video not found' });
         return;
       }
@@ -155,7 +160,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       const videoPath = path.join(recordingsDir, filename);
 
       // Verify file exists
-      if (!await fs.pathExists(videoPath)) {
+      if (!(await fs.pathExists(videoPath))) {
         res.status(404).json({ success: false, error: 'Video not found' });
         return;
       }
@@ -235,7 +240,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       const videoPath = path.join(watchDir, filename);
 
       // Verify file exists
-      if (!await fs.pathExists(videoPath)) {
+      if (!(await fs.pathExists(videoPath))) {
         res.status(404).json({ success: false, error: 'Video not found' });
         return;
       }

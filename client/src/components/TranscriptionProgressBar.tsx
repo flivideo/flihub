@@ -1,33 +1,32 @@
 // FR-52: Transcription Progress Bar
 // Shows project-wide transcription status at a glance
 
-import { useConfig, useProjects } from '../hooks/useApi'
-import type { TranscriptionsResponse } from '../../../shared/types'
+import { useConfig, useProjects } from '../hooks/useApi';
+import type { TranscriptionsResponse } from '../../../shared/types';
 
 interface TranscriptionProgressBarProps {
-  transcriptionData: TranscriptionsResponse | undefined
+  transcriptionData: TranscriptionsResponse | undefined;
 }
 
 export function TranscriptionProgressBar({ transcriptionData }: TranscriptionProgressBarProps) {
-  const { data: config } = useConfig()
-  const { data: projectsData } = useProjects()
+  const { data: config } = useConfig();
+  const { data: projectsData } = useProjects();
 
   // Find current project stats
-  const currentProject = projectsData?.projects?.find(p => {
-    if (!config?.projectDirectory) return false
-    return config.projectDirectory === p.path ||
-           config.projectDirectory === `${p.path}/`
-  })
+  const currentProject = projectsData?.projects?.find((p) => {
+    if (!config?.projectDirectory) return false;
+    return config.projectDirectory === p.path || config.projectDirectory === `${p.path}/`;
+  });
 
   // If no project selected or no stats, show nothing
   if (!currentProject) {
-    return null
+    return null;
   }
 
-  const { totalFiles, transcriptCount, transcriptPercent, transcriptSync } = currentProject
-  const activeCount = transcriptionData?.active ? 1 : 0
-  const queuedCount = transcriptionData?.queue?.length || 0
-  const missingCount = transcriptSync?.missingCount || 0
+  const { totalFiles, transcriptCount, transcriptPercent, transcriptSync } = currentProject;
+  const activeCount = transcriptionData?.active ? 1 : 0;
+  const queuedCount = transcriptionData?.queue?.length || 0;
+  const missingCount = transcriptSync?.missingCount || 0;
 
   // Handle empty state
   if (totalFiles === 0) {
@@ -35,10 +34,12 @@ export function TranscriptionProgressBar({ transcriptionData }: TranscriptionPro
       <section className="mb-6">
         <div className="border rounded-lg p-4 bg-gray-50">
           <h3 className="text-sm font-medium text-gray-700 mb-2">Transcription Progress</h3>
-          <p className="text-sm text-gray-500">No recordings yet. Add recordings to start transcribing.</p>
+          <p className="text-sm text-gray-500">
+            No recordings yet. Add recordings to start transcribing.
+          </p>
         </div>
       </section>
-    )
+    );
   }
 
   return (
@@ -107,5 +108,5 @@ export function TranscriptionProgressBar({ transcriptionData }: TranscriptionPro
         </div>
       </div>
     </section>
-  )
+  );
 }

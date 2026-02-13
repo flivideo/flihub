@@ -11,12 +11,14 @@
 ### What Happened
 
 **Original Analysis (INCORRECT):**
+
 - Scanner reported 1,805 issues with 1,422 naming errors (79%)
 - Concluded users were typing lowercase tags incorrectly
 - Created NFR-141 to make parser "lenient"
 - Prioritized NFR-141 as CRITICAL blocker
 
 **Reality After Scanner Bug Fixes:**
+
 - Scanner had **TWO BUGS** causing massive false positives
 - After fixes: **Only 391 real issues** (78% reduction)
 - **Only 8 naming errors** (2% of issues, not 79%)
@@ -25,12 +27,12 @@
 
 ### Impact on Requirements
 
-| Requirement | Before | After | Status |
-|-------------|--------|-------|--------|
-| NFR-141 | CRITICAL Priority 0 | ❌ CANCELLED | Withdrawn |
-| FR-140 | HIGH Priority 1 | ✅ STILL VALID | Still HIGH |
-| FR-134 | MEDIUM Priority 2 | 🟢 OPTIONAL | Downgraded |
-| FR-133/135 | LOW Priority 3 | 🟢 OPTIONAL | Unchanged |
+| Requirement | Before              | After          | Status     |
+| ----------- | ------------------- | -------------- | ---------- |
+| NFR-141     | CRITICAL Priority 0 | ❌ CANCELLED   | Withdrawn  |
+| FR-140      | HIGH Priority 1     | ✅ STILL VALID | Still HIGH |
+| FR-134      | MEDIUM Priority 2   | 🟢 OPTIONAL    | Downgraded |
+| FR-133/135  | LOW Priority 3      | 🟢 OPTIONAL    | Unchanged  |
 
 ---
 
@@ -43,8 +45,8 @@ Scanner used simple logic: "everything after position 3 is a tag"
 
 ```typescript
 // BUGGY LOGIC (scanner):
-const parts = filename.replace(extname, '').split('-')
-const tags = parts.slice(3) // Everything after position 3
+const parts = filename.replace(extname, '').split('-');
+const tags = parts.slice(3); // Everything after position 3
 
 // Example: "03-1-intro-to-bmad.mov"
 // parts = ['03', '1', 'intro', 'to', 'bmad']
@@ -56,10 +58,10 @@ Use same `stripTrailingTags()` logic as app parser
 
 ```typescript
 // CORRECT LOGIC (app parser):
-import { stripTrailingTags } from '../../../shared/naming.js'
+import { stripTrailingTags } from '../../../shared/naming.js';
 
-const nameWithTags = filename.replace(extname, '').split('-').slice(2).join('-')
-const { baseName, tags } = stripTrailingTags(nameWithTags)
+const nameWithTags = filename.replace(extname, '').split('-').slice(2).join('-');
+const { baseName, tags } = stripTrailingTags(nameWithTags);
 
 // Example: "03-1-intro-to-bmad.mov"
 // nameWithTags = 'intro-to-bmad'
@@ -68,6 +70,7 @@ const { baseName, tags } = stripTrailingTags(nameWithTags)
 ```
 
 **Impact:**
+
 - Before: 1,422 tag errors
 - After: 137 tag errors
 - **Eliminated 1,285 false positives** (90% reduction)
@@ -103,11 +106,13 @@ if (!NAMING_RULES.name.pattern.test(namePart)) {
 ```
 
 **Rationale:**
+
 - Periods used intentionally for version numbering (e.g., `develop.1.1`)
 - Common pattern in software development naming
 - Not a violation of naming rules
 
 **Impact:**
+
 - Before: 137 naming errors (after Bug 1 fix)
 - After: 8 naming errors
 - **Eliminated 129 false positives** (94% reduction)
@@ -173,8 +178,9 @@ Reduction: 1,805 → 391 (78% total reduction)
    - Fix: Rename to `05-1-demo-1st.mov` OR `05-1-demo-1ST.mov` (if `1ST` is a tag)
 
 5-8. **Similar minor issues** in other projects
-   - Consistent patterns: temp files, missing names, wrong separators
-   - **Total time to fix:** ~15 minutes manual work
+
+- Consistent patterns: temp files, missing names, wrong separators
+- **Total time to fix:** ~15 minutes manual work
 
 ---
 
@@ -185,16 +191,19 @@ Reduction: 1,805 → 391 (78% total reduction)
 The discovery process **VALIDATED** that the app parser is correct:
 
 **✅ Tag Detection:**
+
 - Only uppercase parts at the END of name are tags
 - Multi-part names like `intro-to-bmad` are normal
 - `stripTrailingTags()` logic works correctly
 
 **✅ Period Support:**
+
 - Periods allowed for versioning (e.g., `develop.1.1`)
 - Intentional design decision
 - `NAMING_RULES.name.pattern` correctly allows periods
 
 **✅ No Changes Needed:**
+
 - `shared/naming.ts` is already correct
 - No "lenient" mode needed
 - Users are naming files correctly
@@ -206,17 +215,21 @@ The discovery process **VALIDATED** that the app parser is correct:
 The scanner bugs taught us:
 
 **❌ Don't Duplicate Logic:**
+
 - Scanner should reuse app parser code
 - Bug 1 happened because scanner had different tag detection logic
 
 **✅ Fixed:**
+
 - Scanner now imports `stripTrailingTags()` from `shared/naming.ts`
 - Uses exact same validation rules as app
 
 **❌ Use Correct Validation Rules:**
+
 - Bug 2 happened because scanner used wrong pattern (`label` instead of `name`)
 
 **✅ Fixed:**
+
 - Scanner now uses `NAMING_RULES.name.pattern`
 - Consistent with app validation
 
@@ -234,6 +247,7 @@ The scanner bugs taught us:
 6. ✅ **POST-DISCOVERY:** Bug fixes, corrected analysis
 
 **Key Insight:** Building the scanner revealed its own bugs, leading to:
+
 - Accurate data (391 vs 1,805 issues)
 - Validated app parser correctness
 - Prevented unnecessary code changes (NFR-141)
@@ -244,15 +258,16 @@ The scanner bugs taught us:
 
 ### Issue Type Distribution (ACCURATE)
 
-| Type | Count | % | Severity | Action |
-|------|-------|---|----------|--------|
-| **Derivative** | 361 | 92% | INFO | Optional regen tool (FR-133 low priority) |
-| **Structural** | 22 | 6% | INFO | FR-140 chapter renumbering (still valid) |
-| **Naming** | 8 | 2% | ERROR | Manual fixes (15 minutes) |
+| Type           | Count | %   | Severity | Action                                    |
+| -------------- | ----- | --- | -------- | ----------------------------------------- |
+| **Derivative** | 361   | 92% | INFO     | Optional regen tool (FR-133 low priority) |
+| **Structural** | 22    | 6%  | INFO     | FR-140 chapter renumbering (still valid)  |
+| **Naming**     | 8     | 2%  | ERROR    | Manual fixes (15 minutes)                 |
 
 ### Derivative Issues (361 - INFO Level)
 
 **Breakdown:**
+
 - Missing shadows: ~180 files
 - Missing transcripts: ~180 files
 - Orphaned files: ~1 file
@@ -268,9 +283,11 @@ The scanner bugs taught us:
 ### Structural Issues (22 - INFO Level)
 
 **Breakdown:**
+
 - Chapter gaps: 22 instances across 12 projects
 
 **Example:**
+
 ```
 Chapters: 01, 03, 04, 05, 06
 Missing: 02 (gap)
@@ -287,6 +304,7 @@ Missing: 02 (gap)
 ### Naming Issues (8 - ERROR Level)
 
 **Breakdown:**
+
 - Missing names: 2 files (e.g., `03-1.mov`)
 - Invalid separators: 1 file (plus sign instead of hyphen)
 - Temp files: 2 files (timestamp suffixes)
@@ -305,11 +323,13 @@ Missing: 02 (gap)
 ### NFR-141: Lenient Tag Parser ❌ WITHDRAWN
 
 **Original Rationale (INCORRECT):**
+
 - 1,422 tag errors (79% of issues)
 - Users typing lowercase tags
 - Parser too strict
 
 **Reality:**
+
 - Scanner bug caused false positives
 - App parser already correct
 - No code changes needed
@@ -323,6 +343,7 @@ Missing: 02 (gap)
 ### FR-140: Bulk Chapter Renumbering ✅ STILL HIGH PRIORITY
 
 **Evidence (VALIDATED):**
+
 - 22 chapter gaps across 12 projects (26%)
 - User explicitly requested during FR-138 testing
 - Real user pain point
@@ -336,11 +357,13 @@ Missing: 02 (gap)
 ### FR-134: Inconsistency Detection 🟢 DOWNGRADED TO LOW
 
 **Original Rationale:**
+
 - Warn about chapter gaps (22 found)
 - Warn about label mismatches
 - Warn about mixed chapters
 
 **Reality:**
+
 - Chapter gaps are INFO level (22 instances, benign)
 - Label mismatches not found in scanner (runtime-only)
 - Mixed chapters not found in scanner (runtime-only)
@@ -354,10 +377,12 @@ Missing: 02 (gap)
 ### FR-133: File Status Indicators 🟢 UNCHANGED (LOW)
 
 **Evidence:**
+
 - 361 derivative issues (92% of total)
 - But all INFO level (not blocking)
 
 **Reality:**
+
 - FR-136 already has "Regen Shadows" and "Regen Transcripts" buttons
 - Missing derivatives can be regenerated on demand
 - Status indicators are nice-to-have visibility
@@ -371,6 +396,7 @@ Missing: 02 (gap)
 ### FR-135: Chapter Tools 🟢 UNCHANGED (LOW)
 
 **Evidence:**
+
 - 0 issues found related to needing chapter moves/swaps
 
 **Status:** 🟢 **LOW** - No evidence of need
@@ -384,7 +410,9 @@ Missing: 02 (gap)
 ### NEW Priority Order (Post-Scanner Fixes)
 
 #### Priority 1: HIGH (User-Validated)
+
 **FR-140: Bulk Chapter Renumbering** - 7 hours
+
 - ✅ 22 chapter gaps found (real data)
 - ✅ User explicitly requested
 - ✅ Needs scope definition
@@ -394,7 +422,9 @@ Missing: 02 (gap)
 ---
 
 #### Priority 2: LOW (Manual Fix)
+
 **8 Naming Errors** - 15 minutes
+
 - Missing names (2 files)
 - Invalid separators (1 file)
 - Temp files (2 files)
@@ -405,6 +435,7 @@ Missing: 02 (gap)
 ---
 
 #### Priority 3: OPTIONAL (Future Enhancements)
+
 - **FR-134:** Inconsistency Detection (3-5 days) - Preventative warnings
 - **FR-133:** File Status Indicators (5-8 days) - Visibility tool
 - **FR-135:** Chapter Tools (10-15 days) - No evidence of need
@@ -422,11 +453,13 @@ Missing: 02 (gap)
 **Total Issues Found:** 391
 
 **Issue Breakdown:**
+
 - Derivative (INFO): 361 (92%)
 - Structural (INFO): 22 (6%)
 - Naming (ERROR): 8 (2%)
 
 **Severity Breakdown:**
+
 - ERROR: 8 (2%)
 - INFO: 383 (98%)
 
@@ -519,6 +552,7 @@ Missing: 02 (gap)
 **Original Goal:** Understand all use cases for file/folder management
 
 **Achieved:**
+
 - ✅ Built automated scanner
 - ✅ Analyzed 47 projects
 - ✅ Found and fixed scanner bugs
@@ -527,12 +561,14 @@ Missing: 02 (gap)
 - ✅ Prevented unnecessary code changes (NFR-141)
 
 **Time Investment:**
+
 - Discovery: ~10 hours
 - Scanner bug fixes: ~2 hours
 - Documentation updates: ~2 hours
 - **Total: ~14 hours**
 
 **ROI:**
+
 - Prevented wasted effort on NFR-141 (would have been 8+ hours)
 - Validated FR-140 with data (26% of projects affected)
 - Identified only 8 real errors needing manual fixes (15 minutes)

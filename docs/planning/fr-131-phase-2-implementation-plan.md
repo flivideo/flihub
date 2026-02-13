@@ -10,12 +10,14 @@
 ## Overview
 
 FR-131 Phase 1 (completed 2026-01-03) delivered:
+
 - ✅ Panel renamed: Export → Manage
 - ✅ Basic bulk rename (selected files only)
 - ✅ Server endpoint: `POST /api/manage/bulk-rename`
 - ✅ RecordingsView cleanup
 
 **Phase 2 scope:**
+
 - 🎯 **Regeneration Toolbar** - 4 buttons for regen operations
 - 🎯 **Chapter-Level Rename** - Dropdown to rename entire chapter
 - 🎯 **Shared Code Documentation** - Architecture guide for Recordings/Manage shared code
@@ -69,18 +71,19 @@ All regen operations follow this pattern:
 **Location:** Top of ManagePanel, above bulk rename section
 
 **Structure:**
+
 ```tsx
 // New component: client/src/components/shared/RegenToolbar.tsx
 
 interface RegenToolbarProps {
-  projectCode: string
-  onRegenComplete: (type: 'shadows' | 'transcripts' | 'chapters' | 'all') => void
+  projectCode: string;
+  onRegenComplete: (type: 'shadows' | 'transcripts' | 'chapters' | 'all') => void;
 }
 
 export function RegenToolbar({ projectCode, onRegenComplete }: RegenToolbarProps) {
-  const [isOpen, setIsOpen] = useState(true) // Collapsible
-  const [isRegenerating, setIsRegenerating] = useState(false)
-  const [progress, setProgress] = useState<RegenProgress | null>(null)
+  const [isOpen, setIsOpen] = useState(true); // Collapsible
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [progress, setProgress] = useState<RegenProgress | null>(null);
 
   return (
     <div className="border rounded-lg mb-4">
@@ -102,7 +105,7 @@ export function RegenToolbar({ projectCode, onRegenComplete }: RegenToolbarProps
         </div>
       )}
     </div>
-  )
+  );
 }
 ```
 
@@ -113,20 +116,20 @@ export function RegenToolbar({ projectCode, onRegenComplete }: RegenToolbarProps
 function confirmRegenChapters(): boolean {
   return window.confirm(
     `Regenerate all chapter videos?\n\n` +
-    `This may take 30-60 seconds per chapter.\n\n` +
-    `Existing chapter videos will be deleted and recreated.`
-  )
+      `This may take 30-60 seconds per chapter.\n\n` +
+      `Existing chapter videos will be deleted and recreated.`
+  );
 }
 
 function confirmRegenAll(): boolean {
   return window.confirm(
     `Regenerate ALL derivative files?\n\n` +
-    `This will:\n` +
-    `1. Regenerate shadows (~1 minute)\n` +
-    `2. Queue transcriptions (~5-10 min per file)\n` +
-    `3. Regenerate chapter videos (~30-60s per chapter)\n\n` +
-    `This may take a long time. Continue?`
-  )
+      `This will:\n` +
+      `1. Regenerate shadows (~1 minute)\n` +
+      `2. Queue transcriptions (~5-10 min per file)\n` +
+      `3. Regenerate chapter videos (~30-60s per chapter)\n\n` +
+      `This may take a long time. Continue?`
+  );
 }
 ```
 
@@ -134,15 +137,15 @@ function confirmRegenAll(): boolean {
 
 ```tsx
 interface RegenProgress {
-  type: 'shadows' | 'transcripts' | 'chapters' | 'all'
-  current: number
-  total: number
-  currentItem?: string // e.g., "Chapter 05: intro"
-  status: 'running' | 'complete' | 'error'
+  type: 'shadows' | 'transcripts' | 'chapters' | 'all';
+  current: number;
+  total: number;
+  currentItem?: string; // e.g., "Chapter 05: intro"
+  status: 'running' | 'complete' | 'error';
 }
 
 function RegenProgress({ progress }: { progress: RegenProgress }) {
-  const percentage = (progress.current / progress.total) * 100
+  const percentage = (progress.current / progress.total) * 100;
 
   return (
     <div className="mt-2">
@@ -157,15 +160,14 @@ function RegenProgress({ progress }: { progress: RegenProgress }) {
           {progress.current}/{progress.total}
         </span>
       </div>
-      {progress.currentItem && (
-        <p className="text-xs text-gray-500 mt-1">{progress.currentItem}</p>
-      )}
+      {progress.currentItem && <p className="text-xs text-gray-500 mt-1">{progress.currentItem}</p>}
     </div>
-  )
+  );
 }
 ```
 
 **localStorage State:**
+
 - Remember collapsed state: `localStorage.getItem('regenToolbarOpen')`
 - Default: open (true)
 
@@ -184,54 +186,58 @@ function RegenProgress({ progress }: { progress: RegenProgress }) {
  */
 router.post('/regen-shadows', async (req, res) => {
   try {
-    const config = getConfig()
-    const paths = getProjectPaths(config.projectDirectory)
+    const config = getConfig();
+    const paths = getProjectPaths(config.projectDirectory);
 
     // Get all recordings
-    const recordingsDir = paths.recordings
-    const files = await fs.readdir(recordingsDir)
-    const recordings = files.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'))
+    const recordingsDir = paths.recordings;
+    const files = await fs.readdir(recordingsDir);
+    const recordings = files.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
 
-    const results = { completed: 0, failed: 0, errors: [] }
+    const results = { completed: 0, failed: 0, errors: [] };
 
     for (const filename of recordings) {
       try {
-        const recordingPath = path.join(recordingsDir, filename)
+        const recordingPath = path.join(recordingsDir, filename);
 
         // Delete existing shadow files (both main and -safe)
-        const shadowPath = path.join(paths.shadows, filename.replace(/\.(mov|mp4)$/, '.mp4'))
-        const safeShadowPath = path.join(paths.shadows, '-safe', filename.replace(/\.(mov|mp4)$/, '.mp4'))
+        const shadowPath = path.join(paths.shadows, filename.replace(/\.(mov|mp4)$/, '.mp4'));
+        const safeShadowPath = path.join(
+          paths.shadows,
+          '-safe',
+          filename.replace(/\.(mov|mp4)$/, '.mp4')
+        );
 
-        await fs.remove(shadowPath)
-        await fs.remove(safeShadowPath)
+        await fs.remove(shadowPath);
+        await fs.remove(safeShadowPath);
 
         // Regenerate shadow
-        await createShadowFile(recordingPath, paths.shadows, config.shadowResolution || 240)
+        await createShadowFile(recordingPath, paths.shadows, config.shadowResolution || 240);
 
-        results.completed++
-        console.log(`[Regen Shadows] Created: ${filename}`)
+        results.completed++;
+        console.log(`[Regen Shadows] Created: ${filename}`);
       } catch (err) {
-        results.failed++
-        results.errors.push({ file: filename, error: String(err) })
-        console.error(`[Regen Shadows] Failed: ${filename}`, err)
+        results.failed++;
+        results.errors.push({ file: filename, error: String(err) });
+        console.error(`[Regen Shadows] Failed: ${filename}`, err);
       }
     }
 
     // Emit Socket.io event
-    io.emit('shadows:regenerated', { completed: results.completed, failed: results.failed })
+    io.emit('shadows:regenerated', { completed: results.completed, failed: results.failed });
 
     res.json({
       success: true,
       completed: results.completed,
       failed: results.failed,
       total: recordings.length,
-      errors: results.errors.length > 0 ? results.errors : undefined
-    })
+      errors: results.errors.length > 0 ? results.errors : undefined,
+    });
   } catch (err) {
-    console.error('[Regen Shadows] Error:', err)
-    res.status(500).json({ success: false, error: String(err) })
+    console.error('[Regen Shadows] Error:', err);
+    res.status(500).json({ success: false, error: String(err) });
   }
-})
+});
 ```
 
 #### Endpoint 2: Regen Transcripts
@@ -248,29 +254,29 @@ router.post('/regen-shadows', async (req, res) => {
  */
 router.post('/regen-transcripts', async (req, res) => {
   try {
-    const { force = false } = req.body
-    const config = getConfig()
-    const paths = getProjectPaths(config.projectDirectory)
+    const { force = false } = req.body;
+    const config = getConfig();
+    const paths = getProjectPaths(config.projectDirectory);
 
     // Get all recordings
-    const recordingsDir = paths.recordings
-    const files = await fs.readdir(recordingsDir)
-    const recordings = files.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'))
+    const recordingsDir = paths.recordings;
+    const files = await fs.readdir(recordingsDir);
+    const recordings = files.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
 
-    let queued = 0
+    let queued = 0;
 
     for (const filename of recordings) {
-      const recordingPath = path.join(recordingsDir, filename)
-      const baseName = path.basename(filename, path.extname(filename))
-      const transcriptPath = path.join(paths.transcripts, `${baseName}.txt`)
+      const recordingPath = path.join(recordingsDir, filename);
+      const baseName = path.basename(filename, path.extname(filename));
+      const transcriptPath = path.join(paths.transcripts, `${baseName}.txt`);
 
-      const hasTranscript = await fs.pathExists(transcriptPath)
+      const hasTranscript = await fs.pathExists(transcriptPath);
 
       if (force || !hasTranscript) {
         // Use existing queueTranscription function
-        queueTranscription(recordingPath)
-        queued++
-        console.log(`[Regen Transcripts] Queued: ${filename}`)
+        queueTranscription(recordingPath);
+        queued++;
+        console.log(`[Regen Transcripts] Queued: ${filename}`);
       }
     }
 
@@ -278,13 +284,13 @@ router.post('/regen-transcripts', async (req, res) => {
       success: true,
       queued,
       total: recordings.length,
-      force
-    })
+      force,
+    });
   } catch (err) {
-    console.error('[Regen Transcripts] Error:', err)
-    res.status(500).json({ success: false, error: String(err) })
+    console.error('[Regen Transcripts] Error:', err);
+    res.status(500).json({ success: false, error: String(err) });
   }
-})
+});
 ```
 
 #### Endpoint 3: Regen Chapters
@@ -300,31 +306,31 @@ router.post('/regen-transcripts', async (req, res) => {
  */
 router.post('/regen-chapters', async (req, res) => {
   try {
-    const config = getConfig()
-    const paths = getProjectPaths(config.projectDirectory)
+    const config = getConfig();
+    const paths = getProjectPaths(config.projectDirectory);
 
     // Get all recordings grouped by chapter
-    const recordingsDir = paths.recordings
-    const files = await fs.readdir(recordingsDir)
-    const recordings = files.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'))
+    const recordingsDir = paths.recordings;
+    const files = await fs.readdir(recordingsDir);
+    const recordings = files.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
 
     // Group by chapter
-    const chapters = groupRecordingsByChapter(recordings)
-    const chapterKeys = Array.from(chapters.keys()).sort()
+    const chapters = groupRecordingsByChapter(recordings);
+    const chapterKeys = Array.from(chapters.keys()).sort();
 
     // Start async generation
-    regenerateChaptersAsync(chapterKeys, chapters, paths, config, io)
+    regenerateChaptersAsync(chapterKeys, chapters, paths, config, io);
 
     res.json({
       success: true,
       started: true,
-      chapters: chapterKeys.length
-    })
+      chapters: chapterKeys.length,
+    });
   } catch (err) {
-    console.error('[Regen Chapters] Error:', err)
-    res.status(500).json({ success: false, error: String(err) })
+    console.error('[Regen Chapters] Error:', err);
+    res.status(500).json({ success: false, error: String(err) });
   }
-})
+});
 
 /**
  * Async chapter regeneration with progress updates
@@ -336,36 +342,36 @@ async function regenerateChaptersAsync(
   config: Config,
   io: Server
 ) {
-  const results = { completed: 0, failed: 0, errors: [] }
+  const results = { completed: 0, failed: 0, errors: [] };
 
   for (let i = 0; i < chapterKeys.length; i++) {
-    const chapterKey = chapterKeys[i]
-    const chapterFiles = chapters.get(chapterKey)!
+    const chapterKey = chapterKeys[i];
+    const chapterFiles = chapters.get(chapterKey)!;
 
     try {
       // Emit progress
       io.emit('regen:chapters:progress', {
         current: i + 1,
         total: chapterKeys.length,
-        chapter: chapterKey
-      })
+        chapter: chapterKey,
+      });
 
       // Delete existing chapter video
-      const chapterVideoPath = path.join(paths.recordings, '-chapters', `${chapterKey}-*.mov`)
-      const existing = await glob(chapterVideoPath)
+      const chapterVideoPath = path.join(paths.recordings, '-chapters', `${chapterKey}-*.mov`);
+      const existing = await glob(chapterVideoPath);
       for (const file of existing) {
-        await fs.remove(file)
+        await fs.remove(file);
       }
 
       // Generate new chapter video
-      await generateChapterRecording(chapterKey, chapterFiles, paths, config.chapterRecordings)
+      await generateChapterRecording(chapterKey, chapterFiles, paths, config.chapterRecordings);
 
-      results.completed++
-      console.log(`[Regen Chapters] Created: Chapter ${chapterKey}`)
+      results.completed++;
+      console.log(`[Regen Chapters] Created: Chapter ${chapterKey}`);
     } catch (err) {
-      results.failed++
-      results.errors.push({ chapter: chapterKey, error: String(err) })
-      console.error(`[Regen Chapters] Failed: Chapter ${chapterKey}`, err)
+      results.failed++;
+      results.errors.push({ chapter: chapterKey, error: String(err) });
+      console.error(`[Regen Chapters] Failed: Chapter ${chapterKey}`, err);
     }
   }
 
@@ -373,8 +379,8 @@ async function regenerateChaptersAsync(
   io.emit('regen:chapters:complete', {
     completed: results.completed,
     failed: results.failed,
-    errors: results.errors
-  })
+    errors: results.errors,
+  });
 }
 ```
 
@@ -389,17 +395,17 @@ async function regenerateChaptersAsync(
 router.post('/regen-all', async (req, res) => {
   try {
     // Start async regeneration
-    regenerateAllAsync(getConfig, queueTranscription, io)
+    regenerateAllAsync(getConfig, queueTranscription, io);
 
     res.json({
       success: true,
-      started: true
-    })
+      started: true,
+    });
   } catch (err) {
-    console.error('[Regen All] Error:', err)
-    res.status(500).json({ success: false, error: String(err) })
+    console.error('[Regen All] Error:', err);
+    res.status(500).json({ success: false, error: String(err) });
   }
-})
+});
 
 /**
  * Async regeneration of all derivative files
@@ -410,29 +416,29 @@ async function regenerateAllAsync(
   io: Server
 ) {
   try {
-    io.emit('regen:all:started', {})
+    io.emit('regen:all:started', {});
 
     // Step 1: Shadows
-    io.emit('regen:all:progress', { step: 'shadows', current: 1, total: 3 })
-    const shadowsResult = await regenerateShadowsInternal(getConfig, io)
+    io.emit('regen:all:progress', { step: 'shadows', current: 1, total: 3 });
+    const shadowsResult = await regenerateShadowsInternal(getConfig, io);
 
     // Step 2: Transcripts
-    io.emit('regen:all:progress', { step: 'transcripts', current: 2, total: 3 })
-    const transcriptsResult = await regenerateTranscriptsInternal(getConfig, queueTranscription)
+    io.emit('regen:all:progress', { step: 'transcripts', current: 2, total: 3 });
+    const transcriptsResult = await regenerateTranscriptsInternal(getConfig, queueTranscription);
 
     // Step 3: Chapters
-    io.emit('regen:all:progress', { step: 'chapters', current: 3, total: 3 })
-    const chaptersResult = await regenerateChaptersInternal(getConfig, io)
+    io.emit('regen:all:progress', { step: 'chapters', current: 3, total: 3 });
+    const chaptersResult = await regenerateChaptersInternal(getConfig, io);
 
     // Emit completion
     io.emit('regen:all:complete', {
       shadows: shadowsResult,
       transcripts: transcriptsResult,
-      chapters: chaptersResult
-    })
+      chapters: chaptersResult,
+    });
   } catch (err) {
-    console.error('[Regen All] Error:', err)
-    io.emit('regen:all:error', { error: String(err) })
+    console.error('[Regen All] Error:', err);
+    io.emit('regen:all:error', { error: String(err) });
   }
 }
 ```
@@ -448,13 +454,13 @@ interface ServerToClientEvents {
   // ... existing events
 
   // Regen events
-  'shadows:regenerated': (data: { completed: number; failed: number }) => void
-  'regen:chapters:progress': (data: { current: number; total: number; chapter: string }) => void
-  'regen:chapters:complete': (data: { completed: number; failed: number; errors?: any[] }) => void
-  'regen:all:started': (data: {}) => void
-  'regen:all:progress': (data: { step: string; current: number; total: number }) => void
-  'regen:all:complete': (data: { shadows: any; transcripts: any; chapters: any }) => void
-  'regen:all:error': (data: { error: string }) => void
+  'shadows:regenerated': (data: { completed: number; failed: number }) => void;
+  'regen:chapters:progress': (data: { current: number; total: number; chapter: string }) => void;
+  'regen:chapters:complete': (data: { completed: number; failed: number; errors?: any[] }) => void;
+  'regen:all:started': (data: {}) => void;
+  'regen:all:progress': (data: { step: string; current: number; total: number }) => void;
+  'regen:all:complete': (data: { shadows: any; transcripts: any; chapters: any }) => void;
+  'regen:all:error': (data: { error: string }) => void;
 }
 ```
 
@@ -463,19 +469,19 @@ interface ServerToClientEvents {
 ```typescript
 // client/src/hooks/useRegenSocket.ts
 export function useRegenSocket(onProgress: (data: any) => void) {
-  const { socket } = useSocket()
+  const { socket } = useSocket();
 
   useEffect(() => {
-    if (!socket) return
+    if (!socket) return;
 
-    socket.on('regen:chapters:progress', onProgress)
-    socket.on('regen:all:progress', onProgress)
+    socket.on('regen:chapters:progress', onProgress);
+    socket.on('regen:all:progress', onProgress);
 
     return () => {
-      socket.off('regen:chapters:progress', onProgress)
-      socket.off('regen:all:progress', onProgress)
-    }
-  }, [socket, onProgress])
+      socket.off('regen:chapters:progress', onProgress);
+      socket.off('regen:all:progress', onProgress);
+    };
+  }, [socket, onProgress]);
 }
 ```
 
@@ -493,33 +499,35 @@ export function useRegenSocket(onProgress: (data: any) => void) {
 // Add to ManagePanel.tsx bulk rename section
 
 function ChapterRenameSection({ chapters }: { chapters: ChapterGroup[] }) {
-  const [selectedChapter, setSelectedChapter] = useState('')
-  const [chapterLabel, setChapterLabel] = useState('')
+  const [selectedChapter, setSelectedChapter] = useState('');
+  const [chapterLabel, setChapterLabel] = useState('');
 
   // When chapter is selected, pre-fill current label
   const handleChapterSelect = (chapterKey: string) => {
-    setSelectedChapter(chapterKey)
-    const chapter = chapters.find(c => c.chapterKey === chapterKey)
+    setSelectedChapter(chapterKey);
+    const chapter = chapters.find((c) => c.chapterKey === chapterKey);
     if (chapter) {
-      setChapterLabel(chapter.title)
+      setChapterLabel(chapter.title);
     }
-  }
+  };
 
   const handleChapterRename = async () => {
-    const chapter = chapters.find(c => c.chapterKey === selectedChapter)
-    if (!chapter) return
+    const chapter = chapters.find((c) => c.chapterKey === selectedChapter);
+    if (!chapter) return;
 
-    const filenames = chapter.files.map(f => f.filename)
+    const filenames = chapter.files.map((f) => f.filename);
 
-    if (window.confirm(
-      `Rename ${filenames.length} files in Chapter ${selectedChapter}?\n\n` +
-      `New label: "${chapterLabel}"\n\n` +
-      `Transcripts will be regenerated (5-10 minutes).`
-    )) {
+    if (
+      window.confirm(
+        `Rename ${filenames.length} files in Chapter ${selectedChapter}?\n\n` +
+          `New label: "${chapterLabel}"\n\n` +
+          `Transcripts will be regenerated (5-10 minutes).`
+      )
+    ) {
       // Reuse bulk rename endpoint
-      await handleBulkRename(filenames, chapterLabel)
+      await handleBulkRename(filenames, chapterLabel);
     }
-  }
+  };
 
   return (
     <div className="mt-4 p-4 border-t">
@@ -531,7 +539,7 @@ function ChapterRenameSection({ chapters }: { chapters: ChapterGroup[] }) {
           className="border rounded px-2 py-1"
         >
           <option value="">Select chapter...</option>
-          {chapters.map(ch => (
+          {chapters.map((ch) => (
             <option key={ch.chapterKey} value={ch.chapterKey}>
               Chapter {ch.chapterKey} ({ch.files.length} files)
             </option>
@@ -556,11 +564,12 @@ function ChapterRenameSection({ chapters }: { chapters: ChapterGroup[] }) {
         </button>
       </div>
     </div>
-  )
+  );
 }
 ```
 
 **Integration:**
+
 - Reuses existing `POST /api/manage/bulk-rename` endpoint
 - Just passes all chapter files instead of selected files
 - Same confirmation dialog, same FR-130 delete+regenerate logic
@@ -575,7 +584,7 @@ function ChapterRenameSection({ chapters }: { chapters: ChapterGroup[] }) {
 
 **Template:**
 
-```markdown
+````markdown
 # Shared Code Index
 
 **Last Updated:** 2026-01-04
@@ -586,16 +595,19 @@ function ChapterRenameSection({ chapters }: { chapters: ChapterGroup[] }) {
 ## Decision Rules
 
 **When to create shared code:**
+
 - Code is used by 2+ feature areas
 - Logic is domain-agnostic (not Recordings-specific or Manage-specific)
 - Reduces duplication
 
 **When to keep code separate:**
+
 - Code is feature-specific
 - Only one feature needs it (now and foreseeable future)
 - Sharing would create tight coupling
 
 **Migration path:**
+
 - Start in feature folder
 - Move to shared/ when second feature needs it
 - Update imports, test, commit
@@ -606,30 +618,30 @@ function ChapterRenameSection({ chapters }: { chapters: ChapterGroup[] }) {
 
 ### Hooks
 
-| Hook | Location | Used By | Purpose |
-|------|----------|---------|---------|
-| `useRecordings` | `hooks/useApi.ts` | RecordingsView, ManagePanel, WatchPage | Fetch recordings from API with React Query |
-| `useConfig` | `hooks/useApi.ts` | All panels | Get server config (project path, tags, etc.) |
-| `useRecordingsSocket` | `hooks/useSocket.ts` | RecordingsView, ManagePanel | Real-time file updates via Socket.io |
+| Hook                  | Location             | Used By                                | Purpose                                      |
+| --------------------- | -------------------- | -------------------------------------- | -------------------------------------------- |
+| `useRecordings`       | `hooks/useApi.ts`    | RecordingsView, ManagePanel, WatchPage | Fetch recordings from API with React Query   |
+| `useConfig`           | `hooks/useApi.ts`    | All panels                             | Get server config (project path, tags, etc.) |
+| `useRecordingsSocket` | `hooks/useSocket.ts` | RecordingsView, ManagePanel            | Real-time file updates via Socket.io         |
 
 ### Components
 
-| Component | Location | Used By | Purpose |
-|-----------|----------|---------|---------|
-| `LoadingSpinner` | `components/shared/LoadingSpinner.tsx` | All panels | Consistent loading state |
-| `ErrorMessage` | `components/shared/ErrorMessage.tsx` | All panels | Error display component |
-| `OpenFolderButton` | `components/shared/OpenFolderButton.tsx` | RecordingsView, ManagePanel | Open folder in Finder |
-| `PageContainer` | `components/shared/PageContainer.tsx` | All pages | Layout wrapper |
-| `PageHeader` | `components/shared/PageHeader.tsx` | All pages | Consistent page headers |
+| Component          | Location                                 | Used By                     | Purpose                  |
+| ------------------ | ---------------------------------------- | --------------------------- | ------------------------ |
+| `LoadingSpinner`   | `components/shared/LoadingSpinner.tsx`   | All panels                  | Consistent loading state |
+| `ErrorMessage`     | `components/shared/ErrorMessage.tsx`     | All panels                  | Error display component  |
+| `OpenFolderButton` | `components/shared/OpenFolderButton.tsx` | RecordingsView, ManagePanel | Open folder in Finder    |
+| `PageContainer`    | `components/shared/PageContainer.tsx`    | All pages                   | Layout wrapper           |
+| `PageHeader`       | `components/shared/PageHeader.tsx`       | All pages                   | Consistent page headers  |
 
 ### Utilities
 
-| Utility | Location | Used By | Purpose |
-|---------|----------|---------|---------|
-| `formatFileSize` | `utils/formatting.ts` | RecordingsView, ManagePanel, ProjectsPage | Size formatting (B/KB/MB/GB) |
-| `formatChapterTitle` | `utils/formatting.ts` | RecordingsView, ManagePanel | Format chapter display name |
-| `groupByChapter` | `ManagePanel.tsx` | ManagePanel | Group recordings by chapter number |
-| `extractTagsFromName` | `shared/naming.ts` | RecordingsView, ManagePanel | Parse tags from filename |
+| Utility               | Location              | Used By                                   | Purpose                            |
+| --------------------- | --------------------- | ----------------------------------------- | ---------------------------------- |
+| `formatFileSize`      | `utils/formatting.ts` | RecordingsView, ManagePanel, ProjectsPage | Size formatting (B/KB/MB/GB)       |
+| `formatChapterTitle`  | `utils/formatting.ts` | RecordingsView, ManagePanel               | Format chapter display name        |
+| `groupByChapter`      | `ManagePanel.tsx`     | ManagePanel                               | Group recordings by chapter number |
+| `extractTagsFromName` | `shared/naming.ts`    | RecordingsView, ManagePanel               | Parse tags from filename           |
 
 **NOTE:** `groupByChapter` function is currently duplicated in ManagePanel. Consider extracting to `utils/shared/grouping.ts` if RecordingsView needs it.
 
@@ -639,22 +651,22 @@ function ChapterRenameSection({ chapters }: { chapters: ChapterGroup[] }) {
 
 ### Routes
 
-| Endpoint | Location | Used By | Purpose |
-|----------|----------|---------|---------|
-| `GET /api/recordings` | `routes/index.ts` | RecordingsView, ManagePanel | Get recordings for viewing |
-| `POST /api/manage/bulk-rename` | `routes/manage.ts` | ManagePanel | Bulk rename operation |
-| `POST /api/recordings/rename-chapter` | `routes/index.ts` | ~~RecordingsView~~ (removed) | Legacy rename endpoint |
+| Endpoint                              | Location           | Used By                      | Purpose                    |
+| ------------------------------------- | ------------------ | ---------------------------- | -------------------------- |
+| `GET /api/recordings`                 | `routes/index.ts`  | RecordingsView, ManagePanel  | Get recordings for viewing |
+| `POST /api/manage/bulk-rename`        | `routes/manage.ts` | ManagePanel                  | Bulk rename operation      |
+| `POST /api/recordings/rename-chapter` | `routes/index.ts`  | ~~RecordingsView~~ (removed) | Legacy rename endpoint     |
 
 ### Utilities
 
-| Utility | Location | Used By | Purpose |
-|---------|----------|---------|---------|
-| `renameRecording` | `utils/renameRecording.ts` | ManagePanel, Index routes | FR-130 delete+regenerate rename logic |
-| `getProjectPaths` | `shared/paths.ts` | All routes | Resolve project folder paths |
-| `expandPath` | `utils/pathUtils.ts` | All routes | Expand ~ to home directory |
-| `createShadowFile` | `utils/shadowFiles.ts` | Regen endpoints, Watcher | Create 240p shadow video |
-| `queueTranscription` | `routes/transcriptions.ts` | Regen endpoints, Watcher | Queue Whisper transcription |
-| `generateChapterRecording` | `utils/chapterRecording.ts` | Regen endpoints, Chapters route | Generate chapter video |
+| Utility                    | Location                    | Used By                         | Purpose                               |
+| -------------------------- | --------------------------- | ------------------------------- | ------------------------------------- |
+| `renameRecording`          | `utils/renameRecording.ts`  | ManagePanel, Index routes       | FR-130 delete+regenerate rename logic |
+| `getProjectPaths`          | `shared/paths.ts`           | All routes                      | Resolve project folder paths          |
+| `expandPath`               | `utils/pathUtils.ts`        | All routes                      | Expand ~ to home directory            |
+| `createShadowFile`         | `utils/shadowFiles.ts`      | Regen endpoints, Watcher        | Create 240p shadow video              |
+| `queueTranscription`       | `routes/transcriptions.ts`  | Regen endpoints, Watcher        | Queue Whisper transcription           |
+| `generateChapterRecording` | `utils/chapterRecording.ts` | Regen endpoints, Chapters route | Generate chapter video                |
 
 ---
 
@@ -664,13 +676,14 @@ function ChapterRenameSection({ chapters }: { chapters: ChapterGroup[] }) {
 
 ```typescript
 // ✅ Good: Import from shared location
-import { LoadingSpinner, ErrorMessage } from '../components/shared'
-import { formatFileSize, formatChapterTitle } from '../utils/formatting'
-import { useRecordings, useConfig } from '../hooks/useApi'
+import { LoadingSpinner, ErrorMessage } from '../components/shared';
+import { formatFileSize, formatChapterTitle } from '../utils/formatting';
+import { useRecordings, useConfig } from '../hooks/useApi';
 
 // ❌ Bad: Don't import from feature-specific locations
-import { LoadingSpinner } from '../components/RecordingsView/LoadingSpinner'
+import { LoadingSpinner } from '../components/RecordingsView/LoadingSpinner';
 ```
+````
 
 ### JSDoc Comments for Shared Code
 
@@ -716,10 +729,12 @@ export function formatFileSize(bytes: number): string {
 ---
 
 **Maintenance:** Update this document when:
+
 - New shared code is created
 - Code is moved from feature to shared location
 - New feature (e.g., WatchPage) uses existing shared code
-```
+
+````
 
 ---
 
@@ -983,19 +998,21 @@ for (const file of files) {
   }
 }
 return results
-```
+````
 
 ---
 
 ### Decision 2: Regen All Execution Order
 
 **Options:**
+
 - A) Parallel (all three at once)
 - B) Sequential (shadows → transcripts → chapters)
 
 **Chosen:** **B) Sequential**
 
 **Rationale:**
+
 - Shadows are fast (~1 min total)
 - Transcripts are slow but just queued (no immediate CPU load)
 - Chapters are expensive (30-60s each)
@@ -1003,11 +1020,12 @@ return results
 - Sequential is clearer for progress reporting
 
 **Implementation:**
+
 ```typescript
 async function regenerateAllAsync() {
-  await regenerateShadows()
-  await queueTranscriptions()
-  await regenerateChapters() // Waits for chapters to complete
+  await regenerateShadows();
+  await queueTranscriptions();
+  await regenerateChapters(); // Waits for chapters to complete
 }
 ```
 
@@ -1016,25 +1034,28 @@ async function regenerateAllAsync() {
 ### Decision 3: Chapter Rename Endpoint
 
 **Options:**
+
 - A) Create new endpoint: `POST /api/manage/rename-chapter`
 - B) Reuse existing: `POST /api/manage/bulk-rename`
 
 **Chosen:** **B) Reuse existing**
 
 **Rationale:**
+
 - Chapter rename is just bulk rename with all chapter files
 - No new server logic needed
 - Frontend just collects chapter files and calls bulk-rename
 - Reduces code duplication
 
 **Implementation:**
+
 ```tsx
 function handleChapterRename(chapterKey: string, newLabel: string) {
-  const chapter = chapters.find(c => c.chapterKey === chapterKey)
-  const filenames = chapter.files.map(f => f.filename)
+  const chapter = chapters.find((c) => c.chapterKey === chapterKey);
+  const filenames = chapter.files.map((f) => f.filename);
 
   // Reuse bulk rename
-  handleBulkRename(filenames, newLabel)
+  handleBulkRename(filenames, newLabel);
 }
 ```
 
@@ -1043,16 +1064,19 @@ function handleChapterRename(chapterKey: string, newLabel: string) {
 ### Decision 4: Progress Granularity
 
 **Options:**
+
 - A) File-level progress (emit every file)
 - B) Batch progress (emit every 10 files)
 - C) Chapter-level progress (emit per chapter)
 
 **Chosen:**
+
 - **Shadows:** B) Batch progress (every 10 files)
 - **Transcripts:** No progress (just queue count)
 - **Chapters:** C) Chapter-level progress
 
 **Rationale:**
+
 - Shadows are fast, too many events if per-file
 - Transcripts are queued, actual progress tracked in Transcriptions tab
 - Chapters are slow enough that per-chapter makes sense
@@ -1062,6 +1086,7 @@ function handleChapterRename(chapterKey: string, newLabel: string) {
 ## Dependencies
 
 **Required before Phase 2:**
+
 - ✅ FR-130 (delete+regenerate pattern) - Implemented
 - ✅ FR-131 Phase 1 (Manage panel, bulk rename) - Implemented
 - ✅ Existing shadow/transcript/chapter utilities - Exist
@@ -1073,6 +1098,7 @@ function handleChapterRename(chapterKey: string, newLabel: string) {
 ## Success Metrics
 
 **Phase 2 complete when:**
+
 - [ ] 4 regen buttons working in Manage panel
 - [ ] Real-time progress updates for chapter regen
 - [ ] Chapter-level rename dropdown working
@@ -1082,6 +1108,7 @@ function handleChapterRename(chapterKey: string, newLabel: string) {
 - [ ] Backlog status updated to "✓ Implemented"
 
 **Ready to unblock:**
+
 - FR-133 (File Status Indicators)
 - FR-134 (Inconsistency Detection)
 - FR-135 (Chapter Tools)
@@ -1101,6 +1128,7 @@ function handleChapterRename(chapterKey: string, newLabel: string) {
 7. ✅ **Finally Phase 2.5:** Testing and polish
 
 **Questions?** Check:
+
 - `docs/prd/fr-131-manage-panel-bulk-rename.md` - Full requirements
 - `server/src/utils/shadowFiles.ts` - Shadow regeneration examples
 - `server/src/routes/transcriptions.ts` - Transcript queue examples

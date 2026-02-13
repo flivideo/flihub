@@ -9,11 +9,13 @@
 ## Executive Summary
 
 **Recording filename format:**
+
 ```
 {chapter}-{sequence}-{label}-{tags}.mov
 ```
 
 **Example:**
+
 ```
 05-3-setup-demo-CTA-SKOOL.mov
 │  │ │         └─ Tags (optional, uppercase)
@@ -29,6 +31,7 @@
 ### Format Rules
 
 **Strict (for creating new files):**
+
 - Pattern: `/^\d{2}$/`
 - Format: Exactly 2 digits, zero-padded
 - Range: 01-99
@@ -37,6 +40,7 @@
   - ❌ Invalid: `1`, `001`, `00`, `100`
 
 **Lenient (for reading existing files):**
+
 - Pattern: `/^\d{1,2}$/`
 - Accepts: 1-2 digits (Postel's Law: "Be liberal in what you accept")
 - Examples:
@@ -46,29 +50,32 @@
 ### Validation
 
 ```typescript
-function validateChapter(value: string): string | null
+function validateChapter(value: string): string | null;
 ```
 
 **Rules:**
+
 - Required (cannot be empty)
 - Must match pattern `/^\d{2}$/`
 - Must be in range 01-99
 
 **Error message:**
+
 > "Chapter must be a 2-digit number (01-99)"
 
 ### Sequencing Rules
 
 **Current behavior:** ❓ **Decision needed**
 
-| Scenario | Allowed? | Current State | Recommendation |
-|----------|----------|---------------|----------------|
-| Sequential chapters (01, 02, 03) | ✅ Yes | Expected pattern | Continue |
-| Chapter gaps (01, 03, 05) | ❓ Unknown | Common in projects | **Needs PO decision** |
-| Non-sequential (05, 03, 07, 01) | ❓ Unknown | Technically allowed | **Should warn?** |
-| Duplicate chapters | ❌ No | Impossible (filename conflict) | Enforced by filesystem |
+| Scenario                         | Allowed?   | Current State                  | Recommendation         |
+| -------------------------------- | ---------- | ------------------------------ | ---------------------- |
+| Sequential chapters (01, 02, 03) | ✅ Yes     | Expected pattern               | Continue               |
+| Chapter gaps (01, 03, 05)        | ❓ Unknown | Common in projects             | **Needs PO decision**  |
+| Non-sequential (05, 03, 07, 01)  | ❓ Unknown | Technically allowed            | **Should warn?**       |
+| Duplicate chapters               | ❌ No      | Impossible (filename conflict) | Enforced by filesystem |
 
 **Questions for PO:**
+
 1. Are chapter gaps intentional or errors?
 2. Should we warn about non-sequential chapters?
 3. Should we provide tools to fill gaps? (FR-140)
@@ -80,6 +87,7 @@ function validateChapter(value: string): string | null
 ### Format Rules
 
 **Pattern:** `/^\d+$/`
+
 - Format: 1 or more digits, NO zero-padding
 - Range: 1 to infinity (practical limit: 999)
 - Examples:
@@ -89,30 +97,33 @@ function validateChapter(value: string): string | null
 ### Validation
 
 ```typescript
-function validateSequence(value: string): string | null
+function validateSequence(value: string): string | null;
 ```
 
 **Rules:**
+
 - Required (cannot be empty)
 - Must match pattern `/^\d+$/`
 - Must be >= 1
 
 **Error message:**
+
 > "Sequence must be a number (1, 2, 3, ...)"
 
 ### Sequencing Rules
 
 **Current behavior:** ❓ **Decision needed**
 
-| Scenario | Allowed? | Current State | Recommendation |
-|----------|----------|---------------|----------------|
-| Sequential within chapter (1, 2, 3) | ✅ Yes | Expected pattern | Continue |
-| Sequence gaps (1, 3, 7) | ❓ Unknown | Less common | **Needs PO decision** |
-| Sequence restarts at 1 per chapter | ✅ Yes | Expected pattern | Continue |
-| Duplicate sequences in same chapter | ❌ No | Impossible (filename conflict) | Enforced by filesystem |
-| Sequence doesn't start at 1 | ❓ Unknown | Technically allowed | **Should warn?** |
+| Scenario                            | Allowed?   | Current State                  | Recommendation         |
+| ----------------------------------- | ---------- | ------------------------------ | ---------------------- |
+| Sequential within chapter (1, 2, 3) | ✅ Yes     | Expected pattern               | Continue               |
+| Sequence gaps (1, 3, 7)             | ❓ Unknown | Less common                    | **Needs PO decision**  |
+| Sequence restarts at 1 per chapter  | ✅ Yes     | Expected pattern               | Continue               |
+| Duplicate sequences in same chapter | ❌ No      | Impossible (filename conflict) | Enforced by filesystem |
+| Sequence doesn't start at 1         | ❓ Unknown | Technically allowed            | **Should warn?**       |
 
 **Questions for PO:**
+
 1. Are sequence gaps intentional or errors?
 2. Should sequence always start at 1 for each chapter?
 3. Should we provide auto-renumbering? (FR-138 has preserve/renumber)
@@ -124,6 +135,7 @@ function validateSequence(value: string): string | null
 ### Format Rules
 
 **Pattern:** `/^[a-z0-9]+(-[a-z0-9]+)*$/`
+
 - Format: Kebab-case (lowercase, numbers, hyphens)
 - Characters: `a-z`, `0-9`, `-` (hyphen as separator)
 - Constraints:
@@ -138,15 +150,17 @@ function validateSequence(value: string): string | null
 ### Validation
 
 ```typescript
-function validateLabel(value: string): string | null
+function validateLabel(value: string): string | null;
 ```
 
 **Rules:**
+
 - Required (cannot be empty)
 - Must match kebab-case pattern
 - Max 50 characters
 
 **Error messages:**
+
 - Empty: "Label is required"
 - Invalid format: "Label must be kebab-case (lowercase letters, numbers, hyphens only)"
 - Too long: "Label must be 50 characters or less"
@@ -154,10 +168,11 @@ function validateLabel(value: string): string | null
 ### Sanitization
 
 ```typescript
-function sanitizeName(name: string): string
+function sanitizeName(name: string): string;
 ```
 
 **Transformations:**
+
 - Convert to lowercase
 - Replace spaces with hyphens
 - Remove special characters (keep periods for project names)
@@ -166,6 +181,7 @@ function sanitizeName(name: string): string
 - Truncate to 50 characters
 
 **Examples:**
+
 ```typescript
 sanitizeName("Setup Demo")        → "setup-demo"
 sanitizeName("Build_Server_API")  → "buildserverapi"
@@ -177,11 +193,11 @@ sanitizeName("setup--demo")       → "setup-demo"
 
 **Current behavior:** ❓ **Decision needed**
 
-| Scenario | Allowed? | Current State | Recommendation |
-|----------|----------|---------------|----------------|
-| Same label in same chapter | ❌ No | Impossible (with same sequence) | Enforced by filesystem |
-| Same label in different chapters | ✅ Yes | Allowed | Keep (labels describe content) |
-| Same label across projects | ✅ Yes | Allowed | Keep (projects are independent) |
+| Scenario                         | Allowed? | Current State                   | Recommendation                  |
+| -------------------------------- | -------- | ------------------------------- | ------------------------------- |
+| Same label in same chapter       | ❌ No    | Impossible (with same sequence) | Enforced by filesystem          |
+| Same label in different chapters | ✅ Yes   | Allowed                         | Keep (labels describe content)  |
+| Same label across projects       | ✅ Yes   | Allowed                         | Keep (projects are independent) |
 
 ---
 
@@ -190,6 +206,7 @@ sanitizeName("setup--demo")       → "setup-demo"
 ### Format Rules
 
 **Pattern:** `/^[A-Z]+$/`
+
 - Format: Uppercase letters only
 - Characters: `A-Z` (no numbers, no special chars)
 - Position: After label, before extension
@@ -206,6 +223,7 @@ sanitizeName("setup--demo")       → "setup-demo"
 **No explicit validation function in `naming.ts`**
 
 FR-138 enforces:
+
 - Uppercase only (converted automatically)
 - Max 10 characters per tag
 - Max 5 tags total
@@ -213,11 +231,13 @@ FR-138 enforces:
 ### Tag Positioning
 
 **In filename:**
+
 ```
 {chapter}-{sequence}-{label}-{tag1}-{tag2}-{tag3}.mov
 ```
 
 **Examples:**
+
 ```
 05-3-setup-demo-CTA.mov              ← Single tag
 05-3-setup-demo-CTA-SKOOL.mov        ← Multiple tags
@@ -227,26 +247,29 @@ FR-138 enforces:
 ### Tag Extraction
 
 ```typescript
-function extractTagsFromName(name: string): { name: string; tags: string[] }
+function extractTagsFromName(name: string): { name: string; tags: string[] };
 ```
 
 **Logic:**
+
 - Split by hyphen
 - Identify uppercase-only words as tags
 - Return clean name + tags array
 
 **Examples:**
+
 ```typescript
-extractTagsFromName("intro-demo-CTA")
+extractTagsFromName('intro-demo-CTA');
 // → { name: "intro-demo", tags: ["CTA"] }
 
-extractTagsFromName("setup-bmad-TECHSTACK-API")
+extractTagsFromName('setup-bmad-TECHSTACK-API');
 // → { name: "setup-bmad", tags: ["TECHSTACK", "API"] }
 ```
 
 ### Available Tags
 
 **Configured in `config.json`:**
+
 ```json
 {
   "availableTags": ["CTA", "SKOOL", "DEMO", "INTRO", "ADVANCED"]
@@ -262,26 +285,31 @@ extractTagsFromName("setup-bmad-TECHSTACK-API")
 ### Recording Files
 
 **Format:**
+
 ```
 {chapter}-{sequence}-{label}-{tags}.mov
 ```
 
 **With tags:**
+
 ```
 05-3-setup-demo-CTA-SKOOL.mov
 ```
 
 **Without tags:**
+
 ```
 05-3-setup-demo.mov
 ```
 
 **Legacy format (no sequence):**
+
 ```
 05-intro.mov
 ```
 
 **Parsing behavior:**
+
 - Lenient: Accepts 1-2 digit chapters
 - Tags stripped from label during parsing
 - Sequence optional (legacy support)
@@ -294,10 +322,11 @@ function buildRecordingFilename(
   sequence: string | null,
   name: string,
   tags: string[] = []
-): string
+): string;
 ```
 
 **Logic:**
+
 1. Start with chapter (e.g., `"05"`)
 2. Add sequence if provided (e.g., `"-3"`)
 3. Add sanitized name (e.g., `"-setup-demo"`)
@@ -305,14 +334,15 @@ function buildRecordingFilename(
 5. Add extension (`".mov"`)
 
 **Examples:**
+
 ```typescript
-buildRecordingFilename("05", "3", "setup demo", ["CTA", "SKOOL"])
+buildRecordingFilename('05', '3', 'setup demo', ['CTA', 'SKOOL']);
 // → "05-3-setup-demo-CTA-SKOOL.mov"
 
-buildRecordingFilename("05", "3", "setup demo", [])
+buildRecordingFilename('05', '3', 'setup demo', []);
 // → "05-3-setup-demo.mov"
 
-buildRecordingFilename("05", null, "intro", [])
+buildRecordingFilename('05', null, 'intro', []);
 // → "05-intro.mov" (legacy format)
 ```
 
@@ -323,11 +353,13 @@ buildRecordingFilename("05", null, "intro", [])
 ### Format
 
 **Pattern:**
+
 ```
 {chapter}-{sequence}-{imageOrder}{variant}-{label}.{ext}
 ```
 
 **Examples:**
+
 ```
 05-3-1-workflow.png          ← Image 1, no variant
 05-3-2a-diagram.png          ← Image 2, variant 'a'
@@ -337,17 +369,20 @@ buildRecordingFilename("05", null, "intro", [])
 ### Rules
 
 **Image Order:**
+
 - Pattern: `/^\d+$/`
 - Format: 1+ digits, no zero-padding
 - Examples: `1`, `2`, `10`
 
 **Variant:**
+
 - Pattern: `/^[a-z]$/`
 - Format: Single lowercase letter (a-z)
 - Optional: `null` means no variant
 - Options: `null`, `'a'`, `'b'`, `'c'`, etc.
 
 **Extensions:**
+
 - Supported: `.png`, `.jpg`, `.jpeg`, `.webp`
 
 ---
@@ -385,6 +420,7 @@ project-root/
 **For recording:** `05-3-setup-demo-CTA.mov`
 
 **Generates:**
+
 ```
 recordings/05-3-setup-demo-CTA.mov                    ← Source
 recording-shadows/05-3-setup-demo-CTA.mp4             ← Shadow (240p)
@@ -407,6 +443,7 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 **Location:** Project root
 
 **Structure:**
+
 ```json
 {
   "recordings": {
@@ -433,6 +470,7 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 ```
 
 **Recording States:**
+
 - `parked`: Boolean (file marked for later use)
 - `annotation`: String (reason for parking)
 - `safe`: Boolean (protected from deletion - replaces -safe folder)
@@ -443,23 +481,24 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 
 ### What's Enforced by Code
 
-| Rule | Enforced? | Where | Can Violate? |
-|------|-----------|-------|--------------|
-| Chapter format (01-99) | ✅ Yes | UI validation | No (blocked) |
-| Sequence format (1+) | ✅ Yes | UI validation | No (blocked) |
-| Label kebab-case | ✅ Yes | UI validation | No (blocked) |
-| Label max 50 chars | ✅ Yes | UI validation | No (blocked) |
-| Tags uppercase | ✅ Yes | FR-138 UI | No (converted) |
-| Tags max 5 | ✅ Yes | FR-138 UI | No (blocked) |
-| Duplicate filenames | ✅ Yes | Filesystem | No (OS enforced) |
-| Chapter gaps | ❌ No | Not validated | ✅ Yes (common) |
-| Sequence gaps | ❌ No | Not validated | ✅ Yes (less common) |
-| Sequence starts at 1 | ❌ No | Not validated | ✅ Yes (allowed) |
-| Same label in chapter | ❌ No | Not validated | ✅ Yes (if different sequence) |
+| Rule                   | Enforced? | Where         | Can Violate?                   |
+| ---------------------- | --------- | ------------- | ------------------------------ |
+| Chapter format (01-99) | ✅ Yes    | UI validation | No (blocked)                   |
+| Sequence format (1+)   | ✅ Yes    | UI validation | No (blocked)                   |
+| Label kebab-case       | ✅ Yes    | UI validation | No (blocked)                   |
+| Label max 50 chars     | ✅ Yes    | UI validation | No (blocked)                   |
+| Tags uppercase         | ✅ Yes    | FR-138 UI     | No (converted)                 |
+| Tags max 5             | ✅ Yes    | FR-138 UI     | No (blocked)                   |
+| Duplicate filenames    | ✅ Yes    | Filesystem    | No (OS enforced)               |
+| Chapter gaps           | ❌ No     | Not validated | ✅ Yes (common)                |
+| Sequence gaps          | ❌ No     | Not validated | ✅ Yes (less common)           |
+| Sequence starts at 1   | ❌ No     | Not validated | ✅ Yes (allowed)               |
+| Same label in chapter  | ❌ No     | Not validated | ✅ Yes (if different sequence) |
 
 ### What's NOT Enforced
 
 ❌ **Not checked by code (needs FR-134):**
+
 1. Chapter gaps (01, 03, 05)
 2. Sequence gaps (1, 3, 7)
 3. Non-sequential chapters (05, 03, 07)
@@ -478,16 +517,19 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 **Format:** `{chapter}-{label}.mov` (no sequence)
 
 **Parsing behavior:**
+
 - Accepted by lenient parser
 - Sequence returned as `null`
 - Supported for backwards compatibility
 
 **Example:**
+
 ```
 05-intro.mov → { chapter: "05", sequence: null, name: "intro" }
 ```
 
 **Recommendation:** ❓ **PO decision needed**
+
 - Migrate to new format? (add sequence: 05-intro.mov → 05-1-intro.mov)
 - Keep supporting legacy format?
 
@@ -496,11 +538,13 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 **Format:** `5-3-demo.mov` (single digit chapter)
 
 **Parsing behavior:**
+
 - Accepted by lenient parser (`parsePattern`)
 - Rejected by strict validator (`pattern`)
 - Can READ existing files, cannot CREATE new files
 
 **Recommendation:** ✅ **Keep current behavior**
+
 - Read: Lenient (Postel's Law)
 - Write: Strict (always 2 digits)
 
@@ -509,13 +553,16 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 **Example:** `05-3-Setup-Demo.mov`
 
 **Current behavior:**
+
 - Rejected by UI validation
 - User cannot create
 
 **Sanitization:**
+
 - `sanitizeName("Setup Demo")` → `"setup-demo"`
 
 **Recommendation:** ✅ **Keep current behavior**
+
 - UI prevents creation
 - Sanitize on input
 
@@ -524,13 +571,16 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 **Example:** `05-3-setup_demo!.mov`
 
 **Current behavior:**
+
 - Rejected by UI validation
 - Underscores, exclamation marks not allowed
 
 **Sanitization:**
+
 - `sanitizeName("setup_demo!")` → `"setupdemo"`
 
 **Recommendation:** ✅ **Keep current behavior**
+
 - Kebab-case enforced
 - Special chars stripped
 
@@ -539,13 +589,16 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 **Example:** `05-3-this-is-a-very-long-label-that-exceeds-the-fifty-character-maximum-limit.mov`
 
 **Current behavior:**
+
 - Rejected by UI validation (> 50 chars)
 - Error message shown
 
 **Sanitization:**
+
 - `sanitizeName(longString)` → truncated to 50 chars
 
 **Recommendation:** ✅ **Keep current behavior**
+
 - 50 char limit reasonable
 - Prevents filesystem issues
 
@@ -599,6 +652,7 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 ### For Discovery Plan Phase 3 (Scanner)
 
 **Must detect:**
+
 - ❌ Invalid chapter format (not 01-99)
 - ❌ Invalid sequence format (leading zeros, non-numeric)
 - ❌ Invalid label (uppercase, underscores, special chars)
@@ -606,12 +660,14 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 - ❌ Unparseable filenames
 
 **Should detect (PO decision needed):**
+
 - ⚠️ Chapter gaps
 - ⚠️ Sequence gaps
 - ⚠️ Non-sequential chapters
 - ⚠️ Duplicate sequences (filesystem prevents, but check across projects?)
 
 **Could detect:**
+
 - 🔍 Missing derivatives
 - 🔍 Orphaned derivatives
 - 🔍 Legacy format files
@@ -619,12 +675,14 @@ recordings/-chapters/05-setup-demo.mov                ← Chapter video (label o
 ### For FR-134 (Inconsistency Detection)
 
 **Auto-fix candidates:**
+
 - Lowercase labels with uppercase letters
 - Strip special characters from labels
 - Delete orphaned shadows/transcripts
 - Regenerate missing shadows (instant)
 
 **User decision candidates:**
+
 - Duplicate sequences (which to rename?)
 - Chapter gaps (fill or keep?)
 - Sequence gaps (renumber or keep?)

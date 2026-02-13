@@ -73,7 +73,7 @@ export function createChaptersRoutes(getConfig: () => Config): Router {
         if (finalMedia.srt) {
           const result = await extractChapters(projectPath, finalMedia.srt.path);
           if (result.success) {
-            chaptersWithTimestamps = result.chapters.map(ch => ({
+            chaptersWithTimestamps = result.chapters.map((ch) => ({
               chapter: ch.chapter,
               name: ch.name,
               displayName: ch.displayName,
@@ -107,8 +107,8 @@ export function createChaptersRoutes(getConfig: () => Config): Router {
 
       // Generate formatted string for YouTube
       const formatted = chaptersWithTimestamps
-        .filter(ch => ch.timestamp)
-        .map(ch => `${ch.timestamp} ${ch.displayName}`)
+        .filter((ch) => ch.timestamp)
+        .map((ch) => `${ch.timestamp} ${ch.displayName}`)
         .join('\n');
 
       // FR-53: ASCII format support

@@ -19,7 +19,10 @@ export function checkTranscriptionQueue(
 
   // Check if this file is the active job
   if (activeJob) {
-    const activeBaseName = path.basename(activeJob.videoFilename, path.extname(activeJob.videoFilename));
+    const activeBaseName = path.basename(
+      activeJob.videoFilename,
+      path.extname(activeJob.videoFilename)
+    );
     if (activeBaseName === baseName) {
       return true;
     }
@@ -51,9 +54,7 @@ export async function deleteDerivableFiles(
 
   // Delete shadow files
   // FR-111: Shadow files are always .mp4, only in main recording-shadows/ folder (no -safe subfolder)
-  const shadowPaths = [
-    path.join(paths.project, 'recording-shadows', `${baseName}.mp4`)
-  ];
+  const shadowPaths = [path.join(paths.project, 'recording-shadows', `${baseName}.mp4`)];
 
   // Delete transcript files (Whisper creates .txt, .srt, .json, .vtt, .tsv)
   const transcriptPaths = [
@@ -61,7 +62,7 @@ export async function deleteDerivableFiles(
     path.join(paths.transcripts, `${baseName}.srt`),
     path.join(paths.transcripts, `${baseName}.json`),
     path.join(paths.transcripts, `${baseName}.vtt`),
-    path.join(paths.transcripts, `${baseName}.tsv`)
+    path.join(paths.transcripts, `${baseName}.tsv`),
   ];
 
   // Delete all (log errors but don't fail the rename)
@@ -127,7 +128,7 @@ export function migrateRecordingKey(
 
   return {
     ...state,
-    recordings: newRecordings
+    recordings: newRecordings,
   };
 }
 
@@ -149,21 +150,19 @@ export function updateManifestFilename(
     const manifest = updatedManifest[folder];
     if (!manifest) continue;
 
-    const updatedFiles = manifest.files.map(file =>
-      file.filename === oldFilename
-        ? { ...file, filename: newFilename }
-        : file
+    const updatedFiles = manifest.files.map((file) =>
+      file.filename === oldFilename ? { ...file, filename: newFilename } : file
     );
 
     updatedManifest[folder] = {
       ...manifest,
-      files: updatedFiles
+      files: updatedFiles,
     };
   }
 
   return {
     ...state,
-    editManifest: updatedManifest
+    editManifest: updatedManifest,
   };
 }
 
@@ -249,7 +248,7 @@ export async function renameRecording(
       console.log(`[FR-130] Rename blocked - file is being transcribed`);
       return {
         success: false,
-        error: 'Cannot rename while transcribing. Wait for completion or cancel transcription.'
+        error: 'Cannot rename while transcribing. Wait for completion or cancel transcription.',
       };
     }
 
@@ -271,7 +270,7 @@ export async function renameRecording(
     console.error(`[FR-130] Rename failed:`, error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to rename recording'
+      error: error instanceof Error ? error.message : 'Failed to rename recording',
     };
   }
 }

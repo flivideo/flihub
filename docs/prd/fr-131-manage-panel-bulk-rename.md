@@ -18,6 +18,7 @@ As a user, I want to rename multiple recordings at once and trigger regeneration
 ## Problem
 
 **Current state:**
+
 - "Export" panel name is misleading (does more than just export)
 - Bulk rename lives in Recordings panel (high-touch UI)
 - No centralized location for regeneration operations
@@ -26,6 +27,7 @@ As a user, I want to rename multiple recordings at once and trigger regeneration
 **User quote:** "We've got two totally different functional areas of the system. One's called Recordings, one's called Manage, but they have shared knowledge."
 
 **Architectural concern:** Shared code between Recordings and Manage must be organized to prevent:
+
 - Implementing in wrong feature
 - Not knowing about code in another feature
 - Code duplication
@@ -41,6 +43,7 @@ Transform "Export" panel into "Manage" panel with three key areas:
 **Rationale:** Panel does more than export - it's a power tools area for complex file operations.
 
 **Changes:**
+
 - Tab label: "Export" → "Manage"
 - Component: `ExportPanel.tsx` → `ManagePanel.tsx`
 - Tooltip: "Bulk operations, export to Gling, file regeneration, edit folder management"
@@ -54,6 +57,7 @@ Transform "Export" panel into "Manage" panel with three key areas:
 **Location:** Top of Manage panel, above file list
 
 **UI Design:**
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ Manage                                                          │
@@ -105,6 +109,7 @@ Transform "Export" panel into "Manage" panel with three key areas:
    - Use case: Full project regeneration after corruption or migration
 
 **Implementation:**
+
 - Collapsible section (can hide if not needed)
 - Confirmation dialogs for expensive operations (Regen Chapters, Regen All)
 - Progress indicators for long operations
@@ -119,28 +124,33 @@ Transform "Export" panel into "Manage" panel with three key areas:
 **Features:**
 
 #### A. Selected Files Rename
+
 - Checkbox selection (already exists for export)
 - Text input: "Rename label to: [_____]"
 - Button: "Apply Rename"
 - Applies new label to all selected files
 
 **Example:**
+
 - Selected: `01-1-intro.mov`, `01-2-intro.mov`, `01-3-intro-retake.mov`
 - New label: "introduction"
 - Result: `01-1-introduction.mov`, `01-2-introduction.mov`, `01-3-introduction-retake.mov`
 
 #### B. Chapter-Level Rename
+
 - Dropdown: Select chapter (01, 02, 03, ...)
 - Text input: Current label → New label
 - Button: "Rename Ch 01"
 - Renames all files in chapter
 
 **Example:**
+
 - Chapter 01: 15 files with label "intro"
 - New label: "introduction"
 - Result: All 15 files renamed to "introduction"
 
 **Workflow:**
+
 1. User goes to Manage panel
 2. Selects files via checkboxes OR selects chapter
 3. Enters new label
@@ -156,10 +166,12 @@ Transform "Export" panel into "Manage" panel with three key areas:
 **Current:** Recordings panel has "Rename Chapter" button in chapter headers
 
 **Remove:**
+
 - "Rename Chapter" button
 - `RenameLabelModal.tsx` (move to Manage panel)
 
 **Add help text:**
+
 - "To rename multiple files, use Manage panel"
 - Tooltip on chapter headers: "Use Manage panel for renaming"
 
@@ -174,6 +186,7 @@ Transform "Export" panel into "Manage" panel with three key areas:
 ### Problem
 
 Two separate feature areas share concepts:
+
 - **Recordings panel:** High-touch, view-focused
 - **Manage panel:** Low-touch, operation-focused
 - **Shared:** Recordings data, park/safe states, chapter grouping, file selection
@@ -246,24 +259,25 @@ server/src/
 
 **Prevent confusion:**
 
-| Code Type | Location | Naming Pattern | Example |
-|-----------|----------|----------------|---------|
-| **Recordings-only** | `recordings/` folder | `recordings*`, `view*` | `recordingsViewHelpers.ts` |
-| **Manage-only** | `manage/` folder | `manage*`, `bulk*`, `regen*` | `manageBulkRename.ts` |
-| **Shared** | `shared/` folder | Generic names | `fileGrouping.ts`, `useChapterGroups.ts` |
+| Code Type           | Location             | Naming Pattern               | Example                                  |
+| ------------------- | -------------------- | ---------------------------- | ---------------------------------------- |
+| **Recordings-only** | `recordings/` folder | `recordings*`, `view*`       | `recordingsViewHelpers.ts`               |
+| **Manage-only**     | `manage/` folder     | `manage*`, `bulk*`, `regen*` | `manageBulkRename.ts`                    |
+| **Shared**          | `shared/` folder     | Generic names                | `fileGrouping.ts`, `useChapterGroups.ts` |
 
 **Import paths:**
+
 ```typescript
 // Recordings panel
-import { useRecordingsData } from '../hooks/shared/useRecordingsData'
-import { viewHelpers } from '../utils/recordings/viewHelpers'
+import { useRecordingsData } from '../hooks/shared/useRecordingsData';
+import { viewHelpers } from '../utils/recordings/viewHelpers';
 
 // Manage panel
-import { useRecordingsData } from '../hooks/shared/useRecordingsData'
-import { bulkRename } from '../utils/manage/bulkRename'
+import { useRecordingsData } from '../hooks/shared/useRecordingsData';
+import { bulkRename } from '../utils/manage/bulkRename';
 
 // Shared imports are explicit
-import { groupByChapter } from '../utils/shared/fileGrouping'
+import { groupByChapter } from '../utils/shared/fileGrouping';
 ```
 
 ---
@@ -275,6 +289,7 @@ import { groupByChapter } from '../utils/shared/fileGrouping'
 **Purpose:** Document what code belongs where and why.
 
 **Structure:**
+
 ```markdown
 # Shared Code Index
 
@@ -282,55 +297,58 @@ import { groupByChapter } from '../utils/shared/fileGrouping'
 
 ### Hooks
 
-| Hook | Location | Used By | Purpose |
-|------|----------|---------|---------|
-| `useRecordingsData` | `hooks/shared/` | Recordings, Manage, Watch | Fetch recordings from API |
-| `useChapterGroups` | `hooks/shared/` | Recordings, Manage | Group recordings by chapter |
-| `useFileSelection` | `hooks/shared/` | Manage, Export | Checkbox selection state |
+| Hook                | Location        | Used By                   | Purpose                     |
+| ------------------- | --------------- | ------------------------- | --------------------------- |
+| `useRecordingsData` | `hooks/shared/` | Recordings, Manage, Watch | Fetch recordings from API   |
+| `useChapterGroups`  | `hooks/shared/` | Recordings, Manage        | Group recordings by chapter |
+| `useFileSelection`  | `hooks/shared/` | Manage, Export            | Checkbox selection state    |
 
 ### Components
 
-| Component | Location | Used By | Purpose |
-|-----------|----------|---------|---------|
+| Component          | Location             | Used By            | Purpose             |
+| ------------------ | -------------------- | ------------------ | ------------------- |
 | `RecordingFileRow` | `components/shared/` | Recordings, Manage | Display single file |
-| `ChapterGroup` | `components/shared/` | Recordings, Manage | Chapter section UI |
+| `ChapterGroup`     | `components/shared/` | Recordings, Manage | Chapter section UI  |
 
 ### Utilities
 
-| Utility | Location | Used By | Purpose |
-|---------|----------|---------|---------|
-| `groupByChapter` | `utils/shared/fileGrouping.ts` | Recordings, Manage | Chapter grouping logic |
-| `formatFileSize` | `utils/shared/fileFormatting.ts` | All panels | Size formatting (B/KB/MB/GB) |
+| Utility          | Location                         | Used By            | Purpose                      |
+| ---------------- | -------------------------------- | ------------------ | ---------------------------- |
+| `groupByChapter` | `utils/shared/fileGrouping.ts`   | Recordings, Manage | Chapter grouping logic       |
+| `formatFileSize` | `utils/shared/fileFormatting.ts` | All panels         | Size formatting (B/KB/MB/GB) |
 
 ## Server-Side
 
 ### Routes
 
-| Endpoint | Location | Used By | Purpose |
-|----------|----------|---------|---------|
-| `GET /api/recordings` | `routes/recordings.ts` | Recordings panel | Get recordings for viewing |
-| `POST /api/manage/bulk-rename` | `routes/manage.ts` | Manage panel | Bulk rename operation |
+| Endpoint                       | Location               | Used By          | Purpose                    |
+| ------------------------------ | ---------------------- | ---------------- | -------------------------- |
+| `GET /api/recordings`          | `routes/recordings.ts` | Recordings panel | Get recordings for viewing |
+| `POST /api/manage/bulk-rename` | `routes/manage.ts`     | Manage panel     | Bulk rename operation      |
 
 ### Utilities
 
-| Utility | Location | Used By | Purpose |
-|---------|----------|---------|---------|
-| `renameRecording` | `utils/shared/renameRecording.ts` | Manage, Recordings | FR-130 rename logic |
-| `projectState` | `utils/shared/projectState.ts` | All features | State file operations |
+| Utility           | Location                          | Used By            | Purpose               |
+| ----------------- | --------------------------------- | ------------------ | --------------------- |
+| `renameRecording` | `utils/shared/renameRecording.ts` | Manage, Recordings | FR-130 rename logic   |
+| `projectState`    | `utils/shared/projectState.ts`    | All features       | State file operations |
 
 ## Decision Rules
 
 **When to create shared code:**
+
 - Code is used by 2+ feature areas
 - Logic is domain-agnostic (not Recordings-specific or Manage-specific)
 - Reduces duplication
 
 **When to keep code separate:**
+
 - Code is feature-specific
 - Only one feature needs it (now and foreseeable future)
 - Sharing would create tight coupling
 
 **Migration path:**
+
 - Start in feature folder
 - Move to shared/ when second feature needs it
 - Update imports, test, commit
@@ -369,6 +387,7 @@ export function groupByChapter(recordings: RecordingFile[]): Map<string, Recordi
 **`POST /api/manage/bulk-rename`**
 
 **Request:**
+
 ```json
 {
   "files": ["01-1-intro.mov", "01-2-intro.mov", "01-3-intro-retake.mov"],
@@ -377,6 +396,7 @@ export function groupByChapter(recordings: RecordingFile[]): Map<string, Recordi
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -391,6 +411,7 @@ export function groupByChapter(recordings: RecordingFile[]): Map<string, Recordi
 ```
 
 **Error Response:**
+
 ```json
 {
   "success": false,
@@ -403,20 +424,24 @@ export function groupByChapter(recordings: RecordingFile[]): Map<string, Recordi
 ### New Endpoints: Regeneration
 
 **`POST /api/manage/regen-shadows`**
+
 - Regenerates shadow files for all recordings
 - Returns count of regenerated files
 
 **`POST /api/manage/regen-transcripts`**
+
 - Queues transcription for missing transcripts
 - Optional `force: true` to re-transcribe all
 - Returns count of queued jobs
 
 **`POST /api/manage/regen-chapters`**
+
 - Regenerates chapter videos
 - Returns progress updates via Socket.io
 - Expensive operation (30-60s per chapter)
 
 **`POST /api/manage/regen-all`**
+
 - Runs all three operations sequentially
 - Returns combined status
 
@@ -427,6 +452,7 @@ export function groupByChapter(recordings: RecordingFile[]): Map<string, Recordi
 ### Must Have
 
 **Panel Rename:**
+
 - [ ] Tab label changed: "Export" → "Manage"
 - [ ] Component renamed: `ExportPanel.tsx` → `ManagePanel.tsx`
 - [ ] Route updated: `/export` → `/manage` (or kept for backwards compat)
@@ -434,6 +460,7 @@ export function groupByChapter(recordings: RecordingFile[]): Map<string, Recordi
 - [ ] Tooltip added: "Bulk operations, export to Gling, file regeneration, edit folder management"
 
 **Regen Toolbar:**
+
 - [ ] Toolbar at top of Manage panel
 - [ ] Four buttons: Regen Shadows, Regen Transcripts, Regen Chapters, Regen All
 - [ ] Confirmation dialogs for expensive operations (Chapters, All)
@@ -442,6 +469,7 @@ export function groupByChapter(recordings: RecordingFile[]): Map<string, Recordi
 - [ ] Collapsible section (can hide toolbar)
 
 **Bulk Rename:**
+
 - [ ] "Bulk Rename" section in Manage panel
 - [ ] Text input for new label
 - [ ] "Apply Rename" button for selected files
@@ -451,11 +479,13 @@ export function groupByChapter(recordings: RecordingFile[]): Map<string, Recordi
 - [ ] Toast notification after rename
 
 **Recordings Panel Cleanup:**
+
 - [ ] "Rename Chapter" button removed from chapter headers
 - [ ] Help text added: "To rename multiple files, use Manage panel"
 - [ ] Tooltip on chapter headers links to Manage panel
 
 **Shared Code Architecture:**
+
 - [ ] `shared/` folders created in `components/`, `hooks/`, `utils/`
 - [ ] Shared code moved to `shared/` folders
 - [ ] Export barrel files created (`index.ts`)
@@ -481,26 +511,27 @@ export function groupByChapter(recordings: RecordingFile[]): Map<string, Recordi
 ### Bulk Rename Implementation
 
 **Reuses FR-130 logic:**
+
 ```typescript
 // server/src/routes/manage.ts
 router.post('/bulk-rename', async (req, res) => {
-  const { files, newLabel } = req.body
-  const config = getConfig()
-  const projectPath = expandPath(config.projectDirectory)
+  const { files, newLabel } = req.body;
+  const config = getConfig();
+  const projectPath = expandPath(config.projectDirectory);
 
-  const renamed = []
-  const errors = []
+  const renamed = [];
+  const errors = [];
 
   for (const oldFilename of files) {
     try {
       // FR-130 delete+regenerate pattern
-      const { chapter, sequence } = parseFilename(oldFilename)
-      const newFilename = buildFilename(chapter, sequence, newLabel, tags)
+      const { chapter, sequence } = parseFilename(oldFilename);
+      const newFilename = buildFilename(chapter, sequence, newLabel, tags);
 
-      await renameRecording(oldFilename, newFilename, projectPath)
-      renamed.push({ old: oldFilename, new: newFilename })
+      await renameRecording(oldFilename, newFilename, projectPath);
+      renamed.push({ old: oldFilename, new: newFilename });
     } catch (err) {
-      errors.push({ file: oldFilename, error: String(err) })
+      errors.push({ file: oldFilename, error: String(err) });
     }
   }
 
@@ -509,9 +540,9 @@ router.post('/bulk-rename', async (req, res) => {
     renamedCount: renamed.length,
     transcriptionQueued: true,
     files: renamed,
-    errors: errors.length > 0 ? errors : undefined
-  })
-})
+    errors: errors.length > 0 ? errors : undefined,
+  });
+});
 ```
 
 ---
@@ -519,90 +550,95 @@ router.post('/bulk-rename', async (req, res) => {
 ### Regeneration Implementation
 
 **Regen Shadows:**
+
 ```typescript
 router.post('/regen-shadows', async (req, res) => {
-  const config = getConfig()
-  const recordings = await getRecordings(config.projectDirectory)
-  let count = 0
+  const config = getConfig();
+  const recordings = await getRecordings(config.projectDirectory);
+  let count = 0;
 
   for (const recording of recordings) {
-    await createShadowFile(recording.filename, getShadowDir(recording))
-    count++
+    await createShadowFile(recording.filename, getShadowDir(recording));
+    count++;
   }
 
-  res.json({ success: true, regenerated: count })
-})
+  res.json({ success: true, regenerated: count });
+});
 ```
 
 **Regen Transcripts:**
+
 ```typescript
 router.post('/regen-transcripts', async (req, res) => {
-  const { force } = req.body
-  const config = getConfig()
-  const recordings = await getRecordings(config.projectDirectory)
+  const { force } = req.body;
+  const config = getConfig();
+  const recordings = await getRecordings(config.projectDirectory);
 
-  let queued = 0
+  let queued = 0;
   for (const recording of recordings) {
-    const hasTranscript = await checkTranscript(recording.filename)
+    const hasTranscript = await checkTranscript(recording.filename);
     if (force || !hasTranscript) {
-      queueTranscription(recording.path)
-      queued++
+      queueTranscription(recording.path);
+      queued++;
     }
   }
 
-  res.json({ success: true, queued })
-})
+  res.json({ success: true, queued });
+});
 ```
 
 **Regen Chapters:**
+
 ```typescript
 router.post('/regen-chapters', async (req, res) => {
-  const config = getConfig()
-  const chapters = await getUniqueChapters(config.projectDirectory)
+  const config = getConfig();
+  const chapters = await getUniqueChapters(config.projectDirectory);
 
   // Start async regeneration with Socket.io progress updates
   regenerateChaptersAsync(chapters, (progress) => {
-    io.emit('regen:chapters:progress', progress)
-  })
+    io.emit('regen:chapters:progress', progress);
+  });
 
-  res.json({ success: true, started: true, chapters: chapters.length })
-})
+  res.json({ success: true, started: true, chapters: chapters.length });
+});
 ```
 
 ---
 
 ### Files to Create
 
-| File | Purpose |
-|------|---------|
-| `client/src/components/ManagePanel.tsx` | Renamed from ExportPanel.tsx |
-| `client/src/components/shared/RegenToolbar.tsx` | Regen toolbar component |
-| `client/src/components/shared/BulkRenameSection.tsx` | Bulk rename UI |
-| `server/src/routes/manage.ts` | Manage panel endpoints |
-| `docs/architecture/shared-code-index.md` | Shared code documentation |
+| File                                                 | Purpose                      |
+| ---------------------------------------------------- | ---------------------------- |
+| `client/src/components/ManagePanel.tsx`              | Renamed from ExportPanel.tsx |
+| `client/src/components/shared/RegenToolbar.tsx`      | Regen toolbar component      |
+| `client/src/components/shared/BulkRenameSection.tsx` | Bulk rename UI               |
+| `server/src/routes/manage.ts`                        | Manage panel endpoints       |
+| `docs/architecture/shared-code-index.md`             | Shared code documentation    |
 
 ---
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `client/src/App.tsx` | Rename tab, update route |
+| File                                       | Changes                             |
+| ------------------------------------------ | ----------------------------------- |
+| `client/src/App.tsx`                       | Rename tab, update route            |
 | `client/src/components/RecordingsView.tsx` | Remove rename button, add help text |
-| `client/src/hooks/useManage.ts` | CREATE - Manage panel hooks |
-| `server/src/index.ts` | Register manage routes |
-| `docs/CLAUDE.md` | Update panel names |
+| `client/src/hooks/useManage.ts`            | CREATE - Manage panel hooks         |
+| `server/src/index.ts`                      | Register manage routes              |
+| `docs/CLAUDE.md`                           | Update panel names                  |
 
 ---
 
 ## Testing Checklist
 
 **Panel Rename:**
+
 1. ✅ Tab shows "Manage" instead of "Export"
 2. ✅ Tooltip shows "Bulk operations, export to Gling..."
 3. ✅ All existing export features still work
 
 **Regen Toolbar:**
+
 1. ✅ Regen Shadows - regenerates all shadows
 2. ✅ Regen Transcripts - queues missing transcripts
 3. ✅ Regen Chapters - regenerates chapter videos with progress
@@ -611,6 +647,7 @@ router.post('/regen-chapters', async (req, res) => {
 6. ✅ Toast notifications on completion
 
 **Bulk Rename:**
+
 1. ✅ Select 3 files → rename → all renamed
 2. ✅ Select chapter → rename → all files in chapter renamed
 3. ✅ Confirmation dialog shows before rename
@@ -618,11 +655,13 @@ router.post('/regen-chapters', async (req, res) => {
 5. ✅ State preserved (parked, annotations)
 
 **Recordings Panel:**
+
 1. ✅ "Rename Chapter" button removed
 2. ✅ Help text shows "Use Manage panel for renaming"
 3. ✅ Recordings panel simpler, focused on viewing
 
 **Shared Code:**
+
 1. ✅ `shared/` folders exist
 2. ✅ No code duplication between Recordings and Manage
 3. ✅ Import paths correct
@@ -633,10 +672,12 @@ router.post('/regen-chapters', async (req, res) => {
 ## Dependencies
 
 **Depends on:**
+
 - FR-130 (Delete+Regenerate pattern) - Bulk rename uses this logic
 - FR-122/124 (Export panel) - Base for Manage panel
 
 **Enables:**
+
 - Simpler Recordings panel (focused on viewing)
 - Centralized complex operations
 - Better code organization (shared utilities)
@@ -646,6 +687,7 @@ router.post('/regen-chapters', async (req, res) => {
 ## Migration Path
 
 **From current state:**
+
 1. Rename component files (`ExportPanel.tsx` → `ManagePanel.tsx`)
 2. Create `shared/` folder structure
 3. Move shared code to `shared/` folders
@@ -656,6 +698,7 @@ router.post('/regen-chapters', async (req, res) => {
 8. Update documentation
 
 **User impact:**
+
 - Export panel becomes Manage panel (same location, new name)
 - Existing export features unchanged
 - New features added (regen toolbar, bulk rename)
@@ -666,16 +709,19 @@ router.post('/regen-chapters', async (req, res) => {
 ## Success Metrics
 
 **Code organization:**
+
 - Shared code clearly identified
 - No duplication between Recordings and Manage
 - Documentation complete (shared-code-index.md)
 
 **User experience:**
+
 - Recordings panel simpler (remove complexity)
 - Manage panel is "power tools" area
 - Clear mental model (viewing vs. operations)
 
 **Feature completeness:**
+
 - Bulk rename working
 - Regen toolbar working (4 operations)
 - Toast notifications clear
@@ -685,6 +731,7 @@ router.post('/regen-chapters', async (req, res) => {
 ## Completion Criteria
 
 **Definition of Done:**
+
 - [ ] All acceptance criteria met
 - [ ] All tests passing
 - [ ] Shared code architecture implemented
@@ -706,6 +753,7 @@ router.post('/regen-chapters', async (req, res) => {
 **What was implemented:**
 
 **Phase 1 Scope (Agreed with user):**
+
 - ✅ Panel rename: Export → Manage
 - ✅ Basic bulk rename functionality (selected files)
 - ✅ Server endpoint using FR-130 delete+regenerate logic
@@ -715,10 +763,12 @@ router.post('/regen-chapters', async (req, res) => {
 - ⏸️ **Deferred to Phase 2:** Full shared code architecture documentation
 
 **Files Created:**
+
 - `server/src/routes/manage.ts` (138 lines) - Manage panel routes with bulk-rename endpoint
 - Created folder structure: `client/src/components/shared/`, `client/src/hooks/shared/`, `client/src/utils/shared/`, `server/src/routes/shared/`, `server/src/utils/shared/`, `server/src/utils/manage/`
 
 **Files Modified:**
+
 - `client/src/components/ExportPanel.tsx` → `ManagePanel.tsx` (renamed, +73 lines for bulk rename UI)
 - `client/src/App.tsx` - Updated tab label "Export" → "Manage", added tooltip, updated imports
 - `server/src/index.ts` - Registered manage routes at `/api/manage`
@@ -727,12 +777,14 @@ router.post('/regen-chapters', async (req, res) => {
 **Implementation Details:**
 
 **Panel Rename:**
+
 - Tab label changed to "Manage" with tooltip: "Bulk operations, export to Gling, file regeneration, edit folder management"
 - Component renamed from ExportPanel to ManagePanel
 - Tab value kept as 'export' for backwards compatibility
 - All existing export functionality preserved (Gling prep, edit folders, dictionary management)
 
 **Bulk Rename UI:**
+
 - Blue banner appears when files are selected
 - Input field for new label with Enter key support
 - "Apply Rename" button (disabled when empty or renaming)
@@ -742,6 +794,7 @@ router.post('/regen-chapters', async (req, res) => {
 - Toast notifications on success/error
 
 **Server Endpoint:**
+
 - `POST /api/manage/bulk-rename`
 - Accepts: `{ files: string[], newLabel: string }`
 - Returns: `{ success, renamedCount, transcriptionQueued, files, errors }`
@@ -752,6 +805,7 @@ router.post('/regen-chapters', async (req, res) => {
 - Returns detailed error messages per file
 
 **RecordingsView Changes:**
+
 - Removed "Rename Chapter" button (✏️ emoji button)
 - Added help text: "(Use Manage panel to rename)" with tooltip
 - Removed `editingChapter` state
@@ -759,6 +813,7 @@ router.post('/regen-chapters', async (req, res) => {
 - Comment added explaining FR-131 changes
 
 **Testing Results:**
+
 - ✅ TypeScript compilation successful (no new errors introduced)
 - ✅ All files renamed correctly
 - ✅ Bulk rename UI shows/hides based on selection
@@ -775,6 +830,7 @@ router.post('/regen-chapters', async (req, res) => {
 5. **Reused FR-130:** Bulk rename calls FR-130's renameRecording() for each file (tested and working)
 
 **Phase 2 TODO (Future):**
+
 - [ ] Regeneration toolbar (4 buttons: Regen Shadows, Regen Transcripts, Regen Chapters, Regen All)
 - [ ] Chapter-level rename dropdown
 - [ ] Move shared code to shared/ folders with documentation
@@ -784,6 +840,7 @@ router.post('/regen-chapters', async (req, res) => {
 - [ ] Collapsible sections
 
 **User Verification Needed:**
+
 1. Run dev server and test bulk rename with real recordings
 2. Verify transcription queue works correctly
 3. Verify state preservation (parked, annotations, safe flags)

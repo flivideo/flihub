@@ -8,6 +8,7 @@
 ## Prerequisites
 
 1. **Node.js and tsx installed**
+
    ```bash
    npm install -g tsx  # If not already installed
    ```
@@ -48,12 +49,15 @@ tsx server/src/scripts/scanProjects.ts
 ## What the Scanner Does
 
 ### Phase 1: Project Discovery
+
 - Reads all directories in `PROJECTS_ROOT`
 - Filters out hidden directories (starting with `.`)
 - Sorts projects alphabetically
 
 ### Phase 2: File Scanning
+
 For each project:
+
 1. Read all `.mov` and `.mp4` files in `recordings/` folder
 2. Parse filenames (chapter, sequence, label, tags)
 3. Check for naming violations
@@ -62,7 +66,9 @@ For each project:
 6. Check for state inconsistencies
 
 ### Phase 3: Report Generation
+
 Generates 3 output files:
+
 1. **JSON:** `docs/analysis/discrepancies.json` (machine-readable)
 2. **CSV:** `docs/analysis/discrepancies.csv` (spreadsheet)
 3. **Markdown:** `docs/analysis/project-discrepancies.md` (human-readable)
@@ -119,6 +125,7 @@ DONE
 ### Generated Files
 
 **1. `discrepancies.json`**
+
 ```json
 {
   "summary": {
@@ -160,6 +167,7 @@ DONE
 ```
 
 **2. `discrepancies.csv`**
+
 ```csv
 "Project Code","Project Path","Type","Severity","Issue","File","Details","Suggestion"
 "b01-project-alpha","/path/to/b01","structural","info","Chapter gaps detected","","Missing chapters: 02, 04","..."
@@ -167,6 +175,7 @@ DONE
 ```
 
 **3. `project-discrepancies.md`**
+
 ```markdown
 # Project Discrepancy Report
 
@@ -177,10 +186,11 @@ DONE
 
 ## Summary by Type
 
-| Type | Count | Projects Affected |
-|------|-------|-------------------|
-| Naming | 8 | 5 |
-| Structural | 32 | 10 |
+| Type       | Count | Projects Affected |
+| ---------- | ----- | ----------------- |
+| Naming     | 8     | 5                 |
+| Structural | 32    | 10                |
+
 ...
 
 ## Projects with Issues
@@ -193,8 +203,9 @@ DONE
 **Structural Issues:**
 
 🔍 **Chapter gaps detected**
-  - Details: Missing chapters: 02, 04
-  - Suggestion: Gaps may be intentional...
+
+- Details: Missing chapters: 02, 04
+- Suggestion: Gaps may be intentional...
 ```
 
 ---
@@ -207,10 +218,10 @@ Edit `DECISIONS` object in `scanProjects.ts`:
 
 ```typescript
 const DECISIONS = {
-  chapterGaps: 'info',           // 'error' | 'warning' | 'info'
-  sequenceGaps: 'info',          // 'error' | 'warning' | 'info'
+  chapterGaps: 'info', // 'error' | 'warning' | 'info'
+  sequenceGaps: 'info', // 'error' | 'warning' | 'info'
   nonSequentialChapters: 'warning',
-  sequenceMustStartAt1: false,   // true = check, false = skip
+  sequenceMustStartAt1: false, // true = check, false = skip
   sameLabelInChapter: false,
   safeFolderDeprecated: false,
   legacyFormatWarning: 'info',
@@ -232,6 +243,7 @@ ERROR: Projects root not found: /Users/davidcruwys/dev/video-projects/v-appydave
 ```
 
 **Solution:** Set correct path
+
 ```bash
 export PROJECTS_ROOT=/actual/path/to/video-projects
 tsx server/src/scripts/scanProjects.ts
@@ -244,6 +256,7 @@ Error reading projects root: EACCES: permission denied
 ```
 
 **Solution:** Check folder permissions
+
 ```bash
 ls -la ~/dev/video-projects/v-appydave
 ```
@@ -255,6 +268,7 @@ Error: Cannot find module '@types/fs-extra'
 ```
 
 **Solution:** Install dependencies
+
 ```bash
 npm install
 ```
@@ -297,6 +311,7 @@ npm install
 ## Re-Running the Scanner
 
 Scanner can be run multiple times:
+
 - After fixing issues (to verify fixes)
 - After implementing new features (to detect new issues)
 - After adding new projects (to scan new content)

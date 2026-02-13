@@ -16,12 +16,14 @@
 ## Problem
 
 **Current state:**
+
 - "Folders" button exists in ToolsSidebar (Complex Tools section)
 - Clicking it opens drawer with placeholder: "Folder management functionality coming soon..."
 - No specification exists for what this tool should do
 - FR-136 mentions it as "placeholder for extensibility" and "Future FR-135 functionality"
 
 **Impact:**
+
 - Wasted screen real estate (button that does nothing)
 - User confusion (what is "Folders" supposed to do?)
 - Incomplete FR-136 implementation
@@ -36,6 +38,7 @@
 **What it might be:** UI for creating and managing edit folders (edit-1st, edit-2nd, edit-final)
 
 **Problem:** This already exists in Export tool (FR-136-B)
+
 - ExportPanel.tsx has "Edit Folders" section (lines 350-450)
 - Create/Open buttons per folder
 - FR-126 Manifest status with Clean/Restore operations
@@ -49,11 +52,13 @@
 **What it might be:** Move recordings into subfolders for organization
 
 **Example use cases:**
+
 - Create folders by topic ("Intro", "Advanced", "Demos")
 - Move files into chapter-based folders (ch-01/, ch-02/, etc.)
 - Archive old recordings into "Archive" folder
 
 **Challenges:**
+
 - FliHub assumes flat file structure in `recordings/`
 - Moving to subfolders would break chapter extraction
 - Would require major refactoring of file watchers
@@ -67,6 +72,7 @@
 **What it might be:** UI for FR-135 Chapter Tools (Move, Swap, Undo)
 
 **FR-135 features:**
+
 - Move files to different chapter
 - Swap entire chapters
 - Undo last chapter operation
@@ -82,6 +88,7 @@
 **What it might be:** Manage overall project folder structure
 
 **Example features:**
+
 - Create missing standard folders (inbox/, assets/, final/)
 - Verify folder structure compliance
 - Fix broken folder structures
@@ -105,6 +112,7 @@
 **Decision:** Remove the button (Path A)
 
 **Rationale:**
+
 1. **User confusion confirmed** - User couldn't remember what it was for and confused it with Export tool's folder management
 2. **No clear use case** - After 6 months, no feature definition has emerged
 3. **Clean UI principle** - Better to remove undefined features than show "coming soon" indefinitely
@@ -112,6 +120,7 @@
 5. **FR-140 priority** - Focus development effort on defined, high-value features
 
 **Quote from user:**
+
 > "I don't really understand your questions related to folders tool. I don't even remember what it was about."
 
 This confirms the button serves no current purpose and should be removed.
@@ -123,11 +132,13 @@ This confirms the button serves no current purpose and should be removed.
 ### Path A: Remove the Button ✅ APPROVED
 
 **Action:**
+
 - Remove "Folders" button from ToolsSidebar.tsx
 - Remove corresponding SlideOutDrawer from ManagePanel.tsx
 - Update `activeTool` type to remove 'folders'
 
 **Rationale:**
+
 - No spec = no implementation
 - User doesn't remember what it's for
 - Better to remove than show "coming soon" indefinitely
@@ -142,6 +153,7 @@ This confirms the button serves no current purpose and should be removed.
 ### Path B: Repurpose for FR-135 Chapter Tools ❌
 
 **Rejected because:**
+
 - FR-135 is LOW priority (no evidence of need from scanner)
 - FR-140 (move/cascade) addresses the immediate chapter management need
 - Can create new button if FR-135 becomes priority
@@ -151,6 +163,7 @@ This confirms the button serves no current purpose and should be removed.
 ### Path C: Define New Feature ❌
 
 **Rejected because:**
+
 - User couldn't articulate what it should do
 - No clear use case after 6 months
 - Would delay higher-priority work (FR-140)
@@ -183,9 +196,7 @@ This confirms the button serves no current purpose and should be removed.
   title="Folder Management"
   onClose={() => setActiveTool(null)}
 >
-  <div className="text-gray-600">
-    Folder management functionality coming soon...
-  </div>
+  <div className="text-gray-600">Folder management functionality coming soon...</div>
 </SlideOutDrawer>
 ```
 
@@ -204,12 +215,14 @@ This confirms the button serves no current purpose and should be removed.
 ### If Implementing Option 2 (Recording Organization)
 
 **Challenges:**
+
 - FliHub assumes flat structure in `recordings/`
 - File watcher monitors single directory
 - Chapter extraction parses filenames (e.g., `05-2-intro.mov`)
 - Moving to subfolders would break existing logic
 
 **Required changes:**
+
 - Update WatcherManager to support nested folders
 - Update chapter extraction to search recursively
 - Update all file operations to handle paths
@@ -222,6 +235,7 @@ This confirms the button serves no current purpose and should be removed.
 ### If Implementing Option 3 (Chapter Tools / FR-135)
 
 **Implementation:**
+
 - Rename button to "Chapter Tools"
 - Build ChapterToolsPanel component
 - Implement Move to Chapter feature
@@ -235,12 +249,14 @@ This confirms the button serves no current purpose and should be removed.
 ### If Implementing Option 4 (Project Structure Validation)
 
 **Features:**
+
 - Scan project for missing folders
 - Create standard folder structure
 - Validate folder names
 - Fix broken structures
 
 **Example UI:**
+
 ```
 ┌─────────────────────────────────────────────┐
 │ Folder Management                      [X]  │
@@ -280,6 +296,7 @@ This confirms the button serves no current purpose and should be removed.
 **Reason:** User couldn't remember what it was for, confused it with Export tool functionality, and no clear use case has emerged after 6 months.
 
 **Next steps:**
+
 1. Developer removes button from ToolsSidebar.tsx
 2. Developer removes SlideOutDrawer from ManagePanel.tsx
 3. Developer updates `activeTool` type

@@ -4,26 +4,26 @@ Analysis for creating a new presentations app based on lessons learned from both
 
 ## Technology Stack Comparison
 
-| Component | Storyline App | FliHub | Recommended |
-|-----------|---------------|--------|-------------|
-| **React** | 19.1.1 | 19 | **19.x** |
-| **TypeScript** | 5.9.2 (server), 5.8.3 (client) | 5.6 | **5.9+** |
-| **Vite** | 7.1.5 | 6 | **7.x** |
-| **Express** | 5.1.0 | 5.1 | **5.x** |
-| **Socket.io** | 4.8.1 | 4.8.1 | **4.8.x** |
-| **TanStack Query** | 5.87.1 | 5.60 | **5.87+** |
-| **Tailwind CSS** | 4.1.13 | 4 | **4.x** |
-| **Chokidar** | 3.6.0 | 3.6 | **3.6.x** |
-| **Node.js** | 18+ | 22 | **22+** |
+| Component          | Storyline App                  | FliHub | Recommended |
+| ------------------ | ------------------------------ | ------ | ----------- |
+| **React**          | 19.1.1                         | 19     | **19.x**    |
+| **TypeScript**     | 5.9.2 (server), 5.8.3 (client) | 5.6    | **5.9+**    |
+| **Vite**           | 7.1.5                          | 6      | **7.x**     |
+| **Express**        | 5.1.0                          | 5.1    | **5.x**     |
+| **Socket.io**      | 4.8.1                          | 4.8.1  | **4.8.x**   |
+| **TanStack Query** | 5.87.1                         | 5.60   | **5.87+**   |
+| **Tailwind CSS**   | 4.1.13                         | 4      | **4.x**     |
+| **Chokidar**       | 3.6.0                          | 3.6    | **3.6.x**   |
+| **Node.js**        | 18+                            | 22     | **22+**     |
 
 ### UI Components
 
-| Aspect | Storyline App | FliHub |
-|--------|---------------|--------|
-| **Component Library** | Custom Tailwind | Custom Tailwind |
-| **Routing** | React Router 7.8.2 | Hash-based (#tabs) |
-| **Notifications** | None mentioned | Sonner 1.7 |
-| **Icons** | Not specified | Not specified |
+| Aspect                | Storyline App      | FliHub             |
+| --------------------- | ------------------ | ------------------ |
+| **Component Library** | Custom Tailwind    | Custom Tailwind    |
+| **Routing**           | React Router 7.8.2 | Hash-based (#tabs) |
+| **Notifications**     | None mentioned     | Sonner 1.7         |
+| **Icons**             | Not specified      | Not specified      |
 
 **Recommendation**: Consider adding Sonner for toast notifications. Both apps use custom Tailwind components rather than ShadCN/Radix - this keeps bundle size down but requires more UI work.
 
@@ -96,12 +96,12 @@ io.emit('file:new', fileInfo);
 
 ### Decision Points for New App
 
-| Consideration | Use Rooms | Use Direct |
-|---------------|-----------|------------|
-| Multi-project support | ✅ | ❌ |
-| Simpler implementation | ❌ | ✅ |
-| Resource efficiency | ✅ | ❌ |
-| Real-time collaboration | ✅ | Possible |
+| Consideration           | Use Rooms | Use Direct |
+| ----------------------- | --------- | ---------- |
+| Multi-project support   | ✅        | ❌         |
+| Simpler implementation  | ❌        | ✅         |
+| Resource efficiency     | ✅        | ❌         |
+| Real-time collaboration | ✅        | Possible   |
 
 **Recommendation**: If the presentations app will support multiple presentations simultaneously, use room-based architecture like Storyline. If single-presentation focus, direct events are simpler.
 
@@ -163,6 +163,7 @@ class WatcherManager {
 ```
 
 **Recommendation**:
+
 - Use **Service Layer** pattern for complex domain logic (validation, data transformation)
 - Use **Route Factory** pattern for testability and dependency injection
 - Use **WatcherManager** for file watching centralization
@@ -189,7 +190,7 @@ export function useConfig() {
   return useQuery({
     queryKey: QUERY_KEYS.config,
     queryFn: () => fetchApi<Config>('/api/config'),
-    staleTime: 5 * 60 * 1000,  // 5 min
+    staleTime: 5 * 60 * 1000, // 5 min
   });
 }
 
@@ -241,8 +242,7 @@ export class AppError extends Error {
 }
 
 export function asyncHandler(fn: AsyncRequestHandler) {
-  return (req, res, next) =>
-    Promise.resolve(fn(req, res, next)).catch(next);
+  return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
 
 // Global error middleware
@@ -260,7 +260,7 @@ app.use((err, req, res, next) => {
   const status = err.status || 500;
   res.status(status).json({
     error: err.message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 });
 ```
@@ -407,17 +407,17 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
 ```typescript
 // routes/feature.ts
-export function createFeatureRoutes(
-  getConfig: () => Config,
-  io: Server
-): Router {
+export function createFeatureRoutes(getConfig: () => Config, io: Server): Router {
   const router = Router();
 
-  router.get('/', asyncHandler(async (req, res) => {
-    const config = getConfig();
-    // ... route logic
-    res.json({ success: true, data: result });
-  }));
+  router.get(
+    '/',
+    asyncHandler(async (req, res) => {
+      const config = getConfig();
+      // ... route logic
+      res.json({ success: true, data: result });
+    })
+  );
 
   return router;
 }
@@ -468,14 +468,14 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 
 ### Architecture Decisions
 
-| Decision | Recommendation | Rationale |
-|----------|----------------|-----------|
-| Routing | **React Router** | More complex app benefits from proper routing |
-| Socket.io | **Room-based** if multi-presentation | Allows isolated updates per presentation |
-| Server structure | **Service Layer** | Presentations have complex logic (rendering, templates) |
-| File watching | **WatcherManager** | Centralized control, debouncing built-in |
-| Error handling | **AppError + asyncHandler** | Clean, testable patterns |
-| Config | **JSON + in-memory** | Proven pattern, persists on restart |
+| Decision         | Recommendation                       | Rationale                                               |
+| ---------------- | ------------------------------------ | ------------------------------------------------------- |
+| Routing          | **React Router**                     | More complex app benefits from proper routing           |
+| Socket.io        | **Room-based** if multi-presentation | Allows isolated updates per presentation                |
+| Server structure | **Service Layer**                    | Presentations have complex logic (rendering, templates) |
+| File watching    | **WatcherManager**                   | Centralized control, debouncing built-in                |
+| Error handling   | **AppError + asyncHandler**          | Clean, testable patterns                                |
+| Config           | **JSON + in-memory**                 | Proven pattern, persists on restart                     |
 
 ### Domain-Specific Considerations
 

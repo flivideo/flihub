@@ -15,11 +15,13 @@ As a Windows user, I want the project dropdown to show just the project code, no
 On Windows with WSL paths, the project dropdown shows the full path instead of just the project code.
 
 **David sees (Mac):**
+
 ```
 b71-bmad-poem
 ```
 
 **Jan sees (Windows/WSL):**
+
 ```
 \\wsl$\Ubuntu\home\jan\dev\video-projects\v-appydave\b59-n8n-digital-ocean
 ```
@@ -36,7 +38,7 @@ b71-bmad-poem
 ```json
 {
   "projectsRootDirectory": "\\\\wsl$\\\\Ubuntu\\\\home\\\\jan\\\\dev\\\\video-projects\\\\v-appydave",
-  "activeProject": "b59-n8n-digital-ocean"  // ← Correct value exists!
+  "activeProject": "b59-n8n-digital-ocean" // ← Correct value exists!
 }
 ```
 
@@ -45,6 +47,7 @@ b71-bmad-poem
 The UI is deriving the project name from the full path instead of using `config.activeProject` directly.
 
 **Fix Approach:**
+
 1. Find where the project dropdown gets its display value
 2. Change from deriving via `path.basename(fullPath)` to using `config.activeProject` directly
 3. The config already has the correct value - just use it

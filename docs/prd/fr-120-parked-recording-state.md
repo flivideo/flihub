@@ -15,12 +15,14 @@ As a video creator, I want to mark recordings as "parked" so I can exclude them 
 ## Problem
 
 Some recordings are good content but not for this video:
+
 - Too technical for the target audience
 - Better suited for a future video
 - B-roll material for later use
 - Content for SKOOL community (not YouTube)
 
 Currently only have two states:
+
 - **Regular** - In the main recordings list
 - **Safe** - Protected from accidental deletion
 
@@ -34,11 +36,11 @@ Add a third recording state: **Parked**
 
 ### States Model
 
-| State | Meaning | Visual | Action |
-|-------|---------|--------|--------|
-| Regular | Active in current edit | Green background | "Park" button |
-| Safe | Protected recording | Cream/yellow background | "Unpark" / "Restore" buttons |
-| Parked | Excluded from this edit | Light pink/light yellow | "Unpark" button |
+| State   | Meaning                 | Visual                  | Action                       |
+| ------- | ----------------------- | ----------------------- | ---------------------------- |
+| Regular | Active in current edit  | Green background        | "Park" button                |
+| Safe    | Protected recording     | Cream/yellow background | "Unpark" / "Restore" buttons |
+| Parked  | Excluded from this edit | Light pink/light yellow | "Unpark" button              |
 
 ### Visual Treatment
 
@@ -48,11 +50,11 @@ Add a third recording state: **Parked**
 
 ### Actions
 
-| Current State | Available Actions |
-|---------------|-------------------|
-| Regular | "→ Safe", "→ Park" |
-| Safe | "← Restore" |
-| Parked | "← Unpark" (returns to Regular) |
+| Current State | Available Actions               |
+| ------------- | ------------------------------- |
+| Regular       | "→ Safe", "→ Park"              |
+| Safe          | "← Restore"                     |
+| Parked        | "← Unpark" (returns to Regular) |
 
 ### Storage
 
@@ -88,20 +90,20 @@ Stored in `.flihub-state.json` alongside `safeRecordings`:
 ```typescript
 // shared/types.ts
 interface ProjectState {
-  safeRecordings?: string[]
-  parkedRecordings?: string[]  // NEW
+  safeRecordings?: string[];
+  parkedRecordings?: string[]; // NEW
   // ... other fields
 }
 ```
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `shared/types.ts` | Add `parkedRecordings` to ProjectState |
-| `server/src/utils/projectState.ts` | Add `parkRecording()`, `unparkRecording()` helpers |
-| `server/src/routes/recordings.ts` | Add park/unpark endpoints |
-| `client/src/components/RecordingsPanel.tsx` | Add Park/Unpark buttons, parked styling |
+| File                                        | Changes                                            |
+| ------------------------------------------- | -------------------------------------------------- |
+| `shared/types.ts`                           | Add `parkedRecordings` to ProjectState             |
+| `server/src/utils/projectState.ts`          | Add `parkRecording()`, `unparkRecording()` helpers |
+| `server/src/routes/recordings.ts`           | Add park/unpark endpoints                          |
+| `client/src/components/RecordingsPanel.tsx` | Add Park/Unpark buttons, parked styling            |
 
 ### Color Options
 
@@ -133,32 +135,38 @@ None - this is the foundation for FR-121, FR-122, FR-123.
 ### Backend
 
 **Types (shared/types.ts):**
+
 - Added `parked?: boolean` to RecordingState
 - Added `isParked: boolean` to RecordingFile and QueryRecording
 - Created ParkResponse and UnparkResponse interfaces
 
 **State Management (server/src/utils/projectState.ts):**
+
 - `isRecordingParked()` - Check parked status
 - `setRecordingParked()` - Set parked flag (immutable)
 - `getParkedRecordings()` - Get list of parked files
 - Updated `setRecordingSafe()` cleanup to check parked flag
 
 **API Routes (server/src/routes/index.ts):**
+
 - `POST /api/recordings/park` - Park files/chapters
 - `POST /api/recordings/unpark` - Unpark files
 - Added isParked to recording objects
 
 **Query Endpoints:**
+
 - `server/src/routes/query/recordings.ts` - Returns isParked flag
 - `server/src/routes/query/export.ts` - Returns isParked flag
 
 ### Frontend
 
 **API Hooks (client/src/hooks/useApi.ts):**
+
 - `useParkRecording()` - Park mutation
 - `useUnparkRecording()` - Unpark mutation
 
 **UI (client/src/components/RecordingsView.tsx):**
+
 - Added `showParked` state with toggle checkbox
 - Updated filtering logic for safe + parked
 - Pink background (`bg-pink-50`) for parked files

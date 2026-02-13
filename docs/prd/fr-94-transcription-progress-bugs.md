@@ -15,6 +15,7 @@ As a user, I want the transcription progress display to show accurate status wit
 Multiple bugs observed in the transcription progress UI (Project B89):
 
 **Screenshot context:**
+
 ```
 Transcription Progress
 0/5 files (0%)
@@ -32,18 +33,19 @@ RECENT (all showing ✓):
 
 ## Bugs Identified
 
-| # | Bug | Symptom |
-|---|-----|---------|
-| 1 | **Duplicate entries** | `01-1-intro.mov` appears twice in RECENT |
-| 2 | **Conflicting status** | `02-1-vibe-code-minor-feature.mov` shows as both ACTIVE and ✓ complete |
-| 3 | **Wrong count** | "0/5 files (0%)" but 5 files show ✓ in RECENT |
-| 4 | **Unclear "missing"** | "⚠5 missing" meaning unclear when 5 show complete |
+| #   | Bug                    | Symptom                                                                |
+| --- | ---------------------- | ---------------------------------------------------------------------- |
+| 1   | **Duplicate entries**  | `01-1-intro.mov` appears twice in RECENT                               |
+| 2   | **Conflicting status** | `02-1-vibe-code-minor-feature.mov` shows as both ACTIVE and ✓ complete |
+| 3   | **Wrong count**        | "0/5 files (0%)" but 5 files show ✓ in RECENT                          |
+| 4   | **Unclear "missing"**  | "⚠5 missing" meaning unclear when 5 show complete                      |
 
 ## Solution
 
 **Actual root cause:** Broken Whisper command with two `--output_format` flags - only the last one (`srt`) was applied, so no `.txt` files were created.
 
 **Fixes applied:**
+
 1. Fixed Whisper to use `--output_format all` (creates both .txt and .srt)
 2. Standardized ALL transcript checks to use `.txt` only:
    - `getTranscriptPath()` - status check

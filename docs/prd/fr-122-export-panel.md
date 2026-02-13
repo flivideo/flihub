@@ -112,7 +112,7 @@ const TABS = ['incoming', 'recordings', 'watch', 'export', ...] as const
 Reuse existing recordings query, filter by parked state:
 
 ```typescript
-const exportableFiles = recordings.filter(r => !parkedRecordings.includes(r.filename))
+const exportableFiles = recordings.filter((r) => !parkedRecordings.includes(r.filename));
 ```
 
 ### Prepare for Gling Action
@@ -128,11 +128,11 @@ Already exists from edit workflow (FR-113). Path: `{projectDir}/first-edit-prep/
 
 ### Files to Modify/Create
 
-| File | Changes |
-|------|---------|
-| `client/src/App.tsx` | Add Export tab to navigation |
-| `client/src/components/ExportPanel.tsx` | New component |
-| `server/src/routes/export.ts` | New route for copy operations |
+| File                                    | Changes                       |
+| --------------------------------------- | ----------------------------- |
+| `client/src/App.tsx`                    | Add Export tab to navigation  |
+| `client/src/components/ExportPanel.tsx` | New component                 |
+| `server/src/routes/export.ts`           | New route for copy operations |
 
 ---
 
@@ -155,10 +155,12 @@ Already exists from edit workflow (FR-113). Path: `{projectDir}/first-edit-prep/
 **Implemented:** 2026-01-02
 
 ### Files Created
+
 - `client/src/components/ExportPanel.tsx` - Main export panel component
 - `server/src/routes/export.ts` - Backend API for file copy operations
 
 ### Files Modified
+
 - `client/src/App.tsx` - Added Export tab to navigation
 - `client/src/hooks/useApi.ts` - Exported fetchApi helper function
 - `server/src/index.ts` - Registered export routes
@@ -190,9 +192,11 @@ Already exists from edit workflow (FR-113). Path: `{projectDir}/first-edit-prep/
    - Open Folder - Opens edit-1st/ in Finder
 
 ### API Endpoint
+
 - `POST /api/export/copy-to-gling` - Copies selected files to edit-1st folder
   - Creates edit-1st folder if it doesn't exist
   - Individual file error handling
 
 ### Known Issue
+
 - "Open Folder" errors if edit-1st doesn't exist (addressed in FR-124)

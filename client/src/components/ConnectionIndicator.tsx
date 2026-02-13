@@ -1,26 +1,26 @@
 // FR-28: Server Connection Indicator
 
-type ConnectionState = 'connected' | 'disconnected' | 'reconnecting'
+type ConnectionState = 'connected' | 'disconnected' | 'reconnecting';
 
 interface ConnectionIndicatorProps {
-  isConnected: boolean
-  isReconnecting: boolean
+  isConnected: boolean;
+  isReconnecting: boolean;
 }
 
 const STATE_CONFIG = {
   connected: { color: 'bg-green-500', tooltip: 'Connected' },
   disconnected: { color: 'bg-red-500', tooltip: 'Disconnected' },
   reconnecting: { color: 'bg-yellow-500', tooltip: 'Reconnecting...' },
-}
+};
 
 export function ConnectionIndicator({ isConnected, isReconnecting }: ConnectionIndicatorProps) {
   const state: ConnectionState = isReconnecting
     ? 'reconnecting'
     : isConnected
       ? 'connected'
-      : 'disconnected'
+      : 'disconnected';
 
-  const config = STATE_CONFIG[state]
+  const config = STATE_CONFIG[state];
 
   return (
     <div className="relative group">
@@ -29,5 +29,5 @@ export function ConnectionIndicator({ isConnected, isReconnecting }: ConnectionI
         {config.tooltip}
       </span>
     </div>
-  )
+  );
 }

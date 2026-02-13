@@ -5,13 +5,23 @@ import os from 'os';
 import fs from 'fs-extra';
 import type { Server } from 'socket.io';
 import { getProjectPaths } from '../../../shared/paths.js';
-import { parseRecordingFilename, buildRecordingFilename, extractTagsFromName } from '../../../shared/naming.js';
+import {
+  parseRecordingFilename,
+  buildRecordingFilename,
+  extractTagsFromName,
+} from '../../../shared/naming.js';
 import { renameRecording } from '../utils/renameRecording.js';
 import { createShadowFile } from '../utils/shadowFiles.js';
 import { generateChapterRecording, groupRecordingsByChapter } from '../utils/chapterRecording.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
-import type { Config, TranscriptionJob, ServerToClientEvents, ClientToServerEvents, RecordingFile } from '../../../shared/types.js';
+import type {
+  Config,
+  TranscriptionJob,
+  ServerToClientEvents,
+  ClientToServerEvents,
+  RecordingFile,
+} from '../../../shared/types.js';
 
 /**
  * Create manage panel routes
@@ -60,7 +70,7 @@ export function createManageRoutes(
       if (!Array.isArray(files) || files.length === 0) {
         return res.json({
           success: false,
-          error: 'No files provided'
+          error: 'No files provided',
         });
       }
 
@@ -69,7 +79,7 @@ export function createManageRoutes(
       if (!finalLabel || typeof finalLabel !== 'string') {
         return res.json({
           success: false,
-          error: 'Invalid label provided'
+          error: 'Invalid label provided',
         });
       }
 
@@ -84,7 +94,9 @@ export function createManageRoutes(
       const renamed: Array<{ old: string; new: string }> = [];
       const errors: Array<{ file: string; error: string }> = [];
 
-      console.log(`[FR-138] Bulk rename: ${files.length} files with label "${finalLabel}", chapter=${chapter || 'preserve'}, mode=${finalSequenceMode}`);
+      console.log(
+        `[FR-138] Bulk rename: ${files.length} files with label "${finalLabel}", chapter=${chapter || 'preserve'}, mode=${finalSequenceMode}`
+      );
 
       // Process each file
       for (let i = 0; i < files.length; i++) {
@@ -95,7 +107,7 @@ export function createManageRoutes(
           if (!parsed) {
             errors.push({
               file: oldFilename,
-              error: 'Invalid filename format'
+              error: 'Invalid filename format',
             });
             continue;
           }
@@ -138,32 +150,34 @@ export function createManageRoutes(
           } else {
             errors.push({
               file: oldFilename,
-              error: result.error || 'Rename failed'
+              error: result.error || 'Rename failed',
             });
           }
         } catch (err) {
           console.error(`[FR-138] Error renaming ${oldFilename}:`, err);
           errors.push({
             file: oldFilename,
-            error: err instanceof Error ? err.message : String(err)
+            error: err instanceof Error ? err.message : String(err),
           });
         }
       }
 
-      console.log(`[FR-138] Bulk rename complete: ${renamed.length} renamed, ${errors.length} errors`);
+      console.log(
+        `[FR-138] Bulk rename complete: ${renamed.length} renamed, ${errors.length} errors`
+      );
 
       res.json({
         success: errors.length === 0,
         renamedCount: renamed.length,
         transcriptionQueued: renamed.length > 0,
         files: renamed,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors : undefined,
       });
     } catch (err) {
       console.error('[FR-138] Bulk rename error:', err);
       res.status(500).json({
         success: false,
-        error: err instanceof Error ? err.message : 'Internal server error'
+        error: err instanceof Error ? err.message : 'Internal server error',
       });
     }
   });
@@ -183,7 +197,7 @@ export function createManageRoutes(
    */
   router.post('/regen-shadows', async (req, res) => {
     try {
-      const { files } = req.body;  // FR-136: Optional array of filenames
+      const { files } = req.body; // FR-136: Optional array of filenames
       const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
@@ -198,10 +212,14 @@ export function createManageRoutes(
         recordings = files;
       } else {
         const allFiles = await fs.readdir(recordingsDir);
-        recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+        recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
       }
 
-      const results = { completed: 0, failed: 0, errors: [] as Array<{ file: string; error: string }> };
+      const results = {
+        completed: 0,
+        failed: 0,
+        errors: [] as Array<{ file: string; error: string }>,
+      };
 
       console.log(`[FR-131] Regen shadows: Processing ${recordings.length} ${scope} recordings`);
 
@@ -216,7 +234,7 @@ export function createManageRoutes(
           io.emit('regen:shadows:progress', {
             current: i + 1,
             total: recordings.length,
-            filename
+            filename,
           });
 
           // Delete existing shadow file
@@ -255,24 +273,26 @@ export function createManageRoutes(
       io.emit('regen:shadows:complete', {
         completed: results.completed,
         failed: results.failed,
-        errors: results.errors.length > 0 ? results.errors : undefined
+        errors: results.errors.length > 0 ? results.errors : undefined,
       });
 
-      console.log(`[FR-131] Regen shadows complete: ${results.completed} created, ${results.failed} failed`);
+      console.log(
+        `[FR-131] Regen shadows complete: ${results.completed} created, ${results.failed} failed`
+      );
 
       res.json({
         success: true,
         completed: results.completed,
         failed: results.failed,
         total: recordings.length,
-        scope,  // FR-136: Report whether 'selected' or 'all'
-        errors: results.errors.length > 0 ? results.errors : undefined
+        scope, // FR-136: Report whether 'selected' or 'all'
+        errors: results.errors.length > 0 ? results.errors : undefined,
       });
     } catch (err) {
       console.error('[FR-131 Regen Shadows] Error:', err);
       res.status(500).json({
         success: false,
-        error: err instanceof Error ? err.message : 'Internal server error'
+        error: err instanceof Error ? err.message : 'Internal server error',
       });
     }
   });
@@ -296,14 +316,14 @@ export function createManageRoutes(
    */
   router.post('/regen-transcripts', async (req, res) => {
     try {
-      const { force = false, files } = req.body;  // FR-136: Accept optional files param
+      const { force = false, files } = req.body; // FR-136: Accept optional files param
       const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
       if (!queueTranscription) {
         return res.status(500).json({
           success: false,
-          error: 'Transcription queue not available'
+          error: 'Transcription queue not available',
         });
       }
 
@@ -317,12 +337,14 @@ export function createManageRoutes(
         recordings = files;
       } else {
         const allFiles = await fs.readdir(recordingsDir);
-        recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+        recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
       }
 
       let queued = 0;
 
-      console.log(`[FR-131] Regen transcripts: Processing ${recordings.length} ${scope} recordings (force=${force})`);
+      console.log(
+        `[FR-131] Regen transcripts: Processing ${recordings.length} ${scope} recordings (force=${force})`
+      );
 
       for (const filename of recordings) {
         const recordingPath = path.join(recordingsDir, filename);
@@ -345,14 +367,14 @@ export function createManageRoutes(
         success: true,
         queued,
         total: recordings.length,
-        scope,  // FR-136: Report whether 'selected' or 'all'
-        force
+        scope, // FR-136: Report whether 'selected' or 'all'
+        force,
       });
     } catch (err) {
       console.error('[FR-131 Regen Transcripts] Error:', err);
       res.status(500).json({
         success: false,
-        error: err instanceof Error ? err.message : 'Internal server error'
+        error: err instanceof Error ? err.message : 'Internal server error',
       });
     }
   });
@@ -397,7 +419,7 @@ export function createManageRoutes(
    */
   router.post('/regen-chapters', async (req, res) => {
     try {
-      const { files, chapterSettings } = req.body;  // FR-136: Accept optional files param and chapter settings
+      const { files, chapterSettings } = req.body; // FR-136: Accept optional files param and chapter settings
       const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
@@ -411,13 +433,13 @@ export function createManageRoutes(
         recordings = files;
       } else {
         const allFiles = await fs.readdir(recordingsDir);
-        recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+        recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
       }
 
       console.log(`[FR-131] Regen chapters: Processing ${recordings.length} ${scope} recordings`);
 
       // Build RecordingFile array for grouping
-      const recordingFiles: RecordingFile[] = recordings.map(filename => {
+      const recordingFiles: RecordingFile[] = recordings.map((filename) => {
         const parsed = parseRecordingFilename(filename);
         if (!parsed) {
           // Return a default object for invalid filenames
@@ -464,13 +486,13 @@ export function createManageRoutes(
         success: true,
         started: true,
         chapters: chapterKeys.length,
-        scope  // FR-136: Report whether 'selected' or 'all'
+        scope, // FR-136: Report whether 'selected' or 'all'
       });
     } catch (err) {
       console.error('[FR-131 Regen Chapters] Error:', err);
       res.status(500).json({
         success: false,
-        error: err instanceof Error ? err.message : 'Internal server error'
+        error: err instanceof Error ? err.message : 'Internal server error',
       });
     }
   });
@@ -484,9 +506,17 @@ export function createManageRoutes(
     paths: any,
     config: Config,
     io: Server<ClientToServerEvents, ServerToClientEvents>,
-    requestSettings?: { resolution?: '720p' | '1080p'; includeTitleSlides?: boolean; slideDuration?: number }
+    requestSettings?: {
+      resolution?: '720p' | '1080p';
+      includeTitleSlides?: boolean;
+      slideDuration?: number;
+    }
   ): Promise<void> {
-    const results = { completed: 0, failed: 0, errors: [] as Array<{ chapter: string; error: string }> };
+    const results = {
+      completed: 0,
+      failed: 0,
+      errors: [] as Array<{ chapter: string; error: string }>,
+    };
 
     // Build GenerateOptions (matching chapters.ts pattern)
     // Use request settings if provided, otherwise fall back to config
@@ -503,7 +533,8 @@ export function createManageRoutes(
       resolution: (requestSettings?.resolution ?? chapterConfig.resolution) as '720p' | '1080p',
       outputDir: paths.chapters,
       tempDir,
-      includeTitleSlides: requestSettings?.includeTitleSlides ?? chapterConfig.includeTitleSlides ?? false,
+      includeTitleSlides:
+        requestSettings?.includeTitleSlides ?? chapterConfig.includeTitleSlides ?? false,
       transcriptsDir: paths.transcripts,
     };
 
@@ -516,7 +547,7 @@ export function createManageRoutes(
         io.emit('regen:chapters:progress', {
           current: i + 1,
           total: chapterKeys.length,
-          chapter: chapterKey
+          chapter: chapterKey,
         });
 
         // Delete existing chapter video
@@ -535,22 +566,27 @@ export function createManageRoutes(
         const chapterSegments = {
           chapter: chapterKey,
           label: chapterFiles[0]?.name || chapterKey,
-          segments: await Promise.all(chapterFiles.map(async (file) => {
-            const duration = await getVideoDuration(file.path) || 0;
-            return {
-              filename: file.filename,
-              path: file.path,
-              sequence: parseInt(file.sequence),
-              label: file.name,
-              tags: file.tags,
-              duration,
-            };
-          })),
+          segments: await Promise.all(
+            chapterFiles.map(async (file) => {
+              const duration = (await getVideoDuration(file.path)) || 0;
+              return {
+                filename: file.filename,
+                path: file.path,
+                sequence: parseInt(file.sequence),
+                label: file.name,
+                tags: file.tags,
+                duration,
+              };
+            })
+          ),
           totalDuration: 0, // Will be calculated by segments
         };
 
         // Calculate total duration
-        chapterSegments.totalDuration = chapterSegments.segments.reduce((sum, seg) => sum + seg.duration, 0);
+        chapterSegments.totalDuration = chapterSegments.segments.reduce(
+          (sum, seg) => sum + seg.duration,
+          0
+        );
 
         // Generate new chapter video (correct signature!)
         await generateChapterRecording(chapterSegments, options);
@@ -571,10 +607,12 @@ export function createManageRoutes(
     io.emit('regen:chapters:complete', {
       completed: results.completed,
       failed: results.failed,
-      errors: results.errors.length > 0 ? results.errors : undefined
+      errors: results.errors.length > 0 ? results.errors : undefined,
     });
 
-    console.log(`[FR-131] Regen chapters complete: ${results.completed} created, ${results.failed} failed`);
+    console.log(
+      `[FR-131] Regen chapters complete: ${results.completed} created, ${results.failed} failed`
+    );
   }
 
   /**
@@ -590,7 +628,7 @@ export function createManageRoutes(
    */
   router.post('/regen-all', async (req, res) => {
     try {
-      const { files, chapterSettings } = req.body;  // FR-136: Accept optional files param and chapter settings
+      const { files, chapterSettings } = req.body; // FR-136: Accept optional files param and chapter settings
       const scope = files && Array.isArray(files) && files.length > 0 ? 'selected' : 'all';
 
       // Start async regeneration (don't await - return immediately)
@@ -599,13 +637,13 @@ export function createManageRoutes(
       res.json({
         success: true,
         started: true,
-        scope  // FR-136: Report whether 'selected' or 'all'
+        scope, // FR-136: Report whether 'selected' or 'all'
       });
     } catch (err) {
       console.error('[FR-131 Regen All] Error:', err);
       res.status(500).json({
         success: false,
-        error: err instanceof Error ? err.message : 'Internal server error'
+        error: err instanceof Error ? err.message : 'Internal server error',
       });
     }
   });
@@ -619,7 +657,11 @@ export function createManageRoutes(
     io: Server<ClientToServerEvents, ServerToClientEvents>,
     queueTranscription?: (path: string) => void,
     files?: string[],
-    chapterSettings?: { resolution?: '720p' | '1080p'; includeTitleSlides?: boolean; slideDuration?: number }
+    chapterSettings?: {
+      resolution?: '720p' | '1080p';
+      includeTitleSlides?: boolean;
+      slideDuration?: number;
+    }
   ): Promise<void> {
     try {
       io.emit('regen:all:started');
@@ -632,17 +674,26 @@ export function createManageRoutes(
 
       // Step 2: Transcripts
       io.emit('regen:all:progress', { step: 'transcripts', current: 2, total: 3 });
-      const transcriptsResult = await regenerateTranscriptsInternal(getConfig, queueTranscription, files);
+      const transcriptsResult = await regenerateTranscriptsInternal(
+        getConfig,
+        queueTranscription,
+        files
+      );
 
       // Step 3: Chapters
       io.emit('regen:all:progress', { step: 'chapters', current: 3, total: 3 });
-      const chaptersResult = await regenerateChaptersInternal(getConfig, io, files, chapterSettings);
+      const chaptersResult = await regenerateChaptersInternal(
+        getConfig,
+        io,
+        files,
+        chapterSettings
+      );
 
       // Emit completion
       io.emit('regen:all:complete', {
         shadows: shadowsResult,
         transcripts: transcriptsResult,
-        chapters: chaptersResult
+        chapters: chaptersResult,
       });
 
       console.log('[FR-131] Regen all: Complete');
@@ -672,7 +723,7 @@ export function createManageRoutes(
       recordings = targetFiles;
     } else {
       const allFiles = await fs.readdir(recordingsDir);
-      recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+      recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
     }
 
     const results = { completed: 0, failed: 0 };
@@ -688,7 +739,7 @@ export function createManageRoutes(
         io.emit('regen:shadows:progress', {
           current: i + 1,
           total: recordings.length,
-          filename
+          filename,
         });
 
         await fs.remove(shadowPath);
@@ -732,7 +783,7 @@ export function createManageRoutes(
       recordings = targetFiles;
     } else {
       const allFiles = await fs.readdir(recordingsDir);
-      recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+      recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
     }
 
     let queued = 0;
@@ -760,7 +811,11 @@ export function createManageRoutes(
     getConfig: () => Config,
     io: Server<ClientToServerEvents, ServerToClientEvents>,
     targetFiles?: string[],
-    requestSettings?: { resolution?: '720p' | '1080p'; includeTitleSlides?: boolean; slideDuration?: number }
+    requestSettings?: {
+      resolution?: '720p' | '1080p';
+      includeTitleSlides?: boolean;
+      slideDuration?: number;
+    }
   ): Promise<{ completed: number; failed: number }> {
     const config = getConfig();
     const paths = getProjectPaths(expandPath(config.projectDirectory));
@@ -772,10 +827,10 @@ export function createManageRoutes(
       recordings = targetFiles;
     } else {
       const allFiles = await fs.readdir(recordingsDir);
-      recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+      recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
     }
 
-    const recordingFiles: RecordingFile[] = recordings.map(filename => {
+    const recordingFiles: RecordingFile[] = recordings.map((filename) => {
       const parsed = parseRecordingFilename(filename);
       if (!parsed) {
         // Return a default object for invalid filenames
@@ -829,7 +884,8 @@ export function createManageRoutes(
       resolution: (requestSettings?.resolution ?? chapterConfig.resolution) as '720p' | '1080p',
       outputDir: paths.chapters,
       tempDir,
-      includeTitleSlides: requestSettings?.includeTitleSlides ?? chapterConfig.includeTitleSlides ?? false,
+      includeTitleSlides:
+        requestSettings?.includeTitleSlides ?? chapterConfig.includeTitleSlides ?? false,
       transcriptsDir: paths.transcripts,
     };
 
@@ -849,22 +905,27 @@ export function createManageRoutes(
         const chapterSegments = {
           chapter: chapterKey,
           label: chapterFiles[0]?.name || chapterKey,
-          segments: await Promise.all(chapterFiles.map(async (file) => {
-            const duration = await getVideoDuration(file.path) || 0;
-            return {
-              filename: file.filename,
-              path: file.path,
-              sequence: parseInt(file.sequence),
-              label: file.name,
-              tags: file.tags,
-              duration,
-            };
-          })),
+          segments: await Promise.all(
+            chapterFiles.map(async (file) => {
+              const duration = (await getVideoDuration(file.path)) || 0;
+              return {
+                filename: file.filename,
+                path: file.path,
+                sequence: parseInt(file.sequence),
+                label: file.name,
+                tags: file.tags,
+                duration,
+              };
+            })
+          ),
           totalDuration: 0,
         };
 
         // Calculate total duration
-        chapterSegments.totalDuration = chapterSegments.segments.reduce((sum, seg) => sum + seg.duration, 0);
+        chapterSegments.totalDuration = chapterSegments.segments.reduce(
+          (sum, seg) => sum + seg.duration,
+          0
+        );
 
         // Generate new chapter video (correct signature!)
         await generateChapterRecording(chapterSegments, options);
@@ -904,7 +965,7 @@ export function createManageRoutes(
       if (!oldChapter || !newChapter) {
         return res.json({
           success: false,
-          error: 'oldChapter and newChapter are required'
+          error: 'oldChapter and newChapter are required',
         });
       }
 
@@ -914,21 +975,21 @@ export function createManageRoutes(
       if (isNaN(oldNum) || isNaN(newNum)) {
         return res.json({
           success: false,
-          error: 'Invalid chapter numbers'
+          error: 'Invalid chapter numbers',
         });
       }
 
       if (oldNum < 1 || oldNum > 99 || newNum < 1 || newNum > 99) {
         return res.json({
           success: false,
-          error: 'Chapter numbers must be between 01 and 99'
+          error: 'Chapter numbers must be between 01 and 99',
         });
       }
 
       if (oldNum === newNum) {
         return res.json({
           success: false,
-          error: 'Old and new chapter cannot be the same'
+          error: 'Old and new chapter cannot be the same',
         });
       }
 
@@ -942,15 +1003,15 @@ export function createManageRoutes(
       if (activeJob) {
         return res.json({
           success: false,
-          error: 'Cannot rename chapters while transcription is in progress'
+          error: 'Cannot rename chapters while transcription is in progress',
         });
       }
 
       // Get all files in this chapter
       const allFiles = await fs.readdir(recordingsDir);
-      const recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+      const recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
 
-      const chapterFiles = recordings.filter(f => {
+      const chapterFiles = recordings.filter((f) => {
         const parsed = parseRecordingFilename(f);
         return parsed && parsed.chapter === oldChapter;
       });
@@ -958,11 +1019,13 @@ export function createManageRoutes(
       if (chapterFiles.length === 0) {
         return res.json({
           success: false,
-          error: `No files found in chapter ${oldChapter}`
+          error: `No files found in chapter ${oldChapter}`,
         });
       }
 
-      console.log(`[FR-140] Renaming chapter ${oldChapter} → ${newChapter} (${chapterFiles.length} files)`);
+      console.log(
+        `[FR-140] Renaming chapter ${oldChapter} → ${newChapter} (${chapterFiles.length} files)`
+      );
 
       let renamedCount = 0;
 
@@ -972,11 +1035,9 @@ export function createManageRoutes(
         if (!parsed) continue;
 
         // Build new filename with updated chapter
-        const newFilename = buildRecordingFilename(
-          newChapter,
-          parsed.sequence,
-          parsed.name
-        ) + path.extname(oldFilename);
+        const newFilename =
+          buildRecordingFilename(newChapter, parsed.sequence, parsed.name) +
+          path.extname(oldFilename);
 
         console.log(`[FR-140]   ${oldFilename} → ${newFilename}`);
 
@@ -1002,13 +1063,13 @@ export function createManageRoutes(
 
       return res.json({
         success: true,
-        filesRenamed: renamedCount
+        filesRenamed: renamedCount,
       });
     } catch (err) {
       console.error('[FR-140] Rename chapter error:', err);
       return res.status(500).json({
         success: false,
-        error: err instanceof Error ? err.message : 'Failed to rename chapter'
+        error: err instanceof Error ? err.message : 'Failed to rename chapter',
       });
     }
   });
@@ -1037,7 +1098,7 @@ export function createManageRoutes(
       if (!chapter1 || !chapter2) {
         return res.json({
           success: false,
-          error: 'chapter1 and chapter2 are required'
+          error: 'chapter1 and chapter2 are required',
         });
       }
 
@@ -1047,21 +1108,21 @@ export function createManageRoutes(
       if (isNaN(ch1Num) || isNaN(ch2Num)) {
         return res.json({
           success: false,
-          error: 'Invalid chapter numbers'
+          error: 'Invalid chapter numbers',
         });
       }
 
       if (ch1Num < 1 || ch1Num > 99 || ch2Num < 1 || ch2Num > 99) {
         return res.json({
           success: false,
-          error: 'Chapter numbers must be between 01 and 99'
+          error: 'Chapter numbers must be between 01 and 99',
         });
       }
 
       if (ch1Num === ch2Num) {
         return res.json({
           success: false,
-          error: 'Cannot swap chapter with itself'
+          error: 'Cannot swap chapter with itself',
         });
       }
 
@@ -1075,13 +1136,13 @@ export function createManageRoutes(
       if (activeJob) {
         return res.json({
           success: false,
-          error: 'Cannot swap chapters while transcription is in progress'
+          error: 'Cannot swap chapters while transcription is in progress',
         });
       }
 
       // Get all recording files
       const allFiles = await fs.readdir(recordingsDir);
-      const recordings = allFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+      const recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
 
       console.log(`[FR-140] Swapping chapters ${chapter1} ↔ ${chapter2}`);
 
@@ -1090,7 +1151,7 @@ export function createManageRoutes(
 
       // Phase 1: chapter1 → temp (99)
       console.log(`[FR-140] Phase 1: ${chapter1} → ${tempChapter}`);
-      const ch1Files = recordings.filter(f => {
+      const ch1Files = recordings.filter((f) => {
         const parsed = parseRecordingFilename(f);
         return parsed && parsed.chapter === chapter1;
       });
@@ -1099,11 +1160,9 @@ export function createManageRoutes(
         const parsed = parseRecordingFilename(oldFilename);
         if (!parsed) continue;
 
-        const newFilename = buildRecordingFilename(
-          tempChapter,
-          parsed.sequence,
-          parsed.name
-        ) + path.extname(oldFilename);
+        const newFilename =
+          buildRecordingFilename(tempChapter, parsed.sequence, parsed.name) +
+          path.extname(oldFilename);
 
         const result = await renameRecording(
           oldFilename,
@@ -1119,7 +1178,7 @@ export function createManageRoutes(
 
       // Phase 2: chapter2 → chapter1
       console.log(`[FR-140] Phase 2: ${chapter2} → ${chapter1}`);
-      const ch2Files = recordings.filter(f => {
+      const ch2Files = recordings.filter((f) => {
         const parsed = parseRecordingFilename(f);
         return parsed && parsed.chapter === chapter2;
       });
@@ -1128,11 +1187,9 @@ export function createManageRoutes(
         const parsed = parseRecordingFilename(oldFilename);
         if (!parsed) continue;
 
-        const newFilename = buildRecordingFilename(
-          chapter1,
-          parsed.sequence,
-          parsed.name
-        ) + path.extname(oldFilename);
+        const newFilename =
+          buildRecordingFilename(chapter1, parsed.sequence, parsed.name) +
+          path.extname(oldFilename);
 
         const result = await renameRecording(
           oldFilename,
@@ -1151,9 +1208,11 @@ export function createManageRoutes(
 
       // Re-read directory to get updated filenames
       const updatedFiles = await fs.readdir(recordingsDir);
-      const updatedRecordings = updatedFiles.filter(f => f.endsWith('.mov') || f.endsWith('.mp4'));
+      const updatedRecordings = updatedFiles.filter(
+        (f) => f.endsWith('.mov') || f.endsWith('.mp4')
+      );
 
-      const tempFiles = updatedRecordings.filter(f => {
+      const tempFiles = updatedRecordings.filter((f) => {
         const parsed = parseRecordingFilename(f);
         return parsed && parsed.chapter === tempChapter;
       });
@@ -1162,11 +1221,9 @@ export function createManageRoutes(
         const parsed = parseRecordingFilename(oldFilename);
         if (!parsed) continue;
 
-        const newFilename = buildRecordingFilename(
-          chapter2,
-          parsed.sequence,
-          parsed.name
-        ) + path.extname(oldFilename);
+        const newFilename =
+          buildRecordingFilename(chapter2, parsed.sequence, parsed.name) +
+          path.extname(oldFilename);
 
         const result = await renameRecording(
           oldFilename,
@@ -1187,13 +1244,13 @@ export function createManageRoutes(
 
       return res.json({
         success: true,
-        filesSwapped: swappedCount
+        filesSwapped: swappedCount,
       });
     } catch (err) {
       console.error('[FR-140] Swap chapters error:', err);
       return res.status(500).json({
         success: false,
-        error: err instanceof Error ? err.message : 'Failed to swap chapters'
+        error: err instanceof Error ? err.message : 'Failed to swap chapters',
       });
     }
   });

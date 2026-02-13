@@ -4,6 +4,7 @@
 **Added:** 2026-01-04
 **Implemented:** -
 **Dependencies:**
+
 - FR-130 (delete+regenerate) - ✅ Implemented
 - FR-131 Phase 2 (Manage panel complete) - ⏳ **BLOCKER** - See [Phase 2 Plan](../../planning/fr-131-phase-2-implementation-plan.md)
 - FR-134 (inconsistency detection) - ⚠️ Recommended (provides warning dialogs)
@@ -19,12 +20,14 @@ As a user, I want to reorganize recordings between chapters (move files to diffe
 ## Problem
 
 **Current state:**
+
 - No way to move files from one chapter to another
 - No way to swap entire chapters (e.g., swap chapter 05 ↔ 07)
 - Mistakes during bulk operations are hard to undo
 - Cascading renames (chapter 05 → 06 affects all subsequent chapters) are manual and error-prone
 
 **Impact:**
+
 - Users record content in wrong chapter and can't easily fix it
 - Structural changes (reorder chapters) require manual file renaming
 - Mistakes during complex reorganization are hard to reverse
@@ -70,6 +73,7 @@ After:
 **User decision:** Absolute move only (no relative mode)
 
 **Absolute move:**
+
 - User specifies target chapter number (e.g., "Move to Chapter 19")
 - Files are inserted at that chapter
 - Subsequent chapters cascade forward
@@ -79,6 +83,7 @@ After:
 **Gap filling vs Insert:**
 
 **Gap fill scenario:**
+
 ```
 Before:
 10-1-intro.mov
@@ -95,6 +100,7 @@ After:
 ```
 
 **Insert scenario:**
+
 ```
 Before:
 10-1-intro.mov
@@ -169,6 +175,7 @@ NOT:
 **User decision:** Always show preview before executing
 
 **Preview dialog:**
+
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  📋 Preview: Move to Chapter 19                          │
@@ -199,6 +206,7 @@ NOT:
 ```
 
 **Warning for large cascades:**
+
 ```
 ⚠️  Warning: This will cascade 23 chapters (19 → 42)
 ```
@@ -218,19 +226,18 @@ async function cascadeChapters(
   projectPath: string
 ): Promise<void> {
   // Get all chapters in range (sorted descending)
-  const chaptersToMove = getChaptersInRange(startChapter, endChapter)
-    .sort((a, b) => b - a) // REVERSE ORDER: [42, 41, 40, ..., 20, 19]
+  const chaptersToMove = getChaptersInRange(startChapter, endChapter).sort((a, b) => b - a); // REVERSE ORDER: [42, 41, 40, ..., 20, 19]
 
   for (const chapter of chaptersToMove) {
-    const files = getFilesForChapter(chapter, projectPath)
+    const files = getFilesForChapter(chapter, projectPath);
 
     for (const file of files) {
       // Rename: chapter N → N+1
-      const newChapter = chapter + 1
-      const newFilename = file.replace(/^(\d{2})/, String(newChapter).padStart(2, '0'))
+      const newChapter = chapter + 1;
+      const newFilename = file.replace(/^(\d{2})/, String(newChapter).padStart(2, '0'));
 
       // Use FR-130 pattern: delete derivatives, rename core, regenerate
-      await renameWithDeleteRegenerate(file, newFilename, projectPath)
+      await renameWithDeleteRegenerate(file, newFilename, projectPath);
     }
   }
 }
@@ -238,7 +245,7 @@ async function cascadeChapters(
 
 **Why reverse order?** Avoids filename conflicts during rename.
 
-**Example:** If renaming 19→20, 20→21, must do 20→21 FIRST, otherwise 19→20 conflicts with existing 20-*.
+**Example:** If renaming 19→20, 20→21, must do 20→21 FIRST, otherwise 19→20 conflicts with existing 20-\*.
 
 ---
 
@@ -287,32 +294,32 @@ async function cascadeChapters(
 **User decision:** Rollback everything (atomic operation)
 
 **Implementation:**
+
 ```typescript
 async function moveToChapter(
   files: string[],
   targetChapter: number,
   projectPath: string
-): Promise<{ success: boolean, error?: string }> {
+): Promise<{ success: boolean; error?: string }> {
   // Create backup state
-  const backup = await createBackupState(projectPath)
+  const backup = await createBackupState(projectPath);
 
   try {
     // Execute move + cascade
-    await executeMoveWithCascade(files, targetChapter, projectPath)
+    await executeMoveWithCascade(files, targetChapter, projectPath);
 
     // Save undo state
-    await saveUndoState(backup)
+    await saveUndoState(backup);
 
-    return { success: true }
-
+    return { success: true };
   } catch (error) {
     // Rollback on ANY failure
-    await restoreBackupState(backup)
+    await restoreBackupState(backup);
 
     return {
       success: false,
-      error: `Move failed: ${error.message}. All changes have been rolled back.`
-    }
+      error: `Move failed: ${error.message}. All changes have been rolled back.`,
+    };
   }
 }
 ```
@@ -346,6 +353,7 @@ After:
 ### UI
 
 **Swap dialog:**
+
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  🔄 Swap Chapters                                        │
@@ -380,16 +388,16 @@ async function swapChapters(
   chapter2: number,
   projectPath: string
 ): Promise<void> {
-  const tempChapter = 999 // Temporary chapter number
+  const tempChapter = 999; // Temporary chapter number
 
   // Phase 1: Move chapter1 to temp
-  await moveCoreFiles(chapter1, tempChapter, projectPath)
+  await moveCoreFiles(chapter1, tempChapter, projectPath);
 
   // Phase 2: Move chapter2 to chapter1
-  await moveCoreFiles(chapter2, chapter1, projectPath)
+  await moveCoreFiles(chapter2, chapter1, projectPath);
 
   // Phase 3: Move temp to chapter2
-  await moveCoreFiles(tempChapter, chapter2, projectPath)
+  await moveCoreFiles(tempChapter, chapter2, projectPath);
 
   // Use FR-130 pattern for each move
 }
@@ -404,6 +412,7 @@ async function swapChapters(
 ### Use Case
 
 **One-click rollback:**
+
 - User moves files to chapter 19
 - Realizes it was wrong chapter
 - Clicks "Undo Last Move"
@@ -412,19 +421,20 @@ async function swapChapters(
 ### Undo State
 
 **Stored in memory (server-side):**
+
 ```typescript
 interface UndoState {
-  operation: 'move' | 'swap'
-  timestamp: string
+  operation: 'move' | 'swap';
+  timestamp: string;
   backup: {
-    recordingsState: Map<string, string> // filename → path
-    derivativesState: Map<string, string[]> // filename → derivative paths
-    projectState: ProjectState // .flihub-state.json backup
-  }
+    recordingsState: Map<string, string>; // filename → path
+    derivativesState: Map<string, string[]>; // filename → derivative paths
+    projectState: ProjectState; // .flihub-state.json backup
+  };
 }
 
 // Global undo stack (last operation only)
-let lastUndoState: UndoState | null = null
+let lastUndoState: UndoState | null = null;
 ```
 
 **User decision:** Track last operation only (not full undo stack)
@@ -432,6 +442,7 @@ let lastUndoState: UndoState | null = null
 ### UI
 
 **Undo button (in Chapter Tools section):**
+
 ```
 ┌────────────────────────────────────────────────────────┐
 │  Chapter Tools                                         │
@@ -443,6 +454,7 @@ let lastUndoState: UndoState | null = null
 ```
 
 **Undo confirmation:**
+
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  ⏮️ Undo Last Move?                                      │
@@ -468,6 +480,7 @@ let lastUndoState: UndoState | null = null
 ### Undo Expiry
 
 **When undo state is cleared:**
+
 - After 1 hour (prevent stale undo)
 - After server restart
 - After another move/swap operation (only last operation tracked)
@@ -479,6 +492,7 @@ let lastUndoState: UndoState | null = null
 ### Move to Chapter
 
 **1. Basic Move (Gap Fill)**
+
 - [ ] User selects 02-5-setup.mov
 - [ ] Clicks "Move to Chapter..."
 - [ ] Enters target: 11 (empty chapter, gap)
@@ -486,6 +500,7 @@ let lastUndoState: UndoState | null = null
 - [ ] Execute → File moved to 11-5, chapter 12+ unchanged
 
 **2. Insert Move (Cascade)**
+
 - [ ] User selects 02-5-setup.mov
 - [ ] Moves to chapter 19 (already has files)
 - [ ] Preview shows cascade: 19→20, 20→21
@@ -493,27 +508,32 @@ let lastUndoState: UndoState | null = null
 - [ ] Chapter 02 now empty (placeholder)
 
 **3. Multi-File Move**
+
 - [ ] User selects 02-2, 02-5, 02-8 (non-contiguous)
 - [ ] Moves to chapter 10
 - [ ] Files become: 10-2, 10-5, 10-8 (sequence preserved)
 
 **4. Large Cascade Warning**
+
 - [ ] Move triggers cascade of 23 chapters
 - [ ] Warning shown: "⚠️ This will cascade 23 chapters"
 - [ ] User can proceed or cancel
 
 **5. Mixed Labels Warning**
+
 - [ ] User selects files from chapters 02, 05, 07
 - [ ] Warning: "Mixed chapters selected"
 - [ ] User can continue or cancel
 
 **6. FR-130 Integration**
+
 - [ ] Shadows deleted before move
 - [ ] Transcripts deleted before move
 - [ ] Chapter videos deleted before move
 - [ ] All regenerated after move
 
 **7. Atomic Rollback**
+
 - [ ] If ANY file fails to move, entire operation rolls back
 - [ ] Error message shown
 - [ ] No partial state (all or nothing)
@@ -521,17 +541,20 @@ let lastUndoState: UndoState | null = null
 ### Swap Chapters
 
 **8. Basic Swap**
+
 - [ ] Select chapters 05 ↔ 07
 - [ ] Preview shows both directions
 - [ ] Execute → Chapter 05 becomes 07, 07 becomes 05
 
 **9. Three-Phase Algorithm**
+
 - [ ] Uses temp chapter (999) to avoid conflicts
 - [ ] Phase 1: 05 → 999
 - [ ] Phase 2: 07 → 05
 - [ ] Phase 3: 999 → 07
 
 **10. Derivative Files**
+
 - [ ] Shadows deleted and regenerated
 - [ ] Transcripts deleted and regenerated
 - [ ] Chapter videos deleted and regenerated
@@ -539,21 +562,25 @@ let lastUndoState: UndoState | null = null
 ### Undo Last Move
 
 **11. Undo State Saved**
+
 - [ ] After move, undo state stored in memory
 - [ ] Shows in UI: "Undo Last Move (3 files, 5 min ago)"
 
 **12. Undo Execution**
+
 - [ ] Click "Undo Last Move"
 - [ ] Preview shows what will be restored
 - [ ] Execute → Files restored to original chapter
 - [ ] Cascaded chapters restored
 
 **13. Undo Expiry**
+
 - [ ] Undo state cleared after 1 hour
 - [ ] Undo state cleared after server restart
 - [ ] Undo state cleared after new move operation
 
 **14. No Undo Available**
+
 - [ ] If no recent move, button disabled
 - [ ] Shows: "No recent moves to undo"
 
@@ -620,23 +647,23 @@ Response:
 function detectCascade(
   targetChapter: number,
   projectPath: string
-): { cascadeNeeded: boolean, affectedChapters: number[] } {
+): { cascadeNeeded: boolean; affectedChapters: number[] } {
   // Check if target chapter has files
-  const targetFiles = getFilesForChapter(targetChapter, projectPath)
+  const targetFiles = getFilesForChapter(targetChapter, projectPath);
 
   if (targetFiles.length === 0) {
-    return { cascadeNeeded: false, affectedChapters: [] }
+    return { cascadeNeeded: false, affectedChapters: [] };
   }
 
   // Cascade needed: find all subsequent chapters
-  const allChapters = getAllChapters(projectPath).sort((a, b) => a - b)
-  const cascadeStart = allChapters.indexOf(targetChapter)
-  const affected = allChapters.slice(cascadeStart)
+  const allChapters = getAllChapters(projectPath).sort((a, b) => a - b);
+  const cascadeStart = allChapters.indexOf(targetChapter);
+  const affected = allChapters.slice(cascadeStart);
 
   return {
     cascadeNeeded: true,
-    affectedChapters: affected
-  }
+    affectedChapters: affected,
+  };
 }
 ```
 
@@ -646,9 +673,9 @@ function detectCascade(
 
 ```typescript
 interface BackupState {
-  recordings: Map<string, Buffer> // filename → file contents
-  projectState: ProjectState      // .flihub-state.json
-  manifest?: EditManifest          // edit folder manifest (if exists)
+  recordings: Map<string, Buffer>; // filename → file contents
+  projectState: ProjectState; // .flihub-state.json
+  manifest?: EditManifest; // edit folder manifest (if exists)
 }
 
 async function createBackupState(projectPath: string): Promise<BackupState> {
@@ -748,20 +775,24 @@ async function restoreBackupState(backup: BackupState): Promise<void> {
 ## Implementation Notes
 
 ### Phase 1: Move to Chapter (Core)
+
 - Basic move logic (gap fill vs insert)
 - Preview system
 - FR-130 integration (delete+regenerate)
 
 ### Phase 2: Cascade Algorithm
+
 - Reverse-order cascade
 - Large cascade warning
 - Atomic rollback
 
 ### Phase 3: Swap Chapters
+
 - Three-phase swap algorithm
 - Preview UI
 
 ### Phase 4: Undo System
+
 - Backup state storage
 - Undo UI
 - Expiry logic
@@ -786,10 +817,12 @@ async function restoreBackupState(backup: BackupState): Promise<void> {
 ## Dependencies
 
 **Required:**
+
 - FR-130: Delete+regenerate pattern (critical for derivative file handling)
 - FR-131: Manage panel (where Chapter Tools UI lives)
 
 **Recommended:**
+
 - FR-134: Inconsistency Detection (provides mixed label warnings)
 
 ---

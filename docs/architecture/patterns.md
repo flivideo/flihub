@@ -57,17 +57,17 @@ All React Query keys are defined centrally:
 import { QUERY_KEYS } from '../constants/queryKeys';
 
 // Static keys
-queryKey: QUERY_KEYS.config
-queryKey: QUERY_KEYS.recordings
-queryKey: QUERY_KEYS.incomingImages
+queryKey: QUERY_KEYS.config;
+queryKey: QUERY_KEYS.recordings;
+queryKey: QUERY_KEYS.incomingImages;
 
 // Dynamic keys (functions)
-queryKey: QUERY_KEYS.nextImageOrder(chapter, sequence)
-queryKey: QUERY_KEYS.prompt(filename)
-queryKey: QUERY_KEYS.thumbZipContents(zipFilename)
+queryKey: QUERY_KEYS.nextImageOrder(chapter, sequence);
+queryKey: QUERY_KEYS.prompt(filename);
+queryKey: QUERY_KEYS.thumbZipContents(zipFilename);
 
 // Prefix keys (for invalidation)
-queryClient.invalidateQueries({ queryKey: QUERY_KEYS.nextImageOrderPrefix })
+queryClient.invalidateQueries({ queryKey: QUERY_KEYS.nextImageOrderPrefix });
 ```
 
 **Never** use inline query key arrays like `['assets', 'images']`.
@@ -131,9 +131,12 @@ if (!file) {
 }
 
 // Wrap async handlers
-router.post('/rename', asyncHandler(async (req, res) => {
-  // async code here - errors will be caught automatically
-}));
+router.post(
+  '/rename',
+  asyncHandler(async (req, res) => {
+    // async code here - errors will be caught automatically
+  })
+);
 
 // Register globally (after all routes)
 app.use(errorHandler);
@@ -146,8 +149,8 @@ Configuration uses `projectDirectory` (not `targetDirectory`):
 ```typescript
 // Config interface (shared/types.ts)
 interface Config {
-  watchDirectory: string;      // Ecamm recording source
-  projectDirectory: string;    // Project root (e.g., /path/to/b72-project)
+  watchDirectory: string; // Ecamm recording source
+  projectDirectory: string; // Project root (e.g., /path/to/b72-project)
   imageSourceDirectory: string; // Image watch source (e.g., ~/Downloads)
   // ...
 }
@@ -160,18 +163,19 @@ const paths = getProjectPaths(config.projectDirectory);
 
 Real-time updates use standardized socket events:
 
-| Event | Trigger |
-|-------|---------|
-| `file:new` | New file in watch directory |
-| `file:deleted` | File removed from watch directory |
-| `recordings:changed` | Change in recordings/ or safe/ |
-| `assets:incoming-changed` | Change in imageSourceDirectory |
-| `assets:assigned-changed` | Change in assets/images/ |
-| `projects:changed` | Change in project directory siblings |
-| `thumbs:changed` | Change in assets/thumbs/ |
-| `thumbs:zip-added` | ZIP file added to Downloads |
+| Event                     | Trigger                              |
+| ------------------------- | ------------------------------------ |
+| `file:new`                | New file in watch directory          |
+| `file:deleted`            | File removed from watch directory    |
+| `recordings:changed`      | Change in recordings/ or safe/       |
+| `assets:incoming-changed` | Change in imageSourceDirectory       |
+| `assets:assigned-changed` | Change in assets/images/             |
+| `projects:changed`        | Change in project directory siblings |
+| `thumbs:changed`          | Change in assets/thumbs/             |
+| `thumbs:zip-added`        | ZIP file added to Downloads          |
 
 Client hooks subscribe automatically:
+
 - `useRecordingsSocket()`
 - `useAssetsSocket()`
 - `useThumbsSocket()`
@@ -212,40 +216,42 @@ The ProjectsPanel table uses consistent interaction patterns for each element ty
 
 ### Element Types
 
-| Type | Behavior | Visual Cue |
-|------|----------|------------|
-| **Indicators** | Show only when content exists, click navigates to tab | Emoji only, no number |
-| **Indicators (folder)** | Show only when content exists, click opens folder | Emoji only, no number |
-| **Count columns** | Show count, click opens folder | Number, hover underline |
-| **Status displays** | Show status, hover for tooltip (read-only) | Text/emoji, cursor-help |
-| **Toggles** | Click cycles through states | Badge/icon |
+| Type                    | Behavior                                              | Visual Cue              |
+| ----------------------- | ----------------------------------------------------- | ----------------------- |
+| **Indicators**          | Show only when content exists, click navigates to tab | Emoji only, no number   |
+| **Indicators (folder)** | Show only when content exists, click opens folder     | Emoji only, no number   |
+| **Count columns**       | Show count, click opens folder                        | Number, hover underline |
+| **Status displays**     | Show status, hover for tooltip (read-only)            | Text/emoji, cursor-help |
+| **Toggles**             | Click cycles through states                           | Badge/icon              |
 
 ### Full UX Matrix
 
-| Element | Type | Click Behavior | Tooltip |
-|---------|------|----------------|---------|
-| 📌 Priority | Toggle | Pin/unpin project | Shows current state |
-| Project Code | Navigation | Switch to project | - |
-| Stage | Toggle | Click: next, Shift+Click: prev | Shows description |
-| 📥 Inbox | Indicator | Switch project + navigate to Inbox tab | "Click to view in app" |
-| 🖼 Assets | Indicator | Switch project + navigate to Assets tab | "Click to view in app" |
-| 🎬 Chapters | Indicator (folder) | Opens -chapters folder | "Click to open folder" |
-| Ch column | Folder link | Opens -chapters folder | Only clickable if videos exist |
-| Files column | Folder link | Opens recordings folder | "Open recordings folder" |
-| 👻 Shadows column | Folder link | Opens recording-shadows folder | "Open recording-shadows folder" |
-| 📄 Transcript % | Status | Not clickable | Shows sync stats |
-| ✅ Final Video | Status | Not clickable | Shows video/srt status |
-| ⓘ Info | Popup | Shows project stats popup | "View project stats" |
+| Element           | Type               | Click Behavior                          | Tooltip                         |
+| ----------------- | ------------------ | --------------------------------------- | ------------------------------- |
+| 📌 Priority       | Toggle             | Pin/unpin project                       | Shows current state             |
+| Project Code      | Navigation         | Switch to project                       | -                               |
+| Stage             | Toggle             | Click: next, Shift+Click: prev          | Shows description               |
+| 📥 Inbox          | Indicator          | Switch project + navigate to Inbox tab  | "Click to view in app"          |
+| 🖼 Assets         | Indicator          | Switch project + navigate to Assets tab | "Click to view in app"          |
+| 🎬 Chapters       | Indicator (folder) | Opens -chapters folder                  | "Click to open folder"          |
+| Ch column         | Folder link        | Opens -chapters folder                  | Only clickable if videos exist  |
+| Files column      | Folder link        | Opens recordings folder                 | "Open recordings folder"        |
+| 👻 Shadows column | Folder link        | Opens recording-shadows folder          | "Open recording-shadows folder" |
+| 📄 Transcript %   | Status             | Not clickable                           | Shows sync stats                |
+| ✅ Final Video    | Status             | Not clickable                           | Shows video/srt status          |
+| ⓘ Info            | Popup              | Shows project stats popup               | "View project stats"            |
 
 ### Design Rationale
 
 **Why distinguish "indicators" vs "count columns"?**
+
 - **Indicators** (📥, 🖼, 🎬) are presence markers - they show something exists
 - **Count columns** show quantities and always open the underlying folder
 
 Indicators can have varied behaviors (navigate to tab vs open folder) based on whether there's an in-app view for that content.
 
 **Why does Ch column have two clickable elements?**
+
 - **Ch column number** - Opens -chapters folder (same as Files/Shadows pattern)
 - **🎬 indicator** - Also opens -chapters folder (presence marker pattern)
 
@@ -269,6 +275,7 @@ openFolder({ folder: 'shadows', projectCode: project.code });
 ```
 
 **Supported folder keys:**
+
 - `recordings`, `safe`, `trash` - Recording folders
 - `shadows` - Shadow recordings (`recording-shadows/`)
 - `chapters` - Chapter recordings (`-chapters/`)
@@ -313,12 +320,14 @@ const handleSave = () => {
 ### Key Principles
 
 **Do:**
+
 - ✅ Save on `onBlur` (when user exits field)
 - ✅ Show "Saving..." indicator during save
 - ✅ Show error toast if save fails
 - ✅ Check if data changed before saving (avoid unnecessary API calls)
 
 **Don't:**
+
 - ❌ Save on every keystroke (noisy, triggers constantly while typing)
 - ❌ Show success toast (auto-save should be silent when it works)
 - ❌ Use debounced useEffect for text input (onBlur is cleaner)

@@ -16,6 +16,7 @@ As a developer, I want to view internal data files (.flihub-state.json, config.j
 ## Problem
 
 **Current state:**
+
 - Users cannot see internal data files without opening them in Finder/VSCode
 - Debugging requires switching between FliHub and file system
 - Verifying manifest creation (FR-126) requires manual file inspection
@@ -23,6 +24,7 @@ As a developer, I want to view internal data files (.flihub-state.json, config.j
 - Transcription telemetry is invisible (locked in JSONL files)
 
 **Pain points:**
+
 1. **Hidden state** - No visibility into `.flihub-state.json` from within FliHub
 2. **Manual hunting** - Must navigate file system to find config.json, telemetry files
 3. **Context switching** - Leave app to debug, break workflow
@@ -62,19 +64,20 @@ Add **"🔍 Developer Tools"** to the Cog menu that opens a **400px slide-out dr
 ### Files to Visualize
 
 **Project Scope (per-project):**
+
 1. **`.flihub-state.json`**
    - recordings state (safe, parked, stage, annotations)
    - glingDictionary (project-specific words)
    - editManifest (FR-126 manifest tracking)
    - Current project only
 
-**Global Scope (app-wide):**
-2. **`config.json`**
-   - watchDirectory, projectDirectory
-   - availableTags, commonNames
-   - glingDictionary (global)
-   - shadowResolution
-   - All configuration settings
+**Global Scope (app-wide):** 2. **`config.json`**
+
+- watchDirectory, projectDirectory
+- availableTags, commonNames
+- glingDictionary (global)
+- shadowResolution
+- All configuration settings
 
 3. **`transcription-telemetry.jsonl`**
    - Performance metrics per transcription
@@ -121,6 +124,7 @@ Add **"🔍 Developer Tools"** to the Cog menu that opens a **400px slide-out dr
 ```
 
 **Dimensions:**
+
 - Width: 400px (fixed)
 - Height: 100vh (full viewport height)
 - Position: Fixed right edge, z-index above main UI
@@ -129,26 +133,31 @@ Add **"🔍 Developer Tools"** to the Cog menu that opens a **400px slide-out dr
 ### Visual States
 
 **Collapsed (default):**
+
 - Drawer off-screen (right: -400px)
 - No overlay
 
 **Open:**
+
 - Drawer slides in (right: 0px)
 - Overlay appears with fade-in
 - Main UI dims but remains visible
 
 **File Selected:**
+
 - Tree item highlighted
 - JSON viewer shows formatted content
 - Action bar enabled
 
 **No File Selected:**
+
 - JSON viewer shows "Select a file to view"
 - Action bar disabled (gray out buttons)
 
 ### Syntax Highlighting
 
 **JSON color scheme:**
+
 - Keys: Blue (#0066CC)
 - Strings: Green (#22863A)
 - Numbers: Orange (#D73A49)
@@ -157,9 +166,10 @@ Add **"🔍 Developer Tools"** to the Cog menu that opens a **400px slide-out dr
 - Brackets/Braces: Black
 
 **Line numbers:**
+
 - Gray (#6A737D)
 - Right-aligned
-- 4-digit padding (e.g., "  12 ")
+- 4-digit padding (e.g., " 12 ")
 
 ---
 
@@ -168,6 +178,7 @@ Add **"🔍 Developer Tools"** to the Cog menu that opens a **400px slide-out dr
 ### Must Have
 
 **Navigation:**
+
 - [ ] "🔍 Developer Tools" item in Cog menu dropdown
 - [ ] Clicking menu item opens drawer from right
 - [ ] Drawer is 400px wide, full viewport height
@@ -177,6 +188,7 @@ Add **"🔍 Developer Tools"** to the Cog menu that opens a **400px slide-out dr
 - [ ] Smooth slide-in/out transition (300ms)
 
 **Tree Navigation:**
+
 - [ ] Project Scope section with "▼" collapse indicator
 - [ ] Global Scope section with "▼" collapse indicator
 - [ ] `.flihub-state.json` listed under Project Scope
@@ -186,6 +198,7 @@ Add **"🔍 Developer Tools"** to the Cog menu that opens a **400px slide-out dr
 - [ ] Selected file shows 👁 eye icon
 
 **JSON Viewer:**
+
 - [ ] Selected file content displayed as formatted JSON
 - [ ] Syntax highlighting for keys, strings, numbers, booleans
 - [ ] Line numbers displayed
@@ -194,6 +207,7 @@ Add **"🔍 Developer Tools"** to the Cog menu that opens a **400px slide-out dr
 - [ ] "Select a file to view" message when no file selected
 
 **Actions:**
+
 - [ ] "Copy JSON" button copies formatted JSON to clipboard
 - [ ] "Open in Editor" button opens file in default text editor
 - [ ] "Refresh" button reloads selected file content
@@ -201,6 +215,7 @@ Add **"🔍 Developer Tools"** to the Cog menu that opens a **400px slide-out dr
 - [ ] Action buttons disabled when no file selected
 
 **Data Accuracy:**
+
 - [ ] `.flihub-state.json` shows current project state
 - [ ] Drawer updates when switching projects
 - [ ] `config.json` shows latest configuration
@@ -381,6 +396,7 @@ export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProp
 **Options:**
 
 **Option A: Lightweight CSS-only**
+
 ```typescript
 function SyntaxHighlightedJson({ content }: { content: object }) {
   const formatted = JSON.stringify(content, null, 2)
@@ -408,6 +424,7 @@ function highlightLine(line: string): string {
 ```
 
 **Option B: Use react-syntax-highlighter**
+
 ```bash
 npm install react-syntax-highlighter @types/react-syntax-highlighter
 ```
@@ -434,13 +451,13 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `client/src/components/DeveloperDrawer.tsx` | CREATE - Main drawer component |
-| `client/src/App.tsx` | Add drawer state, menu item, keyboard handler |
-| `client/src/hooks/useApi.ts` | Add hooks for developer endpoints |
-| `server/src/routes/developer.ts` | CREATE - New route file |
-| `server/src/index.ts` | Register developer routes |
+| File                                        | Changes                                       |
+| ------------------------------------------- | --------------------------------------------- |
+| `client/src/components/DeveloperDrawer.tsx` | CREATE - Main drawer component                |
+| `client/src/App.tsx`                        | Add drawer state, menu item, keyboard handler |
+| `client/src/hooks/useApi.ts`                | Add hooks for developer endpoints             |
+| `server/src/routes/developer.ts`            | CREATE - New route file                       |
+| `server/src/index.ts`                       | Register developer routes                     |
 
 ---
 
@@ -451,6 +468,7 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 **Use case:** Verify manifest creation after "Prepare for Gling"
 
 **Workflow:**
+
 1. User copies files to edit-1st via Export panel
 2. Opens Developer Tools (Cog → 🔍 Developer Tools)
 3. Selects `.flihub-state.json`
@@ -465,6 +483,7 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 **Use case:** Verify configuration changes
 
 **Workflow:**
+
 1. User changes settings in Config panel
 2. Opens Developer Tools
 3. Selects `config.json`
@@ -476,6 +495,7 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 **Use case:** Investigate transcription performance issues
 
 **Workflow:**
+
 1. User notices slow transcriptions
 2. Opens Developer Tools
 3. Selects `transcription-telemetry.jsonl`
@@ -532,6 +552,7 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 **None** - This is a standalone feature.
 
 **Complementary to:**
+
 - FR-126 (Edit Folder Manifest) - Helps verify manifest creation
 - FR-119 (API Explorer) - Both are developer tools
 - Config panel - Alternative view of configuration
@@ -541,17 +562,20 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 ## Value Proposition
 
 **Developer Experience:**
+
 - **No context switching** - Stay in FliHub to debug
 - **Immediate visibility** - See state changes instantly
 - **FR-126 validation** - Verify manifest creation without terminal
 - **Debugging tool** - Inspect state during development
 
 **Support & Documentation:**
+
 - **Copy-paste debugging** - Share state files easily
 - **Verification** - Confirm configuration changes
 - **Transparency** - See what the app is actually doing
 
 **Foundation for Future:**
+
 - **Extensible** - Add more tools to drawer (socket monitor, logs)
 - **Developer-friendly** - Shows FliHub is developer-aware
 - **Troubleshooting** - Essential tool for support issues
@@ -560,12 +584,12 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 
 ## Scope Estimate
 
-| Task | Effort | Priority |
-|------|--------|----------|
-| Drawer component (UI) | 2-3 hours | High |
-| API endpoints | 1 hour | High |
-| Syntax highlighting | 1-2 hours | Medium |
-| Testing & polish | 1 hour | High |
+| Task                  | Effort    | Priority |
+| --------------------- | --------- | -------- |
+| Drawer component (UI) | 2-3 hours | High     |
+| API endpoints         | 1 hour    | High     |
+| Syntax highlighting   | 1-2 hours | Medium   |
+| Testing & polish      | 1 hour    | High     |
 
 **Total:** 5-7 hours
 
@@ -581,6 +605,7 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 ## Completion Notes
 
 **What was done:**
+
 - Created 400px slide-out drawer accessible from Cog menu (⚙ → 🔍 Developer Tools)
 - Implemented tree navigation with collapsible Project Scope and Global Scope sections
 - Added JSON viewer with lightweight syntax highlighting (keys, strings, numbers, booleans, null)
@@ -591,10 +616,12 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 - Notes displayed for non-existent files (e.g., "State file does not exist yet")
 
 **Files created:**
+
 - `client/src/components/DeveloperDrawer.tsx` (400 lines) - Main drawer component
 - `server/src/routes/developer.ts` (195 lines) - 3 API endpoints
 
 **Files modified:**
+
 - `server/src/index.ts` - Registered developer routes (`/api/developer`)
 - `server/src/routes/system.ts` - Added `POST /api/system/open-file-by-path` endpoint
 - `client/src/App.tsx` - Added drawer state, menu item, and component render
@@ -602,12 +629,14 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 - `client/src/constants/queryKeys.ts` - Added developer query keys
 
 **API Endpoints:**
+
 1. `GET /api/developer/project-state` - Returns `.flihub-state.json` for active project
 2. `GET /api/developer/config` - Returns `config.json`
 3. `GET /api/developer/telemetry` - Returns `transcription-telemetry.jsonl`
 4. `POST /api/system/open-file-by-path` - Opens file by absolute path (whitelist: config.json, .flihub-state.json, transcription-telemetry.jsonl)
 
 **Implementation details:**
+
 - Syntax highlighting uses lightweight regex-based approach (no external library)
 - File size formatting (B/KB/MB)
 - JSONL parser handles malformed entries gracefully
@@ -615,6 +644,7 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 - Queries use React Query for caching and auto-refetch
 
 **Testing notes:**
+
 1. Open drawer: Cog menu → 🔍 Developer Tools
 2. Verify drawer slides in from right with overlay
 3. Test file selection: Click `.flihub-state.json`, `config.json`, `transcription-telemetry.jsonl`
@@ -632,6 +662,7 @@ function SyntaxHighlightedJson({ content }: { content: object }) {
 **Time estimate accuracy:** ~6-7 hours (within 5-7 hour estimate)
 
 **Final implementation:**
+
 - Switched from custom JSON viewer to **Monaco Editor** (VSCode's actual editor)
 - Removed black overlay (drawer now slides over content without blocking app)
 - 800px default width with resizable support (300-1000px range)

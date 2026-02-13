@@ -14,11 +14,11 @@ Same response types defined in multiple places.
 
 ## Types to Consolidate
 
-| Type | Current Location |
-|------|------------------|
-| InboxFile, InboxSubfolder | query.ts AND useApi.ts |
-| SafeResponse, RestoreResponse | useApi.ts only |
-| Query types | query.ts only |
+| Type                          | Current Location       |
+| ----------------------------- | ---------------------- |
+| InboxFile, InboxSubfolder     | query.ts AND useApi.ts |
+| SafeResponse, RestoreResponse | useApi.ts only         |
+| Query types                   | query.ts only          |
 
 ## Solution
 
@@ -34,6 +34,7 @@ Move all to `shared/types.ts`.
 ## Technical Notes
 
 May need to update import paths in:
+
 - `server/src/routes/query.ts`
 - `client/src/hooks/useApi.ts`
 - Any other files using these types

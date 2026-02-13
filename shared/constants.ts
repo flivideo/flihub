@@ -8,7 +8,7 @@ export const FILE_SIZE = {
   SUBSTANTIAL_BYTES: 5 * 1024 * 1024,
   KB: 1024,
   MB: 1024 * 1024,
-} as const
+} as const;
 
 // Watcher configuration
 export const WATCHER = {
@@ -16,7 +16,7 @@ export const WATCHER = {
   STABILITY_THRESHOLD_MS: 2000,
   /** How often to check file stability (ms) */
   POLL_INTERVAL_MS: 100,
-} as const
+} as const;
 
 // Re-export PATTERNS from naming.ts for backwards compatibility
-export { PATTERNS } from './naming.js'
+export { PATTERNS } from './naming.js';

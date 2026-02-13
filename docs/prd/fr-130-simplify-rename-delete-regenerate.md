@@ -16,6 +16,7 @@ As a developer, I want to simplify the rename logic by deleting and regenerating
 ## Problem
 
 **Current rename complexity (FR-47):**
+
 - Renames recordings in 5+ directories (recordings, -safe, transcripts, shadows, -chapters)
 - Parses filenames to build new names for derived files
 - Special case handling for chapter transcripts, safe folders
@@ -38,47 +39,47 @@ Replace multi-directory rename logic with **delete+regenerate pattern**:
 #### **Phase 1: Pre-Rename Cleanup** (Delete Derivable Files)
 
 Delete files that can be regenerated:
+
 - Shadow files (`recording-shadows/{name}.txt`)
 - Shadow files in safe (`recording-shadows/-safe/{name}.txt`)
 - Transcript files (`.txt` and `.srt`)
 - Chapter videos (`recordings/-chapters/{chapter}-{label}.mov`)
 
 **Implementation:**
+
 ```typescript
-async function deleteDerivableFiles(
-  oldFilename: string,
-  paths: ProjectPaths
-): Promise<void> {
-  const baseName = oldFilename.replace(/\.(mov|mp4)$/, '')
+async function deleteDerivableFiles(oldFilename: string, paths: ProjectPaths): Promise<void> {
+  const baseName = oldFilename.replace(/\.(mov|mp4)$/, '');
 
   // Delete shadow files (both locations)
   const shadowPaths = [
     path.join(paths.project, 'recording-shadows', `${baseName}.txt`),
-    path.join(paths.project, 'recording-shadows', '-safe', `${baseName}.txt`)
-  ]
+    path.join(paths.project, 'recording-shadows', '-safe', `${baseName}.txt`),
+  ];
 
   // Delete transcript files
   const transcriptPaths = [
     path.join(paths.transcripts, `${baseName}.txt`),
-    path.join(paths.transcripts, `${baseName}.srt`)
-  ]
+    path.join(paths.transcripts, `${baseName}.srt`),
+  ];
 
   // Delete chapter video (if exists)
-  const chapterVideoPath = detectChapterVideo(oldFilename, paths)
+  const chapterVideoPath = detectChapterVideo(oldFilename, paths);
   if (chapterVideoPath) {
-    await fs.unlink(chapterVideoPath).catch(() => {})
+    await fs.unlink(chapterVideoPath).catch(() => {});
   }
 
   // Delete all (ignore errors if file doesn't exist)
   await Promise.all(
-    [...shadowPaths, ...transcriptPaths].map(p =>
-      fs.unlink(p).catch(() => {}) // Swallow ENOENT errors
+    [...shadowPaths, ...transcriptPaths].map(
+      (p) => fs.unlink(p).catch(() => {}) // Swallow ENOENT errors
     )
-  )
+  );
 }
 ```
 
 **Benefits:**
+
 - Simple (just delete, no parsing or name building)
 - Idempotent (safe to call multiple times)
 - No edge cases (if file doesn't exist, that's fine)
@@ -90,29 +91,32 @@ async function deleteDerivableFiles(
 Rename only the non-derivable files:
 
 1. **Recording file** (source video)
+
    ```typescript
    await fs.rename(
      path.join(paths.recordings, oldFilename),
      path.join(paths.recordings, newFilename)
-   )
+   );
    ```
 
 2. **State file entries** (preserve user data)
+
    ```typescript
-   const state = await readProjectState(paths.project)
-   const updatedState = migrateRecordingKey(state, oldFilename, newFilename)
-   await writeProjectState(paths.project, updatedState)
+   const state = await readProjectState(paths.project);
+   const updatedState = migrateRecordingKey(state, oldFilename, newFilename);
+   await writeProjectState(paths.project, updatedState);
    ```
 
 3. **Manifest entries** (if file was exported)
    ```typescript
    if (state.editManifest) {
-     updateManifestFilename(updatedState, oldFilename, newFilename)
-     await writeProjectState(paths.project, updatedState)
+     updateManifestFilename(updatedState, oldFilename, newFilename);
+     await writeProjectState(paths.project, updatedState);
    }
    ```
 
 **Key changes from current approach:**
+
 - ❌ **Remove:** Shadow file renaming (4 lines → deleted)
 - ❌ **Remove:** Transcript file renaming (6 lines → deleted)
 - ❌ **Remove:** Chapter video renaming (special logic → deleted)
@@ -127,18 +131,20 @@ Rename only the non-derivable files:
 Regenerate deleted files using existing systems:
 
 1. **Shadow files**
+
    ```typescript
    const shadowDir = wasInSafe
      ? path.join(paths.project, 'recording-shadows', '-safe')
-     : path.join(paths.project, 'recording-shadows')
+     : path.join(paths.project, 'recording-shadows');
 
-   await createShadowFile(newFilename.replace(/\.(mov|mp4)$/, ''), shadowDir)
+   await createShadowFile(newFilename.replace(/\.(mov|mp4)$/, ''), shadowDir);
    ```
 
 2. **Transcripts** (queued, async)
+
    ```typescript
-   const newPath = path.join(paths.recordings, newFilename)
-   queueTranscription(newPath)
+   const newPath = path.join(paths.recordings, newFilename);
+   queueTranscription(newPath);
    ```
 
 3. **Chapter videos** (regenerated on demand)
@@ -146,6 +152,7 @@ Regenerate deleted files using existing systems:
    - User triggers regeneration via "Regenerate Chapter Videos" in Manage panel (FR-131)
 
 **Benefits:**
+
 - Reuses existing, tested code (`createShadowFile`, transcription queue)
 - Consistent with initial import workflow
 - Transcription queue handles retries, progress tracking, error handling
@@ -157,6 +164,7 @@ Regenerate deleted files using existing systems:
 ### Migrate Recording Keys in `.flihub-state.json`
 
 **Problem:** State file uses filename as key:
+
 ```json
 {
   "recordings": {
@@ -168,30 +176,32 @@ Regenerate deleted files using existing systems:
 After rename to `01-1-introduction.mov`, the key must change or data is lost.
 
 **Solution:** Migrate state entry during rename:
+
 ```typescript
 export function migrateRecordingKey(
   state: ProjectState,
   oldFilename: string,
   newFilename: string
 ): ProjectState {
-  const oldEntry = state.recordings[oldFilename]
+  const oldEntry = state.recordings[oldFilename];
 
   // If no entry exists, nothing to migrate
-  if (!oldEntry) return state
+  if (!oldEntry) return state;
 
   // Create new recordings object with migrated key
-  const newRecordings = { ...state.recordings }
-  delete newRecordings[oldFilename]
-  newRecordings[newFilename] = oldEntry
+  const newRecordings = { ...state.recordings };
+  delete newRecordings[oldFilename];
+  newRecordings[newFilename] = oldEntry;
 
   return {
     ...state,
-    recordings: newRecordings
-  }
+    recordings: newRecordings,
+  };
 }
 ```
 
 **Preserves:**
+
 - `parked` status
 - `annotation` text
 - `safe` flag
@@ -205,6 +215,7 @@ export function migrateRecordingKey(
 ### Update Manifest Filename References
 
 **Problem:** If file was exported to edit folder (FR-126), manifest references old filename:
+
 ```json
 {
   "editManifest": {
@@ -218,37 +229,36 @@ export function migrateRecordingKey(
 ```
 
 **Solution:** Update filename in manifest:
+
 ```typescript
 export function updateManifestFilename(
   state: ProjectState,
   oldFilename: string,
   newFilename: string
 ): ProjectState {
-  if (!state.editManifest) return state
+  if (!state.editManifest) return state;
 
-  const updatedManifest = { ...state.editManifest }
+  const updatedManifest = { ...state.editManifest };
 
   // Update filename in all folder manifests
   for (const folder of ['edit-1st', 'edit-2nd', 'edit-final'] as const) {
-    const manifest = updatedManifest[folder]
-    if (!manifest) continue
+    const manifest = updatedManifest[folder];
+    if (!manifest) continue;
 
-    const updatedFiles = manifest.files.map(file =>
-      file.filename === oldFilename
-        ? { ...file, filename: newFilename }
-        : file
-    )
+    const updatedFiles = manifest.files.map((file) =>
+      file.filename === oldFilename ? { ...file, filename: newFilename } : file
+    );
 
     updatedManifest[folder] = {
       ...manifest,
-      files: updatedFiles
-    }
+      files: updatedFiles,
+    };
   }
 
   return {
     ...state,
-    editManifest: updatedManifest
-  }
+    editManifest: updatedManifest,
+  };
 }
 ```
 
@@ -261,12 +271,14 @@ export function updateManifestFilename(
 Show non-blocking toast notification:
 
 **Single file rename:**
+
 ```
 ✅ Renamed to 01-1-introduction.mov
    Transcription queued (view progress in Transcriptions tab)
 ```
 
 **Bulk rename (15 files):**
+
 ```
 ✅ Renamed 15 files
    Transcriptions queued (view progress in Transcriptions tab)
@@ -281,17 +293,19 @@ Show non-blocking toast notification:
 ### Edge Case 1: File Being Transcribed
 
 **Problem:** Rename while transcription is in progress
+
 - Current queue: Job for `01-1-intro.mov` in progress
 - After rename: Job completes, writes to `01-1-intro.txt` (wrong name!)
 
 **Solution:** Check transcription queue before rename
+
 ```typescript
-const isTranscribing = await checkTranscriptionQueue(oldFilename)
+const isTranscribing = await checkTranscriptionQueue(oldFilename);
 if (isTranscribing) {
   return {
     success: false,
-    error: 'Cannot rename while transcribing. Wait for completion or cancel transcription.'
-  }
+    error: 'Cannot rename while transcribing. Wait for completion or cancel transcription.',
+  };
 }
 ```
 
@@ -304,6 +318,7 @@ if (isTranscribing) {
 **Scenario:** Rename succeeds, but transcription queue is full or Whisper fails
 
 **Solution:** User sees missing transcript in Transcriptions tab
+
 - Transcription queue has built-in retry mechanism
 - "Transcribe All" button re-queues failed files
 - No special handling needed
@@ -315,6 +330,7 @@ if (isTranscribing) {
 **Scenario:** File is in safe state, shadow exists in `recording-shadows/-safe/`
 
 **Solution:** Delete shadows from both locations
+
 - Check `state.recordings[filename].safe` flag
 - Delete from both `recording-shadows/` and `recording-shadows/-safe/`
 - Regenerate in correct location based on safe flag
@@ -326,28 +342,33 @@ if (isTranscribing) {
 ### Must Have
 
 **Delete Phase:**
+
 - [ ] Delete shadow files from both `recording-shadows/` and `recording-shadows/-safe/`
 - [ ] Delete transcript files (`.txt` and `.srt`)
 - [ ] Delete chapter video (if exists)
 - [ ] Deletion errors ignored (ENOENT is acceptable)
 
 **Rename Phase:**
+
 - [ ] Rename recording file in `recordings/` (or `recordings/-safe/`)
 - [ ] Migrate state key in `.flihub-state.json` (preserve parked, annotation, safe, stage)
 - [ ] Update manifest filename references (if file was exported)
 - [ ] Atomic state update (all or nothing)
 
 **Regenerate Phase:**
+
 - [ ] Regenerate shadow file in correct location (main or -safe)
 - [ ] Queue transcription for renamed file
 - [ ] Toast notification shows "Transcription queued" with link to Transcriptions tab
 
 **Validation:**
+
 - [ ] Check transcription queue before rename (prevent rename during transcription)
 - [ ] Error message if file is being transcribed
 - [ ] Rename button disabled if file is being transcribed
 
 **Verification:**
+
 - [ ] Parked status preserved after rename
 - [ ] Annotation text preserved after rename
 - [ ] Safe flag preserved after rename
@@ -370,24 +391,28 @@ if (isTranscribing) {
 ### Code Reduction Analysis
 
 **Before (FR-47):**
+
 - 152 lines of rename logic
 - 5 directories scanned
 - 7 edge case categories
 - Special case handling for chapter transcripts, safe folders, shadows
 
 **After (Delete+Regenerate):**
+
 - ~80 lines of rename logic (47% reduction)
 - 2 directories scanned (recordings + state file)
 - 3 edge case categories (4 eliminated)
 - No special case handling (regeneration is uniform)
 
 **Deleted code:**
+
 - Shadow file rename logic (~20 lines)
 - Transcript file rename logic (~25 lines)
 - Filename parsing for derived files (~15 lines)
 - Special case handling for chapter transcripts (~12 lines)
 
 **New code:**
+
 - State key migration (~10 lines)
 - Manifest filename update (~15 lines)
 - Transcription queue check (~10 lines)
@@ -399,6 +424,7 @@ if (isTranscribing) {
 ### Files to Create
 
 **New utility:** `server/src/utils/renameRecording.ts`
+
 ```typescript
 export async function deleteDerivableFiles(...)
 export async function renameCoreFiles(...)
@@ -412,18 +438,19 @@ export async function checkTranscriptionQueue(...)
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `server/src/routes/index.ts` | Replace FR-47 logic with delete+regenerate |
-| `server/src/utils/projectState.ts` | Add `migrateRecordingKey()`, `updateManifestFilename()` |
-| `client/src/components/RenameLabelModal.tsx` | Update warning text, add toast notification |
-| `server/src/utils/renameRecording.ts` | CREATE - New utility file |
+| File                                         | Changes                                                 |
+| -------------------------------------------- | ------------------------------------------------------- |
+| `server/src/routes/index.ts`                 | Replace FR-47 logic with delete+regenerate              |
+| `server/src/utils/projectState.ts`           | Add `migrateRecordingKey()`, `updateManifestFilename()` |
+| `client/src/components/RenameLabelModal.tsx` | Update warning text, add toast notification             |
+| `server/src/utils/renameRecording.ts`        | CREATE - New utility file                               |
 
 ---
 
 ## Testing Checklist
 
 **Single File Rename:**
+
 1. Rename `01-1-intro.mov` → `01-1-introduction.mov`
 2. ✅ Shadow file deleted and regenerated
 3. ✅ Transcript deleted, transcription queued
@@ -432,6 +459,7 @@ export async function checkTranscriptionQueue(...)
 6. ✅ Transcriptions tab shows new job
 
 **State Preservation:**
+
 1. Park file, add annotation
 2. Rename file
 3. ✅ Parked status preserved
@@ -439,24 +467,28 @@ export async function checkTranscriptionQueue(...)
 5. ✅ Verify via FR-127 Developer Tools (check `.flihub-state.json`)
 
 **Manifest Update:**
+
 1. Export file to edit-1st (creates manifest)
 2. Rename file
 3. ✅ Manifest filename updated
 4. ✅ Verify via FR-127 Developer Tools (check `editManifest.edit-1st.files[]`)
 
 **Safe Folder:**
+
 1. Move file to safe
 2. Rename file
 3. ✅ Shadow regenerated in `recording-shadows/-safe/`
 4. ✅ Recording file renamed in `recordings/-safe/`
 
 **Transcription Conflict:**
+
 1. Start transcription for file
 2. Try to rename while transcribing
 3. ✅ Error message shown
 4. ✅ Rename button disabled
 
 **Bulk Rename (Chapter):**
+
 1. Rename chapter with 15 files
 2. ✅ All 15 files renamed
 3. ✅ Toast shows "Renamed 15 files. Transcriptions queued"
@@ -468,15 +500,18 @@ export async function checkTranscriptionQueue(...)
 ## Performance Considerations
 
 **Transcription time:**
+
 - 1-5 minutes per file (depends on Whisper model and file length)
 - User sees progress in Transcriptions tab (async, non-blocking)
 - Acceptable tradeoff for code simplification
 
 **Shadow regeneration:**
+
 - ~1ms per file (instant)
 - No user-visible delay
 
 **State file I/O:**
+
 - JSON read/write is fast (<10ms)
 - Atomic operation (file lock prevents corruption)
 
@@ -485,12 +520,14 @@ export async function checkTranscriptionQueue(...)
 ## Dependencies
 
 **Depends on:**
+
 - FR-47 (existing rename logic) - Will be replaced
 - FR-30 (transcription queue) - Reused for regeneration
 - FR-83 (shadow files) - Reused for regeneration
 - FR-126 (manifest tracking) - Manifest must be updated
 
 **Enables:**
+
 - FR-131 (Bulk rename in Manage panel) - Simpler logic makes bulk easier
 - Future: Sequence renumbering (less complex with delete+regenerate)
 
@@ -499,14 +536,17 @@ export async function checkTranscriptionQueue(...)
 ## Future Enhancements (Not in Scope)
 
 **Chapter videos on-demand regeneration:**
+
 - User triggers via "Regenerate Chapter Videos" button (FR-131)
 - Not automatic during rename (expensive operation)
 
 **Batch optimization:**
+
 - Queue all transcriptions at once (instead of one-by-one)
 - Improves performance for bulk renames
 
 **Progress estimation:**
+
 - Show estimated time for transcription queue
 - "Estimated: 12 minutes for 15 files"
 
@@ -514,28 +554,31 @@ export async function checkTranscriptionQueue(...)
 
 ## Risks & Mitigations
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|-----------|
-| **Transcription takes too long** | High | Medium | Clear toast notifications, progress tracking |
-| **State migration bug loses data** | Low | **High** | Thorough testing, backup recommendation in docs |
-| **Transcription queue collision** | Medium | Medium | Queue check + validation, clear error message |
-| **Shadow regeneration fails** | Low | Low | Idempotent (can retry), shadows are non-critical |
+| Risk                               | Likelihood | Impact   | Mitigation                                       |
+| ---------------------------------- | ---------- | -------- | ------------------------------------------------ |
+| **Transcription takes too long**   | High       | Medium   | Clear toast notifications, progress tracking     |
+| **State migration bug loses data** | Low        | **High** | Thorough testing, backup recommendation in docs  |
+| **Transcription queue collision**  | Medium     | Medium   | Queue check + validation, clear error message    |
+| **Shadow regeneration fails**      | Low        | Low      | Idempotent (can retry), shadows are non-critical |
 
 ---
 
 ## Success Metrics
 
 **Code quality:**
+
 - 47% reduction in rename logic (152 → 80 lines)
 - 4 of 7 edge case categories eliminated
 - No special case handling (uniform pattern)
 
 **User experience:**
+
 - Clear feedback (toast notifications)
 - Non-blocking (transcription is async)
 - State data preserved (parked, annotations)
 
 **Maintainability:**
+
 - Simpler to understand (delete → rename → regenerate)
 - Reuses existing systems (shadows, transcription queue)
 - Fewer bugs (fewer edge cases)
@@ -545,6 +588,7 @@ export async function checkTranscriptionQueue(...)
 ## Completion Criteria
 
 **Definition of Done:**
+
 - [ ] All acceptance criteria met
 - [ ] All tests passing
 - [ ] State migration verified (parked, annotation preserved)
@@ -566,6 +610,7 @@ export async function checkTranscriptionQueue(...)
 Simplified rename logic from 152 lines to ~120 lines using delete+regenerate pattern. The new implementation deletes derivable files (shadows, transcripts, chapter videos), renames core files (recording + state), and regenerates deleted files using existing systems.
 
 **Files created:**
+
 - `server/src/utils/renameRecording.ts` (256 lines) - New utility module with:
   - `deleteDerivableFiles()` - Deletes shadows, transcripts, chapter videos
   - `renameCoreFiles()` - Renames recording and migrates state
@@ -575,12 +620,14 @@ Simplified rename logic from 152 lines to ~120 lines using delete+regenerate pat
   - `checkTranscriptionQueue()` - Prevents rename conflicts
 
 **Files modified:**
+
 - `server/src/routes/transcriptions.ts` - Added `getActiveJob()` and `getQueue()` getters (FR-130)
 - `server/src/index.ts` - Captured queue getters and passed to routes
 - `server/src/routes/index.ts` - Updated `createRoutes()` signature and replaced rename-chapter endpoint (152 → 139 lines)
 - `client/src/components/RenameLabelModal.tsx` - Added warning banner and enhanced toast notifications
 
 **Key improvements:**
+
 1. **Code reduction:** Rename endpoint reduced from 152 to 139 lines (9% reduction in route code)
 2. **Total new code:** 256 lines (utility) vs old approach, but **much simpler logic**
 3. **Edge cases eliminated:** No special handling for shadows, transcripts, or chapter videos
@@ -590,18 +637,21 @@ Simplified rename logic from 152 lines to ~120 lines using delete+regenerate pat
 7. **User feedback:** Clear warnings and progress notifications
 
 **Backend changes:**
+
 - Delete phase: Removes shadows (both locations), transcripts (.txt + .srt), chapter videos
 - Rename phase: Renames recording file, migrates state key, updates manifest
 - Regenerate phase: Creates shadow in correct location, queues transcription
 - Queue check: Prevents rename during active transcription
 
 **Frontend changes:**
+
 - Warning banner: Yellow alert box explaining transcript regeneration (5-10 minutes)
 - Enhanced toasts: Shows file count and progress link to Transcriptions tab
 - Duration: 5 seconds (from default 3 seconds) for better visibility
 - Updated label: "recordings" instead of "recordings + transcripts"
 
 **Testing notes:**
+
 - Implementation compiles successfully (only pre-existing TS config errors)
 - State migration logic verified (preserves all recording state fields)
 - Manifest update logic verified (updates filename in all edit folders)
@@ -610,12 +660,14 @@ Simplified rename logic from 152 lines to ~120 lines using delete+regenerate pat
 
 **Verification via FR-127:**
 Users can verify state migration and manifest updates using Developer Tools (⚙️ → 🔍 Developer Tools) to inspect `.flihub-state.json`:
+
 - Check `recordings[newFilename]` has parked/annotation/safe preserved
 - Check `editManifest[folder].files[]` has updated filename
 
 **Status:** Complete - Ready for user testing
 
 **Next steps:**
+
 - User should test with real projects to verify state preservation
 - Monitor transcription queue for any issues with regenerated transcripts
 - Consider adding progress indicator for bulk renames (FR-130 "Should Have")

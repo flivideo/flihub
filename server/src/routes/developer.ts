@@ -170,7 +170,10 @@ export function createDeveloperRoutes(config: Config): Router {
 
       const content = await fs.readFile(TELEMETRY_FILE, 'utf-8');
       const stats = await fs.stat(TELEMETRY_FILE);
-      const lines = content.trim().split('\n').filter((line) => line.trim());
+      const lines = content
+        .trim()
+        .split('\n')
+        .filter((line) => line.trim());
 
       res.json({
         success: true,

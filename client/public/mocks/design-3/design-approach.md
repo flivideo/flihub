@@ -34,6 +34,7 @@ Abandon the multi-sidebar approach entirely:
 ```
 
 **Why single-column:**
+
 - Maximum content focus
 - No horizontal scrolling ever
 - Simpler responsive design
@@ -50,6 +51,7 @@ The core interaction pattern:
 **Categories:** Actions, Files, Navigation, Tools, Settings
 
 **Command examples:**
+
 ```
 > rename                  → Open rename tool
 > goto chapter 3          → Jump to chapter 3
@@ -60,6 +62,7 @@ The core interaction pattern:
 ```
 
 **Why command palette:**
+
 - Keyboard users are 3x faster
 - No need to remember UI locations
 - Search replaces navigation
@@ -71,12 +74,14 @@ The core interaction pattern:
 Extreme reduction of visual elements:
 
 **Typography:**
+
 - Single font family: "Berkeley Mono" (beautiful mono for everything)
 - Three sizes only: 12px, 14px, 18px
 - Two weights only: 400 (regular), 600 (semibold)
 - Line height: 1.6 (generous for readability)
 
 **Colors:**
+
 - Background: #ffffff (pure white)
 - Text primary: #000000 (pure black)
 - Text secondary: #666666 (medium gray)
@@ -84,6 +89,7 @@ Extreme reduction of visual elements:
 - Border: #e0e0e0 (subtle gray)
 
 **No:**
+
 - No gradients
 - No shadows
 - No rounded corners (sharp 0px)
@@ -95,24 +101,28 @@ Extreme reduction of visual elements:
 Every action has a keyboard shortcut:
 
 **Global:**
+
 - `CMD+K` - Command palette
 - `CMD+P` - Quick file search
 - `CMD+Shift+P` - Quick action
 - `ESC` - Close any overlay
 
 **Navigation:**
+
 - `1-9` - Jump to page (1=Incoming, 2=Recordings, etc.)
 - `CMD+[` / `CMD+]` - Previous/Next page
 - `J` / `K` - Down/Up in lists
 - `Space` - Select item
 
 **Playback:**
+
 - `Space` - Play/Pause
 - `←` / `→` - Seek backward/forward
 - `Shift+←` / `Shift+→` - Previous/Next file
 - `1-9` - Jump to chapter 1-9
 
 **Tools:**
+
 - `R` - Rename selected
 - `E` - Export selected
 - `S` - Safe selected
@@ -120,6 +130,7 @@ Every action has a keyboard shortcut:
 - `T` - Regenerate transcripts
 
 **Shortcuts shown:**
+
 - Bottom right corner: Active shortcut hints
 - Hover tooltips: Show shortcut in gray
 - Command palette: Shows shortcut next to each command
@@ -156,12 +167,14 @@ Actions appear contextually:
 **On right-click:** Context menu (keyboard navigable)
 
 **Example - file list:**
+
 ```
 01-1-intro.mov                    19.0 MB
   [on hover] → play · safe · park · rename
 ```
 
 **Selected files:**
+
 ```
 ┌─────────────────────────────────────────┐
 │  5 files selected (94.7 MB)            │
@@ -174,6 +187,7 @@ Actions appear contextually:
 No drawers, no slide-outs - centered modals:
 
 **Rename modal:**
+
 ```
 ┌──────────────────────┐
 │  Rename 5 files      │
@@ -186,6 +200,7 @@ No drawers, no slide-outs - centered modals:
 ```
 
 **Why modals:**
+
 - Focused interaction
 - No layout shift
 - Easy to dismiss (ESC)
@@ -197,30 +212,35 @@ No drawers, no slide-outs - centered modals:
 ## Page-Specific Implementations
 
 ### Manage Page
+
 - **Title:** "Manage & Export"
 - **Content:** Single-column file list, grouped by chapter
 - **Selection:** Checkboxes on left, action bar on select
 - **No tools sidebar:** Use CMD+K instead
 
 ### Incoming Page
+
 - **Title:** "Incoming Files"
 - **Content:** Naming form (collapsed by default)
 - **Queue:** List of pending files below
 - **Expand form:** Click or press N key
 
 ### Recordings Page
+
 - **Title:** "Recordings"
 - **Content:** Flat file list (no chapter groups)
 - **Playback:** Click filename or press Space
 - **Filters:** CMD+F for filter modal
 
 ### Watch Page
+
 - **Title:** Hidden (full-screen video)
 - **Content:** Video player only
 - **Controls:** Overlay on hover or mouse move
 - **Timeline:** Minimal scrubber, bottom of video
 
 ### Projects Page
+
 - **Title:** "Projects"
 - **Content:** Simple table (project, stage, files, %)
 - **No thumbnails:** Text-only, faster loading
@@ -231,17 +251,20 @@ No drawers, no slide-outs - centered modals:
 ## Visual Design Language
 
 **Spacing:**
+
 - Base unit: 8px
 - Section gaps: 32px
 - Content padding: 24px
 - Line spacing: 8px between items
 
 **Borders:**
+
 - All borders: 1px solid #e0e0e0
 - No border radius: 0px everywhere
 - No shadows: flat design
 
 **Buttons:**
+
 ```
 [Button Text]
 Background: transparent
@@ -251,6 +274,7 @@ Hover: Background #000, Color #fff
 ```
 
 **Links:**
+
 ```
 Underline only on hover
 Color: #0000ff (pure blue)
@@ -258,6 +282,7 @@ Weight: 600
 ```
 
 **Tables:**
+
 ```
 Header: Bold, border-bottom only
 Rows: 1px border between
@@ -269,6 +294,7 @@ Hover: Background #f5f5f5
 ## Command Palette Design
 
 **Appearance:**
+
 ```
 ┌────────────────────────────────────┐
 │  ▸ search query...                 │
@@ -288,6 +314,7 @@ Hover: Background #f5f5f5
 ```
 
 **Search algorithm:**
+
 - Fuzzy matching (fzf-style)
 - Results ranked by relevance
 - Recent actions ranked higher
@@ -295,6 +322,7 @@ Hover: Background #f5f5f5
 - Chapter names searchable
 
 **Categories shown:**
+
 1. Actions (tools, operations)
 2. Files (recordings, videos)
 3. Navigation (pages, chapters)
@@ -304,19 +332,20 @@ Hover: Background #f5f5f5
 
 ## Solving Inconsistencies
 
-| Inconsistency | Design-3 Solution |
-|--------------|-------------------|
+| Inconsistency             | Design-3 Solution                              |
+| ------------------------- | ---------------------------------------------- |
 | Chapter navigation varies | No chapter nav UI - use CMD+K "goto chapter 3" |
-| Sidebar patterns differ | No sidebars - command palette only |
-| Tool access unclear | CMD+K → search for any tool by name |
-| Layout shifts | Single column, nothing shifts ever |
-| Interactive feedback | Minimal hover states, keyboard focus rings |
+| Sidebar patterns differ   | No sidebars - command palette only             |
+| Tool access unclear       | CMD+K → search for any tool by name            |
+| Layout shifts             | Single column, nothing shifts ever             |
+| Interactive feedback      | Minimal hover states, keyboard focus rings     |
 
 ---
 
 ## Technical Implementation
 
 **CSS Variables:**
+
 ```css
 --bg: #ffffff;
 --text: #000000;
@@ -332,6 +361,7 @@ Hover: Background #f5f5f5
 ```
 
 **Keyboard handler:**
+
 ```javascript
 // Global shortcut listener
 document.addEventListener('keydown', (e) => {
@@ -343,6 +373,7 @@ document.addEventListener('keydown', (e) => {
 ```
 
 **Performance:**
+
 - No animations (instant state changes)
 - No images (text-only UI)
 - Minimal JavaScript
@@ -363,14 +394,14 @@ document.addEventListener('keydown', (e) => {
 
 ## Comparison to Design-1 & Design-2
 
-| Aspect | Design-1 | Design-2 | Design-3 |
-|--------|----------|----------|----------|
-| Layout | Tri-column | Floating panels | Single column |
-| Navigation | Tabs + sidebars | Timeline | Command palette |
-| Aesthetic | Professional | Cinematic | Brutalist minimal |
-| Input | Mouse-primary | Balanced | Keyboard-only |
-| Visual | Polished | Dramatic | Stark |
-| Complexity | Medium | High | Low |
+| Aspect     | Design-1        | Design-2        | Design-3          |
+| ---------- | --------------- | --------------- | ----------------- |
+| Layout     | Tri-column      | Floating panels | Single column     |
+| Navigation | Tabs + sidebars | Timeline        | Command palette   |
+| Aesthetic  | Professional    | Cinematic       | Brutalist minimal |
+| Input      | Mouse-primary   | Balanced        | Keyboard-only     |
+| Visual     | Polished        | Dramatic        | Stark             |
+| Complexity | Medium          | High            | Low               |
 
 ---
 
@@ -387,6 +418,7 @@ document.addEventListener('keydown', (e) => {
 ## User Types
 
 **Best for:**
+
 - Power users who live in keyboard
 - Developers comfortable with CLI
 - Users who hate clutter
@@ -394,6 +426,7 @@ document.addEventListener('keydown', (e) => {
 - Screen reader users
 
 **Not ideal for:**
+
 - Mouse-only users
 - Beginners learning the tool
 - Users who prefer visual menus
@@ -412,6 +445,7 @@ document.addEventListener('keydown', (e) => {
 ---
 
 **Next Steps:**
+
 - Build working command palette prototype
 - Create keyboard shortcut reference card
 - Test with keyboard-only workflow

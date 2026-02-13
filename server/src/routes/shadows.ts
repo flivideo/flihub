@@ -9,7 +9,12 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import type { Config, ShadowStatusResponse, ShadowGenerateResponse, ShadowGenerateAllResponse } from '../../../shared/types.js';
+import type {
+  Config,
+  ShadowStatusResponse,
+  ShadowGenerateResponse,
+  ShadowGenerateAllResponse,
+} from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getShadowCounts, generateProjectShadows } from '../utils/shadowFiles.js';
 import { readDirSafe } from '../utils/filesystem.js';
@@ -105,7 +110,7 @@ export function createShadowsRouter(getConfig: () => Config) {
 
       // Get all project directories
       const entries = await readDirSafe(projectsDir);
-      const projectDirs = entries.filter(e => {
+      const projectDirs = entries.filter((e) => {
         const fullPath = path.join(projectsDir, e);
         return fs.statSync(fullPath).isDirectory() && !e.startsWith('.');
       });

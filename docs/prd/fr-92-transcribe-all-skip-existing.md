@@ -21,6 +21,7 @@ As a user, I want "Transcribe All" to skip files that already have transcripts s
 Skip files that already have a corresponding transcript in `recording-transcripts/`.
 
 **Skip logic:**
+
 - For each `.mov`/`.mp4` in `recordings/`
 - Check if matching `.txt` exists in `recording-transcripts/`
 - Example: `01-1-intro.mov` → skip if `01-1-intro.txt` exists

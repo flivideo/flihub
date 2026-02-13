@@ -5,6 +5,7 @@ How to create a new release for FliHub.
 ## Overview
 
 FliHub uses semantic versioning (MAJOR.MINOR.PATCH):
+
 - **MAJOR:** Breaking changes (v1.0.0 = stable after BMAD rebuild)
 - **MINOR:** New features (v0.6.0 → v0.7.0)
 - **PATCH:** Bug fixes only (v0.6.0 → v0.6.1)
@@ -12,11 +13,13 @@ FliHub uses semantic versioning (MAJOR.MINOR.PATCH):
 ## When to Release
 
 **Create a MINOR release when:**
+
 - Significant new feature(s) complete
 - Logical milestone reached (e.g., "Windows support done")
 - Deploying to Jan or collaborators
 
 **Create a PATCH release when:**
+
 - Bug fixes only, no new features
 - Hot fix needed for deployed version
 
@@ -94,6 +97,7 @@ git push origin v0.X.0  # Push the tag
 ```
 
 Or push all tags:
+
 ```bash
 git push origin --tags
 ```
@@ -131,6 +135,7 @@ git checkout -b hotfix-from-v0.5.0 v0.5.0
 ### Theme Names
 
 Use action-oriented, user-focused themes:
+
 - "Edit Workflow" (not "Add S3 staging routes")
 - "Windows/WSL Support" (not "Cross-platform fixes")
 - "Shadow System" (not "Add shadow files")
@@ -143,6 +148,7 @@ Use action-oriented, user-focused themes:
 ### Learnings Section
 
 Document insights for:
+
 - Future BMAD rebuild
 - Patterns that emerged
 - Decisions that proved important
@@ -164,8 +170,8 @@ For now, manual releases are fine for the v0.x development phase.
 
 ## Files Modified in a Release
 
-| File | What Changes |
-|------|--------------|
-| `RELEASES.md` | Add new version section |
+| File           | What Changes                    |
+| -------------- | ------------------------------- |
+| `RELEASES.md`  | Add new version section         |
 | `package.json` | (Optional) Update version field |
-| Git tag | Create annotated tag |
+| Git tag        | Create annotated tag            |

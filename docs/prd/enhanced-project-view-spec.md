@@ -9,12 +9,14 @@ Improve the Projects panel with accurate file counts across all project folders 
 ## Problem Statement
 
 **Current state:**
+
 - Projects table shows: Project Code, Files, Last Modified
 - "Files" count is inaccurate (doesn't properly count recordings, safe, assets, etc.)
 - No visibility into S3 staging (collaboration files shared with Jan)
 - No breakdown of project contents
 
 **Proposed state:**
+
 - Accurate counts for each folder type (recordings, safe, images, thumbs)
 - S3 staging visibility (file count, sync status)
 - Better understanding of project state at a glance
@@ -26,10 +28,12 @@ Improve the Projects panel with accurate file counts across all project folders 
 ### In Scope (v1)
 
 **Level 1: Better Project Metrics**
+
 - Accurate file counts per folder type
 - Show recordings, safe, images, thumbs counts
 
 **Level 2: S3 Visibility**
+
 - Show S3 file count and sync status
 - Read from DAM manifest (`projects.json`)
 
@@ -73,23 +77,23 @@ Improve the Projects panel with accurate file counts across all project folders 
 
 ### Column Definitions
 
-| Column | Description | Source |
-|--------|-------------|--------|
-| Project Code | Project identifier (e.g., b64-bmad-claude-sdk) | Directory name |
-| Rec | Files in `recordings/` (excluding -safe) | Local filesystem |
-| Safe | Files in `recordings/-safe/` | Local filesystem |
-| Img | Files in `assets/images/` | Local filesystem |
-| Thumb | Files in `assets/thumbs/` | Local filesystem |
-| S3 | S3 staging status and file count | DAM manifest |
-| Last Modified | Most recent file modification | Local filesystem |
+| Column        | Description                                    | Source           |
+| ------------- | ---------------------------------------------- | ---------------- |
+| Project Code  | Project identifier (e.g., b64-bmad-claude-sdk) | Directory name   |
+| Rec           | Files in `recordings/` (excluding -safe)       | Local filesystem |
+| Safe          | Files in `recordings/-safe/`                   | Local filesystem |
+| Img           | Files in `assets/images/`                      | Local filesystem |
+| Thumb         | Files in `assets/thumbs/`                      | Local filesystem |
+| S3            | S3 staging status and file count               | DAM manifest     |
+| Last Modified | Most recent file modification                  | Local filesystem |
 
 ### S3 Status Indicators
 
-| Icon | Meaning | Description |
-|------|---------|-------------|
-| `✓ 16` | Synced | All S3 files exist locally (16 files) |
-| `⚠ 2/3` | Partial | 2 of 3 S3 files exist locally |
-| `-` | None | No files in S3 for this project |
+| Icon    | Meaning | Description                           |
+| ------- | ------- | ------------------------------------- |
+| `✓ 16`  | Synced  | All S3 files exist locally (16 files) |
+| `⚠ 2/3` | Partial | 2 of 3 S3 files exist locally         |
+| `-`     | None    | No files in S3 for this project       |
 
 ---
 
@@ -101,10 +105,10 @@ Count files in each project subfolder:
 
 ```typescript
 interface ProjectCounts {
-  recordings: number;  // files in recordings/ (excluding -safe/)
-  safe: number;        // files in recordings/-safe/
-  images: number;      // files in assets/images/
-  thumbs: number;      // files in assets/thumbs/
+  recordings: number; // files in recordings/ (excluding -safe/)
+  safe: number; // files in recordings/-safe/
+  images: number; // files in assets/images/
+  thumbs: number; // files in assets/thumbs/
   transcripts: number; // files in transcripts/ (optional, for future)
 }
 ```
@@ -133,6 +137,7 @@ Read from `~/dev/video-projects/v-appydave/projects.json`:
 ```
 
 **Sync status calculation:**
+
 - Count files in local `s3-staging/` folder
 - Compare to `s3.file_count` from manifest
 - If equal: "Synced" (✓)
@@ -148,6 +153,7 @@ Read from `~/dev/video-projects/v-appydave/projects.json`:
 Update existing endpoint to include detailed counts.
 
 **Response:**
+
 ```json
 {
   "projects": [
@@ -166,7 +172,7 @@ Update existing endpoint to include detailed counts.
         "exists": true,
         "fileCount": 16,
         "localStagingCount": 15,
-        "status": "partial"  // "synced" | "partial" | "none"
+        "status": "partial" // "synced" | "partial" | "none"
       }
     }
   ],
@@ -209,13 +215,13 @@ Update existing endpoint to include detailed counts.
 
 ## Edge Cases
 
-| Scenario | Behavior |
-|----------|----------|
-| Manifest doesn't exist | S3 column shows `-` for all projects |
-| Manifest is stale | Show data as-is (user can regenerate via DAM CLI) |
-| Project not in manifest | S3 column shows `-` |
-| Folder doesn't exist | Count shows `0` |
-| Permission error reading folder | Count shows `-`, log warning |
+| Scenario                        | Behavior                                          |
+| ------------------------------- | ------------------------------------------------- |
+| Manifest doesn't exist          | S3 column shows `-` for all projects              |
+| Manifest is stale               | Show data as-is (user can regenerate via DAM CLI) |
+| Project not in manifest         | S3 column shows `-`                               |
+| Folder doesn't exist            | Count shows `0`                                   |
+| Permission error reading folder | Count shows `-`, log warning                      |
 
 ---
 
@@ -256,23 +262,25 @@ This section documents DAM capabilities that could be integrated in future versi
 
 ### Brands Supported
 
-| Shortcut | Full Name | Workflow |
-|----------|-----------|----------|
-| `appydave` | v-appydave | FliVideo (sequential recording) |
-| `voz` | v-voz | Storyline (script-first) |
-| `aitldr` | v-aitldr | Storyline |
-| `joy` | v-beauty-and-joy | Storyline |
-| `kiros` | v-kiros | Storyline |
-| `ss` | v-supportsignal | Storyline |
+| Shortcut   | Full Name        | Workflow                        |
+| ---------- | ---------------- | ------------------------------- |
+| `appydave` | v-appydave       | FliVideo (sequential recording) |
+| `voz`      | v-voz            | Storyline (script-first)        |
+| `aitldr`   | v-aitldr         | Storyline                       |
+| `joy`      | v-beauty-and-joy | Storyline                       |
+| `kiros`    | v-kiros          | Storyline                       |
+| `ss`       | v-supportsignal  | Storyline                       |
 
 ### Project Naming
 
 **FliVideo (AppyDave):**
+
 - Pattern: `[letter][2-digit]-[name]`
 - Examples: `b65-guy-monroe`, `b72-opus-awesome`
 - Short names: `b65` expands to full name
 
 **Storyline (Other brands):**
+
 - Full descriptive names
 - Examples: `boy-baker`, `the-point`
 
@@ -406,24 +414,28 @@ Click a project to see expanded detail view.
 The `projects.json` manifest can become stale. Options for keeping it current:
 
 ### Option A: Read-Only (Current)
+
 - Read existing manifest
 - User runs `dam manifest appydave` or `dam s3-scan appydave` manually
 - Pros: Simple, no unexpected delays
 - Cons: Data can be stale
 
 ### Option B: On-Demand Refresh
+
 - Add "Refresh" button that runs `dam s3-scan`
 - Show loading state while scanning
 - Pros: User control
 - Cons: Can be slow (S3 scan takes time)
 
 ### Option C: Background Refresh
+
 - Periodically refresh manifest (e.g., on app start, every hour)
 - Run in background, update when complete
 - Pros: Always fresh
 - Cons: Background network activity, complexity
 
 ### Option D: Hybrid
+
 - Read manifest on load (fast)
 - Show "last updated" timestamp
 - Button to refresh if stale
@@ -469,6 +481,7 @@ dam repo-status appydave
 ### Potential UI Addition
 
 Small icon indicating git status:
+
 - `●` Green: Clean, up to date
 - `●` Yellow: Uncommitted changes
 - `●` Red: Behind remote
@@ -478,7 +491,9 @@ Small icon indicating git status:
 ## Configuration Reference
 
 ### System Config
+
 Location: `~/.config/appydave/settings.json`
+
 ```json
 {
   "video-projects-root": "/Users/davidcruwys/dev/video-projects"
@@ -486,7 +501,9 @@ Location: `~/.config/appydave/settings.json`
 ```
 
 ### Brand Config
+
 Location: `{brand-dir}/.video-tools.env`
+
 ```
 AWS_ACCESS_KEY_ID=xxx
 AWS_SECRET_ACCESS_KEY=xxx
@@ -495,7 +512,9 @@ S3_BUCKET=appydave-video-projects
 ```
 
 ### Manifest
+
 Location: `{brand-dir}/projects.json`
+
 - Generated by: `dam manifest` or `dam s3-scan`
 - Contains: All project metadata, storage status, S3 data
 
@@ -519,6 +538,7 @@ If Recording Namer needs to execute DAM commands:
 ```
 
 **Key considerations:**
+
 - DAM is a Ruby gem with CLI interface
 - Call via `child_process.spawn` or `exec`
 - Long operations (upload/download) need job queue

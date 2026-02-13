@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useConfig } from '../hooks/useApi'
+import { useState } from 'react';
+import { useConfig } from '../hooks/useApi';
 
 /**
  * MockupsPage - Visual exploration of Claude Code integration UI concepts
@@ -63,7 +63,7 @@ const TIPS_DATA = {
       { label: 'Context', phrase: 'Get context for AI' },
     ],
   },
-}
+};
 
 // Tip card component used across mockups
 function TipCard({
@@ -74,14 +74,14 @@ function TipCard({
   projectCode = 'b86-demo',
   onCopy,
 }: {
-  icon: string
-  title: string
-  hints: { label: string; phrase: string }[]
-  expanded?: boolean
-  projectCode?: string
-  onCopy?: (text: string) => void
+  icon: string;
+  title: string;
+  hints: { label: string; phrase: string }[];
+  expanded?: boolean;
+  projectCode?: string;
+  onCopy?: (text: string) => void;
 }) {
-  const [isExpanded, setIsExpanded] = useState(expanded)
+  const [isExpanded, setIsExpanded] = useState(expanded);
 
   return (
     <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
@@ -106,8 +106,8 @@ function TipCard({
               </div>
               <button
                 onClick={(e) => {
-                  e.stopPropagation()
-                  onCopy?.(`${hint.phrase} for ${projectCode}`)
+                  e.stopPropagation();
+                  onCopy?.(`${hint.phrase} for ${projectCode}`);
                 }}
                 className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
                 title="Copy"
@@ -119,7 +119,7 @@ function TipCard({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // Mockup container with label
@@ -127,12 +127,12 @@ function MockupContainer({
   number,
   title,
   description,
-  children
+  children,
 }: {
-  number: number
-  title: string
-  description: string
-  children: React.ReactNode
+  number: number;
+  title: string;
+  description: string;
+  children: React.ReactNode;
 }) {
   return (
     <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50">
@@ -142,23 +142,21 @@ function MockupContainer({
         </h3>
         <p className="text-sm text-gray-500">{description}</p>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        {children}
-      </div>
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">{children}</div>
     </div>
-  )
+  );
 }
 
 export function MockupsPage() {
-  const { data: config } = useConfig()
-  const projectCode = config?.projectDirectory?.split('/').pop() || 'b86-demo'
-  const [copiedText, setCopiedText] = useState<string | null>(null)
+  const { data: config } = useConfig();
+  const projectCode = config?.projectDirectory?.split('/').pop() || 'b86-demo';
+  const [copiedText, setCopiedText] = useState<string | null>(null);
 
   const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopiedText(text)
-    setTimeout(() => setCopiedText(null), 2000)
-  }
+    navigator.clipboard.writeText(text);
+    setCopiedText(text);
+    setTimeout(() => setCopiedText(null), 2000);
+  };
 
   return (
     <div className="space-y-8">
@@ -167,10 +165,13 @@ export function MockupsPage() {
         <div className="flex items-start gap-4">
           <div className="text-4xl">🎨</div>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-800 mb-2">FliHub Design System Explorations</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">
+              FliHub Design System Explorations
+            </h2>
             <p className="text-gray-600 mb-4">
               View 4 different design approaches to solve UI inconsistencies across FliHub pages.
-              Each design system includes all 5 pages (Manage, Incoming, Recordings, Watch, Projects).
+              Each design system includes all 5 pages (Manage, Incoming, Recordings, Watch,
+              Projects).
             </p>
             <div className="flex gap-3">
               <a
@@ -197,7 +198,9 @@ export function MockupsPage() {
       </div>
 
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Claude Code Integration - UI Concepts</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          Claude Code Integration - UI Concepts
+        </h1>
         <p className="text-gray-600">Compare four approaches for showing API tips in FliHub</p>
         {copiedText && (
           <div className="mt-2 inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
@@ -207,7 +210,6 @@ export function MockupsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
         {/* Mockup 1: Slide-out Panel */}
         <MockupContainer
           number={1}
@@ -233,14 +235,11 @@ export function MockupsPage() {
               </div>
               <p className="text-xs text-gray-500 mb-3">"How do I..."</p>
               <div className="space-y-2">
-                {Object.values(TIPS_DATA).slice(0, 4).map((tip, i) => (
-                  <TipCard
-                    key={i}
-                    {...tip}
-                    projectCode={projectCode}
-                    onCopy={handleCopy}
-                  />
-                ))}
+                {Object.values(TIPS_DATA)
+                  .slice(0, 4)
+                  .map((tip, i) => (
+                    <TipCard key={i} {...tip} projectCode={projectCode} onCopy={handleCopy} />
+                  ))}
               </div>
             </div>
           </div>
@@ -264,14 +263,11 @@ export function MockupsPage() {
                   <button className="text-gray-400 hover:text-gray-600">✕</button>
                 </div>
                 <div className="p-3 space-y-2 overflow-y-auto max-h-48">
-                  {Object.values(TIPS_DATA).slice(0, 3).map((tip, i) => (
-                    <TipCard
-                      key={i}
-                      {...tip}
-                      projectCode={projectCode}
-                      onCopy={handleCopy}
-                    />
-                  ))}
+                  {Object.values(TIPS_DATA)
+                    .slice(0, 3)
+                    .map((tip, i) => (
+                      <TipCard key={i} {...tip} projectCode={projectCode} onCopy={handleCopy} />
+                    ))}
                 </div>
               </div>
             </div>
@@ -326,9 +322,7 @@ export function MockupsPage() {
                   "Export"
                 </button>
               </div>
-              <button className="text-gray-400 hover:text-white text-sm">
-                [?] More
-              </button>
+              <button className="text-gray-400 hover:text-white text-sm">[?] More</button>
             </div>
           </div>
         </MockupContainer>
@@ -374,7 +368,9 @@ export function MockupsPage() {
       {/* Expanded Card Example */}
       <div className="mt-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Expanded Card Detail</h2>
-        <p className="text-gray-600 mb-4">When a card is expanded, show both natural language and curl command:</p>
+        <p className="text-gray-600 mb-4">
+          When a card is expanded, show both natural language and curl command:
+        </p>
 
         <div className="max-w-md border border-gray-200 rounded-lg bg-white overflow-hidden">
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
@@ -405,10 +401,15 @@ export function MockupsPage() {
               <p className="text-sm text-gray-500 mb-2">Or use curl directly:</p>
               <div className="flex items-center justify-between bg-gray-100 border border-gray-300 rounded px-3 py-2">
                 <code className="text-xs text-gray-700 break-all">
-                  curl -s "http://localhost:5101/api/query/projects/{projectCode}/transcripts?include=content" | jq
+                  curl -s "http://localhost:5101/api/query/projects/{projectCode}
+                  /transcripts?include=content" | jq
                 </code>
                 <button
-                  onClick={() => handleCopy(`curl -s "http://localhost:5101/api/query/projects/${projectCode}/transcripts?include=content" | jq`)}
+                  onClick={() =>
+                    handleCopy(
+                      `curl -s "http://localhost:5101/api/query/projects/${projectCode}/transcripts?include=content" | jq`
+                    )
+                  }
                   className="text-gray-500 hover:text-gray-700 flex-shrink-0 ml-2"
                 >
                   📋
@@ -464,7 +465,9 @@ export function MockupsPage() {
       {/* FR-96: Environment Detection Mockups */}
       <div className="mt-16 pt-8 border-t-2 border-gray-300">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">FR-96: Environment Detection & Path Guidance</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            FR-96: Environment Detection & Path Guidance
+          </h1>
           <p className="text-gray-600">Help Windows+WSL users use correct path formats</p>
         </div>
 
@@ -488,12 +491,19 @@ export function MockupsPage() {
                 <div className="text-sm text-blue-700 space-y-1">
                   <p className="font-medium">Use Linux path formats:</p>
                   <ul className="ml-4 space-y-0.5">
-                    <li>• WSL files: <code className="bg-blue-100 px-1 rounded">/home/jan/...</code></li>
-                    <li>• Windows files: <code className="bg-blue-100 px-1 rounded">/mnt/c/Users/...</code></li>
+                    <li>
+                      • WSL files: <code className="bg-blue-100 px-1 rounded">/home/jan/...</code>
+                    </li>
+                    <li>
+                      • Windows files:{' '}
+                      <code className="bg-blue-100 px-1 rounded">/mnt/c/Users/...</code>
+                    </li>
                   </ul>
                 </div>
                 <div className="mt-2 text-right">
-                  <button className="text-blue-600 hover:text-blue-800 text-sm underline">View docs →</button>
+                  <button className="text-blue-600 hover:text-blue-800 text-sm underline">
+                    View docs →
+                  </button>
                 </div>
               </div>
 
@@ -509,7 +519,9 @@ export function MockupsPage() {
                     readOnly
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
                   />
-                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">📁</button>
+                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                    📁
+                  </button>
                 </div>
                 <p className="text-xs text-green-600 mt-1">
                   <span className="inline-block mr-1">✓</span>
@@ -544,14 +556,17 @@ export function MockupsPage() {
                     readOnly
                     className="flex-1 px-3 py-2 border border-amber-400 rounded-md bg-amber-50 text-sm"
                   />
-                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">📁</button>
+                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                    📁
+                  </button>
                 </div>
                 <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-sm">
                   <p className="text-amber-800 font-medium">
                     ⚠️ Windows path format, but running in WSL
                   </p>
                   <p className="text-amber-700 mt-1">
-                    Suggested: <code className="bg-amber-100 px-1 rounded">/mnt/c/Users/jan/Downloads</code>
+                    Suggested:{' '}
+                    <code className="bg-amber-100 px-1 rounded">/mnt/c/Users/jan/Downloads</code>
                   </p>
                   <button className="mt-2 px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700">
                     Use suggested path
@@ -589,7 +604,9 @@ export function MockupsPage() {
                     readOnly
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
                   />
-                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">📁</button>
+                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                    📁
+                  </button>
                 </div>
                 <p className="text-xs text-green-600 mt-1">
                   <span className="inline-block mr-1">✓</span>
@@ -617,8 +634,14 @@ export function MockupsPage() {
                 <div className="text-sm text-blue-700 space-y-1">
                   <p className="font-medium">Use Windows path formats:</p>
                   <ul className="ml-4 space-y-0.5">
-                    <li>• Windows files: <code className="bg-blue-100 px-1 rounded">C:\Users\...</code></li>
-                    <li>• WSL files: <code className="bg-blue-100 px-1 rounded">\\wsl$\Ubuntu\...</code></li>
+                    <li>
+                      • Windows files:{' '}
+                      <code className="bg-blue-100 px-1 rounded">C:\Users\...</code>
+                    </li>
+                    <li>
+                      • WSL files:{' '}
+                      <code className="bg-blue-100 px-1 rounded">\\wsl$\Ubuntu\...</code>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -635,7 +658,9 @@ export function MockupsPage() {
                     readOnly
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm font-mono text-xs"
                   />
-                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">📁</button>
+                  <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                    📁
+                  </button>
                 </div>
                 <p className="text-xs text-green-600 mt-1">
                   <span className="inline-block mr-1">✓</span>
@@ -648,15 +673,27 @@ export function MockupsPage() {
 
         {/* FR-96 Recommendation */}
         <div className="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <h3 className="font-semibold text-green-800 mb-2">Recommendation: Options B + C Combined</h3>
+          <h3 className="font-semibold text-green-800 mb-2">
+            Recommendation: Options B + C Combined
+          </h3>
           <ul className="text-sm text-green-700 space-y-1">
-            <li>• <strong>Info box</strong> at top of Config - educates user proactively</li>
-            <li>• <strong>Inline warnings</strong> - catches mistakes with actionable suggestions</li>
-            <li>• Environment detection via <code className="bg-green-100 px-1 rounded">GET /api/system/environment</code></li>
-            <li>• WSL detected by checking <code className="bg-green-100 px-1 rounded">process.env.WSL_DISTRO_NAME</code></li>
+            <li>
+              • <strong>Info box</strong> at top of Config - educates user proactively
+            </li>
+            <li>
+              • <strong>Inline warnings</strong> - catches mistakes with actionable suggestions
+            </li>
+            <li>
+              • Environment detection via{' '}
+              <code className="bg-green-100 px-1 rounded">GET /api/system/environment</code>
+            </li>
+            <li>
+              • WSL detected by checking{' '}
+              <code className="bg-green-100 px-1 rounded">process.env.WSL_DISTRO_NAME</code>
+            </li>
           </ul>
         </div>
       </div>
     </div>
-  )
+  );
 }

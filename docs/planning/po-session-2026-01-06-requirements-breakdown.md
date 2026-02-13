@@ -9,10 +9,12 @@
 ## Problem Identified
 
 **User feedback:**
+
 1. "We moved everything over to side panels but I don't see any tickets to really talk about this"
 2. "It just has this idea of if you press a button something happens. This is not good enough"
 
 **Root cause:**
+
 - FR-136 was too high-level ("tool-oriented design")
 - No architectural pattern documentation
 - No detailed specs for each tool drawer
@@ -30,6 +32,7 @@
 **Purpose:** Document the architectural pattern for tool-based UIs
 
 **Contents:**
+
 - When to use slide-out vs modal vs inline
 - Standard drawer behaviors (ESC, overlay, mutual exclusivity, animations)
 - Component APIs (SlideOutDrawer, ToolsSidebar)
@@ -49,11 +52,13 @@
 **Purpose:** Complete specification for Rename tool drawer
 
 **Current state (Basic - 44 lines):**
+
 - Single text input for label
 - Apply/Close buttons
 - Warning about transcript regeneration
 
 **Missing (Specified in FR-138):**
+
 - **Chapter dropdown** (01-99 with auto-detection from selected files)
 - **Sequence numbering** (radio: preserve original OR renumber from X)
 - **Tags checkboxes** (from config.availableTags + custom tag input)
@@ -76,11 +81,13 @@
 **Purpose:** Identify that "Folders" tool has no specification
 
 **Current state:**
+
 - Button exists in ToolsSidebar
 - Placeholder drawer: "Folder management functionality coming soon..."
 - No defined purpose or spec
 
 **Options identified:**
+
 1. **Edit Folder Management** - Duplicate of Export tool (already has this)
 2. **Recording Organization** - Move files to subfolders (requires architecture changes)
 3. **Chapter Tools (FR-135)** - Rename button to "Chapter Tools"
@@ -97,6 +104,7 @@
 **Status:** ✓ Complete (Core Architecture) - See Sub-Requirements
 
 **Changes:**
+
 - Status changed from "Pending" to "Complete (Core Architecture)"
 - Added sub-requirements section linking to FR-137/138/139
 - Added comprehensive "Completion Notes" section documenting:
@@ -114,6 +122,7 @@
 **File:** `docs/backlog.md`
 
 **Added rows:**
+
 ```markdown
 | FR-139 | Folders Tool Specification | 2026-01-06 | Blocked (Needs feature definition) |
 | FR-138 | Rename Tool Specification | 2026-01-06 | Partial (needs Chapter/Sequence/Tags/Preview) |
@@ -122,6 +131,7 @@
 ```
 
 **Updated dependencies:**
+
 - FR-133/134/135 changed from "Blocked by FR-136" to "Unblocked, but low priority"
 
 ---
@@ -131,6 +141,7 @@
 **File:** `docs/changelog.md`
 
 **Added comprehensive entry:**
+
 - FR-136/137/138/139 combined entry
 - What was implemented (Core, Simple Tools, Export)
 - What was documented (FR-137 pattern)
@@ -141,6 +152,7 @@
 - User impact
 
 **Quick Summary updated:**
+
 - Added FR-136 (Core), FR-137 to completed list
 - Added FR-138 (partial), FR-139 (blocked) to "Still Open"
 
@@ -182,6 +194,7 @@
 ### Going Forward
 
 **Every Complex Tool needs:**
+
 - [ ] Own FR with detailed specification
 - [ ] Field-by-field breakdown (for forms)
 - [ ] Pre-fill logic specification
@@ -191,6 +204,7 @@
 - [ ] Backend contract (endpoints, request/response)
 
 **Every Architectural Pattern needs:**
+
 - [ ] NFR documenting when to use it
 - [ ] Component API specification
 - [ ] Behavior rules
@@ -202,11 +216,13 @@
 ## Summary
 
 **Created 3 new PRDs:**
+
 1. FR-137: SlideOutDrawer Tool Pattern (pattern doc)
 2. FR-138: Rename Tool Specification (complete spec)
 3. FR-139: Folders Tool Specification (gap identified)
 
 **Updated 3 existing docs:**
+
 1. FR-136: Added completion notes + sub-requirements
 2. backlog.md: Added FR-137/138/139 + updated statuses
 3. changelog.md: Added comprehensive entry
@@ -214,12 +230,14 @@
 **Total files created/modified:** 6
 
 **Status:**
+
 - FR-136 Core: ✓ Complete (properly documented)
 - FR-137 Pattern: ✓ Documented
 - FR-138 Rename: Specified (ready for `/dev`)
 - FR-139 Folders: Blocked (needs user decision)
 
 **Next steps:**
+
 1. User decides what "Folders" tool should do (FR-139)
 2. Optionally implement FR-138 (Rename enhancement)
 3. Use this process for all future requirements

@@ -11,7 +11,12 @@ import path from 'path';
 import fs from 'fs-extra';
 import os from 'os';
 import type { Server } from 'socket.io';
-import type { ServerToClientEvents, ClientToServerEvents, Config, ChapterRecordingConfig } from '../../../shared/types.js';
+import type {
+  ServerToClientEvents,
+  ClientToServerEvents,
+  Config,
+  ChapterRecordingConfig,
+} from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from '../utils/pathUtils.js';
 import {
@@ -26,7 +31,7 @@ const DEFAULT_CHAPTER_CONFIG: ChapterRecordingConfig = {
   slideDuration: 1.0,
   resolution: '720p',
   autoGenerate: false,
-  includeTitleSlides: false,  // FR-76: Purple slides off by default
+  includeTitleSlides: false, // FR-76: Purple slides off by default
 };
 
 // Generation state
@@ -60,10 +65,15 @@ export function createChapterRoutes(
     const config = getConfig();
 
     const newChapterConfig: ChapterRecordingConfig = {
-      slideDuration: typeof slideDuration === 'number' ? slideDuration : DEFAULT_CHAPTER_CONFIG.slideDuration,
+      slideDuration:
+        typeof slideDuration === 'number' ? slideDuration : DEFAULT_CHAPTER_CONFIG.slideDuration,
       resolution: resolution === '1080p' ? '1080p' : '720p',
-      autoGenerate: typeof autoGenerate === 'boolean' ? autoGenerate : DEFAULT_CHAPTER_CONFIG.autoGenerate,
-      includeTitleSlides: typeof includeTitleSlides === 'boolean' ? includeTitleSlides : DEFAULT_CHAPTER_CONFIG.includeTitleSlides,
+      autoGenerate:
+        typeof autoGenerate === 'boolean' ? autoGenerate : DEFAULT_CHAPTER_CONFIG.autoGenerate,
+      includeTitleSlides:
+        typeof includeTitleSlides === 'boolean'
+          ? includeTitleSlides
+          : DEFAULT_CHAPTER_CONFIG.includeTitleSlides,
     };
 
     config.chapterRecordings = newChapterConfig;
@@ -120,7 +130,9 @@ export function createChapterRoutes(
       ? new Map([[targetChapter, chapters.get(targetChapter)!]]).entries()
       : chapters.entries();
 
-    const chaptersArray = Array.from(chaptersToGenerate).filter(([, ch]) => ch && ch.segments.length > 0);
+    const chaptersArray = Array.from(chaptersToGenerate).filter(
+      ([, ch]) => ch && ch.segments.length > 0
+    );
 
     if (chaptersArray.length === 0) {
       res.status(404).json({
@@ -139,8 +151,8 @@ export function createChapterRoutes(
       resolution: (resolution as '720p' | '1080p') ?? chapterConfig.resolution,
       outputDir: paths.chapters,
       tempDir: path.join(os.tmpdir(), 'flihub-chapters'),
-      includeTitleSlides: chapterConfig.includeTitleSlides ?? false,  // FR-76
-      transcriptsDir: paths.transcripts,  // FR-76
+      includeTitleSlides: chapterConfig.includeTitleSlides ?? false, // FR-76
+      transcriptsDir: paths.transcripts, // FR-76
     };
 
     // Start generation in background
@@ -177,7 +189,7 @@ export function createChapterRoutes(
           io.emit('chapters:generated', {
             chapter: chapterNum,
             outputFile: result.videoFilename,
-            srtFile: result.srtFilename || undefined,  // FR-76
+            srtFile: result.srtFilename || undefined, // FR-76
           });
         } catch (err) {
           const errorMsg = err instanceof Error ? err.message : 'Unknown error';
@@ -210,7 +222,7 @@ export function createChapterRoutes(
     const existing: string[] = [];
     if (await fs.pathExists(paths.chapters)) {
       const files = await fs.readdir(paths.chapters);
-      existing.push(...files.filter(f => f.endsWith('.mov')));
+      existing.push(...files.filter((f) => f.endsWith('.mov')));
     }
 
     // Get available chapters from recordings
@@ -220,7 +232,7 @@ export function createChapterRoutes(
       label: data.label,
       segmentCount: data.segments.length,
       totalDuration: data.totalDuration,
-      hasRecording: existing.some(f => f.startsWith(`${ch}-`)),
+      hasRecording: existing.some((f) => f.startsWith(`${ch}-`)),
     }));
 
     res.json({

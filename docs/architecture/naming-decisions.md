@@ -48,6 +48,7 @@ These decisions are BLOCKING for the scanner implementation. We need answers bef
 #### Current Behavior
 
 Code allows chapter gaps. Example:
+
 ```
 01-1-intro.mov
 03-1-setup.mov     ← Chapter 02 is missing
@@ -59,9 +60,11 @@ No validation, no warnings. User can create this structure.
 #### Context from User
 
 User stated when testing FR-138:
+
 > "I don't see chapter 2, so it feels like I've got to move chapter 2 up to chapter 3"
 
 This suggests:
+
 - Chapter gaps are common
 - Users may want to fill them
 - OR gaps are intentional (deleted bad content)
@@ -69,18 +72,21 @@ This suggests:
 #### Options
 
 **A. Gaps are INTENTIONAL (benign)**
+
 - Pros: No changes needed, matches current behavior
 - Cons: May confuse users (like above example)
 - Scanner: Report as INFO level only
 - Tools: Provide optional gap-filling (FR-140)
 
 **B. Gaps are ERRORS (should fix)**
+
 - Pros: Cleaner structure, sequential chapters
 - Cons: Forces renaming, may delete intentional gaps
 - Scanner: Report as WARNING level
 - Tools: Provide gap-filling tool (FR-140)
 
 **C. Gaps are USER CHOICE (ask each time)**
+
 - Pros: Flexible, user controls
 - Cons: Repetitive prompts, decision fatigue
 - Scanner: Report as WARNING with "dismiss" option
@@ -91,6 +97,7 @@ This suggests:
 **Option A: Gaps are INTENTIONAL (benign)**
 
 Reasoning:
+
 1. Common in real projects (user confirmed)
 2. Deleting chapter 02 because content was bad = valid workflow
 3. Don't force users to renumber 40 projects
@@ -101,7 +108,7 @@ Reasoning:
 [ ] **A - Intentional (benign)** - Report as INFO, tool optional
 [ ] **B - Error (should fix)** - Report as WARNING, tool recommended
 [ ] **C - User choice** - Report as WARNING with dismiss
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -114,6 +121,7 @@ Reasoning:
 #### Current Behavior
 
 Code allows sequence gaps within a chapter. Example:
+
 ```
 05-1-intro.mov
 05-3-setup.mov     ← Sequence 2 is missing
@@ -131,16 +139,19 @@ No validation, no warnings.
 #### Options
 
 **A. Gaps are INTENTIONAL (benign)**
+
 - Same reasoning as chapter gaps
 - Scanner: INFO level
 - Tool: FR-138 already provides renumber
 
 **B. Gaps are ERRORS (should fix)**
+
 - Sequential is cleaner
 - Scanner: WARNING level
 - Tool: FR-138 renumber feature
 
 **C. Gaps are USER CHOICE**
+
 - Same as chapter gaps
 
 #### Recommendation
@@ -148,6 +159,7 @@ No validation, no warnings.
 **Option A: Gaps are INTENTIONAL (benign)**
 
 Reasoning:
+
 1. Same as chapter gaps (delete bad content)
 2. FR-138 already provides renumber tool
 3. Less disruptive than forcing fixes
@@ -157,7 +169,7 @@ Reasoning:
 [ ] **A - Intentional (benign)** - Report as INFO
 [ ] **B - Error (should fix)** - Report as WARNING
 [ ] **C - User choice** - Report as WARNING with dismiss
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -170,6 +182,7 @@ Reasoning:
 #### Current Behavior
 
 Code allows chapters in any order. Example:
+
 ```
 05-1-demo.mov
 03-1-setup.mov     ← Chapter 3 after chapter 5
@@ -188,16 +201,19 @@ File list would sort numerically, but this could happen during reorganization.
 #### Options
 
 **A. Non-sequential is ERROR**
+
 - Chapters should always be in order
 - Scanner: ERROR level
 - Recommendation: Use FR-135 (move/swap tools) to fix
 
 **B. Non-sequential is WARNING**
+
 - Might be temporary (mid-reorganization)
 - Scanner: WARNING level
 - User can dismiss if intentional
 
 **C. Non-sequential is ALLOWED**
+
 - Trust the user
 - Scanner: Don't check
 
@@ -206,6 +222,7 @@ File list would sort numerically, but this could happen during reorganization.
 **Option B: Non-sequential is WARNING**
 
 Reasoning:
+
 1. Likely indicates user mistake
 2. But might be temporary (mid-work)
 3. WARNING gives visibility without blocking
@@ -215,7 +232,7 @@ Reasoning:
 [ ] **A - Error** - Must fix
 [ ] **B - Warning** - Should fix
 [ ] **C - Allowed** - Don't check
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -228,6 +245,7 @@ Reasoning:
 #### Current Behavior
 
 Code allows any starting sequence. Example:
+
 ```
 05-7-intro.mov     ← Starts at 7, not 1
 05-8-setup.mov
@@ -245,14 +263,17 @@ No validation.
 #### Options
 
 **A. Must start at 1 (ERROR)**
+
 - Enforces convention
 - Scanner: ERROR level
 
 **B. Should start at 1 (WARNING)**
+
 - Soft recommendation
 - Scanner: WARNING level
 
 **C. Can start anywhere (ALLOWED)**
+
 - Flexible
 - Scanner: Don't check
 
@@ -261,6 +282,7 @@ No validation.
 **Option C: Can start anywhere (ALLOWED)**
 
 Reasoning:
+
 1. Edge case (very rare)
 2. Could be intentional (moved files)
 3. Not worth enforcing
@@ -270,7 +292,7 @@ Reasoning:
 [ ] **A - Must start at 1** - ERROR
 [ ] **B - Should start at 1** - WARNING
 [ ] **C - Can start anywhere** - Don't check
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -287,6 +309,7 @@ Reasoning:
 #### Current Behavior
 
 Technically possible if sequences differ:
+
 ```
 05-1-intro.mov
 05-2-intro.mov     ← Same label, different sequence
@@ -303,16 +326,19 @@ Code allows this. Filesystem allows this (different filenames).
 #### Options
 
 **A. Same label is ERROR**
+
 - Forces unique labels
 - Scanner: ERROR level
 - Prevents confusion
 
 **B. Same label is WARNING**
+
 - Soft discouragement
 - Scanner: WARNING level
 - User can override
 
 **C. Same label is ALLOWED**
+
 - Flexible
 - Scanner: Don't check
 - User responsibility
@@ -322,6 +348,7 @@ Code allows this. Filesystem allows this (different filenames).
 **Option C: Same label is ALLOWED**
 
 Reasoning:
+
 1. Might be intentional (multi-part segments)
 2. Sequence provides uniqueness
 3. Don't limit user flexibility
@@ -331,7 +358,7 @@ Reasoning:
 [ ] **A - Error** - Must fix
 [ ] **B - Warning** - Discouraged
 [ ] **C - Allowed** - Don't check
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -344,6 +371,7 @@ Reasoning:
 #### Current Behavior
 
 Allowed and common:
+
 ```
 01-1-intro.mov
 02-1-intro.mov     ← Same label, different chapter
@@ -355,10 +383,12 @@ This is probably intentional (each chapter starts with intro).
 #### Options
 
 **A. Same label across chapters is ALLOWED**
+
 - Obviously intentional
 - Scanner: Don't check
 
 **B. Same label across chapters is INFO**
+
 - Just report it
 - Scanner: INFO level for visibility
 
@@ -367,6 +397,7 @@ This is probably intentional (each chapter starts with intro).
 **Option A: ALLOWED (don't check)**
 
 Reasoning:
+
 1. Obviously intentional
 2. Labels describe content, not unique identifiers
 3. No value in reporting
@@ -375,7 +406,7 @@ Reasoning:
 
 [ ] **A - Allowed** - Don't check
 [ ] **B - Info** - Report for visibility
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -392,6 +423,7 @@ Reasoning:
 #### Current Behavior
 
 According to FR-111 Phase 3:
+
 - OLD: Physical `-safe` subfolder
 - NEW: State-based (flag in `.flihub-state.json`)
 
@@ -400,11 +432,12 @@ But documentation unclear if migration complete.
 #### Context from Code
 
 FR-130 rename logic still references `-safe` folders:
+
 ```typescript
 const shadowPaths = [
   path.join(paths.project, 'recording-shadows', `${baseName}.txt`),
-  path.join(paths.project, 'recording-shadows', '-safe', `${baseName}.txt`)
-]
+  path.join(paths.project, 'recording-shadows', '-safe', `${baseName}.txt`),
+];
 ```
 
 Suggests `-safe` folders still exist?
@@ -412,16 +445,19 @@ Suggests `-safe` folders still exist?
 #### Options
 
 **A. -safe folder DEPRECATED**
+
 - Migrate all projects to state-based
 - Scanner: WARNING if -safe folder exists
 - Migration tool needed
 
 **B. -safe folder SUPPORTED (dual-mode)**
+
 - Support both physical folder AND state
 - Scanner: Don't warn
 - Keep current code
 
 **C. -safe folder USER CHOICE**
+
 - Old projects use folder
 - New projects use state
 - Scanner: INFO level
@@ -435,7 +471,7 @@ Suggests `-safe` folders still exist?
 [ ] **A - Deprecated** - Migrate to state-based
 [ ] **B - Supported** - Keep dual-mode
 [ ] **C - User choice** - Both valid
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -448,6 +484,7 @@ Suggests `-safe` folders still exist?
 #### Current Behavior
 
 Parser accepts legacy format:
+
 ```
 05-intro.mov       ← No sequence number
 ```
@@ -463,11 +500,13 @@ Parsed as: `{ chapter: "05", sequence: null, name: "intro" }`
 #### Options
 
 **A. Migrate legacy files**
+
 - Batch rename: `05-intro.mov` → `05-1-intro.mov`
 - Scanner: WARNING on legacy format
 - Migration tool provided
 
 **B. Support legacy format**
+
 - Keep parser lenient
 - Scanner: INFO level (just report)
 - No migration needed
@@ -477,6 +516,7 @@ Parsed as: `{ chapter: "05", sequence: null, name: "intro" }`
 **Option B: Support legacy format**
 
 Reasoning:
+
 1. Backwards compatibility
 2. Parser already handles it
 3. Low priority (old projects only)
@@ -485,7 +525,7 @@ Reasoning:
 
 [ ] **A - Migrate** - Add sequences to legacy files
 [ ] **B - Support** - Keep as-is
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -502,6 +542,7 @@ Reasoning:
 #### Scenario
 
 Recording exists but shadow/transcript missing:
+
 ```
 recordings/05-3-demo.mov              ← Source exists
 recording-shadows/05-3-demo.mp4       ← Missing!
@@ -511,11 +552,13 @@ recording-transcripts/05-3-demo.txt   ← Missing!
 #### Options
 
 **A. Missing derivatives are INFO**
+
 - Just informational
 - Might be queued/in-progress
 - Scanner: INFO level
 
 **B. Missing derivatives are WARNING**
+
 - Should exist
 - Scanner: WARNING level
 - Offer regenerate button
@@ -525,6 +568,7 @@ recording-transcripts/05-3-demo.txt   ← Missing!
 **Option A: INFO level**
 
 Reasoning:
+
 1. Might be queued (transcriptions take time)
 2. Shadows can be regenerated anytime
 3. Not blocking
@@ -533,7 +577,7 @@ Reasoning:
 
 [ ] **A - Info** - Just report
 [ ] **B - Warning** - Should fix
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -546,6 +590,7 @@ Reasoning:
 #### Scenario
 
 Derivative exists but source deleted:
+
 ```
 recordings/05-3-demo.mov              ← Deleted!
 recording-shadows/05-3-demo.mp4       ← Orphaned
@@ -555,11 +600,13 @@ recording-transcripts/05-3-demo.txt   ← Orphaned
 #### Options
 
 **A. Orphans are ERROR**
+
 - Should never happen
 - Scanner: ERROR level
 - Auto-delete option
 
 **B. Orphans are WARNING**
+
 - Might be temporary
 - Scanner: WARNING level
 - User decides to delete
@@ -569,6 +616,7 @@ recording-transcripts/05-3-demo.txt   ← Orphaned
 **Option B: WARNING level with auto-delete**
 
 Reasoning:
+
 1. Easy to fix (just delete)
 2. Low risk (can regenerate if mistake)
 3. Disk space savings
@@ -577,7 +625,7 @@ Reasoning:
 
 [ ] **A - Error** - Auto-delete
 [ ] **B - Warning** - User decides
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 ---
 
@@ -592,6 +640,7 @@ Reasoning:
 #### Current Behavior
 
 Parser rejects lowercase/mixed-case tags:
+
 ```
 01-1-intro-bmad.mov     ← ERROR: "Tag 'bmad' must be uppercase"
 ```
@@ -611,6 +660,7 @@ Parser rejects lowercase/mixed-case tags:
 #### Options
 
 **A. Case-Insensitive (Convert to Uppercase)** ← RECOMMENDED
+
 - Accept lowercase, convert to uppercase automatically
 - Pros: Fixes 1422 errors instantly, intuitive, backwards compatible
 - Cons: Silent conversion (but expected behavior)
@@ -618,6 +668,7 @@ Parser rejects lowercase/mixed-case tags:
 - Implementation: `tag.toUpperCase()` in parser
 
 **B. Case-Sensitive (Strict Uppercase Only)**
+
 - Keep current strict validation
 - Pros: Explicit convention enforcement
 - Cons: Blocks 1422 files, poor UX, requires manual fixes
@@ -625,6 +676,7 @@ Parser rejects lowercase/mixed-case tags:
 - Implementation: No change
 
 **C. Validate and Suggest**
+
 - Show error with suggestion to convert
 - Pros: User explicitly confirms
 - Cons: Still blocks operations, tedious for 1422 errors
@@ -636,6 +688,7 @@ Parser rejects lowercase/mixed-case tags:
 **Option A: Case-Insensitive (Convert to Uppercase)**
 
 Reasoning:
+
 1. **Massive impact:** Fixes 79% of all issues in one change
 2. **User expectations:** Typing `bmad` clearly means `BMAD`
 3. **Zero user action:** Existing files work immediately
@@ -646,6 +699,7 @@ Reasoning:
 #### Implementation
 
 **Parser change:** `shared/naming.ts`
+
 ```typescript
 // BEFORE: Reject lowercase
 if (!/^[A-Z]+$/.test(tag)) {
@@ -661,11 +715,9 @@ tags.push(normalizedTag);
 ```
 
 **UI enforcement:** `RenamePanel.tsx`
+
 ```tsx
-<input
-  style={{ textTransform: 'uppercase' }}
-  placeholder="Add custom tag (e.g., DEMO)"
-/>
+<input style={{ textTransform: 'uppercase' }} placeholder="Add custom tag (e.g., DEMO)" />
 ```
 
 #### PO Decision
@@ -673,9 +725,10 @@ tags.push(normalizedTag);
 [ ] **A - Case-insensitive** - Convert to uppercase (RECOMMENDED)
 [ ] **B - Case-sensitive** - Keep strict validation
 [ ] **C - Validate and suggest** - Show error with suggestion
-[ ] **Other:** _______________________
+[ ] **Other:** **********\_\_\_**********
 
 **Impact if approved:**
+
 - NFR-141 can proceed immediately
 - 1422 errors fixed in 1 hour
 - 38 projects unblocked
@@ -684,21 +737,22 @@ tags.push(normalizedTag);
 
 ## Summary Table
 
-| Decision | Priority | Status | Blocks Scanner? |
-|----------|----------|--------|-----------------|
-| **11. Tag case sensitivity** | **CRITICAL** | ⏳ Pending | 🔴 **BLOCKS 79% OF ISSUES** |
-| 1. Chapter gaps | HIGH | ⏳ Pending | ✅ Yes |
-| 2. Sequence gaps | MEDIUM | ⏳ Pending | ✅ Yes |
-| 3. Non-sequential chapters | MEDIUM | ⏳ Pending | ✅ Yes |
-| 4. Sequence start | LOW | ⏳ Pending | ⚠️ Partial |
-| 5. Same label in chapter | MEDIUM | ⏳ Pending | ⚠️ Partial |
-| 6. Same label across chapters | LOW | ⏳ Pending | ⚠️ Partial |
-| 7. -safe folder | HIGH | 🤔 Needs discussion | ✅ Yes |
-| 8. Legacy format | LOW | ⏳ Pending | ⚠️ Partial |
-| 9. Missing derivatives | MEDIUM | ⏳ Pending | ⚠️ Partial |
-| 10. Orphaned derivatives | MEDIUM | ⏳ Pending | ⚠️ Partial |
+| Decision                      | Priority     | Status              | Blocks Scanner?             |
+| ----------------------------- | ------------ | ------------------- | --------------------------- |
+| **11. Tag case sensitivity**  | **CRITICAL** | ⏳ Pending          | 🔴 **BLOCKS 79% OF ISSUES** |
+| 1. Chapter gaps               | HIGH         | ⏳ Pending          | ✅ Yes                      |
+| 2. Sequence gaps              | MEDIUM       | ⏳ Pending          | ✅ Yes                      |
+| 3. Non-sequential chapters    | MEDIUM       | ⏳ Pending          | ✅ Yes                      |
+| 4. Sequence start             | LOW          | ⏳ Pending          | ⚠️ Partial                  |
+| 5. Same label in chapter      | MEDIUM       | ⏳ Pending          | ⚠️ Partial                  |
+| 6. Same label across chapters | LOW          | ⏳ Pending          | ⚠️ Partial                  |
+| 7. -safe folder               | HIGH         | 🤔 Needs discussion | ✅ Yes                      |
+| 8. Legacy format              | LOW          | ⏳ Pending          | ⚠️ Partial                  |
+| 9. Missing derivatives        | MEDIUM       | ⏳ Pending          | ⚠️ Partial                  |
+| 10. Orphaned derivatives      | MEDIUM       | ⏳ Pending          | ⚠️ Partial                  |
 
 **Legend:**
+
 - ✅ Yes: Must decide before implementing scanner
 - ⚠️ Partial: Scanner can proceed, but categorization depends on decision
 - ❌ No: Scanner doesn't need this decision
@@ -708,17 +762,20 @@ tags.push(normalizedTag);
 ## Next Steps
 
 **For PO:**
+
 1. Review all 10 decisions
 2. Make decisions (checkboxes above)
 3. Add notes for "Other" choices
 4. Prioritize: HIGH decisions first
 
 **For Dev:**
+
 1. Wait for Decisions 1, 2, 3, 7 (HIGH priority)
 2. Can start scanner with placeholder logic
 3. Update scanner after decisions made
 
 **For Phase 3:**
+
 - Scanner categorization depends on these decisions
 - Error vs Warning vs Info levels determined by decisions
 - Auto-fix candidates identified by decisions

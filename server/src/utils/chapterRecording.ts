@@ -21,8 +21,8 @@ const RESOLUTIONS = {
 const SLIDE_BG_COLOR = '#8B5CF6';
 
 // Beep sound settings
-const BEEP_FREQUENCY = 800;  // Hz
-const BEEP_DURATION = 0.1;   // seconds
+const BEEP_FREQUENCY = 800; // Hz
+const BEEP_DURATION = 0.1; // seconds
 
 export interface SegmentInfo {
   filename: string;
@@ -30,23 +30,23 @@ export interface SegmentInfo {
   sequence: number;
   label: string;
   tags: string[];
-  duration: number;  // seconds
+  duration: number; // seconds
 }
 
 export interface ChapterSegments {
   chapter: string;
-  label: string;  // From first segment
+  label: string; // From first segment
   segments: SegmentInfo[];
   totalDuration: number;
 }
 
 export interface GenerateOptions {
-  slideDuration: number;  // seconds
+  slideDuration: number; // seconds
   resolution: '720p' | '1080p';
   outputDir: string;
   tempDir: string;
-  includeTitleSlides: boolean;  // FR-76: Optional title slides (default: false)
-  transcriptsDir: string;       // FR-76: Directory containing segment .srt files
+  includeTitleSlides: boolean; // FR-76: Optional title slides (default: false)
+  transcriptsDir: string; // FR-76: Directory containing segment .srt files
 }
 
 /**
@@ -73,7 +73,10 @@ async function generateTitleSlide(
   options: GenerateOptions
 ): Promise<string> {
   const { width, height } = RESOLUTIONS[options.resolution];
-  const outputPath = path.join(options.tempDir, `slide_${segmentIndex.toString().padStart(2, '0')}.mov`);
+  const outputPath = path.join(
+    options.tempDir,
+    `slide_${segmentIndex.toString().padStart(2, '0')}.mov`
+  );
 
   // Build slide text content - keep it simple and readable
   const durationSecs = Math.round(segment.duration);
@@ -83,12 +86,7 @@ async function generateTitleSlide(
   // (28 seconds)
   //
   // Tags if any
-  const lines = [
-    `Segment ${segment.sequence}`,
-    segment.label,
-    '',
-    `${durationSecs} seconds`,
-  ];
+  const lines = [`Segment ${segment.sequence}`, segment.label, '', `${durationSecs} seconds`];
 
   // Add tags on separate line if present
   if (segment.tags.length > 0) {
@@ -98,31 +96,45 @@ async function generateTitleSlide(
 
   // Escape text for FFmpeg drawtext filter
   // Use actual newlines (not \\n) - FFmpeg drawtext handles real newlines
-  const escapedText = lines.join('\n')
-    .replace(/:/g, '\\:')
-    .replace(/'/g, "'\\''");
+  const escapedText = lines.join('\n').replace(/:/g, '\\:').replace(/'/g, "'\\''");
 
   // FR-72: Generate title slide in H.264 + AAC to match Ecamm recordings
   // Video: H.264 yuv420p, Audio: AAC stereo 48kHz (matches Ecamm output)
   // Audio: short beep followed by silence for full slide duration
   const ffmpegArgs = [
-    '-y',  // Overwrite output
-    '-f', 'lavfi',
-    '-i', `color=c=${SLIDE_BG_COLOR.replace('#', '0x')}:s=${width}x${height}:d=${options.slideDuration}:r=30`,
-    '-f', 'lavfi',
-    '-i', `aevalsrc=0:d=${options.slideDuration}:s=48000:c=stereo`,  // Silent audio for full duration
-    '-f', 'lavfi',
-    '-i', `sine=frequency=${BEEP_FREQUENCY}:duration=${BEEP_DURATION}:sample_rate=48000`,  // Short beep
-    '-filter_complex', '[1][2]amix=inputs=2:duration=first[a]',  // Mix silence with beep
-    '-map', '0:v',
-    '-map', '[a]',
-    '-vf', `drawtext=text='${escapedText}':fontsize=${Math.floor(height / 15)}:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:line_spacing=10`,
-    '-c:v', 'libx264',
-    '-preset', 'fast',
-    '-pix_fmt', 'yuv420p',
-    '-c:a', 'aac',
-    '-ac', '2',
-    '-ar', '48000',
+    '-y', // Overwrite output
+    '-f',
+    'lavfi',
+    '-i',
+    `color=c=${SLIDE_BG_COLOR.replace('#', '0x')}:s=${width}x${height}:d=${options.slideDuration}:r=30`,
+    '-f',
+    'lavfi',
+    '-i',
+    `aevalsrc=0:d=${options.slideDuration}:s=48000:c=stereo`, // Silent audio for full duration
+    '-f',
+    'lavfi',
+    '-i',
+    `sine=frequency=${BEEP_FREQUENCY}:duration=${BEEP_DURATION}:sample_rate=48000`, // Short beep
+    '-filter_complex',
+    '[1][2]amix=inputs=2:duration=first[a]', // Mix silence with beep
+    '-map',
+    '0:v',
+    '-map',
+    '[a]',
+    '-vf',
+    `drawtext=text='${escapedText}':fontsize=${Math.floor(height / 15)}:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2:line_spacing=10`,
+    '-c:v',
+    'libx264',
+    '-preset',
+    'fast',
+    '-pix_fmt',
+    'yuv420p',
+    '-c:a',
+    'aac',
+    '-ac',
+    '2',
+    '-ar',
+    '48000',
     outputPath,
   ];
 
@@ -176,7 +188,9 @@ async function concatenateVideos(
   // Scale each video input
   const scaleFilters: string[] = [];
   for (let i = 0; i < totalInputs; i++) {
-    scaleFilters.push(`[${i}:v]scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1[v${i}]`);
+    scaleFilters.push(
+      `[${i}:v]scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1[v${i}]`
+    );
   }
 
   // Build concat input refs: [v0][0:a][v1][1:a]...
@@ -187,13 +201,20 @@ async function concatenateVideos(
   const ffmpegArgs = [
     '-y',
     ...inputArgs,
-    '-filter_complex', filterComplex,
-    '-map', '[v]',
-    '-map', '[a]',
-    '-c:v', 'libx264',
-    '-preset', 'fast',
-    '-c:a', 'aac',
-    '-ar', '48000',
+    '-filter_complex',
+    filterComplex,
+    '-map',
+    '[v]',
+    '-map',
+    '[a]',
+    '-c:v',
+    'libx264',
+    '-preset',
+    'fast',
+    '-c:a',
+    'aac',
+    '-ar',
+    '48000',
     outputPath,
   ];
 
@@ -238,7 +259,9 @@ async function concatenateVideosNoSlides(
   // Scale each video input
   const scaleFilters: string[] = [];
   for (let i = 0; i < segments.length; i++) {
-    scaleFilters.push(`[${i}:v]scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1[v${i}]`);
+    scaleFilters.push(
+      `[${i}:v]scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,setsar=1[v${i}]`
+    );
   }
 
   // Build concat input refs
@@ -249,13 +272,20 @@ async function concatenateVideosNoSlides(
   const ffmpegArgs = [
     '-y',
     ...inputArgs,
-    '-filter_complex', filterComplex,
-    '-map', '[v]',
-    '-map', '[a]',
-    '-c:v', 'libx264',
-    '-preset', 'fast',
-    '-c:a', 'aac',
-    '-ar', '48000',
+    '-filter_complex',
+    filterComplex,
+    '-map',
+    '[v]',
+    '-map',
+    '[a]',
+    '-c:v',
+    'libx264',
+    '-preset',
+    'fast',
+    '-c:a',
+    'aac',
+    '-ar',
+    '48000',
     outputPath,
   ];
 
@@ -308,13 +338,18 @@ function parseSrtContent(content: string): SrtEntry[] {
   const blocks = content.trim().split(/\n\n+/);
 
   for (const block of blocks) {
-    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+    const lines = block
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
     if (lines.length < 3) continue;
 
     const index = parseInt(lines[0], 10);
     if (isNaN(index)) continue;
 
-    const timestampMatch = lines[1].match(/(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})/);
+    const timestampMatch = lines[1].match(
+      /(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})/
+    );
     if (!timestampMatch) continue;
 
     const parseTs = (ts: string): number => {
@@ -384,9 +419,12 @@ async function generateChapterSrt(
   }
 
   // Generate SRT content
-  const srtContent = allEntries.map(entry =>
-    `${entry.index}\n${formatSrtTimestamp(entry.startTime)} --> ${formatSrtTimestamp(entry.endTime)}\n${entry.text}`
-  ).join('\n\n');
+  const srtContent = allEntries
+    .map(
+      (entry) =>
+        `${entry.index}\n${formatSrtTimestamp(entry.startTime)} --> ${formatSrtTimestamp(entry.endTime)}\n${entry.text}`
+    )
+    .join('\n\n');
 
   // Write SRT file
   const srtFilename = `${chapter.chapter}-${chapter.label}.srt`;
@@ -485,12 +523,12 @@ export async function groupRecordingsByChapter(
 ): Promise<Map<string, ChapterSegments>> {
   const chapters = new Map<string, ChapterSegments>();
 
-  if (!await fs.pathExists(recordingsDir)) {
+  if (!(await fs.pathExists(recordingsDir))) {
     return chapters;
   }
 
   const files = await fs.readdir(recordingsDir);
-  const movFiles = files.filter(f => f.endsWith('.mov') && !f.startsWith('.'));
+  const movFiles = files.filter((f) => f.endsWith('.mov') && !f.startsWith('.'));
 
   for (const filename of movFiles) {
     const parsed = parseRecordingFilename(filename);
@@ -511,7 +549,7 @@ export async function groupRecordingsByChapter(
     if (!chapters.has(parsed.chapter)) {
       chapters.set(parsed.chapter, {
         chapter: parsed.chapter,
-        label: parsed.name,  // Will be updated to first segment's name
+        label: parsed.name, // Will be updated to first segment's name
         segments: [],
         totalDuration: 0,
       });

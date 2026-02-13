@@ -1,14 +1,14 @@
-import { extractTagsFromName } from '../../../shared/naming'
+import { extractTagsFromName } from '../../../shared/naming';
 
 /**
  * NFR-10: Format file size for display
  * Handles B, KB, MB, and GB with appropriate precision
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
 /**
@@ -16,15 +16,15 @@ export function formatFileSize(bytes: number): string {
  * e.g., /Users/davidcruwys/dev/foo -> ~/dev/foo
  */
 export function collapsePath(path: string): string {
-  const homeDir = '/Users/'
+  const homeDir = '/Users/';
   if (path.startsWith(homeDir)) {
-    const afterUsers = path.slice(homeDir.length)
-    const slashIndex = afterUsers.indexOf('/')
+    const afterUsers = path.slice(homeDir.length);
+    const slashIndex = afterUsers.indexOf('/');
     if (slashIndex > 0) {
-      return '~' + afterUsers.slice(slashIndex)
+      return '~' + afterUsers.slice(slashIndex);
     }
   }
-  return path
+  return path;
 }
 
 /**
@@ -37,10 +37,10 @@ export function toKebabCase(text: string): string {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, '')  // Remove invalid chars (keep spaces and existing dashes)
-    .replace(/\s+/g, '-')          // Replace spaces with dashes
-    .replace(/-+/g, '-')           // Collapse multiple dashes
-    .replace(/^-|-$/g, '')         // Trim leading/trailing dashes
+    .replace(/[^a-z0-9\s-]/g, '') // Remove invalid chars (keep spaces and existing dashes)
+    .replace(/\s+/g, '-') // Replace spaces with dashes
+    .replace(/-+/g, '-') // Collapse multiple dashes
+    .replace(/^-|-$/g, ''); // Trim leading/trailing dashes
 }
 
 /**
@@ -49,7 +49,7 @@ export function toKebabCase(text: string): string {
  * - youtube: Always MM:SS or H:MM:SS, zero-padded, for chapter timestamps (e.g., 00:18, 02:34, 1:02:34)
  * - seconds: Raw number as string (e.g., 18, 154, 3754)
  */
-export type TimeFormatStyle = 'smart' | 'youtube' | 'seconds'
+export type TimeFormatStyle = 'smart' | 'youtube' | 'seconds';
 
 /**
  * NFR-7 / FR-41: Format video duration for display
@@ -61,35 +61,35 @@ export function formatDuration(
   seconds: number | null | undefined,
   style: TimeFormatStyle = 'smart'
 ): string {
-  if (seconds == null) return '-'
+  if (seconds == null) return '-';
 
-  const totalSeconds = Math.floor(seconds)
+  const totalSeconds = Math.floor(seconds);
 
   // Seconds style: just the raw number
   if (style === 'seconds') {
-    return String(totalSeconds)
+    return String(totalSeconds);
   }
 
-  const hrs = Math.floor(totalSeconds / 3600)
-  const mins = Math.floor((totalSeconds % 3600) / 60)
-  const secs = totalSeconds % 60
+  const hrs = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
 
   // YouTube style: always zero-padded MM:SS or H:MM:SS
   if (style === 'youtube') {
     if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
   // Smart style (default): add 's' suffix for short durations
   if (totalSeconds < 60) {
-    return `${totalSeconds}s`
+    return `${totalSeconds}s`;
   }
   if (hrs > 0) {
-    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
-  return `${mins}:${secs.toString().padStart(2, '0')}`
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 /**
@@ -99,16 +99,16 @@ export function formatDuration(
  * @returns Title Case string (e.g., "Poem Planning", "Setup Bmad")
  */
 export function formatChapterTitle(name: string): string {
-  if (!name) return ''
+  if (!name) return '';
 
   // NFR-65: Use shared utility to strip tags from name
-  const { name: cleanName } = extractTagsFromName(name)
+  const { name: cleanName } = extractTagsFromName(name);
 
   // Convert to Title Case
   return cleanName
     .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 }
 
 /**
@@ -118,33 +118,33 @@ export function formatChapterTitle(name: string): string {
  * @returns Formatted relative time string, or "-" if null
  */
 export function formatRelativeTime(timestamp: string | Date | null): string {
-  if (!timestamp) return '-'
-  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp
-  const now = Date.now()
-  const diffMs = now - date.getTime()
-  const diffSeconds = Math.floor(diffMs / 1000)
+  if (!timestamp) return '-';
+  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+  const now = Date.now();
+  const diffMs = now - date.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
 
   // Less than 60 seconds
   if (diffSeconds < 60) {
-    return diffSeconds <= 0 ? 'just now' : `${diffSeconds}s ago`
+    return diffSeconds <= 0 ? 'just now' : `${diffSeconds}s ago`;
   }
 
   // Less than 60 minutes
-  const diffMinutes = Math.floor(diffSeconds / 60)
+  const diffMinutes = Math.floor(diffSeconds / 60);
   if (diffMinutes < 60) {
-    return `${diffMinutes}m ago`
+    return `${diffMinutes}m ago`;
   }
 
   // Less than 24 hours
-  const diffHours = Math.floor(diffMinutes / 60)
+  const diffHours = Math.floor(diffMinutes / 60);
   if (diffHours < 24) {
-    return `${diffHours}h ago`
+    return `${diffHours}h ago`;
   }
 
   // Less than 30 days: show days ago
-  const diffDays = Math.floor(diffHours / 24)
+  const diffDays = Math.floor(diffHours / 24);
   if (diffDays < 30) {
-    return `${diffDays}d ago`
+    return `${diffDays}d ago`;
   }
 
   // 30+ days: show absolute date
@@ -152,7 +152,7 @@ export function formatRelativeTime(timestamp: string | Date | null): string {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  })
+  });
 }
 
 /**
@@ -161,13 +161,13 @@ export function formatRelativeTime(timestamp: string | Date | null): string {
  * @returns Formatted date string (e.g., "15 Dec 2025"), or "-" if null
  */
 export function formatDate(timestamp: string | Date | null): string {
-  if (!timestamp) return '-'
-  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp
+  if (!timestamp) return '-';
+  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
   return date.toLocaleDateString('en-AU', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  })
+  });
 }
 
 /**
@@ -176,14 +176,14 @@ export function formatDate(timestamp: string | Date | null): string {
  * @returns Formatted time or date string
  */
 export function formatTimestamp(timestamp: string | number): string {
-  const date = new Date(timestamp)
-  const today = new Date()
-  const isToday = date.toDateString() === today.toDateString()
+  const date = new Date(timestamp);
+  const today = new Date();
+  const isToday = date.toDateString() === today.toDateString();
 
   if (isToday) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
-  return date.toLocaleDateString()
+  return date.toLocaleDateString();
 }
 
 /**
@@ -192,6 +192,6 @@ export function formatTimestamp(timestamp: string | number): string {
  * @returns Formatted time string (e.g., "14:30")
  */
 export function formatTime(timestamp: string): string {
-  const date = new Date(timestamp)
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }

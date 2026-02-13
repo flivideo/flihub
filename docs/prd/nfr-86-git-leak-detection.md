@@ -32,6 +32,7 @@ As a developer, I want pre-commit hooks that detect secrets and credentials.
 ## Technical Notes
 
 Consider:
+
 - Husky for hook management
 - gitleaks for detection (good Go-based tool)
 - Custom patterns for project-specific secrets

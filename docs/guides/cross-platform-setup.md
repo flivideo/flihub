@@ -15,6 +15,7 @@ This guide helps collaborators (primarily on Windows) set up and use FliHub with
 ### Node.js (Required)
 
 Install Node.js v18 or later:
+
 1. Download from https://nodejs.org/
 2. Choose the LTS version
 3. Run the installer, accept defaults
@@ -23,6 +24,7 @@ Install Node.js v18 or later:
 ### Git (Required)
 
 Install Git:
+
 1. Download from https://git-scm.com/download/win
 2. Run installer, accept defaults
 3. Verify: `git --version`
@@ -32,6 +34,7 @@ Install Git:
 Only needed if you want to generate chapter videos from recordings.
 
 **Windows installation:**
+
 1. Download from https://ffmpeg.org/download.html (choose Windows build)
 2. Extract to `C:\ffmpeg`
 3. Add `C:\ffmpeg\bin` to your PATH environment variable
@@ -69,14 +72,15 @@ On first run, you'll need to configure paths in the Config tab.
 
 FliHub supports paths from all major platforms:
 
-| Platform | Format | Example |
-|----------|--------|---------|
-| **Mac** | Unix paths | `~/dev/video-projects/v-appydave` or `/Users/jan/projects` |
-| **Windows** | Drive letters | `C:\Users\Jan\video-projects\v-appydave` |
-| **Windows** | UNC paths | `\\wsl$\Ubuntu\home\jan\projects` |
-| **Linux** | Unix paths | `/home/jan/video-projects` |
+| Platform    | Format        | Example                                                    |
+| ----------- | ------------- | ---------------------------------------------------------- |
+| **Mac**     | Unix paths    | `~/dev/video-projects/v-appydave` or `/Users/jan/projects` |
+| **Windows** | Drive letters | `C:\Users\Jan\video-projects\v-appydave`                   |
+| **Windows** | UNC paths     | `\\wsl$\Ubuntu\home\jan\projects`                          |
+| **Linux**   | Unix paths    | `/home/jan/video-projects`                                 |
 
 **Tips:**
+
 - Paths can start with `~` (home), `/` (Unix root), `C:\` (Windows drive), or `\\` (UNC)
 - The Config panel shows ✓ if the path exists, ⚠ if not found
 - Pasted paths with quotes are automatically cleaned (e.g., `"C:\path"` → `C:\path`)
@@ -86,6 +90,7 @@ FliHub supports paths from all major platforms:
 This is the parent folder containing all your project folders:
 
 **Examples:**
+
 - Mac: `~/dev/video-projects/v-appydave`
 - Windows: `C:\Users\Jan\video-projects\v-appydave`
 - WSL: `\\wsl$\Ubuntu\home\jan\video-projects\v-appydave`
@@ -95,16 +100,19 @@ This folder should contain project subfolders like `b64-bmad-claude-sdk`, `b71-b
 #### Active Project
 
 The currently selected project folder name (e.g., `b71-bmad-poem`). You can:
+
 - Type the folder name directly, or
 - Select from the Projects panel
 
 #### Watch Directory (Optional - Leave Blank)
 
 This is for Ecamm Live (Mac screen recording software). As a recipient:
+
 - Leave this blank, or
 - Set it to any empty folder
 
 The Config page will show:
+
 ```
 🔴 Not configured
 Incoming recordings from Ecamm Live will not be detected.
@@ -143,17 +151,18 @@ project-folder/
 
 In the Recordings tab, you'll see different icons:
 
-| Icon | Meaning |
-|------|---------|
-| 📹 | Real video file (original recording) |
-| 📹👻 | Real + shadow (synced for collaborators) |
-| 👻 | Shadow only (preview mode - no video available) |
+| Icon | Meaning                                         |
+| ---- | ----------------------------------------------- |
+| 📹   | Real video file (original recording)            |
+| 📹👻 | Real + shadow (synced for collaborators)        |
+| 👻   | Shadow only (preview mode - no video available) |
 
 As a recipient, you'll typically see 👻 for all recordings.
 
 ### Watch Page Behavior
 
 When you click on a shadow-only recording:
+
 - Video player shows "Video not available locally"
 - Duration and original file size are displayed
 - Transcript panel works normally (if transcripts exist)
@@ -161,32 +170,32 @@ When you click on a shadow-only recording:
 
 ## What Works Without Video Files
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Project list | ✅ Works | See all projects, stats, stages |
-| File counts | ✅ Works | Shadow count matches original |
-| Transcripts | ✅ Works | Read transcripts if .txt/.srt exist |
-| Transcript sync | ❌ Disabled | Needs actual video to sync |
-| Assets/Images | ✅ Works | View and manage images |
-| Inbox | ✅ Works | View inbox files |
-| Video playback | ❌ Disabled | Shadow files aren't playable |
-| Transcription | ❌ Disabled | Nothing to transcribe |
-| Chapter generation | ❌ Disabled | Needs real video files |
+| Feature            | Status      | Notes                               |
+| ------------------ | ----------- | ----------------------------------- |
+| Project list       | ✅ Works    | See all projects, stats, stages     |
+| File counts        | ✅ Works    | Shadow count matches original       |
+| Transcripts        | ✅ Works    | Read transcripts if .txt/.srt exist |
+| Transcript sync    | ❌ Disabled | Needs actual video to sync          |
+| Assets/Images      | ✅ Works    | View and manage images              |
+| Inbox              | ✅ Works    | View inbox files                    |
+| Video playback     | ❌ Disabled | Shadow files aren't playable        |
+| Transcription      | ❌ Disabled | Nothing to transcribe               |
+| Chapter generation | ❌ Disabled | Needs real video files              |
 
 ## Project List Columns
 
 The Projects tab shows useful stats:
 
-| Column | Meaning | Click Action |
-|--------|---------|--------------|
-| Files | Total recordings | Opens recordings folder |
-| Shadows | Shadow file count | Opens shadows folder |
-| Ch | Chapter count | Opens chapters folder |
-| 📥 | Has inbox files | Navigates to Inbox tab |
-| 🖼 | Has assets | Navigates to Assets tab |
-| 🎬 | Has chapter videos | Navigates to Recordings tab |
-| % | Transcript completion | Tooltip shows details |
-| ✅ | Final video status | Tooltip shows video/SRT status |
+| Column  | Meaning               | Click Action                   |
+| ------- | --------------------- | ------------------------------ |
+| Files   | Total recordings      | Opens recordings folder        |
+| Shadows | Shadow file count     | Opens shadows folder           |
+| Ch      | Chapter count         | Opens chapters folder          |
+| 📥      | Has inbox files       | Navigates to Inbox tab         |
+| 🖼      | Has assets            | Navigates to Assets tab        |
+| 🎬      | Has chapter videos    | Navigates to Recordings tab    |
+| %       | Transcript completion | Tooltip shows details          |
+| ✅      | Final video status    | Tooltip shows video/SRT status |
 
 ## Syncing with David
 
@@ -208,6 +217,7 @@ git pull origin main
 ### If You See Missing Shadows
 
 If a project shows files but no shadows, David needs to generate them:
+
 1. Config tab → Shadow Videos section
 2. Click "Generate Shadows"
 

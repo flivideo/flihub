@@ -26,6 +26,7 @@ As a video creator, I want the Export panel to handle folder creation and show G
 ### Part 1: Smart Open/Create Button
 
 Dynamic button that detects folder existence:
+
 - When folder exists: Shows "📂 Open Folder"
 - When folder missing: Shows "📂 Create Folder" (green)
 
@@ -73,20 +74,24 @@ Claude, Gling, Anthropic, ...             [Copy]
 ### Files Modified
 
 **Server:**
+
 - `server/src/routes/edit.ts` - Added single folder creation endpoint
 
 **Client:**
+
 - `client/src/components/ExportPanel.tsx` - Main UI enhancements
 - `client/src/hooks/useEditApi.ts` - Added single folder mutation hook
 
 ### API Endpoints
 
 **New:**
+
 - `POST /api/edit/create-folder` - Creates a single folder
   - Request: `{ folder: "edit-1st" | "edit-2nd" | "edit-final" }`
   - Validates folder names for security
 
 **Reused:**
+
 - `GET /api/edit/prep` - Fetches folder status and Gling info
 - `POST /api/edit/create-folders` - Creates all three folders
 

@@ -1,13 +1,34 @@
 import { Router, Request, Response } from 'express';
 import fs from 'fs-extra';
 import path from 'path';
-import type { FileInfo, Config, RenameRequest, RenameResponse, SuggestedNaming, RecordingFile, TranscriptionJob } from '../../../shared/types.js';
+import type {
+  FileInfo,
+  Config,
+  RenameRequest,
+  RenameResponse,
+  SuggestedNaming,
+  RecordingFile,
+  TranscriptionJob,
+} from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
-import { createShadowFile, moveShadowFile, renameShadowFile, deleteShadowFile } from '../utils/shadowFiles.js';
-import { readProjectState, writeProjectState, setRecordingSafe, isRecordingSafe, setRecordingParked, isRecordingParked, getRecordingAnnotation } from '../utils/projectState.js';
-import { renameRecording } from '../utils/renameRecording.js';  // FR-130: Simplified rename logic
+import {
+  createShadowFile,
+  moveShadowFile,
+  renameShadowFile,
+  deleteShadowFile,
+} from '../utils/shadowFiles.js';
+import {
+  readProjectState,
+  writeProjectState,
+  setRecordingSafe,
+  isRecordingSafe,
+  setRecordingParked,
+  isRecordingParked,
+  getRecordingAnnotation,
+} from '../utils/projectState.js';
+import { renameRecording } from '../utils/renameRecording.js'; // FR-130: Simplified rename logic
 import {
   NAMING_RULES,
   parseRecordingFilename,
@@ -49,10 +70,13 @@ export function createRoutes(
   pendingFiles: Map<string, FileInfo>,
   config: Config,
   updateConfig: (newConfig: Partial<Config>) => Config,
-  queueTranscription?: (videoPath: string) => void,  // FR-30: Auto-transcribe on rename
-  getActiveJob?: () => TranscriptionJob | null,      // FR-130: Check rename conflicts
-  getQueue?: () => TranscriptionJob[],               // FR-130: Check rename conflicts
-  io?: import('socket.io').Server<import('../../../shared/types.js').ClientToServerEvents, import('../../../shared/types.js').ServerToClientEvents>  // Socket.IO for real-time updates
+  queueTranscription?: (videoPath: string) => void, // FR-30: Auto-transcribe on rename
+  getActiveJob?: () => TranscriptionJob | null, // FR-130: Check rename conflicts
+  getQueue?: () => TranscriptionJob[], // FR-130: Check rename conflicts
+  io?: import('socket.io').Server<
+    import('../../../shared/types.js').ClientToServerEvents,
+    import('../../../shared/types.js').ServerToClientEvents
+  > // Socket.IO for real-time updates
 ): Router {
   const router = Router();
 
@@ -65,26 +89,32 @@ export function createRoutes(
   // NFR-6: Using projectDirectory with getProjectPaths()
   router.get('/suggested-naming', async (_req: Request, res: Response) => {
     try {
-      console.log('[FR-89 DEBUG suggested-naming] config.projectDirectory:', config.projectDirectory);
+      console.log(
+        '[FR-89 DEBUG suggested-naming] config.projectDirectory:',
+        config.projectDirectory
+      );
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       console.log('[FR-89 DEBUG suggested-naming] paths.recordings:', paths.recordings);
 
       // Check if directory exists
-      if (!await fs.pathExists(paths.recordings)) {
+      if (!(await fs.pathExists(paths.recordings))) {
         const defaultResponse = {
           chapter: '01',
           sequence: '1',
           name: 'intro',
           existingFiles: [],
         } as SuggestedNaming;
-        console.log('[FR-89 DEBUG suggested-naming] Directory not found, returning defaults:', defaultResponse);
+        console.log(
+          '[FR-89 DEBUG suggested-naming] Directory not found, returning defaults:',
+          defaultResponse
+        );
         res.json(defaultResponse);
         return;
       }
 
       // Read all .mov files in recordings directory
       const files = await fs.readdir(paths.recordings);
-      const movFiles = files.filter(f => f.endsWith('.mov')).sort();
+      const movFiles = files.filter((f) => f.endsWith('.mov')).sort();
       console.log('[FR-89 DEBUG suggested-naming] Found mov files:', movFiles);
 
       const suggestion = calculateSuggested(movFiles);
@@ -173,7 +203,7 @@ export function createRoutes(
 
     try {
       // Check if source file exists
-      if (!await fs.pathExists(originalPath)) {
+      if (!(await fs.pathExists(originalPath))) {
         res.status(404).json({
           success: false,
           oldPath: originalPath,
@@ -210,7 +240,7 @@ export function createRoutes(
       pendingFiles.delete(originalPath);
 
       // FR-50: Track rename for undo functionality
-      cleanExpiredRenames();  // Clean up old entries first
+      cleanExpiredRenames(); // Clean up old entries first
       const renameEntry: RecentRename = {
         id: generateRenameId(),
         originalPath,
@@ -233,7 +263,7 @@ export function createRoutes(
 
       // FR-83: Auto-generate shadow file for collaborators
       const shadowDir = path.join(paths.project, 'recording-shadows');
-      createShadowFile(newPath, shadowDir).catch(err => {
+      createShadowFile(newPath, shadowDir).catch((err) => {
         console.warn('Failed to create shadow file:', err);
       });
 
@@ -275,7 +305,7 @@ export function createRoutes(
 
     try {
       // Check if source file exists
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         // File already gone, just remove from pending
         pendingFiles.delete(filePath);
         res.json({ success: true, trashPath: null });
@@ -387,7 +417,7 @@ export function createRoutes(
       const shadowDir = path.join(paths.project, 'recording-shadows');
 
       // Known tags that can appear at the end of filenames
-      const knownTags = new Set((config.availableTags || []).map(t => t.toLowerCase()));
+      const knownTags = new Set((config.availableTags || []).map((t) => t.toLowerCase()));
       // Also check suggestTags from commonNames
       for (const cn of config.commonNames || []) {
         for (const tag of cn.suggestTags || []) {
@@ -399,7 +429,10 @@ export function createRoutes(
       const extractNameAndTags = (parsedName: string): { name: string; tags: string[] } => {
         const nameParts = parsedName.split('-');
         const tags: string[] = [];
-        while (nameParts.length > 1 && knownTags.has(nameParts[nameParts.length - 1].toLowerCase())) {
+        while (
+          nameParts.length > 1 &&
+          knownTags.has(nameParts[nameParts.length - 1].toLowerCase())
+        ) {
           tags.unshift(nameParts.pop()!);
         }
         return { name: nameParts.join('-'), tags };
@@ -409,7 +442,10 @@ export function createRoutes(
       const unifiedMap = new Map<string, RecordingFile>();
 
       // FR-88: Track which baseNames have shadow files (for hasShadow flag)
-      const shadowSet = new Map<string, { size: number; duration: number | null; shadowPath: string }>();
+      const shadowSet = new Map<
+        string,
+        { size: number; duration: number | null; shadowPath: string }
+      >();
 
       // FR-111: Only scan main shadow directory (no -safe subfolder)
       if (await fs.pathExists(shadowDir)) {
@@ -440,8 +476,8 @@ export function createRoutes(
 
           // Add as shadow-only entry (may be overwritten by real file)
           unifiedMap.set(baseName, {
-            filename: `${baseName}.mov`,  // Report as .mov for UI consistency
-            path: shadowPath,  // Path points to shadow video
+            filename: `${baseName}.mov`, // Report as .mov for UI consistency
+            path: shadowPath, // Path points to shadow video
             size: stats.size,
             timestamp: stats.mtime.toISOString(),
             duration: duration ?? undefined,
@@ -449,13 +485,13 @@ export function createRoutes(
             sequence: parsed.sequence || '1',
             name,
             tags,
-            folder: 'recordings',  // FR-111: Always 'recordings' now
-            isSafe,                // FR-111: From state file
-            isParked,              // FR-120: From state file
-            annotation,            // FR-123: From state file
+            folder: 'recordings', // FR-111: Always 'recordings' now
+            isSafe, // FR-111: From state file
+            isParked, // FR-120: From state file
+            annotation, // FR-123: From state file
             isShadow: true,
-            hasShadow: true,  // Shadow-only files obviously have shadow
-            shadowSize: stats.size,  // FR-95: Shadow-only, so shadow size = file size
+            hasShadow: true, // Shadow-only files obviously have shadow
+            shadowSize: stats.size, // FR-95: Shadow-only, so shadow size = file size
           });
         }
       }
@@ -464,52 +500,54 @@ export function createRoutes(
       if (await fs.pathExists(paths.recordings)) {
         const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
         // Skip -safe directory if it still exists (migration not complete)
-        const fileEntries = entries.filter(e => e.isFile() && e.name.endsWith('.mov'));
+        const fileEntries = entries.filter((e) => e.isFile() && e.name.endsWith('.mov'));
 
         // FR-57: parallel processing
-        const results = await Promise.all(fileEntries.map(async (entry) => {
-          const filePath = path.join(paths.recordings, entry.name);
-          const parsed = parseRecordingFilename(entry.name);
-          if (!parsed) return null;
+        const results = await Promise.all(
+          fileEntries.map(async (entry) => {
+            const filePath = path.join(paths.recordings, entry.name);
+            const parsed = parseRecordingFilename(entry.name);
+            if (!parsed) return null;
 
-          const stats = await fs.stat(filePath);
+            const stats = await fs.stat(filePath);
 
-          // Check if this recording has a shadow
-          const baseName = entry.name.replace('.mov', '');
-          const shadowInfo = shadowSet.get(baseName);
+            // Check if this recording has a shadow
+            const baseName = entry.name.replace('.mov', '');
+            const shadowInfo = shadowSet.get(baseName);
 
-          // FR-36: Get video duration (prefer shadow duration if available, faster to read)
-          const duration = shadowInfo?.duration ?? await getVideoDuration(filePath);
+            // FR-36: Get video duration (prefer shadow duration if available, faster to read)
+            const duration = shadowInfo?.duration ?? (await getVideoDuration(filePath));
 
-          const { name, tags } = extractNameAndTags(parsed.name);
+            const { name, tags } = extractNameAndTags(parsed.name);
 
-          // FR-111/FR-120/FR-123: Check state for isSafe, isParked, and annotation
-          const isSafe = isRecordingSafe(state, entry.name);
-          const isParked = isRecordingParked(state, entry.name);
-          const annotation = getRecordingAnnotation(state, entry.name);
+            // FR-111/FR-120/FR-123: Check state for isSafe, isParked, and annotation
+            const isSafe = isRecordingSafe(state, entry.name);
+            const isParked = isRecordingParked(state, entry.name);
+            const annotation = getRecordingAnnotation(state, entry.name);
 
-          return {
-            baseName,
-            recording: {
-              filename: entry.name,
-              path: filePath,
-              size: stats.size,
-              timestamp: stats.mtime.toISOString(),
-              duration: duration ?? undefined,
-              chapter: parsed.chapter,
-              sequence: parsed.sequence || '1',
-              name,
-              tags,
-              folder: 'recordings' as const,  // FR-111: Always 'recordings' now
-              isSafe,                         // FR-111: From state file
-              isParked,                       // FR-120: From state file
-              annotation,                     // FR-123: From state file
-              isShadow: false,
-              hasShadow: !!shadowInfo,
-              shadowSize: shadowInfo?.size ?? null,  // FR-95: Shadow file size (null if no shadow)
-            } satisfies RecordingFile,
-          };
-        }));
+            return {
+              baseName,
+              recording: {
+                filename: entry.name,
+                path: filePath,
+                size: stats.size,
+                timestamp: stats.mtime.toISOString(),
+                duration: duration ?? undefined,
+                chapter: parsed.chapter,
+                sequence: parsed.sequence || '1',
+                name,
+                tags,
+                folder: 'recordings' as const, // FR-111: Always 'recordings' now
+                isSafe, // FR-111: From state file
+                isParked, // FR-120: From state file
+                annotation, // FR-123: From state file
+                isShadow: false,
+                hasShadow: !!shadowInfo,
+                shadowSize: shadowInfo?.size ?? null, // FR-95: Shadow file size (null if no shadow)
+              } satisfies RecordingFile,
+            };
+          })
+        );
 
         // Add real recordings to map (overwrites shadow-only entries)
         for (const result of results) {
@@ -546,8 +584,8 @@ export function createRoutes(
 
       res.json({
         recordings,
-        totalRecordingsSize,  // FR-95: Total size of real recordings in bytes
-        totalShadowsSize: totalShadowsSize > 0 ? totalShadowsSize : null,  // FR-95: Total shadow size (null if none)
+        totalRecordingsSize, // FR-95: Total size of real recordings in bytes
+        totalShadowsSize: totalShadowsSize > 0 ? totalShadowsSize : null, // FR-95: Total shadow size (null if none)
       });
     } catch (error) {
       console.error('Error listing recordings:', error);
@@ -562,15 +600,15 @@ export function createRoutes(
 
   // FR-50: GET /api/recordings/recent-renames - Get recent renames for undo
   router.get('/recordings/recent-renames', (_req: Request, res: Response) => {
-    cleanExpiredRenames();  // Clean up old entries first
+    cleanExpiredRenames(); // Clean up old entries first
 
     // Return recent renames (newest first) with human-readable info
-    const renames = [...recentRenames].reverse().map(r => ({
+    const renames = [...recentRenames].reverse().map((r) => ({
       id: r.id,
       originalName: r.originalName,
       newName: r.newName,
       timestamp: r.timestamp,
-      age: Date.now() - r.timestamp,  // milliseconds since rename
+      age: Date.now() - r.timestamp, // milliseconds since rename
     }));
 
     res.json({ renames });
@@ -585,10 +623,10 @@ export function createRoutes(
       return;
     }
 
-    cleanExpiredRenames();  // Clean up old entries first
+    cleanExpiredRenames(); // Clean up old entries first
 
     // Find the rename entry
-    const renameIndex = recentRenames.findIndex(r => r.id === id);
+    const renameIndex = recentRenames.findIndex((r) => r.id === id);
     if (renameIndex === -1) {
       res.status(404).json({
         success: false,
@@ -601,7 +639,7 @@ export function createRoutes(
 
     try {
       // Check if the renamed file still exists at newPath
-      if (!await fs.pathExists(rename.newPath)) {
+      if (!(await fs.pathExists(rename.newPath))) {
         // Remove from tracking since file is gone
         recentRenames.splice(renameIndex, 1);
         res.status(404).json({
@@ -613,7 +651,7 @@ export function createRoutes(
 
       // Check if original location is available (parent dir must exist)
       const originalDir = path.dirname(rename.originalPath);
-      if (!await fs.pathExists(originalDir)) {
+      if (!(await fs.pathExists(originalDir))) {
         res.status(400).json({
           success: false,
           error: 'Original directory no longer exists',
@@ -637,7 +675,7 @@ export function createRoutes(
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const shadowDir = path.join(paths.project, 'recording-shadows');
       const baseName = rename.newName.replace(/\.mov$/i, '');
-      deleteShadowFile(baseName, shadowDir).catch(err => {
+      deleteShadowFile(baseName, shadowDir).catch((err) => {
         console.warn(`Failed to delete shadow for undone rename:`, err);
       });
 
@@ -685,9 +723,9 @@ export function createRoutes(
         // Mark all files in the chapter
         const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
         filesToMark = entries
-          .filter(e => e.isFile() && e.name.endsWith('.mov'))
-          .map(e => e.name)
-          .filter(name => {
+          .filter((e) => e.isFile() && e.name.endsWith('.mov'))
+          .map((e) => e.name)
+          .filter((name) => {
             const parsed = parseRecordingFilename(name);
             return parsed && parsed.chapter === chapter;
           });
@@ -710,7 +748,9 @@ export function createRoutes(
             errors.push(`File not found: ${filename}`);
           }
         } catch (err) {
-          errors.push(`Failed to mark ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to mark ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`
+          );
         }
       }
 
@@ -724,7 +764,7 @@ export function createRoutes(
 
       res.json({
         success: errors.length === 0,
-        moved: marked,  // Keep 'moved' for API compatibility
+        moved: marked, // Keep 'moved' for API compatibility
         count: marked.length,
         errors: errors.length > 0 ? errors : undefined,
       });
@@ -766,7 +806,9 @@ export function createRoutes(
             errors.push(`File not marked as safe: ${filename}`);
           }
         } catch (err) {
-          errors.push(`Failed to restore ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to restore ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`
+          );
         }
       }
 
@@ -817,9 +859,9 @@ export function createRoutes(
         // Mark all files in the chapter
         const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
         filesToMark = entries
-          .filter(e => e.isFile() && e.name.endsWith('.mov'))
-          .map(e => e.name)
-          .filter(name => {
+          .filter((e) => e.isFile() && e.name.endsWith('.mov'))
+          .map((e) => e.name)
+          .filter((name) => {
             const parsed = parseRecordingFilename(name);
             return parsed && parsed.chapter === chapter;
           });
@@ -842,7 +884,9 @@ export function createRoutes(
             errors.push(`File not found: ${filename}`);
           }
         } catch (err) {
-          errors.push(`Failed to mark ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to mark ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`
+          );
         }
       }
 
@@ -897,7 +941,9 @@ export function createRoutes(
             errors.push(`File not marked as parked: ${filename}`);
           }
         } catch (err) {
-          errors.push(`Failed to unpark ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to unpark ${filename}: ${err instanceof Error ? err.message : 'Unknown error'}`
+          );
         }
       }
 
@@ -952,7 +998,7 @@ export function createRoutes(
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
       // Build set of known tags from config
-      const knownTags = new Set((config.availableTags || []).map(t => t.toUpperCase()));
+      const knownTags = new Set((config.availableTags || []).map((t) => t.toUpperCase()));
       for (const cn of config.commonNames || []) {
         for (const tag of cn.suggestTags || []) {
           knownTags.add(tag.toUpperCase());
@@ -964,7 +1010,7 @@ export function createRoutes(
 
       // Helper to find recordings (only .mov files, not transcripts or shadows)
       const findRecordings = async (dirPath: string) => {
-        if (!await fs.pathExists(dirPath)) return;
+        if (!(await fs.pathExists(dirPath))) return;
 
         const entries = await fs.readdir(dirPath);
         for (const filename of entries) {
@@ -978,7 +1024,10 @@ export function createRoutes(
           const nameParts = parsed.name.split('-');
           const fileTags: string[] = [];
 
-          while (nameParts.length > 1 && knownTags.has(nameParts[nameParts.length - 1].toUpperCase())) {
+          while (
+            nameParts.length > 1 &&
+            knownTags.has(nameParts[nameParts.length - 1].toUpperCase())
+          ) {
             fileTags.unshift(nameParts.pop()!.toUpperCase());
           }
 
@@ -988,7 +1037,12 @@ export function createRoutes(
           if (fileLabel !== currentLabel) continue;
 
           // Build new filename
-          const newFilename = buildRecordingFilename(parsed.chapter, parsed.sequence, newLabel, fileTags);
+          const newFilename = buildRecordingFilename(
+            parsed.chapter,
+            parsed.sequence,
+            newLabel,
+            fileTags
+          );
 
           recordingsToRename.push({ oldFilename: filename, newFilename });
         }
@@ -1052,7 +1106,9 @@ export function createRoutes(
         }
       }
 
-      console.log(`[FR-130] All renames complete, sending success response with ${renamedFiles.length} files`);
+      console.log(
+        `[FR-130] All renames complete, sending success response with ${renamedFiles.length} files`
+      );
       res.json({
         success: true,
         renamedFiles,

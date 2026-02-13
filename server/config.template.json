@@ -2,10 +2,7 @@
   "watchDirectory": "~/Movies/Ecamm Live/",
   "projectsRootDirectory": "~/dev/video-projects/v-appydave",
   "activeProject": "",
-  "availableTags": [
-    "CTA",
-    "SKOOL"
-  ],
+  "availableTags": ["CTA", "SKOOL"],
   "commonNames": [
     {
       "name": "intro",
@@ -19,10 +16,7 @@
     },
     {
       "name": "outro",
-      "suggestTags": [
-        "RECAP",
-        "ENDCARD"
-      ]
+      "suggestTags": ["RECAP", "ENDCARD"]
     }
   ],
   "imageSourceDirectory": "~/Downloads",

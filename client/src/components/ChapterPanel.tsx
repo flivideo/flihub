@@ -1,40 +1,40 @@
 // FR-56: Chapter Navigation Panel - Fixed sidebar showing chapter table of contents
-import { toast } from 'sonner'
-import { formatDuration, formatChapterTitle } from '../utils/formatting'
+import { toast } from 'sonner';
+import { formatDuration, formatChapterTitle } from '../utils/formatting';
 
 interface ChapterInfo {
-  chapterKey: string
-  title: string
-  startTime: number
-  fileCount: number
+  chapterKey: string;
+  title: string;
+  startTime: number;
+  fileCount: number;
 }
 
 interface ChapterPanelProps {
-  chapters: ChapterInfo[]
-  currentChapter: string | null
-  onChapterClick: (chapterKey: string) => void
+  chapters: ChapterInfo[];
+  currentChapter: string | null;
+  onChapterClick: (chapterKey: string) => void;
 }
 
 export function ChapterPanel({ chapters, currentChapter, onChapterClick }: ChapterPanelProps) {
   // Copy YouTube-format chapter list to clipboard
   const handleCopyChapters = async () => {
-    const lines = chapters.map(ch => {
-      const timestamp = formatDuration(ch.startTime, 'youtube')
-      const title = formatChapterTitle(ch.title)
-      return `${timestamp} ${title}`
-    })
-    const text = lines.join('\n')
+    const lines = chapters.map((ch) => {
+      const timestamp = formatDuration(ch.startTime, 'youtube');
+      const title = formatChapterTitle(ch.title);
+      return `${timestamp} ${title}`;
+    });
+    const text = lines.join('\n');
 
     try {
-      await navigator.clipboard.writeText(text)
-      toast.success('Copied chapter list')
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied chapter list');
     } catch {
-      toast.error('Failed to copy')
+      toast.error('Failed to copy');
     }
-  }
+  };
 
   if (chapters.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -50,8 +50,8 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
       <div className="flex-1 overflow-y-auto">
         <div className="py-1">
           {chapters.map((chapter) => {
-            const isActive = chapter.chapterKey === currentChapter
-            const title = formatChapterTitle(chapter.title)
+            const isActive = chapter.chapterKey === currentChapter;
+            const title = formatChapterTitle(chapter.title);
 
             return (
               <button
@@ -63,26 +63,30 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
                     : 'hover:bg-gray-50 border-l-2 border-transparent'
                 }`}
               >
-                <span className={`font-mono text-xs flex-shrink-0 pt-0.5 w-5 ${
-                  isActive ? 'text-blue-400' : 'text-gray-300'
-                }`}>
+                <span
+                  className={`font-mono text-xs flex-shrink-0 pt-0.5 w-5 ${
+                    isActive ? 'text-blue-400' : 'text-gray-300'
+                  }`}
+                >
                   {chapter.chapterKey}
                 </span>
-                <span className={`font-mono text-xs flex-shrink-0 pt-0.5 w-14 text-right ${
-                  isActive ? 'text-blue-600' : 'text-gray-400'
-                }`}>
+                <span
+                  className={`font-mono text-xs flex-shrink-0 pt-0.5 w-14 text-right ${
+                    isActive ? 'text-blue-600' : 'text-gray-400'
+                  }`}
+                >
                   {formatDuration(chapter.startTime, 'youtube')}
                 </span>
-                <span className={`text-sm leading-tight ${
-                  isActive ? 'text-blue-700 font-medium' : 'text-gray-700'
-                }`}>
+                <span
+                  className={`text-sm leading-tight ${
+                    isActive ? 'text-blue-700 font-medium' : 'text-gray-700'
+                  }`}
+                >
                   {title || `Chapter ${chapter.chapterKey}`}
                 </span>
-                {isActive && (
-                  <span className="text-blue-500 ml-auto flex-shrink-0">◀</span>
-                )}
+                {isActive && <span className="text-blue-500 ml-auto flex-shrink-0">◀</span>}
               </button>
-            )
+            );
           })}
         </div>
       </div>
@@ -95,11 +99,16 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
           title="Copy YouTube-format chapter list"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+            />
           </svg>
           Copy for YouTube
         </button>
       </div>
     </div>
-  )
+  );
 }

@@ -18,17 +18,17 @@ FliHub uses Socket.io for real-time updates between the Express server and React
 import { io } from 'socket.io-client';
 
 const socket = io('http://localhost:5101', {
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
 });
 ```
 
 ### Connection Events
 
-| Event | Direction | Description |
-|-------|-----------|-------------|
-| `connect` | Built-in | Connection established |
-| `disconnect` | Built-in | Connection lost |
-| `reconnect_attempt` | Built-in | Attempting to reconnect |
+| Event               | Direction | Description             |
+| ------------------- | --------- | ----------------------- |
+| `connect`           | Built-in  | Connection established  |
+| `disconnect`        | Built-in  | Connection lost         |
+| `reconnect_attempt` | Built-in  | Attempting to reconnect |
 
 ---
 
@@ -44,11 +44,11 @@ New file detected in watch directory (Ecamm Live).
 
 ```typescript
 interface FileNewPayload {
-  path: string;       // Full path to file
-  filename: string;   // Filename only
-  timestamp: string;  // ISO timestamp
-  size: number;       // File size in bytes
-  duration?: number;  // Video duration in seconds
+  path: string; // Full path to file
+  filename: string; // Filename only
+  timestamp: string; // ISO timestamp
+  size: number; // File size in bytes
+  duration?: number; // Video duration in seconds
 }
 ```
 
@@ -62,7 +62,7 @@ File removed from disk.
 
 ```typescript
 interface FileDeletedPayload {
-  path: string;  // Full path to deleted file
+  path: string; // Full path to deleted file
 }
 ```
 
@@ -76,8 +76,8 @@ File successfully renamed.
 
 ```typescript
 interface FileRenamedPayload {
-  oldPath: string;  // Original path
-  newPath: string;  // New path after rename
+  oldPath: string; // Original path
+  newPath: string; // New path after rename
 }
 ```
 
@@ -91,8 +91,8 @@ Error with file operation.
 
 ```typescript
 interface FileErrorPayload {
-  path: string;   // File path
-  error: string;  // Error description
+  path: string; // File path
+  error: string; // Error description
 }
 ```
 
@@ -109,6 +109,7 @@ Change detected in recordings folder.
 ```
 
 **Trigger:** File added, deleted, or modified in:
+
 - `recordings/`
 - `recordings/-safe/`
 - `recording-shadows/`
@@ -235,6 +236,7 @@ Change in transcripts folder.
 **Debounce:** 300ms
 
 **Client Action:** Invalidate multiple caches:
+
 - `QUERY_KEYS.recordings` (updates `hasTranscript` flag)
 - `QUERY_KEYS.projects` (updates transcript %)
 - `QUERY_KEYS.transcriptions`
@@ -251,9 +253,9 @@ Video queued for transcription.
 
 ```typescript
 interface TranscriptionQueuedPayload {
-  jobId: string;      // Unique job ID (job_{timestamp}_{random})
-  videoPath: string;  // Path to video file
-  position: number;   // Queue position (1-based)
+  jobId: string; // Unique job ID (job_{timestamp}_{random})
+  videoPath: string; // Path to video file
+  position: number; // Queue position (1-based)
 }
 ```
 
@@ -275,7 +277,7 @@ Progress update from Whisper.
 ```typescript
 interface TranscriptionProgressPayload {
   jobId: string;
-  text: string;  // Progress text from stdout/stderr
+  text: string; // Progress text from stdout/stderr
 }
 ```
 
@@ -287,7 +289,7 @@ Transcription finished successfully.
 interface TranscriptionCompletePayload {
   jobId: string;
   videoPath: string;
-  transcriptPath: string;  // Path to generated .txt file
+  transcriptPath: string; // Path to generated .txt file
 }
 ```
 
@@ -299,7 +301,7 @@ Transcription failed.
 interface TranscriptionErrorPayload {
   jobId: string;
   videoPath: string;
-  error: string;  // Error description
+  error: string; // Error description
 }
 ```
 
@@ -315,9 +317,9 @@ Starting to generate a chapter.
 
 ```typescript
 interface ChaptersGeneratingPayload {
-  chapter: string;  // Chapter number (e.g., "01")
-  total: number;    // Total chapters to generate
-  current: number;  // Current chapter (1-based)
+  chapter: string; // Chapter number (e.g., "01")
+  total: number; // Total chapters to generate
+  current: number; // Current chapter (1-based)
 }
 ```
 
@@ -328,8 +330,8 @@ Single chapter generated successfully.
 ```typescript
 interface ChaptersGeneratedPayload {
   chapter: string;
-  outputFile: string;   // Generated video filename
-  srtFile?: string;     // Optional SRT subtitle file
+  outputFile: string; // Generated video filename
+  srtFile?: string; // Optional SRT subtitle file
 }
 ```
 
@@ -339,12 +341,13 @@ All chapters processed.
 
 ```typescript
 interface ChaptersCompletePayload {
-  generated: string[];  // Successfully generated filenames
-  errors?: string[];    // Error messages (if any)
+  generated: string[]; // Successfully generated filenames
+  errors?: string[]; // Error messages (if any)
 }
 ```
 
 **Client Action:**
+
 - Invalidate cache for `QUERY_KEYS.chapterRecordingStatus`
 - Show success/error toast
 
@@ -447,16 +450,16 @@ Server-side file watcher management using Chokidar.
 
 ### Watchers
 
-| Watcher | Pattern | Events | Debounce |
-|---------|---------|--------|----------|
-| ZIP | `~/Downloads/*.zip` | add | 200ms |
-| Incoming Images | `imageSourceDirectory/*.{png,jpg,...}` | add, unlink | 200ms |
-| Assigned Images | `assets/images/` | add, unlink, change | 200ms |
-| Recordings | `recordings/`, `-safe/`, `recording-shadows/` | add, unlink, change | 200ms |
-| Projects | Parent directory | addDir, unlinkDir | 500ms |
-| Inbox | `inbox/` + 2 levels | add, unlink, addDir, unlinkDir | 300ms |
-| Transcripts | `recording-transcripts/` | add, unlink, change | 300ms |
-| Thumbs | `assets/thumbs/` | add, unlink, change | 300ms |
+| Watcher         | Pattern                                       | Events                         | Debounce |
+| --------------- | --------------------------------------------- | ------------------------------ | -------- |
+| ZIP             | `~/Downloads/*.zip`                           | add                            | 200ms    |
+| Incoming Images | `imageSourceDirectory/*.{png,jpg,...}`        | add, unlink                    | 200ms    |
+| Assigned Images | `assets/images/`                              | add, unlink, change            | 200ms    |
+| Recordings      | `recordings/`, `-safe/`, `recording-shadows/` | add, unlink, change            | 200ms    |
+| Projects        | Parent directory                              | addDir, unlinkDir              | 500ms    |
+| Inbox           | `inbox/` + 2 levels                           | add, unlink, addDir, unlinkDir | 300ms    |
+| Transcripts     | `recording-transcripts/`                      | add, unlink, change            | 300ms    |
+| Thumbs          | `assets/thumbs/`                              | add, unlink, change            | 300ms    |
 
 ### Lifecycle
 
@@ -521,6 +524,7 @@ Socket.io automatically reconnects with exponential backoff:
 ### Connection Indicator
 
 The `ConnectionIndicator` component shows connection status:
+
 - Green: Connected
 - Yellow: Reconnecting
 - Red: Disconnected
@@ -587,9 +591,9 @@ Socket events are logged to console during development:
 
 ### Common Issues
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Events not received | CORS blocking | Check server CORS config |
-| Stale data | Cache not invalidating | Verify hook is mounted |
-| Too many refetches | Missing debounce | Check WatcherManager debounce |
-| Reconnection loop | Server down | Check server is running |
+| Issue               | Cause                  | Solution                      |
+| ------------------- | ---------------------- | ----------------------------- |
+| Events not received | CORS blocking          | Check server CORS config      |
+| Stale data          | Cache not invalidating | Verify hook is mounted        |
+| Too many refetches  | Missing debounce       | Check WatcherManager debounce |
+| Reconnection loop   | Server down            | Check server is running       |

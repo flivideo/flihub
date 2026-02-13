@@ -22,18 +22,20 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 
 **Valid paths to accept:**
 
-| Platform | Example |
-|----------|---------|
-| Unix | `/Users/david/dev/...` |
-| Unix (home) | `~/dev/...` |
-| Windows | `C:\Users\jan\dev\...` |
-| Windows UNC | `\\wsl$\Ubuntu\home\jan\dev\...` |
+| Platform         | Example                          |
+| ---------------- | -------------------------------- |
+| Unix             | `/Users/david/dev/...`           |
+| Unix (home)      | `~/dev/...`                      |
+| Windows          | `C:\Users\jan\dev\...`           |
+| Windows UNC      | `\\wsl$\Ubuntu\home\jan\dev\...` |
 | WSL from Windows | `//wsl$/Ubuntu/home/jan/dev/...` |
 
 **Validation regex:**
+
 ```
 ^(~|/|[A-Za-z]:\\|\\\\)
 ```
+
 - Starts with `~` (Unix home) - **Mac/Linux only**
 - Starts with `/` (Unix absolute)
 - Starts with drive letter like `C:\` (Windows)
@@ -50,6 +52,7 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 **Problem:** If user enters `~/dev/video-projects`, Node.js won't expand it.
 
 **Requirements:**
+
 - Server-side: Replace `~` with `os.homedir()` before any filesystem operations
 - Only applies on Mac/Linux (Windows users won't use tilde)
 - Example: `~/dev/...` → `/Users/david/dev/...`
@@ -63,10 +66,12 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 **Problem:** Only shadow section shows "Path not found" warning. All path fields need this.
 
 **Bug reported (2025-12-16):** Jan reports paths not going green on Windows. His paths:
+
 - `C:\Users\rjanr\Downloads` - standard Windows
 - `\\wsl$\Ubuntu\home\jan\dev\video-projects\v-appydave` - WSL UNC path
 
 **Requirements:**
+
 - Each directory field shows status indicator:
   - ✅ Green checkmark if path exists
   - ⚠️ Yellow warning with "Path not found" if doesn't exist
@@ -78,6 +83,7 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 **Needs Jan to UAT on Windows after pulling.**
 
 **Affected fields:**
+
 1. Ecamm Watch Directory
 2. Projects Root Directory (see Part 5)
 3. Image Watch Directory
@@ -89,12 +95,14 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 **Problem:** Folder 📁 buttons open Finder, need to work on Windows.
 
 **Requirements:**
+
 - Detect OS server-side
 - Mac: `open -R <path>` (Finder)
 - Windows: `explorer <path>` (Explorer)
 - Linux: `xdg-open <path>`
 
 **Centralization audit needed:** Ensure all "open folder" functionality uses a single `openInFileExplorer(path)` function. Current locations to check:
+
 - Config panel folder buttons
 - Project actions menu "Open in Finder"
 - Any recording/asset context menus
@@ -108,6 +116,7 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 **Problem:** Jan pasted `"\\wsl$\..."` with quotes (common copy-paste error).
 
 **Requirements:**
+
 - Strip leading/trailing quotes on save
 - Strip leading/trailing whitespace
 - Show brief toast/warning if quotes were stripped: "Quotes removed from path"
@@ -119,6 +128,7 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 **Problem:** `projectDirectory` holds full path. When switching projects, entire path changes. The "root" is implicit.
 
 **Current config:**
+
 ```json
 {
   "projectDirectory": "/Users/david/dev/video-projects/v-appydave/b67"
@@ -126,6 +136,7 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 ```
 
 **New config:**
+
 ```json
 {
   "projectsRootDirectory": "/Users/david/dev/video-projects/v-appydave",
@@ -134,6 +145,7 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 ```
 
 **Benefits:**
+
 - Root path configured once (OS-specific part)
 - Project selection is just the folder name
 - Cleaner mental model
@@ -158,12 +170,14 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 ```
 
 **Migration:**
+
 - On startup, if old `projectDirectory` exists and new fields don't:
   - Split: `projectsRootDirectory` = dirname, `activeProject` = basename
   - Write new fields, remove old field
 - Server derives full path: `path.join(projectsRootDirectory, activeProject)`
 
 **Backward compatibility:**
+
 - Migration happens automatically on first load
 - No manual user action required
 
@@ -174,6 +188,7 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 **Problem:** Shadow videos hardcoded at 240p. Want to test lower resolutions (160p) for smaller files.
 
 **New config field:**
+
 ```json
 {
   "shadowResolution": 240
@@ -181,6 +196,7 @@ Jan (Windows user) encountered multiple issues with path handling in the Config 
 ```
 
 **UI addition to Shadow Recordings section:**
+
 ```
 Default Shadow Resolution
 (○) 240p  (○) 180p  (○) 160p
@@ -208,13 +224,13 @@ Update `docs/guides/cross-platform-setup.md` with:
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `client/src/components/ConfigPanel.tsx` | Validation, existence indicators, new fields UI |
-| `server/src/index.ts` | Config migration, path validation, open-folder Windows support |
-| `server/src/routes/system.ts` | New `/path-exists` endpoint (if not exists) |
-| `shared/constants.ts` or `shared/validation.ts` | Cross-platform path regex |
-| `docs/guides/cross-platform-setup.md` | Path format documentation |
+| File                                            | Changes                                                        |
+| ----------------------------------------------- | -------------------------------------------------------------- |
+| `client/src/components/ConfigPanel.tsx`         | Validation, existence indicators, new fields UI                |
+| `server/src/index.ts`                           | Config migration, path validation, open-folder Windows support |
+| `server/src/routes/system.ts`                   | New `/path-exists` endpoint (if not exists)                    |
+| `shared/constants.ts` or `shared/validation.ts` | Cross-platform path regex                                      |
+| `docs/guides/cross-platform-setup.md`           | Path format documentation                                      |
 
 ## Acceptance Criteria
 

@@ -3,6 +3,7 @@
 ## Summary
 
 Implemented automatic video transcription using local Whisper AI. The feature includes:
+
 - Auto-transcription when recordings are renamed
 - Manual transcription for legacy recordings
 - Transcription monitoring via "Transcripts" tab
@@ -27,6 +28,7 @@ For legacy recordings without transcripts, users can manually trigger transcript
 **Location:** Recordings tab > individual recording rows
 
 **Button states:**
+
 - `[Transcribe]` - gray, for recordings with no transcript
 - `[Queued]` - yellow, waiting to process
 - `[Transcribing...]` - blue, currently processing
@@ -42,6 +44,7 @@ Combines all transcripts for a chapter into a single file.
 **Combined file:** `{chapter}-chapter.txt` (e.g., `07-chapter.txt`)
 
 **Button states:**
+
 - Hidden - no transcripts for chapter
 - `[Combine]` - purple, transcripts exist but not combined yet
 - `[View] [Combine ✓]` - blue View + green Combine when combined file exists
@@ -53,6 +56,7 @@ Combines all transcripts for a chapter into a single file.
 New tab for monitoring transcription progress.
 
 **Sections:**
+
 - **Active** - Currently transcribing with live progress
 - **Queue** - Pending transcriptions
 - **Recent** - Last 5 completed/failed jobs
@@ -61,50 +65,50 @@ New tab for monitoring transcription progress.
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `server/src/routes/transcriptions.ts` | Transcription API & job queue |
-| `client/src/components/TranscriptionsPage.tsx` | Transcripts tab UI |
-| `client/src/components/TranscriptModal.tsx` | Transcript viewer modal |
+| File                                           | Purpose                       |
+| ---------------------------------------------- | ----------------------------- |
+| `server/src/routes/transcriptions.ts`          | Transcription API & job queue |
+| `client/src/components/TranscriptionsPage.tsx` | Transcripts tab UI            |
+| `client/src/components/TranscriptModal.tsx`    | Transcript viewer modal       |
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
-| `shared/types.ts` | Added TranscriptionJob, status types, socket events |
-| `shared/paths.ts` | Added `transcripts` to ProjectPaths |
-| `server/src/index.ts` | Registered transcription routes |
-| `server/src/routes/index.ts` | Auto-queue on rename |
-| `server/src/routes/system.ts` | Added transcripts folder to open-folder |
-| `client/src/App.tsx` | Added Transcripts tab |
-| `client/src/components/RecordingsView.tsx` | Added TranscriptionBadge, CombineChapterButton |
-| `client/src/constants/queryKeys.ts` | Added transcription query keys |
-| `client/src/hooks/useOpenFolder.ts` | Added transcripts folder type |
+| File                                       | Changes                                             |
+| ------------------------------------------ | --------------------------------------------------- |
+| `shared/types.ts`                          | Added TranscriptionJob, status types, socket events |
+| `shared/paths.ts`                          | Added `transcripts` to ProjectPaths                 |
+| `server/src/index.ts`                      | Registered transcription routes                     |
+| `server/src/routes/index.ts`               | Auto-queue on rename                                |
+| `server/src/routes/system.ts`              | Added transcripts folder to open-folder             |
+| `client/src/App.tsx`                       | Added Transcripts tab                               |
+| `client/src/components/RecordingsView.tsx` | Added TranscriptionBadge, CombineChapterButton      |
+| `client/src/constants/queryKeys.ts`        | Added transcription query keys                      |
+| `client/src/hooks/useOpenFolder.ts`        | Added transcripts folder type                       |
 
 ---
 
 ## API Endpoints
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | `/api/transcriptions` | Get all transcription state (active, queue, recent) |
-| GET | `/api/transcriptions/status/:filename` | Get status for specific video |
-| GET | `/api/transcriptions/transcript/:filename` | Get transcript content |
-| POST | `/api/transcriptions/queue` | Manually queue a transcription |
-| GET | `/api/transcriptions/chapter-status/:chapter` | Check if combined exists |
-| POST | `/api/transcriptions/combine-chapter` | Create combined chapter file |
+| Method | Endpoint                                      | Purpose                                             |
+| ------ | --------------------------------------------- | --------------------------------------------------- |
+| GET    | `/api/transcriptions`                         | Get all transcription state (active, queue, recent) |
+| GET    | `/api/transcriptions/status/:filename`        | Get status for specific video                       |
+| GET    | `/api/transcriptions/transcript/:filename`    | Get transcript content                              |
+| POST   | `/api/transcriptions/queue`                   | Manually queue a transcription                      |
+| GET    | `/api/transcriptions/chapter-status/:chapter` | Check if combined exists                            |
+| POST   | `/api/transcriptions/combine-chapter`         | Create combined chapter file                        |
 
 ---
 
 ## Socket Events
 
-| Event | Payload | Purpose |
-|-------|---------|---------|
-| `transcription:queued` | `{ jobId, videoPath, position }` | Job added to queue |
-| `transcription:started` | `{ jobId, videoPath }` | Processing began |
-| `transcription:progress` | `{ jobId, text }` | Streaming output |
+| Event                    | Payload                                | Purpose                |
+| ------------------------ | -------------------------------------- | ---------------------- |
+| `transcription:queued`   | `{ jobId, videoPath, position }`       | Job added to queue     |
+| `transcription:started`  | `{ jobId, videoPath }`                 | Processing began       |
+| `transcription:progress` | `{ jobId, text }`                      | Streaming output       |
 | `transcription:complete` | `{ jobId, videoPath, transcriptPath }` | Successfully completed |
-| `transcription:error` | `{ jobId, videoPath, error }` | Failed |
+| `transcription:error`    | `{ jobId, videoPath, error }`          | Failed                 |
 
 ---
 
@@ -121,17 +125,20 @@ For transcription to work, the server machine needs:
 ## Testing Checklist
 
 ### Auto-Transcription
+
 - [ ] Rename a recording in Incoming tab
 - [ ] Verify transcription queues (check Transcripts tab)
 - [ ] Verify transcript file created in `transcripts/` folder
 - [ ] Verify status badge updates on Recordings tab
 
 ### Manual Transcription
+
 - [ ] Find a recording without transcript (shows `[Transcribe]`)
 - [ ] Click Transcribe, verify it queues
 - [ ] Verify badge changes to `[Transcript]` when done
 
 ### Combine Chapter
+
 - [ ] Go to Recordings tab with Chapters enabled
 - [ ] Find chapter with transcripts
 - [ ] Click `[Combine]`, verify combined file created
@@ -139,6 +146,7 @@ For transcription to work, the server machine needs:
 - [ ] Verify content is plain text (no headers)
 
 ### Edge Cases
+
 - [ ] Server restart during transcription (job lost, can retry manually)
 - [ ] Video deleted while transcribing (should fail gracefully)
 - [ ] Transcript already exists (should skip, not duplicate)

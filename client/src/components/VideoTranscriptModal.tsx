@@ -1,80 +1,82 @@
 // FR-55: Modal for viewing combined video transcript organized by chapters
-import { useState, useEffect, useCallback } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { QUERY_KEYS } from '../constants/queryKeys'
-import { API_URL } from '../config'
-import { formatChapterTitle } from '../utils/formatting'
+import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { QUERY_KEYS } from '../constants/queryKeys';
+import { API_URL } from '../config';
+import { formatChapterTitle } from '../utils/formatting';
 
 interface VideoTranscriptModalProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 interface CombinedTranscriptResponse {
   chapters: {
-    chapter: string
-    title: string
-    content: string
-  }[]
+    chapter: string;
+    title: string;
+    content: string;
+  }[];
 }
 
 export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
   // Toggle for chapter headings (default: show headings)
-  const [showChapterHeadings, setShowChapterHeadings] = useState(true)
+  const [showChapterHeadings, setShowChapterHeadings] = useState(true);
 
   // Fetch combined transcript from API
   const { data, isLoading, error } = useQuery<CombinedTranscriptResponse>({
     queryKey: QUERY_KEYS.combinedTranscript,
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/api/transcriptions/combined`)
+      const res = await fetch(`${API_URL}/api/transcriptions/combined`);
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Failed to load transcript')
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to load transcript');
       }
-      return res.json()
+      return res.json();
     },
-  })
+  });
 
   // Build display text for copy - respects showChapterHeadings toggle
   const buildDisplayText = useCallback(() => {
-    if (!data?.chapters) return ''
+    if (!data?.chapters) return '';
 
     if (showChapterHeadings) {
       // With chapter headings
-      return data.chapters.map(ch => {
-        const title = formatChapterTitle(ch.title)
-        const header = `Chapter ${parseInt(ch.chapter, 10)}: ${title}`
-        const separator = '─'.repeat(Math.min(header.length, 40))
-        return `${header}\n${separator}\n${ch.content}`
-      }).join('\n\n')
+      return data.chapters
+        .map((ch) => {
+          const title = formatChapterTitle(ch.title);
+          const header = `Chapter ${parseInt(ch.chapter, 10)}: ${title}`;
+          const separator = '─'.repeat(Math.min(header.length, 40));
+          return `${header}\n${separator}\n${ch.content}`;
+        })
+        .join('\n\n');
     } else {
       // Raw transcript only (no headings)
-      return data.chapters.map(ch => ch.content).join('\n\n')
+      return data.chapters.map((ch) => ch.content).join('\n\n');
     }
-  }, [data, showChapterHeadings])
+  }, [data, showChapterHeadings]);
 
   const copyToClipboard = async () => {
-    const text = buildDisplayText()
+    const text = buildDisplayText();
     if (text) {
       try {
-        await navigator.clipboard.writeText(text)
-        toast.success('Copied to clipboard')
+        await navigator.clipboard.writeText(text);
+        toast.success('Copied to clipboard');
       } catch {
-        toast.error('Failed to copy')
+        toast.error('Failed to copy');
       }
     }
-  }
+  };
 
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose()
+        onClose();
       }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   return (
     <div
@@ -83,7 +85,7 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
     >
       <div
         className="bg-white rounded-lg w-full max-w-3xl max-h-[85vh] flex flex-col mx-4"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
@@ -108,7 +110,12 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
               title="Copy to clipboard"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                />
               </svg>
               Copy
             </button>
@@ -118,7 +125,12 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
               title="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -140,7 +152,7 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
             // With chapter headings
             <div className="space-y-8">
               {data.chapters.map((ch) => {
-                const title = formatChapterTitle(ch.title)
+                const title = formatChapterTitle(ch.title);
                 return (
                   <div key={ch.chapter}>
                     <h4 className="font-semibold text-gray-800 mb-1">
@@ -151,17 +163,17 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
                       {ch.content}
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           ) : (
             // Raw transcript (no headings)
             <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-              {data.chapters.map(ch => ch.content).join('\n\n')}
+              {data.chapters.map((ch) => ch.content).join('\n\n')}
             </div>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }

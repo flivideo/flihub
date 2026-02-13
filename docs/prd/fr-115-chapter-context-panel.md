@@ -15,6 +15,7 @@ As a video creator working on the Incoming page, I want to see my current chapte
 ## Problem
 
 When naming incoming recordings on the Incoming page, users must:
+
 1. Remember what chapters they've already recorded
 2. Switch to Recordings tab to see chapter names
 3. Mentally track "where am I in this video?"
@@ -55,23 +56,27 @@ Add a sticky chapter context panel on the right side of the Incoming page showin
 ## Features
 
 ### Chapter List
+
 - Shows all existing chapters (derived from recordings)
 - Format: `{chapter} {name}` (e.g., "01 intro")
 - Sorted by chapter number ascending
 - Simplified view (no durations, no file counts)
 
 ### Copy Button
+
 - Small clipboard icon next to each chapter name
 - Copies just the name portion (e.g., "intro")
 - Toast: "Copied: intro"
 - Use case: Quick paste into name input for consistency
 
 ### "Next Chapter" Indicator
+
 - Shows what the next chapter number would be
 - Helps user know where they are in sequence
 - Updates dynamically as new files are renamed
 
 ### Sticky Positioning
+
 - Panel stays visible as user scrolls through incoming files
 - Does not scroll with content
 
@@ -80,11 +85,13 @@ Add a sticky chapter context panel on the right side of the Incoming page showin
 ## Technical Notes
 
 ### Data Source
+
 - Reuse existing chapter grouping logic from RecordingsView
 - Need to fetch recordings data on Incoming page (currently only fetched on Recordings tab)
 - Consider: lightweight endpoint returning just chapter summary
 
 ### New Endpoint Option
+
 ```
 GET /api/query/projects/:code/chapters/summary
 Response: {
@@ -97,11 +104,13 @@ Response: {
 ```
 
 ### Client Changes
+
 - New component: `ChapterContextPanel.tsx`
 - `IncomingView.tsx` - Add panel to right side
 - Layout: Flexbox with sticky positioning
 
 ### Panel Width
+
 - Fixed width: ~200px (w-52)
 - Collapsible on smaller screens (optional future enhancement)
 
@@ -140,6 +149,7 @@ Response: {
 **Implemented:** 2025-12-31
 
 **What was built:**
+
 - New component: `client/src/components/ChapterContextPanel.tsx`
 - Fixed position panel on right side of Incoming page
 - Shows chapters derived from recordings with copy buttons
@@ -147,12 +157,15 @@ Response: {
 - Hides when no recordings exist
 
 **Files created:**
+
 - `client/src/components/ChapterContextPanel.tsx`
 
 **Files modified:**
+
 - `client/src/App.tsx` - Import and render panel on Incoming tab
 
 **Implementation details:**
+
 - Uses `extractTagsFromName` from shared/naming for clean chapter names
 - Prefers sequence 1 file's name for each chapter
 - Copy uses clipboard API with toast feedback

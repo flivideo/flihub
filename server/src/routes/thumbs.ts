@@ -11,7 +11,11 @@ import { getProjectPaths } from '../../../shared/paths.js';
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp'];
 
 // Check if a ZIP file contains any image files
-function zipContainsImages(zipPath: string): { hasImages: boolean; imageCount: number; imageNames: string[] } {
+function zipContainsImages(zipPath: string): {
+  hasImages: boolean;
+  imageCount: number;
+  imageNames: string[];
+} {
   try {
     const zip = new AdmZip(zipPath);
     const entries = zip.getEntries();
@@ -54,7 +58,7 @@ export interface ThumbInfo {
   path: string;
   size: number;
   timestamp: string;
-  order: number;  // 1, 2, or 3 from thumb-{n}
+  order: number; // 1, 2, or 3 from thumb-{n}
 }
 
 export interface ZipInfo {
@@ -68,7 +72,7 @@ export interface ZipInfo {
 export interface ZipImagePreview {
   name: string;
   size: number;
-  dataUrl: string;  // base64 encoded image for preview
+  dataUrl: string; // base64 encoded image for preview
 }
 
 export function createThumbRoutes(config: Config): Router {
@@ -79,15 +83,13 @@ export function createThumbRoutes(config: Config): Router {
     try {
       const downloadsDir = path.join(os.homedir(), 'Downloads');
 
-      if (!await fs.pathExists(downloadsDir)) {
+      if (!(await fs.pathExists(downloadsDir))) {
         res.json({ zips: [] });
         return;
       }
 
       const entries = await fs.readdir(downloadsDir, { withFileTypes: true });
-      const zipFiles = entries.filter(e =>
-        e.isFile() && e.name.toLowerCase().endsWith('.zip')
-      );
+      const zipFiles = entries.filter((e) => e.isFile() && e.name.toLowerCase().endsWith('.zip'));
 
       const zips: ZipInfo[] = [];
 
@@ -127,7 +129,7 @@ export function createThumbRoutes(config: Config): Router {
       const downloadsDir = path.join(os.homedir(), 'Downloads');
       const zipPath = path.join(downloadsDir, filename);
 
-      if (!await fs.pathExists(zipPath)) {
+      if (!(await fs.pathExists(zipPath))) {
         res.status(404).json({ success: false, error: 'ZIP file not found' });
         return;
       }
@@ -147,8 +149,8 @@ export function createThumbRoutes(config: Config): Router {
 
         // Get the image data as base64
         const buffer = entry.getData();
-        const mimeType = ext === '.png' ? 'image/png' :
-                        ext === '.webp' ? 'image/webp' : 'image/jpeg';
+        const mimeType =
+          ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
         const dataUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
 
         images.push({
@@ -177,7 +179,9 @@ export function createThumbRoutes(config: Config): Router {
       const { zipFilename, selectedImages } = req.body;
 
       if (!zipFilename || !selectedImages || !Array.isArray(selectedImages)) {
-        res.status(400).json({ success: false, error: 'zipFilename and selectedImages array required' });
+        res
+          .status(400)
+          .json({ success: false, error: 'zipFilename and selectedImages array required' });
         return;
       }
 
@@ -189,7 +193,7 @@ export function createThumbRoutes(config: Config): Router {
       const downloadsDir = path.join(os.homedir(), 'Downloads');
       const zipPath = path.join(downloadsDir, zipFilename);
 
-      if (!await fs.pathExists(zipPath)) {
+      if (!(await fs.pathExists(zipPath))) {
         res.status(404).json({ success: false, error: 'ZIP file not found' });
         return;
       }
@@ -212,7 +216,7 @@ export function createThumbRoutes(config: Config): Router {
       // Find and extract selected images
       let thumbIndex = 1;
       for (const imageName of selectedImages) {
-        const entry = entries.find(e => path.basename(e.entryName) === imageName);
+        const entry = entries.find((e) => path.basename(e.entryName) === imageName);
         if (entry) {
           const ext = path.extname(imageName).toLowerCase();
           const newFilename = `thumb-${thumbIndex}${ext}`;
@@ -247,15 +251,13 @@ export function createThumbRoutes(config: Config): Router {
     try {
       const thumbsDir = getThumbsDir(config);
 
-      if (!await fs.pathExists(thumbsDir)) {
+      if (!(await fs.pathExists(thumbsDir))) {
         res.json({ thumbs: [] });
         return;
       }
 
       const entries = await fs.readdir(thumbsDir, { withFileTypes: true });
-      const thumbFiles = entries.filter(e =>
-        e.isFile() && e.name.startsWith('thumb-')
-      );
+      const thumbFiles = entries.filter((e) => e.isFile() && e.name.startsWith('thumb-'));
 
       const thumbs: ThumbInfo[] = [];
 
@@ -296,14 +298,13 @@ export function createThumbRoutes(config: Config): Router {
       const thumbsDir = getThumbsDir(config);
       const filePath = path.join(thumbsDir, filename);
 
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         res.status(404).json({ success: false, error: 'Thumbnail not found' });
         return;
       }
 
       const ext = path.extname(filename).toLowerCase();
-      const mimeType = ext === '.png' ? 'image/png' :
-                      ext === '.webp' ? 'image/webp' : 'image/jpeg';
+      const mimeType = ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg';
 
       res.contentType(mimeType);
       res.sendFile(filePath);
@@ -325,7 +326,7 @@ export function createThumbRoutes(config: Config): Router {
 
       const thumbsDir = getThumbsDir(config);
 
-      if (!await fs.pathExists(thumbsDir)) {
+      if (!(await fs.pathExists(thumbsDir))) {
         res.status(404).json({ success: false, error: 'Thumbnails directory not found' });
         return;
       }
@@ -370,7 +371,7 @@ export function createThumbRoutes(config: Config): Router {
       const downloadsDir = path.join(os.homedir(), 'Downloads');
       const zipPath = path.join(downloadsDir, filename);
 
-      if (!await fs.pathExists(zipPath)) {
+      if (!(await fs.pathExists(zipPath))) {
         res.status(404).json({ success: false, error: 'ZIP file not found' });
         return;
       }
@@ -403,7 +404,7 @@ export function createThumbRoutes(config: Config): Router {
       const thumbsDir = getThumbsDir(config);
       const filePath = path.join(thumbsDir, filename);
 
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         res.status(404).json({ success: false, error: 'Thumbnail not found' });
         return;
       }
@@ -418,12 +419,12 @@ export function createThumbRoutes(config: Config): Router {
       // Renumber remaining files to fill the gap
       const entries = await fs.readdir(thumbsDir);
       const remainingThumbs = entries
-        .filter(f => f.startsWith('thumb-'))
-        .map(f => {
+        .filter((f) => f.startsWith('thumb-'))
+        .map((f) => {
           const m = f.match(/^thumb-(\d+)/);
           return { filename: f, order: m ? parseInt(m[1], 10) : 0 };
         })
-        .filter(t => t.order > deletedOrder)
+        .filter((t) => t.order > deletedOrder)
         .sort((a, b) => a.order - b.order);
 
       // Shift higher numbers down

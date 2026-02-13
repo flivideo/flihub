@@ -38,7 +38,7 @@ function saveConfig(config: Config): void {
   }
   // FR-32: Only save projectStages if it has values
   if (config.projectStages && Object.keys(config.projectStages).length > 0) {
-    toSave.projectStages = config.projectStages;  // This is the STAGE LIST, not overrides
+    toSave.projectStages = config.projectStages; // This is the STAGE LIST, not overrides
   }
   // MISSING: projectStageOverrides (per-project assignments)
 }
@@ -66,6 +66,7 @@ if (config.projectStageOverrides && Object.keys(config.projectStageOverrides).le
 ### Problem
 
 The current click-to-cycle UI is unintuitive:
+
 - Click = forward through stages
 - Shift+Click = backward
 - Users don't know what stages are available or where they are in the cycle
@@ -111,29 +112,31 @@ Replace with a dropdown menu showing all stages with their colors:
 
 ### Stage Options
 
-| Value | Label | Color | Description |
-|-------|-------|-------|-------------|
-| auto | Auto | - | Reset to auto-detection |
-| planning | Plan | Purple | Preparing content outline |
-| recording | REC | Yellow | Actively recording |
-| first-edit | 1st | Blue | Initial rough cut |
-| second-edit | 2nd | Dark Blue | Refining edit |
-| review | Rev | Orange | Final review |
-| ready-to-publish | Rdy | Teal | Ready to publish |
-| published | Pub | Green | Published |
-| archived | Arc | Gray | Archived |
+| Value            | Label | Color     | Description               |
+| ---------------- | ----- | --------- | ------------------------- |
+| auto             | Auto  | -         | Reset to auto-detection   |
+| planning         | Plan  | Purple    | Preparing content outline |
+| recording        | REC   | Yellow    | Actively recording        |
+| first-edit       | 1st   | Blue      | Initial rough cut         |
+| second-edit      | 2nd   | Dark Blue | Refining edit             |
+| review           | Rev   | Orange    | Final review              |
+| ready-to-publish | Rdy   | Teal      | Ready to publish          |
+| published        | Pub   | Green     | Published                 |
+| archived         | Arc   | Gray      | Archived                  |
 
 ---
 
 ## Testing
 
 ### Bug Fix Test
+
 1. Change a project's stage (e.g., b94 → "published")
 2. Verify `server/config.json` contains `"projectStageOverrides": { "b94-...": "published" }`
 3. Restart server or refresh page
 4. Stage should persist
 
 ### Dropdown UI Test
+
 1. Click on a stage badge
 2. Dropdown menu appears with all stages
 3. Select a different stage
@@ -145,9 +148,11 @@ Replace with a dropdown menu showing all stages with their colors:
 ## Files to Change
 
 **Bug Fix:**
+
 - `server/src/index.ts` - Add `projectStageOverrides` to `saveConfig()`
 
 **Dropdown UI:**
+
 - `client/src/components/ProjectsPanel.tsx` - Replace `StageCell` click handler with dropdown
 
 ---
@@ -165,10 +170,12 @@ Replace with a dropdown menu showing all stages with their colors:
 **What was done:**
 
 Bug Fix:
+
 - Added `projectStageOverrides` to `saveConfig()` in server/src/index.ts
 - Same pattern as FR-108 - conditional save when object has values
 
 Dropdown UI:
+
 - Replaced click-to-cycle with dropdown menu in StageCell component
 - Shows all 8 stages with colored dots + "Auto" option at top
 - Current stage has checkmark indicator
@@ -176,10 +183,12 @@ Dropdown UI:
 - Removed unused `getNextStage` and `DEFAULT_PROJECT_STAGES` constants
 
 **Files changed:**
+
 - `server/src/index.ts` (lines 184-187) - persistence fix
 - `client/src/components/ProjectsPanel.tsx` - StageCell dropdown, removed cycle code
 
 **Testing notes:**
+
 1. Click stage badge → dropdown appears
 2. Select a stage → badge updates, dropdown closes
 3. Select "Auto" → returns to auto-detected stage

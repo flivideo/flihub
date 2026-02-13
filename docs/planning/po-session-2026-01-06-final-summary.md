@@ -9,6 +9,7 @@
 ## TL;DR
 
 **Discovery Success:**
+
 - ✅ Built scanner, analyzed 47 projects
 - ✅ Found **scanner bugs** causing 78% false positives
 - ✅ Fixed bugs, accurate results: **391 real issues** (not 1,805)
@@ -16,6 +17,7 @@
 - ❌ **Withdrew NFR-141** - based on incorrect scanner analysis
 
 **Bottom Line:**
+
 - **Only 8 naming errors** need manual fixes (15 minutes)
 - **FR-140 still valid** - 22 chapter gaps across 12 projects (user-requested)
 - **App code is fine** - no parser changes needed
@@ -25,19 +27,23 @@
 ## Discovery Journey
 
 ### Phase 1-2: Planning (Correct)
+
 - Inventoried FRs related to file management
 - Documented naming rules and decisions
 - Created scanner specification
 
 ### Phase 3: Scanner Build (Had Bugs)
+
 **Built automated scanner to analyze 47 projects**
 
 **Original Results (INCORRECT):**
+
 - 1,805 issues found
 - 1,422 naming errors (79% - **FALSE POSITIVES**)
 - Concluded users typing lowercase tags incorrectly
 
 ### Phase 4: Pattern Analysis (Caught the Bugs!)
+
 **Critical finding:** 79% error rate seemed unusually high
 
 **Investigation revealed TWO scanner bugs:**
@@ -53,16 +59,19 @@
    - Fix: Use `NAMING_RULES.name.pattern` instead of `label.pattern`
 
 ### Phase 5-6: Requirements & Testing (Based on Bad Data)
+
 - Created NFR-141 (Lenient Tag Parser)
 - Prioritized as CRITICAL blocker
 - Created test scenarios and UAT checklist
 - **All based on false scanner results**
 
 ### Phase 7: Execution Plan (Had to be Revised)
+
 - Originally: Sprint 1 = NFR-141 (1.5 hours)
 - After scanner fixes: **NFR-141 cancelled**
 
 ### Post-Discovery: Scanner Correction (SUCCESS!)
+
 - Fixed both scanner bugs
 - Re-ran analysis
 - **Accurate results: 391 issues (78% reduction)**
@@ -79,11 +88,11 @@
 **Projects with Issues:** 46 (98%)
 **Total Issues:** 391
 
-| Type | Count | % | Severity | Action |
-|------|-------|---|----------|--------|
-| Derivative | 361 | 92% | INFO | Optional (FR-136 has regen buttons) |
-| Structural | 22 | 6% | INFO | FR-140 (user-requested) |
-| Naming | 8 | 2% | ERROR | Manual fixes (15 min) |
+| Type       | Count | %   | Severity | Action                              |
+| ---------- | ----- | --- | -------- | ----------------------------------- |
+| Derivative | 361   | 92% | INFO     | Optional (FR-136 has regen buttons) |
+| Structural | 22    | 6%  | INFO     | FR-140 (user-requested)             |
+| Naming     | 8     | 2%  | ERROR    | Manual fixes (15 min)               |
 
 ---
 
@@ -95,7 +104,7 @@
 2. `10-2-requirement-documents+developer-agent.mov` - Plus sign instead of hyphen
 3. `iceberg-1-1767536909595.mp4` - Temp file
 4. `05-1-demo-1ST.mov` - Uppercase in name
-5-8. Similar minor issues
+   5-8. Similar minor issues
 
 **Not a systemic problem** - 8 files out of ~4,700 (0.17%)
 
@@ -104,6 +113,7 @@
 ### Chapter Gaps (22 instances - FR-140 Validated)
 
 **Evidence:**
+
 - 22 chapter gaps across 12 projects (26%)
 - User explicitly mentioned in FR-138 testing: "I don't see chapter 2..."
 - Real user pain point
@@ -117,6 +127,7 @@
 ### Derivative Issues (361 instances - Low Priority)
 
 **Breakdown:**
+
 - Missing shadows: ~180 files
 - Missing transcripts: ~180 files
 - Orphaned files: ~1 file
@@ -134,6 +145,7 @@
 ### 1. App Parser is Correct ✅
 
 **Validation:**
+
 - Tag detection logic works properly
 - Period support works as designed
 - Multi-part names (e.g., `intro-to-bmad`) are normal
@@ -142,20 +154,24 @@
 ### 2. Scanner Bugs Taught Us
 
 **Lesson 1:** Reuse existing logic
+
 - Don't duplicate tag detection
 - Import `stripTrailingTags()` from shared code
 
 **Lesson 2:** Use correct validation rules
+
 - `NAMING_RULES.name.pattern` (allows periods)
 - NOT `NAMING_RULES.label.pattern` (no periods)
 
 **Lesson 3:** Question unexpected results
+
 - 79% error rate was a red flag
 - Investigation revealed scanner bugs
 
 ### 3. Discovery Process Works ✅
 
 **Value demonstrated:**
+
 - Built scanner to automate analysis
 - Pattern analysis revealed inconsistencies
 - Caught scanner bugs before implementation
@@ -178,6 +194,7 @@
 **Status:** ❌ **WITHDRAWN** - Do not implement
 
 **Documents updated:**
+
 - `docs/prd/nfr-141-lenient-tag-parser.md` - Cancellation notice added
 - `docs/planning/developer-handover-nfr-141.md` - Marked as cancelled
 
@@ -186,6 +203,7 @@
 ### FR-140: Bulk Chapter Renumbering ✅ HIGH PRIORITY
 
 **Evidence (validated):**
+
 - 22 chapter gaps across 12 projects (26%)
 - User explicitly requested
 - Real user pain point
@@ -193,6 +211,7 @@
 **Status:** 🟡 **HIGH** - Needs PO scope definition
 
 **Next step:** PO answers 5 questions (1 hour)
+
 1. Which modes? (Fill gaps / Shift chapters / Both)
 2. UI approach? (New tool / Extend rename)
 3. Preview requirements?
@@ -208,6 +227,7 @@
 **Original rationale:** Warn about chapter gaps, label mismatches
 
 **Reality:**
+
 - Chapter gaps are INFO level (22 instances, benign)
 - Label/mixed warnings are runtime-only (not found by scanner)
 
@@ -222,6 +242,7 @@
 **Evidence:** 361 derivative issues (92% of total)
 
 **Reality:**
+
 - All INFO level (not blocking)
 - FR-136 already has regen buttons
 - Status indicators are visibility tool
@@ -265,6 +286,7 @@
 ### Priority 1: HIGH (User-Requested)
 
 **FR-140: Bulk Chapter Renumbering**
+
 - Evidence: 22 chapter gaps, user explicitly requested
 - Effort: 7 hours
 - Blocker: Needs PO scope definition (1 hour)
@@ -274,6 +296,7 @@
 ### Priority 2: MANUAL (15 minutes)
 
 **Fix 8 Naming Errors**
+
 - Missing names (2 files)
 - Invalid separators (1 file)
 - Temp files (2 files)
@@ -286,6 +309,7 @@
 ### Priority 3: OPTIONAL (Future)
 
 **FR-134/133/135** - Only if user requests
+
 - No evidence of urgent need
 - All have complete PRDs
 - Can implement any time
@@ -379,6 +403,7 @@
 **Original Goal:** Understand all use cases for file/folder management
 
 **Achieved:**
+
 - ✅ Built scanner (automated analysis)
 - ✅ Analyzed 47 projects (~4,700 files)
 - ✅ Found scanner bugs (quality assurance)
@@ -391,6 +416,7 @@
 ### Process Quality
 
 **7-Phase Discovery Plan:**
+
 - ✅ Phase 1: Inventory (11 FRs reviewed)
 - ✅ Phase 2: Rules documentation (11 decisions)
 - ✅ Phase 3: Scanner build (found bugs!)
@@ -401,12 +427,14 @@
 - ✅ **Post:** Scanner correction & documentation
 
 **Time Investment:**
+
 - Discovery: ~10 hours
 - Scanner bug fixes: ~2 hours
 - Documentation: ~2 hours
 - **Total: ~14 hours**
 
 **ROI:**
+
 - Saved: ~6 hours (prevented NFR-141 implementation)
 - Gained: Validated app parser correctness
 - Gained: Accurate issue data (391 vs 1,805)
@@ -418,6 +446,7 @@
 ### 1. Build Validators, Then Validate Them
 
 **Discovery process worked:**
+
 - Built scanner to analyze files
 - Scanner analysis revealed its own bugs
 - Fixed bugs, got accurate data
@@ -426,6 +455,7 @@
 ### 2. Question Unexpected Results
 
 **79% error rate was suspicious:**
+
 - Too high to be realistic
 - Investigated, found scanner bugs
 - **Trust your instincts when data doesn't make sense**
@@ -433,6 +463,7 @@
 ### 3. Reuse Battle-Tested Code
 
 **Scanner bugs happened because:**
+
 - Duplicated tag detection logic incorrectly
 - Used wrong validation pattern
 - **Fix: Import shared code, don't reinvent**
@@ -440,9 +471,11 @@
 ### 4. Discovery Saves Dev Time
 
 **Investment:**
+
 - 14 hours discovery + documentation
 
 **Savings:**
+
 - 6+ hours avoided on NFR-141
 - Unknown hours avoided from using incorrect data
 - **ROI: Positive**
@@ -450,6 +483,7 @@
 ### 5. App Parser is Already Good
 
 **Validation:**
+
 - Tag detection works correctly
 - Period support works as designed
 - Multi-part names handled properly
@@ -491,6 +525,7 @@
 ## Conclusion
 
 **Discovery Success:**
+
 - Found and fixed scanner bugs (78% false positives eliminated)
 - Validated app parser is correct (no changes needed)
 - Identified only 8 real naming errors (0.17% of files)
@@ -498,6 +533,7 @@
 - Prevented unnecessary NFR-141 implementation
 
 **Bottom Line:**
+
 - **App code is fine** ✅
 - **FR-140 still valid** ✅
 - **8 naming errors** need manual fixes (15 min)

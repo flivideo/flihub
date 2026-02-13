@@ -1,48 +1,56 @@
 // FR-47: Modal for renaming the label portion of all recordings in a chapter
-import { useState, useEffect, useCallback } from 'react'
-import { toast } from 'sonner'
-import { useRenameChapter } from '../hooks/useApi'
-import { toKebabCase } from '../utils/formatting'
+import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
+import { useRenameChapter } from '../hooks/useApi';
+import { toKebabCase } from '../utils/formatting';
 
 interface FileToRename {
-  filename: string
-  isSafe: boolean  // FR-111: State-based safe flag
+  filename: string;
+  isSafe: boolean; // FR-111: State-based safe flag
 }
 
 interface ChapterInfo {
-  chapter: string      // e.g., "04"
-  label: string        // e.g., "access-specification"
-  files: FileToRename[]  // Files that will be renamed
+  chapter: string; // e.g., "04"
+  label: string; // e.g., "access-specification"
+  files: FileToRename[]; // Files that will be renamed
 }
 
 interface RenameLabelModalProps {
-  chapterInfo: ChapterInfo
-  onClose: () => void
+  chapterInfo: ChapterInfo;
+  onClose: () => void;
 }
 
 export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps) {
-  const renameMutation = useRenameChapter()
-  const [newLabel, setNewLabel] = useState(chapterInfo.label)
+  const renameMutation = useRenameChapter();
+  const [newLabel, setNewLabel] = useState(chapterInfo.label);
 
   // Handle keyboard shortcuts
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !renameMutation.isPending && newLabel && newLabel !== chapterInfo.label) {
-      e.preventDefault()
-      handleRename()
-    } else if (e.key === 'Escape') {
-      e.preventDefault()
-      onClose()
-    }
-  }, [newLabel, chapterInfo.label, renameMutation.isPending, onClose])
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (
+        e.key === 'Enter' &&
+        !renameMutation.isPending &&
+        newLabel &&
+        newLabel !== chapterInfo.label
+      ) {
+        e.preventDefault();
+        handleRename();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    },
+    [newLabel, chapterInfo.label, renameMutation.isPending, onClose]
+  );
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [handleKeyDown])
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   const handleRename = async () => {
     if (!newLabel || newLabel === chapterInfo.label) {
-      return
+      return;
     }
 
     try {
@@ -50,54 +58,43 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
         chapter: chapterInfo.chapter,
         currentLabel: chapterInfo.label,
         newLabel: newLabel,
-      })
+      });
 
       if (result.success) {
         // FR-130: Inform user about transcript regeneration
-        const fileCount = result.renamedFiles.length
+        const fileCount = result.renamedFiles.length;
         if (fileCount === 1) {
-          toast.success(
-            `Renamed to ${result.renamedFiles[0]}`,
-            {
-              description: 'Transcription queued (view progress in Transcriptions tab)',
-              duration: 5000,
-            }
-          )
+          toast.success(`Renamed to ${result.renamedFiles[0]}`, {
+            description: 'Transcription queued (view progress in Transcriptions tab)',
+            duration: 5000,
+          });
         } else {
-          toast.success(
-            `Renamed ${fileCount} files`,
-            {
-              description: 'Transcriptions queued (view progress in Transcriptions tab)',
-              duration: 5000,
-            }
-          )
+          toast.success(`Renamed ${fileCount} files`, {
+            description: 'Transcriptions queued (view progress in Transcriptions tab)',
+            duration: 5000,
+          });
         }
-        onClose()
+        onClose();
       } else {
-        toast.error(result.error || 'Failed to rename')
+        toast.error(result.error || 'Failed to rename');
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to rename')
+      toast.error(err instanceof Error ? err.message : 'Failed to rename');
     }
-  }
+  };
 
-  const hasChanges = newLabel && newLabel !== chapterInfo.label
+  const hasChanges = newLabel && newLabel !== chapterInfo.label;
 
   // Build preview of new chapter name
-  const previewName = `${chapterInfo.chapter}-*-${newLabel}[-tags].mov`
+  const previewName = `${chapterInfo.chapter}-*-${newLabel}[-tags].mov`;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Rename Chapter
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <h3 className="text-lg font-semibold text-gray-900">Rename Chapter</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             ✕
           </button>
         </div>
@@ -127,13 +124,13 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
               type="text"
               value={newLabel}
               onChange={(e) => {
-                const val = e.target.value.toLowerCase().replace(/[^a-z0-9\s-]/g, '')
-                setNewLabel(val)
+                const val = e.target.value.toLowerCase().replace(/[^a-z0-9\s-]/g, '');
+                setNewLabel(val);
               }}
               onBlur={(e) => {
-                const kebab = toKebabCase(e.target.value)
+                const kebab = toKebabCase(e.target.value);
                 if (kebab !== newLabel) {
-                  setNewLabel(kebab)
+                  setNewLabel(kebab);
                 }
               }}
               className="w-full px-3 py-2 text-sm font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -178,7 +175,8 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
               <div className="text-sm text-yellow-800">
                 <p className="font-medium mb-1">Transcripts will be regenerated</p>
                 <p className="text-xs text-yellow-700">
-                  Existing transcripts will be deleted and re-queued. This may take 5-10 minutes depending on file count and duration.
+                  Existing transcripts will be deleted and re-queued. This may take 5-10 minutes
+                  depending on file count and duration.
                 </p>
               </div>
             </div>
@@ -204,5 +202,5 @@ export function RenameLabelModal({ chapterInfo, onClose }: RenameLabelModalProps
         </div>
       </div>
     </div>
-  )
+  );
 }

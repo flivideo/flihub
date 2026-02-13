@@ -16,6 +16,7 @@ As a developer working on FliHub, I need a documented standard pattern for tool-
 ## Problem
 
 **Current state:**
+
 - SlideOutDrawer component exists and is used in 3+ places (Rename, Export, Folders)
 - Pattern is working in production but undocumented
 - No specification for when to use slide-out vs modal vs inline
@@ -23,6 +24,7 @@ As a developer working on FliHub, I need a documented standard pattern for tool-
 - New developers have no guidance on implementing new tools
 
 **Impact:**
+
 - Inconsistent implementations if pattern isn't documented
 - Developers must reverse-engineer behavior from existing code
 - No single source of truth for drawer UX patterns
@@ -43,18 +45,21 @@ This is a **documentation-only requirement** - the implementation already exists
 ### When to Use SlideOutDrawer
 
 **Use slide-out drawer for:**
+
 - Complex tools requiring multi-field configuration (Rename, Export)
 - Tools that need significant vertical space
 - Tools that benefit from side-by-side view (file list + config)
 - Operations that take >1 field of input
 
 **Use modal dialog for:**
+
 - Confirmation prompts (yes/no decisions)
 - Single-field inputs
 - Error messages
 - Destructive action warnings
 
 **Use inline UI for:**
+
 - Simple toggles (Show Parked checkbox)
 - Instant actions (Select All button)
 - Status displays (selection count)
@@ -66,11 +71,13 @@ This is a **documentation-only requirement** - the implementation already exists
 ### Standard Behaviors
 
 **1. Mutual Exclusivity**
+
 - Only one drawer can be open at a time
 - Opening a new drawer closes the current drawer
 - State managed by single `activeTool` variable
 
 **2. Close Interactions**
+
 - ESC key closes drawer
 - Click overlay (dark background) closes drawer
 - X button in drawer header closes drawer
@@ -78,12 +85,14 @@ This is a **documentation-only requirement** - the implementation already exists
 - Clicking same tool button toggles drawer closed
 
 **3. Open Interactions**
+
 - Click tool button opens drawer
 - Drawer slides in from right side
 - Previous drawer (if any) closes before new one opens
 - 300ms slide animation (smooth transition)
 
 **4. Visual Behavior**
+
 - Drawer overlays main content (doesn't push it)
 - Dark overlay (50% opacity) behind drawer
 - Drawer width configurable (default 380px, can override)
@@ -91,6 +100,7 @@ This is a **documentation-only requirement** - the implementation already exists
 - Scroll if content exceeds height
 
 **5. Focus Management**
+
 - First input field auto-focused on open
 - Tab navigation trapped within drawer
 - Focus returns to tool button on close
@@ -103,11 +113,11 @@ This is a **documentation-only requirement** - the implementation already exists
 
 ```tsx
 interface SlideOutDrawerProps {
-  isOpen: boolean              // Controlled by parent activeTool state
-  title: string                // Drawer header title
-  onClose: () => void          // Called when user closes drawer
-  width?: string               // Optional width override (default: "w-96" = 380px)
-  children: React.ReactNode    // Drawer content
+  isOpen: boolean; // Controlled by parent activeTool state
+  title: string; // Drawer header title
+  onClose: () => void; // Called when user closes drawer
+  width?: string; // Optional width override (default: "w-96" = 380px)
+  children: React.ReactNode; // Drawer content
 }
 
 // Usage example:
@@ -115,10 +125,10 @@ interface SlideOutDrawerProps {
   isOpen={activeTool === 'rename'}
   title="Rename Tool"
   onClose={() => setActiveTool(null)}
-  width="w-[560px]"  // Optional: wider drawer
+  width="w-[560px]" // Optional: wider drawer
 >
   <RenamePanel selectedFiles={selectedFiles} />
-</SlideOutDrawer>
+</SlideOutDrawer>;
 ```
 
 **File:** `client/src/components/shared/SlideOutDrawer.tsx`
@@ -129,11 +139,13 @@ interface SlideOutDrawerProps {
 
 ```tsx
 interface ToolsSidebarProps {
-  selectedFiles: string[]      // Currently selected files
-  totalFiles: number           // Total files in project
-  activeTool: string | null    // Which tool is currently active
-  onSimpleToolClick: (tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all') => void
-  onComplexToolClick: (tool: 'rename' | 'export' | 'folders') => void
+  selectedFiles: string[]; // Currently selected files
+  totalFiles: number; // Total files in project
+  activeTool: string | null; // Which tool is currently active
+  onSimpleToolClick: (
+    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all'
+  ) => void;
+  onComplexToolClick: (tool: 'rename' | 'export' | 'folders') => void;
 }
 
 // Usage example:
@@ -143,7 +155,7 @@ interface ToolsSidebarProps {
   activeTool={activeTool}
   onSimpleToolClick={handleSimpleToolClick}
   onComplexToolClick={handleComplexToolClick}
-/>
+/>;
 ```
 
 **File:** `client/src/components/shared/ToolsSidebar.tsx`
@@ -156,19 +168,19 @@ interface ToolsSidebarProps {
 
 ```tsx
 // In ManagePanel.tsx or similar
-const [activeTool, setActiveTool] = useState<'rename' | 'export' | 'folders' | null>(null)
+const [activeTool, setActiveTool] = useState<'rename' | 'export' | 'folders' | null>(null);
 
 // Simple tool handler (executes immediately)
 const handleSimpleToolClick = (tool: string) => {
   // Execute tool logic directly
-  executeSimpleTool(tool)
-}
+  executeSimpleTool(tool);
+};
 
 // Complex tool handler (opens drawer)
 const handleComplexToolClick = (tool: 'rename' | 'export' | 'folders') => {
   // Toggle drawer: if already open, close it; otherwise open it
-  setActiveTool(activeTool === tool ? null : tool)
-}
+  setActiveTool(activeTool === tool ? null : tool);
+};
 ```
 
 ### Mutual Exclusivity
@@ -177,15 +189,16 @@ const handleComplexToolClick = (tool: 'rename' | 'export' | 'folders') => {
 
 ```tsx
 // Opening new tool automatically closes previous
-setActiveTool('rename')  // Opens Rename drawer
-setActiveTool('export')  // Closes Rename, opens Export
-setActiveTool(null)      // Closes current drawer
+setActiveTool('rename'); // Opens Rename drawer
+setActiveTool('export'); // Closes Rename, opens Export
+setActiveTool(null); // Closes current drawer
 ```
 
 **Toggle behavior:**
+
 ```tsx
 // Clicking same tool button toggles closed
-setActiveTool(activeTool === 'rename' ? null : 'rename')
+setActiveTool(activeTool === 'rename' ? null : 'rename');
 ```
 
 ---
@@ -223,18 +236,22 @@ opacity: 0.5  /* 50% dark overlay */
 ## Width Guidelines
 
 **Default:** 380px (`w-96`)
+
 - Use for simple forms (2-4 fields)
 - Example: Basic rename input
 
 **Medium:** 480px (`w-[480px]`)
+
 - Use for moderate complexity (5-8 fields)
 - Example: Rename with Chapter/Sequence/Tags
 
 **Wide:** 560px (`w-[560px]`)
+
 - Use for complex forms or content display
 - Example: Export tool with dictionary sections
 
 **Extra Wide:** 640px (`w-[640px]`)
+
 - Use for side-by-side layouts within drawer
 - Rare - only if absolutely needed
 
@@ -245,11 +262,13 @@ opacity: 0.5  /* 50% dark overlay */
 ### Behavioral Requirements
 
 **1. Mutual Exclusivity**
+
 - [ ] Only one drawer can be open at a time
 - [ ] Opening new drawer closes previous drawer
 - [ ] State managed by single `activeTool` variable
 
 **2. Close Interactions**
+
 - [ ] ESC key closes drawer
 - [ ] Click overlay closes drawer
 - [ ] X button in header closes drawer
@@ -257,18 +276,21 @@ opacity: 0.5  /* 50% dark overlay */
 - [ ] Clicking active tool button toggles drawer closed
 
 **3. Animations**
+
 - [ ] Drawer slides in from right (300ms)
 - [ ] Overlay fades in (200ms)
 - [ ] Smooth cubic-bezier easing
 - [ ] No layout shift (drawer overlays content)
 
 **4. Focus Management**
+
 - [ ] First input auto-focused on open
 - [ ] Tab navigation stays within drawer
 - [ ] Focus returns to trigger button on close
 - [ ] ESC key works from any focused element
 
 **5. Responsive Behavior**
+
 - [ ] Drawer width configurable via prop
 - [ ] Drawer scrolls if content exceeds viewport height
 - [ ] Overlay covers entire viewport
@@ -290,16 +312,19 @@ opacity: 0.5  /* 50% dark overlay */
 ### Existing Implementations
 
 **1. SlideOutDrawer Component**
+
 - File: `client/src/components/shared/SlideOutDrawer.tsx` (51 lines)
 - Features: Overlay, animations, ESC handler, close on overlay click
 - Props: isOpen, title, onClose, width, children
 
 **2. ToolsSidebar Component**
+
 - File: `client/src/components/shared/ToolsSidebar.tsx` (147 lines)
 - Features: Simple/Complex tool sections, tooltips, active state, disabled state
 - Props: selectedFiles, totalFiles, activeTool, handlers
 
 **3. ManagePanel Integration**
+
 - File: `client/src/components/ManagePanel.tsx`
 - Lines 76-77: activeTool state
 - Lines 402-404: handleComplexToolClick
@@ -307,6 +332,7 @@ opacity: 0.5  /* 50% dark overlay */
 - Lines 586-651: Three SlideOutDrawer instances
 
 **4. Current Tool Implementations**
+
 - Rename drawer (lines 586-629): Basic input + buttons
 - Export drawer (lines 631-641): ExportPanel component (593 lines)
 - Folders drawer (lines 643-651): Placeholder
@@ -334,7 +360,9 @@ opacity: 0.5  /* 50% dark overlay */
 
 ```tsx
 // In ManagePanel.tsx
-const [activeTool, setActiveTool] = useState<'rename' | 'export' | 'folders' | 'my-tool' | null>(null)
+const [activeTool, setActiveTool] = useState<'rename' | 'export' | 'folders' | 'my-tool' | null>(
+  null
+);
 ```
 
 **Step 3: Add SlideOutDrawer**
@@ -355,11 +383,7 @@ const [activeTool, setActiveTool] = useState<'rename' | 'export' | 'folders' | '
 ```tsx
 // In client/src/components/shared/MyToolPanel.tsx
 export function MyToolPanel({ selectedFiles }: { selectedFiles: string[] }) {
-  return (
-    <div className="space-y-4">
-      {/* Tool UI here */}
-    </div>
-  )
+  return <div className="space-y-4">{/* Tool UI here */}</div>;
 }
 ```
 
@@ -376,11 +400,13 @@ export function MyToolPanel({ selectedFiles }: { selectedFiles: string[] }) {
 ### Files Modified (Historical - from FR-136 implementation)
 
 **Created:**
+
 - `client/src/components/shared/SlideOutDrawer.tsx` (51 lines)
 - `client/src/components/shared/ToolsSidebar.tsx` (147 lines)
 - `client/src/components/shared/ExportPanel.tsx` (593 lines)
 
 **Modified:**
+
 - `client/src/components/ManagePanel.tsx` - Added tool state, handlers, drawers
 - `client/src/components/shared/index.ts` - Exported new components
 
@@ -397,6 +423,7 @@ export function MyToolPanel({ selectedFiles }: { selectedFiles: string[] }) {
 **Status:** Documentation complete
 
 **What exists:**
+
 - ✅ SlideOutDrawer component fully implemented
 - ✅ ToolsSidebar component fully implemented
 - ✅ State management pattern in use
@@ -405,6 +432,7 @@ export function MyToolPanel({ selectedFiles }: { selectedFiles: string[] }) {
 - ✅ Mutual exclusivity working
 
 **What was documented:**
+
 - Pattern definition (when to use)
 - Behavior specification (all close/open interactions)
 - Component APIs (props, usage)
@@ -414,6 +442,7 @@ export function MyToolPanel({ selectedFiles }: { selectedFiles: string[] }) {
 - Code examples
 
 **Next steps:**
+
 - Use this pattern for all future complex tools
 - Reference this PRD when implementing FR-138, FR-139, etc.
 - Keep this document updated if pattern evolves

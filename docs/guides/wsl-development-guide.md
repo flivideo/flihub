@@ -11,6 +11,7 @@ This guide is for developers running FliHub on Windows with WSL (Windows Subsyst
 > **"Everything is Linux. Windows is just a mounted drive at `/mnt/c/`."**
 
 When running FliHub from WSL:
+
 - WSL files use native Linux paths: `/home/jan/...`
 - Windows files use the mount point: `/mnt/c/Users/jan/...`
 
@@ -20,13 +21,13 @@ This mental model matches how Mac works (everything Unix), making future transit
 
 ## Why WSL-First?
 
-| Factor | Native Windows | WSL (Recommended) |
-|--------|----------------|-------------------|
-| Video projects path | `\\wsl$\Ubuntu\home\jan\...` | `/home/jan/...` |
-| Ruby/Python dev | Problematic | Native Linux |
-| Matches Mac workflow | No | Yes |
-| Path complexity | UNC paths, escaping | Simple Unix paths |
-| Long-term value | Windows-specific | Transferable skills |
+| Factor               | Native Windows               | WSL (Recommended)   |
+| -------------------- | ---------------------------- | ------------------- |
+| Video projects path  | `\\wsl$\Ubuntu\home\jan\...` | `/home/jan/...`     |
+| Ruby/Python dev      | Problematic                  | Native Linux        |
+| Matches Mac workflow | No                           | Yes                 |
+| Path complexity      | UNC paths, escaping          | Simple Unix paths   |
+| Long-term value      | Windows-specific             | Transferable skills |
 
 ---
 
@@ -75,11 +76,11 @@ Edit `server/config.json` with **Linux paths**:
 
 **Path breakdown:**
 
-| Config Field | Location | Path Format |
-|--------------|----------|-------------|
-| `projectsRootDirectory` | WSL filesystem | `/home/jan/...` |
-| `watchDirectory` | Windows (OBS output) | `/mnt/c/Users/jan/...` |
-| `imageSourceDirectory` | Windows (Downloads) | `/mnt/c/Users/jan/...` |
+| Config Field            | Location             | Path Format            |
+| ----------------------- | -------------------- | ---------------------- |
+| `projectsRootDirectory` | WSL filesystem       | `/home/jan/...`        |
+| `watchDirectory`        | Windows (OBS output) | `/mnt/c/Users/jan/...` |
+| `imageSourceDirectory`  | Windows (Downloads)  | `/mnt/c/Users/jan/...` |
 
 ### 4. Run FliHub
 
@@ -119,10 +120,10 @@ Use for: Downloads, OBS output, Windows apps
 
 ### Converting Paths
 
-| From Windows | To WSL |
-|--------------|--------|
+| From Windows             | To WSL                       |
+| ------------------------ | ---------------------------- |
 | `C:\Users\jan\Downloads` | `/mnt/c/Users/jan/Downloads` |
-| `D:\Videos` | `/mnt/d/Videos` |
+| `D:\Videos`              | `/mnt/d/Videos`              |
 
 **Pattern:** Replace `X:\` with `/mnt/x/` (lowercase), change `\` to `/`
 
@@ -151,6 +152,7 @@ Use for: Downloads, OBS output, Windows apps
 ### 4. Mixing Path Formats
 
 **Wrong:**
+
 ```json
 {
   "projectsRootDirectory": "\\\\wsl$\\Ubuntu\\home\\jan\\...",
@@ -185,11 +187,13 @@ This is the **opposite direction** - Windows accessing WSL. It's fine for browsi
 ### Projects Not Showing
 
 Ensure `projectsRootDirectory` uses native WSL path:
+
 ```
 /home/jan/dev/video-projects/v-appydave
 ```
 
 Not UNC path:
+
 ```
 \\wsl$\Ubuntu\home\jan\dev\video-projects\v-appydave
 ```
@@ -197,6 +201,7 @@ Not UNC path:
 ### OBS Recordings Not Detected
 
 OBS runs on Windows, so its output folder needs the mount path:
+
 ```
 /mnt/c/Users/jan/Videos/obs
 ```
@@ -222,9 +227,9 @@ When working with FliHub on a Windows+WSL system:
 
 ## Summary
 
-| Running From | WSL Files | Windows Files |
-|--------------|-----------|---------------|
-| WSL (recommended) | `/home/jan/...` | `/mnt/c/Users/jan/...` |
-| Native Windows | `\\wsl$\Ubuntu\home\jan\...` | `C:\Users\jan\...` |
+| Running From      | WSL Files                    | Windows Files          |
+| ----------------- | ---------------------------- | ---------------------- |
+| WSL (recommended) | `/home/jan/...`              | `/mnt/c/Users/jan/...` |
+| Native Windows    | `\\wsl$\Ubuntu\home\jan\...` | `C:\Users\jan\...`     |
 
 **Recommendation:** Always run from WSL, always use Linux paths. Think Linux.

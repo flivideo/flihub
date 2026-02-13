@@ -15,6 +15,7 @@ As a content creator preparing AI context or video descriptions, I want to quick
 ## Problem
 
 Currently, accessing a project's combined transcript requires:
+
 1. Selecting the project
 2. Navigating to Recordings tab
 3. Finding the transcript button
@@ -30,19 +31,23 @@ For multi-project workflows (e.g., creating a video series summary), this is ted
 Add transcript quick-access features directly to the Projects panel:
 
 ### Phase 1: Single Project Copy
+
 - Add a small clipboard icon next to each project row
 - Click copies the project's combined transcript to clipboard
 - Toast confirmation: "Transcript copied (12,345 chars)"
 
 ### Phase 2: Multi-Select Infrastructure
+
 - Add selection checkboxes to project rows
 - "Select All" / "Clear" buttons in header
 - Selected count indicator
 
 ### Phase 3: Multi-Select Transcript Concatenation
+
 - When multiple projects selected, enable "Copy All Transcripts" action
 - Concatenates transcripts with project headers as separators
 - Format:
+
   ```
   === b85-project-name ===
 
@@ -58,6 +63,7 @@ Add transcript quick-access features directly to the Projects panel:
 ## UI Mockup
 
 ### Single Project Row (Phase 1)
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │ ⭐ │ b85-project │ REC │ 24 │ 100% │ 📋 │ ...                      │
@@ -67,6 +73,7 @@ Add transcript quick-access features directly to the Projects panel:
 ```
 
 ### Multi-Select Mode (Phase 2-3)
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │ [Select All] [Clear]                           3 selected  [📋 Copy]│
@@ -83,14 +90,17 @@ Add transcript quick-access features directly to the Projects panel:
 ## Technical Notes
 
 ### New API Endpoint
+
 - `GET /api/query/projects/:code/transcript/text` - Returns plain text transcript
 - Reuses existing combined transcript logic from `/api/transcriptions/:projectCode/combined`
 
 ### Client Changes
+
 - `ProjectsPanel.tsx` - Add copy button per row, multi-select state
 - New hook: `useCopyTranscript` - Handles clipboard copy with toast
 
 ### Multi-Select State
+
 ```typescript
 interface MultiSelectState {
   enabled: boolean;
@@ -103,17 +113,20 @@ interface MultiSelectState {
 ## Acceptance Criteria
 
 ### Phase 1
+
 - [x] Single-click copy button on each project row
 - [x] Toast shows confirmation with character count
 - [x] Button disabled if project has no transcripts (0%)
 - [x] Copy icon uses same style as existing clipboard buttons
 
 ### Phase 2
+
 - [ ] Checkbox appears on each row when multi-select enabled
 - [ ] Select All/Clear buttons functional
 - [ ] Selected count shows in header
 
 ### Phase 3
+
 - [ ] "Copy All Transcripts" concatenates selected projects
 - [ ] Clear separator headers between projects
 - [ ] Projects ordered by code (ascending)
@@ -123,6 +136,7 @@ interface MultiSelectState {
 ## Future Considerations
 
 Multi-select infrastructure enables future bulk operations:
+
 - Bulk stage changes
 - Bulk export to JSON
 - Bulk transcript regeneration
@@ -145,9 +159,11 @@ Multi-select infrastructure enables future bulk operations:
    - On click: fetches transcript -> copies to clipboard -> shows toast with char count
 
 **Bug fix during implementation:**
+
 - Had to use `API_URL` (`http://localhost:5101`) instead of relative URL, since Vite dev server doesn't proxy API requests to the backend.
 
 **Files modified:**
+
 - `server/src/routes/query/projects.ts` - New transcript text endpoint
 - `client/src/components/ProjectsPanel.tsx` - Copy button per row
 

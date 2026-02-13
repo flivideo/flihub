@@ -28,7 +28,12 @@ interface RegenToolbarProps {
   onRegenComplete?: (type: 'shadows' | 'transcripts' | 'chapters' | 'all') => void;
 }
 
-export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenComplete }: RegenToolbarProps) {
+export function RegenToolbar({
+  projectCode,
+  selectedFiles,
+  totalFiles,
+  onRegenComplete,
+}: RegenToolbarProps) {
   const [isOpen, setIsOpen] = useState(() => {
     const saved = localStorage.getItem('flihub:regenToolbarOpen');
     return saved === null ? true : saved === 'true';
@@ -53,7 +58,7 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
         current: data.current,
         total: data.total,
         currentItem: `Processing ${data.filename}`,
-        status: 'running'
+        status: 'running',
       });
     };
 
@@ -63,7 +68,7 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
         current: data.current,
         total: data.total,
         currentItem: `Chapter ${data.chapter}`,
-        status: 'running'
+        status: 'running',
       });
     };
 
@@ -72,7 +77,7 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
         type: 'chapters',
         current: data.completed,
         total: data.completed + data.failed,
-        status: 'complete'
+        status: 'complete',
       });
       setIsRegenerating(false);
       onRegenComplete?.('chapters');
@@ -84,12 +89,12 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
         current: data.current,
         total: data.total,
         currentItem: `Step ${data.current}: ${data.step}`,
-        status: 'running'
+        status: 'running',
       });
     };
 
     const handleAllComplete = () => {
-      setProgress(prev => prev ? { ...prev, status: 'complete' } : null);
+      setProgress((prev) => (prev ? { ...prev, status: 'complete' } : null));
       setIsRegenerating(false);
       onRegenComplete?.('all');
     };
@@ -104,14 +109,18 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
         current: completed,
         total: total,
         currentItem: `Regenerated ${completed} shadow file${completed !== 1 ? 's' : ''}`,
-        status: 'complete'
+        status: 'complete',
       });
 
       // Show completion toast
       if (failed > 0) {
-        toast.warning(`Regenerated ${completed}/${total} shadow files (${failed} failed)`, { duration: 5000 });
+        toast.warning(`Regenerated ${completed}/${total} shadow files (${failed} failed)`, {
+          duration: 5000,
+        });
       } else {
-        toast.success(`Regenerated ${completed} shadow file${completed !== 1 ? 's' : ''}`, { duration: 3000 });
+        toast.success(`Regenerated ${completed} shadow file${completed !== 1 ? 's' : ''}`, {
+          duration: 3000,
+        });
       }
 
       // Keep completion state visible for 3 seconds
@@ -146,24 +155,30 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
   const handleRegen = async (type: 'shadows' | 'transcripts' | 'chapters' | 'all') => {
     // FR-136: Determine scope (selected files or all files)
     const targetFiles = selectedFiles.length > 0 ? selectedFiles : undefined;
-    const scope = selectedFiles.length > 0
-      ? `${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
-      : `all ${totalFiles} files`;
+    const scope =
+      selectedFiles.length > 0
+        ? `${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
+        : `all ${totalFiles} files`;
 
     // FR-136: Build file list preview (max 3 files, then "... and X more")
     let fileListPreview = '';
     if (selectedFiles.length > 0) {
       if (selectedFiles.length <= 3) {
-        fileListPreview = selectedFiles.map(f => `• ${f}`).join('\n');
+        fileListPreview = selectedFiles.map((f) => `• ${f}`).join('\n');
       } else {
         fileListPreview = `• ${selectedFiles.slice(0, 3).join('\n• ')}\n... and ${selectedFiles.length - 3} more`;
       }
     }
 
     // FR-136: Confirmation dialogs showing explicit scope
-    const typeLabel = type === 'shadows' ? 'shadows' :
-                      type === 'transcripts' ? 'transcripts' :
-                      type === 'chapters' ? 'chapter videos' : 'all derivative files';
+    const typeLabel =
+      type === 'shadows'
+        ? 'shadows'
+        : type === 'transcripts'
+          ? 'transcripts'
+          : type === 'chapters'
+            ? 'chapter videos'
+            : 'all derivative files';
 
     let confirmMessage = `Regenerate ${typeLabel} for ${scope}?`;
 
@@ -174,7 +189,8 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
     if (type === 'chapters') {
       confirmMessage += `\n\nThis may take 30-60 seconds per chapter.`;
     } else if (type === 'all') {
-      confirmMessage += `\n\nThis will:\n` +
+      confirmMessage +=
+        `\n\nThis will:\n` +
         `1. Regenerate shadows\n` +
         `2. Queue transcriptions\n` +
         `3. Regenerate chapter videos\n\n` +
@@ -192,13 +208,18 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
       current: 0,
       total: 0,
       currentItem: `Starting ${type} regeneration...`,
-      status: 'running'
+      status: 'running',
     });
 
     // Show start toast
-    const toastLabel = type === 'shadows' ? 'Shadow Files' :
-                       type === 'transcripts' ? 'Transcripts' :
-                       type === 'chapters' ? 'Chapter Videos' : 'All Files';
+    const toastLabel =
+      type === 'shadows'
+        ? 'Shadow Files'
+        : type === 'transcripts'
+          ? 'Transcripts'
+          : type === 'chapters'
+            ? 'Chapter Videos'
+            : 'All Files';
     toast.info(`Regenerating ${toastLabel}...`);
 
     try {
@@ -228,11 +249,13 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
           current: queued,
           total: total,
           currentItem: `Queued ${queued} file${queued !== 1 ? 's' : ''} for transcription`,
-          status: 'complete'
+          status: 'complete',
         });
 
         // Show completion toast
-        toast.success(`Queued ${queued} file${queued !== 1 ? 's' : ''} for transcription`, { duration: 3000 });
+        toast.success(`Queued ${queued} file${queued !== 1 ? 's' : ''} for transcription`, {
+          duration: 3000,
+        });
 
         // Keep completion state visible for 3 seconds
         setTimeout(() => {
@@ -244,10 +267,12 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
       }
       // For chapters and all, Socket.io events will handle progress
     } catch (err) {
-      setProgress(prev => prev ? { ...prev, status: 'error' } : null);
+      setProgress((prev) => (prev ? { ...prev, status: 'error' } : null));
       setIsRegenerating(false);
       console.error(`[Regen ${type}] Error:`, err);
-      toast.error(`Failed to regenerate ${type}: ${err instanceof Error ? err.message : String(err)}`);
+      toast.error(
+        `Failed to regenerate ${type}: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
   };
 
@@ -279,11 +304,13 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
               onClick={() => handleRegen('shadows')}
               disabled={isRegenerating || totalFiles === 0}
               className="px-3 py-2 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-              title={totalFiles === 0
-                ? "No files to regenerate"
-                : (selectedFiles.length > 0
-                  ? `Regenerate shadows for ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
-                  : `Regenerate shadows for all ${totalFiles} files`)}
+              title={
+                totalFiles === 0
+                  ? 'No files to regenerate'
+                  : selectedFiles.length > 0
+                    ? `Regenerate shadows for ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
+                    : `Regenerate shadows for all ${totalFiles} files`
+              }
             >
               ↻ Regen Shadows
             </button>
@@ -291,11 +318,13 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
               onClick={() => handleRegen('transcripts')}
               disabled={isRegenerating || totalFiles === 0}
               className="px-3 py-2 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-              title={totalFiles === 0
-                ? "No files to transcribe"
-                : (selectedFiles.length > 0
-                  ? `Queue transcription for ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
-                  : `Queue transcription for all ${totalFiles} files`)}
+              title={
+                totalFiles === 0
+                  ? 'No files to transcribe'
+                  : selectedFiles.length > 0
+                    ? `Queue transcription for ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
+                    : `Queue transcription for all ${totalFiles} files`
+              }
             >
               ↻ Regen Transcripts
             </button>
@@ -303,11 +332,13 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
               onClick={() => handleRegen('chapters')}
               disabled={isRegenerating || totalFiles === 0}
               className="px-3 py-2 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-              title={totalFiles === 0
-                ? "No chapters to regenerate"
-                : (selectedFiles.length > 0
-                  ? `Regenerate chapters from ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
-                  : `Regenerate all chapter videos`)}
+              title={
+                totalFiles === 0
+                  ? 'No chapters to regenerate'
+                  : selectedFiles.length > 0
+                    ? `Regenerate chapters from ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
+                    : `Regenerate all chapter videos`
+              }
             >
               ↻ Regen Chapters
             </button>
@@ -315,24 +346,25 @@ export function RegenToolbar({ projectCode, selectedFiles, totalFiles, onRegenCo
               onClick={() => handleRegen('all')}
               disabled={isRegenerating || totalFiles === 0}
               className="px-3 py-2 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-              title={totalFiles === 0
-                ? "No files to regenerate"
-                : (selectedFiles.length > 0
-                  ? `Regenerate all derivative files for ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
-                  : `Regenerate all derivative files (shadows → transcripts → chapters)`)}
+              title={
+                totalFiles === 0
+                  ? 'No files to regenerate'
+                  : selectedFiles.length > 0
+                    ? `Regenerate all derivative files for ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
+                    : `Regenerate all derivative files (shadows → transcripts → chapters)`
+              }
             >
               ↻ Regen All
             </button>
           </div>
 
           {/* Progress indicator */}
-          {progress && (
-            <RegenProgressDisplay progress={progress} />
-          )}
+          {progress && <RegenProgressDisplay progress={progress} />}
 
           {/* Help text */}
           <p className="text-xs text-gray-500">
-            Regeneration tools delete and recreate derivative files. Shadows are fast (~1 minute), transcripts are queued (5-10 min/file), chapters are slow (~30-60s each).
+            Regeneration tools delete and recreate derivative files. Shadows are fast (~1 minute),
+            transcripts are queued (5-10 min/file), chapters are slow (~30-60s each).
           </p>
         </div>
       )}
@@ -350,18 +382,20 @@ function RegenProgressDisplay({ progress }: { progress: RegenProgress }) {
   const isError = progress.status === 'error';
 
   return (
-    <div className={`p-3 border rounded ${
-      isComplete ? 'bg-green-50 border-green-200' :
-      isError ? 'bg-red-50 border-red-200' :
-      'bg-blue-50 border-blue-200'
-    }`}>
+    <div
+      className={`p-3 border rounded ${
+        isComplete
+          ? 'bg-green-50 border-green-200'
+          : isError
+            ? 'bg-red-50 border-red-200'
+            : 'bg-blue-50 border-blue-200'
+      }`}
+    >
       <div className="flex items-center gap-2">
         <div className="flex-1 bg-gray-200 rounded-full h-2">
           <div
             className={`h-2 rounded-full transition-all ${
-              isComplete ? 'bg-green-500' :
-              isError ? 'bg-red-500' :
-              'bg-blue-500'
+              isComplete ? 'bg-green-500' : isError ? 'bg-red-500' : 'bg-blue-500'
             } ${isRunning && progress.total === 0 ? 'animate-pulse' : ''}`}
             style={{ width: progress.total === 0 ? '100%' : `${Math.min(100, percentage)}%` }}
           />
@@ -372,15 +406,9 @@ function RegenProgressDisplay({ progress }: { progress: RegenProgress }) {
           </span>
         )}
       </div>
-      {progress.currentItem && (
-        <p className="text-xs text-gray-600 mt-2">{progress.currentItem}</p>
-      )}
-      {isComplete && (
-        <p className="text-xs text-green-600 font-medium mt-1">✓ Complete</p>
-      )}
-      {isError && (
-        <p className="text-xs text-red-600 font-medium mt-1">✗ Error</p>
-      )}
+      {progress.currentItem && <p className="text-xs text-gray-600 mt-2">{progress.currentItem}</p>}
+      {isComplete && <p className="text-xs text-green-600 font-medium mt-1">✓ Complete</p>}
+      {isError && <p className="text-xs text-red-600 font-medium mt-1">✗ Error</p>}
     </div>
   );
 }

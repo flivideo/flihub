@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react';
 
 /**
  * FR-117: Hook for hover state with configurable delays
@@ -9,47 +9,47 @@ export function useDelayedHover(
   enterDelay = 0,
   leaveDelay = 150
 ): {
-  isHovered: boolean
-  handleMouseEnter: () => void
-  handleMouseLeave: () => void
+  isHovered: boolean;
+  handleMouseEnter: () => void;
+  handleMouseLeave: () => void;
 } {
-  const [isHovered, setIsHovered] = useState(false)
-  const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [isHovered, setIsHovered] = useState(false);
+  const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleMouseEnter = useCallback(() => {
     // Clear any pending leave timer
     if (leaveTimer.current) {
-      clearTimeout(leaveTimer.current)
-      leaveTimer.current = null
+      clearTimeout(leaveTimer.current);
+      leaveTimer.current = null;
     }
 
     if (enterDelay > 0) {
       enterTimer.current = setTimeout(() => {
-        setIsHovered(true)
-      }, enterDelay)
+        setIsHovered(true);
+      }, enterDelay);
     } else {
-      setIsHovered(true)
+      setIsHovered(true);
     }
-  }, [enterDelay])
+  }, [enterDelay]);
 
   const handleMouseLeave = useCallback(() => {
     // Clear any pending enter timer
     if (enterTimer.current) {
-      clearTimeout(enterTimer.current)
-      enterTimer.current = null
+      clearTimeout(enterTimer.current);
+      enterTimer.current = null;
     }
 
     if (leaveDelay > 0) {
       leaveTimer.current = setTimeout(() => {
-        setIsHovered(false)
-      }, leaveDelay)
+        setIsHovered(false);
+      }, leaveDelay);
     } else {
-      setIsHovered(false)
+      setIsHovered(false);
     }
-  }, [leaveDelay])
+  }, [leaveDelay]);
 
-  return { isHovered, handleMouseEnter, handleMouseLeave }
+  return { isHovered, handleMouseEnter, handleMouseLeave };
 }
 
 /**
@@ -60,75 +60,78 @@ export function useDelayedHoverValue<T>(
   enterDelay = 0,
   leaveDelay = 200
 ): {
-  value: T | null
-  setValue: (val: T | null) => void
-  handleEnter: (val: T) => void
-  handleLeave: () => void
-  cancelPendingEnter: () => void  // FR-117: Cancel enter timer without starting leave timer
+  value: T | null;
+  setValue: (val: T | null) => void;
+  handleEnter: (val: T) => void;
+  handleLeave: () => void;
+  cancelPendingEnter: () => void; // FR-117: Cancel enter timer without starting leave timer
 } {
-  const [value, setValueState] = useState<T | null>(null)
-  const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [value, setValueState] = useState<T | null>(null);
+  const enterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleEnter = useCallback((val: T) => {
-    // Clear any pending leave timer
-    if (leaveTimer.current) {
-      clearTimeout(leaveTimer.current)
-      leaveTimer.current = null
-    }
+  const handleEnter = useCallback(
+    (val: T) => {
+      // Clear any pending leave timer
+      if (leaveTimer.current) {
+        clearTimeout(leaveTimer.current);
+        leaveTimer.current = null;
+      }
 
-    // Clear any pending enter timer (for different value)
-    if (enterTimer.current) {
-      clearTimeout(enterTimer.current)
-      enterTimer.current = null
-    }
+      // Clear any pending enter timer (for different value)
+      if (enterTimer.current) {
+        clearTimeout(enterTimer.current);
+        enterTimer.current = null;
+      }
 
-    if (enterDelay > 0) {
-      enterTimer.current = setTimeout(() => {
-        setValueState(val)
-      }, enterDelay)
-    } else {
-      setValueState(val)
-    }
-  }, [enterDelay])
+      if (enterDelay > 0) {
+        enterTimer.current = setTimeout(() => {
+          setValueState(val);
+        }, enterDelay);
+      } else {
+        setValueState(val);
+      }
+    },
+    [enterDelay]
+  );
 
   const handleLeave = useCallback(() => {
     // Clear any pending enter timer
     if (enterTimer.current) {
-      clearTimeout(enterTimer.current)
-      enterTimer.current = null
+      clearTimeout(enterTimer.current);
+      enterTimer.current = null;
     }
 
     if (leaveDelay > 0) {
       leaveTimer.current = setTimeout(() => {
-        setValueState(null)
-      }, leaveDelay)
+        setValueState(null);
+      }, leaveDelay);
     } else {
-      setValueState(null)
+      setValueState(null);
     }
-  }, [leaveDelay])
+  }, [leaveDelay]);
 
   // FR-117: Cancel pending enter without affecting current value or starting leave timer
   // Used when mouse passes through an element quickly (e.g., crossing chapters to reach segment panel)
   const cancelPendingEnter = useCallback(() => {
     if (enterTimer.current) {
-      clearTimeout(enterTimer.current)
-      enterTimer.current = null
+      clearTimeout(enterTimer.current);
+      enterTimer.current = null;
     }
-  }, [])
+  }, []);
 
   const setValue = useCallback((val: T | null) => {
     // Direct set, clear all timers
     if (enterTimer.current) {
-      clearTimeout(enterTimer.current)
-      enterTimer.current = null
+      clearTimeout(enterTimer.current);
+      enterTimer.current = null;
     }
     if (leaveTimer.current) {
-      clearTimeout(leaveTimer.current)
-      leaveTimer.current = null
+      clearTimeout(leaveTimer.current);
+      leaveTimer.current = null;
     }
-    setValueState(val)
-  }, [])
+    setValueState(val);
+  }, []);
 
-  return { value, setValue, handleEnter, handleLeave, cancelPendingEnter }
+  return { value, setValue, handleEnter, handleLeave, cancelPendingEnter };
 }

@@ -34,6 +34,7 @@ Add a subtle config shortcut button near the common name pills on the Incoming p
 ## UI Mockup
 
 ### Incoming Page - Common Names Section
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │  Common Names:                                                      │
@@ -46,6 +47,7 @@ Add a subtle config shortcut button near the common name pills on the Incoming p
 ```
 
 ### Button Appearance
+
 - Small cog icon with plus: `⚙+` or just `+`
 - Muted color (gray-400) to not distract from main workflow
 - Tooltip: "Add common name"
@@ -67,21 +69,25 @@ Add a subtle config shortcut button near the common name pills on the Incoming p
 ## Technical Notes
 
 ### Navigation with Focus
+
 - Use URL hash or query param: `/config#common-names` or `/config?focus=commonNames`
 - Config page reads hash/param on mount and focuses appropriate field
 
 ### Config Page Changes
+
 - Add `id="common-names"` to section for scroll targeting
 - Add `ref` to common names input field
 - On mount, check for focus param and trigger `inputRef.current?.focus()`
 
 ### Incoming Page Changes
+
 - Add button next to common name pills
 - Button triggers navigation with focus param
 
 ### Implementation Options
 
 **Option A: URL Hash (simpler)**
+
 ```typescript
 // In Incoming page
 <button onClick={() => navigate('/config#common-names')}>
@@ -98,6 +104,7 @@ useEffect(() => {
 ```
 
 **Option B: App State (cleaner)**
+
 ```typescript
 // App-level state
 const [configFocus, setConfigFocus] = useState<string | null>(null);

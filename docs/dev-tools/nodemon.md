@@ -21,18 +21,19 @@ FliHub uses a `nodemon.json` config file in `server/`:
 }
 ```
 
-| Setting | Value | Purpose |
-|---------|-------|---------|
-| `watch` | `["src"]` | Only watch the source code directory |
-| `ext` | `ts` | Only watch TypeScript files |
-| `ignore` | `["*.json", ...]` | Ignore generated/config files |
-| `exec` | `tsx src/index.ts` | Command to run the server |
+| Setting  | Value              | Purpose                              |
+| -------- | ------------------ | ------------------------------------ |
+| `watch`  | `["src"]`          | Only watch the source code directory |
+| `ext`    | `ts`               | Only watch TypeScript files          |
+| `ignore` | `["*.json", ...]`  | Ignore generated/config files        |
+| `exec`   | `tsx src/index.ts` | Command to run the server            |
 
 ## Why This Configuration?
 
 ### Problem: Runtime-Generated Files
 
 The server writes files during operation:
+
 - `config.json` - User configuration
 - `transcription-telemetry.json` - Transcription metrics
 
@@ -58,12 +59,12 @@ By setting `"watch": ["src"]`, nodemon only monitors the source directory. Gener
 
 ## File Locations
 
-| File | Location | Watched? |
-|------|----------|----------|
-| Source code | `server/src/**/*.ts` | Yes |
-| Config | `server/config.json` | No |
-| Telemetry | `server/transcription-telemetry.json` | No |
-| Package | `server/package.json` | No |
+| File        | Location                              | Watched? |
+| ----------- | ------------------------------------- | -------- |
+| Source code | `server/src/**/*.ts`                  | Yes      |
+| Config      | `server/config.json`                  | No       |
+| Telemetry   | `server/transcription-telemetry.json` | No       |
+| Package     | `server/package.json`                 | No       |
 
 ## Troubleshooting
 

@@ -53,18 +53,19 @@ This feature is implemented in phases. Each phase builds on the previous.
 
 ### Phase Summary
 
-| Phase | Focus | Status |
-|-------|-------|--------|
-| **Phase 1: MVP** | Basic extraction, copy to clipboard | ✅ Complete |
-| **Phase 2: UI Improvements** | 3-state colors, match explanations, bug fixes | ✅ Complete |
-| **Phase 3: Algorithm Improvements** | Proper text similarity library | ✅ Complete |
-| **Phase 4: LLM Fallback** | Semantic matching for uncertain cases | Future |
+| Phase                               | Focus                                         | Status      |
+| ----------------------------------- | --------------------------------------------- | ----------- |
+| **Phase 1: MVP**                    | Basic extraction, copy to clipboard           | ✅ Complete |
+| **Phase 2: UI Improvements**        | 3-state colors, match explanations, bug fixes | ✅ Complete |
+| **Phase 3: Algorithm Improvements** | Proper text similarity library                | ✅ Complete |
+| **Phase 4: LLM Fallback**           | Semantic matching for uncertain cases         | Future      |
 
 ---
 
 ### Phase 1: MVP ✅ Complete
 
 **What was built:**
+
 - Parse recording transcripts and final SRT
 - Multi-stage phrase matching (10, 7, 5, 3 words)
 - Confidence scoring with deductions
@@ -73,6 +74,7 @@ This feature is implemented in phases. Each phase builds on the previous.
 - Basic UI showing chapters with timestamps
 
 **Acceptance Criteria:** ✅ All met
+
 - [x] Chapters extracted from transcripts
 - [x] Timestamps found in SRT
 - [x] YouTube format generated
@@ -86,12 +88,12 @@ This feature is implemented in phases. Each phase builds on the previous.
 
 **Issues fixed:**
 
-| Issue | Problem | Fix |
-|-------|---------|-----|
-| **Confidence % meaningless** | "79% vs 85%" doesn't tell a story | Replace with 3-state colors |
-| **No match explanation** | User can't see WHY a match was made | Show match reason text |
-| **Lightning bolts wrong** | Chapters 29, 30 flagged when in order | Fix out-of-order logic |
-| **Impossible alternatives** | Options 37 minutes apart shown | Filter to nearby timestamps only |
+| Issue                        | Problem                               | Fix                              |
+| ---------------------------- | ------------------------------------- | -------------------------------- |
+| **Confidence % meaningless** | "79% vs 85%" doesn't tell a story     | Replace with 3-state colors      |
+| **No match explanation**     | User can't see WHY a match was made   | Show match reason text           |
+| **Lightning bolts wrong**    | Chapters 29, 30 flagged when in order | Fix out-of-order logic           |
+| **Impossible alternatives**  | Options 37 minutes apart shown        | Filter to nearby timestamps only |
 
 **3-State Color System:**
 
@@ -104,11 +106,13 @@ This feature is implemented in phases. Each phase builds on the previous.
 ```
 
 **Match Reason Examples:**
+
 - "Matched 10 words at position 0" → 🟢 CONFIDENT
 - "Matched 5 words, skipped 1" → 🟡 REVIEW
 - "Partial match: 5 words overlap" → 🔴 UNCERTAIN
 
 **Acceptance Criteria:**
+
 - [x] Replace confidence % with color badge (CONFIDENT/REVIEW/UNCERTAIN)
 - [x] Show match reason as text below each chapter (visible on hover + in expanded view)
 - [x] Fix lightning bolt: only show when chapter is actually out of order
@@ -116,6 +120,7 @@ This feature is implemented in phases. Each phase builds on the previous.
 - [ ] Side-by-side text comparison (transcript vs SRT snippet) - DEFERRED to Phase 3
 
 **Files to modify:**
+
 - `client/src/components/ChaptersPanel.tsx` - UI display
 - `server/src/utils/chapterExtraction.ts` - Add match reason to response
 - `shared/types.ts` - Add `matchReason` field to ChapterMatch
@@ -129,6 +134,7 @@ This feature is implemented in phases. Each phase builds on the previous.
 **What to implement:**
 
 1. **Integrate `string-comparisons` library**
+
    ```bash
    npm install string-comparisons -w server
    ```
@@ -147,12 +153,14 @@ This feature is implemented in phases. Each phase builds on the previous.
    - Unique words ("BMAD", "Vercel", "configuration") contribute more
 
 **Acceptance Criteria:**
+
 - [ ] `string-comparisons` library integrated
 - [ ] Matching uses Trigram + LCS combined scoring
 - [ ] Threshold gates reject low-quality matches
 - [ ] False positive rate reduced (measure with b64 test case)
 
 **Files to modify:**
+
 - `server/src/utils/chapterExtraction.ts` - Replace matching logic
 - `package.json` (server) - Add dependency
 
@@ -163,22 +171,26 @@ This feature is implemented in phases. Each phase builds on the previous.
 **Why needed:** Even good algorithms fail on heavily edited content where semantic meaning matters more than word matching.
 
 **When to use LLM:**
+
 - Confidence < 60% after algorithm pass
 - User clicks "Verify" button
 - "Verify All Uncertain" batch operation
 
 **What LLM does:**
+
 - Compare transcript snippet to SRT segment
 - Answer: "Are these talking about the same topic?"
 - Return confidence + explanation
 
 **Acceptance Criteria:**
+
 - [ ] Auto-escalate to LLM when algorithm confidence < 60%
 - [ ] "Verify" button on uncertain matches
 - [ ] "Verify All" button for batch verification
 - [ ] LLM explanation shown in UI
 
 **Files to modify:**
+
 - `server/src/routes/projects.ts` - Verify endpoint (already exists)
 - `client/src/components/ChaptersPanel.tsx` - Verify buttons
 - `server/src/utils/chapterExtraction.ts` - Auto-escalation logic
@@ -189,8 +201,8 @@ This feature is implemented in phases. Each phase builds on the previous.
 
 **Issue 1: False Positive Match**
 
-| Transcript | Matched SRT | Problem |
-|------------|-------------|---------|
+| Transcript                        | Matched SRT           | Problem                    |
+| --------------------------------- | --------------------- | -------------------------- |
 | "build this complete application" | "add products or any" | Different content entirely |
 
 **Root cause:** Algorithm matched on "brings us to the end" - a common phrase.
@@ -248,11 +260,11 @@ flowchart TB
 
 Transcripts follow the naming convention: `{chapter}-{sequence}-{name}.txt`
 
-| Example | Chapter | Sequence | Name |
-|---------|---------|----------|------|
-| `01-1-intro.txt` | 01 | 1 | intro |
-| `02-3-setup-bmad.txt` | 02 | 3 | setup-bmad |
-| `16-1-create-agent.txt` | 16 | 1 | create-agent |
+| Example                 | Chapter | Sequence | Name         |
+| ----------------------- | ------- | -------- | ------------ |
+| `01-1-intro.txt`        | 01      | 1        | intro        |
+| `02-3-setup-bmad.txt`   | 02      | 3        | setup-bmad   |
+| `16-1-create-agent.txt` | 16      | 1        | create-agent |
 
 **Grouping Rule**: Multiple files for the same chapter+name combination are grouped, and only the **first file** (by filename sort order) is used.
 
@@ -298,13 +310,13 @@ flowchart LR
 
 ### Matching Rules Table
 
-| Stage | Words | Min Characters | Confidence Base | Use Case |
-|-------|-------|----------------|-----------------|----------|
-| 1 | 10 | 10 | 100% | Unique, long opening |
-| 2 | 7 | 10 | 100% | Standard opening |
-| 3 | 5 | 10 | 85-100% | Short but distinct |
-| 4 | 3 | 10 | 85-100% | Brief, unique phrase |
-| 5 | Partial | 5+ words match | 50% | Last resort |
+| Stage | Words   | Min Characters | Confidence Base | Use Case             |
+| ----- | ------- | -------------- | --------------- | -------------------- |
+| 1     | 10      | 10             | 100%            | Unique, long opening |
+| 2     | 7       | 10             | 100%            | Standard opening     |
+| 3     | 5       | 10             | 85-100%         | Short but distinct   |
+| 4     | 3       | 10             | 85-100%         | Brief, unique phrase |
+| 5     | Partial | 5+ words match | 50%             | Last resort          |
 
 ### Word Position Skipping
 
@@ -372,27 +384,27 @@ flowchart TB
 
 ### Confidence Score Reference
 
-| Score | Meaning | Action Required |
-|-------|---------|-----------------|
-| 100% | Perfect match | No action needed |
-| 90% | Confident (short phrase) | Review optional |
-| 80% | Good (minor issue) | Quick review |
-| 70% | Acceptable (some concern) | Should review |
-| 65% | Low confidence | Manual verification |
-| 50% | Partial match only | Likely needs correction |
-| <50% | Very uncertain | Manual timestamp needed |
+| Score | Meaning                   | Action Required         |
+| ----- | ------------------------- | ----------------------- |
+| 100%  | Perfect match             | No action needed        |
+| 90%   | Confident (short phrase)  | Review optional         |
+| 80%   | Good (minor issue)        | Quick review            |
+| 70%   | Acceptable (some concern) | Should review           |
+| 65%   | Low confidence            | Manual verification     |
+| 50%   | Partial match only        | Likely needs correction |
+| <50%  | Very uncertain            | Manual timestamp needed |
 
 ### Deduction Table
 
-| Issue | Deduction | Rationale |
-|-------|-----------|-----------|
-| Partial word match (not phrase) | Base 50% | Fundamentally uncertain |
-| Very short phrase (< 5 words) | -15 | Less distinct, more collision risk |
-| Short phrase (5-6 words) | -10 | Moderate collision risk |
-| Skipped 1 word | -5 | Content may be trimmed |
-| Skipped 2 words | -10 | Content likely trimmed |
-| Skipped 3+ words | -15 (max) | Significant trimming |
-| Out of order | -20 | Major editing detected |
+| Issue                           | Deduction | Rationale                          |
+| ------------------------------- | --------- | ---------------------------------- |
+| Partial word match (not phrase) | Base 50%  | Fundamentally uncertain            |
+| Very short phrase (< 5 words)   | -15       | Less distinct, more collision risk |
+| Short phrase (5-6 words)        | -10       | Moderate collision risk            |
+| Skipped 1 word                  | -5        | Content may be trimmed             |
+| Skipped 2 words                 | -10       | Content likely trimmed             |
+| Skipped 3+ words                | -15 (max) | Significant trimming               |
+| Out of order                    | -20       | Major editing detected             |
 
 ---
 
@@ -442,6 +454,7 @@ Chapters in the final video should generally appear in numerical order. When the
 A chapter is **out of order** if it **jumps forward** significantly from the previous chapter, indicating it was placed earlier in the video than expected.
 
 **Examples:**
+
 ```
 Timeline: ch1 → ch2 → ch40 → ch3 → ch4 → ch6 → ch7 → ch8 → ch9 → ch19 → ch10
 
@@ -464,6 +477,7 @@ flowchart TB
 ```
 
 **Rules:**
+
 1. Calculate `gap = currentChapter - previousChapter`
 2. If `gap > MAX_GAP` (default: 5), flag CURRENT chapter as out-of-order
 3. Small gaps (like ch4 → ch6, skipping ch5) are acceptable
@@ -508,13 +522,13 @@ flowchart TB
 
 ### Escalation Thresholds
 
-| Confidence | Action | Rationale |
-|------------|--------|-----------|
-| >= 80% | Auto-accept | High reliability |
-| 60-79% | Show with review option | Usable but verify |
-| 40-59% | Show alternatives | User should pick |
-| < 40% | Offer LLM verification | Algorithm uncertain |
-| 0% (not found) | LLM or manual entry | No algorithmic match |
+| Confidence     | Action                  | Rationale            |
+| -------------- | ----------------------- | -------------------- |
+| >= 80%         | Auto-accept             | High reliability     |
+| 60-79%         | Show with review option | Usable but verify    |
+| 40-59%         | Show alternatives       | User should pick     |
+| < 40%          | Offer LLM verification  | Algorithm uncertain  |
+| 0% (not found) | LLM or manual entry     | No algorithmic match |
 
 ---
 
@@ -530,6 +544,7 @@ Chapter 14: "So let's take a look at the deployment..."
 ```
 
 **Solution**:
+
 - 10-word phrase differentiates them
 - If collision occurs, duplicate resolution re-matches with deeper text
 
@@ -549,6 +564,7 @@ SRT:        "So welcome to today's tutorial"  (missing "Right,")
 **Problem**: Editor moves chapter 11 to appear after chapter 14 in final video.
 
 **Solution**:
+
 - Out-of-order detection flags this (-20 confidence)
 - User sees the warning and can verify it's intentional
 
@@ -569,6 +585,7 @@ SRT:        "So welcome to today's tutorial"  (missing "Right,")
 **Problem**: Chapter content doesn't appear in final video (cut entirely).
 
 **Solution**:
+
 - Status: `not_found`
 - Confidence: 0%
 - Alternatives shown if any partial matches exist
@@ -582,6 +599,7 @@ Transcript: "Thanks for watching"
 ```
 
 **Solution**:
+
 - 3-word minimum phrase match
 - Short phrase penalty (-15) reflects uncertainty
 - User may need to verify
@@ -636,22 +654,23 @@ flowchart TB
 
 ```typescript
 interface ChapterMatch {
-  chapter: number           // Chapter number (1-99)
-  name: string              // kebab-case name
-  displayName: string       // Human readable ("Setup BMAD")
-  timestamp?: string        // YouTube format ("2:34")
-  timestampSeconds?: number // Seconds from start
-  confidence: number        // 0-100
-  status: 'matched' | 'low_confidence' | 'not_found' | 'verified'
-  matchedText?: string      // SRT text that matched
-  transcriptSnippet?: string // First ~100 chars of transcript
-  alternatives?: {          // Other potential matches
-    timestamp: string
-    timestampSeconds: number
-    confidence: number
-    matchedText: string
-    matchMethod: 'phrase' | 'partial'
-  }[]
+  chapter: number; // Chapter number (1-99)
+  name: string; // kebab-case name
+  displayName: string; // Human readable ("Setup BMAD")
+  timestamp?: string; // YouTube format ("2:34")
+  timestampSeconds?: number; // Seconds from start
+  confidence: number; // 0-100
+  status: 'matched' | 'low_confidence' | 'not_found' | 'verified';
+  matchedText?: string; // SRT text that matched
+  transcriptSnippet?: string; // First ~100 chars of transcript
+  alternatives?: {
+    // Other potential matches
+    timestamp: string;
+    timestampSeconds: number;
+    confidence: number;
+    matchedText: string;
+    matchMethod: 'phrase' | 'partial';
+  }[];
 }
 ```
 
@@ -661,15 +680,16 @@ interface ChapterMatch {
 
 From a real project with 36 chapters:
 
-| Confidence | Count | Interpretation |
-|------------|-------|----------------|
-| 100% | 3 | Perfect long phrase matches |
-| 90% | 1 | Good match, minor skip |
-| 80% | 21 | Standard matches |
-| 70% | 4 | Short phrases, need review |
-| 65% | 7 | Very short or skipped words |
+| Confidence | Count | Interpretation              |
+| ---------- | ----- | --------------------------- |
+| 100%       | 3     | Perfect long phrase matches |
+| 90%        | 1     | Good match, minor skip      |
+| 80%        | 21    | Standard matches            |
+| 70%        | 4     | Short phrases, need review  |
+| 65%        | 7     | Very short or skipped words |
 
 This distribution tells a clear story:
+
 - Most matches (58%) are confident
 - Some (11%) need review
 - A few (19%) should be verified
@@ -681,6 +701,7 @@ This distribution tells a clear story:
 **Source Code**: `server/src/utils/chapterExtraction.ts`
 
 **Key Functions**:
+
 - `extractChapters()` - Main orchestration
 - `getChaptersFromTranscripts()` - Parse and group transcript files
 - `parseSrt()` - Parse SRT into segments
@@ -692,12 +713,12 @@ This distribution tells a clear story:
 
 ## Glossary
 
-| Term | Definition |
-|------|------------|
-| **Chapter** | A logical section of video content (e.g., "Introduction", "Setup") |
-| **Transcript** | Text file containing what was spoken in a recorded clip |
-| **SRT** | SubRip Subtitle format - timestamped text segments |
-| **Phrase Match** | Finding an exact sequence of words |
-| **Partial Match** | Finding individual words (not in sequence) |
-| **Collision** | Multiple chapters matching the same timestamp |
-| **Out-of-Order** | Chapter appearing at an unexpected timestamp |
+| Term              | Definition                                                         |
+| ----------------- | ------------------------------------------------------------------ |
+| **Chapter**       | A logical section of video content (e.g., "Introduction", "Setup") |
+| **Transcript**    | Text file containing what was spoken in a recorded clip            |
+| **SRT**           | SubRip Subtitle format - timestamped text segments                 |
+| **Phrase Match**  | Finding an exact sequence of words                                 |
+| **Partial Match** | Finding individual words (not in sequence)                         |
+| **Collision**     | Multiple chapters matching the same timestamp                      |
+| **Out-of-Order**  | Chapter appearing at an unexpected timestamp                       |

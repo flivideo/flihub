@@ -17,19 +17,20 @@ const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 async function getProjectFolders(): Promise<string[]> {
   const projectsDir = expandPath(PROJECTS_ROOT);
 
-  if (!await fs.pathExists(projectsDir)) {
+  if (!(await fs.pathExists(projectsDir))) {
     return [];
   }
 
   const entries = await fs.readdir(projectsDir, { withFileTypes: true });
   return entries
-    .filter(e =>
-      e.isDirectory() &&
-      !e.name.startsWith('.') &&
-      !e.name.startsWith('-') &&
-      e.name !== 'archived'
+    .filter(
+      (e) =>
+        e.isDirectory() &&
+        !e.name.startsWith('.') &&
+        !e.name.startsWith('-') &&
+        e.name !== 'archived'
     )
-    .map(e => e.name);
+    .map((e) => e.name);
 }
 
 /**
@@ -47,7 +48,9 @@ async function getProjectFolders(): Promise<string[]> {
  * await resolveProjectCode("c10-poem-epic-3")
  * // -> { code: "c10-poem-epic-3", path: "/path/to/c10-poem-epic-3" }
  */
-export async function resolveProjectCode(codeInput: string): Promise<{ code: string; path: string } | null> {
+export async function resolveProjectCode(
+  codeInput: string
+): Promise<{ code: string; path: string } | null> {
   const projectsDir = expandPath(PROJECTS_ROOT);
   const folders = await getProjectFolders();
 
@@ -55,12 +58,12 @@ export async function resolveProjectCode(codeInput: string): Promise<{ code: str
   if (folders.includes(codeInput)) {
     return {
       code: codeInput,
-      path: path.join(projectsDir, codeInput)
+      path: path.join(projectsDir, codeInput),
     };
   }
 
   // Try prefix match (short code resolution)
-  const matches = folders.filter(code => code.startsWith(codeInput)).sort();
+  const matches = folders.filter((code) => code.startsWith(codeInput)).sort();
 
   if (matches.length === 0) {
     return null;
@@ -70,7 +73,7 @@ export async function resolveProjectCode(codeInput: string): Promise<{ code: str
   const code = matches[0];
   return {
     code,
-    path: path.join(projectsDir, code)
+    path: path.join(projectsDir, code),
   };
 }
 
@@ -78,7 +81,9 @@ export async function resolveProjectCode(codeInput: string): Promise<{ code: str
  * Resolve project code or throw 404 error
  * Convenience function for Express route handlers
  */
-export async function resolveProjectCodeOrFail(codeInput: string): Promise<{ code: string; path: string }> {
+export async function resolveProjectCodeOrFail(
+  codeInput: string
+): Promise<{ code: string; path: string }> {
   const result = await resolveProjectCode(codeInput);
 
   if (!result) {

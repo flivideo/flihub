@@ -1,23 +1,23 @@
-import { createPortal } from 'react-dom'
-import { formatFileSize } from '../utils/formatting'
-import type { PreviewContent } from '../hooks/useShiftHover'
+import { createPortal } from 'react-dom';
+import { formatFileSize } from '../utils/formatting';
+import type { PreviewContent } from '../hooks/useShiftHover';
 
 // Legacy interface for backwards compatibility
 interface LegacyPreviewImage {
-  url: string
-  filename: string
-  size: number
-  timestamp: string
+  url: string;
+  filename: string;
+  size: number;
+  timestamp: string;
 }
 
 interface ImagePreviewOverlayProps {
-  image?: LegacyPreviewImage | null
-  content?: PreviewContent
-  position: { x: number; y: number }
+  image?: LegacyPreviewImage | null;
+  content?: PreviewContent;
+  position: { x: number; y: number };
 }
 
-const PREVIEW_WIDTH = 600
-const PREVIEW_PADDING = 20
+const PREVIEW_WIDTH = 600;
+const PREVIEW_PADDING = 20;
 
 /**
  * Preview overlay that appears when Shift+hovering over thumbnails or prompt badges.
@@ -26,38 +26,39 @@ const PREVIEW_PADDING = 20
  */
 export function ImagePreviewOverlay({ image, content, position }: ImagePreviewOverlayProps) {
   // Support both legacy image prop and new content prop
-  const previewContent = content ?? (image ? { type: 'image' as const, ...image } : null)
+  const previewContent = content ?? (image ? { type: 'image' as const, ...image } : null);
 
-  if (!previewContent) return null
+  if (!previewContent) return null;
 
   // Calculate position, clamped to stay within viewport
-  const viewportWidth = window.innerWidth
-  const viewportHeight = window.innerHeight
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
 
   // Start with cursor position, offset slightly
-  let left = position.x + PREVIEW_PADDING
-  let top = position.y + PREVIEW_PADDING
+  let left = position.x + PREVIEW_PADDING;
+  let top = position.y + PREVIEW_PADDING;
 
   // Clamp horizontal position
   if (left + PREVIEW_WIDTH > viewportWidth - PREVIEW_PADDING) {
     // Show on left side of cursor instead
-    left = position.x - PREVIEW_WIDTH - PREVIEW_PADDING
+    left = position.x - PREVIEW_WIDTH - PREVIEW_PADDING;
   }
   if (left < PREVIEW_PADDING) {
-    left = PREVIEW_PADDING
+    left = PREVIEW_PADDING;
   }
 
   // Estimate preview height based on content type
-  const estimatedHeight = previewContent.type === 'image'
-    ? PREVIEW_WIDTH * 0.5625 + 80 // 16:9 aspect + info
-    : 300 // Text preview
+  const estimatedHeight =
+    previewContent.type === 'image'
+      ? PREVIEW_WIDTH * 0.5625 + 80 // 16:9 aspect + info
+      : 300; // Text preview
 
   // Clamp vertical position
   if (top + estimatedHeight > viewportHeight - PREVIEW_PADDING) {
-    top = viewportHeight - estimatedHeight - PREVIEW_PADDING
+    top = viewportHeight - estimatedHeight - PREVIEW_PADDING;
   }
   if (top < PREVIEW_PADDING) {
-    top = PREVIEW_PADDING
+    top = PREVIEW_PADDING;
   }
 
   const overlay = (
@@ -106,15 +107,13 @@ export function ImagePreviewOverlay({ image, content, position }: ImagePreviewOv
               <div className="font-mono text-sm text-purple-800 truncate">
                 {previewContent.filename}
               </div>
-              <div className="text-xs text-purple-600">
-                {previewContent.content.length} chars
-              </div>
+              <div className="text-xs text-purple-600">{previewContent.content.length} chars</div>
             </div>
           </>
         )}
       </div>
     </div>
-  )
+  );
 
-  return createPortal(overlay, document.body)
+  return createPortal(overlay, document.body);
 }

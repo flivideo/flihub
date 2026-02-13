@@ -13,168 +13,168 @@
  * - Escape key closes
  */
 
-import { useState, useEffect } from 'react'
-import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
-import Editor from '@monaco-editor/react'
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import Editor from '@monaco-editor/react';
 import {
   useDeveloperProjectState,
   useDeveloperConfig,
   useDeveloperTelemetry,
-} from '../hooks/useApi'
-import { QUERY_KEYS } from '../constants/queryKeys'
+} from '../hooks/useApi';
+import { QUERY_KEYS } from '../constants/queryKeys';
 
 interface DeveloperDrawerProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-type FileTab = 'project-state' | 'config' | 'telemetry'
+type FileTab = 'project-state' | 'config' | 'telemetry';
 
 const TABS = [
   { key: 'project-state' as FileTab, label: '.flihub-state.json', icon: '📄' },
   { key: 'config' as FileTab, label: 'config.json', icon: '⚙️' },
   { key: 'telemetry' as FileTab, label: 'telemetry.jsonl', icon: '📊' },
-]
+];
 
-const MIN_WIDTH = 300
-const MAX_WIDTH = 1000
-const DEFAULT_WIDTH = 800
+const MIN_WIDTH = 300;
+const MAX_WIDTH = 1000;
+const DEFAULT_WIDTH = 800;
 
 export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProps) {
-  const [activeTab, setActiveTab] = useState<FileTab>('project-state')
+  const [activeTab, setActiveTab] = useState<FileTab>('project-state');
   const [drawerWidth, setDrawerWidth] = useState(() => {
-    const saved = localStorage.getItem('devDrawerWidth')
-    return saved ? parseInt(saved) : DEFAULT_WIDTH
-  })
-  const [isResizing, setIsResizing] = useState(false)
-  const queryClient = useQueryClient()
+    const saved = localStorage.getItem('devDrawerWidth');
+    return saved ? parseInt(saved) : DEFAULT_WIDTH;
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch data (FR-127: Socket listener is at App level)
-  const projectState = useDeveloperProjectState()
-  const config = useDeveloperConfig()
-  const telemetry = useDeveloperTelemetry()
+  const projectState = useDeveloperProjectState();
+  const config = useDeveloperConfig();
+  const telemetry = useDeveloperTelemetry();
 
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose()
+        onClose();
       }
-    }
-    document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [isOpen, onClose])
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
 
   // Resizing logic
-  const handleMouseDown = () => setIsResizing(true)
+  const handleMouseDown = () => setIsResizing(true);
 
   useEffect(() => {
-    if (!isResizing) return
+    if (!isResizing) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, window.innerWidth - e.clientX))
-      setDrawerWidth(newWidth)
-    }
+      const newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, window.innerWidth - e.clientX));
+      setDrawerWidth(newWidth);
+    };
 
     const handleMouseUp = () => {
-      setIsResizing(false)
-      localStorage.setItem('devDrawerWidth', String(drawerWidth))
-    }
+      setIsResizing(false);
+      localStorage.setItem('devDrawerWidth', String(drawerWidth));
+    };
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [isResizing, drawerWidth])
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, drawerWidth]);
 
   // Get data for active tab
   const getTabData = () => {
     switch (activeTab) {
       case 'project-state':
-        return projectState.data
+        return projectState.data;
       case 'config':
-        return config.data
+        return config.data;
       case 'telemetry':
-        return telemetry.data
+        return telemetry.data;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
-  const activeData = getTabData()
+  const activeData = getTabData();
 
   // Format content for display
   const getDisplayContent = () => {
-    if (!activeData) return ''
+    if (!activeData) return '';
 
     if (activeTab === 'telemetry') {
       // For JSONL, just return as-is (each line is a JSON object)
-      return activeData.content
+      return activeData.content;
     } else {
       // For JSON, format with 2-space indentation
-      return JSON.stringify(activeData.content, null, 2)
+      return JSON.stringify(activeData.content, null, 2);
     }
-  }
+  };
 
   // Copy JSON to clipboard
   const handleCopy = () => {
-    if (!activeData) return
+    if (!activeData) return;
 
-    const content = getDisplayContent()
-    navigator.clipboard.writeText(content)
-    toast.success('Copied to clipboard')
-  }
+    const content = getDisplayContent();
+    navigator.clipboard.writeText(content);
+    toast.success('Copied to clipboard');
+  };
 
   // Open file in editor
   const handleOpenInEditor = async () => {
-    if (!activeData) return
+    if (!activeData) return;
 
     try {
       const response = await fetch('http://localhost:5101/api/system/open-file-by-path', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filePath: activeData.filePath }),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to open file')
+        const error = await response.json();
+        toast.error(error.error || 'Failed to open file');
       } else {
-        toast.success('File opened in editor')
+        toast.success('File opened in editor');
       }
     } catch (error) {
-      toast.error('Failed to open file')
+      toast.error('Failed to open file');
     }
-  }
+  };
 
   // Refresh data
   const handleRefresh = () => {
     switch (activeTab) {
       case 'project-state':
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.developerProjectState })
-        break
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.developerProjectState });
+        break;
       case 'config':
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.developerConfig })
-        break
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.developerConfig });
+        break;
       case 'telemetry':
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.developerTelemetry })
-        break
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.developerTelemetry });
+        break;
     }
-    toast.success('File refreshed')
-  }
+    toast.success('File refreshed');
+  };
 
   // Format file size
   const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
-  }
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
 
   return (
     <div
@@ -303,5 +303,5 @@ export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProp
         </button>
       </div>
     </div>
-  )
+  );
 }

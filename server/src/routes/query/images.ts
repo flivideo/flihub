@@ -39,7 +39,7 @@ export function createImagesRoutes(getConfig: () => Config): Router {
       const paths = getProjectPaths(projectPath);
       const images: QueryImage[] = [];
 
-      if (!await fs.pathExists(paths.images)) {
+      if (!(await fs.pathExists(paths.images))) {
         // FR-53: ASCII format support for empty case
         if (req.query.format === 'text') {
           res.setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -75,7 +75,9 @@ export function createImagesRoutes(getConfig: () => Config): Router {
       let filtered = images;
       if (chapterFilter && typeof chapterFilter === 'string') {
         const chapterNum = chapterFilter.padStart(2, '0');
-        filtered = filtered.filter(img => img.chapter === chapterNum || img.chapter === chapterFilter);
+        filtered = filtered.filter(
+          (img) => img.chapter === chapterNum || img.chapter === chapterFilter
+        );
       }
 
       // FR-53: ASCII format support

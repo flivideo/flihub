@@ -11,10 +11,12 @@
 **Session Goal:** Finalize FR-140 (Chapter Renumbering) and FR-139 (Folders Tool) specifications
 
 **Decisions Made:**
+
 1. **FR-140:** Fully specified as "Chapter Move & Cascade" - Ready for development (HIGH priority)
 2. **FR-139:** Remove undefined button - Simple cleanup task (LOW priority)
 
 **Key Insight from User:**
+
 > "It's not about compressing gaps (01,03,05 → 01,02,03). What it is, is that the 03 can move up to 02, and everything below it should increase by one."
 
 This clarified that FR-140 is NOT about gap compression - it's about targeted chapter movement with automatic cascade effects.
@@ -33,6 +35,7 @@ This clarified that FR-140 is NOT about gap compression - it's about targeted ch
 ### User Requirements (Clarified)
 
 **What it IS:**
+
 - Move specific chapter to new position (e.g., 03 → 02)
 - Automatic cascade for chapters in between (e.g., 05 → 04)
 - Targeted selection (NOT whole project)
@@ -40,6 +43,7 @@ This clarified that FR-140 is NOT about gap compression - it's about targeted ch
 - Uses tooling to fix issues
 
 **What it is NOT:**
+
 - ❌ Gap compression (01,03,05 → 01,02,03)
 - ❌ Whole project renumbering (too complex)
 - ❌ Manual fixes (use tooling instead)
@@ -47,6 +51,7 @@ This clarified that FR-140 is NOT about gap compression - it's about targeted ch
 ### Core Features
 
 1. **Move Chapter Down** (fill gap)
+
    ```
    Before: 01, 03, 05
    Action: Move 03 → 02
@@ -55,6 +60,7 @@ This clarified that FR-140 is NOT about gap compression - it's about targeted ch
    ```
 
 2. **Move Chapter Up** (create gap)
+
    ```
    Before: 01, 03, 05
    Action: Insert at 03
@@ -77,17 +83,20 @@ This clarified that FR-140 is NOT about gap compression - it's about targeted ch
 **New Tool:** "Renumber" button in ToolsSidebar (Complex Tools)
 
 **Drawer Components:**
+
 - Chapter dropdown (existing chapters only)
 - Target position input (01-99 validation)
 - Preview panel (shows cascade effects)
 - Apply/Cancel buttons
 
 **Backend:**
+
 - Cascade calculation algorithm
 - Preview endpoint: `POST /api/manage/move-chapter`
 - Execute endpoint: `POST /api/manage/execute-move-chapter`
 
 **Estimated LOC:** ~300-400 lines
+
 - Backend: 150 lines (cascade logic, endpoints)
 - Frontend: 150 lines (ChapterMovePanel component)
 - Shared: 50 lines (types)
@@ -95,12 +104,14 @@ This clarified that FR-140 is NOT about gap compression - it's about targeted ch
 ### User Impact
 
 **Value:**
+
 - Eliminates manual cascade calculation
 - One-click chapter reorganization
 - Preview prevents mistakes
 - Addresses pain point from FR-138 user testing
 
 **User Quote:**
+
 > "I don't see chapter 2, so it feels like I've got to move chapter 2 up to chapter 3. That's the way my brain works with it."
 
 This feature directly addresses that mental model.
@@ -121,6 +132,7 @@ This feature directly addresses that mental model.
 **Path Chosen:** Remove the button (Path A)
 
 **Rationale:**
+
 1. User couldn't remember what it was for
 2. User confused it with Export tool's folder management
 3. No clear use case after 6 months
@@ -128,6 +140,7 @@ This feature directly addresses that mental model.
 5. Focus development on defined features (FR-140)
 
 **User Quote:**
+
 > "I don't really understand your questions related to folders tool. I don't even remember what it was about."
 
 This confirms the button serves no current purpose.
@@ -135,11 +148,13 @@ This confirms the button serves no current purpose.
 ### Alternative Paths Rejected
 
 **Path B: Repurpose for FR-135 (Chapter Tools)** ❌
+
 - Rejected: FR-135 is LOW priority, no evidence of need
 - FR-140 addresses immediate chapter management needs
 - Can create new button if FR-135 becomes priority
 
 **Path C: Define New Feature** ❌
+
 - Rejected: User couldn't articulate use case
 - No clear need after 6 months
 - Would delay higher-priority work
@@ -147,11 +162,13 @@ This confirms the button serves no current purpose.
 ### Implementation
 
 **Files to modify:**
+
 1. `client/src/components/shared/ToolsSidebar.tsx` - Remove "Folders" button
 2. `client/src/components/ManagePanel.tsx` - Remove drawer
 3. Update `activeTool` type to remove 'folders'
 
 **Git commit message:**
+
 ```
 chore(FR-139): Remove undefined Folders button from Manage panel
 ```
@@ -165,18 +182,22 @@ chore(FR-139): Remove undefined Folders button from Manage panel
 ### Files Created/Updated
 
 **PRD Updates:**
+
 1. ✅ `docs/prd/fr-140-bulk-chapter-renumbering.md` - Complete specification
 2. ✅ `docs/prd/fr-139-folders-tool-specification.md` - Removal decision
 
 **Backlog Updates:**
+
 - ✅ FR-140: Status changed to "Ready for development"
 - ✅ FR-139: Status changed to "Ready - Remove button"
 
 **Changelog Updates:**
+
 - ✅ Added FR-140 specification entry
 - ✅ Added FR-139 decision entry
 
 **Planning Docs:**
+
 - ✅ `docs/planning/po-session-2026-01-06-fr-140-fr-139-decisions.md` - This document
 
 ---
@@ -257,6 +278,7 @@ chore(FR-139): Remove undefined Folders button from Manage panel
 ## Summary
 
 **Accomplishments:**
+
 - ✅ FR-140 fully specified (move + cascade, NOT gap compression)
 - ✅ FR-139 decision made (remove button)
 - ✅ Backlog updated
@@ -264,12 +286,14 @@ chore(FR-139): Remove undefined Folders button from Manage panel
 - ✅ Developer handover prepared
 
 **Ready for Development:**
+
 - FR-140: HIGH priority, 4-6 hours, fully specified
 - FR-139: LOW priority, 30 minutes, simple removal
 
 **Total Estimated Effort:** ~5-7 hours for both
 
 **User Impact:**
+
 - Chapter reorganization becomes one-click with preview
 - Cleaner UI (no undefined buttons)
 - Addresses user pain point from FR-138 testing

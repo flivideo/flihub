@@ -18,6 +18,7 @@
 ### Recommended Approach
 
 **3 Sprints:**
+
 - **Sprint 1 (CRITICAL):** Fix tag parser - resolves 79% of all issues in 1.5 hours
 - **Sprint 2 (HIGH):** Implement FR-140 bulk chapter renumbering - addresses 26% of projects
 - **Sprint 3 (NICE-TO-HAVE):** Auto-regenerate missing derivatives - quality of life
@@ -43,6 +44,7 @@
 **Change:** Accept lowercase/mixed-case tags, convert to uppercase
 
 **Acceptance Criteria:**
+
 - Parser accepts `bmad` → converts to `BMAD`
 - Parser accepts `CommunIty` → converts to `COMMUNITY`
 - Multiple tags: `project-brief-sdk` → `PROJECT-BRIEF-SDK`
@@ -59,6 +61,7 @@
 **Change:** Add `text-transform: uppercase` to tag inputs
 
 **Acceptance Criteria:**
+
 - User types "demo" → displays "DEMO"
 - Saved tags are uppercase
 - Placeholder shows uppercase examples
@@ -75,6 +78,7 @@
 **UAT:** See `uat-checklist-rename.md` Sprint 1
 
 **Acceptance Criteria:**
+
 - All unit tests pass
 - All integration tests pass (TC1.1-TC1.7)
 - UAT Sprint 1 approved
@@ -87,15 +91,15 @@
 
 ### Sprint 1 Timeline
 
-| Task | Duration | Assignee | Dependencies |
-|------|----------|----------|--------------|
-| NFR-141 PO Approval | 30 min | PO | Decision 11 |
-| Implement parser change | 1 hour | Dev | PO approval |
-| Implement UI enforcement | 30 min | Dev | None (parallel) |
-| Write unit tests | 30 min | Dev | Parser complete |
-| Integration testing | 30 min | Dev | All code complete |
-| UAT Sprint 1 | 1 hour | Tester | Integration tests pass |
-| **TOTAL** | **3.5 hours** | | |
+| Task                     | Duration      | Assignee | Dependencies           |
+| ------------------------ | ------------- | -------- | ---------------------- |
+| NFR-141 PO Approval      | 30 min        | PO       | Decision 11            |
+| Implement parser change  | 1 hour        | Dev      | PO approval            |
+| Implement UI enforcement | 30 min        | Dev      | None (parallel)        |
+| Write unit tests         | 30 min        | Dev      | Parser complete        |
+| Integration testing      | 30 min        | Dev      | All code complete      |
+| UAT Sprint 1             | 1 hour        | Tester   | Integration tests pass |
+| **TOTAL**                | **3.5 hours** |          |                        |
 
 **Actual dev time:** 2 hours (parallel work)
 **Calendar time:** 1 day (with testing)
@@ -105,11 +109,13 @@
 ### Sprint 1 Success Metrics
 
 **Quantitative:**
+
 - Scanner errors: 1422 → 0 (100% reduction)
 - Projects affected: 38 → 0 (100% improvement)
 - Validation error rate: ~79% → 0%
 
 **Qualitative:**
+
 - User feedback: "Tags work as expected now"
 - Support tickets: Zero tag-related errors reported in first week
 
@@ -146,6 +152,7 @@
 **Task:** PO defines scope for FR-140
 
 **Questions to resolve:**
+
 1. Fill gaps mode: `01, 03, 05` → `01, 02, 03`?
 2. Shift chapters mode: `03, 04, 05` → `02, 03, 04`?
 3. Both modes or just one?
@@ -162,6 +169,7 @@
 **Backend:** Extend `server/src/routes/manage.ts` with renumber endpoint
 
 **Acceptance Criteria:**
+
 - Detect chapter gaps
 - Preview all changes before execution
 - Support "Fill gaps" mode (minimum)
@@ -186,13 +194,13 @@
 
 ### Sprint 2 Timeline
 
-| Task | Duration | Assignee | Dependencies |
-|------|----------|----------|--------------|
-| FR-140 PO definition | 1 hour | PO + Dev | Decision 1 (chapter gaps) |
-| Implement renumber tool | 4 hours | Dev | PO approval |
-| Integration testing | 1 hour | Dev | Code complete |
-| UAT Sprint 2 | 1 hour | Tester | Integration tests pass |
-| **TOTAL** | **7 hours** | | |
+| Task                    | Duration    | Assignee | Dependencies              |
+| ----------------------- | ----------- | -------- | ------------------------- |
+| FR-140 PO definition    | 1 hour      | PO + Dev | Decision 1 (chapter gaps) |
+| Implement renumber tool | 4 hours     | Dev      | PO approval               |
+| Integration testing     | 1 hour      | Dev      | Code complete             |
+| UAT Sprint 2            | 1 hour      | Tester   | Integration tests pass    |
+| **TOTAL**               | **7 hours** |          |                           |
 
 **Calendar time:** 2-3 days
 
@@ -201,11 +209,13 @@
 ### Sprint 2 Success Metrics
 
 **Quantitative:**
+
 - Chapter gaps detected: 22 instances across 12 projects
 - User operations: Fill gaps in X projects
 - Time saved: Avoid manual multi-step renames
 
 **Qualitative:**
+
 - User feedback: "Chapter renumbering is straightforward"
 - Addresses pain point from FR-138 testing
 
@@ -240,6 +250,7 @@
 **File:** Add detection logic to `server/src/routes/manage.ts`
 
 **Acceptance Criteria:**
+
 - Scan for missing shadows (recording exists, shadow missing)
 - Scan for missing transcripts (recording exists, transcript missing)
 - Return count and file list
@@ -253,6 +264,7 @@
 **File:** Add "Regenerate Missing" button to Manage panel
 
 **Acceptance Criteria:**
+
 - Display count of missing derivatives
 - Click button to queue regeneration
 - Show progress via Socket.io
@@ -272,13 +284,13 @@
 
 ### Sprint 3 Timeline
 
-| Task | Duration | Assignee | Dependencies |
-|------|----------|----------|--------------|
-| Detection logic | 1 hour | Dev | None |
-| Regeneration UI | 1 hour | Dev | Detection logic |
-| Integration testing | 30 min | Dev | Code complete |
-| UAT Sprint 3 | 30 min | Tester | Integration tests pass |
-| **TOTAL** | **3 hours** | | |
+| Task                | Duration    | Assignee | Dependencies           |
+| ------------------- | ----------- | -------- | ---------------------- |
+| Detection logic     | 1 hour      | Dev      | None                   |
+| Regeneration UI     | 1 hour      | Dev      | Detection logic        |
+| Integration testing | 30 min      | Dev      | Code complete          |
+| UAT Sprint 3        | 30 min      | Tester   | Integration tests pass |
+| **TOTAL**           | **3 hours** |          |                        |
 
 **Calendar time:** 1 day
 
@@ -287,10 +299,12 @@
 ### Sprint 3 Success Metrics
 
 **Quantitative:**
+
 - Missing derivatives detected: 361 instances
 - Regenerations triggered: X files
 
 **Qualitative:**
+
 - User feedback: "Nice to have one-click regeneration"
 
 ---
@@ -309,23 +323,23 @@
 
 ### Sequential Execution
 
-| Sprint | Duration | Calendar Time | Start After |
-|--------|----------|---------------|-------------|
-| Sprint 1 | 3.5 hours | 1 day | PO approval |
-| Sprint 2 | 7 hours | 2-3 days | Sprint 1 complete |
-| Sprint 3 | 3 hours | 1 day | Sprint 2 complete |
-| **TOTAL** | **13.5 hours** | **4-5 days** | |
+| Sprint    | Duration       | Calendar Time | Start After       |
+| --------- | -------------- | ------------- | ----------------- |
+| Sprint 1  | 3.5 hours      | 1 day         | PO approval       |
+| Sprint 2  | 7 hours        | 2-3 days      | Sprint 1 complete |
+| Sprint 3  | 3 hours        | 1 day         | Sprint 2 complete |
+| **TOTAL** | **13.5 hours** | **4-5 days**  |                   |
 
 ---
 
 ### Parallel Execution (Optimized)
 
-| Sprint | Dev Hours | Calendar Days | Notes |
-|--------|-----------|---------------|-------|
-| Sprint 1 | 2 hours | 1 day | Parser + UI in parallel, then testing |
-| Sprint 2 | 4 hours | 2 days | Includes PO definition time |
-| Sprint 3 | 2 hours | 1 day | Can start while Sprint 2 in UAT |
-| **TOTAL** | **8 hours** | **3-4 days** | Optimized with parallelization |
+| Sprint    | Dev Hours   | Calendar Days | Notes                                 |
+| --------- | ----------- | ------------- | ------------------------------------- |
+| Sprint 1  | 2 hours     | 1 day         | Parser + UI in parallel, then testing |
+| Sprint 2  | 4 hours     | 2 days        | Includes PO definition time           |
+| Sprint 3  | 2 hours     | 1 day         | Can start while Sprint 2 in UAT       |
+| **TOTAL** | **8 hours** | **3-4 days**  | Optimized with parallelization        |
 
 ---
 
@@ -381,6 +395,7 @@
 **Impact:** Medium
 
 **Mitigation:**
+
 - Comprehensive unit tests
 - Integration tests with real files
 - Scanner verification before release
@@ -393,6 +408,7 @@
 **Impact:** High
 
 **Mitigation:**
+
 - Clear PO definition upfront
 - Minimum viable features first (Fill gaps mode only)
 - Defer "Shift chapters" to future if complex
@@ -405,6 +421,7 @@
 **Impact:** Low (user aware, queued)
 
 **Mitigation:**
+
 - Clear warning before execution
 - Progress tracking via Socket.io
 - FR-132 (dual transcription) can help in future

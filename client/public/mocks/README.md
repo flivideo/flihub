@@ -5,12 +5,14 @@ This directory contains HTML mockups for exploring different design directions f
 ## Purpose
 
 The current FliHub application has UI inconsistencies across different pages:
+
 - Chapter navigation appears differently on each page
 - Sidebar/drawer patterns are inconsistent
 - Tool access varies
 - Layout patterns differ
 
 These mocks allow us to:
+
 1. **Explore** different unified design systems
 2. **Compare** alternative approaches side-by-side
 3. **Test** consistency patterns before implementation
@@ -35,6 +37,7 @@ mocks/
 ## Design Folders
 
 Each design folder contains:
+
 - **design-approach.md** - Philosophy, principles, and design decisions
 - **HTML mockups** - Standalone pages demonstrating the design system
 
@@ -45,12 +48,14 @@ All HTML files are standalone (embedded CSS/JS) for easy viewing in a browser.
 **Philosophy:** "Content in the center, tools in the margins"
 
 **Key Features:**
+
 - Tri-column layout (tools left, content center, context right)
 - Fixed chapter navigation on the right (280px)
 - Consistent tool access via left sidebar (220px) + drawers (400px)
 - Unified visual language across all pages
 
 **Files:**
+
 - `manage.html` - Tools sidebar + file management + chapter nav
 - `incoming.html` - Naming template + incoming queue + chapter context
 - `recordings.html` - File list + playback + chapter navigation
@@ -72,12 +77,14 @@ To create a new design exploration (e.g., design-2):
 ### Design Exploration Ideas
 
 **Design-2 could explore:**
+
 - Dark mode aesthetic
 - Minimalist single-column layout
 - Command palette-first interaction
 - Mobile-first responsive design
 
 **Design-3 could explore:**
+
 - Maximalist data-dense layout
 - Split-screen chapter comparison
 - Timeline-based navigation
@@ -105,6 +112,7 @@ When comparing designs, consider:
 ## Automation Idea
 
 Consider building an agent that can:
+
 1. Read `design-approach.md` template
 2. Generate all HTML pages automatically
 3. Ensure consistency across pages

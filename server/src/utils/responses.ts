@@ -70,9 +70,7 @@ export function sendServerError(res: Response, message: string, error?: unknown)
  *     // ... your code
  *   }))
  */
-export function asyncHandler(
-  fn: (req: any, res: Response) => Promise<void>
-) {
+export function asyncHandler(fn: (req: any, res: Response) => Promise<void>) {
   return (req: any, res: Response) => {
     Promise.resolve(fn(req, res)).catch((err) => {
       sendServerError(res, 'Internal server error', err);

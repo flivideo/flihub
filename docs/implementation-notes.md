@@ -7,6 +7,7 @@ This document captures implementation details, decisions, and learnings discover
 ## Format
 
 Each entry should include:
+
 - **Date**
 - **Related FR/NFR**
 - **What was discovered**
@@ -26,6 +27,7 @@ Each entry should include:
 2. **Suggested tags** (ENDCARD) - Context-specific, only shown for certain common names
 
 **Resolution:**
+
 - `availableTags` should only contain truly global tags: `["CTA", "SKOOL"]`
 - Context-specific tags go in `suggestTags` on the relevant commonName: `{ "name": "outro", "suggestTags": ["ENDCARD"] }`
 
@@ -58,6 +60,7 @@ project/
 ```
 
 **Migration needed:**
+
 - `/Users/davidcruwys/dev/video-projects/v-appydave/b71-bmad-poem/.trash` → `-trash`
 - `/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome/.trash` → `-trash`
 - Delete: `/Users/davidcruwys/dev/video-projects/v-appydave/b72-opus-4.5-awesome/recordings/.trash` (incorrect location)

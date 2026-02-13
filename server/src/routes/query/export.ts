@@ -54,7 +54,7 @@ export function createExportRoutes(getConfig: () => Config): Router {
 
       // Parse include param
       const includeSections = include
-        ? (include as string).split(',').map(s => s.trim().toLowerCase())
+        ? (include as string).split(',').map((s) => s.trim().toLowerCase())
         : ['project', 'recordings', 'transcripts', 'chapters', 'images'];
 
       const exportData: Record<string, unknown> = {
@@ -65,7 +65,9 @@ export function createExportRoutes(getConfig: () => Config): Router {
       // Get project detail - NFR-9: Use shared utility
       if (includeSections.includes('project')) {
         const config = getConfig();
-        const raw = await getProjectStatsRaw(projectPath, code, config, { includeFinalMedia: true });
+        const raw = await getProjectStatsRaw(projectPath, code, config, {
+          includeFinalMedia: true,
+        });
 
         exportData.project = {
           // FR-111: recordingsCount and safeCount removed (safe status is per-file)
@@ -74,7 +76,7 @@ export function createExportRoutes(getConfig: () => Config): Router {
           stage: raw.stage,
           priority: raw.priority,
           stats: {
-            recordings: raw.totalFiles,  // FR-111: All files are in recordings/
+            recordings: raw.totalFiles, // FR-111: All files are in recordings/
             chapters: raw.chapterCount,
             transcripts: {
               matched: raw.transcriptSync.matched,
@@ -107,7 +109,8 @@ export function createExportRoutes(getConfig: () => Config): Router {
 
         // FR-111/FR-120: Only scan recordings/ (no more -safe folder)
         // FR-123: Also get annotations
-        const { readProjectState, isRecordingSafe, isRecordingParked, getRecordingAnnotation } = await import('../../utils/projectState.js');
+        const { readProjectState, isRecordingSafe, isRecordingParked, getRecordingAnnotation } =
+          await import('../../utils/projectState.js');
         const state = await readProjectState(projectPath);
 
         const files = await readDirSafe(paths.recordings);
@@ -131,10 +134,10 @@ export function createExportRoutes(getConfig: () => Config): Router {
             sequence: parsed.sequence || '0',
             name: cleanName,
             tags,
-            folder: 'recordings',  // FR-111: Always recordings
-            isSafe: isRecordingSafe(state, filename),  // FR-111: From state
-            isParked: isRecordingParked(state, filename),  // FR-120: From state
-            annotation: getRecordingAnnotation(state, filename),  // FR-123: From state
+            folder: 'recordings', // FR-111: Always recordings
+            isSafe: isRecordingSafe(state, filename), // FR-111: From state
+            isParked: isRecordingParked(state, filename), // FR-120: From state
+            annotation: getRecordingAnnotation(state, filename), // FR-123: From state
             size: stat.size,
             duration: null,
             hasTranscript: transcriptSet.has(baseName),
@@ -166,7 +169,7 @@ export function createExportRoutes(getConfig: () => Config): Router {
           const filePath = path.join(paths.transcripts, filename);
           const stat = await statSafe(filePath);
           if (!stat) continue;
-          const content = await readFileSafe(filePath) ?? '';
+          const content = (await readFileSafe(filePath)) ?? '';
 
           // NFR-65: Use extractTagsFromName utility
           const { name: cleanName } = extractTagsFromName(parsed.name || '');
@@ -223,14 +226,15 @@ export function createExportRoutes(getConfig: () => Config): Router {
           if (finalMedia.srt) {
             const result = await extractChapters(projectPath, finalMedia.srt.path);
             if (result.success) {
-              chapters = result.chapters.map(ch => ({
+              chapters = result.chapters.map((ch) => ({
                 chapter: ch.chapter,
                 name: ch.name,
                 displayName: ch.displayName,
                 timestamp: ch.timestamp || null,
                 timestampSeconds: ch.timestampSeconds || null,
                 recordingCount: chapterRecordings.get(String(ch.chapter).padStart(2, '0')) || 0,
-                hasTranscript: chapterHasTranscript.get(String(ch.chapter).padStart(2, '0')) || false,
+                hasTranscript:
+                  chapterHasTranscript.get(String(ch.chapter).padStart(2, '0')) || false,
               }));
             }
           }
@@ -290,7 +294,9 @@ export function createExportRoutes(getConfig: () => Config): Router {
       // FR-53: ASCII format support
       if (req.query.format === 'text') {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        return res.send(formatExportReport(exportData as Parameters<typeof formatExportReport>[0], code));
+        return res.send(
+          formatExportReport(exportData as Parameters<typeof formatExportReport>[0], code)
+        );
       }
 
       res.json(exportData);

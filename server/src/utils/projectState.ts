@@ -10,13 +10,13 @@
  * - Recording not in state treated as { safe: false } (active by default)
  */
 
-import fs from 'fs-extra'
-import path from 'path'
-import type { ProjectState, RecordingState } from '../../../shared/types.js'
-import { getProjectPaths } from '../../../shared/paths.js'
-import { expandPath } from './pathUtils.js'
+import fs from 'fs-extra';
+import path from 'path';
+import type { ProjectState, RecordingState } from '../../../shared/types.js';
+import { getProjectPaths } from '../../../shared/paths.js';
+import { expandPath } from './pathUtils.js';
 
-const STATE_FILE_NAME = '.flihub-state.json'
+const STATE_FILE_NAME = '.flihub-state.json';
 
 /**
  * Create an empty project state object
@@ -25,7 +25,7 @@ export function createEmptyState(): ProjectState {
   return {
     version: 1,
     recordings: {},
-  }
+  };
 }
 
 /**
@@ -33,39 +33,42 @@ export function createEmptyState(): ProjectState {
  * Returns empty state if file doesn't exist or is corrupt
  */
 export async function readProjectState(projectDir: string): Promise<ProjectState> {
-  const expandedDir = expandPath(projectDir)
-  const paths = getProjectPaths(expandedDir)
-  const stateFilePath = paths.stateFile
+  const expandedDir = expandPath(projectDir);
+  const paths = getProjectPaths(expandedDir);
+  const stateFilePath = paths.stateFile;
 
   try {
-    const exists = await fs.pathExists(stateFilePath)
+    const exists = await fs.pathExists(stateFilePath);
     if (!exists) {
-      return createEmptyState()
+      return createEmptyState();
     }
 
-    const content = await fs.readFile(stateFilePath, 'utf-8')
-    const state = JSON.parse(content) as ProjectState
+    const content = await fs.readFile(stateFilePath, 'utf-8');
+    const state = JSON.parse(content) as ProjectState;
 
     // Validate version
     if (state.version !== 1) {
-      console.warn(`[FR-111] Unknown state file version: ${state.version}, treating as empty`)
-      return createEmptyState()
+      console.warn(`[FR-111] Unknown state file version: ${state.version}, treating as empty`);
+      return createEmptyState();
     }
 
     // Ensure recordings object exists
     if (!state.recordings || typeof state.recordings !== 'object') {
-      console.warn('[FR-111] State file missing recordings object, treating as empty')
-      return createEmptyState()
+      console.warn('[FR-111] State file missing recordings object, treating as empty');
+      return createEmptyState();
     }
 
-    return state
+    return state;
   } catch (error) {
     if (error instanceof SyntaxError) {
-      console.warn(`[FR-111] Corrupt state file at ${stateFilePath}, treating as empty:`, error.message)
+      console.warn(
+        `[FR-111] Corrupt state file at ${stateFilePath}, treating as empty:`,
+        error.message
+      );
     } else {
-      console.error(`[FR-111] Error reading state file:`, error)
+      console.error(`[FR-111] Error reading state file:`, error);
     }
-    return createEmptyState()
+    return createEmptyState();
   }
 }
 
@@ -74,9 +77,9 @@ export async function readProjectState(projectDir: string): Promise<ProjectState
  * Creates parent directories if needed
  */
 export async function writeProjectState(projectDir: string, state: ProjectState): Promise<void> {
-  const expandedDir = expandPath(projectDir)
-  const paths = getProjectPaths(expandedDir)
-  const stateFilePath = paths.stateFile
+  const expandedDir = expandPath(projectDir);
+  const paths = getProjectPaths(expandedDir);
+  const stateFilePath = paths.stateFile;
 
   // Ensure version is set, preserve all fields
   const stateToWrite: ProjectState = {
@@ -87,27 +90,29 @@ export async function writeProjectState(projectDir: string, state: ProjectState)
       ? { glingDictionary: state.glingDictionary }
       : {}),
     // FR-126: Preserve edit manifest if present
-    ...(state.editManifest
-      ? { editManifest: state.editManifest }
-      : {}),
-  }
+    ...(state.editManifest ? { editManifest: state.editManifest } : {}),
+  };
 
-  await fs.writeFile(stateFilePath, JSON.stringify(stateToWrite, null, 2), 'utf-8')
+  await fs.writeFile(stateFilePath, JSON.stringify(stateToWrite, null, 2), 'utf-8');
 }
 
 /**
  * Check if a recording is marked as safe (hidden from active view)
  */
 export function isRecordingSafe(state: ProjectState, filename: string): boolean {
-  const recordingState = state.recordings[filename]
-  return recordingState?.safe === true
+  const recordingState = state.recordings[filename];
+  return recordingState?.safe === true;
 }
 
 /**
  * Set the safe flag for a recording
  * Returns the updated state (does not persist to disk)
  */
-export function setRecordingSafe(state: ProjectState, filename: string, safe: boolean): ProjectState {
+export function setRecordingSafe(
+  state: ProjectState,
+  filename: string,
+  safe: boolean
+): ProjectState {
   const newState: ProjectState = {
     ...state,
     recordings: {
@@ -117,15 +122,20 @@ export function setRecordingSafe(state: ProjectState, filename: string, safe: bo
         safe,
       },
     },
-  }
+  };
 
   // Remove entry if all flags are default/false and no annotation
-  const recordingState = newState.recordings[filename]
-  if (!recordingState.safe && !recordingState.parked && !recordingState.stage && !recordingState.annotation) {
-    delete newState.recordings[filename]
+  const recordingState = newState.recordings[filename];
+  if (
+    !recordingState.safe &&
+    !recordingState.parked &&
+    !recordingState.stage &&
+    !recordingState.annotation
+  ) {
+    delete newState.recordings[filename];
   }
 
-  return newState
+  return newState;
 }
 
 /**
@@ -133,7 +143,7 @@ export function setRecordingSafe(state: ProjectState, filename: string, safe: bo
  * Returns empty state if recording is not in state file
  */
 export function getRecordingState(state: ProjectState, filename: string): RecordingState {
-  return state.recordings[filename] || {}
+  return state.recordings[filename] || {};
 }
 
 /**
@@ -145,20 +155,20 @@ export function mergeRecordingStates(
   state: ProjectState,
   updates: Record<string, RecordingState>
 ): ProjectState {
-  const mergedRecordings = { ...state.recordings }
+  const mergedRecordings = { ...state.recordings };
 
   // Deep merge each recording state
   for (const [filename, update] of Object.entries(updates)) {
     mergedRecordings[filename] = {
-      ...mergedRecordings[filename],  // Preserve existing fields
-      ...update,                       // Apply updates
-    }
+      ...mergedRecordings[filename], // Preserve existing fields
+      ...update, // Apply updates
+    };
   }
 
   return {
     ...state,
     recordings: mergedRecordings,
-  }
+  };
 }
 
 /**
@@ -167,7 +177,7 @@ export function mergeRecordingStates(
 export function getSafeRecordings(state: ProjectState): string[] {
   return (Object.entries(state.recordings) as [string, RecordingState][])
     .filter(([_, recordingState]) => recordingState.safe === true)
-    .map(([filename]) => filename)
+    .map(([filename]) => filename);
 }
 
 /**
@@ -178,22 +188,26 @@ export function getSafeRecordings(state: ProjectState): string[] {
 export function getActiveRecordingsFromState(state: ProjectState): string[] {
   return (Object.entries(state.recordings) as [string, RecordingState][])
     .filter(([_, recordingState]) => recordingState.safe !== true)
-    .map(([filename]) => filename)
+    .map(([filename]) => filename);
 }
 
 /**
  * FR-120: Check if a recording is marked as parked (excluded from this edit)
  */
 export function isRecordingParked(state: ProjectState, filename: string): boolean {
-  const recordingState = state.recordings[filename]
-  return recordingState?.parked === true
+  const recordingState = state.recordings[filename];
+  return recordingState?.parked === true;
 }
 
 /**
  * FR-120: Set the parked flag for a recording
  * Returns the updated state (does not persist to disk)
  */
-export function setRecordingParked(state: ProjectState, filename: string, parked: boolean): ProjectState {
+export function setRecordingParked(
+  state: ProjectState,
+  filename: string,
+  parked: boolean
+): ProjectState {
   const newState: ProjectState = {
     ...state,
     recordings: {
@@ -203,15 +217,20 @@ export function setRecordingParked(state: ProjectState, filename: string, parked
         parked,
       },
     },
-  }
+  };
 
   // Remove entry if all flags are default/false and no annotation
-  const recordingState = newState.recordings[filename]
-  if (!recordingState.safe && !recordingState.parked && !recordingState.stage && !recordingState.annotation) {
-    delete newState.recordings[filename]
+  const recordingState = newState.recordings[filename];
+  if (
+    !recordingState.safe &&
+    !recordingState.parked &&
+    !recordingState.stage &&
+    !recordingState.annotation
+  ) {
+    delete newState.recordings[filename];
   }
 
-  return newState
+  return newState;
 }
 
 /**
@@ -220,15 +239,15 @@ export function setRecordingParked(state: ProjectState, filename: string, parked
 export function getParkedRecordings(state: ProjectState): string[] {
   return (Object.entries(state.recordings) as [string, RecordingState][])
     .filter(([_, recordingState]) => recordingState.parked === true)
-    .map(([filename]) => filename)
+    .map(([filename]) => filename);
 }
 
 /**
  * FR-123: Get annotation for a recording (if any)
  */
 export function getRecordingAnnotation(state: ProjectState, filename: string): string | undefined {
-  const recordingState = state.recordings[filename]
-  return recordingState?.annotation
+  const recordingState = state.recordings[filename];
+  return recordingState?.annotation;
 }
 
 /**
@@ -239,7 +258,7 @@ export function setProjectDictionary(state: ProjectState, words: string[]): Proj
   return {
     ...state,
     glingDictionary: words.length > 0 ? words : undefined,
-  }
+  };
 }
 
 /**
@@ -250,7 +269,7 @@ export function getEditManifest(
   state: ProjectState,
   folder: 'edit-1st' | 'edit-2nd' | 'edit-final'
 ): import('../../../shared/types.js').EditFolderManifest | undefined {
-  return state.editManifest?.[folder]
+  return state.editManifest?.[folder];
 }
 
 /**
@@ -271,5 +290,5 @@ export function setEditManifest(
       ...state.editManifest,
       [folder]: manifest,
     },
-  }
+  };
 }

@@ -1,93 +1,103 @@
 // FR-103: S3 Staging Page
 // FR-104: S3 Staging Migration Tool
 // FR-105: S3 DAM Integration
-import { useState } from 'react'
-import { useS3StagingStatus, useSyncPrep, usePromoteToPublish, useMigrate, MigrationActions, useS3Status, useDamCommand, useCleanLocal, useLocalSize } from '../hooks/useS3StagingApi'
+import { useState } from 'react';
+import {
+  useS3StagingStatus,
+  useSyncPrep,
+  usePromoteToPublish,
+  useMigrate,
+  MigrationActions,
+  useS3Status,
+  useDamCommand,
+  useCleanLocal,
+  useLocalSize,
+} from '../hooks/useS3StagingApi';
 
 interface S3StagingPageProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 const formatSize = (bytes: number) => {
-  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`
-  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
-  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${bytes} B`
-}
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${bytes} B`;
+};
 
 // Extract version from filename like "b85-clauding-01-v1.mp4" -> "v1"
 const extractVersion = (filename: string): string | null => {
-  const match = filename.match(/-v(\d+)\.(mp4|mov|srt)$/i)
-  return match ? `v${match[1]}` : null
-}
+  const match = filename.match(/-v(\d+)\.(mp4|mov|srt)$/i);
+  return match ? `v${match[1]}` : null;
+};
 
 export function S3StagingPage({ onClose }: S3StagingPageProps) {
-  const { data, isLoading, refetch } = useS3StagingStatus()
-  const syncPrep = useSyncPrep()
-  const promoteToPublish = usePromoteToPublish()
-  const migrate = useMigrate()
-  const [selectedVersion, setSelectedVersion] = useState<string | null>(null)
+  const { data, isLoading, refetch } = useS3StagingStatus();
+  const syncPrep = useSyncPrep();
+  const promoteToPublish = usePromoteToPublish();
+  const migrate = useMigrate();
+  const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   // FR-104: Migration state
-  const [showMigrationPreview, setShowMigrationPreview] = useState(false)
-  const [migrationPreview, setMigrationPreview] = useState<MigrationActions | null>(null)
+  const [showMigrationPreview, setShowMigrationPreview] = useState(false);
+  const [migrationPreview, setMigrationPreview] = useState<MigrationActions | null>(null);
 
   // FR-105: S3 DAM integration
-  const { data: s3Status, refetch: refetchS3Status } = useS3Status()
-  const damCommand = useDamCommand()
-  const cleanLocal = useCleanLocal()
-  const { data: localSize } = useLocalSize()
-  const [showCleanConfirm, setShowCleanConfirm] = useState<'local' | 's3' | null>(null)
+  const { data: s3Status, refetch: refetchS3Status } = useS3Status();
+  const damCommand = useDamCommand();
+  const cleanLocal = useCleanLocal();
+  const { data: localSize } = useLocalSize();
+  const [showCleanConfirm, setShowCleanConfirm] = useState<'local' | 's3' | null>(null);
 
   // FR-105: Check if any DAM operation is in progress
-  const isDamBusy = damCommand.isPending || cleanLocal.isPending
+  const isDamBusy = damCommand.isPending || cleanLocal.isPending;
 
   // FR-105: Open S3 console in browser
   const handleViewS3 = () => {
     if (data?.project && s3Status?.brand) {
-      const url = `https://s3.console.aws.amazon.com/s3/buckets/v-${s3Status.brand}/${data.project}/`
-      window.open(url, '_blank')
+      const url = `https://s3.console.aws.amazon.com/s3/buckets/v-${s3Status.brand}/${data.project}/`;
+      window.open(url, '_blank');
     }
-  }
+  };
 
   // FR-105: Handle DAM upload
   const handleUpload = () => {
     damCommand.mutate('upload', {
       onSuccess: () => {
-        refetchS3Status()
-        refetch()
-      }
-    })
-  }
+        refetchS3Status();
+        refetch();
+      },
+    });
+  };
 
   // FR-105: Handle DAM download
   const handleDownload = () => {
     damCommand.mutate('download', {
       onSuccess: () => {
-        refetchS3Status()
-        refetch()
-      }
-    })
-  }
+        refetchS3Status();
+        refetch();
+      },
+    });
+  };
 
   // FR-105: Handle clean local
   const handleCleanLocal = () => {
-    setShowCleanConfirm(null)
+    setShowCleanConfirm(null);
     cleanLocal.mutate(undefined, {
       onSuccess: () => {
-        refetch()
-      }
-    })
-  }
+        refetch();
+      },
+    });
+  };
 
   // FR-105: Handle clean S3
   const handleCleanS3 = () => {
-    setShowCleanConfirm(null)
+    setShowCleanConfirm(null);
     damCommand.mutate('cleanup-s3', {
       onSuccess: () => {
-        refetchS3Status()
-      }
-    })
-  }
+        refetchS3Status();
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -96,7 +106,7 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
           <span className="text-gray-500">Loading...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (!data?.success) {
@@ -112,44 +122,47 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   // Get unique versions from post files
-  const versions = new Map<string, { video: typeof data.post.staging.files[0] | null; hasSrt: boolean }>()
+  const versions = new Map<
+    string,
+    { video: (typeof data.post.staging.files)[0] | null; hasSrt: boolean }
+  >();
   for (const file of data.post.staging.files) {
-    const version = extractVersion(file.name)
+    const version = extractVersion(file.name);
     if (version) {
-      const existing = versions.get(version) || { video: null, hasSrt: false }
-      existing.video = file
-      existing.hasSrt = file.hasSrt || false
-      versions.set(version, existing)
+      const existing = versions.get(version) || { video: null, hasSrt: false };
+      existing.video = file;
+      existing.hasSrt = file.hasSrt || false;
+      versions.set(version, existing);
     }
   }
 
   const handlePromote = () => {
     if (selectedVersion) {
-      promoteToPublish.mutate(selectedVersion)
+      promoteToPublish.mutate(selectedVersion);
     }
-  }
+  };
 
   // FR-104: Migration handlers
   const handlePreviewMigration = async () => {
-    const result = await migrate.mutateAsync(true)
+    const result = await migrate.mutateAsync(true);
     if (result.success && result.actions) {
-      setMigrationPreview(result.actions)
-      setShowMigrationPreview(true)
+      setMigrationPreview(result.actions);
+      setShowMigrationPreview(true);
     }
-  }
+  };
 
   const handleRunMigration = async () => {
-    setShowMigrationPreview(false)
-    const result = await migrate.mutateAsync(false)
+    setShowMigrationPreview(false);
+    const result = await migrate.mutateAsync(false);
     if (result.success) {
-      setMigrationPreview(null)
-      refetch()
+      setMigrationPreview(null);
+      refetch();
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -176,8 +189,8 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
                 <div className="flex-1">
                   <h3 className="font-medium text-amber-800">Legacy Structure Detected</h3>
                   <p className="text-sm text-amber-700 mt-1">
-                    This project has {data.migration.flatFileCount} file(s) in flat s3-staging/ structure.
-                    Migrate to prep/ + post/ subfolders?
+                    This project has {data.migration.flatFileCount} file(s) in flat s3-staging/
+                    structure. Migrate to prep/ + post/ subfolders?
                   </p>
                   <div className="flex gap-2 mt-3">
                     <button
@@ -236,7 +249,11 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
               <div className="text-xs text-gray-400">Staging: {data.prep.staging.path}</div>
               <button
                 onClick={() => syncPrep.mutate()}
-                disabled={syncPrep.isPending || !data.prep.source.exists || data.prep.source.files.length === 0}
+                disabled={
+                  syncPrep.isPending ||
+                  !data.prep.source.exists ||
+                  data.prep.source.files.length === 0
+                }
                 className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {syncPrep.isPending ? 'Syncing...' : 'Sync from Source'}
@@ -246,7 +263,9 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
               {!data.prep.staging.exists ? (
                 <div className="px-3 py-2 text-gray-400 text-sm">(folder does not exist)</div>
               ) : data.prep.staging.files.length === 0 ? (
-                <div className="px-3 py-2 text-gray-400 text-sm">(no files - click Sync to copy)</div>
+                <div className="px-3 py-2 text-gray-400 text-sm">
+                  (no files - click Sync to copy)
+                </div>
               ) : (
                 data.prep.staging.files.map((f) => (
                   <div
@@ -278,7 +297,8 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
                   {s3Status?.prep.fileCount ? (
                     <span className="text-xs text-gray-400">
                       {s3Status.prep.fileCount} files
-                      {s3Status.prep.lastSync && ` • Last sync: ${new Date(s3Status.prep.lastSync).toLocaleDateString()}`}
+                      {s3Status.prep.lastSync &&
+                        ` • Last sync: ${new Date(s3Status.prep.lastSync).toLocaleDateString()}`}
                     </span>
                   ) : null}
                 </div>
@@ -509,7 +529,9 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
                   disabled={isDamBusy}
                   className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {damCommand.isPending && damCommand.variables === 'cleanup-s3' ? 'Cleaning...' : 'Clean S3'}
+                  {damCommand.isPending && damCommand.variables === 'cleanup-s3'
+                    ? 'Cleaning...'
+                    : 'Clean S3'}
                 </button>
               </div>
             </div>
@@ -563,33 +585,49 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
             <div className="p-4 text-sm font-mono space-y-4">
               {migrationPreview.delete.length > 0 && (
                 <div>
-                  <div className="text-red-600 font-medium font-sans">DELETE ({migrationPreview.delete.length}):</div>
+                  <div className="text-red-600 font-medium font-sans">
+                    DELETE ({migrationPreview.delete.length}):
+                  </div>
                   {migrationPreview.delete.map((f) => (
-                    <div key={f} className="ml-4 text-gray-600">{f}</div>
+                    <div key={f} className="ml-4 text-gray-600">
+                      {f}
+                    </div>
                   ))}
                 </div>
               )}
               {migrationPreview.toPrep.length > 0 && (
                 <div>
-                  <div className="text-blue-600 font-medium font-sans">MOVE TO prep/ ({migrationPreview.toPrep.length}):</div>
+                  <div className="text-blue-600 font-medium font-sans">
+                    MOVE TO prep/ ({migrationPreview.toPrep.length}):
+                  </div>
                   {migrationPreview.toPrep.map(({ from, to }) => (
-                    <div key={from} className="ml-4 text-gray-600">{from} → {to}</div>
+                    <div key={from} className="ml-4 text-gray-600">
+                      {from} → {to}
+                    </div>
                   ))}
                 </div>
               )}
               {migrationPreview.toPost.length > 0 && (
                 <div>
-                  <div className="text-green-600 font-medium font-sans">MOVE TO post/ ({migrationPreview.toPost.length}):</div>
+                  <div className="text-green-600 font-medium font-sans">
+                    MOVE TO post/ ({migrationPreview.toPost.length}):
+                  </div>
                   {migrationPreview.toPost.map(({ from, to }) => (
-                    <div key={from} className="ml-4 text-gray-600">{from} → {to}</div>
+                    <div key={from} className="ml-4 text-gray-600">
+                      {from} → {to}
+                    </div>
                   ))}
                 </div>
               )}
               {migrationPreview.conflicts.length > 0 && (
                 <div>
-                  <div className="text-orange-600 font-medium font-sans">CONFLICTS ({migrationPreview.conflicts.length}):</div>
+                  <div className="text-orange-600 font-medium font-sans">
+                    CONFLICTS ({migrationPreview.conflicts.length}):
+                  </div>
                   {migrationPreview.conflicts.map(({ file, reason }) => (
-                    <div key={file} className="ml-4 text-gray-600">{file} - {reason}</div>
+                    <div key={file} className="ml-4 text-gray-600">
+                      {file} - {reason}
+                    </div>
                   ))}
                 </div>
               )}
@@ -597,8 +635,8 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
                 migrationPreview.toPrep.length === 0 &&
                 migrationPreview.toPost.length === 0 &&
                 migrationPreview.conflicts.length === 0 && (
-                <div className="text-gray-500 font-sans">No files to migrate.</div>
-              )}
+                  <div className="text-gray-500 font-sans">No files to migrate.</div>
+                )}
             </div>
             <div className="p-4 border-t flex justify-end gap-2">
               <button
@@ -619,5 +657,5 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

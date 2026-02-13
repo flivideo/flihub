@@ -41,10 +41,10 @@ Show "PARKED" badge on parked recordings, similar to existing "SAFE" badge:
 
 ### Badge Styling
 
-| Badge | Color | Background |
-|-------|-------|------------|
-| SAFE | Yellow text | Yellow/cream bg |
-| PARKED | Pink text | Light pink bg |
+| Badge  | Color       | Background      |
+| ------ | ----------- | --------------- |
+| SAFE   | Yellow text | Yellow/cream bg |
+| PARKED | Pink text   | Light pink bg   |
 
 Color should match the Recordings panel treatment from FR-120.
 
@@ -72,16 +72,16 @@ Watch panel already handles safe state - extend the same pattern:
 
 ```typescript
 // In WatchPanel.tsx or similar
-const isParked = parkedRecordings.includes(recording.filename)
-const isSafe = safeRecordings.includes(recording.filename)
+const isParked = parkedRecordings.includes(recording.filename);
+const isSafe = safeRecordings.includes(recording.filename);
 
 // Render badge(s) based on state
 ```
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                                   | Changes                               |
+| -------------------------------------- | ------------------------------------- |
 | `client/src/components/WatchPanel.tsx` | Add PARKED badge, conditional styling |
 
 ---
@@ -91,6 +91,7 @@ const isSafe = safeRecordings.includes(recording.filename)
 **Filter toggle to hide parked recordings:**
 
 A checkbox or toggle in the Watch panel header:
+
 - "Show parked" (default: checked)
 - When unchecked, parked recordings are hidden from the list
 
@@ -111,22 +112,26 @@ This is optional - implement if time permits, otherwise defer.
 ### Changes to WatchPage.tsx
 
 **State Management:**
+
 - Added `showParked` localStorage key for persistence
 - Added `showParked` state (defaults to true)
 - Added `handleShowParkedToggle` callback
 
 **Filtering Logic:**
+
 - Updated `groupByChapterWithTiming` to filter parked recordings based on toggle
 - Updated `sortedRecordings` to respect showParked setting
 - Updated `mostRecentRecording` to exclude parked recordings
 
 **UI Updates:**
+
 - Row styling: Pink background for parked files (`bg-pink-50 text-pink-700 hover:bg-pink-100 border-l-2 border-pink-400`)
 - PARKED badge: Pink badge matching RecordingsView style
 - Parked toggle button: Toggle button next to Safe button
 - Title attributes: Updated to show "(Parked)" status
 
 **Visual Design:**
+
 - Uses pink styling (`bg-pink-50`, `border-pink-200`, `text-pink-800`) matching FR-120
 - Consistent with SAFE feature UX pattern
 - Badge and toggle follow the exact same pattern as Safe recordings

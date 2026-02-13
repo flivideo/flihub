@@ -1,156 +1,170 @@
-import { useRef, useState, useEffect, useMemo } from 'react'
-import type { NamingState } from '../App'
-import type { CommonName, ChapterFilter } from '../../../shared/types'
-import { DEFAULT_TAGS } from '../../../shared/types'
-import { buildPreviewFilename } from '../utils/naming'
+import { useRef, useState, useEffect, useMemo } from 'react';
+import type { NamingState } from '../App';
+import type { CommonName, ChapterFilter } from '../../../shared/types';
+import { DEFAULT_TAGS } from '../../../shared/types';
+import { buildPreviewFilename } from '../utils/naming';
 
 // FR-73: Filter templates by current chapter
 function shouldShowTemplate(template: CommonName, currentChapter: number): boolean {
-  const filter = template.chapterFilter ?? 'all'
-  if (filter === 'all') return true
+  const filter = template.chapterFilter ?? 'all';
+  if (filter === 'all') return true;
 
-  const { min, max } = filter as ChapterFilter
-  if (min !== undefined && currentChapter < min) return false
-  if (max !== undefined && currentChapter > max) return false
-  return true
+  const { min, max } = filter as ChapterFilter;
+  if (min !== undefined && currentChapter < min) return false;
+  if (max !== undefined && currentChapter > max) return false;
+  return true;
 }
 
 interface NamingControlsProps {
-  namingState: NamingState
-  updateNaming: (field: keyof NamingState, value: string | string[]) => void
-  onNewChapter: () => void
-  availableTags?: string[]    // NFR-2: Tags from config
-  commonNames?: CommonName[]  // NFR-3/FR-13: Common names from config
-  newChapterClickCount?: number  // FR-112: Track clicks for glow detection
-  onAddCommonName?: () => void  // FR-116: Navigate to config to add common name
+  namingState: NamingState;
+  updateNaming: (field: keyof NamingState, value: string | string[]) => void;
+  onNewChapter: () => void;
+  availableTags?: string[]; // NFR-2: Tags from config
+  commonNames?: CommonName[]; // NFR-3/FR-13: Common names from config
+  newChapterClickCount?: number; // FR-112: Track clicks for glow detection
+  onAddCommonName?: () => void; // FR-116: Navigate to config to add common name
 }
 
-export function NamingControls({ namingState, updateNaming, onNewChapter, availableTags, commonNames, newChapterClickCount = 0, onAddCommonName }: NamingControlsProps) {
-  const { chapter, sequence, name, tags, customTag } = namingState
+export function NamingControls({
+  namingState,
+  updateNaming,
+  onNewChapter,
+  availableTags,
+  commonNames,
+  newChapterClickCount = 0,
+  onAddCommonName,
+}: NamingControlsProps) {
+  const { chapter, sequence, name, tags, customTag } = namingState;
   // NFR-2: Global tags (always visible)
-  const globalTags = availableTags ?? [...DEFAULT_TAGS]
+  const globalTags = availableTags ?? [...DEFAULT_TAGS];
 
   // NFR-2 fix: Find suggestTags for the currently active common name
-  const activeCommonName = commonNames?.find(cn => cn.name === name)
-  const suggestedTags = activeCommonName?.suggestTags ?? []
+  const activeCommonName = commonNames?.find((cn) => cn.name === name);
+  const suggestedTags = activeCommonName?.suggestTags ?? [];
 
   // FR-73: Filter common names by current chapter
   const filteredCommonNames = useMemo(() => {
-    if (!commonNames) return []
-    const chapterNum = parseInt(chapter, 10) || 0
-    return commonNames.filter(cn => shouldShowTemplate(cn, chapterNum))
-  }, [commonNames, chapter])
+    if (!commonNames) return [];
+    const chapterNum = parseInt(chapter, 10) || 0;
+    return commonNames.filter((cn) => shouldShowTemplate(cn, chapterNum));
+  }, [commonNames, chapter]);
 
   // FR-107: Name input auto-focus and glow when New Chapter clicked
-  const nameInputRef = useRef<HTMLInputElement>(null)
+  const nameInputRef = useRef<HTMLInputElement>(null);
   // FR-112: Refs for chapter and sequence inputs
-  const chapterInputRef = useRef<HTMLInputElement>(null)
-  const sequenceInputRef = useRef<HTMLInputElement>(null)
+  const chapterInputRef = useRef<HTMLInputElement>(null);
+  const sequenceInputRef = useRef<HTMLInputElement>(null);
 
   // FR-107: Blue glow for name field
-  const [showNameGlow, setShowNameGlow] = useState(false)
+  const [showNameGlow, setShowNameGlow] = useState(false);
   // FR-112: Green glow for chapter/seq on productive click
-  const [showChapterGlowGreen, setShowChapterGlowGreen] = useState(false)
+  const [showChapterGlowGreen, setShowChapterGlowGreen] = useState(false);
   // FR-112: Red glow for chapter/seq on idempotent click
-  const [showChapterGlowRed, setShowChapterGlowRed] = useState(false)
+  const [showChapterGlowRed, setShowChapterGlowRed] = useState(false);
 
   // FR-112: Track previous state for detecting changes and showing previous filename
-  const prevChapterRef = useRef<string>(chapter)
-  const prevClickCountRef = useRef<number>(newChapterClickCount)
-  const [previousFilename, setPreviousFilename] = useState<string | null>(null)
+  const prevChapterRef = useRef<string>(chapter);
+  const prevClickCountRef = useRef<number>(newChapterClickCount);
+  const [previousFilename, setPreviousFilename] = useState<string | null>(null);
   // Store previous naming state before click
-  const prevNamingStateRef = useRef<{ chapter: string; sequence: string; name: string; tags: string[]; customTag: string } | null>(null)
+  const prevNamingStateRef = useRef<{
+    chapter: string;
+    sequence: string;
+    name: string;
+    tags: string[];
+    customTag: string;
+  } | null>(null);
 
   // FR-112: Detect New Chapter clicks and show appropriate glow
   useEffect(() => {
     // Skip initial mount
     if (prevClickCountRef.current === 0 && newChapterClickCount === 0) {
-      prevClickCountRef.current = newChapterClickCount
-      prevChapterRef.current = chapter
-      return
+      prevClickCountRef.current = newChapterClickCount;
+      prevChapterRef.current = chapter;
+      return;
     }
 
     // Detect if click count increased (New Chapter was clicked)
     if (newChapterClickCount > prevClickCountRef.current) {
-      const chapterChanged = prevChapterRef.current !== chapter
+      const chapterChanged = prevChapterRef.current !== chapter;
 
       // Always show blue glow on name field when New Chapter clicked
-      setShowNameGlow(true)
-      nameInputRef.current?.focus()
+      setShowNameGlow(true);
+      nameInputRef.current?.focus();
 
       if (chapterChanged) {
         // Productive click: green glow on chapter/seq
-        setShowChapterGlowRed(false)  // Ensure red is off
-        setShowChapterGlowGreen(true)
+        setShowChapterGlowRed(false); // Ensure red is off
+        setShowChapterGlowGreen(true);
 
         // Build previous filename from the state before the click
         if (prevNamingStateRef.current) {
-          const prev = prevNamingStateRef.current
-          setPreviousFilename(buildPreviewFilename(prev.chapter, prev.sequence, prev.name, prev.tags, prev.customTag))
+          const prev = prevNamingStateRef.current;
+          setPreviousFilename(
+            buildPreviewFilename(prev.chapter, prev.sequence, prev.name, prev.tags, prev.customTag)
+          );
         }
 
         const timer = setTimeout(() => {
-          setShowChapterGlowGreen(false)
-          setShowNameGlow(false)
-          setPreviousFilename(null)
-        }, 1500)
+          setShowChapterGlowGreen(false);
+          setShowNameGlow(false);
+          setPreviousFilename(null);
+        }, 1500);
 
-        prevClickCountRef.current = newChapterClickCount
-        prevChapterRef.current = chapter
-        return () => clearTimeout(timer)
+        prevClickCountRef.current = newChapterClickCount;
+        prevChapterRef.current = chapter;
+        return () => clearTimeout(timer);
       } else {
         // Idempotent click: red glow on chapter/seq
-        setShowChapterGlowGreen(false)  // Ensure green is off
-        setShowChapterGlowRed(true)
+        setShowChapterGlowGreen(false); // Ensure green is off
+        setShowChapterGlowRed(true);
 
         const timer = setTimeout(() => {
-          setShowChapterGlowRed(false)
-          setShowNameGlow(false)
-        }, 500)
+          setShowChapterGlowRed(false);
+          setShowNameGlow(false);
+        }, 500);
 
-        prevClickCountRef.current = newChapterClickCount
-        return () => clearTimeout(timer)
+        prevClickCountRef.current = newChapterClickCount;
+        return () => clearTimeout(timer);
       }
     }
 
     // Update refs when chapter changes without a click (e.g., manual typing)
-    prevChapterRef.current = chapter
-  }, [chapter, newChapterClickCount])
+    prevChapterRef.current = chapter;
+  }, [chapter, newChapterClickCount]);
 
   // FR-112: Capture naming state before each render for previous filename tracking
   useEffect(() => {
-    prevNamingStateRef.current = { chapter, sequence, name, tags: [...tags], customTag }
-  })
+    prevNamingStateRef.current = { chapter, sequence, name, tags: [...tags], customTag };
+  });
 
   const toggleTag = (tag: string) => {
-    const newTags = tags.includes(tag)
-      ? tags.filter((t) => t !== tag)
-      : [...tags, tag]
-    updateNaming('tags', newTags)
-  }
+    const newTags = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
+    updateNaming('tags', newTags);
+  };
 
   // FR-21/FR-54: Sanitize custom tag input (spaces/commas → dashes, strip invalid chars, uppercase)
   // Note: Only trim leading dashes, keep trailing so user can type TAG1-TAG2
   const sanitizeCustomTag = (value: string): string => {
     return value
       .toUpperCase()
-      .replace(/[\s,]+/g, '-')      // spaces and commas to dashes
-      .replace(/[^A-Z0-9-]/g, '')   // strip invalid chars
-      .replace(/-+/g, '-')          // multiple dashes to single
-      .replace(/^-/, '')            // trim leading dash only
-  }
+      .replace(/[\s,]+/g, '-') // spaces and commas to dashes
+      .replace(/[^A-Z0-9-]/g, '') // strip invalid chars
+      .replace(/-+/g, '-') // multiple dashes to single
+      .replace(/^-/, ''); // trim leading dash only
+  };
 
   // FR-13: Apply common name with rules
   const applyCommonName = (commonName: CommonName) => {
-    updateNaming('name', commonName.name)
+    updateNaming('name', commonName.name);
 
     // Apply autoSequence rule: reset to 1
     if (commonName.autoSequence) {
-      updateNaming('sequence', '1')
+      updateNaming('sequence', '1');
     }
 
     // Note: suggestTags just makes tags available, doesn't auto-select them
-  }
+  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 shadow-sm">
@@ -303,8 +317,10 @@ export function NamingControls({ namingState, updateNaming, onNewChapter, availa
             <span className="text-gray-300">→</span>
           </>
         )}
-        <span className="font-mono text-base text-blue-600">{buildPreviewFilename(chapter, sequence, name, tags, customTag)}</span>
+        <span className="font-mono text-base text-blue-600">
+          {buildPreviewFilename(chapter, sequence, name, tags, customTag)}
+        </span>
       </div>
     </div>
-  )
+  );
 }

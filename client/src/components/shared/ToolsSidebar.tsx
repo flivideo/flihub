@@ -10,7 +10,9 @@ interface ToolsSidebarProps {
   selectedFiles: string[];
   totalFiles: number;
   activeTool: string | null;
-  onSimpleToolClick: (tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all') => void;
+  onSimpleToolClick: (
+    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all'
+  ) => void;
   onComplexToolClick: (tool: 'rename' | 'export' | 'renumber') => void;
 }
 
@@ -19,7 +21,7 @@ export function ToolsSidebar({
   totalFiles,
   activeTool,
   onSimpleToolClick,
-  onComplexToolClick
+  onComplexToolClick,
 }: ToolsSidebarProps) {
   const disabled = totalFiles === 0;
 
@@ -36,36 +38,52 @@ export function ToolsSidebar({
             disabled={disabled}
             active={false}
             onClick={() => onSimpleToolClick('regen-shadows')}
-            tooltip={disabled ? "No files" : (selectedFiles.length > 0
-              ? `Regenerate shadows for ${selectedFiles.length} selected`
-              : `Regenerate shadows for all ${totalFiles}`)}
+            tooltip={
+              disabled
+                ? 'No files'
+                : selectedFiles.length > 0
+                  ? `Regenerate shadows for ${selectedFiles.length} selected`
+                  : `Regenerate shadows for all ${totalFiles}`
+            }
           />
           <ToolButton
             label="Regen Transcripts"
             disabled={disabled}
             active={false}
             onClick={() => onSimpleToolClick('regen-transcripts')}
-            tooltip={disabled ? "No files" : (selectedFiles.length > 0
-              ? `Queue ${selectedFiles.length} for transcription`
-              : `Queue all ${totalFiles} for transcription`)}
+            tooltip={
+              disabled
+                ? 'No files'
+                : selectedFiles.length > 0
+                  ? `Queue ${selectedFiles.length} for transcription`
+                  : `Queue all ${totalFiles} for transcription`
+            }
           />
           <ToolButton
             label="Regen Chapters"
             disabled={disabled}
             active={false}
             onClick={() => onSimpleToolClick('regen-chapters')}
-            tooltip={disabled ? "No chapters" : (selectedFiles.length > 0
-              ? `Regen chapters from ${selectedFiles.length} selected`
-              : `Regenerate all chapter videos`)}
+            tooltip={
+              disabled
+                ? 'No chapters'
+                : selectedFiles.length > 0
+                  ? `Regen chapters from ${selectedFiles.length} selected`
+                  : `Regenerate all chapter videos`
+            }
           />
           <ToolButton
             label="Regen All"
             disabled={disabled}
             active={false}
             onClick={() => onSimpleToolClick('regen-all')}
-            tooltip={disabled ? "No files" : (selectedFiles.length > 0
-              ? `Regen all for ${selectedFiles.length} selected`
-              : `Regenerate all derivative files`)}
+            tooltip={
+              disabled
+                ? 'No files'
+                : selectedFiles.length > 0
+                  ? `Regen all for ${selectedFiles.length} selected`
+                  : `Regenerate all derivative files`
+            }
           />
         </div>
       </div>
@@ -81,25 +99,29 @@ export function ToolsSidebar({
             disabled={selectedFiles.length === 0}
             active={activeTool === 'rename'}
             onClick={() => onComplexToolClick('rename')}
-            tooltip={selectedFiles.length === 0
-              ? "Select files to rename"
-              : `Rename ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}`}
+            tooltip={
+              selectedFiles.length === 0
+                ? 'Select files to rename'
+                : `Rename ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}`
+            }
           />
           <ToolButton
             label="Export"
             disabled={selectedFiles.length === 0}
             active={activeTool === 'export'}
             onClick={() => onComplexToolClick('export')}
-            tooltip={selectedFiles.length === 0
-              ? "Select files to export"
-              : `Export ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}`}
+            tooltip={
+              selectedFiles.length === 0
+                ? 'Select files to export'
+                : `Export ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}`
+            }
           />
           <ToolButton
             label="Renumber"
             disabled={disabled}
             active={activeTool === 'renumber'}
             onClick={() => onComplexToolClick('renumber')}
-            tooltip={disabled ? "No files" : "Move chapters with automatic cascade"}
+            tooltip={disabled ? 'No files' : 'Move chapters with automatic cascade'}
           />
         </div>
       </div>
@@ -124,11 +146,12 @@ function ToolButton({ label, disabled, active, onClick, tooltip }: ToolButtonPro
       className={`
         relative px-3 py-2 rounded-md text-left text-sm font-medium
         transition-all duration-200 border-l-2
-        ${disabled
-          ? 'bg-transparent text-gray-300 cursor-not-allowed border-transparent'
-          : active
-            ? 'bg-gray-100 text-blue-600 border-blue-600'
-            : 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 border-transparent hover:border-gray-300'
+        ${
+          disabled
+            ? 'bg-transparent text-gray-300 cursor-not-allowed border-transparent'
+            : active
+              ? 'bg-gray-100 text-blue-600 border-blue-600'
+              : 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 border-transparent hover:border-gray-300'
         }
       `}
     >

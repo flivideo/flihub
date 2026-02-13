@@ -16,6 +16,7 @@ As a user managing video files, I want a complete rename tool with chapter/seque
 ## Problem
 
 **Current state (as of 2026-01-06):**
+
 - Rename drawer exists but only has single text input for label
 - Missing: Chapter number control
 - Missing: Sequence preserve/renumber options
@@ -24,6 +25,7 @@ As a user managing video files, I want a complete rename tool with chapter/seque
 - Missing: Intelligent pre-fill from selected files
 
 **Impact:**
+
 - Users can only rename the label portion of filename
 - Cannot change chapter numbers in bulk
 - Cannot control sequence numbering behavior
@@ -103,35 +105,38 @@ Implement a complete Rename Tool drawer with all naming controls, intelligent pr
 **Default:** Auto-detected from first selected file
 
 **Pre-fill Logic:**
+
 ```typescript
 function detectChapter(selectedFiles: string[]): string {
   // Extract chapter from first file
-  const firstFile = selectedFiles[0]
-  const chapter = firstFile.split('-')[0]  // "05-2-welcome.mov" → "05"
+  const firstFile = selectedFiles[0];
+  const chapter = firstFile.split('-')[0]; // "05-2-welcome.mov" → "05"
 
   // Validate all files have same chapter
-  const allSameChapter = selectedFiles.every(f => f.startsWith(chapter + '-'))
+  const allSameChapter = selectedFiles.every((f) => f.startsWith(chapter + '-'));
 
   if (allSameChapter) {
-    return chapter  // "05"
+    return chapter; // "05"
   } else {
     // Mixed chapters: use most common, show warning
-    const chapterCounts = new Map<string, number>()
-    selectedFiles.forEach(f => {
-      const ch = f.split('-')[0]
-      chapterCounts.set(ch, (chapterCounts.get(ch) || 0) + 1)
-    })
-    const mostCommon = [...chapterCounts.entries()].sort((a, b) => b[1] - a[1])[0][0]
-    return mostCommon
+    const chapterCounts = new Map<string, number>();
+    selectedFiles.forEach((f) => {
+      const ch = f.split('-')[0];
+      chapterCounts.set(ch, (chapterCounts.get(ch) || 0) + 1);
+    });
+    const mostCommon = [...chapterCounts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    return mostCommon;
   }
 }
 ```
 
 **Validation:**
+
 - [ ] Must be 01-99 (padded with leading zero)
 - [ ] Cannot be empty
 
 **Help Text:**
+
 - Single chapter: "Auto-detected from selection"
 - Mixed chapters: "⚠️ Mixed chapters selected (using most common: 05)"
 
@@ -144,24 +149,29 @@ function detectChapter(selectedFiles: string[]): string {
 **Options:**
 
 **Option A: Preserve original**
+
 ```
 ○ Preserve original numbers
   (05-2 → 05-2, 05-5 → 05-5, 05-8 → 05-8)
 ```
+
 - Keeps existing sequence numbers
 - Gaps are preserved
 - Useful when inserting files into existing chapter
 
 **Option B: Renumber** (Default)
+
 ```
 ● Renumber starting from: [ 1 ]
   (05-2 → 05-1, 05-5 → 05-2, 05-8 → 05-3)
 ```
+
 - Renumbers sequentially from start value
 - Removes gaps
 - Useful for clean sequential numbering
 
 **Start Input:**
+
 - Type: Number input
 - Min: 1
 - Max: 999
@@ -169,10 +179,11 @@ function detectChapter(selectedFiles: string[]): string {
 - Only enabled when "Renumber" selected
 
 **Pre-fill Logic:**
+
 ```typescript
 function detectSequenceMode(selectedFiles: string[]): 'preserve' | 'renumber' {
   // Default to renumber (most common use case)
-  return 'renumber'
+  return 'renumber';
 }
 ```
 
@@ -184,6 +195,7 @@ function detectSequenceMode(selectedFiles: string[]): 'preserve' | 'renumber' {
 **Default:** Empty (user must provide)
 
 **Validation Rules:**
+
 - [ ] Required (cannot be empty)
 - [ ] Must be kebab-case (lowercase letters, numbers, hyphens)
 - [ ] Cannot start or end with hyphen
@@ -192,25 +204,27 @@ function detectSequenceMode(selectedFiles: string[]): 'preserve' | 'renumber' {
 - [ ] Max length: 50 characters
 
 **Validation Messages:**
+
 ```typescript
 const validateLabel = (label: string): string | null => {
   if (!label.trim()) {
-    return "Name is required"
+    return 'Name is required';
   }
 
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(label)) {
-    return "Must be kebab-case (lowercase, hyphens only)"
+    return 'Must be kebab-case (lowercase, hyphens only)';
   }
 
   if (label.length > 50) {
-    return "Name too long (max 50 characters)"
+    return 'Name too long (max 50 characters)';
   }
 
-  return null  // Valid
-}
+  return null; // Valid
+};
 ```
 
 **Help Text:**
+
 - "Must be kebab-case (a-z, 0-9, hyphens)"
 - Real-time validation (red border + error message on invalid)
 
@@ -221,6 +235,7 @@ const validateLabel = (label: string): string | null => {
 **Type:** Checkbox group + custom input
 
 **Default Tags (from config.availableTags):**
+
 ```typescript
 // From config.json
 {
@@ -229,24 +244,27 @@ const validateLabel = (label: string): string | null => {
 ```
 
 **UI:**
+
 ```
 ☑ CTA    ☐ SKOOL   ☐ DEMO   ☐ INTRO   ☐ ADVANCED
 [+ Add Custom Tag]
 ```
 
 **Pre-fill Logic:**
+
 ```typescript
 function detectTags(selectedFiles: string[]): string[] {
   // Extract tags from first file
-  const firstFile = selectedFiles[0]
-  const tags = extractTagsFromName(firstFile.replace('.mov', ''))
+  const firstFile = selectedFiles[0];
+  const tags = extractTagsFromName(firstFile.replace('.mov', ''));
   // "05-2-welcome-CTA-SKOOL.mov" → ["CTA", "SKOOL"]
 
-  return tags
+  return tags;
 }
 ```
 
 **Custom Tag Input:**
+
 - Click "+ Add Custom Tag" opens text input
 - Input validates uppercase letters only
 - Max 10 characters
@@ -254,6 +272,7 @@ function detectTags(selectedFiles: string[]): string[] {
 - Can remove custom tags
 
 **Validation:**
+
 - [ ] Tags must be uppercase
 - [ ] Max 5 tags total
 - [ ] No duplicate tags
@@ -265,6 +284,7 @@ function detectTags(selectedFiles: string[]): string[] {
 **Purpose:** Show exactly what files will become before executing
 
 **Display:**
+
 ```
 Preview (first 5 files):
 ✓ 05-2-welcome.mov
@@ -283,6 +303,7 @@ Preview (first 5 files):
 ```
 
 **Rules:**
+
 - [ ] Show first 5 files
 - [ ] Show "... and N more files" if > 5
 - [ ] Checkmark indicates valid rename
@@ -290,6 +311,7 @@ Preview (first 5 files):
 - [ ] Update in real-time as user changes fields
 
 **Preview Logic:**
+
 ```typescript
 function generatePreview(
   selectedFiles: string[],
@@ -299,25 +321,22 @@ function generatePreview(
   label: string,
   tags: string[]
 ): { from: string; to: string; valid: boolean; warning?: string }[] {
-
   return selectedFiles.map((filename, index) => {
-    const [oldChapter, oldSequence, , ] = filename.split('-')
+    const [oldChapter, oldSequence, ,] = filename.split('-');
 
     // Determine new sequence
-    const newSequence = sequenceMode === 'preserve'
-      ? oldSequence
-      : String(sequenceStart + index)
+    const newSequence = sequenceMode === 'preserve' ? oldSequence : String(sequenceStart + index);
 
     // Build new filename
-    const tagSuffix = tags.length > 0 ? `-${tags.join('-')}` : ''
-    const newFilename = `${chapter}-${newSequence}-${label}${tagSuffix}.mov`
+    const tagSuffix = tags.length > 0 ? `-${tags.join('-')}` : '';
+    const newFilename = `${chapter}-${newSequence}-${label}${tagSuffix}.mov`;
 
     return {
       from: filename,
       to: newFilename,
-      valid: true  // Could add conflict detection here
-    }
-  })
+      valid: true, // Could add conflict detection here
+    };
+  });
 }
 ```
 
@@ -326,15 +345,17 @@ function generatePreview(
 ### 6. Warning Banner
 
 **Display:**
+
 ```
 ⚠️ Transcripts will be regenerated (~50 minutes)
 ```
 
 **Calculation:**
+
 ```typescript
-const estimatedTime = selectedFiles.length * 10  // 10 min per file
-const minutes = Math.round(estimatedTime)
-const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
+const estimatedTime = selectedFiles.length * 10; // 10 min per file
+const minutes = Math.round(estimatedTime);
+const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`;
 ```
 
 **Color:** Yellow background (`bg-yellow-50 text-yellow-800`)
@@ -346,6 +367,7 @@ const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
 ### Field Implementation
 
 **1. Chapter Dropdown**
+
 - [ ] Dropdown with values 01-99
 - [ ] Auto-filled from first selected file's chapter
 - [ ] Shows warning if mixed chapters detected
@@ -353,6 +375,7 @@ const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
 - [ ] Styled consistently with other dropdowns
 
 **2. Sequence Numbering**
+
 - [ ] Two radio options: Preserve / Renumber
 - [ ] "Preserve" is default when selected files have gaps
 - [ ] "Renumber" is default otherwise
@@ -361,6 +384,7 @@ const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
 - [ ] Validates 1-999
 
 **3. Name Input**
+
 - [ ] Required field
 - [ ] Real-time validation (kebab-case)
 - [ ] Error message on invalid input
@@ -369,6 +393,7 @@ const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
 - [ ] Max length 50 characters
 
 **4. Tags Checkboxes**
+
 - [ ] Checkboxes for all config.availableTags
 - [ ] Pre-selected based on first file's tags
 - [ ] "+ Add Custom Tag" button
@@ -377,6 +402,7 @@ const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
 - [ ] Max 5 tags total
 
 **5. Preview Section**
+
 - [ ] Shows first 5 files with before → after
 - [ ] Shows "... and N more" if > 5 files
 - [ ] Updates in real-time as fields change
@@ -384,6 +410,7 @@ const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
 - [ ] Warning icon if conflicts detected
 
 **6. Warning Banner**
+
 - [ ] Shows estimated transcript regeneration time
 - [ ] Calculates based on file count (~10 min per file)
 - [ ] Yellow background, visible
@@ -391,18 +418,21 @@ const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
 ### Behavior
 
 **7. Pre-fill Logic**
+
 - [ ] Chapter auto-detected from selection
 - [ ] Tags auto-detected from first file
 - [ ] Sequence mode defaults to "Renumber"
 - [ ] Name field empty (user must provide)
 
 **8. Validation**
+
 - [ ] Apply button disabled until name provided
 - [ ] Apply button disabled if validation errors exist
 - [ ] Shows validation errors inline
 - [ ] Prevents submit with Enter if invalid
 
 **9. Execution**
+
 - [ ] Calls `POST /api/manage/bulk-rename` with all fields
 - [ ] Shows loading state during rename
 - [ ] Success toast: "Renamed 5 files"
@@ -411,6 +441,7 @@ const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
 - [ ] Queues transcriptions (via FR-130)
 
 **10. Drawer Behavior**
+
 - [ ] Follows FR-137 pattern (ESC to close, overlay, etc.)
 - [ ] Width: 480px (`w-[480px]`) for moderate complexity
 - [ ] First input (chapter dropdown) auto-focused on open
@@ -426,6 +457,7 @@ const message = `⚠️ Transcripts will be regenerated (~${minutes} min)`
 **Endpoint:** `POST /api/manage/bulk-rename`
 
 **Request Body:**
+
 ```typescript
 interface BulkRenameRequest {
   files: string[]           // Selected filenames
@@ -448,6 +480,7 @@ interface BulkRenameRequest {
 ```
 
 **Response:**
+
 ```typescript
 interface BulkRenameResponse {
   success: boolean
@@ -472,37 +505,37 @@ interface BulkRenameResponse {
 ```
 
 **Backend Logic:**
+
 ```typescript
 async function bulkRename(req: BulkRenameRequest): Promise<BulkRenameResponse> {
-  const { files, chapter, sequenceMode, sequenceStart, label, tags } = req
+  const { files, chapter, sequenceMode, sequenceStart, label, tags } = req;
 
-  let renamed = 0
-  let queued = 0
-  const errors: string[] = []
+  let renamed = 0;
+  let queued = 0;
+  const errors: string[] = [];
 
   for (let i = 0; i < files.length; i++) {
-    const oldFilename = files[i]
-    const [oldChapter, oldSequence, , ] = oldFilename.split('-')
+    const oldFilename = files[i];
+    const [oldChapter, oldSequence, ,] = oldFilename.split('-');
 
     // Determine new chapter
-    const newChapter = chapter || oldChapter
+    const newChapter = chapter || oldChapter;
 
     // Determine new sequence
-    const newSequence = sequenceMode === 'preserve'
-      ? oldSequence
-      : String((sequenceStart || 1) + i)
+    const newSequence =
+      sequenceMode === 'preserve' ? oldSequence : String((sequenceStart || 1) + i);
 
     // Build new filename
-    const tagSuffix = tags && tags.length > 0 ? `-${tags.join('-')}` : ''
-    const newFilename = `${newChapter}-${newSequence}-${label}${tagSuffix}.mov`
+    const tagSuffix = tags && tags.length > 0 ? `-${tags.join('-')}` : '';
+    const newFilename = `${newChapter}-${newSequence}-${label}${tagSuffix}.mov`;
 
     try {
       // Use FR-130 delete+regenerate pattern
-      await renameWithDeleteRegenerate(oldFilename, newFilename, projectPath)
-      renamed++
-      queued++  // Transcription queued
+      await renameWithDeleteRegenerate(oldFilename, newFilename, projectPath);
+      renamed++;
+      queued++; // Transcription queued
     } catch (error) {
-      errors.push(`${oldFilename}: ${error.message}`)
+      errors.push(`${oldFilename}: ${error.message}`);
     }
   }
 
@@ -510,8 +543,8 @@ async function bulkRename(req: BulkRenameRequest): Promise<BulkRenameResponse> {
     success: errors.length === 0,
     renamed,
     queued,
-    errors: errors.length > 0 ? errors : undefined
-  }
+    errors: errors.length > 0 ? errors : undefined,
+  };
 }
 ```
 
@@ -524,6 +557,7 @@ async function bulkRename(req: BulkRenameRequest): Promise<BulkRenameResponse> {
 ### Files to Create/Modify
 
 **Create:**
+
 - `client/src/components/shared/RenamePanel.tsx` (~300 lines)
   - Extract from ManagePanel.tsx lines 591-628
   - Add Chapter dropdown component
@@ -534,6 +568,7 @@ async function bulkRename(req: BulkRenameRequest): Promise<BulkRenameResponse> {
   - Add pre-fill logic
 
 **Modify:**
+
 - `client/src/components/ManagePanel.tsx`
   - Replace inline rename UI (lines 591-628) with `<RenamePanel />`
   - Pass selectedFiles prop
@@ -552,35 +587,35 @@ async function bulkRename(req: BulkRenameRequest): Promise<BulkRenameResponse> {
 ```tsx
 // RenamePanel.tsx
 interface RenamePanelProps {
-  selectedFiles: string[]
-  onClose: () => void
+  selectedFiles: string[];
+  onClose: () => void;
 }
 
 export function RenamePanel({ selectedFiles, onClose }: RenamePanelProps) {
   // State
-  const [chapter, setChapter] = useState('')
-  const [sequenceMode, setSequenceMode] = useState<'preserve' | 'renumber'>('renumber')
-  const [sequenceStart, setSequenceStart] = useState(1)
-  const [label, setLabel] = useState('')
-  const [tags, setTags] = useState<string[]>([])
-  const [customTagInput, setCustomTagInput] = useState('')
+  const [chapter, setChapter] = useState('');
+  const [sequenceMode, setSequenceMode] = useState<'preserve' | 'renumber'>('renumber');
+  const [sequenceStart, setSequenceStart] = useState(1);
+  const [label, setLabel] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [customTagInput, setCustomTagInput] = useState('');
 
   // Pre-fill on mount
   useEffect(() => {
-    const detectedChapter = detectChapter(selectedFiles)
-    const detectedTags = detectTags(selectedFiles)
-    setChapter(detectedChapter)
-    setTags(detectedTags)
-  }, [selectedFiles])
+    const detectedChapter = detectChapter(selectedFiles);
+    const detectedTags = detectTags(selectedFiles);
+    setChapter(detectedChapter);
+    setTags(detectedTags);
+  }, [selectedFiles]);
 
   // Preview generation
   const preview = useMemo(() => {
-    return generatePreview(selectedFiles, chapter, sequenceMode, sequenceStart, label, tags)
-  }, [selectedFiles, chapter, sequenceMode, sequenceStart, label, tags])
+    return generatePreview(selectedFiles, chapter, sequenceMode, sequenceStart, label, tags);
+  }, [selectedFiles, chapter, sequenceMode, sequenceStart, label, tags]);
 
   // Validation
-  const labelError = validateLabel(label)
-  const isValid = !labelError && label.trim() !== ''
+  const labelError = validateLabel(label);
+  const isValid = !labelError && label.trim() !== '';
 
   // Submit handler
   const handleRename = async () => {
@@ -592,19 +627,19 @@ export function RenamePanel({ selectedFiles, onClose }: RenamePanelProps) {
         sequenceMode,
         sequenceStart: sequenceMode === 'renumber' ? sequenceStart : undefined,
         label,
-        tags
-      })
-    })
+        tags,
+      }),
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
     if (data.success) {
-      toast.success(`Renamed ${data.renamed} files`)
-      onClose()
+      toast.success(`Renamed ${data.renamed} files`);
+      onClose();
     } else {
-      toast.error(`Failed: ${data.errors?.join(', ')}`)
+      toast.error(`Failed: ${data.errors?.join(', ')}`);
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -627,7 +662,7 @@ export function RenamePanel({ selectedFiles, onClose }: RenamePanelProps) {
         <button onClick={onClose}>Cancel</button>
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -720,9 +755,11 @@ export function RenamePanel({ selectedFiles, onClose }: RenamePanelProps) {
    - Error messages inline
 
 **Files Created (1):**
+
 - `client/src/components/shared/RenamePanel.tsx` (461 lines)
 
 **Files Modified (3):**
+
 - `client/src/components/shared/index.ts` - Added RenamePanel export
 - `server/src/routes/manage.ts` - Extended bulk-rename endpoint (+50 lines)
 - `client/src/components/ManagePanel.tsx` - Integrated RenamePanel (-50 lines)
@@ -741,6 +778,7 @@ export function RenamePanel({ selectedFiles, onClose }: RenamePanelProps) {
 10. ✅ Drawer behavior (FR-137 pattern, ESC/overlay close, 480px width)
 
 **Testing Notes:**
+
 - Start dev server: `npm run dev`
 - Navigate to Manage panel
 - Select files and click "Rename" tool
@@ -753,6 +791,7 @@ export function RenamePanel({ selectedFiles, onClose }: RenamePanelProps) {
   - Apply with various combinations
 
 **User Impact:**
+
 - Complete control over chapter/sequence/label/tags in bulk rename
 - Visual preview before executing
 - Intelligent pre-fill reduces typing

@@ -18,7 +18,7 @@ import { readDirSafe, statSafe } from './filesystem.js';
  */
 export async function countMovFiles(dir: string): Promise<number> {
   const files = await readDirSafe(dir);
-  return files.filter(f => f.endsWith('.mov')).length;
+  return files.filter((f) => f.endsWith('.mov')).length;
 }
 
 /**
@@ -26,7 +26,7 @@ export async function countMovFiles(dir: string): Promise<number> {
  */
 export async function countTxtFiles(dir: string): Promise<number> {
   const files = await readDirSafe(dir);
-  return files.filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt')).length;
+  return files.filter((f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt')).length;
 }
 
 /**
@@ -34,7 +34,7 @@ export async function countTxtFiles(dir: string): Promise<number> {
  */
 export async function countFiles(dir: string, extensions: string[]): Promise<number> {
   const files = await readDirSafe(dir);
-  return files.filter(f => extensions.some(ext => f.toLowerCase().endsWith(ext))).length;
+  return files.filter((f) => extensions.some((ext) => f.toLowerCase().endsWith(ext))).length;
 }
 
 /**
@@ -64,9 +64,7 @@ export async function getTranscriptSyncStatus(
 ): Promise<TranscriptSyncStatus> {
   // Get all .mov files (base names without extension)
   const files = await readDirSafe(recordingsDir);
-  const recordingFiles = files
-    .filter(f => f.endsWith('.mov'))
-    .map(f => f.replace('.mov', ''))
+  const recordingFiles = files.filter((f) => f.endsWith('.mov')).map((f) => f.replace('.mov', ''));
 
   // FR-94: .txt is the primary format - only .txt counts as "transcribed"
   const transcriptDirFiles = await readDirSafe(transcriptsDir);
@@ -74,18 +72,18 @@ export async function getTranscriptSyncStatus(
   // Get base names for .txt files only (exclude chapter transcripts)
   const txtFiles = new Set(
     transcriptDirFiles
-      .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
-      .map(f => f.replace('.txt', ''))
+      .filter((f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+      .map((f) => f.replace('.txt', ''))
   );
 
   const recordingSet = new Set(recordingFiles);
 
   // A transcript is "complete" only if .txt exists
-  const matched = recordingFiles.filter(r => txtFiles.has(r)).length;
-  const missingTranscripts = recordingFiles.filter(r => !txtFiles.has(r));
+  const matched = recordingFiles.filter((r) => txtFiles.has(r)).length;
+  const missingTranscripts = recordingFiles.filter((r) => !txtFiles.has(r));
 
   // Orphaned = .txt files without matching recording
-  const orphanedTranscripts = [...txtFiles].filter(t => !recordingSet.has(t));
+  const orphanedTranscripts = [...txtFiles].filter((t) => !recordingSet.has(t));
 
   return { matched, missingTranscripts, orphanedTranscripts };
 }
@@ -137,7 +135,7 @@ export async function getProjectTimestamps(projectPath: string): Promise<Project
  */
 export async function listMovFiles(dir: string): Promise<string[]> {
   const files = await readDirSafe(dir);
-  return files.filter(f => f.endsWith('.mov'));
+  return files.filter((f) => f.endsWith('.mov'));
 }
 
 /**
@@ -145,7 +143,7 @@ export async function listMovFiles(dir: string): Promise<string[]> {
  */
 export async function listTranscriptFiles(dir: string): Promise<string[]> {
   const files = await readDirSafe(dir);
-  return files.filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'));
+  return files.filter((f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt'));
 }
 
 /**
@@ -155,8 +153,8 @@ export async function listTranscriptFiles(dir: string): Promise<string[]> {
 export async function getTranscriptBasenames(dir: string): Promise<string[]> {
   const files = await readDirSafe(dir);
   return files
-    .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
-    .map(f => f.replace('.txt', ''));
+    .filter((f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+    .map((f) => f.replace('.txt', ''));
 }
 
 /**
@@ -192,7 +190,7 @@ export async function getProjectIndicators(projectPath: string): Promise<Project
 
   // Check chapters - count .mov files in -chapters directory
   const chapterFiles = await readDirSafe(chaptersDir);
-  const chapterMovFiles = chapterFiles.filter(f => f.endsWith('.mov'));
+  const chapterMovFiles = chapterFiles.filter((f) => f.endsWith('.mov'));
   const chapterVideoCount = chapterMovFiles.length;
   const hasChapters = chapterVideoCount > 0;
 

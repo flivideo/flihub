@@ -70,21 +70,15 @@ export function ConfirmationModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
         {/* Title */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">
-          {title}
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3">{title}</h3>
 
         {/* Main message */}
-        <p className="text-sm text-gray-700 mb-3 whitespace-pre-line">
-          {message}
-        </p>
+        <p className="text-sm text-gray-700 mb-3 whitespace-pre-line">{message}</p>
 
         {/* File list (if provided) */}
         {files && files.length > 0 && (
           <div className="mb-3 p-3 bg-gray-50 rounded border border-gray-200">
-            <p className="text-xs font-medium text-gray-600 mb-2">
-              Files to process:
-            </p>
+            <p className="text-xs font-medium text-gray-600 mb-2">Files to process:</p>
             <ul className="text-sm text-gray-700 space-y-1">
               {files.slice(0, 3).map((file, i) => (
                 <li key={i} className="font-mono text-xs truncate">
@@ -92,9 +86,7 @@ export function ConfirmationModal({
                 </li>
               ))}
               {files.length > 3 && (
-                <li className="text-xs text-gray-500 italic">
-                  ... and {files.length - 3} more
-                </li>
+                <li className="text-xs text-gray-500 italic">... and {files.length - 3} more</li>
               )}
             </ul>
           </div>
@@ -103,21 +95,19 @@ export function ConfirmationModal({
         {/* Chapter Settings (if provided) */}
         {chapterSettings && onChapterSettingsChange && (
           <div className="mb-3 p-4 bg-blue-50 rounded border border-blue-200">
-            <p className="text-sm font-semibold text-gray-700 mb-3">
-              Chapter Generation Settings
-            </p>
+            <p className="text-sm font-semibold text-gray-700 mb-3">Chapter Generation Settings</p>
 
             {/* Resolution */}
             <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Resolution
-              </label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Resolution</label>
               <select
                 value={chapterSettings.resolution}
-                onChange={(e) => onChapterSettingsChange({
-                  ...chapterSettings,
-                  resolution: e.target.value as '720p' | '1080p'
-                })}
+                onChange={(e) =>
+                  onChapterSettingsChange({
+                    ...chapterSettings,
+                    resolution: e.target.value as '720p' | '1080p',
+                  })
+                }
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="720p">720p (1280×720)</option>
@@ -131,13 +121,17 @@ export function ConfirmationModal({
                 <input
                   type="checkbox"
                   checked={chapterSettings.includeTitleSlides}
-                  onChange={(e) => onChapterSettingsChange({
-                    ...chapterSettings,
-                    includeTitleSlides: e.target.checked
-                  })}
+                  onChange={(e) =>
+                    onChapterSettingsChange({
+                      ...chapterSettings,
+                      includeTitleSlides: e.target.checked,
+                    })
+                  }
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Include purple title slides between segments</span>
+                <span className="text-sm text-gray-700">
+                  Include purple title slides between segments
+                </span>
               </label>
             </div>
 
@@ -153,10 +147,12 @@ export function ConfirmationModal({
                   max="5"
                   step="0.5"
                   value={chapterSettings.slideDuration}
-                  onChange={(e) => onChapterSettingsChange({
-                    ...chapterSettings,
-                    slideDuration: parseFloat(e.target.value)
-                  })}
+                  onChange={(e) =>
+                    onChapterSettingsChange({
+                      ...chapterSettings,
+                      slideDuration: parseFloat(e.target.value),
+                    })
+                  }
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -167,9 +163,7 @@ export function ConfirmationModal({
         {/* Warning (if provided) */}
         {warning && (
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-            <p className="text-xs text-yellow-800 whitespace-pre-line">
-              ⚠️ {warning}
-            </p>
+            <p className="text-xs text-yellow-800 whitespace-pre-line">⚠️ {warning}</p>
           </div>
         )}
 

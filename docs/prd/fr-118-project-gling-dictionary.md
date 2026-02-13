@@ -14,11 +14,13 @@ As a user, I want project-specific dictionary words so transcription accuracy im
 ## Problem
 
 Current state:
+
 - Single "Gling Dictionary Words" textarea in Config
 - Words apply globally to all projects
 - Examples in global: AppyDave, BMAD, FliVideo
 
 Some dictionary words are brand-wide (AppyDave, BMAD), but others are project-specific:
+
 - "Claudemas" only relevant for b86
 - "Theodore" only for a future project
 - Technical terms specific to a video topic
@@ -30,12 +32,14 @@ No way to separate these currently - global dictionary gets cluttered with one-o
 Split into two dictionaries that merge at transcription time:
 
 ### 1. Global Dictionary (existing)
+
 - Brand names: AppyDave, BMAD, FliVideo
 - Common tech terms: Claude, Anthropic
 - Persists in `server/config.json`
 - Editable in Config panel (current behavior)
 
 ### 2. Project Dictionary (new)
+
 - Project-specific terms
 - Storage options:
   - **Option A:** In `.flihub-state.json` (FR-111 infrastructure exists)
@@ -43,7 +47,9 @@ Split into two dictionaries that merge at transcription time:
 - Merged with global when generating First Edit Prep
 
 ### Merge Behavior
+
 When generating First Edit Prep dictionary:
+
 ```
 final_dictionary = global_words + project_words
 ```
@@ -80,6 +86,7 @@ Duplicates removed, alphabetically sorted.
 ## Completion Notes
 
 **What was done:**
+
 - Added `glingDictionary?: string[]` to `ProjectState` type in shared/types.ts
 - Updated `writeProjectState()` to preserve the new field
 - Added `setProjectDictionary()` helper function
@@ -90,6 +97,7 @@ Duplicates removed, alphabetically sorted.
 - Shows current project code in label
 
 **Files changed:**
+
 - `shared/types.ts` (modified) - Added glingDictionary to ProjectState
 - `server/src/utils/projectState.ts` (modified) - Updated write + added helper
 - `server/src/routes/state.ts` (modified) - Added PATCH dictionary endpoint
@@ -98,11 +106,13 @@ Duplicates removed, alphabetically sorted.
 - `client/src/components/ConfigPanel.tsx` (modified) - Added project dictionary UI
 
 **Additional features implemented:**
+
 - "Copy all" button - copies merged dictionary to clipboard
 - Common Names auto-save - add/delete now saves immediately without needing Save button
 - Renamed "Gling Dictionary Words" to "Global Dictionary Words" for clarity
 
 **Testing notes:**
+
 1. Go to Config page with a project selected
 2. Add words to "Project Dictionary Words" (e.g., "Claudemas")
 3. Click Save

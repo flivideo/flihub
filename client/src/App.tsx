@@ -1,55 +1,90 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
-import { Toaster, toast } from 'sonner'
-import { useSocket, useRecordingsSocket, useDeveloperSocket } from './hooks/useSocket'
-import { useConfig, useSuggestedNaming, useTrashFile, useProjects, useUpdateConfig, useRefetchSuggestedNaming, useRecentRenames, useUndoRename, useRecordings } from './hooks/useApi'
-import { useBestTake } from './hooks/useBestTake'
-import { discardFiles } from './utils/fileActions'
-import { collapsePath } from './utils/formatting'
-import { FileCard } from './components/FileCard'
-import { ConfigPanel } from './components/ConfigPanel'
-import { ProjectsPanel } from './components/ProjectsPanel'
-import { NamingControls } from './components/NamingControls'
-import { DiscardModal } from './components/DiscardModal'
-import { RecordingsView } from './components/RecordingsView'
-import { AssetsPage } from './components/AssetsPage'
-import { ThumbsPage } from './components/ThumbsPage'
-import { TranscriptionsPage } from './components/TranscriptionsPage'
-import { InboxPage } from './components/InboxPage'
-import { MockupsPage } from './components/MockupsPage'
-import { WatchPage } from './components/WatchPage'
-import { S3StagingPage } from './components/S3StagingPage'
-import { ManagePanel } from './components/ManagePanel'
-import { ChapterContextPanel } from './components/ChapterContextPanel'
-import { ConnectionIndicator } from './components/ConnectionIndicator'
-import { OpenFolderButton } from './components/shared'
-import { HeaderDropdown } from './components/HeaderDropdown'
-import { useOpenFolder } from './hooks/useOpenFolder'
-import ApiExplorer from './components/ApiExplorer'
-import DeveloperDrawer from './components/DeveloperDrawer'
-import type { FileInfo } from '../../shared/types'
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { Toaster, toast } from 'sonner';
+import { useSocket, useRecordingsSocket, useDeveloperSocket } from './hooks/useSocket';
+import {
+  useConfig,
+  useSuggestedNaming,
+  useTrashFile,
+  useProjects,
+  useUpdateConfig,
+  useRefetchSuggestedNaming,
+  useRecentRenames,
+  useUndoRename,
+  useRecordings,
+} from './hooks/useApi';
+import { useBestTake } from './hooks/useBestTake';
+import { discardFiles } from './utils/fileActions';
+import { collapsePath } from './utils/formatting';
+import { FileCard } from './components/FileCard';
+import { ConfigPanel } from './components/ConfigPanel';
+import { ProjectsPanel } from './components/ProjectsPanel';
+import { NamingControls } from './components/NamingControls';
+import { DiscardModal } from './components/DiscardModal';
+import { RecordingsView } from './components/RecordingsView';
+import { AssetsPage } from './components/AssetsPage';
+import { ThumbsPage } from './components/ThumbsPage';
+import { TranscriptionsPage } from './components/TranscriptionsPage';
+import { InboxPage } from './components/InboxPage';
+import { MockupsPage } from './components/MockupsPage';
+import { WatchPage } from './components/WatchPage';
+import { S3StagingPage } from './components/S3StagingPage';
+import { ManagePanel } from './components/ManagePanel';
+import { ChapterContextPanel } from './components/ChapterContextPanel';
+import { ConnectionIndicator } from './components/ConnectionIndicator';
+import { OpenFolderButton } from './components/shared';
+import { HeaderDropdown } from './components/HeaderDropdown';
+import { useOpenFolder } from './hooks/useOpenFolder';
+import ApiExplorer from './components/ApiExplorer';
+import DeveloperDrawer from './components/DeveloperDrawer';
+import type { FileInfo } from '../../shared/types';
 
-type ViewTab = 'incoming' | 'recordings' | 'watch' | 'transcriptions' | 'inbox' | 'assets' | 'thumbs' | 'export' | 'projects' | 'config' | 'mockups' | 'api-explorer'
+type ViewTab =
+  | 'incoming'
+  | 'recordings'
+  | 'watch'
+  | 'transcriptions'
+  | 'inbox'
+  | 'assets'
+  | 'thumbs'
+  | 'export'
+  | 'projects'
+  | 'config'
+  | 'mockups'
+  | 'api-explorer';
 
-const VALID_TABS: ViewTab[] = ['incoming', 'recordings', 'watch', 'transcriptions', 'inbox', 'assets', 'thumbs', 'export', 'projects', 'config', 'mockups', 'api-explorer']
+const VALID_TABS: ViewTab[] = [
+  'incoming',
+  'recordings',
+  'watch',
+  'transcriptions',
+  'inbox',
+  'assets',
+  'thumbs',
+  'export',
+  'projects',
+  'config',
+  'mockups',
+  'api-explorer',
+];
 
 // FR-116: Config section focus targets
-export type ConfigFocusSection = 'common-names' | null
+export type ConfigFocusSection = 'common-names' | null;
 
 // Get initial tab from URL hash
 function getTabFromHash(): ViewTab {
-  const hash = window.location.hash.slice(1) // remove #
+  const hash = window.location.hash.slice(1); // remove #
   if (VALID_TABS.includes(hash as ViewTab)) {
-    return hash as ViewTab
+    return hash as ViewTab;
   }
-  return 'incoming'
+  return 'incoming';
 }
 
 export interface NamingState {
-  chapter: string
-  sequence: string
-  name: string
-  tags: string[]
-  customTag: string  // FR-21: One-off custom tag input
+  chapter: string;
+  sequence: string;
+  name: string;
+  tags: string[];
+  customTag: string; // FR-21: One-off custom tag input
 }
 
 const DEFAULT_NAMING_STATE: NamingState = {
@@ -58,68 +93,68 @@ const DEFAULT_NAMING_STATE: NamingState = {
   name: 'intro',
   tags: [],
   customTag: '',
-}
+};
 
 function App() {
-  const [activeTab, setActiveTab] = useState<ViewTab>(getTabFromHash)
+  const [activeTab, setActiveTab] = useState<ViewTab>(getTabFromHash);
 
   // Sync tab changes to URL hash
   const changeTab = useCallback((tab: ViewTab) => {
-    setActiveTab(tab)
-    window.location.hash = tab
-  }, [])
+    setActiveTab(tab);
+    window.location.hash = tab;
+  }, []);
 
   // Listen for browser back/forward navigation
   useEffect(() => {
     const handleHashChange = () => {
-      setActiveTab(getTabFromHash())
-    }
-    window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [])
-  const [showDiscardModal, setShowDiscardModal] = useState(false)
-  const [renamedFilePath, setRenamedFilePath] = useState<string | null>(null)
+      setActiveTab(getTabFromHash());
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [renamedFilePath, setRenamedFilePath] = useState<string | null>(null);
   // FR-43: Project switcher dropdown state
-  const [showProjectDropdown, setShowProjectDropdown] = useState(false)
-  const projectDropdownRef = useRef<HTMLDivElement>(null)
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+  const projectDropdownRef = useRef<HTMLDivElement>(null);
   // FR-103: S3 Staging modal state
-  const [showS3Staging, setShowS3Staging] = useState(false)
+  const [showS3Staging, setShowS3Staging] = useState(false);
   // FR-116: Config section focus (for quick navigation from other pages)
-  const [configFocusSection, setConfigFocusSection] = useState<ConfigFocusSection>(null)
+  const [configFocusSection, setConfigFocusSection] = useState<ConfigFocusSection>(null);
   // FR-127: Developer drawer state
-  const [isDevDrawerOpen, setIsDevDrawerOpen] = useState(false)
+  const [isDevDrawerOpen, setIsDevDrawerOpen] = useState(false);
 
-  const { files, connected, isReconnecting, removeFile } = useSocket()
-  const { data: config } = useConfig()
-  const trashMutation = useTrashFile()
+  const { files, connected, isReconnecting, removeFile } = useSocket();
+  const { data: config } = useConfig();
+  const trashMutation = useTrashFile();
 
   // FR-43: Project switching hooks
-  const { data: projectsData } = useProjects()
-  const updateConfig = useUpdateConfig()
-  const refetchSuggestedNaming = useRefetchSuggestedNaming()
+  const { data: projectsData } = useProjects();
+  const updateConfig = useUpdateConfig();
+  const refetchSuggestedNaming = useRefetchSuggestedNaming();
 
   // FR-50: Recent renames for undo functionality
-  const { data: recentRenames, refetch: refetchRecentRenames } = useRecentRenames()
-  const undoRenameMutation = useUndoRename()
+  const { data: recentRenames, refetch: refetchRecentRenames } = useRecentRenames();
+  const undoRenameMutation = useUndoRename();
 
   // FR-69: Open project folder in Finder
-  const { mutate: openFolder } = useOpenFolder()
+  const { mutate: openFolder } = useOpenFolder();
 
   // FR-4: Get suggested naming based on existing files
-  const { data: suggestedNaming } = useSuggestedNaming()
+  const { data: suggestedNaming } = useSuggestedNaming();
   // FR-112: Get recordings to calculate highest chapter
-  const { data: recordingsData } = useRecordings()
+  const { data: recordingsData } = useRecordings();
   // FR-115: Real-time updates for recordings (invalidates cache on socket event)
-  useRecordingsSocket()
+  useRecordingsSocket();
   // FR-127: Real-time updates for developer tools (invalidates cache on socket event)
-  useDeveloperSocket()
+  useDeveloperSocket();
   // NFR-6: Track project directory changes
-  const previousProjectDir = useRef<string | undefined>(undefined)
+  const previousProjectDir = useRef<string | undefined>(undefined);
 
   // Shared naming state (FR-1: defaults to 01, 1, intro)
-  const [namingState, setNamingState] = useState<NamingState>(DEFAULT_NAMING_STATE)
+  const [namingState, setNamingState] = useState<NamingState>(DEFAULT_NAMING_STATE);
   // FR-112: Track New Chapter clicks for glow detection
-  const [newChapterClickCount, setNewChapterClickCount] = useState(0)
+  const [newChapterClickCount, setNewChapterClickCount] = useState(0);
 
   // FR-4: Apply suggested naming when project directory changes or on initial load
   // NFR-6: Renamed from targetDirectory to projectDirectory
@@ -131,224 +166,240 @@ function App() {
       configActiveProject: config?.activeProject,
       configRootDir: config?.projectsRootDirectory,
       previousProjectDir: previousProjectDir.current,
-    })
+    });
 
     if (suggestedNaming) {
-      const isInitialLoad = previousProjectDir.current === undefined
-      const projectDirChanged = previousProjectDir.current !== config?.projectDirectory
+      const isInitialLoad = previousProjectDir.current === undefined;
+      const projectDirChanged = previousProjectDir.current !== config?.projectDirectory;
 
       console.log('[FR-89 DEBUG App.tsx] Update conditions:', {
         isInitialLoad,
         projectDirChanged,
         willUpdate: isInitialLoad || projectDirChanged,
-      })
+      });
 
       if (isInitialLoad || projectDirChanged) {
         console.log('[FR-89 DEBUG App.tsx] Setting namingState to:', {
           chapter: suggestedNaming.chapter,
           sequence: suggestedNaming.sequence,
           name: suggestedNaming.name,
-        })
+        });
         setNamingState({
           chapter: suggestedNaming.chapter,
           sequence: suggestedNaming.sequence,
           name: suggestedNaming.name,
           tags: [],
           customTag: '',
-        })
+        });
 
         if (!isInitialLoad && projectDirChanged && suggestedNaming.existingFiles.length > 0) {
-          toast.info(`Found ${suggestedNaming.existingFiles.length} existing files, updated naming`)
+          toast.info(
+            `Found ${suggestedNaming.existingFiles.length} existing files, updated naming`
+          );
         }
       }
 
-      previousProjectDir.current = config?.projectDirectory
-      console.log('[FR-89 DEBUG App.tsx] Updated previousProjectDir to:', previousProjectDir.current)
+      previousProjectDir.current = config?.projectDirectory;
+      console.log(
+        '[FR-89 DEBUG App.tsx] Updated previousProjectDir to:',
+        previousProjectDir.current
+      );
     }
-  }, [suggestedNaming, config?.projectDirectory])
+  }, [suggestedNaming, config?.projectDirectory]);
 
   // FR-2: Increment sequence after successful rename
   // FR-16: Show discard modal if other files remain
   // FR-54: Custom tag now persists after rename (user must clear manually)
-  const handleRenamed = useCallback((filePath: string) => {
-    console.log('[FR-89 DEBUG App.tsx] handleRenamed called for:', filePath)
-    removeFile(filePath)
-    setNamingState((prev) => {
-      const newState = {
-        ...prev,
-        sequence: String(parseInt(prev.sequence || '0', 10) + 1),
-      }
-      console.log('[FR-89 DEBUG App.tsx] handleRenamed - updating namingState:', {
-        prev,
-        newState,
-      })
-      return newState
-    })
+  const handleRenamed = useCallback(
+    (filePath: string) => {
+      console.log('[FR-89 DEBUG App.tsx] handleRenamed called for:', filePath);
+      removeFile(filePath);
+      setNamingState((prev) => {
+        const newState = {
+          ...prev,
+          sequence: String(parseInt(prev.sequence || '0', 10) + 1),
+        };
+        console.log('[FR-89 DEBUG App.tsx] handleRenamed - updating namingState:', {
+          prev,
+          newState,
+        });
+        return newState;
+      });
 
-    // FR-16: Check if other files remain (files state hasn't updated yet, so subtract 1)
-    const remainingCount = files.length - 1
-    if (remainingCount > 0) {
-      setRenamedFilePath(filePath)
-      setShowDiscardModal(true)
-    }
-  }, [removeFile, files.length])
+      // FR-16: Check if other files remain (files state hasn't updated yet, so subtract 1)
+      const remainingCount = files.length - 1;
+      if (remainingCount > 0) {
+        setRenamedFilePath(filePath);
+        setShowDiscardModal(true);
+      }
+    },
+    [removeFile, files.length]
+  );
 
   // FR-16: Discard remaining files after rename (excludes just-renamed file)
   const handleDiscardRemaining = useCallback(async () => {
-    setShowDiscardModal(false)
-    const remainingFiles = files.filter(f => f.path !== renamedFilePath)
-    const filePaths = remainingFiles.map(f => f.path)
+    setShowDiscardModal(false);
+    const remainingFiles = files.filter((f) => f.path !== renamedFilePath);
+    const filePaths = remainingFiles.map((f) => f.path);
 
-    const result = await discardFiles(filePaths, trashMutation, removeFile)
-    toast.info(`Moved ${result.successCount} file(s) to trash`)
-    setRenamedFilePath(null)
-  }, [files, renamedFilePath, trashMutation, removeFile])
+    const result = await discardFiles(filePaths, trashMutation, removeFile);
+    toast.info(`Moved ${result.successCount} file(s) to trash`);
+    setRenamedFilePath(null);
+  }, [files, renamedFilePath, trashMutation, removeFile]);
 
   // Discard all files (for "Discard All" button)
   const handleDiscardAll = useCallback(async () => {
-    const filePaths = files.map(f => f.path)
-    const result = await discardFiles(filePaths, trashMutation, removeFile)
-    toast.info(`Moved ${result.successCount} file(s) to trash`)
-  }, [files, trashMutation, removeFile])
+    const filePaths = files.map((f) => f.path);
+    const result = await discardFiles(filePaths, trashMutation, removeFile);
+    toast.info(`Moved ${result.successCount} file(s) to trash`);
+  }, [files, trashMutation, removeFile]);
 
   const handleCancelDiscard = useCallback(() => {
-    setShowDiscardModal(false)
-    setRenamedFilePath(null)
-  }, [])
+    setShowDiscardModal(false);
+    setRenamedFilePath(null);
+  }, []);
 
   // FR-43: Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (projectDropdownRef.current && !projectDropdownRef.current.contains(e.target as Node)) {
-        setShowProjectDropdown(false)
+        setShowProjectDropdown(false);
       }
-    }
+    };
     if (showProjectDropdown) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showProjectDropdown])
+  }, [showProjectDropdown]);
 
   // FR-43: Get pinned projects for dropdown
-  const pinnedProjects = projectsData?.projects?.filter(p => p.priority === 'pinned') || []
+  const pinnedProjects = projectsData?.projects?.filter((p) => p.priority === 'pinned') || [];
   // FR-93: Use activeProject for cross-platform support (split('/') doesn't work on Windows backslash paths)
-  const currentProjectCode = config?.activeProject || config?.projectDirectory?.split(/[/\\]/).pop() || ''
+  const currentProjectCode =
+    config?.activeProject || config?.projectDirectory?.split(/[/\\]/).pop() || '';
 
   // FR-43: Switch to a different project
   // FR-93: Use regex split for cross-platform path support
-  const handleSwitchProject = useCallback(async (projectPath: string) => {
-    try {
-      await updateConfig.mutateAsync({ projectDirectory: projectPath })
-      refetchSuggestedNaming()
-      setShowProjectDropdown(false)
-      toast.success(`Switched to ${projectPath.split(/[/\\]/).pop()}`)
-    } catch (err) {
-      toast.error('Failed to switch project')
-    }
-  }, [updateConfig, refetchSuggestedNaming])
+  const handleSwitchProject = useCallback(
+    async (projectPath: string) => {
+      try {
+        await updateConfig.mutateAsync({ projectDirectory: projectPath });
+        refetchSuggestedNaming();
+        setShowProjectDropdown(false);
+        toast.success(`Switched to ${projectPath.split(/[/\\]/).pop()}`);
+      } catch (err) {
+        toast.error('Failed to switch project');
+      }
+    },
+    [updateConfig, refetchSuggestedNaming]
+  );
 
   // FR-50: Undo a recent rename
-  const handleUndoRename = useCallback(async (id: string) => {
-    try {
-      const result = await undoRenameMutation.mutateAsync(id)
-      if (result.success) {
-        toast.success(`Undone: ${result.originalName}`)
-        refetchRecentRenames()
-      } else {
-        toast.error(result.error || 'Failed to undo rename')
+  const handleUndoRename = useCallback(
+    async (id: string) => {
+      try {
+        const result = await undoRenameMutation.mutateAsync(id);
+        if (result.success) {
+          toast.success(`Undone: ${result.originalName}`);
+          refetchRecentRenames();
+        } else {
+          toast.error(result.error || 'Failed to undo rename');
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to undo rename');
       }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to undo rename')
-    }
-  }, [undoRenameMutation, refetchRecentRenames])
+    },
+    [undoRenameMutation, refetchRecentRenames]
+  );
 
   // FR-51: Copy project info for calendar
   // FR-93: Use currentProjectCode for cross-platform support
   // FR-101: Format as "b85 > Clauding 01" (not "b85 - clauding-01")
   const handleCopyCalendar = useCallback(async () => {
-    if (!currentProjectCode) return
+    if (!currentProjectCode) return;
 
     // Extract code (e.g., "b76") and name (e.g., "vibe-code-auto-chapters")
-    const parts = currentProjectCode.split('-')
-    const code = parts[0] // e.g., "b76"
-    const nameParts = parts.slice(1)
+    const parts = currentProjectCode.split('-');
+    const code = parts[0]; // e.g., "b76"
+    const nameParts = parts.slice(1);
     // Take first 3-4 segments if name is very long
-    const shortName = nameParts.length > 4
-      ? nameParts.slice(0, 4).join('-')
-      : nameParts.join('-')
+    const shortName = nameParts.length > 4 ? nameParts.slice(0, 4).join('-') : nameParts.join('-');
 
     // Convert kebab-case to Title Case
     const titleName = shortName
       .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
 
-    const text = `${code} > ${titleName}`
+    const text = `${code} > ${titleName}`;
 
     try {
-      await navigator.clipboard.writeText(text)
-      toast.success('Copied to clipboard')
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard');
     } catch {
-      toast.error('Failed to copy')
+      toast.error('Failed to copy');
     }
-  }, [currentProjectCode])
+  }, [currentProjectCode]);
 
   // FR-116: Navigate to Config tab with focus on a specific section
-  const handleNavigateToConfig = useCallback((section: ConfigFocusSection) => {
-    setConfigFocusSection(section)
-    changeTab('config')
-  }, [changeTab])
+  const handleNavigateToConfig = useCallback(
+    (section: ConfigFocusSection) => {
+      setConfigFocusSection(section);
+      changeTab('config');
+    },
+    [changeTab]
+  );
 
   // FR-3: New Chapter button
   // FR-112: Calculate next chapter from highest recorded chapter (idempotent)
   // Preserve the name from previous chapter - user can change if needed
   const handleNewChapter = useCallback(() => {
-    console.log('[FR-112 DEBUG App.tsx] handleNewChapter called')
+    console.log('[FR-112 DEBUG App.tsx] handleNewChapter called');
     // FR-112: Increment click counter for glow detection in NamingControls
-    setNewChapterClickCount(c => c + 1)
+    setNewChapterClickCount((c) => c + 1);
     setNamingState((prev) => {
       // FR-112: Calculate highest recorded chapter from project recordings
-      const recordings = recordingsData?.recordings || []
+      const recordings = recordingsData?.recordings || [];
       const chapters = recordings
-        .map(r => parseInt(r.chapter || '0', 10))
-        .filter(ch => !isNaN(ch) && ch > 0)
-      const highestRecordedChapter = chapters.length > 0 ? Math.max(...chapters) : 0
-      const nextChapter = String(Math.min(99, highestRecordedChapter + 1)).padStart(2, '0')
+        .map((r) => parseInt(r.chapter || '0', 10))
+        .filter((ch) => !isNaN(ch) && ch > 0);
+      const highestRecordedChapter = chapters.length > 0 ? Math.max(...chapters) : 0;
+      const nextChapter = String(Math.min(99, highestRecordedChapter + 1)).padStart(2, '0');
 
       const newState = {
         chapter: nextChapter,
         sequence: '1',
-        name: prev.name || 'intro',  // Preserve previous name, default to 'intro'
+        name: prev.name || 'intro', // Preserve previous name, default to 'intro'
         tags: [],
         customTag: '',
-      }
+      };
       console.log('[FR-112 DEBUG App.tsx] handleNewChapter - updating namingState:', {
         highestRecordedChapter,
         nextChapter,
         prev,
         newState,
-      })
-      return newState
-    })
-  }, [recordingsData])
+      });
+      return newState;
+    });
+  }, [recordingsData]);
 
   // Update individual naming fields
   const updateNaming = useCallback((field: keyof NamingState, value: string | string[]) => {
-    console.log('[FR-89 DEBUG App.tsx] updateNaming called:', { field, value })
+    console.log('[FR-89 DEBUG App.tsx] updateNaming called:', { field, value });
     setNamingState((prev) => {
-      const newState = { ...prev, [field]: value }
-      console.log('[FR-89 DEBUG App.tsx] updateNaming - state update:', { prev, newState })
-      return newState
-    })
-  }, [])
+      const newState = { ...prev, [field]: value };
+      console.log('[FR-89 DEBUG App.tsx] updateNaming - state update:', { prev, newState });
+      return newState;
+    });
+  }, []);
 
   // FR-8: Best take detection (extracted to hook)
-  const { bestTakePath, goodTakePath } = useBestTake(files)
+  const { bestTakePath, goodTakePath } = useBestTake(files);
 
   // FR-16: Calculate remaining files for modal (exclude the one just renamed)
   const remainingFilesCount = renamedFilePath
-    ? files.filter(f => f.path !== renamedFilePath).length
-    : files.length
+    ? files.filter((f) => f.path !== renamedFilePath).length
+    : files.length;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -364,9 +415,7 @@ function App() {
       )}
 
       {/* FR-103: S3 Staging modal */}
-      {showS3Staging && (
-        <S3StagingPage onClose={() => setShowS3Staging(false)} />
-      )}
+      {showS3Staging && <S3StagingPage onClose={() => setShowS3Staging(false)} />}
 
       {/* FR-127: Developer drawer */}
       <DeveloperDrawer isOpen={isDevDrawerOpen} onClose={() => setIsDevDrawerOpen(false)} />
@@ -409,10 +458,10 @@ function App() {
                           onClick: async () => {
                             if (config?.projectDirectory) {
                               try {
-                                await navigator.clipboard.writeText(config.projectDirectory)
-                                toast.success('Path copied')
+                                await navigator.clipboard.writeText(config.projectDirectory);
+                                toast.success('Path copied');
                               } catch {
-                                toast.error('Failed to copy')
+                                toast.error('Failed to copy');
                               }
                             }
                           },
@@ -432,7 +481,7 @@ function App() {
                         {pinnedProjects.length > 0 ? (
                           <>
                             <div className="py-1">
-                              {pinnedProjects.map(project => (
+                              {pinnedProjects.map((project) => (
                                 <button
                                   key={project.code}
                                   onClick={() => handleSwitchProject(project.path)}
@@ -451,8 +500,8 @@ function App() {
                             <div className="border-t border-gray-100">
                               <button
                                 onClick={() => {
-                                  setShowProjectDropdown(false)
-                                  changeTab('projects')
+                                  setShowProjectDropdown(false);
+                                  changeTab('projects');
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                               >
@@ -463,8 +512,8 @@ function App() {
                         ) : (
                           <button
                             onClick={() => {
-                              setShowProjectDropdown(false)
-                              changeTab('projects')
+                              setShowProjectDropdown(false);
+                              changeTab('projects');
                             }}
                             className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                           >
@@ -480,9 +529,24 @@ function App() {
             {/* FR-69: Settings dropdown */}
             <HeaderDropdown
               trigger={
-                <svg className={`w-5 h-5 ${activeTab === 'config' || activeTab === 'mockups' || activeTab === 'api-explorer' ? 'text-blue-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <svg
+                  className={`w-5 h-5 ${activeTab === 'config' || activeTab === 'mockups' || activeTab === 'api-explorer' ? 'text-blue-600' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
                 </svg>
               }
               align="right"
@@ -521,7 +585,8 @@ function App() {
                 {
                   label: 'Video Projects',
                   icon: <span className="text-gray-700">🎬</span>,
-                  onClick: () => window.open('https://github.com/appydave-video-projects/v-appydave', '_blank'),
+                  onClick: () =>
+                    window.open('https://github.com/appydave-video-projects/v-appydave', '_blank'),
                 },
               ]}
             />
@@ -630,7 +695,6 @@ function App() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6">
-
         {/* Incoming Tab */}
         {activeTab === 'incoming' && (
           <>
@@ -665,9 +729,7 @@ function App() {
               {files.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
                   <p className="text-gray-500">No pending files</p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Watching for new .mov files...
-                  </p>
+                  <p className="text-sm text-gray-400 mt-1">Watching for new .mov files...</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -706,7 +768,9 @@ function App() {
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="font-mono text-gray-700 truncate">{rename.newName}</span>
                         <span className="text-gray-400">←</span>
-                        <span className="font-mono text-gray-400 truncate text-xs">{rename.originalName}</span>
+                        <span className="font-mono text-gray-400 truncate text-xs">
+                          {rename.originalName}
+                        </span>
                       </div>
                       <button
                         onClick={() => handleUndoRename(rename.id)}
@@ -718,9 +782,7 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  Renames expire after 10 minutes
-                </p>
+                <p className="text-xs text-gray-400 mt-1">Renames expire after 10 minutes</p>
               </section>
             )}
           </>
@@ -820,7 +882,8 @@ function App() {
         <footer className="mt-8 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-500">
-              Project: {config?.projectDirectory ? collapsePath(config.projectDirectory) : 'Loading...'}
+              Project:{' '}
+              {config?.projectDirectory ? collapsePath(config.projectDirectory) : 'Loading...'}
             </p>
             <ConnectionIndicator isConnected={connected} isReconnecting={isReconnecting} />
           </div>
@@ -835,7 +898,7 @@ function App() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

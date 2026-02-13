@@ -1,96 +1,96 @@
-import { useState } from 'react'
-import { toast } from 'sonner'
-import { useTranscriptSync, useQueueTranscription, useDeleteTranscript } from '../hooks/useApi'
-import { useQueryClient } from '@tanstack/react-query'
-import { QUERY_KEYS } from '../constants/queryKeys'
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useTranscriptSync, useQueueTranscription, useDeleteTranscript } from '../hooks/useApi';
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '../constants/queryKeys';
 
 interface Props {
-  projectCode: string
-  projectPath: string
-  onClose: () => void
+  projectCode: string;
+  projectPath: string;
+  onClose: () => void;
 }
 
 export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props) {
-  const queryClient = useQueryClient()
-  const { data, isLoading, refetch } = useTranscriptSync(projectCode)
-  const queueTranscription = useQueueTranscription()
-  const deleteTranscript = useDeleteTranscript()
+  const queryClient = useQueryClient();
+  const { data, isLoading, refetch } = useTranscriptSync(projectCode);
+  const queueTranscription = useQueueTranscription();
+  const deleteTranscript = useDeleteTranscript();
 
-  const [processingFiles, setProcessingFiles] = useState<Set<string>>(new Set())
+  const [processingFiles, setProcessingFiles] = useState<Set<string>>(new Set());
 
   // Queue a single recording for transcription
   const handleTranscribe = async (filename: string) => {
     // Build the full path to the recording
     // Try recordings/ first, then recordings/-safe/
-    const videoPath = `${projectPath}/recordings/${filename}.mov`
+    const videoPath = `${projectPath}/recordings/${filename}.mov`;
 
-    setProcessingFiles(prev => new Set(prev).add(filename))
+    setProcessingFiles((prev) => new Set(prev).add(filename));
     try {
-      await queueTranscription.mutateAsync(videoPath)
-      toast.success(`Queued: ${filename}`)
-      refetch()
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
+      await queueTranscription.mutateAsync(videoPath);
+      toast.success(`Queued: ${filename}`);
+      refetch();
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
     } catch (error) {
       // Try the safe folder
       try {
-        const safePath = `${projectPath}/recordings/-safe/${filename}.mov`
-        await queueTranscription.mutateAsync(safePath)
-        toast.success(`Queued: ${filename}`)
-        refetch()
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
+        const safePath = `${projectPath}/recordings/-safe/${filename}.mov`;
+        await queueTranscription.mutateAsync(safePath);
+        toast.success(`Queued: ${filename}`);
+        refetch();
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
       } catch {
-        toast.error(`Failed to queue: ${filename}`)
+        toast.error(`Failed to queue: ${filename}`);
       }
     } finally {
-      setProcessingFiles(prev => {
-        const next = new Set(prev)
-        next.delete(filename)
-        return next
-      })
+      setProcessingFiles((prev) => {
+        const next = new Set(prev);
+        next.delete(filename);
+        return next;
+      });
     }
-  }
+  };
 
   // Delete an orphaned transcript
   const handleDelete = async (filename: string) => {
-    setProcessingFiles(prev => new Set(prev).add(filename))
+    setProcessingFiles((prev) => new Set(prev).add(filename));
     try {
-      await deleteTranscript.mutateAsync({ filename, projectCode })
-      toast.success(`Deleted: ${filename}.txt`)
-      refetch()
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects })
+      await deleteTranscript.mutateAsync({ filename, projectCode });
+      toast.success(`Deleted: ${filename}.txt`);
+      refetch();
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
     } catch {
-      toast.error(`Failed to delete: ${filename}`)
+      toast.error(`Failed to delete: ${filename}`);
     } finally {
-      setProcessingFiles(prev => {
-        const next = new Set(prev)
-        next.delete(filename)
-        return next
-      })
+      setProcessingFiles((prev) => {
+        const next = new Set(prev);
+        next.delete(filename);
+        return next;
+      });
     }
-  }
+  };
 
   // Queue all missing transcriptions
   const handleTranscribeAll = async () => {
-    if (!data?.missingTranscripts.length) return
+    if (!data?.missingTranscripts.length) return;
 
     for (const filename of data.missingTranscripts) {
-      await handleTranscribe(filename)
+      await handleTranscribe(filename);
     }
-  }
+  };
 
   // Delete all orphaned transcripts
   const handleDeleteAllOrphaned = async () => {
-    if (!data?.orphanedTranscripts.length) return
+    if (!data?.orphanedTranscripts.length) return;
 
     const confirmed = window.confirm(
       `Delete ${data.orphanedTranscripts.length} orphaned transcript(s)? This cannot be undone.`
-    )
-    if (!confirmed) return
+    );
+    if (!confirmed) return;
 
     for (const filename of data.orphanedTranscripts) {
-      await handleDelete(filename)
+      await handleDelete(filename);
     }
-  }
+  };
 
   return (
     <div
@@ -99,7 +99,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
     >
       <div
         className="bg-white rounded-lg shadow-xl w-[600px] max-w-[90vw] max-h-[80vh] flex flex-col"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
@@ -132,7 +132,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
                     </h4>
                   </div>
                   <div className="space-y-1 max-h-48 overflow-y-auto border border-gray-100 rounded p-2">
-                    {data.missingTranscripts.map(filename => (
+                    {data.missingTranscripts.map((filename) => (
                       <div
                         key={filename}
                         className="flex items-center justify-between py-1 px-2 hover:bg-gray-50 rounded"
@@ -162,7 +162,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
                     </h4>
                   </div>
                   <div className="space-y-1 max-h-48 overflow-y-auto border border-gray-100 rounded p-2">
-                    {data.orphanedTranscripts.map(filename => (
+                    {data.orphanedTranscripts.map((filename) => (
                       <div
                         key={filename}
                         className="flex items-center justify-between py-1 px-2 hover:bg-gray-50 rounded"
@@ -190,7 +190,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
                     Matched ({data.matched.length} recordings with transcripts)
                   </summary>
                   <div className="mt-2 space-y-1 max-h-32 overflow-y-auto border border-gray-100 rounded p-2">
-                    {data.matched.map(filename => (
+                    {data.matched.map((filename) => (
                       <div key={filename} className="text-xs font-mono text-gray-500 py-0.5">
                         {filename}
                       </div>
@@ -239,5 +239,5 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
         )}
       </div>
     </div>
-  )
+  );
 }

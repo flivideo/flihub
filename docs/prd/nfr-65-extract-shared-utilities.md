@@ -15,9 +15,11 @@ Code duplication in server routes.
 ## Scope
 
 ### 1. Transcript file filtering
+
 6 locations filter .txt files excluding -chapter.txt
 
 ### 2. Tag extraction
+
 4 locations parse uppercase tags from filenames
 
 ## Deliverables
@@ -35,6 +37,7 @@ Code duplication in server routes.
 ## Technical Notes
 
 Search for patterns like:
+
 - `.filter(f => f.endsWith('.txt') && !f.includes('-chapter'))`
 - Regex for uppercase tags: `/[A-Z]+/g`
 

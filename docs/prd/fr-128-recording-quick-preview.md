@@ -16,11 +16,13 @@ As a user, I want a play button on each recording row in the Recordings page so 
 ## Problem
 
 **Current state:**
+
 - Incoming page has play button (▶) on each file that opens a video preview modal
 - Recordings page has NO play button - only transcription badges and state actions
 - To watch a recording, user must navigate to the Watch page
 
 **Pain points:**
+
 1. **Context switching** - Must leave Recordings page to preview a video
 2. **Inconsistent UX** - Incoming page has preview, Recordings page doesn't
 3. **Extra clicks** - Navigate to Watch tab, find chapter, click segment
@@ -81,6 +83,7 @@ Add a **play button (▶)** at the left side of each recording row that opens a 
 ```
 
 **Play button states:**
+
 - Active: Blue ▶ icon, hover shows darker blue
 - Disabled (shadow): Gray ▶ icon, cursor shows "not-allowed", tooltip appears
 
@@ -103,6 +106,7 @@ Add a **play button (▶)** at the left side of each recording row that opens a 
 ```
 
 **Modal behavior:**
+
 - Clicking overlay (dark background) closes modal
 - Escape key closes modal
 - Video starts playing immediately (autoPlay)
@@ -115,6 +119,7 @@ Add a **play button (▶)** at the left side of each recording row that opens a 
 ### Must Have
 
 **Button Placement:**
+
 - [ ] Play button (▶) appears at left side of each recording row
 - [ ] Button positioned before filename text
 - [ ] Visual styling matches row aesthetic (blue text, hover state)
@@ -122,6 +127,7 @@ Add a **play button (▶)** at the left side of each recording row that opens a 
 - [ ] Disabled button shows tooltip: "Video not available locally"
 
 **Modal Functionality:**
+
 - [ ] Clicking play button opens RecordingVideoModal
 - [ ] Modal displays filename in header
 - [ ] Video player shows recording with HTML5 controls
@@ -130,6 +136,7 @@ Add a **play button (▶)** at the left side of each recording row that opens a 
 - [ ] Close button (X) in top-right of header
 
 **Playback Controls:**
+
 - [ ] Play/pause button in controls bar
 - [ ] Playback speed buttons: 1x, 1.5x, 2x, 2.5x, 3x
 - [ ] Active speed highlighted (blue background, white text)
@@ -138,14 +145,17 @@ Add a **play button (▶)** at the left side of each recording row that opens a 
 - [ ] Speed persists to localStorage: `flihub:watch:playbackSpeed`
 
 **Metadata Display:**
+
 - [ ] Duration shown in controls bar (e.g., "1:23")
 - [ ] File size shown in controls bar (e.g., "2.3 MB")
 
 **Keyboard Shortcuts:**
+
 - [ ] Escape key closes modal
 - [ ] Modal closes when clicking overlay (dark background)
 
 **API Integration:**
+
 - [ ] Video endpoint: `GET /api/video/recordings/:filename`
 - [ ] Endpoint serves video from project recordings folder
 - [ ] Returns 404 if file not found
@@ -173,23 +183,25 @@ Add a **play button (▶)** at the left side of each recording row that opens a 
 
 This component is nearly identical to `IncomingVideoModal.tsx` with one key difference:
 
-| Component | Video URL Pattern |
-|-----------|-------------------|
-| IncomingVideoModal | `${API_URL}/api/video/incoming/${encodeURIComponent(file.filename)}` |
-| RecordingVideoModal | `${API_URL}/api/video/recordings/${encodeURIComponent(filename)}` |
+| Component           | Video URL Pattern                                                    |
+| ------------------- | -------------------------------------------------------------------- |
+| IncomingVideoModal  | `${API_URL}/api/video/incoming/${encodeURIComponent(file.filename)}` |
+| RecordingVideoModal | `${API_URL}/api/video/recordings/${encodeURIComponent(filename)}`    |
 
 **Shared constants:**
+
 ```typescript
-const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3]
-const DEFAULT_SPEED = 2
-const SPEED_STORAGE_KEY = 'flihub:watch:playbackSpeed'
+const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3];
+const DEFAULT_SPEED = 2;
+const SPEED_STORAGE_KEY = 'flihub:watch:playbackSpeed';
 ```
 
 **Props interface:**
+
 ```typescript
 interface RecordingVideoModalProps {
-  filename: string  // e.g., "01-1-intro.mov"
-  onClose: () => void
+  filename: string; // e.g., "01-1-intro.mov"
+  onClose: () => void;
 }
 ```
 
@@ -202,6 +214,7 @@ interface RecordingVideoModalProps {
 **Location:** `server/src/routes/video.ts` (add alongside existing `/incoming/:filename`)
 
 **Implementation:**
+
 ```typescript
 // GET /api/video/recordings/:filename
 app.get('/api/video/recordings/:filename', async (req, res) => {
@@ -234,11 +247,11 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `client/src/components/RecordingVideoModal.tsx` | CREATE - Modal component (clone IncomingVideoModal) |
-| `client/src/components/RecordingsView.tsx` | Add play button to row, import RecordingVideoModal, state management |
-| `server/src/routes/video.ts` | Add GET /api/video/recordings/:filename endpoint |
+| File                                            | Changes                                                              |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
+| `client/src/components/RecordingVideoModal.tsx` | CREATE - Modal component (clone IncomingVideoModal)                  |
+| `client/src/components/RecordingsView.tsx`      | Add play button to row, import RecordingVideoModal, state management |
+| `server/src/routes/video.ts`                    | Add GET /api/video/recordings/:filename endpoint                     |
 
 ---
 
@@ -249,6 +262,7 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
 **Relationship:** Complementary feature
 
 **Shared patterns:**
+
 - Same modal design language
 - Same playback speed presets and localStorage key
 - Same keyboard shortcuts (Escape to close)
@@ -262,17 +276,20 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
 **Relationship:** Alternative workflow
 
 **Watch page:**
+
 - Dedicated video review experience
 - Chapter navigation, segment panels
 - Transcript synchronization
 - Best for: Deep video review, editing workflow
 
 **Quick preview (this FR):**
+
 - Inline preview on Recordings page
 - Fast access, no navigation
 - Best for: Quick checks, verify content, spot reviews
 
 **Use cases that prefer quick preview:**
+
 - "Did I say 'um' too much in this one?"
 - "Which take had the better intro?"
 - "Is this the segment where I mentioned X?"
@@ -314,12 +331,14 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
 ## Value Proposition
 
 **User Benefits:**
+
 - **Faster decisions** - Preview without leaving Recordings page
 - **Consistent UX** - Same preview capability as Incoming page
 - **Workflow efficiency** - Quick spot-checks during review
 - **Better context** - See video content while reviewing list
 
 **Developer Benefits:**
+
 - **Code reuse** - Clone existing IncomingVideoModal
 - **Simple endpoint** - Standard video streaming pattern
 - **Low risk** - No changes to existing video playback logic
@@ -328,12 +347,12 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
 
 ## Scope Estimate
 
-| Task | Effort | Priority |
-|------|--------|----------|
-| RecordingVideoModal component | 30 min | High |
-| RecordingsView integration | 30 min | High |
-| API endpoint | 20 min | High |
-| Testing & polish | 20 min | High |
+| Task                          | Effort | Priority |
+| ----------------------------- | ------ | -------- |
+| RecordingVideoModal component | 30 min | High     |
+| RecordingsView integration    | 30 min | High     |
+| API endpoint                  | 20 min | High     |
+| Testing & polish              | 20 min | High     |
 
 **Total:** ~2 hours
 
@@ -342,6 +361,7 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
 ## Completion Notes
 
 **What was done:**
+
 - Created `RecordingVideoModal.tsx` component (cloned from IncomingVideoModal)
 - Added play button (▶) to left side of each recording row in RecordingsView
 - Implemented `GET /api/video/recordings/:filename` endpoint in server/routes/video.ts
@@ -351,6 +371,7 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
 - Escape key and overlay click close the modal
 
 **Files changed:**
+
 - `client/src/components/RecordingVideoModal.tsx` (new, 196 lines)
 - `client/src/components/RecordingsView.tsx` (modified)
   - Import RecordingVideoModal
@@ -363,6 +384,7 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
   - Security validation (no path traversal, .mov/.mp4 only)
 
 **API Endpoint:**
+
 - `GET /api/video/recordings/:filename`
   - Serves video from `{projectDirectory}/recordings/{filename}`
   - Supports HTTP Range requests for seeking
@@ -370,6 +392,7 @@ app.get('/api/video/recordings/:filename', async (req, res) => {
   - Returns 400 for invalid filenames or file types
 
 **Testing notes:**
+
 - Play button appears on all recording rows
 - Button is disabled (grayed out) for shadow-only files
 - Clicking play button opens modal with video player

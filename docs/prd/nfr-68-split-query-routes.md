@@ -40,6 +40,7 @@ server/src/routes/query/
 Do NFR-66 first to avoid type import issues during the split.
 
 Each sub-module should:
+
 - Export a router
 - Import shared types from `shared/types.ts`
 - Use any utilities from NFR-65/NFR-67

@@ -47,10 +47,13 @@ No algorithmic match was found.
 
   if (alternatives && alternatives.length > 0) {
     prompt += `## Alternative Matches Found
-${alternatives.map((alt, i) =>
-  `${i + 1}. Timestamp: ${alt.timestamp} (${alt.confidence}% confidence, ${alt.matchMethod} match)
+${alternatives
+  .map(
+    (alt, i) =>
+      `${i + 1}. Timestamp: ${alt.timestamp} (${alt.confidence}% confidence, ${alt.matchMethod} match)
    SRT text: "${alt.matchedText}"`
-).join('\n\n')}
+  )
+  .join('\n\n')}
 
 `;
   }
@@ -128,7 +131,7 @@ export async function verifyChapterWithLLM(
     // Extract text from response
     const responseText = message.content
       .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-      .map(block => block.text)
+      .map((block) => block.text)
       .join('');
 
     // Parse JSON response
@@ -160,7 +163,8 @@ export async function verifyChapterWithLLM(
     // Add timestamp if provided
     if (parsed.timestamp) {
       response.recommendation.timestamp = parsed.timestamp;
-      response.recommendation.timestampSeconds = parsed.timestampSeconds || parseTimestamp(parsed.timestamp);
+      response.recommendation.timestampSeconds =
+        parsed.timestampSeconds || parseTimestamp(parsed.timestamp);
     } else if (parsed.action === 'use_current' && request.currentMatch) {
       response.recommendation.timestamp = request.currentMatch.timestamp;
       response.recommendation.timestampSeconds = parseTimestamp(request.currentMatch.timestamp);
@@ -195,9 +199,7 @@ export async function verifyMultipleChapters(
 
   for (let i = 0; i < requests.length; i += concurrency) {
     const batch = requests.slice(i, i + concurrency);
-    const batchResults = await Promise.all(
-      batch.map(req => verifyChapterWithLLM(req))
-    );
+    const batchResults = await Promise.all(batch.map((req) => verifyChapterWithLLM(req)));
     results.push(...batchResults);
   }
 

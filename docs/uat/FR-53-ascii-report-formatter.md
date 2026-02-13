@@ -15,6 +15,7 @@
 ## Acceptance Criteria
 
 From the spec:
+
 1. All NFR-8 endpoints support `?format=text` parameter
 2. Text output is `Content-Type: text/plain`
 3. Reports use consistent formatting (headers, dividers, footers)
@@ -30,11 +31,13 @@ From the spec:
 ### Test 1: Projects List (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects?format=text"
 ```
 
 **Expected:**
+
 - Content-Type: text/plain
 - Table with columns: PROJECT, STAGE, CH, FILES, 📄, 🎬
 - Pinned projects marked with 📌
@@ -49,6 +52,7 @@ curl -s "http://localhost:5101/api/query/projects?format=text"
 ### Test 2: Content-Type Header (Auto)
 
 **Command:**
+
 ```bash
 curl -sI "http://localhost:5101/api/query/projects?format=text" | grep -i content-type
 ```
@@ -63,11 +67,13 @@ curl -sI "http://localhost:5101/api/query/projects?format=text" | grep -i conten
 ### Test 3: Project Detail (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk?format=text"
 ```
 
 **Expected:**
+
 - Project header with code
 - STATS section with counts (Recordings, Safe, Chapters, Transcripts, etc.)
 - FINAL MEDIA section showing video/SRT status
@@ -82,11 +88,13 @@ curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk?format=tex
 ### Test 4: Recordings Table (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/recordings?format=text"
 ```
 
 **Expected:**
+
 - Recordings grouped by chapter with dividers
 - Columns: RECORDING, SIZE, DURATION, 📄 (transcript status)
 - Chapter headings like `── Chapter 01: intro ──`
@@ -100,11 +108,13 @@ curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/recordings
 ### Test 5: Transcripts Table (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/transcripts?format=text"
 ```
 
 **Expected:**
+
 - Columns: TRANSCRIPT, SIZE, PREVIEW
 - Preview shows first ~40 chars of content
 - Footer with total count and size
@@ -117,11 +127,13 @@ curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/transcript
 ### Test 6: Chapters (YouTube-ready) (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/chapters?format=text"
 ```
 
 **Expected:**
+
 - Format: `00:00 Chapter Title`
 - One chapter per line
 - Ready to paste into YouTube description
@@ -135,11 +147,13 @@ curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/chapters?f
 ### Test 7: Images Table (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/images?format=text"
 ```
 
 **Expected:**
+
 - Image filename, size columns
 - Footer with totals
 - Note: May be empty if project has no images
@@ -152,11 +166,13 @@ curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/images?for
 ### Test 8: Full Export (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/export?format=text"
 ```
 
 **Expected:**
+
 - Full combined report with all sections
 - Double-line dividers (═) between major sections
 - Generated timestamp in header
@@ -170,6 +186,7 @@ curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/export?for
 ### Test 9: Fallback to JSON (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects" | head -c 50
 ```
@@ -184,6 +201,7 @@ curl -s "http://localhost:5101/api/query/projects" | head -c 50
 ### Test 10: Filter + Format Combo (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/recordings?chapter=1&format=text"
 ```
@@ -198,6 +216,7 @@ curl -s "http://localhost:5101/api/query/projects/b64-bmad-claude-sdk/recordings
 ### Test 11: Empty Project (Auto)
 
 **Command:**
+
 ```bash
 curl -s "http://localhost:5101/api/query/projects/b81-dam-command-line?format=text"
 ```
@@ -212,6 +231,7 @@ curl -s "http://localhost:5101/api/query/projects/b81-dam-command-line?format=te
 ### Test 12: Emoji Display (Manual)
 
 **Steps:**
+
 1. Run projects list command in terminal
 2. Visually verify emoji render correctly: 📂 📌 📄 🎬 ✅ ❌ ⚠️
 
@@ -225,6 +245,7 @@ curl -s "http://localhost:5101/api/query/projects/b81-dam-command-line?format=te
 ### Test 13: Column Alignment (Manual)
 
 **Steps:**
+
 1. Run projects list and recordings commands
 2. Visually check columns are aligned
 
@@ -238,6 +259,7 @@ curl -s "http://localhost:5101/api/query/projects/b81-dam-command-line?format=te
 ### Test 14: Skill Documentation Updated (Auto)
 
 **Command:**
+
 ```bash
 grep -l "format=text" ~/.claude/skills/querying-flihub/SKILL.md 2>/dev/null || echo "Not found"
 ```

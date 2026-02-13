@@ -25,20 +25,20 @@ The pattern for reading and filtering transcript files appears in 5+ locations w
 ```typescript
 const files = await fs.readdir(dir);
 const transcriptFiles = files
-  .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
-  .map(f => f.replace('.txt', ''));
+  .filter((f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+  .map((f) => f.replace('.txt', ''));
 ```
 
 ### Affected Files
 
-| File | Lines | Context |
-|------|-------|---------|
-| `server/src/routes/query.ts` | 433-437 | recordings endpoint |
-| `server/src/routes/query.ts` | 554-556 | transcripts endpoint |
-| `server/src/routes/query.ts` | 713-718 | chapters endpoint |
-| `server/src/routes/query.ts` | 916-920 | export endpoint |
-| `server/src/routes/query.ts` | 1044-1051 | export endpoint |
-| `server/src/routes/projects.ts` | 200-215 | transcript sync |
+| File                            | Lines     | Context              |
+| ------------------------------- | --------- | -------------------- |
+| `server/src/routes/query.ts`    | 433-437   | recordings endpoint  |
+| `server/src/routes/query.ts`    | 554-556   | transcripts endpoint |
+| `server/src/routes/query.ts`    | 713-718   | chapters endpoint    |
+| `server/src/routes/query.ts`    | 916-920   | export endpoint      |
+| `server/src/routes/query.ts`    | 1044-1051 | export endpoint      |
+| `server/src/routes/projects.ts` | 200-215   | transcript sync      |
 
 ### Proposed Solution
 
@@ -46,12 +46,12 @@ Create utility function in `server/src/utils/scanning.ts`:
 
 ```typescript
 export async function getTranscriptBasenames(transcriptsDir: string): Promise<Set<string>> {
-  if (!await fs.pathExists(transcriptsDir)) return new Set();
+  if (!(await fs.pathExists(transcriptsDir))) return new Set();
   const files = await fs.readdir(transcriptsDir);
   return new Set(
     files
-      .filter(f => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
-      .map(f => f.replace('.txt', ''))
+      .filter((f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt'))
+      .map((f) => f.replace('.txt', ''))
   );
 }
 ```
@@ -90,12 +90,12 @@ for (const part of nameParts) {
 
 ### Affected Files
 
-| File | Lines | Context |
-|------|-------|---------|
-| `server/src/routes/query.ts` | 464-475 | recordings endpoint |
+| File                         | Lines   | Context              |
+| ---------------------------- | ------- | -------------------- |
+| `server/src/routes/query.ts` | 464-475 | recordings endpoint  |
 | `server/src/routes/query.ts` | 565-567 | transcripts endpoint |
-| `server/src/routes/query.ts` | 943-952 | export recordings |
-| `server/src/routes/query.ts` | 997-998 | export transcripts |
+| `server/src/routes/query.ts` | 943-952 | export recordings    |
+| `server/src/routes/query.ts` | 997-998 | export transcripts   |
 
 ### Proposed Solution
 
@@ -147,30 +147,30 @@ export function extractTagsFromName(name: string): ParsedNameParts {
 
 Same response types are defined in multiple places, risking drift:
 
-| Type | Defined In | Also In |
-|------|-----------|---------|
-| `QueryProjectSummary` | query.ts:54-68 | - |
-| `QueryProjectDetail` | query.ts:70-94 | - |
-| `QueryRecording` | query.ts:96-106 | Similar to `RecordingFile` in shared/types.ts |
-| `QueryTranscript` | query.ts:108-116 | - |
-| `QueryChapter` | query.ts:118-126 | - |
-| `QueryImage` | query.ts:128-136 | Similar to `ImageAsset` in shared/types.ts |
-| `SafeResponse` | useApi.ts:137-143 | - |
-| `RestoreResponse` | useApi.ts:165-172 | - |
-| `RecentRename` | index.ts:18-25 | useApi.ts:402-408 |
-| `InboxFile` | query.ts:1156-1160 | useApi.ts:439-443 |
-| `InboxSubfolder` | query.ts:1162-1167 | useApi.ts:445-450 |
+| Type                  | Defined In         | Also In                                       |
+| --------------------- | ------------------ | --------------------------------------------- |
+| `QueryProjectSummary` | query.ts:54-68     | -                                             |
+| `QueryProjectDetail`  | query.ts:70-94     | -                                             |
+| `QueryRecording`      | query.ts:96-106    | Similar to `RecordingFile` in shared/types.ts |
+| `QueryTranscript`     | query.ts:108-116   | -                                             |
+| `QueryChapter`        | query.ts:118-126   | -                                             |
+| `QueryImage`          | query.ts:128-136   | Similar to `ImageAsset` in shared/types.ts    |
+| `SafeResponse`        | useApi.ts:137-143  | -                                             |
+| `RestoreResponse`     | useApi.ts:165-172  | -                                             |
+| `RecentRename`        | index.ts:18-25     | useApi.ts:402-408                             |
+| `InboxFile`           | query.ts:1156-1160 | useApi.ts:439-443                             |
+| `InboxSubfolder`      | query.ts:1162-1167 | useApi.ts:445-450                             |
 
 ### Proposed Solution
 
-1. Move all Query* types to `shared/types.ts` under a "Query API Types" section
+1. Move all Query\* types to `shared/types.ts` under a "Query API Types" section
 2. Move response types (SafeResponse, RestoreResponse, etc.) to shared/types.ts
 3. Import in routes and hooks instead of redefining
 4. Remove duplicate definitions
 
 ### Acceptance Criteria
 
-- [ ] All Query* types moved to shared/types.ts
+- [ ] All Query\* types moved to shared/types.ts
 - [ ] SafeResponse, RestoreResponse moved to shared/types.ts
 - [ ] RecentRename consolidated (single definition)
 - [ ] InboxFile, InboxSubfolder consolidated
@@ -190,25 +190,26 @@ Same response types are defined in multiple places, risking drift:
 ### Problem
 
 `server/src/routes/query.ts` is 1352 lines containing 9 endpoints. This makes it difficult to:
+
 - Locate specific endpoint logic
 - Test endpoints independently
 - Make changes without risking regressions
 
 ### Current Structure
 
-| Endpoint | Lines | Purpose |
-|----------|-------|---------|
-| GET /config | 181-193 | System metadata |
-| GET /projects/resolve | 198-238 | Resolve project prefix |
-| GET /projects | 243-356 | List projects |
-| GET /projects/:code | 361-409 | Project detail |
-| GET /projects/:code/recordings | 415-522 | List recordings |
-| GET /projects/:code/transcripts | 528-673 | List/get transcripts |
-| GET /projects/:code/chapters | 678-783 | Chapter timestamps |
-| GET /projects/:code/images | 788-852 | List images |
-| GET /projects/:code/export | 858-1137 | Full export |
-| GET /projects/:code/inbox | 1143-1271 | Inbox contents |
-| GET /projects/:code/inbox/:sub/:file | 1278-1349 | Inbox file content |
+| Endpoint                             | Lines     | Purpose                |
+| ------------------------------------ | --------- | ---------------------- |
+| GET /config                          | 181-193   | System metadata        |
+| GET /projects/resolve                | 198-238   | Resolve project prefix |
+| GET /projects                        | 243-356   | List projects          |
+| GET /projects/:code                  | 361-409   | Project detail         |
+| GET /projects/:code/recordings       | 415-522   | List recordings        |
+| GET /projects/:code/transcripts      | 528-673   | List/get transcripts   |
+| GET /projects/:code/chapters         | 678-783   | Chapter timestamps     |
+| GET /projects/:code/images           | 788-852   | List images            |
+| GET /projects/:code/export           | 858-1137  | Full export            |
+| GET /projects/:code/inbox            | 1143-1271 | Inbox contents         |
+| GET /projects/:code/inbox/:sub/:file | 1278-1349 | Inbox file content     |
 
 ### Proposed Solution
 
@@ -249,6 +250,7 @@ server/src/routes/query/
 Error handling varies across the codebase:
 
 **Pattern 1: Silent catch (hides errors)**
+
 ```typescript
 try {
   const files = await fs.readdir(dir);
@@ -258,6 +260,7 @@ try {
 ```
 
 **Pattern 2: Log and continue**
+
 ```typescript
 try {
   // logic
@@ -267,6 +270,7 @@ try {
 ```
 
 **Pattern 3: Return error response**
+
 ```typescript
 try {
   // logic
@@ -277,11 +281,11 @@ try {
 
 ### Affected Files
 
-| File | Approximate Count |
-|------|-------------------|
-| `server/src/routes/query.ts` | 15+ empty catches |
+| File                            | Approximate Count |
+| ------------------------------- | ----------------- |
+| `server/src/routes/query.ts`    | 15+ empty catches |
 | `server/src/routes/projects.ts` | 5+ mixed patterns |
-| `server/src/routes/index.ts` | 3+ mixed patterns |
+| `server/src/routes/index.ts`    | 3+ mixed patterns |
 
 ### Proposed Solution
 
@@ -303,12 +307,7 @@ export async function readDirSafe(dir: string): Promise<string[]> {
 }
 
 // For route error responses
-export function sendErrorResponse(
-  res: Response,
-  status: number,
-  message: string,
-  error?: unknown
-) {
+export function sendErrorResponse(res: Response, status: number, message: string, error?: unknown) {
   if (error) {
     console.error(`[${status}] ${message}:`, error);
   }
@@ -341,21 +340,23 @@ const parsed = parseRecordingFilename(filename.replace('.txt', '.mov'));
 ```
 
 This is fragile because:
+
 - Assumes transcript naming matches recording naming exactly
 - Extension substitution could fail for edge cases
 - Intent is unclear
 
 ### Affected Files
 
-| File | Lines |
-|------|-------|
-| `server/src/routes/query.ts` | 558 |
-| `server/src/routes/query.ts` | 651 |
-| `server/src/routes/query.ts` | 990 |
+| File                         | Lines |
+| ---------------------------- | ----- |
+| `server/src/routes/query.ts` | 558   |
+| `server/src/routes/query.ts` | 651   |
+| `server/src/routes/query.ts` | 990   |
 
 ### Proposed Solution
 
 Option A: Make `parseRecordingFilename` extension-agnostic:
+
 ```typescript
 export function parseRecordingFilename(filename: string): ParsedRecording | null {
   // Strip any extension first
@@ -365,6 +366,7 @@ export function parseRecordingFilename(filename: string): ParsedRecording | null
 ```
 
 Option B: Create separate transcript parser:
+
 ```typescript
 export function parseTranscriptFilename(filename: string): ParsedRecording | null {
   const baseName = filename.replace(/\.txt$/, '');
@@ -424,6 +426,7 @@ res.json({ success: false, error: 'Not found' });
 ### Note
 
 This is a breaking change for API consumers. Consider:
+
 - Versioning the API (`/api/v2/...`)
 - Migration period with both formats
 - Updating all client code simultaneously
@@ -439,15 +442,15 @@ This is a breaking change for API consumers. Consider:
 
 ## Summary Table
 
-| ID | Title | Priority | Effort | Category |
-|----|-------|----------|--------|----------|
-| REF-1 | Extract Transcript Filtering Utility | High | Small | Duplication |
-| REF-2 | Extract Tag Extraction Utility | High | Small | Duplication |
-| REF-3 | Consolidate Response Types | High | Medium | Types |
-| REF-4 | Split query.ts Into Sub-Modules | Medium | Large | Large File |
-| REF-5 | Standardize Error Handling | Medium | Medium | Patterns |
-| REF-6 | Fix Fragile Transcript Parsing | Medium | Small | Fragile Code |
-| REF-7 | Standardize API Response Format | Low | Large | Patterns |
+| ID    | Title                                | Priority | Effort | Category     |
+| ----- | ------------------------------------ | -------- | ------ | ------------ |
+| REF-1 | Extract Transcript Filtering Utility | High     | Small  | Duplication  |
+| REF-2 | Extract Tag Extraction Utility       | High     | Small  | Duplication  |
+| REF-3 | Consolidate Response Types           | High     | Medium | Types        |
+| REF-4 | Split query.ts Into Sub-Modules      | Medium   | Large  | Large File   |
+| REF-5 | Standardize Error Handling           | Medium   | Medium | Patterns     |
+| REF-6 | Fix Fragile Transcript Parsing       | Medium   | Small  | Fragile Code |
+| REF-7 | Standardize API Response Format      | Low      | Large  | Patterns     |
 
 ---
 

@@ -149,7 +149,9 @@ export async function getManifestStatus(
   } else {
     // All files present and unchanged - check if they're in edit folder
     const allInEditFolder = await Promise.all(
-      manifest.files.map((f: EditManifestFile) => fs.pathExists(path.join(editFolderPath, f.filename)))
+      manifest.files.map((f: EditManifestFile) =>
+        fs.pathExists(path.join(editFolderPath, f.filename))
+      )
     );
 
     if (allInEditFolder.every((exists: boolean) => !exists)) {
@@ -231,7 +233,7 @@ export async function restoreEditFolder(
     const destPath = path.join(editFolderPath, manifestFile.filename);
 
     // Check if source exists
-    if (!await fs.pathExists(sourcePath)) {
+    if (!(await fs.pathExists(sourcePath))) {
       warnings.push(`Source file missing: ${manifestFile.filename}`);
       continue;
     }

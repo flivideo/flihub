@@ -3,6 +3,7 @@
 ## What You're Working On
 
 **FR-136: Tool-Oriented Manage Panel**
+
 - PRD: `/docs/prd/fr-136-tool-oriented-manage-panel.md`
 - Status: Partially implemented (regen tools done, export/folders pending)
 
@@ -27,16 +28,19 @@ This is pure refactoring - no new functionality. The Gling prep UI (FR-122/124) 
 ## Resources
 
 **PRD:**
+
 - `/docs/prd/fr-136-tool-oriented-manage-panel.md` - Overall design
 - `/docs/prd/fr-122-export-panel.md` - Export functionality (already implemented)
 - `/docs/prd/fr-124-export-panel-enhancements.md` - Gling prep features (already implemented)
 
 **Reference Implementation:**
+
 - Rename tool in ManagePanel.tsx (lines 1133-1181) - Similar drawer pattern
 - ToolsSidebar component - Shows Export button (lines 89-96)
 - SlideOutDrawer component - Shared drawer UI
 
 **Code to Extract:**
+
 - ManagePanel.tsx lines 862-1057 - Gling prep UI
 - ManagePanel.tsx lines 290-322 - handlePrepareForGling
 - ManagePanel.tsx lines 495-580 - Export-related handlers

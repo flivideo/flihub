@@ -78,11 +78,13 @@ touch recordings/20-2-demo-SKOOL.mov
 4. Observe pre-filled tags
 
 **Expected Result (AFTER FIX):**
+
 - Tags checkbox shows: `BMAD` (uppercase, checked)
 - File preview shows: `01-1-intro-BMAD.mov`
 - No validation errors
 
 **Current Result (BEFORE FIX):**
+
 - Validation error: "Tag 'bmad' must be uppercase"
 - Rename blocked
 
@@ -100,6 +102,7 @@ touch recordings/20-2-demo-SKOOL.mov
 3. Observe tag handling
 
 **Expected Result (AFTER FIX):**
+
 - Tags show: `PROJECT`, `BRIEF`, `SDK` (all uppercase)
 - All checked
 - Preview correct
@@ -117,6 +120,7 @@ touch recordings/20-2-demo-SKOOL.mov
 2. Open Rename tool
 
 **Expected Result (AFTER FIX):**
+
 - Tag shows: `COMMUNITY` (fully uppercase)
 - Preview: `02-1-outro-COMMUNITY.mov`
 
@@ -134,6 +138,7 @@ touch recordings/20-2-demo-SKOOL.mov
 4. Click Rename
 
 **Expected Result (AFTER FIX):**
+
 - Input auto-converts to `DEMO` as user types (CSS text-transform)
 - Saved as uppercase
 - No validation error
@@ -150,6 +155,7 @@ touch recordings/20-2-demo-SKOOL.mov
 ### Test Case 2.1: Detect Chapter Gaps
 
 **Files:**
+
 - `01-1-intro.mov`
 - `03-1-setup.mov`
 - `05-1-demo.mov`
@@ -160,6 +166,7 @@ touch recordings/20-2-demo-SKOOL.mov
 2. View chapter list
 
 **Expected Result:**
+
 - Chapter 01 displayed
 - Chapter 03 displayed (gap indicator?)
 - Chapter 05 displayed (gap indicator?)
@@ -183,6 +190,7 @@ touch recordings/20-2-demo-SKOOL.mov
 5. Confirm
 
 **Expected Result:**
+
 - All chapters sequential: 01, 02, 03
 - No gaps
 
@@ -198,6 +206,7 @@ touch recordings/20-2-demo-SKOOL.mov
 ### Test Case 3.1: Renumber Sequences
 
 **Files:**
+
 - `10-1-intro.mov`
 - `10-3-outro.mov`
 - `10-7-wrap.mov`
@@ -214,6 +223,7 @@ touch recordings/20-2-demo-SKOOL.mov
 5. Rename
 
 **Expected Result:**
+
 - Sequences sequential: 1, 2, 3
 - No gaps
 
@@ -234,6 +244,7 @@ touch recordings/20-2-demo-SKOOL.mov
 5. Rename
 
 **Expected Result (AFTER FIX):**
+
 - All files renamed with new label
 - All tags converted to uppercase
 - No validation errors
@@ -253,6 +264,7 @@ touch recordings/20-2-demo-SKOOL.mov
 2. Open Rename tool
 
 **Expected Result (CURRENT):**
+
 - Validation error: "Tag must be letters only"
 - **OR** accept and convert to `N9N`?
 
@@ -270,6 +282,7 @@ touch recordings/20-2-demo-SKOOL.mov
 1. Parse filename
 
 **Expected Result (CURRENT):**
+
 - Validation error: "Tag must be letters only"
 
 ---
@@ -284,6 +297,7 @@ touch recordings/20-2-demo-SKOOL.mov
 1. Parse filename
 
 **Expected Result:**
+
 - Should skip empty tag
 - OR validation error
 
@@ -323,6 +337,7 @@ touch recordings/20-2-demo-SKOOL.mov
 6. Rename
 
 **Expected Result:**
+
 - All files moved to chapter 07
 - Sequences preserved or renumbered based on selection
 
@@ -341,6 +356,7 @@ touch recordings/20-2-demo-SKOOL.mov
 2. Rename to new label "tutorial"
 
 **Expected Result:**
+
 - No changes to tag behavior
 - Tag remains `CTA`
 - Rename succeeds
@@ -358,6 +374,7 @@ touch recordings/20-2-demo-SKOOL.mov
 2. Rename to "tutorial"
 
 **Expected Result:**
+
 - Rename succeeds
 - No tag-related errors
 
@@ -376,6 +393,7 @@ touch recordings/20-2-demo-SKOOL.mov
 3. Measure time
 
 **Expected Result:**
+
 - Completes in < 30 seconds
 - All tags converted to uppercase
 - All files renamed successfully
@@ -395,6 +413,7 @@ touch recordings/20-2-demo-SKOOL.mov
 5. Submit rename (Enter)
 
 **Expected Result:**
+
 - All controls keyboard-accessible
 - Clear focus indicators
 - No mouse required

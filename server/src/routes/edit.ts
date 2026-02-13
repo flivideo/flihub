@@ -1,83 +1,83 @@
 // FR-102: Edit Prep Page API
-import express from 'express'
-import path from 'path'
-import fs from 'fs/promises'
-import type { Config } from '../../../shared/types.js'
-import { expandPath } from '../utils/pathUtils.js'
-import { readProjectState } from '../utils/projectState.js'
+import express from 'express';
+import path from 'path';
+import fs from 'fs/promises';
+import type { Config } from '../../../shared/types.js';
+import { expandPath } from '../utils/pathUtils.js';
+import { readProjectState } from '../utils/projectState.js';
 
 export function createEditRoutes(getConfig: () => Config) {
-  const router = express.Router()
+  const router = express.Router();
 
   // GET /api/edit/prep - Get edit prep data
   router.get('/prep', async (req, res) => {
     try {
-      const config = getConfig()
+      const config = getConfig();
 
       if (!config.projectDirectory) {
-        return res.json({ success: false, error: 'No project selected' })
+        return res.json({ success: false, error: 'No project selected' });
       }
 
       // Extract project code from path
-      const projectCode = path.basename(config.projectDirectory)
-      const parts = projectCode.split('-')
-      const code = parts[0]
-      const name = parts.slice(1).join('-')
+      const projectCode = path.basename(config.projectDirectory);
+      const parts = projectCode.split('-');
+      const code = parts[0];
+      const name = parts.slice(1).join('-');
 
       // Get recordings
-      const recordingsPath = path.join(expandPath(config.projectDirectory), 'recordings')
-      let recordings: { name: string; size: number }[] = []
-      let recordingsTotal = 0
+      const recordingsPath = path.join(expandPath(config.projectDirectory), 'recordings');
+      let recordings: { name: string; size: number }[] = [];
+      let recordingsTotal = 0;
 
       try {
-        const files = await fs.readdir(recordingsPath)
+        const files = await fs.readdir(recordingsPath);
         const stats = await Promise.all(
           files
-            .filter(f => /\.(mov|mp4)$/i.test(f) && !f.startsWith('.') && !f.startsWith('-'))
-            .map(async f => {
-              const stat = await fs.stat(path.join(recordingsPath, f))
-              return { name: f, size: stat.size }
+            .filter((f) => /\.(mov|mp4)$/i.test(f) && !f.startsWith('.') && !f.startsWith('-'))
+            .map(async (f) => {
+              const stat = await fs.stat(path.join(recordingsPath, f));
+              return { name: f, size: stat.size };
             })
-        )
-        recordings = stats.sort((a, b) => a.name.localeCompare(b.name))
-        recordingsTotal = recordings.reduce((sum, r) => sum + r.size, 0)
+        );
+        recordings = stats.sort((a, b) => a.name.localeCompare(b.name));
+        recordingsTotal = recordings.reduce((sum, r) => sum + r.size, 0);
       } catch {
         // No recordings folder
       }
 
       // Check edit folders
-      const projectPath = expandPath(config.projectDirectory)
-      const editFolders = ['edit-1st', 'edit-2nd', 'edit-final']
-      const editFolderStatus: { name: string; exists: boolean }[] = []
+      const projectPath = expandPath(config.projectDirectory);
+      const editFolders = ['edit-1st', 'edit-2nd', 'edit-final'];
+      const editFolderStatus: { name: string; exists: boolean }[] = [];
 
       for (const folder of editFolders) {
-        const folderPath = path.join(projectPath, folder)
-        let exists = false
+        const folderPath = path.join(projectPath, folder);
+        let exists = false;
         try {
-          const stat = await fs.stat(folderPath)
-          exists = stat.isDirectory()
+          const stat = await fs.stat(folderPath);
+          exists = stat.isDirectory();
         } catch {
           // Folder doesn't exist
         }
-        editFolderStatus.push({ name: folder, exists })
+        editFolderStatus.push({ name: folder, exists });
       }
 
-      const allExist = editFolderStatus.every(f => f.exists)
+      const allExist = editFolderStatus.every((f) => f.exists);
 
       // FR-118: Read project state for project-specific dictionary
-      const projectState = await readProjectState(projectPath)
-      const projectDictionary = projectState.glingDictionary || []
-      const globalDictionary = config.glingDictionary || []
+      const projectState = await readProjectState(projectPath);
+      const projectDictionary = projectState.glingDictionary || [];
+      const globalDictionary = config.glingDictionary || [];
 
       // FR-118: Merge dictionaries - dedupe and sort alphabetically
-      const mergedDictionary = [...new Set([...globalDictionary, ...projectDictionary])].sort()
+      const mergedDictionary = [...new Set([...globalDictionary, ...projectDictionary])].sort();
 
       res.json({
         success: true,
         project: {
           code,
           name,
-          fullCode: projectCode
+          fullCode: projectCode,
         },
         glingFilename: projectCode,
         glingDictionary: mergedDictionary,
@@ -88,63 +88,63 @@ export function createEditRoutes(getConfig: () => Config) {
         recordingsTotal,
         editFolders: {
           allExist,
-          folders: editFolderStatus
-        }
-      })
+          folders: editFolderStatus,
+        },
+      });
     } catch (error) {
-      res.status(500).json({ success: false, error: String(error) })
+      res.status(500).json({ success: false, error: String(error) });
     }
-  })
+  });
 
   // POST /api/edit/create-folders - Create all edit folders
   router.post('/create-folders', async (req, res) => {
     try {
-      const config = getConfig()
+      const config = getConfig();
 
       if (!config.projectDirectory) {
-        return res.json({ success: false, error: 'No project selected' })
+        return res.json({ success: false, error: 'No project selected' });
       }
 
-      const projectPath = expandPath(config.projectDirectory)
-      const editFolders = ['edit-1st', 'edit-2nd', 'edit-final']
+      const projectPath = expandPath(config.projectDirectory);
+      const editFolders = ['edit-1st', 'edit-2nd', 'edit-final'];
 
       for (const folder of editFolders) {
-        await fs.mkdir(path.join(projectPath, folder), { recursive: true })
+        await fs.mkdir(path.join(projectPath, folder), { recursive: true });
       }
 
-      res.json({ success: true, folders: editFolders })
+      res.json({ success: true, folders: editFolders });
     } catch (error) {
-      res.status(500).json({ success: false, error: String(error) })
+      res.status(500).json({ success: false, error: String(error) });
     }
-  })
+  });
 
   // FR-124: POST /api/edit/create-folder - Create a single edit folder
   router.post('/create-folder', async (req, res) => {
     try {
-      const config = getConfig()
+      const config = getConfig();
 
       if (!config.projectDirectory) {
-        return res.json({ success: false, error: 'No project selected' })
+        return res.json({ success: false, error: 'No project selected' });
       }
 
-      const { folder } = req.body as { folder: string }
+      const { folder } = req.body as { folder: string };
 
       // Validate folder name
-      const validFolders = ['edit-1st', 'edit-2nd', 'edit-final']
+      const validFolders = ['edit-1st', 'edit-2nd', 'edit-final'];
       if (!validFolders.includes(folder)) {
-        return res.json({ success: false, error: 'Invalid folder name' })
+        return res.json({ success: false, error: 'Invalid folder name' });
       }
 
-      const projectPath = expandPath(config.projectDirectory)
-      const folderPath = path.join(projectPath, folder)
+      const projectPath = expandPath(config.projectDirectory);
+      const folderPath = path.join(projectPath, folder);
 
-      await fs.mkdir(folderPath, { recursive: true })
+      await fs.mkdir(folderPath, { recursive: true });
 
-      res.json({ success: true, folder })
+      res.json({ success: true, folder });
     } catch (error) {
-      res.status(500).json({ success: false, error: String(error) })
+      res.status(500).json({ success: false, error: String(error) });
     }
-  })
+  });
 
-  return router
+  return router;
 }

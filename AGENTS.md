@@ -32,19 +32,20 @@ docs/
 ```
 
 **Key files:**
+
 - `docs/backlog.md` - Current FRs/NFRs with status
 - `docs/prd/*.md` - Detailed feature specifications
 - `docs/architecture/patterns.md` - Code conventions
 
 ## Slash Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/po` | Product Owner - requirements, specs, handovers |
-| `/dev` | Developer - implementation |
-| `/uat` | User acceptance testing |
-| `/progress` | Quick project status check |
-| `/jan` | WSL collaborator support |
+| Command     | Purpose                                        |
+| ----------- | ---------------------------------------------- |
+| `/po`       | Product Owner - requirements, specs, handovers |
+| `/dev`      | Developer - implementation                     |
+| `/uat`      | User acceptance testing                        |
+| `/progress` | Quick project status check                     |
+| `/jan`      | WSL collaborator support                       |
 
 ## PO Practices
 
@@ -57,10 +58,12 @@ Due to context limits, conversations may be split across sessions. Before issuin
 3. **If pending** - Proceed with standard handover
 
 **When receiving completion handovers:**
+
 - Update `backlog.md` and `changelog.md` immediately before context splits
 - Don't batch multiple completion updates
 
 **When resuming from summary:**
+
 - Re-read `backlog.md` to get accurate current state before taking action
 
 ## Commands
@@ -79,11 +82,13 @@ npm run build -w client  # Build client: tsc -b && vite build
 ## Architecture
 
 **Monorepo Structure** (npm workspaces):
+
 - `client/` - React 19 + Vite + TailwindCSS v4
 - `server/` - Express + Socket.io, file watchers (chokidar)
 - `shared/` - TypeScript types and utilities
 
 **Server (`server/src/`)**:
+
 - `index.ts` - Express app setup, Socket.io, config management
 - `WatcherManager.ts` - File watcher management
 - `routes/index.ts` - Recording rename, project management
@@ -92,12 +97,14 @@ npm run build -w client  # Build client: tsc -b && vite build
 - `routes/system.ts` - System operations (open Finder)
 
 **Client (`client/src/`)**:
+
 - `App.tsx` - Main app with tab navigation
 - `hooks/useSocket.ts` - Socket.io connection
 - `hooks/useApi.ts` - React Query hooks
 - `components/` - UI components
 
 **Shared (`shared/`)**:
+
 - `types.ts` - TypeScript interfaces
 - `naming.ts` - Naming validation and parsing
 - `paths.ts` - Path utilities
@@ -106,6 +113,7 @@ npm run build -w client  # Build client: tsc -b && vite build
 ## Key Concepts
 
 **Recording Naming Convention**: `{chapter}-{sequence}-{name}-{tags}.mov`
+
 - Chapter: 2 digits (01-99)
 - Sequence: 1+ digits (1, 2, 3...)
 - Name: kebab-case descriptive name
@@ -113,9 +121,11 @@ npm run build -w client  # Build client: tsc -b && vite build
 - Example: `10-5-intro-CTA.mov`
 
 **Image Asset Naming**: `{chapter}-{seq}-{imgOrder}{variant}-{label}.{ext}`
+
 - Example: `05-3-2a-workflow.png`
 
 **Project Directory Structure**:
+
 ```
 project-root/
 ├── recordings/           # Named video recordings (.mov/.mp4)
@@ -135,6 +145,7 @@ project-root/
 ```
 
 **Configuration** (`server/config.json`):
+
 - `watchDirectory` - Where Ecamm Live saves recordings
 - `projectDirectory` - Current active project path
 - `availableTags` - Tags available for recordings
@@ -144,6 +155,7 @@ project-root/
 ## Real-time Updates
 
 Socket.io events:
+
 - `file:new`, `file:deleted`, `file:renamed` - Recording changes
 - `recordings:changed` - Recording folder changes
 - `assets:incoming-changed`, `assets:assigned-changed` - Image changes
@@ -153,6 +165,7 @@ Socket.io events:
 ## Git Workflow
 
 Semantic commit helpers:
+
 - `kfeat "message"` - New features
 - `kfix "message"` - Bug fixes
 - `kchore "message"` - Maintenance

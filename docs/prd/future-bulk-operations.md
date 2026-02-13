@@ -40,6 +40,7 @@ Bulk Operations
 ```
 
 **Workflow:**
+
 1. User selects files via checkboxes
 2. Clicks "Park Selected" or "Unpark Selected"
 3. Confirmation dialog: "Park 12 files? They will be hidden from active view."
@@ -49,6 +50,7 @@ Bulk Operations
 ### Technical Notes
 
 **API endpoint:** `POST /api/manage/bulk-park`
+
 ```json
 {
   "files": ["01-1-intro.mov", "01-2-intro.mov"],
@@ -57,6 +59,7 @@ Bulk Operations
 ```
 
 **Implementation:**
+
 - Reuse existing park/unpark logic from FR-120
 - Batch state file updates (one write instead of N writes)
 - Socket.io events for real-time UI updates
@@ -96,6 +99,7 @@ Bulk Operations
 ```
 
 **Workflow:**
+
 1. User selects files via checkboxes
 2. Clicks "Move to Safe" or "Restore from Safe"
 3. Confirmation dialog: "Move 12 files to safe folder? They will be hidden from active view."
@@ -107,6 +111,7 @@ Bulk Operations
 ### Technical Notes
 
 **API endpoint:** `POST /api/manage/bulk-safe`
+
 ```json
 {
   "files": ["01-1-intro.mov", "01-2-intro.mov"],
@@ -115,6 +120,7 @@ Bulk Operations
 ```
 
 **Implementation:**
+
 - Reuse existing safe/restore logic from FR-111
 - Batch file moves (use `Promise.all`)
 - Update state file once (batch update)
@@ -149,6 +155,7 @@ As a user, I want to reorder recordings within a chapter by changing sequence nu
 **Location:** Manage panel, advanced operations
 
 **Option A: Drag-and-drop UI**
+
 ```
 Chapter 01: intro (15 files)
 ┌─────────────────────────────────────────────────────────┐
@@ -161,6 +168,7 @@ Chapter 01: intro (15 files)
 ```
 
 **Option B: Manual sequence input**
+
 ```
 Sequence Renumbering
 ┌─────────────────────────────────────────────────────────┐
@@ -180,6 +188,7 @@ Sequence Renumbering
 ### Complexity Warning
 
 **Very high complexity:**
+
 - Cascading renames (01-3 → 01-1 requires renaming 01-1 → 01-2, 01-2 → 01-3)
 - Conflict detection (can't rename to existing sequence)
 - Temporary filenames (avoid collisions during cascading renames)
@@ -243,9 +252,7 @@ Rename Templates
   "renameTemplates": [
     {
       "name": "Strip CTA Tags",
-      "rules": [
-        { "action": "stripTag", "tag": "CTA" }
-      ]
+      "rules": [{ "action": "stripTag", "tag": "CTA" }]
     },
     {
       "name": "SKOOL-ready",
@@ -274,14 +281,15 @@ Rename Templates
 
 ## Prioritization
 
-| Feature | Priority | Complexity | Estimated Effort | Value |
-|---------|----------|-----------|------------------|-------|
-| **Bulk Park/Unpark** | Medium | Low | 0.5 sprint | High (frequently requested) |
-| **Bulk Safe/Restore** | Medium | Medium | 1 sprint | Medium (archive workflow) |
-| **Sequence Renumbering** | Low | **Very High** | 2+ sprints | Low (rare use case) |
-| **Advanced Rename Templates** | Low | High | 1.5 sprints | Medium (power users) |
+| Feature                       | Priority | Complexity    | Estimated Effort | Value                       |
+| ----------------------------- | -------- | ------------- | ---------------- | --------------------------- |
+| **Bulk Park/Unpark**          | Medium   | Low           | 0.5 sprint       | High (frequently requested) |
+| **Bulk Safe/Restore**         | Medium   | Medium        | 1 sprint         | Medium (archive workflow)   |
+| **Sequence Renumbering**      | Low      | **Very High** | 2+ sprints       | Low (rare use case)         |
+| **Advanced Rename Templates** | Low      | High          | 1.5 sprints      | Medium (power users)        |
 
 **Recommendation:**
+
 1. Implement Bulk Park/Unpark first (easiest, high value)
 2. Implement Bulk Safe/Restore second (medium complexity, good value)
 3. Defer Sequence Renumbering indefinitely (very complex, rare use case)
@@ -292,10 +300,12 @@ Rename Templates
 ## Dependencies
 
 **All features depend on:**
+
 - FR-131 (Manage Panel) - Provides bulk operations UI structure
 - FR-130 (Delete+Regenerate) - Simplifies implementation
 
 **Each feature enables:**
+
 - Better bulk workflows
 - Less repetitive clicking
 - Power user features
@@ -305,6 +315,7 @@ Rename Templates
 ## Related Work
 
 **Similar features:**
+
 - FR-120 (Parked Recording State) - Single-file park/unpark
 - FR-111 (Safe Architecture) - Single-file safe/restore
 - FR-47 (Rename Chapter Label) - Single-chapter rename

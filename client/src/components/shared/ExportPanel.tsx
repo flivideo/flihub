@@ -7,140 +7,151 @@
  * - File copying and preparation for Gling AI
  */
 
-import { useState, useEffect } from 'react'
-import { toast } from 'sonner'
-import { useConfig, fetchApi, useUpdateProjectDictionary, useUpdateGlobalDictionary } from '../../hooks/useApi'
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import {
+  useConfig,
+  fetchApi,
+  useUpdateProjectDictionary,
+  useUpdateGlobalDictionary,
+} from '../../hooks/useApi';
 import {
   useEditPrep,
   useCreateEditFolders,
   useCreateEditFolder,
   useManifestStatus,
   useCleanEditFolder,
-  useRestoreEditFolder
-} from '../../hooks/useEditApi'
-import { formatFileSize } from '../../utils/formatting'
-import type { EditFolderKey } from '../../../../shared/types'
+  useRestoreEditFolder,
+} from '../../hooks/useEditApi';
+import { formatFileSize } from '../../utils/formatting';
+import type { EditFolderKey } from '../../../../shared/types';
 
 interface ExportPanelProps {
-  selectedFiles: string[]
-  selectedCount: number
+  selectedFiles: string[];
+  selectedCount: number;
 }
 
 export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) {
-  const { data: config } = useConfig()
-  const { data: editPrepData } = useEditPrep()
-  const createFolders = useCreateEditFolders()
-  const createFolder = useCreateEditFolder()
-  const updateProjectDictionary = useUpdateProjectDictionary()
-  const updateGlobalDictionary = useUpdateGlobalDictionary()
+  const { data: config } = useConfig();
+  const { data: editPrepData } = useEditPrep();
+  const createFolders = useCreateEditFolders();
+  const createFolder = useCreateEditFolder();
+  const updateProjectDictionary = useUpdateProjectDictionary();
+  const updateGlobalDictionary = useUpdateGlobalDictionary();
 
-  const [showGlingInfo, setShowGlingInfo] = useState(true)
-  const [globalDictionary, setGlobalDictionary] = useState('')
-  const [projectDictionary, setProjectDictionary] = useState('')
-  const [isCopying, setIsCopying] = useState(false)
-  const [savingGlobal, setSavingGlobal] = useState(false)
-  const [savingProject, setSavingProject] = useState(false)
+  const [showGlingInfo, setShowGlingInfo] = useState(true);
+  const [globalDictionary, setGlobalDictionary] = useState('');
+  const [projectDictionary, setProjectDictionary] = useState('');
+  const [isCopying, setIsCopying] = useState(false);
+  const [savingGlobal, setSavingGlobal] = useState(false);
+  const [savingProject, setSavingProject] = useState(false);
 
   // Initialize local state from API data
   useEffect(() => {
     if (editPrepData?.globalDictionary) {
-      setGlobalDictionary(editPrepData.globalDictionary.join('\n'))
+      setGlobalDictionary(editPrepData.globalDictionary.join('\n'));
     }
-  }, [editPrepData?.globalDictionary])
+  }, [editPrepData?.globalDictionary]);
 
   useEffect(() => {
     if (editPrepData?.projectDictionary) {
-      setProjectDictionary(editPrepData.projectDictionary.join('\n'))
+      setProjectDictionary(editPrepData.projectDictionary.join('\n'));
     }
-  }, [editPrepData?.projectDictionary])
+  }, [editPrepData?.projectDictionary]);
 
   // Save global dictionary when user leaves the text box
   const handleSaveGlobal = () => {
-    if (!editPrepData?.globalDictionary) return
+    if (!editPrepData?.globalDictionary) return;
 
-    const currentWords = globalDictionary.split('\n').map(w => w.trim()).filter(w => w.length > 0)
-    const originalWords = editPrepData.globalDictionary
+    const currentWords = globalDictionary
+      .split('\n')
+      .map((w) => w.trim())
+      .filter((w) => w.length > 0);
+    const originalWords = editPrepData.globalDictionary;
 
     // Check if changed
-    if (JSON.stringify(currentWords) === JSON.stringify(originalWords)) return
+    if (JSON.stringify(currentWords) === JSON.stringify(originalWords)) return;
 
-    setSavingGlobal(true)
-    const startTime = Date.now()
+    setSavingGlobal(true);
+    const startTime = Date.now();
 
     updateGlobalDictionary.mutate(currentWords, {
       onSuccess: () => {
         // Show "Saving..." for at least 500ms so user can see it
-        const elapsed = Date.now() - startTime
-        const delay = Math.max(0, 500 - elapsed)
-        setTimeout(() => setSavingGlobal(false), delay)
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(0, 500 - elapsed);
+        setTimeout(() => setSavingGlobal(false), delay);
       },
       onError: () => {
-        toast.error('Failed to save global dictionary')
-        setSavingGlobal(false)
+        toast.error('Failed to save global dictionary');
+        setSavingGlobal(false);
       },
-    })
-  }
+    });
+  };
 
   // Save project dictionary when user leaves the text box
   const handleSaveProject = () => {
-    const activeProject = config?.activeProject
-    if (!activeProject || !editPrepData?.projectDictionary) return
+    const activeProject = config?.activeProject;
+    if (!activeProject || !editPrepData?.projectDictionary) return;
 
-    const currentWords = projectDictionary.split('\n').map(w => w.trim()).filter(w => w.length > 0)
-    const originalWords = editPrepData.projectDictionary
+    const currentWords = projectDictionary
+      .split('\n')
+      .map((w) => w.trim())
+      .filter((w) => w.length > 0);
+    const originalWords = editPrepData.projectDictionary;
 
     // Check if changed
-    if (JSON.stringify(currentWords) === JSON.stringify(originalWords)) return
+    if (JSON.stringify(currentWords) === JSON.stringify(originalWords)) return;
 
-    setSavingProject(true)
-    const startTime = Date.now()
+    setSavingProject(true);
+    const startTime = Date.now();
 
     updateProjectDictionary.mutate(
       { projectCode: activeProject, words: currentWords },
       {
         onSuccess: () => {
           // Show "Saving..." for at least 500ms so user can see it
-          const elapsed = Date.now() - startTime
-          const delay = Math.max(0, 500 - elapsed)
-          setTimeout(() => setSavingProject(false), delay)
+          const elapsed = Date.now() - startTime;
+          const delay = Math.max(0, 500 - elapsed);
+          setTimeout(() => setSavingProject(false), delay);
         },
         onError: () => {
-          toast.error('Failed to save project dictionary')
-          setSavingProject(false)
+          toast.error('Failed to save project dictionary');
+          setSavingProject(false);
         },
       }
-    )
-  }
+    );
+  };
 
   // Copy file list to clipboard
   const handleCopyFileList = async () => {
     if (!config?.projectDirectory) {
-      toast.error('No project directory configured')
-      return
+      toast.error('No project directory configured');
+      return;
     }
 
     if (selectedCount === 0) {
-      toast.error('No files selected')
-      return
+      toast.error('No files selected');
+      return;
     }
 
     // Note: This should receive file paths from parent, but for now we'll show a message
-    toast.info('Copy file list - implementation depends on parent providing full file data')
-  }
+    toast.info('Copy file list - implementation depends on parent providing full file data');
+  };
 
   // Prepare for Gling - copy files to edit-1st folder
   const handlePrepareForGling = async () => {
     if (!config?.projectDirectory) {
-      toast.error('No project directory configured')
-      return
+      toast.error('No project directory configured');
+      return;
     }
 
     if (selectedCount === 0) {
-      toast.error('No files selected')
-      return
+      toast.error('No files selected');
+      return;
     }
 
-    setIsCopying(true)
+    setIsCopying(true);
     try {
       const response = await fetchApi<{ success: boolean; copied: string[]; error?: string }>(
         '/api/export/copy-to-gling',
@@ -150,65 +161,65 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
             files: selectedFiles,
           }),
         }
-      )
+      );
 
       if (response.success) {
-        toast.success(`Copied ${response.copied.length} files to edit-1st folder`)
+        toast.success(`Copied ${response.copied.length} files to edit-1st folder`);
       } else {
-        toast.error(response.error || 'Failed to copy files')
+        toast.error(response.error || 'Failed to copy files');
       }
     } catch (err) {
-      toast.error('Failed to prepare files for Gling')
+      toast.error('Failed to prepare files for Gling');
     } finally {
-      setIsCopying(false)
+      setIsCopying(false);
     }
-  }
+  };
 
   // FR-124: Copy Gling filename
   const handleCopyFilename = async () => {
-    if (!editPrepData?.glingFilename) return
+    if (!editPrepData?.glingFilename) return;
     try {
-      await navigator.clipboard.writeText(editPrepData.glingFilename)
-      toast.success('Filename copied')
+      await navigator.clipboard.writeText(editPrepData.glingFilename);
+      toast.success('Filename copied');
     } catch {
-      toast.error('Failed to copy')
+      toast.error('Failed to copy');
     }
-  }
+  };
 
   // FR-125: Copy global dictionary
   const handleCopyGlobal = async () => {
-    if (!globalDictionary.trim()) return
+    if (!globalDictionary.trim()) return;
     try {
-      await navigator.clipboard.writeText(globalDictionary)
-      const wordCount = globalDictionary.split('\n').filter(w => w.trim()).length
-      toast.success(`Copied ${wordCount} global words`)
+      await navigator.clipboard.writeText(globalDictionary);
+      const wordCount = globalDictionary.split('\n').filter((w) => w.trim()).length;
+      toast.success(`Copied ${wordCount} global words`);
     } catch {
-      toast.error('Failed to copy')
+      toast.error('Failed to copy');
     }
-  }
+  };
 
   // FR-125: Copy project dictionary
   const handleCopyProject = async () => {
-    if (!projectDictionary.trim()) return
+    if (!projectDictionary.trim()) return;
     try {
-      await navigator.clipboard.writeText(projectDictionary)
-      const wordCount = projectDictionary.split('\n').filter(w => w.trim()).length
-      toast.success(`Copied ${wordCount} project words`)
+      await navigator.clipboard.writeText(projectDictionary);
+      const wordCount = projectDictionary.split('\n').filter((w) => w.trim()).length;
+      toast.success(`Copied ${wordCount} project words`);
     } catch {
-      toast.error('Failed to copy')
+      toast.error('Failed to copy');
     }
-  }
+  };
 
   // FR-125: Copy combined dictionary
   const handleCopyCombined = async () => {
-    if (!editPrepData?.glingDictionary?.length) return
+    if (!editPrepData?.glingDictionary?.length) return;
     try {
-      await navigator.clipboard.writeText(editPrepData.glingDictionary.join('\n'))
-      toast.success(`Copied ${editPrepData.glingDictionary.length} words (combined)`)
+      await navigator.clipboard.writeText(editPrepData.glingDictionary.join('\n'));
+      toast.success(`Copied ${editPrepData.glingDictionary.length} words (combined)`);
     } catch {
-      toast.error('Failed to copy')
+      toast.error('Failed to copy');
     }
-  }
+  };
 
   // FR-124: Open folder in Finder
   const handleOpenFolder = async (folder: string) => {
@@ -219,95 +230,95 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
           method: 'POST',
           body: JSON.stringify({ folder }),
         }
-      )
+      );
       if (!response.success) {
-        toast.error(response.error || 'Failed to open folder')
+        toast.error(response.error || 'Failed to open folder');
       }
     } catch (err) {
-      toast.error('Failed to open folder')
+      toast.error('Failed to open folder');
     }
-  }
+  };
 
   // FR-124: Create all edit folders
   const handleCreateFolders = () => {
-    createFolders.mutate()
-  }
+    createFolders.mutate();
+  };
 
   // FR-124: Create a single edit folder
   const handleCreateFolder = (folderName: string) => {
-    createFolder.mutate(folderName)
-  }
+    createFolder.mutate(folderName);
+  };
 
   // FR-126: Manifest status component for a single folder
   const FolderManifestStatus = ({ folder }: { folder: EditFolderKey }) => {
-    const { data: manifestData } = useManifestStatus(folder)
-    const cleanFolder = useCleanEditFolder()
-    const restoreFolder = useRestoreEditFolder()
+    const { data: manifestData } = useManifestStatus(folder);
+    const cleanFolder = useCleanEditFolder();
+    const restoreFolder = useRestoreEditFolder();
 
     if (!manifestData?.success || manifestData.detail.status === 'no-manifest') {
-      return null
+      return null;
     }
 
-    const { detail } = manifestData
+    const { detail } = manifestData;
     const statusEmoji = {
-      'present': '🟢',
-      'cleaned': '🔴',
-      'changed': '⚠️',
-      'missing': '❌',
+      present: '🟢',
+      cleaned: '🔴',
+      changed: '⚠️',
+      missing: '❌',
       'no-manifest': '',
-    }[detail.status]
+    }[detail.status];
 
     const statusText = {
-      'present': `Present (${formatFileSize(detail.totalSize)})`,
-      'cleaned': 'Cleaned',
-      'changed': `Changed (${detail.changedFiles} files)`,
-      'missing': `Missing (${detail.missingFiles} files)`,
+      present: `Present (${formatFileSize(detail.totalSize)})`,
+      cleaned: 'Cleaned',
+      changed: `Changed (${detail.changedFiles} files)`,
+      missing: `Missing (${detail.missingFiles} files)`,
       'no-manifest': '',
-    }[detail.status]
+    }[detail.status];
 
     const handleClean = async () => {
       const confirmed = window.confirm(
         `Delete ${detail.manifestedFiles} source files from ${folder}?\n\n` +
-        `This will free up ${formatFileSize(detail.totalSize)}.\n\n` +
-        `Gling outputs will be preserved.\n` +
-        `You can restore these files later from recordings/.`
-      )
+          `This will free up ${formatFileSize(detail.totalSize)}.\n\n` +
+          `Gling outputs will be preserved.\n` +
+          `You can restore these files later from recordings/.`
+      );
 
-      if (!confirmed) return
+      if (!confirmed) return;
 
       try {
-        const result = await cleanFolder.mutateAsync(folder)
+        const result = await cleanFolder.mutateAsync(folder);
         if (result.success) {
           toast.success(
             `Cleaned ${result.deletedCount} files (${formatFileSize(result.spaceSaved)} freed)`
-          )
+          );
         } else {
-          toast.error(result.error || 'Failed to clean folder')
+          toast.error(result.error || 'Failed to clean folder');
         }
       } catch {
-        toast.error('Failed to clean folder')
+        toast.error('Failed to clean folder');
       }
-    }
+    };
 
     const handleRestore = async () => {
       try {
-        const result = await restoreFolder.mutateAsync(folder)
+        const result = await restoreFolder.mutateAsync(folder);
         if (result.success) {
           if (result.warnings && result.warnings.length > 0) {
             toast.warning(
               `Restored ${result.restoredCount} files with ${result.warnings.length} warnings`,
               { duration: 5000 }
-            )
+            );
           } else {
-            toast.success(`Restored ${result.restoredCount} files`)
+            toast.success(`Restored ${result.restoredCount} files`);
           }
         } else {
-          toast.error(result.error || 'Failed to restore files')
+          toast.error(result.error || 'Failed to restore files');
         }
       } catch {
-        toast.error('Failed to restore files')
+        toast.error('Failed to restore files');
       }
-    }
+    };
 
     return (
       <div className="mt-2 pl-6 text-xs space-y-1">
@@ -342,8 +353,8 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
           )}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -366,7 +377,9 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
             <div className="px-4 pb-4 space-y-3">
               {/* Filename */}
               <div>
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Gling Filename</label>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Gling Filename
+                </label>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex-1 bg-gray-50 border border-gray-200 rounded px-3 py-2 font-mono text-sm text-gray-800">
                     {editPrepData.glingFilename}
@@ -391,7 +404,7 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-600">
-                        Global: {globalDictionary.split('\n').filter(w => w.trim()).length} words
+                        Global: {globalDictionary.split('\n').filter((w) => w.trim()).length} words
                       </span>
                       {savingGlobal && <span className="text-xs text-blue-600">Saving...</span>}
                     </div>
@@ -418,10 +431,13 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-600">
-                        Project: {projectDictionary.split('\n').filter(w => w.trim()).length} words
+                        Project: {projectDictionary.split('\n').filter((w) => w.trim()).length}{' '}
+                        words
                       </span>
                       {config?.activeProject && (
-                        <span className="text-xs text-blue-600 font-mono">({config.activeProject})</span>
+                        <span className="text-xs text-blue-600 font-mono">
+                          ({config.activeProject})
+                        </span>
                       )}
                       {savingProject && <span className="text-xs text-blue-600">Saving...</span>}
                     </div>
@@ -446,7 +462,9 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
                 {/* Combined Dictionary */}
                 <div className="space-y-2 border-t border-gray-300 pt-3 mt-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 font-medium">Combined: {editPrepData.glingDictionary?.length || 0} words</span>
+                    <span className="text-sm text-gray-700 font-medium">
+                      Combined: {editPrepData.glingDictionary?.length || 0} words
+                    </span>
                     <button
                       onClick={handleCopyCombined}
                       disabled={!editPrepData.glingDictionary?.length}
@@ -479,8 +497,8 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
           </div>
 
           <div className="space-y-3">
-            {editPrepData.editFolders.folders.map(folder => {
-              const exists = folder.exists
+            {editPrepData.editFolders.folders.map((folder) => {
+              const exists = folder.exists;
               return (
                 <div key={folder.name}>
                   <div className="flex items-center justify-between">
@@ -488,12 +506,14 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
                       <span className={exists ? 'text-green-500' : 'text-gray-300'}>
                         {exists ? '✓' : '○'}
                       </span>
-                      <span className={exists ? 'text-gray-700 font-mono' : 'text-gray-400 font-mono'}>
+                      <span
+                        className={exists ? 'text-gray-700 font-mono' : 'text-gray-400 font-mono'}
+                      >
                         {folder.name}/
                       </span>
                       <span className="text-xs text-gray-400">
                         {folder.name === 'edit-1st' && '← Gling exports'}
-                        {folder.name === 'edit-2nd' && '← Jan\'s edits'}
+                        {folder.name === 'edit-2nd' && "← Jan's edits"}
                         {folder.name === 'edit-final' && '← Final publish'}
                       </span>
                     </div>
@@ -517,7 +537,7 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
                   {/* FR-126: Manifest status for this folder */}
                   {exists && <FolderManifestStatus folder={folder.name as EditFolderKey} />}
                 </div>
-              )
+              );
             })}
           </div>
 
@@ -563,7 +583,7 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
         </button>
 
         {/* FR-124: Smart Open/Create button for edit-1st */}
-        {editPrepData?.editFolders.folders.find(f => f.name === 'edit-1st')?.exists ? (
+        {editPrepData?.editFolders.folders.find((f) => f.name === 'edit-1st')?.exists ? (
           <button
             onClick={() => handleOpenFolder('edit-1st')}
             className="px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
@@ -589,5 +609,5 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
         </span>
       </div>
     </div>
-  )
+  );
 }

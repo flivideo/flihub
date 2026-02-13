@@ -46,7 +46,7 @@ export function createInboxRoutes(getConfig: () => Config): Router {
         const entries = await readDirEntriesSafe(paths.inbox);
 
         // First, check for root-level files (files directly in inbox/)
-        const rootFiles = entries.filter(e => e.isFile() && !e.name.startsWith('.'));
+        const rootFiles = entries.filter((e) => e.isFile() && !e.name.startsWith('.'));
         if (rootFiles.length > 0) {
           const rootResult: InboxSubfolder = {
             name: '(root)',
@@ -74,8 +74,8 @@ export function createInboxRoutes(getConfig: () => Config): Router {
 
         // Then scan subfolders
         const subfolderNames = entries
-          .filter(e => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('-'))
-          .map(e => e.name);
+          .filter((e) => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('-'))
+          .map((e) => e.name);
 
         // Preferred sort order: raw, dataset, presentation first, then alphabetical
         const preferredOrder = ['raw', 'dataset', 'presentation'];
@@ -102,7 +102,7 @@ export function createInboxRoutes(getConfig: () => Config): Router {
           };
 
           const fileEntries = await readDirEntriesSafe(subfolderPath);
-          const files = fileEntries.filter(e => e.isFile() && !e.name.startsWith('.'));
+          const files = fileEntries.filter((e) => e.isFile() && !e.name.startsWith('.'));
 
           // Get file details
           for (const file of files) {
@@ -176,7 +176,7 @@ export function createInboxRoutes(getConfig: () => Config): Router {
         filePath = path.join(paths.inbox, subfolder, filename);
       }
 
-      if (!await fs.pathExists(filePath)) {
+      if (!(await fs.pathExists(filePath))) {
         res.status(404).json({ success: false, error: `File not found: ${filename}` });
         return;
       }
@@ -198,9 +198,22 @@ export function createInboxRoutes(getConfig: () => Config): Router {
       const mimeType = mimeTypes[ext] || 'text/plain';
 
       // Only allow text-based files
-      const allowedExtensions = ['.md', '.json', '.html', '.txt', '.css', '.js', '.ts', '.yaml', '.yml', '.xml'];
+      const allowedExtensions = [
+        '.md',
+        '.json',
+        '.html',
+        '.txt',
+        '.css',
+        '.js',
+        '.ts',
+        '.yaml',
+        '.yml',
+        '.xml',
+      ];
       if (!allowedExtensions.includes(ext)) {
-        res.status(400).json({ success: false, error: `File type not supported for viewing: ${ext}` });
+        res
+          .status(400)
+          .json({ success: false, error: `File type not supported for viewing: ${ext}` });
         return;
       }
 

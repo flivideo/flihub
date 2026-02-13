@@ -24,17 +24,17 @@ import { readDirSafe, statSafe } from './filesystem.js';
  * FR-89 Part 6: height is now configurable via config.shadowResolution
  */
 const SHADOW_SETTINGS = {
-  defaultHeight: 240,    // Default 240p, configurable via config.shadowResolution
+  defaultHeight: 240, // Default 240p, configurable via config.shadowResolution
   videoCodec: 'libx264',
-  videoPreset: 'fast',   // Balance speed vs compression
-  videoCrf: 28,          // Quality level (lower = better, 28 is reasonable for preview)
+  videoPreset: 'fast', // Balance speed vs compression
+  videoCrf: 28, // Quality level (lower = better, 28 is reasonable for preview)
   audioCodec: 'aac',
-  audioBitrate: '128k',  // Good enough for Whisper transcription
+  audioBitrate: '128k', // Good enough for Whisper transcription
 };
 
 // FR-89 Part 6: Valid shadow resolutions
 export const VALID_SHADOW_RESOLUTIONS = [240, 180, 160] as const;
-export type ShadowResolution = typeof VALID_SHADOW_RESOLUTIONS[number];
+export type ShadowResolution = (typeof VALID_SHADOW_RESOLUTIONS)[number];
 
 /**
  * Get video duration using ffprobe
@@ -42,9 +42,12 @@ export type ShadowResolution = typeof VALID_SHADOW_RESOLUTIONS[number];
 export async function getVideoDuration(videoPath: string): Promise<number | null> {
   return new Promise((resolve) => {
     const ffprobe = spawn('ffprobe', [
-      '-v', 'error',
-      '-show_entries', 'format=duration',
-      '-of', 'default=noprint_wrappers=1:nokey=1',
+      '-v',
+      'error',
+      '-show_entries',
+      'format=duration',
+      '-of',
+      'default=noprint_wrappers=1:nokey=1',
       videoPath,
     ]);
 
@@ -80,7 +83,7 @@ export async function createShadowFile(
   try {
     const videoFilename = path.basename(videoPath);
     const baseName = videoFilename.replace(/\.(mov|mp4)$/i, '');
-    const shadowFilename = `${baseName}.mp4`;  // Always output as .mp4
+    const shadowFilename = `${baseName}.mp4`; // Always output as .mp4
     const shadowPath = path.join(shadowDir, shadowFilename);
 
     // Check if shadow already exists
@@ -103,14 +106,21 @@ export async function createShadowFile(
     // FR-89 Part 6: Transcode using configurable resolution
     return new Promise((resolve) => {
       const ffmpeg = spawn('ffmpeg', [
-        '-i', videoPath,
-        '-vf', `scale=-2:${resolution}`,  // -2 maintains aspect ratio with even width
-        '-c:v', SHADOW_SETTINGS.videoCodec,
-        '-preset', SHADOW_SETTINGS.videoPreset,
-        '-crf', SHADOW_SETTINGS.videoCrf.toString(),
-        '-c:a', SHADOW_SETTINGS.audioCodec,
-        '-b:a', SHADOW_SETTINGS.audioBitrate,
-        '-y',  // Overwrite output file if exists
+        '-i',
+        videoPath,
+        '-vf',
+        `scale=-2:${resolution}`, // -2 maintains aspect ratio with even width
+        '-c:v',
+        SHADOW_SETTINGS.videoCodec,
+        '-preset',
+        SHADOW_SETTINGS.videoPreset,
+        '-crf',
+        SHADOW_SETTINGS.videoCrf.toString(),
+        '-c:a',
+        SHADOW_SETTINGS.audioCodec,
+        '-b:a',
+        SHADOW_SETTINGS.audioBitrate,
+        '-y', // Overwrite output file if exists
         shadowPath,
       ]);
 
@@ -156,10 +166,10 @@ export async function createShadowFile(
  * Unified file entry - either real or shadow
  */
 export interface UnifiedRecording {
-  baseName: string;       // Without extension (e.g., "01-1-intro")
+  baseName: string; // Without extension (e.g., "01-1-intro")
   type: 'real' | 'shadow';
-  realPath?: string;      // Path to source .mov file (if real)
-  shadowPath?: string;    // Path to shadow .mp4 (if shadow only)
+  realPath?: string; // Path to source .mov file (if real)
+  shadowPath?: string; // Path to shadow .mp4 (if shadow only)
 }
 
 /**
@@ -216,11 +226,11 @@ export async function getShadowCounts(
 ): Promise<{ recordings: number; shadows: number; missing: number }> {
   // Count real recordings
   const recordingFiles = await readDirSafe(recordingsDir);
-  const realCount = recordingFiles.filter(f => f.match(/\.(mov|mp4)$/i)).length;
+  const realCount = recordingFiles.filter((f) => f.match(/\.(mov|mp4)$/i)).length;
 
   // Count shadow files (now .mp4)
   const shadowFiles = await readDirSafe(shadowDir);
-  const shadowCount = shadowFiles.filter(f => f.match(/\.mp4$/i)).length;
+  const shadowCount = shadowFiles.filter((f) => f.match(/\.mp4$/i)).length;
 
   // Get unified to count missing (real files without shadows)
   const realBaseNames = new Set<string>();

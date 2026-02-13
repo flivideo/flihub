@@ -27,30 +27,36 @@
  * - Chapter videos use chapter SRT with offset timing
  */
 
-import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
-import { useRecordings, useConfig, useParkRecording, useUnparkRecording, fetchApi } from '../hooks/useApi'
-import { useRecordingsSocket } from '../hooks/useSocket'
-import { useDelayedHoverValue } from '../hooks/useDelayedHover'
-import { extractTagsFromName } from '../../../shared/naming'
-import { formatDuration, formatChapterTitle } from '../utils/formatting'
-import { LoadingSpinner, ErrorMessage } from './shared'
-import { TranscriptSyncPanel } from './TranscriptSyncPanel'
-import { toast } from 'sonner'
-import { API_URL } from '../config'
-import type { RecordingFile } from '../../../shared/types'
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
+import {
+  useRecordings,
+  useConfig,
+  useParkRecording,
+  useUnparkRecording,
+  fetchApi,
+} from '../hooks/useApi';
+import { useRecordingsSocket } from '../hooks/useSocket';
+import { useDelayedHoverValue } from '../hooks/useDelayedHover';
+import { extractTagsFromName } from '../../../shared/naming';
+import { formatDuration, formatChapterTitle } from '../utils/formatting';
+import { LoadingSpinner, ErrorMessage } from './shared';
+import { TranscriptSyncPanel } from './TranscriptSyncPanel';
+import { toast } from 'sonner';
+import { API_URL } from '../config';
+import type { RecordingFile } from '../../../shared/types';
 
 // FR-71: Speed presets
-const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3, 4]
-const DEFAULT_SPEED = 2
+const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3, 4];
+const DEFAULT_SPEED = 2;
 
 // FR-71: Size options
 // FR-91: Simplified to just N and L
-type VideoSize = 'normal' | 'large'
+type VideoSize = 'normal' | 'large';
 // FR-91: Removed XL option
 const SIZE_LABELS: Record<VideoSize, string> = {
   normal: 'N',
   large: 'L',
-}
+};
 
 // FR-71: localStorage keys
 const STORAGE_KEYS = {
@@ -58,65 +64,69 @@ const STORAGE_KEYS = {
   size: 'flihub:watch:videoSize',
   autoplay: 'flihub:watch:autoplay',
   autonext: 'flihub:watch:autonext',
-  showSafe: 'flihub:watch:showSafe',  // FR-111 Phase 4: Show safe recordings toggle
-  showParked: 'flihub:watch:showParked',  // FR-121: Show parked recordings toggle
-}
+  showSafe: 'flihub:watch:showSafe', // FR-111 Phase 4: Show safe recordings toggle
+  showParked: 'flihub:watch:showParked', // FR-121: Show parked recordings toggle
+};
 
 // FR-71/FR-91: Size CSS classes
 // N = 896px (max-w-4xl), L = breaks out of container to ~1280px
 const SIZE_CLASSES: Record<VideoSize, string> = {
   normal: 'max-w-4xl mx-auto',
-  large: 'w-[calc(100vw-2rem)] max-w-7xl relative left-1/2 -translate-x-1/2',  // Break out to viewport
-}
+  large: 'w-[calc(100vw-2rem)] max-w-7xl relative left-1/2 -translate-x-1/2', // Break out to viewport
+};
 
 // Chapter group with files and timing
 interface ChapterGroup {
-  chapterKey: string
-  title: string
-  files: RecordingFile[]
-  totalDuration: number
-  startTime: number
+  chapterKey: string;
+  title: string;
+  files: RecordingFile[];
+  totalDuration: number;
+  startTime: number;
 }
 
 // Extract display name from first file in chapter, stripping tags
 function getChapterDisplayName(files: RecordingFile[]): string {
-  const firstFile = files.find(f => f.sequence === '1') || files[0]
-  if (!firstFile) return ''
-  const { name } = extractTagsFromName(firstFile.name)
-  return name
+  const firstFile = files.find((f) => f.sequence === '1') || files[0];
+  if (!firstFile) return '';
+  const { name } = extractTagsFromName(firstFile.name);
+  return name;
 }
 
 // Group recordings by chapter and calculate timing
 // FR-111/FR-121: Accept showSafe and showParked parameters to optionally include safe/parked recordings
-function groupByChapterWithTiming(recordings: RecordingFile[], showSafe: boolean = false, showParked: boolean = true): ChapterGroup[] {
-  const groups = new Map<string, { files: RecordingFile[]; totalDuration: number }>()
+function groupByChapterWithTiming(
+  recordings: RecordingFile[],
+  showSafe: boolean = false,
+  showParked: boolean = true
+): ChapterGroup[] {
+  const groups = new Map<string, { files: RecordingFile[]; totalDuration: number }>();
 
   // FR-111/FR-121: Filter based on showSafe and showParked toggles
-  const filteredRecordings = recordings.filter(r => {
-    if (!showSafe && r.isSafe) return false
-    if (!showParked && r.isParked) return false
-    return true
-  })
+  const filteredRecordings = recordings.filter((r) => {
+    if (!showSafe && r.isSafe) return false;
+    if (!showParked && r.isParked) return false;
+    return true;
+  });
 
   for (const recording of filteredRecordings) {
-    const key = recording.chapter
+    const key = recording.chapter;
     if (!groups.has(key)) {
-      groups.set(key, { files: [], totalDuration: 0 })
+      groups.set(key, { files: [], totalDuration: 0 });
     }
-    const group = groups.get(key)!
-    group.files.push(recording)
+    const group = groups.get(key)!;
+    group.files.push(recording);
     if (recording.duration != null) {
-      group.totalDuration += recording.duration
+      group.totalDuration += recording.duration;
     }
   }
 
   // Convert to array with cumulative timing
-  const result: ChapterGroup[] = []
-  let cumulative = 0
+  const result: ChapterGroup[] = [];
+  let cumulative = 0;
 
   for (const [chapterKey, group] of groups.entries()) {
     // Sort files by sequence within chapter
-    group.files.sort((a, b) => parseInt(a.sequence) - parseInt(b.sequence))
+    group.files.sort((a, b) => parseInt(a.sequence) - parseInt(b.sequence));
 
     result.push({
       chapterKey,
@@ -124,11 +134,11 @@ function groupByChapterWithTiming(recordings: RecordingFile[], showSafe: boolean
       files: group.files,
       totalDuration: group.totalDuration,
       startTime: cumulative,
-    })
-    cumulative += group.totalDuration
+    });
+    cumulative += group.totalDuration;
   }
 
-  return result
+  return result;
 }
 
 // Build video URL for a recording
@@ -141,31 +151,32 @@ function getVideoUrl(
 ): string {
   if (options?.isShadow) {
     // Shadow videos are .mp4 in recording-shadows/ folder
-    const shadowFilename = filename.replace(/\.mov$/i, '.mp4')
-    const shadowFolder = options.shadowFolder === 'safe' ? 'recording-shadows-safe' : 'recording-shadows'
-    return `${API_URL}/api/video/${projectCode}/${shadowFolder}/${shadowFilename}`
+    const shadowFilename = filename.replace(/\.mov$/i, '.mp4');
+    const shadowFolder =
+      options.shadowFolder === 'safe' ? 'recording-shadows-safe' : 'recording-shadows';
+    return `${API_URL}/api/video/${projectCode}/${shadowFolder}/${shadowFilename}`;
   }
-  return `${API_URL}/api/video/${projectCode}/${folder}/${filename}`
+  return `${API_URL}/api/video/${projectCode}/${folder}/${filename}`;
 }
 
 // FR-71: Video metadata for transcript loading
 interface VideoMeta {
-  url: string
-  title: string
-  isChapter?: boolean
-  chapterKey?: string    // For chapter videos, the chapter number (e.g., "01")
-  chapterLabel?: string  // FR-77: For chapter videos, the label (e.g., "intro")
-  segmentName?: string   // For segment videos, the full name without extension (e.g., "01-1-intro")
-  chapterFiles?: RecordingFile[]  // For chapter videos, all segments in the chapter
-  isShadow?: boolean     // FR-83: True if playing 240p preview video
-  sourceFile?: RecordingFile  // FR-88: Original file for fallback logic
+  url: string;
+  title: string;
+  isChapter?: boolean;
+  chapterKey?: string; // For chapter videos, the chapter number (e.g., "01")
+  chapterLabel?: string; // FR-77: For chapter videos, the label (e.g., "intro")
+  segmentName?: string; // For segment videos, the full name without extension (e.g., "01-1-intro")
+  chapterFiles?: RecordingFile[]; // For chapter videos, all segments in the chapter
+  isShadow?: boolean; // FR-83: True if playing 240p preview video
+  sourceFile?: RecordingFile; // FR-88: Original file for fallback logic
 }
 
 export function WatchPage() {
-  const { data: config } = useConfig()
-  const { data, isLoading, error } = useRecordings()
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [currentVideo, setCurrentVideo] = useState<VideoMeta | null>(null)
+  const { data: config } = useConfig();
+  const { data, isLoading, error } = useRecordings();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [currentVideo, setCurrentVideo] = useState<VideoMeta | null>(null);
   // FR-117: Delayed hover for chapter→segment panel transitions
   // 250ms enter delay allows mouse to cross chapters without triggering change
   // 200ms leave delay keeps panel visible while moving toward it
@@ -175,381 +186,395 @@ export function WatchPage() {
     handleEnter: handleChapterEnter,
     handleLeave: handleChapterLeave,
     cancelPendingEnter: lockCurrentChapter,
-  } = useDelayedHoverValue<ChapterGroup>(250, 200)
+  } = useDelayedHoverValue<ChapterGroup>(250, 200);
 
   // FR-71: Speed and size state with localStorage persistence
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.speed)
-    return saved ? parseFloat(saved) : DEFAULT_SPEED
-  })
+    const saved = localStorage.getItem(STORAGE_KEYS.speed);
+    return saved ? parseFloat(saved) : DEFAULT_SPEED;
+  });
   const [videoSize, setVideoSize] = useState<VideoSize>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.size)
+    const saved = localStorage.getItem(STORAGE_KEYS.size);
     // FR-91: Validate saved value (xl was removed)
-    if (saved === 'normal' || saved === 'large') return saved
-    return 'normal'
-  })
+    if (saved === 'normal' || saved === 'large') return saved;
+    return 'normal';
+  });
 
   // FR-75/FR-77: Transcript panel collapsed state
-  const [transcriptCollapsed, setTranscriptCollapsed] = useState(false)
+  const [transcriptCollapsed, setTranscriptCollapsed] = useState(false);
 
   // FR-75: Video time tracking for transcript sync
-  const [currentTime, setCurrentTime] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0);
 
   // Play/pause state for manual control
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Autoplay state - starts playing when you click a video
   const [autoplay, setAutoplay] = useState<boolean>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.autoplay)
-    return saved === 'true'
-  })
+    const saved = localStorage.getItem(STORAGE_KEYS.autoplay);
+    return saved === 'true';
+  });
 
   // Auto-next state - plays next segment when video ends
   const [autonext, setAutonext] = useState<boolean>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.autonext)
-    return saved === 'true'
-  })
+    const saved = localStorage.getItem(STORAGE_KEYS.autonext);
+    return saved === 'true';
+  });
 
   // FR-111 Phase 4: Show safe recordings toggle (default: false)
   const [showSafe, setShowSafe] = useState<boolean>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.showSafe)
-    return saved === 'true'
-  })
+    const saved = localStorage.getItem(STORAGE_KEYS.showSafe);
+    return saved === 'true';
+  });
 
   // FR-121: Show parked recordings toggle (default: true)
   const [showParked, setShowParked] = useState<boolean>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.showParked)
-    return saved !== 'false'  // Default to true (show parked)
-  })
+    const saved = localStorage.getItem(STORAGE_KEYS.showParked);
+    return saved !== 'false'; // Default to true (show parked)
+  });
 
   // FR-123: Annotation editing state
-  const [editingAnnotation, setEditingAnnotation] = useState(false)
-  const [annotationText, setAnnotationText] = useState('')
+  const [editingAnnotation, setEditingAnnotation] = useState(false);
+  const [annotationText, setAnnotationText] = useState('');
 
   // FR-123: Park/Unpark mutations
-  const parkRecording = useParkRecording()
-  const unparkRecording = useUnparkRecording()
+  const parkRecording = useParkRecording();
+  const unparkRecording = useUnparkRecording();
 
   // Subscribe to real-time recordings changes
-  useRecordingsSocket()
+  useRecordingsSocket();
 
   // Get project code from config
-  const projectCode = config?.projectDirectory?.split('/').pop() || ''
+  const projectCode = config?.projectDirectory?.split('/').pop() || '';
 
   // Group recordings by chapter with timing
   // FR-111 Phase 4: Pass showSafe to filter
   const chapters = useMemo(() => {
-    if (!data?.recordings) return []
-    return groupByChapterWithTiming(data.recordings, showSafe, showParked)
-  }, [data?.recordings, showSafe, showParked])
+    if (!data?.recordings) return [];
+    return groupByChapterWithTiming(data.recordings, showSafe, showParked);
+  }, [data?.recordings, showSafe, showParked]);
 
   // FR-100: Flat list of recordings for next/prev navigation
   // FR-111/FR-121: Filter based on showSafe and showParked toggles
   const sortedRecordings = useMemo(() => {
-    if (!data?.recordings) return []
-    const filtered = data.recordings.filter(r => {
-      if (!showSafe && r.isSafe) return false
-      if (!showParked && r.isParked) return false
-      return true
-    })
+    if (!data?.recordings) return [];
+    const filtered = data.recordings.filter((r) => {
+      if (!showSafe && r.isSafe) return false;
+      if (!showParked && r.isParked) return false;
+      return true;
+    });
     return filtered.sort((a, b) => {
-      const chapterDiff = parseInt(a.chapter) - parseInt(b.chapter)
-      if (chapterDiff !== 0) return chapterDiff
-      return parseInt(a.sequence) - parseInt(b.sequence)
-    })
-  }, [data?.recordings, showSafe, showParked])
+      const chapterDiff = parseInt(a.chapter) - parseInt(b.chapter);
+      if (chapterDiff !== 0) return chapterDiff;
+      return parseInt(a.sequence) - parseInt(b.sequence);
+    });
+  }, [data?.recordings, showSafe, showParked]);
 
   // FR-100: Find current index in sorted list
   const currentIndex = useMemo(() => {
-    if (!currentVideo?.segmentName || sortedRecordings.length === 0) return -1
-    return sortedRecordings.findIndex(r =>
-      r.filename.replace(/\.mov$/i, '') === currentVideo.segmentName
-    )
-  }, [currentVideo?.segmentName, sortedRecordings])
+    if (!currentVideo?.segmentName || sortedRecordings.length === 0) return -1;
+    return sortedRecordings.findIndex(
+      (r) => r.filename.replace(/\.mov$/i, '') === currentVideo.segmentName
+    );
+  }, [currentVideo?.segmentName, sortedRecordings]);
 
   // FR-100: Navigation handlers
   // FR-111: Simplified - no more -safe subfolder for shadows
   const handlePrevious = useCallback(() => {
-    if (currentIndex <= 0 || !projectCode) return
-    const prev = sortedRecordings[currentIndex - 1]
-    const isShadow = 'isShadow' in prev && prev.isShadow
+    if (currentIndex <= 0 || !projectCode) return;
+    const prev = sortedRecordings[currentIndex - 1];
+    const isShadow = 'isShadow' in prev && prev.isShadow;
     const url = getVideoUrl(projectCode, prev.filename, 'recordings', {
       isShadow,
-      shadowFolder: 'recordings',  // FR-111: Always recordings now
-    })
+      shadowFolder: 'recordings', // FR-111: Always recordings now
+    });
     setCurrentVideo({
       url,
       title: prev.filename,
       segmentName: prev.filename.replace(/\.mov$/i, ''),
       isShadow,
       sourceFile: prev,
-    })
-  }, [currentIndex, sortedRecordings, projectCode])
+    });
+  }, [currentIndex, sortedRecordings, projectCode]);
 
   const handleNext = useCallback(() => {
-    if (currentIndex >= sortedRecordings.length - 1 || !projectCode) return
-    const next = sortedRecordings[currentIndex + 1]
-    const isShadow = 'isShadow' in next && next.isShadow
+    if (currentIndex >= sortedRecordings.length - 1 || !projectCode) return;
+    const next = sortedRecordings[currentIndex + 1];
+    const isShadow = 'isShadow' in next && next.isShadow;
     const url = getVideoUrl(projectCode, next.filename, 'recordings', {
       isShadow,
-      shadowFolder: 'recordings',  // FR-111: Always recordings now
-    })
+      shadowFolder: 'recordings', // FR-111: Always recordings now
+    });
     setCurrentVideo({
       url,
       title: next.filename,
       segmentName: next.filename.replace(/\.mov$/i, ''),
       isShadow,
       sourceFile: next,
-    })
-  }, [currentIndex, sortedRecordings, projectCode])
+    });
+  }, [currentIndex, sortedRecordings, projectCode]);
 
-  const hasPrevious = currentIndex > 0
-  const hasNext = currentIndex >= 0 && currentIndex < sortedRecordings.length - 1
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex >= 0 && currentIndex < sortedRecordings.length - 1;
 
   // FR-71: Find the most recent recording (highest chapter, then highest sequence)
   const mostRecentRecording = useMemo(() => {
-    if (!data?.recordings) return null
+    if (!data?.recordings) return null;
     // FR-111/FR-121: Filter out safe and parked recordings
-    const activeRecordings = data.recordings.filter(r => !r.isSafe && !r.isParked)
-    if (activeRecordings.length === 0) return null
+    const activeRecordings = data.recordings.filter((r) => !r.isSafe && !r.isParked);
+    if (activeRecordings.length === 0) return null;
 
     return activeRecordings.sort((a, b) => {
-      const chapterDiff = parseInt(b.chapter) - parseInt(a.chapter)
-      if (chapterDiff !== 0) return chapterDiff
-      return parseInt(b.sequence) - parseInt(a.sequence)
-    })[0]
-  }, [data?.recordings])
+      const chapterDiff = parseInt(b.chapter) - parseInt(a.chapter);
+      if (chapterDiff !== 0) return chapterDiff;
+      return parseInt(b.sequence) - parseInt(a.sequence);
+    })[0];
+  }, [data?.recordings]);
 
   // FR-71: Auto-select last recording on page load
-  const hasAutoSelected = useRef(false)
+  const hasAutoSelected = useRef(false);
   useEffect(() => {
     if (mostRecentRecording && projectCode && !hasAutoSelected.current && !currentVideo) {
-      hasAutoSelected.current = true
-      const url = getVideoUrl(projectCode, mostRecentRecording.filename)
-      const segmentName = mostRecentRecording.filename.replace(/\.mov$/, '')
+      hasAutoSelected.current = true;
+      const url = getVideoUrl(projectCode, mostRecentRecording.filename);
+      const segmentName = mostRecentRecording.filename.replace(/\.mov$/, '');
       setCurrentVideo({
         url,
         title: mostRecentRecording.filename,
         segmentName,
-      })
+      });
     }
-  }, [mostRecentRecording, projectCode, currentVideo])
+  }, [mostRecentRecording, projectCode, currentVideo]);
 
   // FR-71: Apply playback speed when video changes or speed changes
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.playbackRate = playbackSpeed
+      videoRef.current.playbackRate = playbackSpeed;
     }
-  }, [playbackSpeed, currentVideo])
+  }, [playbackSpeed, currentVideo]);
 
   // FR-71: Persist speed preference
   const handleSpeedChange = useCallback((speed: number) => {
-    setPlaybackSpeed(speed)
-    localStorage.setItem(STORAGE_KEYS.speed, speed.toString())
+    setPlaybackSpeed(speed);
+    localStorage.setItem(STORAGE_KEYS.speed, speed.toString());
     if (videoRef.current) {
-      videoRef.current.playbackRate = speed
+      videoRef.current.playbackRate = speed;
     }
-  }, [])
+  }, []);
 
   // FR-71: Persist size preference
   const handleSizeChange = useCallback((size: VideoSize) => {
-    setVideoSize(size)
-    localStorage.setItem(STORAGE_KEYS.size, size)
-  }, [])
+    setVideoSize(size);
+    localStorage.setItem(STORAGE_KEYS.size, size);
+  }, []);
 
   // Toggle autoplay (start playing on click)
   const handleAutoplayToggle = useCallback(() => {
-    setAutoplay(prev => {
-      const newValue = !prev
-      localStorage.setItem(STORAGE_KEYS.autoplay, String(newValue))
-      return newValue
-    })
-  }, [])
+    setAutoplay((prev) => {
+      const newValue = !prev;
+      localStorage.setItem(STORAGE_KEYS.autoplay, String(newValue));
+      return newValue;
+    });
+  }, []);
 
   // Toggle auto-next (play next segment when video ends)
   const handleAutonextToggle = useCallback(() => {
-    setAutonext(prev => {
-      const newValue = !prev
-      localStorage.setItem(STORAGE_KEYS.autonext, String(newValue))
-      return newValue
-    })
-  }, [])
+    setAutonext((prev) => {
+      const newValue = !prev;
+      localStorage.setItem(STORAGE_KEYS.autonext, String(newValue));
+      return newValue;
+    });
+  }, []);
 
   // FR-111 Phase 4: Toggle show safe recordings
   const handleShowSafeToggle = useCallback(() => {
-    setShowSafe(prev => {
-      const newValue = !prev
-      localStorage.setItem(STORAGE_KEYS.showSafe, String(newValue))
-      return newValue
-    })
-  }, [])
+    setShowSafe((prev) => {
+      const newValue = !prev;
+      localStorage.setItem(STORAGE_KEYS.showSafe, String(newValue));
+      return newValue;
+    });
+  }, []);
 
   // FR-121: Toggle show parked recordings
   const handleShowParkedToggle = useCallback(() => {
-    setShowParked(prev => {
-      const newValue = !prev
-      localStorage.setItem(STORAGE_KEYS.showParked, String(newValue))
-      return newValue
-    })
-  }, [])
+    setShowParked((prev) => {
+      const newValue = !prev;
+      localStorage.setItem(STORAGE_KEYS.showParked, String(newValue));
+      return newValue;
+    });
+  }, []);
 
   // Toggle play/pause for current video
   const handlePlayPause = useCallback(() => {
-    if (!videoRef.current) return
+    if (!videoRef.current) return;
     if (isPlaying) {
-      videoRef.current.pause()
+      videoRef.current.pause();
     } else {
-      videoRef.current.play()
+      videoRef.current.play();
     }
-  }, [isPlaying])
+  }, [isPlaying]);
 
   // FR-75: Seek video to a specific time (for transcript click-to-seek)
   const handleSeek = useCallback((time: number) => {
     if (videoRef.current) {
-      videoRef.current.currentTime = time
+      videoRef.current.currentTime = time;
     }
-  }, [])
+  }, []);
 
   // Get flat list of all segments for autoplay navigation
   const allSegments = useMemo(() => {
-    return chapters.flatMap(ch => ch.files)
-  }, [chapters])
+    return chapters.flatMap((ch) => ch.files);
+  }, [chapters]);
 
   // Find and play the next segment
   // FR-88: Handle shadow files and include sourceFile for fallback
   const playNextSegment = useCallback(() => {
-    if (!currentVideo || !projectCode || currentVideo.isChapter) return
+    if (!currentVideo || !projectCode || currentVideo.isChapter) return;
 
     // Find current segment index
     const currentIndex = allSegments.findIndex(
-      seg => currentVideo.url.includes(seg.filename) ||
-             currentVideo.url.includes(seg.filename.replace(/\.mov$/i, '.mp4'))
-    )
+      (seg) =>
+        currentVideo.url.includes(seg.filename) ||
+        currentVideo.url.includes(seg.filename.replace(/\.mov$/i, '.mp4'))
+    );
 
-    if (currentIndex === -1 || currentIndex >= allSegments.length - 1) return
+    if (currentIndex === -1 || currentIndex >= allSegments.length - 1) return;
 
     // Play next segment
     // FR-111: Simplified - no more -safe subfolder for shadows
-    const nextSegment = allSegments[currentIndex + 1]
-    const isShadow = 'isShadow' in nextSegment && nextSegment.isShadow
+    const nextSegment = allSegments[currentIndex + 1];
+    const isShadow = 'isShadow' in nextSegment && nextSegment.isShadow;
     const url = getVideoUrl(projectCode, nextSegment.filename, 'recordings', {
       isShadow,
-      shadowFolder: 'recordings',  // FR-111: Always recordings now
-    })
-    const segmentName = nextSegment.filename.replace(/\.mov$/, '')
+      shadowFolder: 'recordings', // FR-111: Always recordings now
+    });
+    const segmentName = nextSegment.filename.replace(/\.mov$/, '');
     setCurrentVideo({
       url,
       title: nextSegment.filename,
       segmentName,
       isShadow,
-      sourceFile: nextSegment,  // FR-88: Include for fallback
-    })
+      sourceFile: nextSegment, // FR-88: Include for fallback
+    });
 
     // Auto-play the video
     setTimeout(() => {
       if (videoRef.current) {
-        videoRef.current.play()
+        videoRef.current.play();
       }
-    }, 100)
-  }, [currentVideo, projectCode, allSegments])
+    }, 100);
+  }, [currentVideo, projectCode, allSegments]);
 
   // Play a specific recording (segment)
   // FR-83: Shadow files play from recording-shadows/ folder as .mp4
   // FR-88: Include source file for shadow fallback
   // FR-111: Simplified - no more -safe subfolder for shadows
-  const playRecording = useCallback((file: RecordingFile) => {
-    if (!projectCode) return
-    const isShadow = 'isShadow' in file && file.isShadow
-    const url = getVideoUrl(projectCode, file.filename, 'recordings', {
-      isShadow,
-      shadowFolder: 'recordings',  // FR-111: Always recordings now
-    })
-    const segmentName = file.filename.replace(/\.mov$/, '')
-    setCurrentVideo({
-      url,
-      title: file.filename,
-      segmentName,
-      isShadow,
-      sourceFile: file,  // FR-88: Keep reference for fallback
-    })
-  }, [projectCode])
+  const playRecording = useCallback(
+    (file: RecordingFile) => {
+      if (!projectCode) return;
+      const isShadow = 'isShadow' in file && file.isShadow;
+      const url = getVideoUrl(projectCode, file.filename, 'recordings', {
+        isShadow,
+        shadowFolder: 'recordings', // FR-111: Always recordings now
+      });
+      const segmentName = file.filename.replace(/\.mov$/, '');
+      setCurrentVideo({
+        url,
+        title: file.filename,
+        segmentName,
+        isShadow,
+        sourceFile: file, // FR-88: Keep reference for fallback
+      });
+    },
+    [projectCode]
+  );
 
   // Play chapter recording (combined video from -chapters folder)
-  const playChapterRecording = useCallback((chapter: ChapterGroup) => {
-    if (!projectCode) return
-    // Chapter recordings are named like: 01-intro.mov
-    const chapterLabel = chapter.title || 'chapter'
-    const chapterFilename = `${chapter.chapterKey}-${chapterLabel}.mov`
-    const url = getVideoUrl(projectCode, chapterFilename, '-chapters')
-    setCurrentVideo({
-      url,
-      title: `Chapter ${chapter.chapterKey}: ${formatChapterTitle(chapter.title)}`,
-      isChapter: true,
-      chapterKey: chapter.chapterKey,
-      chapterLabel,  // FR-77: Store label for SRT filename
-      chapterFiles: chapter.files,
-    })
-  }, [projectCode])
+  const playChapterRecording = useCallback(
+    (chapter: ChapterGroup) => {
+      if (!projectCode) return;
+      // Chapter recordings are named like: 01-intro.mov
+      const chapterLabel = chapter.title || 'chapter';
+      const chapterFilename = `${chapter.chapterKey}-${chapterLabel}.mov`;
+      const url = getVideoUrl(projectCode, chapterFilename, '-chapters');
+      setCurrentVideo({
+        url,
+        title: `Chapter ${chapter.chapterKey}: ${formatChapterTitle(chapter.title)}`,
+        isChapter: true,
+        chapterKey: chapter.chapterKey,
+        chapterLabel, // FR-77: Store label for SRT filename
+        chapterFiles: chapter.files,
+      });
+    },
+    [projectCode]
+  );
 
   // FR-88: Handle video load error with shadow fallback
-  const handleVideoError = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
-    console.error('Video error:', e)
+  const handleVideoError = useCallback(
+    (e: React.SyntheticEvent<HTMLVideoElement>) => {
+      console.error('Video error:', e);
 
-    // If we're already playing a shadow or no source file, nothing to fall back to
-    if (!currentVideo || currentVideo.isShadow || !currentVideo.sourceFile) {
-      console.log('[FR-88] No fallback available - already shadow or no source file')
-      return
-    }
+      // If we're already playing a shadow or no source file, nothing to fall back to
+      if (!currentVideo || currentVideo.isShadow || !currentVideo.sourceFile) {
+        console.log('[FR-88] No fallback available - already shadow or no source file');
+        return;
+      }
 
-    const file = currentVideo.sourceFile
-    const hasShadow = 'hasShadow' in file && file.hasShadow
+      const file = currentVideo.sourceFile;
+      const hasShadow = 'hasShadow' in file && file.hasShadow;
 
-    if (hasShadow && projectCode) {
-      console.log('[FR-88] Falling back to shadow video for:', file.filename)
-      // FR-111: Always recordings now (no more -safe folder)
-      const shadowUrl = getVideoUrl(projectCode, file.filename, 'recordings', {
-        isShadow: true,
-        shadowFolder: 'recordings',
-      })
-      setCurrentVideo(prev => prev ? {
-        ...prev,
-        url: shadowUrl,
-        isShadow: true,
-      } : null)
-    } else {
-      console.log('[FR-88] No shadow available for fallback')
-    }
-  }, [currentVideo, projectCode])
+      if (hasShadow && projectCode) {
+        console.log('[FR-88] Falling back to shadow video for:', file.filename);
+        // FR-111: Always recordings now (no more -safe folder)
+        const shadowUrl = getVideoUrl(projectCode, file.filename, 'recordings', {
+          isShadow: true,
+          shadowFolder: 'recordings',
+        });
+        setCurrentVideo((prev) =>
+          prev
+            ? {
+                ...prev,
+                url: shadowUrl,
+                isShadow: true,
+              }
+            : null
+        );
+      } else {
+        console.log('[FR-88] No shadow available for fallback');
+      }
+    },
+    [currentVideo, projectCode]
+  );
 
   // FR-123: Park/Unpark handlers
   const handleParkToggle = useCallback(async () => {
-    if (!currentVideo?.segmentName || !projectCode) return
+    if (!currentVideo?.segmentName || !projectCode) return;
 
-    const filename = currentVideo.segmentName + '.mov'
-    const currentRecording = sortedRecordings.find(r => r.filename === filename)
+    const filename = currentVideo.segmentName + '.mov';
+    const currentRecording = sortedRecordings.find((r) => r.filename === filename);
 
     if (currentRecording?.isParked) {
       // Unpark
-      await unparkRecording.mutateAsync([filename])
-      setEditingAnnotation(false)
-      setAnnotationText('')
-      toast.success('Recording unparked')
+      await unparkRecording.mutateAsync([filename]);
+      setEditingAnnotation(false);
+      setAnnotationText('');
+      toast.success('Recording unparked');
     } else {
       // Park
-      await parkRecording.mutateAsync({ files: [filename] })
+      await parkRecording.mutateAsync({ files: [filename] });
       // Initialize annotation from current recording if exists
-      const annotation = currentRecording?.annotation || ''
-      setAnnotationText(annotation)
-      toast.success('Recording parked')
+      const annotation = currentRecording?.annotation || '';
+      setAnnotationText(annotation);
+      toast.success('Recording parked');
     }
-  }, [currentVideo, projectCode, sortedRecordings, parkRecording, unparkRecording])
+  }, [currentVideo, projectCode, sortedRecordings, parkRecording, unparkRecording]);
 
   // FR-123: Save annotation
   const handleSaveAnnotation = useCallback(async () => {
-    if (!currentVideo?.segmentName || !projectCode) return
+    if (!currentVideo?.segmentName || !projectCode) return;
 
-    const filename = currentVideo.segmentName + '.mov'
-    const currentRecording = sortedRecordings.find(r => r.filename === filename)
+    const filename = currentVideo.segmentName + '.mov';
+    const currentRecording = sortedRecordings.find((r) => r.filename === filename);
 
     const payload = {
       recordings: {
@@ -559,55 +584,58 @@ export function WatchPage() {
           annotation: annotationText.trim() || undefined,
         },
       },
-    }
+    };
 
     console.log('[SAVE] Annotation:', {
       filename,
       projectCode,
       annotationText: annotationText.trim(),
       payload,
-    })
+    });
 
     try {
       const response = await fetchApi(`/api/projects/${projectCode}/state`, {
         method: 'POST',
         body: JSON.stringify(payload),
-      })
+      });
 
-      console.log('[SAVE] Response:', response)
-      setEditingAnnotation(false)
-      toast.success('Annotation saved')
+      console.log('[SAVE] Response:', response);
+      setEditingAnnotation(false);
+      toast.success('Annotation saved');
     } catch (error) {
-      console.error('[SAVE] Error:', error)
-      toast.error('Failed to save annotation')
+      console.error('[SAVE] Error:', error);
+      toast.error('Failed to save annotation');
     }
-  }, [currentVideo, projectCode, annotationText, sortedRecordings])
+  }, [currentVideo, projectCode, annotationText, sortedRecordings]);
 
   // FR-123: Initialize annotation when current video changes
   useEffect(() => {
     if (currentVideo?.segmentName) {
-      const filename = currentVideo.segmentName + '.mov'
-      const recording = sortedRecordings.find(r => r.filename === filename)
-      console.log('[LOAD] Annotation for:', filename)
-      console.log('[LOAD] Recording object:', recording)
-      console.log('[LOAD] Annotation value:', recording?.annotation)
-      console.log('[LOAD] All recordings:', sortedRecordings.map(r => ({ filename: r.filename, annotation: r.annotation })))
-      setAnnotationText(recording?.annotation || '')
-      setEditingAnnotation(false)
+      const filename = currentVideo.segmentName + '.mov';
+      const recording = sortedRecordings.find((r) => r.filename === filename);
+      console.log('[LOAD] Annotation for:', filename);
+      console.log('[LOAD] Recording object:', recording);
+      console.log('[LOAD] Annotation value:', recording?.annotation);
+      console.log(
+        '[LOAD] All recordings:',
+        sortedRecordings.map((r) => ({ filename: r.filename, annotation: r.annotation }))
+      );
+      setAnnotationText(recording?.annotation || '');
+      setEditingAnnotation(false);
     }
-  }, [currentVideo?.segmentName, sortedRecordings])
+  }, [currentVideo?.segmentName, sortedRecordings]);
 
   // Calculate total duration
   const totalDuration = useMemo(() => {
-    return chapters.reduce((sum, ch) => sum + ch.totalDuration, 0)
-  }, [chapters])
+    return chapters.reduce((sum, ch) => sum + ch.totalDuration, 0);
+  }, [chapters]);
 
   if (isLoading) {
-    return <LoadingSpinner message="Loading recordings..." />
+    return <LoadingSpinner message="Loading recordings..." />;
   }
 
   if (error) {
-    return <ErrorMessage message="Error loading recordings" />
+    return <ErrorMessage message="Error loading recordings" />;
   }
 
   if (!data?.recordings || data.recordings.length === 0) {
@@ -618,7 +646,7 @@ export function WatchPage() {
           Recordings will appear here after you rename incoming files
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -626,7 +654,10 @@ export function WatchPage() {
       {/* FR-71: Size-responsive container */}
       <div className={SIZE_CLASSES[videoSize]}>
         {/* Full-width Video Player */}
-        <div className="bg-black rounded-lg overflow-hidden relative" style={{ aspectRatio: '16/9' }}>
+        <div
+          className="bg-black rounded-lg overflow-hidden relative"
+          style={{ aspectRatio: '16/9' }}
+        >
           {/* FR-83: Shadow indicator badge */}
           {currentVideo?.isShadow && (
             <div className="absolute top-3 left-3 z-10 bg-black/70 text-yellow-400 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
@@ -636,37 +667,52 @@ export function WatchPage() {
           )}
           {currentVideo ? (
             <video
-                ref={videoRef}
-                src={currentVideo.url}
-                controls
-                className="w-full h-full object-contain"
-                onLoadedMetadata={() => {
-                  // FR-71: Apply saved playback speed when video loads
-                  if (videoRef.current) {
-                    videoRef.current.playbackRate = playbackSpeed
-                    // Auto-start playback when autoplay is enabled
-                    if (autoplay) {
-                      videoRef.current.play()
-                    }
+              ref={videoRef}
+              src={currentVideo.url}
+              controls
+              className="w-full h-full object-contain"
+              onLoadedMetadata={() => {
+                // FR-71: Apply saved playback speed when video loads
+                if (videoRef.current) {
+                  videoRef.current.playbackRate = playbackSpeed;
+                  // Auto-start playback when autoplay is enabled
+                  if (autoplay) {
+                    videoRef.current.play();
                   }
-                }}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                onError={handleVideoError}
-                onEnded={() => {
-                  setIsPlaying(false)
-                  if (autonext) {
-                    playNextSegment()
-                  }
-                }}
-              />
+                }
+              }}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+              onError={handleVideoError}
+              onEnded={() => {
+                setIsPlaying(false);
+                if (autonext) {
+                  playNextSegment();
+                }
+              }}
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500">
               <div className="text-center p-8">
-                <svg className="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-20 h-20 mx-auto mb-4 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 <p className="text-lg">Select a recording to play</p>
                 <p className="text-sm text-gray-600 mt-1">
@@ -726,8 +772,8 @@ export function WatchPage() {
 
                 {/* FR-123: Park/Unpark button - moved here between nav and filename */}
                 {(() => {
-                  const filename = currentVideo.segmentName + '.mov'
-                  const isParked = sortedRecordings.find(r => r.filename === filename)?.isParked
+                  const filename = currentVideo.segmentName + '.mov';
+                  const isParked = sortedRecordings.find((r) => r.filename === filename)?.isParked;
                   return (
                     <button
                       onClick={handleParkToggle}
@@ -740,7 +786,7 @@ export function WatchPage() {
                     >
                       {isParked ? '← Unpark' : 'Park →'}
                     </button>
-                  )
+                  );
                 })()}
 
                 {/* Filename + counter */}
@@ -852,7 +898,9 @@ export function WatchPage() {
                   ? 'bg-green-600 text-white font-medium'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
-              title={autonext ? 'Auto-next ON - plays next segment when video ends' : 'Auto-next OFF'}
+              title={
+                autonext ? 'Auto-next ON - plays next segment when video ends' : 'Auto-next OFF'
+              }
             >
               Auto Next
             </button>
@@ -886,80 +934,84 @@ export function WatchPage() {
         </div>
 
         {/* FR-123: Annotation field when parked */}
-        {currentVideo && !currentVideo.isChapter && (() => {
-          const filename = currentVideo.segmentName + '.mov'
-          const currentRecording = sortedRecordings.find(r => r.filename === filename)
-          const isParked = currentRecording?.isParked
+        {currentVideo &&
+          !currentVideo.isChapter &&
+          (() => {
+            const filename = currentVideo.segmentName + '.mov';
+            const currentRecording = sortedRecordings.find((r) => r.filename === filename);
+            const isParked = currentRecording?.isParked;
 
-          if (!isParked) return null
+            if (!isParked) return null;
 
-          return (
-            <div className="mt-3 p-3 bg-pink-50 border border-pink-200 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-pink-700 uppercase tracking-wide">
-                  Parked - Optional Note
-                </span>
-                {!editingAnnotation && annotationText && (
+            return (
+              <div className="mt-3 p-3 bg-pink-50 border border-pink-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-pink-700 uppercase tracking-wide">
+                    Parked - Optional Note
+                  </span>
+                  {!editingAnnotation && annotationText && (
+                    <button
+                      onClick={() => setEditingAnnotation(true)}
+                      className="text-xs text-pink-600 hover:text-pink-700 hover:underline"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+
+                {editingAnnotation ? (
+                  <div>
+                    <textarea
+                      value={annotationText}
+                      onChange={(e) => setAnnotationText(e.target.value)}
+                      rows={2}
+                      className="w-full px-3 py-2 text-sm border border-pink-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+                      placeholder="Why is this parked? (e.g., 'Too technical for YouTube', 'Save for SKOOL')"
+                      autoFocus
+                    />
+                    <div className="flex items-center justify-end gap-2 mt-2">
+                      <button
+                        onClick={() => {
+                          setAnnotationText(currentRecording?.annotation || '');
+                          setEditingAnnotation(false);
+                        }}
+                        className="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveAnnotation}
+                        className="px-3 py-1 text-xs bg-pink-600 text-white rounded hover:bg-pink-700 transition-colors"
+                      >
+                        Save Note
+                      </button>
+                    </div>
+                  </div>
+                ) : annotationText ? (
+                  <p className="text-sm text-gray-700 italic">"{annotationText}"</p>
+                ) : (
                   <button
                     onClick={() => setEditingAnnotation(true)}
-                    className="text-xs text-pink-600 hover:text-pink-700 hover:underline"
+                    className="text-sm text-pink-600 hover:text-pink-700 hover:underline"
                   >
-                    Edit
+                    + Add note explaining why this is parked
                   </button>
                 )}
               </div>
-
-              {editingAnnotation ? (
-                <div>
-                  <textarea
-                    value={annotationText}
-                    onChange={(e) => setAnnotationText(e.target.value)}
-                    rows={2}
-                    className="w-full px-3 py-2 text-sm border border-pink-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
-                    placeholder="Why is this parked? (e.g., 'Too technical for YouTube', 'Save for SKOOL')"
-                    autoFocus
-                  />
-                  <div className="flex items-center justify-end gap-2 mt-2">
-                    <button
-                      onClick={() => {
-                        setAnnotationText(currentRecording?.annotation || '')
-                        setEditingAnnotation(false)
-                      }}
-                      className="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSaveAnnotation}
-                      className="px-3 py-1 text-xs bg-pink-600 text-white rounded hover:bg-pink-700 transition-colors"
-                    >
-                      Save Note
-                    </button>
-                  </div>
-                </div>
-              ) : annotationText ? (
-                <p className="text-sm text-gray-700 italic">
-                  "{annotationText}"
-                </p>
-              ) : (
-                <button
-                  onClick={() => setEditingAnnotation(true)}
-                  className="text-sm text-pink-600 hover:text-pink-700 hover:underline"
-                >
-                  + Add note explaining why this is parked
-                </button>
-              )}
-            </div>
-          )
-        })()}
+            );
+          })()}
 
         {/* FR-75/FR-77: Transcript Sync Panel (for both segment and chapter videos) */}
         {currentVideo && (
           <div className="mt-4">
             <TranscriptSyncPanel
               projectCode={projectCode}
-              segmentName={currentVideo.isChapter ? null : (currentVideo.segmentName || null)}
-              chapterName={currentVideo.isChapter ? `${currentVideo.chapterKey}-${currentVideo.chapterLabel}` : null}
+              segmentName={currentVideo.isChapter ? null : currentVideo.segmentName || null}
+              chapterName={
+                currentVideo.isChapter
+                  ? `${currentVideo.chapterKey}-${currentVideo.chapterLabel}`
+                  : null
+              }
               currentTime={currentTime}
               onSeek={handleSeek}
               isCollapsed={transcriptCollapsed}
@@ -994,7 +1046,9 @@ export function WatchPage() {
         <div
           onMouseEnter={lockCurrentChapter}
           className={`absolute right-72 top-0 h-full w-64 transition-all duration-200 ease-out pointer-events-auto ${
-            hoveredChapter ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0 pointer-events-none'
+            hoveredChapter
+              ? 'translate-x-0 opacity-100'
+              : 'translate-x-8 opacity-0 pointer-events-none'
           }`}
         >
           <div className="bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-lg h-full flex flex-col">
@@ -1003,15 +1057,17 @@ export function WatchPage() {
               <h3 className="text-sm font-semibold text-gray-700">
                 {hoveredChapter ? (
                   <>
-                    <span className="text-gray-400">{hoveredChapter.chapterKey}</span>
-                    {' '}
+                    <span className="text-gray-400">{hoveredChapter.chapterKey}</span>{' '}
                     {formatChapterTitle(hoveredChapter.title) || 'Segments'}
                   </>
-                ) : 'Segments'}
+                ) : (
+                  'Segments'
+                )}
               </h3>
               {hoveredChapter && (
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {hoveredChapter.files.length} segment{hoveredChapter.files.length !== 1 ? 's' : ''}
+                  {hoveredChapter.files.length} segment
+                  {hoveredChapter.files.length !== 1 ? 's' : ''}
                 </p>
               )}
             </div>
@@ -1019,43 +1075,48 @@ export function WatchPage() {
             {/* Segment List */}
             <div className="flex-1 overflow-y-auto py-1">
               {hoveredChapter?.files.map((file) => {
-                const isPlaying = currentVideo?.url.includes(file.filename) && !currentVideo?.isChapter
+                const isPlaying =
+                  currentVideo?.url.includes(file.filename) && !currentVideo?.isChapter;
                 // FR-83: Recording status
-                const isShadow = 'isShadow' in file && file.isShadow
-                const hasShadow = 'hasShadow' in file && file.hasShadow
+                const isShadow = 'isShadow' in file && file.isShadow;
+                const hasShadow = 'hasShadow' in file && file.hasShadow;
                 // FR-111 Phase 4: Safe status
-                const isSafe = 'isSafe' in file && file.isSafe
+                const isSafe = 'isSafe' in file && file.isSafe;
                 // FR-121: Parked status
-                const isParked = 'isParked' in file && file.isParked
+                const isParked = 'isParked' in file && file.isParked;
 
                 // FR-83/FR-88: Status indicator - show both playing state AND shadow status
                 // 📹 = Real | 👻 = Shadow only | 📹👻 = Real + Shadow
                 // ▶ prefix = currently playing
-                let statusIcon: string
-                let statusTitle: string
+                let statusIcon: string;
+                let statusTitle: string;
                 if (isShadow) {
-                  statusIcon = isPlaying ? '▶ 👻' : '👻'
-                  statusTitle = isPlaying ? 'Playing (shadow only)' : 'Shadow only (collaborator mode)'
+                  statusIcon = isPlaying ? '▶ 👻' : '👻';
+                  statusTitle = isPlaying
+                    ? 'Playing (shadow only)'
+                    : 'Shadow only (collaborator mode)';
                 } else if (hasShadow) {
-                  statusIcon = isPlaying ? '▶ 📹👻' : '📹👻'
-                  statusTitle = isPlaying ? 'Playing (real + shadow)' : 'Real + Shadow'
+                  statusIcon = isPlaying ? '▶ 📹👻' : '📹👻';
+                  statusTitle = isPlaying ? 'Playing (real + shadow)' : 'Real + Shadow';
                 } else {
-                  statusIcon = isPlaying ? '▶ 📹' : '📹'
-                  statusTitle = isPlaying ? 'Playing (real only)' : 'Real recording (no shadow)'
+                  statusIcon = isPlaying ? '▶ 📹' : '📹';
+                  statusTitle = isPlaying ? 'Playing (real only)' : 'Real recording (no shadow)';
                 }
 
                 // FR-111/FR-121: Determine row styling - safe=yellow, parked=pink
-                let rowClasses: string
+                let rowClasses: string;
                 if (isPlaying) {
-                  rowClasses = 'bg-blue-50 text-blue-700 border-l-2 border-blue-500'
+                  rowClasses = 'bg-blue-50 text-blue-700 border-l-2 border-blue-500';
                 } else if (isSafe) {
-                  rowClasses = 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-l-2 border-yellow-400'
+                  rowClasses =
+                    'bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-l-2 border-yellow-400';
                 } else if (isParked) {
-                  rowClasses = 'bg-pink-50 text-pink-700 hover:bg-pink-100 border-l-2 border-pink-400'
+                  rowClasses =
+                    'bg-pink-50 text-pink-700 hover:bg-pink-100 border-l-2 border-pink-400';
                 } else if (isShadow) {
-                  rowClasses = 'hover:bg-purple-50 text-purple-600 border-l-2 border-transparent'
+                  rowClasses = 'hover:bg-purple-50 text-purple-600 border-l-2 border-transparent';
                 } else {
-                  rowClasses = 'hover:bg-gray-50 text-gray-600 border-l-2 border-transparent'
+                  rowClasses = 'hover:bg-gray-50 text-gray-600 border-l-2 border-transparent';
                 }
 
                 return (
@@ -1063,14 +1124,24 @@ export function WatchPage() {
                     key={file.path}
                     onClick={() => playRecording(file)}
                     className={`w-full text-left px-4 py-2 flex items-center gap-2 transition-colors ${rowClasses}`}
-                    title={isSafe ? `${statusTitle} (Safe)` : isParked ? `${statusTitle} (Parked)` : statusTitle}
+                    title={
+                      isSafe
+                        ? `${statusTitle} (Safe)`
+                        : isParked
+                          ? `${statusTitle} (Parked)`
+                          : statusTitle
+                    }
                   >
-                    <span className={`text-xs ${isPlaying ? 'text-blue-500' : isSafe ? 'text-yellow-500' : isShadow ? 'text-purple-400' : 'text-gray-400'}`}>
+                    <span
+                      className={`text-xs ${isPlaying ? 'text-blue-500' : isSafe ? 'text-yellow-500' : isShadow ? 'text-purple-400' : 'text-gray-400'}`}
+                    >
                       {statusIcon}
                     </span>
-                    <span className={`flex-1 font-mono text-xs truncate ${
-                      isPlaying ? 'font-medium' : ''
-                    }`}>
+                    <span
+                      className={`flex-1 font-mono text-xs truncate ${
+                        isPlaying ? 'font-medium' : ''
+                      }`}
+                    >
                       {file.chapter}-{file.sequence}-{file.name}
                     </span>
                     {/* FR-111 Phase 4: SAFE badge for safe files */}
@@ -1091,7 +1162,7 @@ export function WatchPage() {
                       </span>
                     )}
                   </button>
-                )
+                );
               })}
             </div>
           </div>
@@ -1116,9 +1187,11 @@ export function WatchPage() {
             {/* Chapter List - flat, no expansion */}
             <div className="flex-1 overflow-y-auto py-1">
               {chapters.map((chapter) => {
-                const title = formatChapterTitle(chapter.title)
-                const isChapterPlaying = currentVideo?.isChapter && currentVideo.title.includes(`Chapter ${chapter.chapterKey}`)
-                const isHovered = hoveredChapter?.chapterKey === chapter.chapterKey
+                const title = formatChapterTitle(chapter.title);
+                const isChapterPlaying =
+                  currentVideo?.isChapter &&
+                  currentVideo.title.includes(`Chapter ${chapter.chapterKey}`);
+                const isHovered = hoveredChapter?.chapterKey === chapter.chapterKey;
 
                 return (
                   <button
@@ -1133,39 +1206,37 @@ export function WatchPage() {
                           : 'hover:bg-gray-50 border-l-2 border-transparent'
                     }`}
                   >
-                    <span className={`font-mono text-xs w-5 ${
-                      isChapterPlaying ? 'text-purple-500' : 'text-gray-400'
-                    }`}>
+                    <span
+                      className={`font-mono text-xs w-5 ${
+                        isChapterPlaying ? 'text-purple-500' : 'text-gray-400'
+                      }`}
+                    >
                       {chapter.chapterKey}
                     </span>
-                    <span className={`flex-1 text-sm truncate ${
-                      isChapterPlaying ? 'font-medium text-purple-700' : 'text-gray-700'
-                    }`}>
+                    <span
+                      className={`flex-1 text-sm truncate ${
+                        isChapterPlaying ? 'font-medium text-purple-700' : 'text-gray-700'
+                      }`}
+                    >
                       {title || `Chapter ${chapter.chapterKey}`}
                     </span>
                     <span className="font-mono text-xs text-gray-400">
                       {formatDuration(chapter.startTime, 'youtube')}
                     </span>
-                    {isChapterPlaying && (
-                      <span className="text-purple-500">▶</span>
-                    )}
+                    {isChapterPlaying && <span className="text-purple-500">▶</span>}
                   </button>
-                )
+                );
               })}
             </div>
 
             {/* Footer */}
             <div className="px-4 py-3 border-t border-gray-100 flex-shrink-0 text-center">
-              <p className="text-xs text-gray-500">
-                Click = play chapter
-              </p>
-              <p className="text-xs text-gray-400">
-                Hover = show segments
-              </p>
+              <p className="text-xs text-gray-500">Click = play chapter</p>
+              <p className="text-xs text-gray-400">Hover = show segments</p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

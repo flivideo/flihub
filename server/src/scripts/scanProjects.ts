@@ -61,21 +61,22 @@ interface ScanSummary {
 // ============================================
 
 // Get projects root from config or use default
-const PROJECTS_ROOT = process.env.PROJECTS_ROOT || path.join(process.env.HOME!, 'dev/video-projects/v-appydave');
+const PROJECTS_ROOT =
+  process.env.PROJECTS_ROOT || path.join(process.env.HOME!, 'dev/video-projects/v-appydave');
 
 // PO Decisions (from naming-decisions.md)
 // TODO: Update these after PO makes decisions
 const DECISIONS = {
-  chapterGaps: 'info' as DiscrepancySeverity,  // Decision 1
-  sequenceGaps: 'info' as DiscrepancySeverity,  // Decision 2
-  nonSequentialChapters: 'warning' as DiscrepancySeverity,  // Decision 3
-  sequenceMustStartAt1: false,  // Decision 4: don't check
-  sameLabelInChapter: false,  // Decision 5: don't check
-  sameLabelAcrossChapters: false,  // Decision 6: don't check
-  safeFolderDeprecated: false,  // Decision 7: needs investigation
-  legacyFormatWarning: 'info' as DiscrepancySeverity,  // Decision 8
-  missingDerivatives: 'info' as DiscrepancySeverity,  // Decision 9
-  orphanedDerivatives: 'warning' as DiscrepancySeverity,  // Decision 10
+  chapterGaps: 'info' as DiscrepancySeverity, // Decision 1
+  sequenceGaps: 'info' as DiscrepancySeverity, // Decision 2
+  nonSequentialChapters: 'warning' as DiscrepancySeverity, // Decision 3
+  sequenceMustStartAt1: false, // Decision 4: don't check
+  sameLabelInChapter: false, // Decision 5: don't check
+  sameLabelAcrossChapters: false, // Decision 6: don't check
+  safeFolderDeprecated: false, // Decision 7: needs investigation
+  legacyFormatWarning: 'info' as DiscrepancySeverity, // Decision 8
+  missingDerivatives: 'info' as DiscrepancySeverity, // Decision 9
+  orphanedDerivatives: 'warning' as DiscrepancySeverity, // Decision 10
 };
 
 // ============================================
@@ -89,8 +90,8 @@ async function getProjects(rootPath: string): Promise<string[]> {
   try {
     const entries = await fs.readdir(rootPath, { withFileTypes: true });
     return entries
-      .filter(entry => entry.isDirectory() && !entry.name.startsWith('.'))
-      .map(entry => path.join(rootPath, entry.name))
+      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+      .map((entry) => path.join(rootPath, entry.name))
       .sort();
   } catch (error) {
     console.error(`Error reading projects root: ${error}`);
@@ -106,8 +107,8 @@ async function getRecordings(projectPath: string): Promise<string[]> {
   try {
     const entries = await fs.readdir(recordingsPath);
     return entries
-      .filter(f => /\.(mov|mp4)$/i.test(f) && !f.startsWith('.'))
-      .filter(f => !f.startsWith('-'))  // Exclude -safe, -chapters folders
+      .filter((f) => /\.(mov|mp4)$/i.test(f) && !f.startsWith('.'))
+      .filter((f) => !f.startsWith('-')) // Exclude -safe, -chapters folders
       .sort();
   } catch (error) {
     return [];
@@ -152,12 +153,16 @@ function checkNamingViolations(
       projectPath,
       type: 'naming',
       severity,
-      issue: severity === 'error' ? 'Invalid chapter format' : 'Single-digit chapter (should be zero-padded)',
+      issue:
+        severity === 'error'
+          ? 'Invalid chapter format'
+          : 'Single-digit chapter (should be zero-padded)',
       file: filename,
       details: `Chapter "${chapter}" should be 2 digits (01-99)`,
-      suggestion: severity === 'error'
-        ? 'Rename to use 2-digit chapter number'
-        : `Rename: ${filename} → ${chapter.padStart(2, '0')}-...`,
+      suggestion:
+        severity === 'error'
+          ? 'Rename to use 2-digit chapter number'
+          : `Rename: ${filename} → ${chapter.padStart(2, '0')}-...`,
     });
   }
 
@@ -278,7 +283,7 @@ async function checkStructuralIssues(
   const discrepancies: Discrepancy[] = [];
 
   // Parse all files
-  const parsed = recordings.map(f => ({
+  const parsed = recordings.map((f) => ({
     filename: f,
     parsed: parseRecordingFilename(f),
   }));
@@ -296,7 +301,7 @@ async function checkStructuralIssues(
   // Check chapter gaps
   if (DECISIONS.chapterGaps) {
     const chapterNumbers = Array.from(chapters.keys())
-      .map(c => parseInt(c, 10))
+      .map((c) => parseInt(c, 10))
       .sort((a, b) => a - b);
 
     const gaps: number[] = [];
@@ -315,18 +320,18 @@ async function checkStructuralIssues(
         type: 'structural',
         severity: DECISIONS.chapterGaps,
         issue: 'Chapter gaps detected',
-        details: `Missing chapters: ${gaps.map(g => String(g).padStart(2, '0')).join(', ')}`,
-        suggestion: DECISIONS.chapterGaps === 'error'
-          ? 'Use FR-140 (Bulk Chapter Renumbering) to fill gaps'
-          : 'Gaps may be intentional (deleted content). Use FR-140 if you want to fill them.',
+        details: `Missing chapters: ${gaps.map((g) => String(g).padStart(2, '0')).join(', ')}`,
+        suggestion:
+          DECISIONS.chapterGaps === 'error'
+            ? 'Use FR-140 (Bulk Chapter Renumbering) to fill gaps'
+            : 'Gaps may be intentional (deleted content). Use FR-140 if you want to fill them.',
       });
     }
   }
 
   // Check non-sequential chapters
   if (DECISIONS.nonSequentialChapters) {
-    const chapterNumbers = Array.from(chapters.keys())
-      .map(c => parseInt(c, 10));
+    const chapterNumbers = Array.from(chapters.keys()).map((c) => parseInt(c, 10));
 
     // Check if chapters appear in order in the file list
     let prevChapter = -1;
@@ -358,8 +363,8 @@ async function checkStructuralIssues(
   if (DECISIONS.sequenceGaps) {
     for (const [chapterNum, files] of chapters.entries()) {
       const sequences = files
-        .filter(f => f.parsed && f.parsed.sequence)
-        .map(f => parseInt(f.parsed!.sequence!, 10))
+        .filter((f) => f.parsed && f.parsed.sequence)
+        .map((f) => parseInt(f.parsed!.sequence!, 10))
         .sort((a, b) => a - b);
 
       if (sequences.length < 2) continue;
@@ -478,7 +483,7 @@ async function checkDerivatives(
   let shadows: string[] = [];
   try {
     shadows = await fs.readdir(shadowsPath);
-    shadows = shadows.filter(f => f.endsWith('.mp4'));
+    shadows = shadows.filter((f) => f.endsWith('.mp4'));
   } catch {
     // Shadow folder doesn't exist - that's OK
   }
@@ -487,7 +492,7 @@ async function checkDerivatives(
   let transcripts: string[] = [];
   try {
     transcripts = await fs.readdir(transcriptsPath);
-    transcripts = transcripts.filter(f => f.endsWith('.txt'));
+    transcripts = transcripts.filter((f) => f.endsWith('.txt'));
   } catch {
     // Transcript folder doesn't exist - that's OK
   }
@@ -517,9 +522,7 @@ async function checkDerivatives(
   if (DECISIONS.orphanedDerivatives) {
     for (const shadow of shadows) {
       const baseName = shadow.replace(/\.mp4$/i, '');
-      const recordingExists = recordings.some(r =>
-        r.replace(/\.(mov|mp4)$/i, '') === baseName
-      );
+      const recordingExists = recordings.some((r) => r.replace(/\.(mov|mp4)$/i, '') === baseName);
 
       if (!recordingExists) {
         discrepancies.push({
@@ -561,9 +564,7 @@ async function checkDerivatives(
   if (DECISIONS.orphanedDerivatives) {
     for (const transcript of transcripts) {
       const baseName = transcript.replace(/\.txt$/i, '');
-      const recordingExists = recordings.some(r =>
-        r.replace(/\.(mov|mp4)$/i, '') === baseName
-      );
+      const recordingExists = recordings.some((r) => r.replace(/\.(mov|mp4)$/i, '') === baseName);
 
       if (!recordingExists) {
         discrepancies.push({
@@ -586,10 +587,7 @@ async function checkDerivatives(
 /**
  * Check for state inconsistencies
  */
-async function checkState(
-  projectCode: string,
-  projectPath: string
-): Promise<Discrepancy[]> {
+async function checkState(projectCode: string, projectPath: string): Promise<Discrepancy[]> {
   const discrepancies: Discrepancy[] = [];
 
   // Check for -safe folder (Decision 7)
@@ -689,7 +687,7 @@ function generateSummary(results: ProjectScanResult[]): ScanSummary {
   const summary: ScanSummary = {
     scanDate: new Date().toISOString(),
     projectsScanned: results.length,
-    projectsWithIssues: results.filter(r => r.discrepancies.length > 0).length,
+    projectsWithIssues: results.filter((r) => r.discrepancies.length > 0).length,
     totalIssues: results.reduce((sum, r) => sum + r.discrepancies.length, 0),
     byType: {
       naming: 0,
@@ -738,7 +736,7 @@ async function exportCSV(results: ProjectScanResult[]): Promise<void> {
   await fs.ensureDir(path.dirname(outputPath));
 
   const rows = [
-    ['Project Code', 'Project Path', 'Type', 'Severity', 'Issue', 'File', 'Details', 'Suggestion']
+    ['Project Code', 'Project Path', 'Type', 'Severity', 'Issue', 'File', 'Details', 'Suggestion'],
   ];
 
   for (const result of results) {
@@ -757,9 +755,9 @@ async function exportCSV(results: ProjectScanResult[]): Promise<void> {
   }
 
   // Properly escape CSV cells (double any quotes, then wrap in quotes)
-  const csv = rows.map(row =>
-    row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-  ).join('\n');
+  const csv = rows
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
   await fs.writeFile(outputPath, csv);
   console.log(`Exported CSV: ${outputPath}`);
 }
@@ -939,7 +937,7 @@ async function main() {
 
 // Run if executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(error => {
+  main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

@@ -1,10 +1,10 @@
 // NFR-6c: Shared size toggle component for thumbnail size selection
 
 interface SizeToggleProps<T extends string> {
-  sizes: readonly T[]
-  value: T
-  onChange: (size: T) => void
-  labels?: Partial<Record<T, string>>  // Optional full labels for tooltips
+  sizes: readonly T[];
+  value: T;
+  onChange: (size: T) => void;
+  labels?: Partial<Record<T, string>>; // Optional full labels for tooltips
 }
 
 export function SizeToggle<T extends string>({
@@ -30,5 +30,5 @@ export function SizeToggle<T extends string>({
         </button>
       ))}
     </div>
-  )
+  );
 }

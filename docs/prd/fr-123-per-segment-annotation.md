@@ -59,6 +59,7 @@ Move Previous/Next to the controls bar below video. Single location for all cont
 ```
 
 **Controls bar layout (left to right):**
+
 1. `←` Previous button
 2. `▶/⏹` Play/Stop button
 3. `→` Next button
@@ -71,10 +72,12 @@ Move Previous/Next to the controls bar below video. Single location for all cont
 Add ability to park/unpark the current recording directly from Watch panel:
 
 **Option A: Toggle button (like Safe)**
+
 - "Park" / "Unpark" button in controls bar
 - Matches existing Safe button pattern
 
 **Option B: Right-click context menu**
+
 - Right-click on segment in right panel → Park/Unpark
 
 **Recommend: Both** - Button for current video, context menu for any segment.
@@ -84,6 +87,7 @@ Add ability to park/unpark the current recording directly from Watch panel:
 When parking (or after), allow adding a note explaining why.
 
 **Option A: Inline annotation area**
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ [←] [▶] [→]  07-1-deep-dive.mov [PARKED]                        │
@@ -94,11 +98,13 @@ When parking (or after), allow adding a note explaining why.
 ```
 
 **Option B: Click-to-edit annotation**
+
 - Only shows when parked
 - Click to expand/edit
 - Auto-save on blur
 
 **Option C: Annotation in segment panel**
+
 - Annotation shown in right-side segment list
 - Click to edit
 - Visible while browsing segments
@@ -110,6 +116,7 @@ When parking (or after), allow adding a note explaining why.
 ## Acceptance Criteria
 
 ### Part 1: Navigation Consolidation
+
 - [ ] Remove navigation from above video
 - [ ] Add Previous/Next buttons to controls bar below video
 - [ ] Play/Stop button between Previous and Next
@@ -117,11 +124,13 @@ When parking (or after), allow adding a note explaining why.
 - [ ] Clean, single-line layout
 
 ### Part 2: Park/Unpark in Watch Panel
+
 - [ ] "Park" / "Unpark" button in controls bar for current video
 - [ ] Button state reflects current recording's parked status
 - [ ] Optional: Context menu on segment rows
 
 ### Part 3: Per-Segment Annotation
+
 - [ ] Annotation field visible when current video is parked
 - [ ] Click to edit, auto-save on blur
 - [ ] Annotations visible in segment panel (right side)
@@ -135,30 +144,39 @@ When parking (or after), allow adding a note explaining why.
 ### Navigation Move
 
 Current structure (WatchPage.tsx ~line 540-580):
+
 ```tsx
-{/* Navigation above video */}
+{
+  /* Navigation above video */
+}
 <div className="flex items-center justify-between mb-4">
   <button>← Previous</button>
   <span>{title} (X of Y)</span>
   <button>Next →</button>
-</div>
+</div>;
 ```
 
 Move into controls bar (~line 633+):
+
 ```tsx
-{/* Controls bar - now includes navigation */}
+{
+  /* Controls bar - now includes navigation */
+}
 <div className="mt-3 flex items-center gap-3">
   <button>←</button>
   <button>{isPlaying ? '⏹' : '▶'}</button>
   <button>→</button>
-  <span>{title} ({index}/{total})</span>
+  <span>
+    {title} ({index}/{total})
+  </span>
   {/* ... existing tags, toggles */}
-</div>
+</div>;
 ```
 
 ### Park/Unpark Button
 
 Reuse existing mutations from RecordingsView:
+
 ```tsx
 const parkRecording = useParkRecording()
 const unparkRecording = useUnparkRecording()
@@ -175,22 +193,23 @@ const unparkRecording = useUnparkRecording()
 ### Annotation Storage
 
 Add to ProjectState (Option A from original spec):
+
 ```typescript
 interface ProjectState {
-  safeRecordings?: string[]
-  parkedRecordings?: string[]
-  parkedAnnotations?: Record<string, string>  // NEW: filename → note
+  safeRecordings?: string[];
+  parkedRecordings?: string[];
+  parkedAnnotations?: Record<string, string>; // NEW: filename → note
 }
 ```
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
+| File                                  | Changes                                             |
+| ------------------------------------- | --------------------------------------------------- |
 | `client/src/components/WatchPage.tsx` | Move navigation, add Park button, add annotation UI |
-| `shared/types.ts` | Add `parkedAnnotations` to ProjectState |
-| `server/src/utils/projectState.ts` | Add annotation helpers |
-| `server/src/routes/state.ts` | Add annotation endpoint |
+| `shared/types.ts`                     | Add `parkedAnnotations` to ProjectState             |
+| `server/src/utils/projectState.ts`    | Add annotation helpers                              |
+| `server/src/routes/state.ts`          | Add annotation endpoint                             |
 
 ---
 
@@ -212,6 +231,7 @@ interface ProjectState {
 ```
 
 **Segment panel (right side) showing annotation:**
+
 ```
 ┌─────────────────────────────────────┐
 │ 05 Deep Dive                        │
@@ -249,6 +269,7 @@ interface ProjectState {
 **What was done:**
 
 ### Part 1: Consolidated Navigation ✓
+
 - **Removed** navigation bar above video (Previous/Next buttons + filename + counter)
 - **Added** navigation to controls bar below video in this order:
   - `←` Previous button
@@ -260,6 +281,7 @@ interface ProjectState {
 - Single line layout - all controls in one place
 
 ### Part 2: Park/Unpark in Watch Panel ✓
+
 - **Park/Unpark toggle button** added to controls bar
   - Shows "Park →" when not parked (gray button)
   - Shows "← Unpark" when parked (pink button)
@@ -269,6 +291,7 @@ interface ProjectState {
 - No need to switch to Recordings panel to park/unpark
 
 ### Part 3: Per-Segment Annotations ✓
+
 - **Annotation field** appears when current recording is parked
   - Pink highlighted box with "PARKED - Optional Note" header
   - Three states:
@@ -280,16 +303,19 @@ interface ProjectState {
 - **Placeholder** suggests example annotations: "Too technical for YouTube", "Save for SKOOL"
 
 **Files changed:**
+
 - ✓ `shared/types.ts` - Added `annotation?: string` to RecordingState interface
 - ✓ `client/src/components/WatchPage.tsx` - Consolidated navigation, added park/unpark button, annotation UI
 - ✓ `server/src/routes/state.ts` - No changes needed (already supports annotations via RecordingState)
 
 **API:**
+
 - No new endpoints needed
 - Uses existing `POST /api/projects/:code/state` to save annotations
 - Uses existing FR-120 park/unpark mutations
 
 **Testing notes:**
+
 1. Go to Watch tab, play a recording
 2. Verify controls bar layout: [←] [▶] [→] filename (X/Y) [Park →] ... toggles
 3. Verify Previous/Next navigation works
@@ -303,6 +329,7 @@ interface ProjectState {
 11. Park again - previous annotation should restore
 
 **UX improvements:**
+
 - Cleaner layout - all controls in one line
 - No eye movement from top to bottom
 - Park/Unpark decisions made while watching
@@ -319,6 +346,7 @@ interface ProjectState {
 ✅ **All acceptance criteria met:**
 
 **Part 1: Navigation Consolidation**
+
 - ✅ Removed navigation from above video
 - ✅ Added Previous/Next buttons to controls bar below video
 - ✅ Play/Stop button between Previous and Next
@@ -326,11 +354,13 @@ interface ProjectState {
 - ✅ Clean, single-line layout
 
 **Part 2: Park/Unpark in Watch Panel**
+
 - ✅ "Park" / "Unpark" button in controls bar for current video
 - ✅ Button state reflects current recording's parked status
 - ✅ Toast notifications on state changes
 
 **Part 3: Per-Segment Annotation**
+
 - ✅ Annotation field visible when current video is parked
 - ✅ Click to edit, save/cancel workflow
 - ✅ Annotations stored in `.flihub-state.json`
@@ -339,11 +369,13 @@ interface ProjectState {
 - ✅ Persists across navigation
 
 **Additional features delivered:**
+
 - ✅ Annotation helpers in `projectState.ts`
 - ✅ Annotation support in all query endpoints
 - ✅ Real-time sync across clients via Socket.io events
 
 **Testing verified:**
+
 - ✅ Park → annotation UI appears
 - ✅ Add annotation → saves to state file
 - ✅ Navigate away and back → annotation persists
@@ -353,6 +385,7 @@ interface ProjectState {
 - ✅ Socket.io updates → real-time UI refresh
 
 **UX improvements confirmed:**
+
 - Single eye position for all controls (no jumping top/bottom)
 - Park decisions made while watching (not in Recordings panel)
 - Reasoning captured immediately at decision point

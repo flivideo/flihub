@@ -3,30 +3,30 @@
  * Metadata for all FliHub REST API endpoints
  */
 
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-export type ParameterType = 'path' | 'query' | 'body'
-export type DataType = 'string' | 'number' | 'boolean' | 'object' | 'array'
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+export type ParameterType = 'path' | 'query' | 'body';
+export type DataType = 'string' | 'number' | 'boolean' | 'object' | 'array';
 
 export interface ApiParameter {
-  name: string
-  type: ParameterType
-  dataType: DataType
-  description?: string
-  required?: boolean
-  enum?: string[]
-  example?: any
-  properties?: ApiParameter[] // For object/array types
+  name: string;
+  type: ParameterType;
+  dataType: DataType;
+  description?: string;
+  required?: boolean;
+  enum?: string[];
+  example?: any;
+  properties?: ApiParameter[]; // For object/array types
 }
 
 export interface ApiEndpoint {
-  id: string
-  method: HttpMethod
-  path: string
-  group: string
-  description: string
-  parameters: ApiParameter[]
-  exampleResponse?: any
-  notes?: string
+  id: string;
+  method: HttpMethod;
+  path: string;
+  group: string;
+  description: string;
+  parameters: ApiParameter[];
+  exampleResponse?: any;
+  notes?: string;
 }
 
 /**
@@ -48,8 +48,8 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
       success: true,
       stages: ['planning', 'recording', 'first-edit'],
       priorities: ['normal', 'pinned'],
-      tags: ['CTA', 'SKOOL']
-    }
+      tags: ['CTA', 'SKOOL'],
+    },
   },
   {
     id: 'query-projects',
@@ -63,28 +63,28 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'query',
         dataType: 'string',
         enum: ['pinned', 'all'],
-        description: 'Filter projects by priority'
+        description: 'Filter projects by priority',
       },
       {
         name: 'stage',
         type: 'query',
         dataType: 'string',
-        description: 'Filter by stage (e.g., "recording", "first-edit")'
+        description: 'Filter by stage (e.g., "recording", "first-edit")',
       },
       {
         name: 'recent',
         type: 'query',
         dataType: 'number',
         description: 'Limit to N most recent projects',
-        example: 10
+        example: 10,
       },
       {
         name: 'format',
         type: 'query',
         dataType: 'string',
         enum: ['json', 'text'],
-        description: 'Output format (text for CLI)'
-      }
+        description: 'Output format (text for CLI)',
+      },
     ],
     exampleResponse: {
       success: true,
@@ -93,10 +93,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
           code: 'b85-example',
           stage: 'recording',
           priority: 'pinned',
-          recordingsCount: 24
-        }
-      ]
-    }
+          recordingsCount: 24,
+        },
+      ],
+    },
   },
   {
     id: 'query-project-detail',
@@ -111,8 +111,8 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         dataType: 'string',
         required: true,
         description: 'Project code (e.g., "b85-example")',
-        example: 'b85-example'
-      }
+        example: 'b85-example',
+      },
     ],
     exampleResponse: {
       success: true,
@@ -121,9 +121,9 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         path: '/path/to/project',
         stage: 'recording',
         recordingsCount: 24,
-        transcriptPercent: 100
-      }
-    }
+        transcriptPercent: 100,
+      },
+    },
   },
   {
     id: 'query-recordings',
@@ -137,27 +137,27 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b85-example'
+        example: 'b85-example',
       },
       {
         name: 'chapter',
         type: 'query',
         dataType: 'string',
         description: 'Filter by chapter number',
-        example: '10'
+        example: '10',
       },
       {
         name: 'missing-transcripts',
         type: 'query',
         dataType: 'boolean',
-        description: 'Only show files without transcripts'
+        description: 'Only show files without transcripts',
       },
       {
         name: 'format',
         type: 'query',
         dataType: 'string',
-        enum: ['json', 'text']
-      }
+        enum: ['json', 'text'],
+      },
     ],
     exampleResponse: {
       success: true,
@@ -167,10 +167,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
           chapter: '10',
           sequence: '5',
           name: 'intro',
-          duration: 125.5
-        }
-      ]
-    }
+          duration: 125.5,
+        },
+      ],
+    },
   },
   {
     id: 'query-transcripts',
@@ -184,28 +184,28 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b85-example'
+        example: 'b85-example',
       },
       {
         name: 'chapter',
         type: 'query',
         dataType: 'string',
-        description: 'Filter by chapter'
+        description: 'Filter by chapter',
       },
       {
         name: 'segments',
         type: 'query',
         dataType: 'string',
         description: 'Filter by segments (comma-delimited, e.g., "1,2,3")',
-        example: '1,2,3'
+        example: '1,2,3',
       },
       {
         name: 'include',
         type: 'query',
         dataType: 'string',
         description: 'Set to "content" to get full transcript text (default: preview only)',
-        enum: ['content']
-      }
+        enum: ['content'],
+      },
     ],
     exampleResponse: {
       success: true,
@@ -213,10 +213,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         {
           filename: '10-5-intro.txt',
           chapter: '10',
-          sequence: '5'
-        }
-      ]
-    }
+          sequence: '5',
+        },
+      ],
+    },
   },
   {
     id: 'query-chapters',
@@ -230,8 +230,8 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b85-example'
-      }
+        example: 'b85-example',
+      },
     ],
     exampleResponse: {
       success: true,
@@ -239,10 +239,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         {
           chapter: '01',
           name: 'Introduction',
-          timestamp: '00:00:00'
-        }
-      ]
-    }
+          timestamp: '00:00:00',
+        },
+      ],
+    },
   },
   {
     id: 'query-images',
@@ -256,14 +256,14 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b85-example'
+        example: 'b85-example',
       },
       {
         name: 'chapter',
         type: 'query',
         dataType: 'string',
-        description: 'Filter by chapter'
-      }
+        description: 'Filter by chapter',
+      },
     ],
     exampleResponse: {
       success: true,
@@ -272,10 +272,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
           filename: '05-3-2a-workflow.png',
           chapter: '05',
           sequence: '3',
-          label: 'workflow'
-        }
-      ]
-    }
+          label: 'workflow',
+        },
+      ],
+    },
   },
   {
     id: 'query-export',
@@ -289,28 +289,28 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b85-example'
+        example: 'b85-example',
       },
       {
         name: 'include',
         type: 'query',
         dataType: 'string',
         description: 'Comma-separated: project,recordings,transcripts,chapters,images',
-        example: 'project,recordings,transcripts'
+        example: 'project,recordings,transcripts',
       },
       {
         name: 'format',
         type: 'query',
         dataType: 'string',
-        enum: ['json', 'text']
-      }
+        enum: ['json', 'text'],
+      },
     ],
     exampleResponse: {
       success: true,
       project: {},
       recordings: [],
-      transcripts: []
-    }
+      transcripts: [],
+    },
   },
   {
     id: 'query-inbox',
@@ -324,8 +324,8 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b85-example'
-      }
+        example: 'b85-example',
+      },
     ],
     exampleResponse: {
       success: true,
@@ -333,10 +333,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         {
           name: 'raw',
           files: ['notes.md'],
-          totalSize: 1024
-        }
-      ]
-    }
+          totalSize: 1024,
+        },
+      ],
+    },
   },
   {
     id: 'query-inbox-file',
@@ -350,7 +350,7 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b85-example'
+        example: 'b85-example',
       },
       {
         name: 'subfolder',
@@ -358,20 +358,20 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         dataType: 'string',
         required: true,
         description: 'Subfolder name or "(root)" for root files',
-        example: 'raw'
+        example: 'raw',
       },
       {
         name: 'filename',
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'notes.md'
-      }
+        example: 'notes.md',
+      },
     ],
     exampleResponse: {
       success: true,
-      content: '# Project Notes\n...'
-    }
+      content: '# Project Notes\n...',
+    },
   },
 
   // ========================================
@@ -388,8 +388,8 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
       watchDirectory: '~/Movies/Ecamm Live',
       projectsRootDirectory: '~/dev/video-projects/v-appydave',
       activeProject: 'b72-project-name',
-      availableTags: ['CTA', 'SKOOL']
-    }
+      availableTags: ['CTA', 'SKOOL'],
+    },
   },
   {
     id: 'update-config',
@@ -402,24 +402,24 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         name: 'watchDirectory',
         type: 'body',
         dataType: 'string',
-        description: 'Ecamm recording watch directory'
+        description: 'Ecamm recording watch directory',
       },
       {
         name: 'projectsRootDirectory',
         type: 'body',
         dataType: 'string',
-        description: 'Root directory for all projects'
+        description: 'Root directory for all projects',
       },
       {
         name: 'activeProject',
         type: 'body',
         dataType: 'string',
-        description: 'Current active project code'
-      }
+        description: 'Current active project code',
+      },
     ],
     exampleResponse: {
-      success: true
-    }
+      success: true,
+    },
   },
 
   // ========================================
@@ -438,10 +438,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
           code: 'b72-project',
           recordingsCount: 15,
           stage: 'recording',
-          transcriptPercent: 80
-        }
-      ]
-    }
+          transcriptPercent: 80,
+        },
+      ],
+    },
   },
   {
     id: 'create-project',
@@ -456,14 +456,14 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         dataType: 'string',
         required: true,
         description: 'Project code (e.g., "b73-new-project")',
-        example: 'b73-new-project'
-      }
+        example: 'b73-new-project',
+      },
     ],
     exampleResponse: {
       success: true,
       code: 'b73-new-project',
-      path: '/path/to/b73-new-project'
-    }
+      path: '/path/to/b73-new-project',
+    },
   },
   {
     id: 'update-project-priority',
@@ -477,7 +477,7 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b72-project'
+        example: 'b72-project',
       },
       {
         name: 'priority',
@@ -485,12 +485,12 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         dataType: 'string',
         required: true,
         enum: ['normal', 'pinned'],
-        example: 'pinned'
-      }
+        example: 'pinned',
+      },
     ],
     exampleResponse: {
-      success: true
-    }
+      success: true,
+    },
   },
   {
     id: 'update-project-stage',
@@ -504,20 +504,30 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b72-project'
+        example: 'b72-project',
       },
       {
         name: 'stage',
         type: 'body',
         dataType: 'string',
         required: true,
-        enum: ['planning', 'recording', 'first-edit', 'second-edit', 'review', 'ready-to-publish', 'published', 'archived', 'auto'],
-        example: 'first-edit'
-      }
+        enum: [
+          'planning',
+          'recording',
+          'first-edit',
+          'second-edit',
+          'review',
+          'ready-to-publish',
+          'published',
+          'archived',
+          'auto',
+        ],
+        example: 'first-edit',
+      },
     ],
     exampleResponse: {
-      success: true
-    }
+      success: true,
+    },
   },
   {
     id: 'get-project-final',
@@ -531,16 +541,16 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b72-project'
-      }
+        example: 'b72-project',
+      },
     ],
     exampleResponse: {
       success: true,
       video: {
         filename: 'b72-final-v1.mp4',
-        size: 524288000
-      }
-    }
+        size: 524288000,
+      },
+    },
   },
   {
     id: 'write-to-inbox',
@@ -554,7 +564,7 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b72-project'
+        example: 'b72-project',
       },
       {
         name: 'subfolder',
@@ -562,27 +572,27 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         dataType: 'string',
         required: true,
         description: 'Inbox subfolder (e.g., "raw", "dataset")',
-        example: 'raw'
+        example: 'raw',
       },
       {
         name: 'filename',
         type: 'body',
         dataType: 'string',
         required: true,
-        example: 'notes.md'
+        example: 'notes.md',
       },
       {
         name: 'content',
         type: 'body',
         dataType: 'string',
         required: true,
-        example: '# Project Notes\n...'
-      }
+        example: '# Project Notes\n...',
+      },
     ],
     exampleResponse: {
       success: true,
-      path: '/path/to/inbox/raw/notes.md'
-    }
+      path: '/path/to/inbox/raw/notes.md',
+    },
   },
 
   // ========================================
@@ -600,10 +610,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         {
           filename: 'Movie on 2025-01-15.mov',
           size: 524288000,
-          duration: 125.5
-        }
-      ]
-    }
+          duration: 125.5,
+        },
+      ],
+    },
   },
   {
     id: 'get-recordings',
@@ -619,10 +629,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
           chapter: '10',
           sequence: '5',
           isSafe: false,
-          isParked: false
-        }
-      ]
-    }
+          isParked: false,
+        },
+      ],
+    },
   },
   {
     id: 'get-suggested-naming',
@@ -634,8 +644,8 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
     exampleResponse: {
       chapter: '10',
       sequence: '6',
-      name: 'intro'
-    }
+      name: 'intro',
+    },
   },
   {
     id: 'rename-recording',
@@ -649,41 +659,41 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'body',
         dataType: 'string',
         required: true,
-        description: 'Full path to source file'
+        description: 'Full path to source file',
       },
       {
         name: 'chapter',
         type: 'body',
         dataType: 'string',
         required: true,
-        example: '10'
+        example: '10',
       },
       {
         name: 'sequence',
         type: 'body',
         dataType: 'string',
         required: true,
-        example: '5'
+        example: '5',
       },
       {
         name: 'name',
         type: 'body',
         dataType: 'string',
         required: true,
-        example: 'intro'
+        example: 'intro',
       },
       {
         name: 'tags',
         type: 'body',
         dataType: 'array',
         description: 'Optional tags (uppercase)',
-        example: ['CTA', 'SKOOL']
-      }
+        example: ['CTA', 'SKOOL'],
+      },
     ],
     exampleResponse: {
       success: true,
-      newPath: '/path/to/recordings/10-5-intro-CTA.mov'
-    }
+      newPath: '/path/to/recordings/10-5-intro-CTA.mov',
+    },
   },
   {
     id: 'park-recording',
@@ -697,12 +707,12 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'body',
         dataType: 'string',
         required: true,
-        example: '10-5-intro.mov'
-      }
+        example: '10-5-intro.mov',
+      },
     ],
     exampleResponse: {
-      success: true
-    }
+      success: true,
+    },
   },
   {
     id: 'unpark-recording',
@@ -716,12 +726,12 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'body',
         dataType: 'string',
         required: true,
-        example: '10-5-intro.mov'
-      }
+        example: '10-5-intro.mov',
+      },
     ],
     exampleResponse: {
-      success: true
-    }
+      success: true,
+    },
   },
 
   // ========================================
@@ -737,11 +747,11 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
     exampleResponse: {
       active: {
         jobId: 'job_123',
-        videoPath: '/path/to/video.mov'
+        videoPath: '/path/to/video.mov',
       },
       queue: [],
-      recent: []
-    }
+      recent: [],
+    },
   },
   {
     id: 'get-transcript-status',
@@ -755,14 +765,14 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: '10-5-intro.mov'
-      }
+        example: '10-5-intro.mov',
+      },
     ],
     exampleResponse: {
       filename: '10-5-intro.mov',
       status: 'complete',
-      transcriptPath: '/path/to/10-5-intro.txt'
-    }
+      transcriptPath: '/path/to/10-5-intro.txt',
+    },
   },
   {
     id: 'queue-transcription',
@@ -776,13 +786,13 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'body',
         dataType: 'string',
         required: true,
-        description: 'Full path to video file'
-      }
+        description: 'Full path to video file',
+      },
     ],
     exampleResponse: {
       success: true,
-      jobId: 'job_124'
-    }
+      jobId: 'job_124',
+    },
   },
   {
     id: 'queue-all-transcriptions',
@@ -797,20 +807,20 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         dataType: 'string',
         required: true,
         enum: ['project', 'chapter'],
-        description: 'Scope of operation'
+        description: 'Scope of operation',
       },
       {
         name: 'chapter',
         type: 'body',
         dataType: 'string',
         description: 'Chapter number (required if scope=chapter)',
-        example: '10'
-      }
+        example: '10',
+      },
     ],
     exampleResponse: {
       success: true,
-      queued: 5
-    }
+      queued: 5,
+    },
   },
 
   // ========================================
@@ -827,8 +837,8 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
       success: true,
       status: 'healthy',
       server: 'FliHub',
-      port: 5101
-    }
+      port: 5101,
+    },
   },
   {
     id: 'get-environment',
@@ -840,8 +850,8 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
     exampleResponse: {
       platform: 'darwin',
       isWSL: false,
-      pathFormat: 'unix'
-    }
+      pathFormat: 'unix',
+    },
   },
   {
     id: 'open-folder',
@@ -855,20 +865,35 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'body',
         dataType: 'string',
         required: true,
-        enum: ['ecamm', 'downloads', 'recordings', 'safe', 'trash', 'images', 'thumbs', 'transcripts', 'project', 'final', 's3Staging', 'inbox', 'shadows', 'chapters'],
-        description: 'Folder key to open'
+        enum: [
+          'ecamm',
+          'downloads',
+          'recordings',
+          'safe',
+          'trash',
+          'images',
+          'thumbs',
+          'transcripts',
+          'project',
+          'final',
+          's3Staging',
+          'inbox',
+          'shadows',
+          'chapters',
+        ],
+        description: 'Folder key to open',
       },
       {
         name: 'projectCode',
         type: 'body',
         dataType: 'string',
         description: 'Project code (required for project-specific folders)',
-        example: 'b72-project'
-      }
+        example: 'b72-project',
+      },
     ],
     exampleResponse: {
-      success: true
-    }
+      success: true,
+    },
   },
   {
     id: 'get-watchers',
@@ -881,10 +906,10 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
       watchers: [
         {
           path: '~/Movies/Ecamm Live',
-          type: 'ecamm'
-        }
-      ]
-    }
+          type: 'ecamm',
+        },
+      ],
+    },
   },
 
   // ========================================
@@ -902,8 +927,8 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b72-project'
-      }
+        example: 'b72-project',
+      },
     ],
     exampleResponse: {
       success: true,
@@ -911,11 +936,11 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         recordings: {
           '10-5-intro.mov': {
             isSafe: false,
-            parked: false
-          }
-        }
-      }
-    }
+            parked: false,
+          },
+        },
+      },
+    },
   },
   {
     id: 'update-project-state',
@@ -929,45 +954,45 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
         type: 'path',
         dataType: 'string',
         required: true,
-        example: 'b72-project'
+        example: 'b72-project',
       },
       {
         name: 'recordings',
         type: 'body',
         dataType: 'object',
-        description: 'Recording state updates'
+        description: 'Recording state updates',
       },
       {
         name: 'glingDictionary',
         type: 'body',
         dataType: 'array',
-        description: 'Project-specific dictionary words'
-      }
+        description: 'Project-specific dictionary words',
+      },
     ],
     exampleResponse: {
-      success: true
-    }
-  }
-]
+      success: true,
+    },
+  },
+];
 
 /**
  * Group endpoints by category
  */
 export function getEndpointGroups(): Map<string, ApiEndpoint[]> {
-  const groups = new Map<string, ApiEndpoint[]>()
+  const groups = new Map<string, ApiEndpoint[]>();
 
   for (const endpoint of API_ENDPOINTS) {
-    const existing = groups.get(endpoint.group) || []
-    existing.push(endpoint)
-    groups.set(endpoint.group, existing)
+    const existing = groups.get(endpoint.group) || [];
+    existing.push(endpoint);
+    groups.set(endpoint.group, existing);
   }
 
-  return groups
+  return groups;
 }
 
 /**
  * Get endpoint by ID
  */
 export function getEndpointById(id: string): ApiEndpoint | undefined {
-  return API_ENDPOINTS.find(e => e.id === id)
+  return API_ENDPOINTS.find((e) => e.id === id);
 }

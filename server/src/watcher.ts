@@ -34,7 +34,7 @@ export function createWatcher(
     try {
       const stats = fs.statSync(filePath);
       size = stats.size;
-      mtime = stats.mtime;  // Use actual file modification time
+      mtime = stats.mtime; // Use actual file modification time
     } catch (err) {
       console.warn('Could not get file stats:', err);
     }

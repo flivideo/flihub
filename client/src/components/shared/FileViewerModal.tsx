@@ -10,21 +10,21 @@
  *
  * Used by TranscriptModal and InboxPage for viewing text-based files.
  */
-import { toast } from 'sonner'
-import { OpenFolderButton } from './OpenFolderButton'
-import type { FolderKey } from '../../hooks/useOpenFolder'
-import type { ReactNode } from 'react'
+import { toast } from 'sonner';
+import { OpenFolderButton } from './OpenFolderButton';
+import type { FolderKey } from '../../hooks/useOpenFolder';
+import type { ReactNode } from 'react';
 
 interface FileViewerModalProps {
-  title: string
-  content: string | null
-  isLoading: boolean
-  error: Error | null
-  onClose: () => void
-  onCopy?: () => void
-  onOpenExternal?: () => void
-  folderKey?: FolderKey
-  headerExtra?: ReactNode  // FR-94: Custom header controls
+  title: string;
+  content: string | null;
+  isLoading: boolean;
+  error: Error | null;
+  onClose: () => void;
+  onCopy?: () => void;
+  onOpenExternal?: () => void;
+  folderKey?: FolderKey;
+  headerExtra?: ReactNode; // FR-94: Custom header controls
 }
 
 export function FileViewerModal({
@@ -40,19 +40,19 @@ export function FileViewerModal({
 }: FileViewerModalProps) {
   const handleCopy = async () => {
     if (onCopy) {
-      onCopy()
+      onCopy();
     } else if (content) {
-      await navigator.clipboard.writeText(content)
-      toast.success('Copied to clipboard')
+      await navigator.clipboard.writeText(content);
+      toast.success('Copied to clipboard');
     }
-  }
+  };
 
   // Close on Escape key
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
-      onClose()
+      onClose();
     }
-  }
+  };
 
   return (
     <div
@@ -63,7 +63,7 @@ export function FileViewerModal({
     >
       <div
         className="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] flex flex-col mx-4"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
@@ -79,7 +79,12 @@ export function FileViewerModal({
               title="Copy to clipboard"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                />
               </svg>
             </button>
 
@@ -91,7 +96,12 @@ export function FileViewerModal({
                 title="Open in browser"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
                 </svg>
               </button>
             )}
@@ -106,7 +116,12 @@ export function FileViewerModal({
               title="Close"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -126,5 +141,5 @@ export function FileViewerModal({
         </div>
       </div>
     </div>
-  )
+  );
 }

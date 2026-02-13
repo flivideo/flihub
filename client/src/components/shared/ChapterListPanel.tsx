@@ -16,7 +16,7 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
   const chapters = useMemo(() => {
     const chapterMap = new Map<number, number>();
 
-    recordings.forEach(filename => {
+    recordings.forEach((filename) => {
       const parsed = parseRecordingFilename(filename);
       if (parsed) {
         const chapterNum = parseInt(parsed.chapter, 10);
@@ -57,7 +57,7 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
 
     try {
       // Check if collision (target chapter exists)
-      const collision = chapters.find(ch => ch.number === newChapter);
+      const collision = chapters.find((ch) => ch.number === newChapter);
 
       if (collision) {
         // SWAP: oldChapter ↔ newChapter
@@ -66,8 +66,8 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chapter1: String(oldChapter).padStart(2, '0'),
-            chapter2: String(newChapter).padStart(2, '0')
-          })
+            chapter2: String(newChapter).padStart(2, '0'),
+          }),
         });
 
         const result = await response.json();
@@ -86,14 +86,16 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             oldChapter: String(oldChapter).padStart(2, '0'),
-            newChapter: String(newChapter).padStart(2, '0')
-          })
+            newChapter: String(newChapter).padStart(2, '0'),
+          }),
         });
 
         const result = await response.json();
 
         if (result.success) {
-          console.log(`[FR-140] Renamed chapter ${oldChapter} → ${newChapter} (${result.filesRenamed} files)`);
+          console.log(
+            `[FR-140] Renamed chapter ${oldChapter} → ${newChapter} (${result.filesRenamed} files)`
+          );
           // Trigger re-fetch via parent
           window.location.reload();
         } else {
@@ -160,16 +162,20 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
             return (
               <div key={chapter.number}>
                 {/* Gap Indicator */}
-                {hasGap && gaps.map(gap => {
-                  if (gap > previousChapter && gap < chapter.number) {
-                    return (
-                      <div key={gap} className="text-sm text-yellow-600 bg-yellow-50 px-3 py-2 rounded mb-2">
-                        ⚠️ Gap at {String(gap).padStart(2, '0')}
-                      </div>
-                    );
-                  }
-                  return null;
-                })}
+                {hasGap &&
+                  gaps.map((gap) => {
+                    if (gap > previousChapter && gap < chapter.number) {
+                      return (
+                        <div
+                          key={gap}
+                          className="text-sm text-yellow-600 bg-yellow-50 px-3 py-2 rounded mb-2"
+                        >
+                          ⚠️ Gap at {String(gap).padStart(2, '0')}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
 
                 {/* Chapter Panel */}
                 <div className="border border-gray-200 rounded-lg p-3 bg-white hover:border-blue-300 transition-colors">
@@ -218,9 +224,7 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
           })}
 
           {chapters.length === 0 && (
-            <div className="text-center text-gray-400 py-8">
-              No chapters found
-            </div>
+            <div className="text-center text-gray-400 py-8">No chapters found</div>
           )}
         </div>
 

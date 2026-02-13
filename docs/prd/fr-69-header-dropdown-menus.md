@@ -17,11 +17,13 @@ Header has multiple standalone icons that could be better organized into logical
 ## Solution
 
 ### Gear Menu
+
 - Config
 - Mockups
 - (future: API Help)
 
 ### Project Actions Menu
+
 - Copy for calendar
 - Copy full path
 - Open in Finder
@@ -42,14 +44,17 @@ Consider using a dropdown component library or building a simple one with proper
 **Discovered 2026-01-01:** Code review revealed FR-69 was already implemented.
 
 **What was built:**
+
 - `client/src/components/HeaderDropdown.tsx` - Reusable dropdown component
 - Settings dropdown (gear icon) with Config and Mockups options
 - Project actions dropdown (ellipsis icon) with Copy for Calendar, Copy Path, Open in Finder
 
 **Evidence:**
+
 - HeaderDropdown.tsx has `// FR-69:` comment at top
 - App.tsx uses HeaderDropdown with `// FR-69: Project Actions dropdown` and `// FR-69: Settings dropdown` comments
 
 **Files:**
+
 - `client/src/components/HeaderDropdown.tsx` (created)
 - `client/src/App.tsx` (modified - imports and uses HeaderDropdown)

@@ -29,6 +29,7 @@ When project list becomes noticeably slow (>500ms).
 ## Technical Notes
 
 Potential approaches:
+
 - Cache scan results with TTL
 - Background refresh on project change events
 - Lazy load indicators (show skeleton, then populate)
