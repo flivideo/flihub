@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "nodemon --config nodemon.json",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
@@ -18,7 +21,8 @@
     "fs-extra": "^11.3.0",
     "glob": "^13.0.0",
     "socket.io": "^4.8.1",
-    "string-comparisons": "^0.0.20"
+    "string-comparisons": "^0.0.20",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
@@ -26,8 +30,13 @@
     "@types/express": "^5.0.0",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.10.2",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/ui": "^4.0.18",
     "nodemon": "^3.1.9",
+    "supertest": "^7.2.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.18"
   }
 }
