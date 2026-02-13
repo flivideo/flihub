@@ -10,7 +10,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath } from '../../utils/pathUtils.js';
+import { expandPath, queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseRecordingFilename, extractTagsFromName } from '../../../../shared/naming.js';
@@ -39,7 +39,7 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
   // GET / - List recordings for a project
   // ============================================
   router.get('/', async (req: Request, res: Response) => {
-    const { code: codeInput } = req.params;
+    const codeInput = queryString(req.params.code);
     console.log('[RECORDINGS API] ===== GET RECORDINGS REQUEST =====', codeInput);
     const { chapter: chapterFilter, 'missing-transcripts': missingFilter } = req.query;
 

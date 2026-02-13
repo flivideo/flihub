@@ -7,7 +7,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath } from '../../utils/pathUtils.js';
+import { expandPath, queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseImageFilename, compareImageAssets } from '../../../../shared/naming.js';
@@ -23,7 +23,7 @@ export function createImagesRoutes(getConfig: () => Config): Router {
   // GET / - List images for a project
   // ============================================
   router.get('/', async (req: Request, res: Response) => {
-    const { code: codeInput } = req.params;
+    const codeInput = queryString(req.params.code);
     const { chapter: chapterFilter } = req.query;
 
     try {

@@ -14,7 +14,7 @@ import type {
   SavePromptResponse,
   LoadPromptResponse,
 } from '../../../shared/types.js';
-import { expandPath } from '../utils/pathUtils.js';
+import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { readFileSafe } from '../utils/filesystem.js';
 import {
@@ -180,7 +180,8 @@ export function createAssetRoutes(config: Config): Router {
   // NFR-6: Using projectDirectory with getProjectPaths()
   router.get('/next-image-order', async (req: Request, res: Response) => {
     try {
-      const { chapter, sequence } = req.query;
+      const chapter = queryString(req.query.chapter);
+      const sequence = queryString(req.query.sequence);
 
       if (!chapter || !sequence) {
         res.status(400).json({ success: false, error: 'Chapter and sequence are required' });
@@ -362,7 +363,7 @@ export function createAssetRoutes(config: Config): Router {
 
   // DELETE /api/assets/incoming/:encodedPath - Remove an incoming image (move to trash)
   router.delete('/incoming/:encodedPath', async (req: Request, res: Response) => {
-    const filePath = decodeURIComponent(req.params.encodedPath);
+    const filePath = decodeURIComponent(queryString(req.params.encodedPath));
 
     try {
       if (!(await fs.pathExists(filePath))) {
@@ -387,7 +388,7 @@ export function createAssetRoutes(config: Config): Router {
 
   // GET /api/assets/image/:encodedPath - Serve an image file (for thumbnails)
   router.get('/image/:encodedPath', async (req: Request, res: Response) => {
-    const filePath = decodeURIComponent(req.params.encodedPath);
+    const filePath = decodeURIComponent(queryString(req.params.encodedPath));
 
     try {
       if (!(await fs.pathExists(filePath))) {
@@ -564,7 +565,7 @@ export function createAssetRoutes(config: Config): Router {
   // FR-22: GET /api/assets/prompt/:filename - Read a prompt file for editing
   // NFR-6: Using projectDirectory with getProjectPaths()
   router.get('/prompt/:filename', async (req: Request, res: Response) => {
-    const { filename } = req.params;
+    const filename = queryString(req.params.filename);
 
     try {
       // Parse filename to extract components
@@ -606,7 +607,7 @@ export function createAssetRoutes(config: Config): Router {
 
   // FR-38: DELETE /api/assets/prompt/:filename - Delete a prompt file (Option B)
   router.delete('/prompt/:filename', async (req: Request, res: Response) => {
-    const { filename } = req.params;
+    const filename = queryString(req.params.filename);
 
     try {
       // Validate filename format
@@ -642,7 +643,7 @@ export function createAssetRoutes(config: Config): Router {
 
   // FR-49: DELETE /api/assets/images/:filename - Delete an assigned image (move to -trash/)
   router.delete('/images/:filename', async (req: Request, res: Response) => {
-    const { filename } = req.params;
+    const filename = queryString(req.params.filename);
 
     try {
       // Validate filename - must be parseable as an image filename
@@ -699,12 +700,10 @@ export function createAssetRoutes(config: Config): Router {
       return;
     }
     if (!chapter || !sequence || !imageOrder || !label) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          error: 'Missing required fields: chapter, sequence, imageOrder, label',
-        });
+      res.status(400).json({
+        success: false,
+        error: 'Missing required fields: chapter, sequence, imageOrder, label',
+      });
       return;
     }
 

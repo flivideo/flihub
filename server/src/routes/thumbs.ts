@@ -4,7 +4,7 @@ import path from 'path';
 import os from 'os';
 import AdmZip from 'adm-zip';
 import type { Config } from '../../../shared/types.js';
-import { expandPath } from '../utils/pathUtils.js';
+import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 
 // Supported image extensions
@@ -125,7 +125,7 @@ export function createThumbRoutes(config: Config): Router {
   // GET /api/thumbs/zip/:filename/contents - Preview images in a ZIP file
   router.get('/zip/:filename/contents', async (req: Request, res: Response) => {
     try {
-      const { filename } = req.params;
+      const filename = queryString(req.params.filename);
       const downloadsDir = path.join(os.homedir(), 'Downloads');
       const zipPath = path.join(downloadsDir, filename);
 
@@ -294,7 +294,7 @@ export function createThumbRoutes(config: Config): Router {
   // GET /api/thumbs/image/:filename - Serve a thumbnail image
   router.get('/image/:filename', async (req: Request, res: Response) => {
     try {
-      const { filename } = req.params;
+      const filename = queryString(req.params.filename);
       const thumbsDir = getThumbsDir(config);
       const filePath = path.join(thumbsDir, filename);
 
@@ -367,7 +367,7 @@ export function createThumbRoutes(config: Config): Router {
   // DELETE /api/thumbs/zip/:filename - Delete a ZIP file from Downloads
   router.delete('/zip/:filename', async (req: Request, res: Response) => {
     try {
-      const { filename } = req.params;
+      const filename = queryString(req.params.filename);
       const downloadsDir = path.join(os.homedir(), 'Downloads');
       const zipPath = path.join(downloadsDir, filename);
 
@@ -400,7 +400,7 @@ export function createThumbRoutes(config: Config): Router {
   // DELETE /api/thumbs/:filename - Delete a thumbnail and renumber remaining
   router.delete('/:filename', async (req: Request, res: Response) => {
     try {
-      const { filename } = req.params;
+      const filename = queryString(req.params.filename);
       const thumbsDir = getThumbsDir(config);
       const filePath = path.join(thumbsDir, filename);
 

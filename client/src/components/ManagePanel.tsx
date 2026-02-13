@@ -10,7 +10,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useRecordings, useConfig, fetchApi } from '../hooks/useApi';
+import { useRecordings, useConfig } from '../hooks/useApi';
 import { useRecordingsSocket, getSocket } from '../hooks/useSocket';
 import { formatFileSize, formatChapterTitle } from '../utils/formatting';
 import {

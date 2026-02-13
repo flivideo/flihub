@@ -108,7 +108,7 @@ Reasoning:
 [ ] **A - Intentional (benign)** - Report as INFO, tool optional
 [ ] **B - Error (should fix)** - Report as WARNING, tool recommended
 [ ] **C - User choice** - Report as WARNING with dismiss
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -169,7 +169,7 @@ Reasoning:
 [ ] **A - Intentional (benign)** - Report as INFO
 [ ] **B - Error (should fix)** - Report as WARNING
 [ ] **C - User choice** - Report as WARNING with dismiss
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -232,7 +232,7 @@ Reasoning:
 [ ] **A - Error** - Must fix
 [ ] **B - Warning** - Should fix
 [ ] **C - Allowed** - Don't check
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -292,7 +292,7 @@ Reasoning:
 [ ] **A - Must start at 1** - ERROR
 [ ] **B - Should start at 1** - WARNING
 [ ] **C - Can start anywhere** - Don't check
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -358,7 +358,7 @@ Reasoning:
 [ ] **A - Error** - Must fix
 [ ] **B - Warning** - Discouraged
 [ ] **C - Allowed** - Don't check
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -406,7 +406,7 @@ Reasoning:
 
 [ ] **A - Allowed** - Don't check
 [ ] **B - Info** - Report for visibility
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -471,7 +471,7 @@ Suggests `-safe` folders still exist?
 [ ] **A - Deprecated** - Migrate to state-based
 [ ] **B - Supported** - Keep dual-mode
 [ ] **C - User choice** - Both valid
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -525,7 +525,7 @@ Reasoning:
 
 [ ] **A - Migrate** - Add sequences to legacy files
 [ ] **B - Support** - Keep as-is
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -577,7 +577,7 @@ Reasoning:
 
 [ ] **A - Info** - Just report
 [ ] **B - Warning** - Should fix
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -625,7 +625,7 @@ Reasoning:
 
 [ ] **A - Error** - Auto-delete
 [ ] **B - Warning** - User decides
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 ---
 
@@ -725,7 +725,7 @@ tags.push(normalizedTag);
 [ ] **A - Case-insensitive** - Convert to uppercase (RECOMMENDED)
 [ ] **B - Case-sensitive** - Keep strict validation
 [ ] **C - Validate and suggest** - Show error with suggestion
-[ ] **Other:** **********\_\_\_**********
+[ ] **Other:** \***\*\*\*\*\***\_\_\_\***\*\*\*\*\***
 
 **Impact if approved:**
 

@@ -10,7 +10,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath } from '../../utils/pathUtils.js';
+import { expandPath, queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { getProjectStatsRaw } from '../../utils/projectStats.js';
@@ -250,7 +250,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
   // FR-114: GET /:code/transcript/text - Combined transcript as plain text
   // ============================================
   router.get('/:code/transcript/text', async (req: Request, res: Response) => {
-    const { code: codeInput } = req.params;
+    const codeInput = queryString(req.params.code);
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
@@ -312,7 +312,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
   // GET /:code - Project detail
   // ============================================
   router.get('/:code', async (req: Request, res: Response) => {
-    const { code: codeInput } = req.params;
+    const codeInput = queryString(req.params.code);
     const config = getConfig();
 
     try {

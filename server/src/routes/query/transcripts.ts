@@ -9,7 +9,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath } from '../../utils/pathUtils.js';
+import { expandPath, queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseRecordingFilename } from '../../../../shared/naming.js';
@@ -26,7 +26,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
   // GET / - List transcripts for a project
   // ============================================
   router.get('/', async (req: Request, res: Response) => {
-    const { code: codeInput } = req.params;
+    const codeInput = queryString(req.params.code);
     const { chapter: chapterFilter, segments: segmentsParam, include } = req.query;
     const includeContent = include === 'content';
 
@@ -130,7 +130,8 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
   // GET /:recording - Get single transcript content
   // ============================================
   router.get('/:recording', async (req: Request, res: Response) => {
-    const { code: codeInput, recording } = req.params;
+    const codeInput = queryString(req.params.code);
+    const recording = queryString(req.params.recording);
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
@@ -186,7 +187,8 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
   // NOTE: Must be defined BEFORE /:recording/srt to avoid "chapters" matching as :recording
   // ============================================
   router.get('/chapters/:chapterName/srt', async (req: Request, res: Response) => {
-    const { code, chapterName } = req.params;
+    const code = queryString(req.params.code);
+    const chapterName = queryString(req.params.chapterName);
     const projectsDir = expandPath(PROJECTS_ROOT);
     const projectPath = path.join(projectsDir, code);
 
@@ -228,7 +230,8 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
   // FR-75: GET /:recording/srt - Get SRT subtitle file content
   // ============================================
   router.get('/:recording/srt', async (req: Request, res: Response) => {
-    const { code, recording } = req.params;
+    const code = queryString(req.params.code);
+    const recording = queryString(req.params.recording);
     const projectsDir = expandPath(PROJECTS_ROOT);
     const projectPath = path.join(projectsDir, code);
 

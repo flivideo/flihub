@@ -393,7 +393,7 @@ If implementation causes issues:
 - [ ] **Option B:** Case-sensitive (strict uppercase only)
 - [ ] **Option C:** Validate and suggest
 
-**PO Decision:** ******\_******
+**PO Decision:** **\*\***\_**\*\***
 
 **If not Option A:** This handover is invalid, new approach needed.
 

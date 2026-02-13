@@ -29,8 +29,6 @@ import type {
   RenameChapterResponse,
   QueueAllResponse,
   RecentRename,
-  InboxFile,
-  InboxSubfolder,
   InboxResponse,
   ChapterRecordingStatusResponse,
   ShadowStatusResponse,

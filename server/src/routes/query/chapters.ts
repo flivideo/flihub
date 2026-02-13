@@ -7,7 +7,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath } from '../../utils/pathUtils.js';
+import { expandPath, queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { detectFinalMedia } from '../../utils/finalMedia.js';
@@ -25,7 +25,7 @@ export function createChaptersRoutes(getConfig: () => Config): Router {
   // GET / - Get chapters with timestamps
   // ============================================
   router.get('/', async (req: Request, res: Response) => {
-    const { code: codeInput } = req.params;
+    const codeInput = queryString(req.params.code);
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")

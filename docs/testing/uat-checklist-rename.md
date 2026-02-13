@@ -60,7 +60,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** no validation errors occur
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -74,7 +74,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** preview shows uppercase tags
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -87,7 +87,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** preview shows `02-1-outro-COMMUNITY.mov`
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -112,7 +112,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **Then** file saved as `20-1-intro-CTA-DEMO.mov`
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -127,7 +127,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** rename succeeds without errors
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -140,7 +140,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** no tag-related errors
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -156,7 +156,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** preview showed correct uppercase tags
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -172,7 +172,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** no errors or timeouts
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -208,7 +208,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** chapters are sequential: 01, 02, 03
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -226,7 +226,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **Then** all files shifted successfully
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -249,7 +249,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **Then** sequences are sequential: 1, 2, 3
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -279,7 +279,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** indicator disappears
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -294,7 +294,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** progress tracked via Socket.io
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -313,7 +313,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
   - [ ] **Then** validation error shown
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail | ⏸️ Blocked (needs PO decision)
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -325,7 +325,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **Or** validation error shown
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -343,7 +343,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** state preserved (parked/annotation flags)
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -364,7 +364,7 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] **And** no mouse required
 
 **Status:** ⬜ Not Tested | ✅ Pass | ❌ Fail
-**Notes:** **************\_**************
+**Notes:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 
@@ -403,8 +403,8 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] No regression issues found
 - [ ] Browser compatibility verified
 
-**Tester Name:** **************\_**************
-**Date:** **************\_**************
+**Tester Name:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
+**Date:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 **Sign-off:** ⬜ Approved | ⬜ Rejected (see notes)
 
 ---
@@ -417,8 +417,8 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] Sequence renumbering works (TC2.3)
 - [ ] Preview accurate before execution
 
-**Tester Name:** **************\_**************
-**Date:** **************\_**************
+**Tester Name:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
+**Date:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 **Sign-off:** ⬜ Approved | ⬜ Rejected (see notes)
 
 ---
@@ -430,8 +430,8 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 - [ ] Progress tracking visible
 - [ ] No performance issues
 
-**Tester Name:** **************\_**************
-**Date:** **************\_**************
+**Tester Name:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
+**Date:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 **Sign-off:** ⬜ Approved | ⬜ Rejected (see notes)
 
 ---
@@ -446,11 +446,11 @@ User Acceptance Testing checklist for rename operations, derived from real-world
 
 ## Test Environment
 
-**Date Tested:** **************\_**************
-**Tester:** **************\_**************
-**Node Version:** **************\_**************
-**Browser:** **************\_**************
-**OS:** **************\_**************
+**Date Tested:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
+**Tester:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
+**Node Version:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
+**Browser:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
+**OS:** **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 
 ---
 

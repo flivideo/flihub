@@ -345,7 +345,7 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
           {(detail.status === 'cleaned' || detail.status === 'changed') && (
             <button
               onClick={handleRestore}
-              disabled={restoreFolder.isPending || detail.status === 'missing'}
+              disabled={restoreFolder.isPending || (detail.status as string) === 'missing'}
               className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
             >
               {restoreFolder.isPending ? 'Restoring...' : 'Restore for Gling'}

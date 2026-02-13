@@ -13,7 +13,7 @@ import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
 import type { Server as SocketServer } from 'socket.io';
-import { expandPath } from '../utils/pathUtils.js';
+import { expandPath, queryString } from '../utils/pathUtils.js';
 import {
   readProjectState,
   writeProjectState,
@@ -47,7 +47,7 @@ export function createStateRoutes(
    * If state file doesn't exist, returns empty state: { version: 1, recordings: {} }
    */
   router.get('/projects/:code/state', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
 
     try {
       // Resolve project directory
@@ -92,7 +92,7 @@ export function createStateRoutes(
    * - { success: false, error: string } on error
    */
   router.post('/projects/:code/state', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const body = req.body as UpdateProjectStateRequest;
 
     console.log('[SERVER SAVE] Request:', { code, recordings: body.recordings });
@@ -159,7 +159,7 @@ export function createStateRoutes(
    * - { success: false, error: string } on error
    */
   router.patch('/projects/:code/state/dictionary', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const { words } = req.body as { words?: string[] };
 
     if (!Array.isArray(words)) {

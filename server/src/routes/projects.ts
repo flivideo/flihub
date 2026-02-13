@@ -6,7 +6,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath } from '../utils/pathUtils.js';
+import { expandPath, queryString } from '../utils/pathUtils.js';
 import { resolveProjectCode } from '../utils/projectResolver.js';
 import { detectFinalMedia } from '../utils/finalMedia.js';
 import { extractChapters } from '../utils/chapterExtraction.js';
@@ -115,7 +115,7 @@ export function createProjectRoutes(
 
   // PUT /api/projects/:code/priority - Update project priority (pin/unpin)
   router.put('/:code/priority', async (req: Request, res: Response) => {
-    const { code: codeInput } = req.params;
+    const codeInput = queryString(req.params.code);
     const { priority } = req.body;
 
     if (!['pinned', 'normal'].includes(priority)) {
@@ -161,7 +161,7 @@ export function createProjectRoutes(
   // PUT /api/projects/:code/stage - Update project stage (manual override)
   // FR-80: Updated to support new 8-stage workflow
   router.put('/:code/stage', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const { stage } = req.body;
 
     // FR-80: Valid stages from the new workflow model + 'auto' for reset
@@ -212,7 +212,7 @@ export function createProjectRoutes(
 
   // FR-48: GET /api/projects/:code/transcript-sync - Get detailed transcript sync status
   router.get('/:code/transcript-sync', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const projectsDir = expandPath(PROJECTS_ROOT);
     const projectPath = path.join(projectsDir, code);
 
@@ -256,7 +256,7 @@ export function createProjectRoutes(
 
   // GET /api/projects/:code/final - Get final video and SRT info for a project
   router.get('/:code/final', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const projectsDir = expandPath(PROJECTS_ROOT);
     const projectPath = path.join(projectsDir, code);
 
@@ -277,7 +277,7 @@ export function createProjectRoutes(
 
   // GET /api/projects/:code/chapters - FR-34: Extract chapter timestamps from SRT
   router.get('/:code/chapters', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const projectsDir = expandPath(PROJECTS_ROOT);
     const projectPath = path.join(projectsDir, code);
 
@@ -316,7 +316,7 @@ export function createProjectRoutes(
 
   // POST /api/projects/:code/chapters/verify - FR-34 Enhancement: Verify chapter with LLM
   router.post('/:code/chapters/verify', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const verifyRequest = req.body as ChapterVerifyRequest;
 
     if (!verifyRequest.chapter || !verifyRequest.name) {
@@ -354,7 +354,7 @@ export function createProjectRoutes(
 
   // GET /api/projects/:code/chapters/overrides - Get all chapter overrides for a project
   router.get('/:code/chapters/overrides', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const projectsDir = expandPath(PROJECTS_ROOT);
     const projectPath = path.join(projectsDir, code);
     const overridesPath = path.join(projectPath, '.chapter-overrides.json');
@@ -374,7 +374,7 @@ export function createProjectRoutes(
 
   // POST /api/projects/:code/chapters/override - Set a chapter override
   router.post('/:code/chapters/override', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const overrideRequest = req.body as SetChapterOverrideRequest;
 
     if (!overrideRequest.chapter || !overrideRequest.name || !overrideRequest.action) {
@@ -452,7 +452,9 @@ export function createProjectRoutes(
 
   // DELETE /api/projects/:code/chapters/override/:chapter/:name - Remove a chapter override
   router.delete('/:code/chapters/override/:chapter/:name', async (req: Request, res: Response) => {
-    const { code, chapter, name } = req.params;
+    const code = queryString(req.params.code);
+    const chapter = queryString(req.params.chapter);
+    const name = queryString(req.params.name);
     const chapterNum = parseInt(chapter, 10);
 
     const projectsDir = expandPath(PROJECTS_ROOT);
@@ -491,7 +493,7 @@ export function createProjectRoutes(
 
   // FR-59: POST /api/projects/:code/inbox/write - Write file to inbox subfolder
   router.post('/:code/inbox/write', async (req: Request, res: Response) => {
-    const { code } = req.params;
+    const code = queryString(req.params.code);
     const { subfolder, filename, content } = req.body;
 
     // Validate subfolder

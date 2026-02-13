@@ -15,7 +15,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath } from '../utils/pathUtils.js';
+import { expandPath, queryString } from '../utils/pathUtils.js';
 import type { Config } from '../../../shared/types.js';
 
 const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
@@ -41,7 +41,9 @@ export function createVideoRoutes(getConfig: () => Config): Router {
    * filename: the video file name
    */
   router.get('/:projectCode/:folder/:filename', async (req: Request, res: Response) => {
-    const { projectCode, folder, filename } = req.params;
+    const projectCode = queryString(req.params.projectCode);
+    const folder = queryString(req.params.folder);
+    const filename = queryString(req.params.filename);
     const filepath = `${folder}/${filename}`;
 
     // Security: Validate no path traversal and valid folder
@@ -138,7 +140,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
    * Supports Range requests for seeking
    */
   router.get('/recordings/:filename', async (req: Request, res: Response) => {
-    const { filename } = req.params;
+    const filename = queryString(req.params.filename);
 
     // Security: Validate filename - no path traversal
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
@@ -219,7 +221,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
    * Supports Range requests for seeking
    */
   router.get('/incoming/:filename', async (req: Request, res: Response) => {
-    const { filename } = req.params;
+    const filename = queryString(req.params.filename);
 
     // Security: Validate filename - no path traversal
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {

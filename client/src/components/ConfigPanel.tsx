@@ -474,9 +474,9 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
 
       // FR-116: Build common names array (preserve existing autoSequence/suggestTags if name exists)
       const existingCommonNames = config?.commonNames || [];
-      const updatedCommonNames = commonNames.map((name) => {
-        const existing = existingCommonNames.find((cn) => cn.name === name);
-        return existing || { name };
+      const updatedCommonNames = commonNames.map((cn) => {
+        const existing = existingCommonNames.find((ecn) => ecn.name === cn.name);
+        return existing || cn;
       });
 
       // FR-89 Part 5: Send split project directory fields

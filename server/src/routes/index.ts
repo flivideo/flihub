@@ -10,7 +10,7 @@ import type {
   RecordingFile,
   TranscriptionJob,
 } from '../../../shared/types.js';
-import { expandPath } from '../utils/pathUtils.js';
+import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import {
@@ -285,7 +285,7 @@ export function createRoutes(
 
   // DELETE /api/files/:path - Remove a file from pending (discard without renaming)
   router.delete('/files/:encodedPath', (req: Request, res: Response) => {
-    const filePath = decodeURIComponent(req.params.encodedPath);
+    const filePath = decodeURIComponent(queryString(req.params.encodedPath));
     if (pendingFiles.has(filePath)) {
       pendingFiles.delete(filePath);
       res.json({ success: true, path: filePath });

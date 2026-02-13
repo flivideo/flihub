@@ -9,7 +9,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath } from '../../utils/pathUtils.js';
+import { expandPath, queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { readDirEntriesSafe, statSafe } from '../../utils/filesystem.js';
@@ -24,7 +24,7 @@ export function createInboxRoutes(getConfig: () => Config): Router {
   // GET / - List inbox files and subfolders (FR-59)
   // ============================================
   router.get('/', async (req: Request, res: Response) => {
-    const { code: codeInput } = req.params;
+    const codeInput = queryString(req.params.code);
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
@@ -144,7 +144,9 @@ export function createInboxRoutes(getConfig: () => Config): Router {
   // GET /:subfolder/:filename - Read inbox file content (FR-64)
   // ============================================
   router.get('/:subfolder/:filename', async (req: Request, res: Response) => {
-    const { code: codeInput, subfolder, filename } = req.params;
+    const codeInput = queryString(req.params.code);
+    const subfolder = queryString(req.params.subfolder);
+    const filename = queryString(req.params.filename);
 
     try {
       // Security: Validate no path traversal in subfolder or filename

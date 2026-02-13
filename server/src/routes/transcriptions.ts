@@ -12,7 +12,7 @@ import type {
   Config,
 } from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
-import { expandPath } from '../utils/pathUtils.js';
+import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { appendTelemetryEntry } from '../utils/telemetry.js';
 
@@ -380,7 +380,7 @@ export function createTranscriptionRoutes(
 
   // GET /api/transcriptions/status/:filename - Get status for specific file
   router.get('/status/:filename', (req: Request, res: Response) => {
-    const { filename } = req.params;
+    const filename = queryString(req.params.filename);
     const status = getStatusForVideo(filename);
     const transcriptPath = getTranscriptPath(filename);
 
@@ -394,8 +394,8 @@ export function createTranscriptionRoutes(
   // GET /api/transcriptions/transcript/:filename - Get transcript content
   // FR-94: Supports ?format=txt|srt query param, defaults to txt if available
   router.get('/transcript/:filename', async (req: Request, res: Response) => {
-    const { filename } = req.params;
-    const requestedFormat = req.query.format as string | undefined;
+    const filename = queryString(req.params.filename);
+    const requestedFormat = queryString(req.query.format) || undefined;
     const baseName = path.basename(filename, path.extname(filename));
     const transcriptsDir = getTranscriptsDir();
 
