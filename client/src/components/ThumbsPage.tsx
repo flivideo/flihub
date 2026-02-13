@@ -64,7 +64,7 @@ export function ThumbsPage() {
 
   const zips = zipsData?.zips || [];
   const zipImages = zipContentsData?.images || [];
-  const thumbs = thumbsData?.thumbs || [];
+  const thumbs = useMemo(() => thumbsData?.thumbs || [], [thumbsData?.thumbs]);
 
   // Handle ZIP selection
   const handlePreviewZip = useCallback((filename: string) => {

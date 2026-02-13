@@ -89,7 +89,7 @@ export function TranscriptionsPage() {
       socket.off('transcription:started', handleStarted);
       socket.off('transcription:queued', handleQueued);
     };
-  }, [refetch, queryClient]);
+  }, [refetch, queryClient, activeProject]);
 
   const { active, queue, recent } = data || { active: null, queue: [], recent: [] };
   const transcripts = transcriptsData?.transcripts || [];

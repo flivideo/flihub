@@ -205,7 +205,7 @@ function App() {
         previousProjectDir.current
       );
     }
-  }, [suggestedNaming, config?.projectDirectory]);
+  }, [suggestedNaming, config?.projectDirectory, config?.activeProject, config?.projectsRootDirectory]);
 
   // FR-2: Increment sequence after successful rename
   // FR-16: Show discard modal if other files remain
