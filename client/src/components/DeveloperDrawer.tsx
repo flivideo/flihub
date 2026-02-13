@@ -146,7 +146,7 @@ export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProp
       } else {
         toast.success('File opened in editor');
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to open file');
     }
   };
@@ -231,10 +231,13 @@ export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProp
             <span>Size: {formatSize(activeData.size)}</span>
             <span>Modified: {new Date(activeData.lastModified).toLocaleString()}</span>
             {activeTab === 'telemetry' && 'lineCount' in activeData && (
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <span>Lines: {(activeData as any).lineCount}</span>
             )}
           </div>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {'note' in activeData && (activeData as any).note && (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <div className="mt-2 text-amber-400 italic text-xs">{(activeData as any).note}</div>
           )}
         </div>

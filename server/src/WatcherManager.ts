@@ -169,7 +169,7 @@ export class WatcherManager {
       event: 'projects:changed',
       debounceMs: 500,
       depth: 1,
-      ignored: /(^|[\/\\])\../,
+      ignored: /(^|[/\\])\../,
       watchEvents: ['addDir', 'unlinkDir'],
     });
   }
@@ -185,7 +185,7 @@ export class WatcherManager {
       event: 'inbox:changed',
       debounceMs: 300,
       depth: 2, // Watch inbox/ and one level of subfolders
-      ignored: /(^|[\/\\])\../,
+      ignored: /(^|[/\\])\../,
       watchEvents: ['add', 'unlink', 'addDir', 'unlinkDir'],
     });
   }

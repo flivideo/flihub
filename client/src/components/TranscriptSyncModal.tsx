@@ -30,7 +30,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
       toast.success(`Queued: ${filename}`);
       refetch();
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
-    } catch (error) {
+    } catch (_error) {
       // Try the safe folder
       try {
         const safePath = `${projectPath}/recordings/-safe/${filename}.mov`;

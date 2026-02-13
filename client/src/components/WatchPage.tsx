@@ -988,7 +988,7 @@ export function WatchPage() {
                     </div>
                   </div>
                 ) : annotationText ? (
-                  <p className="text-sm text-gray-700 italic">"{annotationText}"</p>
+                  <p className="text-sm text-gray-700 italic">&quot;{annotationText}&quot;</p>
                 ) : (
                   <button
                     onClick={() => setEditingAnnotation(true)}

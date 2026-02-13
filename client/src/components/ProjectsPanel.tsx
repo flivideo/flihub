@@ -475,7 +475,7 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
       });
       refetchSuggestedNaming();
       toast.success(`Switched to project: ${projectCode}`);
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to switch project');
     }
   };
@@ -495,7 +495,7 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
     const nextPriority = getNextPriority(project.priority);
     try {
       await updatePriority.mutateAsync({ code: project.code, priority: nextPriority });
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to update priority');
     }
   };
@@ -510,7 +510,7 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   const handleStageChange = async (code: string, stage: string) => {
     try {
       await updateStage.mutateAsync({ code, stage: stage as ProjectStageOverride });
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to update stage');
     }
   };

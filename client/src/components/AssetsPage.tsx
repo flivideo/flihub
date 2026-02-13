@@ -520,6 +520,7 @@ export function AssetsPage() {
   };
 
   // FR-22: Handle clicking a prompt to edit it
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleEditPrompt = (prompt: PromptAsset) => {
     setEditingPromptFilename(prompt.filename);
   };

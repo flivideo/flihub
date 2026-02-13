@@ -65,7 +65,7 @@ export function parseSrt(content: string): SrtEntry[] {
     // Second line: timestamp range
     const timestampLine = lines[1];
     const timestampMatch = timestampLine.match(
-      /(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})/
+      /(\d{2}:\d{2}:\d{2}[,.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,.]\d{3})/
     );
     if (!timestampMatch) continue;
 

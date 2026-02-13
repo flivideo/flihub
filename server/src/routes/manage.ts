@@ -12,7 +12,7 @@ import {
 } from '../../../shared/naming.js';
 import { renameRecording } from '../utils/renameRecording.js';
 import { createShadowFile } from '../utils/shadowFiles.js';
-import { generateChapterRecording, groupRecordingsByChapter } from '../utils/chapterRecording.js';
+import { generateChapterRecording } from '../utils/chapterRecording.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import type {
@@ -503,6 +503,7 @@ export function createManageRoutes(
   async function regenerateChaptersAsync(
     chapterKeys: string[],
     chapters: Map<string, RecordingFile[]>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     paths: any,
     config: Config,
     io: Server<ClientToServerEvents, ServerToClientEvents>,
@@ -756,7 +757,7 @@ export function createManageRoutes(
         } else {
           results.failed++;
         }
-      } catch (err) {
+      } catch (_err) {
         results.failed++;
       }
     }
@@ -930,7 +931,7 @@ export function createManageRoutes(
         // Generate new chapter video (correct signature!)
         await generateChapterRecording(chapterSegments, options);
         results.completed++;
-      } catch (err) {
+      } catch (_err) {
         results.failed++;
       }
     }

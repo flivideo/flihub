@@ -17,12 +17,9 @@ import { readDirSafe } from '../utils/filesystem.js';
 import type {
   Config,
   ProjectStats,
-  ProjectPriority,
-  ProjectStage,
   ChapterVerifyRequest,
   ChapterOverride,
   SetChapterOverrideRequest,
-  TranscriptSyncStatus,
   TranscriptSyncResponse,
 } from '../../../shared/types.js';
 

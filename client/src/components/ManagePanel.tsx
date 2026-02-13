@@ -334,6 +334,7 @@ export function ManagePanel() {
           const endpoint = `/api/manage/${tool}`;
 
           // Build request body with optional chapter settings
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const requestBody: any = { files: targetFiles };
           if ((type === 'chapters' || type === 'all') && modalChapterSettings) {
             requestBody.chapterSettings = modalChapterSettings;

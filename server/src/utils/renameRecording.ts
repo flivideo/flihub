@@ -71,6 +71,7 @@ export async function deleteDerivableFiles(
       try {
         await fs.unlink(p);
         console.log(`[FR-130] Deleted: ${path.basename(p)}`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         // Only ignore ENOENT (file doesn't exist) - log other errors
         if (err.code !== 'ENOENT') {

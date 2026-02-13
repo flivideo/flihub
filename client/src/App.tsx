@@ -287,7 +287,7 @@ function App() {
         refetchSuggestedNaming();
         setShowProjectDropdown(false);
         toast.success(`Switched to ${projectPath.split(/[/\\]/).pop()}`);
-      } catch (err) {
+      } catch (_err) {
         toast.error('Failed to switch project');
       }
     },

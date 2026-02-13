@@ -9,7 +9,7 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath, queryString } from '../../utils/pathUtils.js';
+import { queryString, expandPath } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseRecordingFilename } from '../../../../shared/naming.js';
@@ -19,7 +19,7 @@ import type { Config, QueryTranscript } from '../../../../shared/types.js';
 
 const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 
-export function createTranscriptsRoutes(getConfig: () => Config): Router {
+export function createTranscriptsRoutes(_getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
 
   // ============================================
@@ -141,7 +141,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
         return;
       }
 
-      const { code, path: projectPath } = resolved;
+      const { path: projectPath } = resolved;
 
       const paths = getProjectPaths(projectPath);
 
@@ -159,7 +159,6 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
       }
 
       const parsed = parseRecordingFilename(filename.replace('.txt', '.mov'));
-      const stat = await fs.stat(filePath);
       const content = await fs.readFile(filePath, 'utf-8');
 
       // Extract name parts (remove tags)

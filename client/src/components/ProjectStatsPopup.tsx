@@ -318,7 +318,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
           success: false,
         });
       }
-    } catch (error) {
+    } catch (_error) {
       setVerifyResult({
         chapter: ch.chapter,
         message: 'Verification failed',
@@ -367,7 +367,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
         });
         refetchChapters();
       }
-    } catch (error) {
+    } catch (_error) {
       setVerifyResult({
         chapter: helpAIChapter.chapter,
         message: 'Verification failed',

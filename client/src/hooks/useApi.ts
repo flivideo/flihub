@@ -732,6 +732,7 @@ export function useDeveloperProjectState() {
     queryFn: () =>
       fetchApi<{
         success: boolean;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         content: any;
         filePath: string;
         size: number;
@@ -748,6 +749,7 @@ export function useDeveloperConfig() {
     queryFn: () =>
       fetchApi<{
         success: boolean;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         content: any;
         filePath: string;
         size: number;

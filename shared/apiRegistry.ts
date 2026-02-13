@@ -14,6 +14,7 @@ export interface ApiParameter {
   description?: string;
   required?: boolean;
   enum?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   example?: any;
   properties?: ApiParameter[]; // For object/array types
 }
@@ -25,6 +26,7 @@ export interface ApiEndpoint {
   group: string;
   description: string;
   parameters: ApiParameter[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   exampleResponse?: any;
   notes?: string;
 }

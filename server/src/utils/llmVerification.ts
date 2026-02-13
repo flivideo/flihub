@@ -6,11 +6,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import type {
-  ChapterVerifyRequest,
-  ChapterVerifyResponse,
-  ChapterMatchCandidate,
-} from '../../../shared/types.js';
+import type { ChapterVerifyRequest, ChapterVerifyResponse } from '../../../shared/types.js';
 
 // Initialize client (uses ANTHROPIC_API_KEY env var)
 const anthropic = new Anthropic();

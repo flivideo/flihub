@@ -279,6 +279,7 @@ export interface ServerToClientEvents {
     current: number;
     total: number;
   }) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   'regen:all:complete': (data: { shadows: any; transcripts: any; chapters: any }) => void;
   'regen:all:error': (data: { error: string }) => void;
 }

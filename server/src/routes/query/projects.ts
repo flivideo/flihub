@@ -18,7 +18,6 @@ import { parseRecordingFilename } from '../../../../shared/naming.js';
 import { readFileSafe } from '../../utils/filesystem.js';
 import {
   countMovFiles,
-  countTxtFiles,
   countUniqueChapters,
   countFiles,
   getProjectTimestamps,
@@ -260,7 +259,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
         return;
       }
 
-      const { code, path: projectPath } = resolved;
+      const { path: projectPath } = resolved;
 
       const paths = getProjectPaths(projectPath);
 

@@ -24,8 +24,6 @@ import {
   buildImageFilename,
   validateLabel,
   compareImageAssets,
-  parseChapterNum,
-  parseSequenceNum,
 } from '../../../shared/naming.js';
 
 // Supported image extensions

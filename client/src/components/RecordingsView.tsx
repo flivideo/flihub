@@ -310,6 +310,7 @@ export function RecordingsView() {
   const parkRecording = useParkRecording(); // FR-120
   const unparkRecording = useUnparkRecording(); // FR-120
   const transcribeAll = useTranscribeAll();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const generateChapter = useGenerateChapterRecordings();
   // FR-92: Get count of files pending transcription
   const { data: pendingData } = usePendingTranscriptionCount();

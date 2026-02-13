@@ -5,9 +5,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import path from 'path';
-import fs from 'fs-extra';
-import { expandPath, queryString } from '../../utils/pathUtils.js';
+import { queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { detectFinalMedia } from '../../utils/finalMedia.js';
@@ -16,9 +14,7 @@ import { readDirSafe } from '../../utils/filesystem.js';
 import { formatChaptersReport } from '../../utils/reporters.js';
 import type { Config, QueryChapter } from '../../../../shared/types.js';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
-export function createChaptersRoutes(getConfig: () => Config): Router {
+export function createChaptersRoutes(_getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
 
   // ============================================

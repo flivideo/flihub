@@ -506,7 +506,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       // FR-83: Refetch shadow status when watch/project directory changes
       refetchShadowStatus();
       toast.success('Configuration saved');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to save configuration');
     }
   };
@@ -521,7 +521,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         );
         refetchShadowStatus();
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to generate shadow files');
     }
   };
@@ -543,7 +543,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         toast.success(`Created ${result.created} shadow files across ${result.projects} projects`);
         refetchShadowStatus();
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to generate shadow files');
     }
   };

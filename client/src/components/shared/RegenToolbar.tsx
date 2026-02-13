@@ -29,7 +29,7 @@ interface RegenToolbarProps {
 }
 
 export function RegenToolbar({
-  projectCode,
+  projectCode: _projectCode,
   selectedFiles,
   totalFiles,
   onRegenComplete,

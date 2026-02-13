@@ -11,12 +11,9 @@
  */
 
 import fs from 'fs-extra';
-import path from 'path';
 import type { ProjectState, RecordingState } from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from './pathUtils.js';
-
-const STATE_FILE_NAME = '.flihub-state.json';
 
 /**
  * Create an empty project state object

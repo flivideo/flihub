@@ -7,8 +7,7 @@
 
 import { Router, Request, Response } from 'express';
 import path from 'path';
-import fs from 'fs-extra';
-import { expandPath, queryString } from '../../utils/pathUtils.js';
+import { queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { getProjectStatsRaw } from '../../utils/projectStats.js';
@@ -29,8 +28,6 @@ import type {
   QueryChapter,
   QueryImage,
 } from '../../../../shared/types.js';
-
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 
 export function createExportRoutes(getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });

@@ -52,6 +52,7 @@ export interface GenerateOptions {
 /**
  * Format seconds to MM:SS or H:MM:SS
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function formatTimestamp(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -348,7 +349,7 @@ function parseSrtContent(content: string): SrtEntry[] {
     if (isNaN(index)) continue;
 
     const timestampMatch = lines[1].match(
-      /(\d{2}:\d{2}:\d{2}[,\.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,\.]\d{3})/
+      /(\d{2}:\d{2}:\d{2}[,.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,.]\d{3})/
     );
     if (!timestampMatch) continue;
 

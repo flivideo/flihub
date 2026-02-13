@@ -92,7 +92,7 @@ function openInFileExplorer(folderPath: string): Promise<void> {
         // Use start command with empty title ("") to handle paths with spaces
         command = `start "" "${folderPath}"`;
         break;
-      case 'linux':
+      case 'linux': {
         // FR-101: Detect WSL (has Microsoft in /proc/version)
         const isWSLExplorer =
           fs.existsSync('/proc/version') &&
@@ -113,6 +113,7 @@ function openInFileExplorer(folderPath: string): Promise<void> {
           command = `xdg-open "${folderPath}"`;
         }
         break;
+      }
       default:
         reject(new Error(`Unsupported platform: ${platform}`));
         return;
@@ -153,7 +154,7 @@ function openInDefaultApp(filePath: string): Promise<void> {
         // Windows: open in default app
         command = `start "" "${filePath}"`;
         break;
-      case 'linux':
+      case 'linux': {
         // FR-101: Detect WSL (has Microsoft in /proc/version)
         const isWSLApp =
           fs.existsSync('/proc/version') &&
@@ -174,6 +175,7 @@ function openInDefaultApp(filePath: string): Promise<void> {
           command = `xdg-open "${filePath}"`;
         }
         break;
+      }
       default:
         reject(new Error(`Unsupported platform: ${platform}`));
         return;

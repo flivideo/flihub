@@ -9,7 +9,6 @@
  */
 
 import path from 'path';
-import fs from 'fs-extra';
 import type { TranscriptSyncStatus } from '../../../shared/types.js';
 import { readDirSafe, statSafe } from './filesystem.js';
 
@@ -19,14 +18,6 @@ import { readDirSafe, statSafe } from './filesystem.js';
 export async function countMovFiles(dir: string): Promise<number> {
   const files = await readDirSafe(dir);
   return files.filter((f) => f.endsWith('.mov')).length;
-}
-
-/**
- * Count .txt files in a directory (excludes *-chapter.txt combined files)
- */
-export async function countTxtFiles(dir: string): Promise<number> {
-  const files = await readDirSafe(dir);
-  return files.filter((f) => f.endsWith('.txt') && !f.endsWith('-chapter.txt')).length;
 }
 
 /**

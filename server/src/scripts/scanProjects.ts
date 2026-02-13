@@ -110,7 +110,7 @@ async function getRecordings(projectPath: string): Promise<string[]> {
       .filter((f) => /\.(mov|mp4)$/i.test(f) && !f.startsWith('.'))
       .filter((f) => !f.startsWith('-')) // Exclude -safe, -chapters folders
       .sort();
-  } catch (error) {
+  } catch (_error) {
     return [];
   }
 }
@@ -331,8 +331,6 @@ async function checkStructuralIssues(
 
   // Check non-sequential chapters
   if (DECISIONS.nonSequentialChapters) {
-    const chapterNumbers = Array.from(chapters.keys()).map((c) => parseInt(c, 10));
-
     // Check if chapters appear in order in the file list
     let prevChapter = -1;
     let nonSequential = false;
@@ -418,7 +416,8 @@ async function checkStructuralIssues(
       sequenceCounts.get(key)!.push(filename);
     }
 
-    for (const [key, filenames] of sequenceCounts.entries()) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [_key, filenames] of sequenceCounts.entries()) {
       if (filenames.length > 1) {
         discrepancies.push({
           projectCode,
@@ -477,7 +476,6 @@ async function checkDerivatives(
 
   const shadowsPath = path.join(projectPath, 'recording-shadows');
   const transcriptsPath = path.join(projectPath, 'recording-transcripts');
-  const chaptersPath = path.join(projectPath, 'recordings', '-chapters');
 
   // Get existing shadows
   let shadows: string[] = [];

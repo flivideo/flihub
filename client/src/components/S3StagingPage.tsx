@@ -332,7 +332,7 @@ export function S3StagingPage({ onClose }: S3StagingPageProps) {
           {/* POST Section */}
           <div className="border-t border-gray-200 pt-4">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              POST <span className="font-normal text-gray-500">(Jan's Edits → You)</span>
+              POST <span className="font-normal text-gray-500">(Jan&apos;s Edits → You)</span>
             </h3>
 
             {/* FR-105: S3 Status for POST */}

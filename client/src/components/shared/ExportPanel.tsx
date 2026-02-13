@@ -168,7 +168,7 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
       } else {
         toast.error(response.error || 'Failed to copy files');
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to prepare files for Gling');
     } finally {
       setIsCopying(false);
@@ -234,7 +234,7 @@ export function ExportPanel({ selectedFiles, selectedCount }: ExportPanelProps) 
       if (!response.success) {
         toast.error(response.error || 'Failed to open folder');
       }
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to open folder');
     }
   };

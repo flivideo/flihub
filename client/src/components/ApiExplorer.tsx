@@ -10,12 +10,14 @@ import {
 const API_BASE_URL = 'http://localhost:5101';
 
 interface ParamValues {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
 interface ApiResponse {
   status: number;
   statusText: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   error?: string;
 }
@@ -71,6 +73,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
     setParamValues(defaults);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateParam = (name: string, value: any) => {
     setParamValues((prev) => ({ ...prev, [name]: value }));
   };
@@ -111,6 +114,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
     const bodyParams = selectedEndpoint.parameters.filter((p) => p.type === 'body');
     if (bodyParams.length === 0) return null;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body: any = {};
     bodyParams.forEach((param) => {
       const value = paramValues[param.name];
@@ -119,7 +123,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
         if (param.dataType === 'array' || param.dataType === 'object') {
           try {
             body[param.name] = typeof value === 'string' ? JSON.parse(value) : value;
-          } catch (e) {
+          } catch (_e) {
             body[param.name] = value;
           }
         } else {
@@ -153,6 +157,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
 
       const res = await fetch(url, options);
       const contentType = res.headers.get('content-type');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let data: any;
 
       if (contentType?.includes('application/json')) {
@@ -166,6 +171,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
         statusText: res.statusText,
         data,
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setResponse({
         status: 0,

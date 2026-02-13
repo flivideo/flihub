@@ -9,8 +9,7 @@
 
 import { Router, Request, Response } from 'express';
 import path from 'path';
-import fs from 'fs-extra';
-import { expandPath, queryString } from '../../utils/pathUtils.js';
+import { queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseRecordingFilename, extractTagsFromName } from '../../../../shared/naming.js';
@@ -18,8 +17,6 @@ import { readDirSafe, statSafe } from '../../utils/filesystem.js';
 import { formatRecordingsReport } from '../../utils/reporters.js';
 import { getVideoDuration } from '../../utils/shadowFiles.js';
 import type { Config, QueryRecording } from '../../../../shared/types.js';
-
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 
 // FR-83/FR-111: Extended recording with shadow support
 // isShadow: true = shadow-only (no real recording)
@@ -32,7 +29,7 @@ interface UnifiedRecording extends QueryRecording {
   shadowSize?: number | null;
 }
 
-export function createRecordingsRoutes(getConfig: () => Config): Router {
+export function createRecordingsRoutes(_getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
 
   // ============================================

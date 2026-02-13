@@ -11,7 +11,6 @@ import path from 'path';
 import type {
   EditManifestFile,
   EditFolderManifest,
-  EditFolderKey,
   ManifestStatus,
   ManifestStatusDetail,
   ManifestFileStatus,
@@ -44,7 +43,7 @@ export async function calculateFileHash(filePath: string): Promise<string> {
  */
 export async function createManifest(
   filePaths: string[],
-  recordingsDir: string
+  _recordingsDir: string
 ): Promise<EditFolderManifest> {
   const files: EditManifestFile[] = [];
   const now = new Date().toISOString();
@@ -96,11 +95,7 @@ export async function getManifestStatus(
 
   // Check each file in the manifest
   for (const manifestFile of manifest.files) {
-    const editFilePath = path.join(editFolderPath, manifestFile.filename);
     const recordingFilePath = path.join(recordingsDir, manifestFile.filename);
-
-    // Check if file exists in edit folder
-    const existsInEdit = await fs.pathExists(editFilePath);
 
     // Check if source exists in recordings folder
     const existsInRecordings = await fs.pathExists(recordingFilePath);

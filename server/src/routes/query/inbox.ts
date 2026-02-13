@@ -9,15 +9,13 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { expandPath, queryString } from '../../utils/pathUtils.js';
+import { queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
 import { readDirEntriesSafe, statSafe } from '../../utils/filesystem.js';
-import type { Config, InboxFile, InboxSubfolder } from '../../../../shared/types.js';
+import type { Config, InboxSubfolder } from '../../../../shared/types.js';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
-export function createInboxRoutes(getConfig: () => Config): Router {
+export function createInboxRoutes(_getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
 
   // ============================================
@@ -34,7 +32,7 @@ export function createInboxRoutes(getConfig: () => Config): Router {
         return;
       }
 
-      const { code, path: projectPath } = resolved;
+      const { path: projectPath } = resolved;
 
       const paths = getProjectPaths(projectPath);
 
@@ -166,7 +164,7 @@ export function createInboxRoutes(getConfig: () => Config): Router {
         return;
       }
 
-      const { code, path: projectPath } = resolved;
+      const { path: projectPath } = resolved;
 
       const paths = getProjectPaths(projectPath);
 

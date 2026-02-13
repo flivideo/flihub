@@ -13,12 +13,7 @@ import type {
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
-import {
-  createShadowFile,
-  moveShadowFile,
-  renameShadowFile,
-  deleteShadowFile,
-} from '../utils/shadowFiles.js';
+import { createShadowFile, deleteShadowFile } from '../utils/shadowFiles.js';
 import {
   readProjectState,
   writeProjectState,

@@ -102,7 +102,7 @@ function TipCard({
             <div key={i} className="flex items-center justify-between text-sm">
               <div>
                 <span className="text-gray-500">{hint.label}: </span>
-                <span className="text-blue-600">"{hint.phrase}"</span>
+                <span className="text-blue-600">&quot;{hint.phrase}&quot;</span>
               </div>
               <button
                 onClick={(e) => {
@@ -204,7 +204,7 @@ export function MockupsPage() {
         <p className="text-gray-600">Compare four approaches for showing API tips in FliHub</p>
         {copiedText && (
           <div className="mt-2 inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-            Copied: "{copiedText}"
+            Copied: &quot;{copiedText}&quot;
           </div>
         )}
       </div>
@@ -233,7 +233,7 @@ export function MockupsPage() {
                 </h4>
                 <button className="text-gray-400 hover:text-gray-600">✕</button>
               </div>
-              <p className="text-xs text-gray-500 mb-3">"How do I..."</p>
+              <p className="text-xs text-gray-500 mb-3">&quot;How do I...&quot;</p>
               <div className="space-y-2">
                 {Object.values(TIPS_DATA)
                   .slice(0, 4)
@@ -305,21 +305,21 @@ export function MockupsPage() {
                   onClick={() => handleCopy(`Get transcripts for ${projectCode}`)}
                   className="text-blue-300 hover:text-blue-200 hover:underline"
                 >
-                  "Get transcripts"
+                  &quot;Get transcripts&quot;
                 </button>
                 <span className="text-gray-500">|</span>
                 <button
                   onClick={() => handleCopy(`Chapter 5 recordings for ${projectCode}`)}
                   className="text-blue-300 hover:text-blue-200 hover:underline"
                 >
-                  "Chapter 5"
+                  &quot;Chapter 5&quot;
                 </button>
                 <span className="text-gray-500">|</span>
                 <button
                   onClick={() => handleCopy(`Export ${projectCode} for AI`)}
                   className="text-blue-300 hover:text-blue-200 hover:underline"
                 >
-                  "Export"
+                  &quot;Export&quot;
                 </button>
               </div>
               <button className="text-gray-400 hover:text-white text-sm">[?] More</button>
@@ -386,7 +386,7 @@ export function MockupsPage() {
               <p className="text-sm text-gray-500 mb-2">Ask Claude Code:</p>
               <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded px-3 py-2">
                 <code className="text-sm text-blue-700">
-                  "Get the full transcript for {projectCode}"
+                  &quot;Get the full transcript for {projectCode}&quot;
                 </code>
                 <button
                   onClick={() => handleCopy(`Get the full transcript for ${projectCode}`)}
@@ -401,8 +401,8 @@ export function MockupsPage() {
               <p className="text-sm text-gray-500 mb-2">Or use curl directly:</p>
               <div className="flex items-center justify-between bg-gray-100 border border-gray-300 rounded px-3 py-2">
                 <code className="text-xs text-gray-700 break-all">
-                  curl -s "http://localhost:5101/api/query/projects/{projectCode}
-                  /transcripts?include=content" | jq
+                  curl -s &quot;http://localhost:5101/api/query/projects/{projectCode}
+                  /transcripts?include=content&quot; | jq
                 </code>
                 <button
                   onClick={() =>
@@ -423,7 +423,7 @@ export function MockupsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-gray-600">By chapter: </span>
-                    <span className="text-blue-600">"Get chapter 5 transcript"</span>
+                    <span className="text-blue-600">&quot;Get chapter 5 transcript&quot;</span>
                   </div>
                   <button
                     onClick={() => handleCopy(`Get chapter 5 transcript for ${projectCode}`)}
@@ -435,7 +435,7 @@ export function MockupsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-gray-600">Single segment: </span>
-                    <span className="text-blue-600">"Show 01-1-intro transcript"</span>
+                    <span className="text-blue-600">&quot;Show 01-1-intro transcript&quot;</span>
                   </div>
                   <button
                     onClick={() => handleCopy(`Show 01-1-intro transcript for ${projectCode}`)}

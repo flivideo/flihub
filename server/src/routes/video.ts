@@ -44,7 +44,6 @@ export function createVideoRoutes(getConfig: () => Config): Router {
     const projectCode = queryString(req.params.projectCode);
     const folder = queryString(req.params.folder);
     const filename = queryString(req.params.filename);
-    const filepath = `${folder}/${filename}`;
 
     // Security: Validate no path traversal and valid folder
     if (folder.includes('..') || filename.includes('..')) {

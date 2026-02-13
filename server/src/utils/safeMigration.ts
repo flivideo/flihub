@@ -12,7 +12,6 @@ import path from 'path';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from './pathUtils.js';
 import { readProjectState, writeProjectState, setRecordingSafe } from './projectState.js';
-import type { ProjectState } from '../../../shared/types.js';
 
 export interface MigrationResult {
   migrated: number;

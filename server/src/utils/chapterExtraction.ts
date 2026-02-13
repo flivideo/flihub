@@ -14,7 +14,6 @@
 
 import path from 'path';
 import fs from 'fs-extra';
-import { glob } from 'glob';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { statSafe, readFileSafe } from './filesystem.js';
 import type {
@@ -195,7 +194,7 @@ function toDisplayName(name: string): string {
   const words = name.split('-');
 
   // Capitalize each word
-  const capitalized = words.map((word, index) => {
+  const capitalized = words.map((word) => {
     // Check if word is an acronym (all uppercase or known acronyms)
     if (word.toUpperCase() === word && word.length <= 5) {
       return word.toUpperCase();
@@ -227,6 +226,7 @@ function normalizeText(text: string): string {
 /**
  * Extract first N words from text
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getFirstWords(text: string, n: number): string {
   const normalized = normalizeText(text);
   const words = normalized.split(' ');
@@ -754,7 +754,12 @@ export async function extractChapters(
 
   // Clean up internal fields (segmentIndex, transcriptText, matchResultInternal) but keep verification fields including matchReason
   const cleanResults: ChapterMatch[] = results.map(
-    ({ segmentIndex, transcriptText, matchResultInternal, ...r }) => r
+    ({
+      segmentIndex: _segmentIndex,
+      transcriptText: _transcriptText,
+      matchResultInternal: _matchResultInternal,
+      ...r
+    }) => r
   );
 
   // Generate YouTube format (sorted by timestamp for proper YouTube ordering)
