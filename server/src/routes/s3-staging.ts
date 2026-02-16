@@ -41,7 +41,8 @@ function extractBrand(projectPath: string): string {
 async function runDamCommand(
   action: DamAction,
   brand: string,
-  projectCode: string
+  projectCode: string,
+  cwd?: string
 ): Promise<DamResult> {
   const commandMap: Record<DamAction, string> = {
     upload: `dam s3-up ${brand} ${projectCode}`,
@@ -53,9 +54,18 @@ async function runDamCommand(
   const command = commandMap[action];
   const startTime = Date.now();
 
+  // Use login shell so rbenv/rvm/gem paths from .bashrc/.profile are available (WSL fix)
+  const shellCommand = `bash -lc "${command}"`;
+
+  console.log(`[DAM] Running: ${command}${cwd ? ` (cwd: ${cwd})` : ''}`);
+
   try {
-    const { stdout, stderr } = await execAsync(command, { timeout: 300000 }); // 5 min timeout
+    const { stdout, stderr } = await execAsync(shellCommand, { timeout: 300000, cwd }); // 5 min timeout
     const duration = Date.now() - startTime;
+
+    // Log full output for debugging
+    console.log(`[DAM] stdout: ${stdout}`);
+    if (stderr) console.log(`[DAM] stderr: ${stderr}`);
 
     return {
       success: true,
@@ -456,7 +466,7 @@ export function createS3StagingRoutes(getConfig: () => Config) {
       const brand = extractBrand(projectDir);
 
       // Get S3 status via DAM command
-      const damResult = await runDamCommand('status', brand, projectCode);
+      const damResult = await runDamCommand('status', brand, projectCode, projectDir);
 
       if (!damResult.success) {
         return res.json({
@@ -532,10 +542,30 @@ export function createS3StagingRoutes(getConfig: () => Config) {
 
       console.log(`[S3 Staging] Running DAM ${action} for ${brand}/${projectCode}`);
 
-      const result = await runDamCommand(action, brand, projectCode);
+      // Pre-create post/ directory for downloads so DAM has somewhere to write
+      if (action === 'download') {
+        const postDir = path.join(projectDir, 's3-staging', 'post');
+        await fs.mkdir(postDir, { recursive: true });
+        console.log(`[S3 Staging] Ensured post/ exists: ${postDir}`);
+      }
+
+      const result = await runDamCommand(action, brand, projectCode, projectDir);
 
       if (result.success) {
         console.log(`[S3 Staging] DAM ${action} completed in ${result.duration}ms`);
+
+        // Post-verify: count files in post/ after download
+        if (action === 'download') {
+          const postDir = path.join(projectDir, 's3-staging', 'post');
+          try {
+            const files = await fs.readdir(postDir);
+            const mediaFiles = files.filter(f => !f.startsWith('.'));
+            (result as DamResult & { filesFound?: number }).filesFound = mediaFiles.length;
+            console.log(`[S3 Staging] Post-download: ${mediaFiles.length} file(s) in post/`);
+          } catch {
+            console.log(`[S3 Staging] Post-download: could not read post/ directory`);
+          }
+        }
       } else {
         console.error(`[S3 Staging] DAM ${action} failed: ${result.error}`);
       }

@@ -531,12 +531,16 @@ export function useInboxFileContent(
 export function useOpenInboxFile() {
   return useMutation({
     mutationFn: ({ subfolder, filename }: { subfolder: string; filename: string }) =>
-      fetchApi<{ success: boolean; path: string }>('/api/system/open-file', {
+      fetchApi<{ success: boolean; path: string; windowsPath?: string }>('/api/system/open-file', {
         method: 'POST',
         body: JSON.stringify({ subfolder, filename }),
       }),
-    onSuccess: () => {
-      toast.success('File opened');
+    onSuccess: (data) => {
+      if (data.windowsPath) {
+        toast.success(`Opened: ${data.windowsPath}`);
+      } else {
+        toast.success('File opened');
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to open file');

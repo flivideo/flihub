@@ -220,7 +220,7 @@ export function useDamCommand() {
       });
       return res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: DamResult & { filesFound?: number }) => {
       if (data.success) {
         const actionLabels: Record<DamAction, string> = {
           upload: 'Upload',
@@ -228,7 +228,19 @@ export function useDamCommand() {
           'cleanup-s3': 'S3 cleanup',
           status: 'Status check',
         };
-        toast.success(`${actionLabels[data.action]} completed`);
+        let message = `${actionLabels[data.action]} completed`;
+        // Show DAM output for context (e.g. "No files found in S3")
+        const firstLine = data.output?.trim().split('\n')[0];
+        if (data.filesFound !== undefined && data.filesFound > 0) {
+          message += ` — ${data.filesFound} file(s) in post/`;
+        } else if (firstLine) {
+          message += `: ${firstLine}`;
+        }
+        if (data.filesFound === 0 && firstLine) {
+          toast.warning(message);
+        } else {
+          toast.success(message);
+        }
         // Refresh both S3 status and local status
         queryClient.invalidateQueries({ queryKey: ['s3-staging-s3-status'] });
         queryClient.invalidateQueries({ queryKey: ['s3-staging-status'] });

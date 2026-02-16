@@ -75,43 +75,45 @@ type FolderKey =
  * @param folderPath - The path to open
  * @returns Promise that resolves when the command completes
  */
-function openInFileExplorer(folderPath: string): Promise<void> {
+function openInFileExplorer(folderPath: string): Promise<{ windowsPath?: string }> {
   return new Promise((resolve, reject) => {
     const platform = os.platform();
     let command: string;
 
-    // FR-106: Debug logging for WSL troubleshooting
-    console.log(`[FR-106] openInFileExplorer called with: ${folderPath}`);
-    console.log(`[FR-106] Platform: ${platform}`);
+    console.log(`[system] openInFileExplorer: ${folderPath} (platform: ${platform})`);
+
+    // Verify folder exists before trying to open
+    if (!fs.existsSync(folderPath)) {
+      reject(new Error(`Folder does not exist: ${folderPath}`));
+      return;
+    }
 
     switch (platform) {
       case 'darwin':
-        // macOS: open in Finder
         command = `open "${folderPath}"`;
         break;
       case 'win32':
-        // Windows: open in Explorer
-        // Use start command with empty title ("") to handle paths with spaces
         command = `start "" "${folderPath}"`;
         break;
       case 'linux': {
-        // FR-101: Detect WSL (has Microsoft in /proc/version)
         const isWSLExplorer =
           fs.existsSync('/proc/version') &&
           fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
-        console.log(`[FR-106] isWSL: ${isWSLExplorer}`);
 
         if (isWSLExplorer) {
-          // WSL: use Windows explorer.exe with converted path
-          // wslpath -w converts Linux paths to Windows format
-          const windowsPath = execSync(`wslpath -w "${folderPath}"`).toString().trim();
-          console.log(`[FR-106] Converted to Windows path: ${windowsPath}`);
+          let windowsPath: string;
+          try {
+            windowsPath = execSync(`wslpath -w "${folderPath}"`).toString().trim();
+          } catch (err) {
+            reject(new Error(`wslpath failed to convert path: ${folderPath} — ${err}`));
+            return;
+          }
+          console.log(`[system] WSL path: ${windowsPath}`);
           // explorer.exe often returns exit code 1 even on success, so fire-and-forget
           exec(`explorer.exe "${windowsPath}"`);
-          resolve();
+          resolve({ windowsPath });
           return;
         } else {
-          // Native Linux: use xdg-open
           command = `xdg-open "${folderPath}"`;
         }
         break;
@@ -125,7 +127,7 @@ function openInFileExplorer(folderPath: string): Promise<void> {
       if (error) {
         reject(error);
       } else {
-        resolve();
+        resolve({});
       }
     });
   });
@@ -138,42 +140,43 @@ function openInFileExplorer(folderPath: string): Promise<void> {
  * @param filePath - The path to the file to open
  * @returns Promise that resolves when the command completes
  */
-function openInDefaultApp(filePath: string): Promise<void> {
+function openInDefaultApp(filePath: string): Promise<{ windowsPath?: string }> {
   return new Promise((resolve, reject) => {
     const platform = os.platform();
     let command: string;
 
-    // FR-106: Debug logging for WSL troubleshooting
-    console.log(`[FR-106] openInDefaultApp called with: ${filePath}`);
-    console.log(`[FR-106] Platform: ${platform}`);
+    console.log(`[system] openInDefaultApp: ${filePath} (platform: ${platform})`);
+
+    if (!fs.existsSync(filePath)) {
+      reject(new Error(`File does not exist: ${filePath}`));
+      return;
+    }
 
     switch (platform) {
       case 'darwin':
-        // macOS: open in default app
         command = `open "${filePath}"`;
         break;
       case 'win32':
-        // Windows: open in default app
         command = `start "" "${filePath}"`;
         break;
       case 'linux': {
-        // FR-101: Detect WSL (has Microsoft in /proc/version)
         const isWSLApp =
           fs.existsSync('/proc/version') &&
           fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
-        console.log(`[FR-106] isWSL: ${isWSLApp}`);
 
         if (isWSLApp) {
-          // WSL: use Windows explorer.exe with converted path
-          // wslpath -w converts Linux paths to Windows format
-          const windowsPath = execSync(`wslpath -w "${filePath}"`).toString().trim();
-          console.log(`[FR-106] Converted to Windows path: ${windowsPath}`);
-          // explorer.exe often returns exit code 1 even on success, so fire-and-forget
+          let windowsPath: string;
+          try {
+            windowsPath = execSync(`wslpath -w "${filePath}"`).toString().trim();
+          } catch (err) {
+            reject(new Error(`wslpath failed to convert path: ${filePath} — ${err}`));
+            return;
+          }
+          console.log(`[system] WSL path: ${windowsPath}`);
           exec(`explorer.exe "${windowsPath}"`);
-          resolve();
+          resolve({ windowsPath });
           return;
         } else {
-          // Native Linux: use xdg-open
           command = `xdg-open "${filePath}"`;
         }
         break;
@@ -187,7 +190,7 @@ function openInDefaultApp(filePath: string): Promise<void> {
       if (error) {
         reject(error);
       } else {
-        resolve();
+        resolve({});
       }
     });
   });
@@ -339,12 +342,12 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
 
     // FR-89 Part 3: Cross-platform folder opener
     try {
-      await openInFileExplorer(folderPath);
+      const result = await openInFileExplorer(folderPath);
       console.log(`Opened folder: ${folderPath}`);
-      res.json({ success: true, path: folderPath });
+      res.json({ success: true, path: folderPath, windowsPath: result.windowsPath });
     } catch (error) {
       console.error('Failed to open folder:', error);
-      res.status(500).json({ success: false, error: 'Failed to open folder' });
+      res.status(500).json({ success: false, error: String(error) });
     }
   });
 
@@ -416,12 +419,12 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
 
     // FR-89 Part 3: Cross-platform file opener
     try {
-      await openInDefaultApp(filePath);
+      const result = await openInDefaultApp(filePath);
       console.log(`Opened file: ${filePath}`);
-      res.json({ success: true, path: filePath });
+      res.json({ success: true, path: filePath, windowsPath: result.windowsPath });
     } catch (error) {
       console.error('Failed to open file:', error);
-      res.status(500).json({ success: false, error: 'Failed to open file' });
+      res.status(500).json({ success: false, error: String(error) });
     }
   });
 
@@ -471,12 +474,12 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
 
     // Open in default app
     try {
-      await openInDefaultApp(filePath);
+      const result = await openInDefaultApp(filePath);
       console.log(`[FR-127] Opened file: ${filePath}`);
-      res.json({ success: true, path: filePath });
+      res.json({ success: true, path: filePath, windowsPath: result.windowsPath });
     } catch (error) {
       console.error('[FR-127] Failed to open file:', error);
-      res.status(500).json({ success: false, error: 'Failed to open file' });
+      res.status(500).json({ success: false, error: String(error) });
     }
   });
 

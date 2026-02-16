@@ -144,7 +144,12 @@ export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProp
         const error = await response.json();
         toast.error(error.error || 'Failed to open file');
       } else {
-        toast.success('File opened in editor');
+        const data = await response.json();
+        if (data.windowsPath) {
+          toast.success(`Opened: ${data.windowsPath}`);
+        } else {
+          toast.success('File opened in editor');
+        }
       }
     } catch (_error) {
       toast.error('Failed to open file');
