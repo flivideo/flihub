@@ -18,6 +18,7 @@ Requirements index for FliHub.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-141 | [Export & S3 Workflow Overhaul](prd/fr-141-export-s3-workflow-overhaul.md)                    | 2026-02-16 | 🔴 **With Developer** - Option B approved (16-20 hours)         |
 | FR-140 | [Chapter Move & Cascade Renumbering](prd/fr-140-bulk-chapter-renumbering.md)                  | 2026-01-06 | 🟡 **HIGH** - Ready for development (22 chapter gaps validated) |
 | FR-139 | [Folders Tool Specification](prd/fr-139-folders-tool-specification.md)                        | 2026-01-06 | 🟢 Ready - Remove undefined button (30 min)                     |
 | FR-138 | [Rename Tool Specification](prd/fr-138-rename-tool-specification.md)                          | 2026-01-06 | ✓ Implemented (Validated - no updates needed)                   |

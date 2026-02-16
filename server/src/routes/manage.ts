@@ -41,6 +41,21 @@ export function createManageRoutes(
   const router = Router();
 
   /**
+   * GET /api/manage/recordings-folder-path
+   * FR-141: Returns the recordings folder path for the current project
+   */
+  router.get('/recordings-folder-path', (_req, res) => {
+    const config = getConfig();
+    if (!config.projectDirectory) {
+      res.json({ success: false, error: 'No project directory configured' });
+      return;
+    }
+    const projectPath = expandPath(config.projectDirectory);
+    const paths = getProjectPaths(projectPath);
+    res.json({ success: true, path: paths.recordings });
+  });
+
+  /**
    * POST /api/manage/bulk-rename
    * FR-138: Bulk rename multiple recordings with full control
    *

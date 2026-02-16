@@ -64,7 +64,9 @@ type FolderKey =
   | 'inbox'
   | 'shadows'
   | 'chapters'
-  | 'edit-1st';
+  | 'edit-1st'
+  | 'edit-2nd'
+  | 'edit-final';
 
 /**
  * FR-89 Part 3: Cross-platform file explorer opener
@@ -318,6 +320,8 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
       shadows: path.join(projectPath, 'recording-shadows'),
       chapters: path.join(paths.recordings, '-chapters'),
       'edit-1st': path.join(projectPath, 'edit-1st'),
+      'edit-2nd': path.join(projectPath, 'edit-2nd'),
+      'edit-final': path.join(projectPath, 'edit-final'),
     };
 
     const folderPath = folderMap[folder];

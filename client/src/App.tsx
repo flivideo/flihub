@@ -27,7 +27,7 @@ import { TranscriptionsPage } from './components/TranscriptionsPage';
 import { InboxPage } from './components/InboxPage';
 import { MockupsPage } from './components/MockupsPage';
 import { WatchPage } from './components/WatchPage';
-import { S3StagingPage } from './components/S3StagingPage';
+// FR-141: S3StagingPage removed - consolidated into ExportS3Tool in Manage panel
 import { ManagePanel } from './components/ManagePanel';
 import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
@@ -117,8 +117,7 @@ function App() {
   // FR-43: Project switcher dropdown state
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const projectDropdownRef = useRef<HTMLDivElement>(null);
-  // FR-103: S3 Staging modal state
-  const [showS3Staging, setShowS3Staging] = useState(false);
+  // FR-141: S3 Staging modal removed - consolidated into Manage panel
   // FR-116: Config section focus (for quick navigation from other pages)
   const [configFocusSection, setConfigFocusSection] = useState<ConfigFocusSection>(null);
   // FR-127: Developer drawer state
@@ -419,9 +418,6 @@ function App() {
         />
       )}
 
-      {/* FR-103: S3 Staging modal */}
-      {showS3Staging && <S3StagingPage onClose={() => setShowS3Staging(false)} />}
-
       {/* FR-127: Developer drawer */}
       <DeveloperDrawer isOpen={isDevDrawerOpen} onClose={() => setIsDevDrawerOpen(false)} />
 
@@ -565,11 +561,6 @@ function App() {
                   label: 'Mockups',
                   icon: <span className="text-purple-500">🎨</span>,
                   onClick: () => changeTab('mockups'),
-                },
-                {
-                  label: 'S3 Staging',
-                  icon: <span className="text-blue-500">☁️</span>,
-                  onClick: () => setShowS3Staging(true),
                 },
                 {
                   label: 'API Explorer',

@@ -19,7 +19,7 @@ import {
   ToolsSidebar,
   SlideOutDrawer,
   ConfirmationModal,
-  ExportPanel,
+  ExportS3Tool,
   RenamePanel,
   ChapterListPanel,
 } from './shared';
@@ -82,8 +82,8 @@ export function ManagePanel() {
   // const [bulkRenameLabel, setBulkRenameLabel] = useState('')
   // const [isRenaming, setIsRenaming] = useState(false)
 
-  // FR-136: Tool-oriented design (FR-139: removed 'folders', FR-140: added 'renumber')
-  const [activeTool, setActiveTool] = useState<'rename' | 'export' | 'renumber' | null>(null);
+  // FR-136: Tool-oriented design (FR-139: removed 'folders', FR-140: added 'renumber', FR-141: export-s3)
+  const [activeTool, setActiveTool] = useState<'rename' | 'export-s3' | 'renumber' | null>(null);
 
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -369,7 +369,7 @@ export function ManagePanel() {
     });
   };
 
-  const handleComplexToolClick = (tool: 'rename' | 'export' | 'renumber') => {
+  const handleComplexToolClick = (tool: 'rename' | 'export-s3' | 'renumber') => {
     setActiveTool(activeTool === tool ? null : tool);
   };
 
@@ -573,12 +573,12 @@ export function ManagePanel() {
       </SlideOutDrawer>
 
       <SlideOutDrawer
-        isOpen={activeTool === 'export'}
-        title="Export Tool"
+        isOpen={activeTool === 'export-s3'}
+        title="Export / S3 Staging"
         onClose={() => setActiveTool(null)}
         width="w-[560px]"
       >
-        <ExportPanel selectedFiles={Array.from(selectedFiles)} selectedCount={selectedCount} />
+        <ExportS3Tool />
       </SlideOutDrawer>
 
       <SlideOutDrawer

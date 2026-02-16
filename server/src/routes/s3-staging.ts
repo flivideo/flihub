@@ -7,6 +7,7 @@ import fs from 'fs/promises';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import type { Config } from '../../../shared/types.js';
+import { expandPath } from '../utils/pathUtils.js';
 
 const execAsync = promisify(exec);
 
@@ -192,7 +193,8 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         return res.json({ success: false, error: 'No project selected' });
       }
 
-      const projectCode = path.basename(config.projectDirectory);
+      const projectDir = expandPath(config.projectDirectory);
+      const projectCode = path.basename(projectDir);
 
       // Helper to list files in a directory
       const listFiles = async (dir: string) => {
@@ -222,10 +224,11 @@ export function createS3StagingRoutes(getConfig: () => Config) {
       };
 
       // Paths
-      const prepSourcePath = path.join(config.projectDirectory, 'edits', 'prep');
-      const prepStagingPath = path.join(config.projectDirectory, 's3-staging', 'prep');
-      const postStagingPath = path.join(config.projectDirectory, 's3-staging', 'post');
-      const publishPath = path.join(config.projectDirectory, 'edits', 'publish');
+      // FR-141: Source is edit-1st/ (Gling output), not edits/prep/
+      const prepSourcePath = path.join(projectDir, 'edit-1st');
+      const prepStagingPath = path.join(projectDir, 's3-staging', 'prep');
+      const postStagingPath = path.join(projectDir, 's3-staging', 'post');
+      const publishPath = path.join(projectDir, 'edits', 'publish');
 
       // Gather data
       const [prepSource, prepStaging, postStaging, publishFiles] = await Promise.all([
@@ -262,7 +265,7 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         .map((v) => ({ type: 'missing_srt', file: v.name }));
 
       // FR-104: Detect flat files in s3-staging root (legacy structure)
-      const stagingDir = path.join(config.projectDirectory, 's3-staging');
+      const stagingDir = path.join(projectDir, 's3-staging');
       let flatFiles: string[] = [];
       try {
         const stagingEntries = await fs.readdir(stagingDir, { withFileTypes: true });
@@ -276,7 +279,7 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         project: projectCode,
         prep: {
           source: {
-            path: 'edits/prep/',
+            path: 'edit-1st/',
             exists: await folderExists(prepSourcePath),
             files: prepSourceWithSync,
           },
@@ -310,7 +313,8 @@ export function createS3StagingRoutes(getConfig: () => Config) {
     }
   });
 
-  // POST /api/s3-staging/sync-prep - Copy from edits/prep to s3-staging/prep
+  // POST /api/s3-staging/sync-prep - Copy from edit-1st/ to s3-staging/prep/
+  // FR-141: Changed source from edits/prep/ to edit-1st/ (Gling output)
   router.post('/sync-prep', async (req, res) => {
     try {
       const config = getConfig();
@@ -318,8 +322,9 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         return res.json({ success: false, error: 'No project selected' });
       }
 
-      const sourcePath = path.join(config.projectDirectory, 'edits', 'prep');
-      const destPath = path.join(config.projectDirectory, 's3-staging', 'prep');
+      const projectDir = expandPath(config.projectDirectory);
+      const sourcePath = path.join(projectDir, 'edit-1st');
+      const destPath = path.join(projectDir, 's3-staging', 'prep');
 
       // Create destination if needed
       await fs.mkdir(destPath, { recursive: true });
@@ -355,8 +360,9 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         return res.json({ success: false, error: 'No project selected' });
       }
 
-      const postPath = path.join(config.projectDirectory, 's3-staging', 'post');
-      const publishPath = path.join(config.projectDirectory, 'edits', 'publish');
+      const projectDir = expandPath(config.projectDirectory);
+      const postPath = path.join(projectDir, 's3-staging', 'post');
+      const publishPath = path.join(projectDir, 'edits', 'publish');
 
       // Create publish folder if needed
       await fs.mkdir(publishPath, { recursive: true });
@@ -397,7 +403,8 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         return res.status(400).json({ success: false, error: 'No project selected' });
       }
 
-      const stagingDir = path.join(config.projectDirectory, 's3-staging');
+      const projectDir = expandPath(config.projectDirectory);
+      const stagingDir = path.join(projectDir, 's3-staging');
 
       // Check if staging folder exists
       try {
@@ -444,8 +451,9 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         return res.json({ success: false, error: 'No project selected' });
       }
 
-      const projectCode = path.basename(config.projectDirectory);
-      const brand = extractBrand(config.projectDirectory);
+      const projectDir = expandPath(config.projectDirectory);
+      const projectCode = path.basename(projectDir);
+      const brand = extractBrand(projectDir);
 
       // Get S3 status via DAM command
       const damResult = await runDamCommand('status', brand, projectCode);
@@ -460,36 +468,42 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         });
       }
 
-      // Parse DAM status output (format depends on DAM implementation)
-      // For now, return a basic structure - can be enhanced based on actual DAM output format
+      // Parse DAM status output
       const output = damResult.output || '';
 
       // Try to parse JSON output if DAM returns JSON
-      let parsedStatus = { prep: {}, post: {} };
+      // FR-141 BUG FIX: Default uploaded to false, only true if DAM confirms files exist
+      let parsedPrep: { fileCount?: number; totalSize?: number; lastSync?: string; uploaded?: boolean } = {};
+      let parsedPost: { fileCount?: number; totalSize?: number; newFilesAvailable?: number; newFiles?: string[] } = {};
       try {
-        parsedStatus = JSON.parse(output);
+        const parsed = JSON.parse(output);
+        parsedPrep = parsed.prep || {};
+        parsedPost = parsed.post || {};
       } catch {
-        // DAM might return text format - parse as needed
-        // For now, return basic status indicating command succeeded
+        // DAM might return text format - check for indicators in text output
+        // If we can't parse, default to "not uploaded" to avoid false positives
       }
+
+      // Determine upload status: only true if DAM explicitly confirms files exist
+      const prepUploaded = parsedPrep.uploaded === true ||
+        (parsedPrep.fileCount !== undefined && parsedPrep.fileCount > 0);
 
       res.json({
         success: true,
         project: projectCode,
         brand,
         prep: {
-          uploaded: true,
-          fileCount: (parsedStatus.prep as { fileCount?: number })?.fileCount || 0,
-          totalSize: (parsedStatus.prep as { totalSize?: number })?.totalSize || 0,
-          lastSync: (parsedStatus.prep as { lastSync?: string })?.lastSync,
-          inSync: true,
+          uploaded: prepUploaded,
+          fileCount: parsedPrep.fileCount || 0,
+          totalSize: parsedPrep.totalSize || 0,
+          lastSync: parsedPrep.lastSync,
+          inSync: prepUploaded,
         },
         post: {
-          fileCount: (parsedStatus.post as { fileCount?: number })?.fileCount || 0,
-          totalSize: (parsedStatus.post as { totalSize?: number })?.totalSize || 0,
-          newFilesAvailable:
-            (parsedStatus.post as { newFilesAvailable?: number })?.newFilesAvailable || 0,
-          newFiles: (parsedStatus.post as { newFiles?: string[] })?.newFiles || [],
+          fileCount: parsedPost.fileCount || 0,
+          totalSize: parsedPost.totalSize || 0,
+          newFilesAvailable: parsedPost.newFilesAvailable || 0,
+          newFiles: parsedPost.newFiles || [],
         },
         rawOutput: output,
       });
@@ -512,8 +526,9 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         return res.status(400).json({ success: false, error: `Invalid action: ${action}` });
       }
 
-      const projectCode = path.basename(config.projectDirectory);
-      const brand = extractBrand(config.projectDirectory);
+      const projectDir = expandPath(config.projectDirectory);
+      const projectCode = path.basename(projectDir);
+      const brand = extractBrand(projectDir);
 
       console.log(`[S3 Staging] Running DAM ${action} for ${brand}/${projectCode}`);
 
@@ -539,7 +554,8 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         return res.json({ success: false, error: 'No project selected' });
       }
 
-      const stagingDir = path.join(config.projectDirectory, 's3-staging');
+      const projectDir = expandPath(config.projectDirectory);
+      const stagingDir = path.join(projectDir, 's3-staging');
       const prepDir = path.join(stagingDir, 'prep');
       const postDir = path.join(stagingDir, 'post');
 
@@ -602,7 +618,8 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         return res.json({ success: false, error: 'No project selected' });
       }
 
-      const stagingDir = path.join(config.projectDirectory, 's3-staging');
+      const projectDir = expandPath(config.projectDirectory);
+      const stagingDir = path.join(projectDir, 's3-staging');
 
       // Calculate total size
       const calculateDirSize = async (dir: string): Promise<number> => {

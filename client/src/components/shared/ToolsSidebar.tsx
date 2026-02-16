@@ -13,7 +13,7 @@ interface ToolsSidebarProps {
   onSimpleToolClick: (
     tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all'
   ) => void;
-  onComplexToolClick: (tool: 'rename' | 'export' | 'renumber') => void;
+  onComplexToolClick: (tool: 'rename' | 'export-s3' | 'renumber') => void;
 }
 
 export function ToolsSidebar({
@@ -106,15 +106,11 @@ export function ToolsSidebar({
             }
           />
           <ToolButton
-            label="Export"
-            disabled={selectedFiles.length === 0}
-            active={activeTool === 'export'}
-            onClick={() => onComplexToolClick('export')}
-            tooltip={
-              selectedFiles.length === 0
-                ? 'Select files to export'
-                : `Export ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}`
-            }
+            label="Export / S3"
+            disabled={false}
+            active={activeTool === 'export-s3'}
+            onClick={() => onComplexToolClick('export-s3')}
+            tooltip="Export preparation & S3 staging"
           />
           <ToolButton
             label="Renumber"
