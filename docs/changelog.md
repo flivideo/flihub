@@ -10,17 +10,40 @@ Track what was implemented, fixed, or changed and when.
 
 **Completed:** FR-5, FR-8, FR-9, FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-23, FR-24, FR-25, FR-26, FR-27, FR-28, FR-29, FR-30, FR-32, FR-33, FR-35, FR-36 through FR-78, FR-80, FR-82, FR-83, FR-84, FR-87, FR-88, FR-90, FR-91, FR-92, FR-94, FR-105, FR-106, FR-107, FR-108, FR-109, FR-110, FR-111, FR-112, FR-113, FR-114 (Phase 1), FR-115, FR-116, FR-117, FR-118, FR-119, FR-120, FR-121, FR-122, FR-123, FR-124, FR-125, FR-126, FR-127, FR-128, FR-130, FR-136 (Core), FR-137, FR-73, FR-54 (discovered), FR-69 (discovered), FR-80 (discovered), NFR-1, NFR-2, NFR-3, NFR-4, NFR-5, NFR-6, NFR-7, NFR-8, NFR-79, NFR-85, NFR-87
 
-**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), FR-132 (Dual Transcription), FR-133/134/135 (Manage panel enhancements), FR-138 (Rename Tool - partial), FR-139 (Folders Tool - blocked), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
+**Still Open:** FR-31 (DAM Integration), FR-34 Phase 3 (Algorithm improvements), FR-89 (Cross-Platform Path Support), FR-93 (Project Name Shows Full Path on Windows), FR-114 (Phases 2-3), FR-132 (Dual Transcription), FR-133/134/135 (Manage panel enhancements), FR-139 (Folders Tool), NFR-65/66/67/68 (Tech Debt), NFR-81 (Future), NFR-86 (Git Leak Detection), UX Improvements
 
 ---
 
 ## Per-Item History
+
+### FR-141: Export & S3 Workflow Overhaul
+
+| Date       | Change                                                    | Commit  |
+| ---------- | --------------------------------------------------------- | ------- |
+| 2026-02-16 | Consolidated Export + S3 into unified Manage tool         | 99b281f |
+| 2026-02-16 | Cleanup: deleted S3StagingPage, ExportPanel, export routes | -       |
+
+**What was implemented:**
+- New "Export/S3" tool in Manage sidebar with 4-section drawer
+- Copy Folder Path, Open in Finder buttons
+- Gling Info (filename + dictionaries)
+- Edit Folders (status + Create/Open)
+- S3 PREP section (upload status + button)
+- S3 POST section (file list + download)
+- S3 CLEANUP section (Clean Local + Clean S3)
+- Old files deleted: S3StagingPage.tsx, ExportPanel.tsx, export.ts
+- Export tab removed, S3 Staging modal removed from settings
+
+**Status:** ✓ Complete
+
+---
 
 ### FR-140: Chapter Move & Cascade Renumbering
 
 | Date       | Change                                          | Commit |
 | ---------- | ----------------------------------------------- | ------ |
 | 2026-01-06 | Specification completed - Ready for development | -      |
+| 2026-02-16 | Implementation complete                         | -      |
 
 **What was specified:**
 
