@@ -142,6 +142,13 @@ export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProp
 
       if (!response.ok) {
         const error = await response.json();
+        if (error.path) {
+          try {
+            await navigator.clipboard.writeText(error.path);
+            toast.warning(`Couldn't open file — path copied to clipboard`);
+            return;
+          } catch { /* clipboard failed, fall through */ }
+        }
         toast.error(error.error || 'Failed to open file');
       } else {
         const data = await response.json();

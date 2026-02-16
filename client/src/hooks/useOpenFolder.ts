@@ -15,6 +15,8 @@ export type FolderKey =
   | 'project'
   | 'final'
   | 's3Staging'
+  | 's3Prep'
+  | 's3Post'
   | 'inbox'
   | 'shadows'
   | 'chapters';
@@ -37,6 +39,14 @@ export function useOpenFolder() {
       });
       if (!res.ok) {
         const data = await res.json();
+        // Copy path to clipboard as fallback when folder can't be opened
+        if (data.path) {
+          try {
+            await navigator.clipboard.writeText(data.path);
+            toast.warning(`Couldn't open folder — path copied to clipboard`);
+            return data;
+          } catch { /* clipboard failed, fall through to error */ }
+        }
         throw new Error(data.error || 'Failed to open folder');
       }
       return res.json();
@@ -44,7 +54,7 @@ export function useOpenFolder() {
     onSuccess: (data: { success: boolean; path: string; windowsPath?: string }) => {
       if (data.windowsPath) {
         toast.success(`Opened: ${data.windowsPath}`);
-      } else {
+      } else if (data.success) {
         toast.success('Folder opened');
       }
     },

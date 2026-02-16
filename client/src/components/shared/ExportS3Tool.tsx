@@ -34,6 +34,7 @@ import {
   type MigrationActions,
 } from '../../hooks/useS3StagingApi';
 import { API_URL } from '../../config';
+import { OpenFolderButton } from './OpenFolderButton';
 
 const formatSize = (bytes: number) => {
   if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
@@ -648,6 +649,7 @@ export function ExportS3Tool() {
                     >
                       View
                     </button>
+                    <OpenFolderButton folder="s3Prep" />
                   </div>
                 </div>
               </div>
@@ -681,15 +683,25 @@ export function ExportS3Tool() {
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={handleDownload}
-                    disabled={isDamBusy}
-                    className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                  >
-                    {damCommand.isPending && damCommand.variables === 'download'
-                      ? 'Downloading...'
-                      : 'Download from S3'}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleDownload}
+                      disabled={isDamBusy}
+                      className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    >
+                      {damCommand.isPending && damCommand.variables === 'download'
+                        ? 'Downloading...'
+                        : 'Download from S3'}
+                    </button>
+                    <button
+                      onClick={handleViewS3}
+                      disabled={!s3Status?.brand}
+                      className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      View
+                    </button>
+                    <OpenFolderButton folder="s3Post" />
+                  </div>
                 </div>
               </div>
 

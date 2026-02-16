@@ -61,6 +61,8 @@ type FolderKey =
   | 'project'
   | 'final'
   | 's3Staging'
+  | 's3Prep'
+  | 's3Post'
   | 'inbox'
   | 'shadows'
   | 'chapters'
@@ -319,6 +321,8 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
       project: paths.project,
       final: paths.final,
       s3Staging: paths.s3Staging,
+      s3Prep: path.join(paths.s3Staging, 'prep'),
+      s3Post: path.join(paths.s3Staging, 'post'),
       inbox: paths.inbox,
       shadows: path.join(projectPath, 'recording-shadows'),
       chapters: path.join(paths.recordings, '-chapters'),
@@ -336,7 +340,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
 
     // Check folder exists
     if (!(await fs.pathExists(folderPath))) {
-      res.status(404).json({ success: false, error: `Folder does not exist: ${folderPath}` });
+      res.status(404).json({ success: false, error: `Folder does not exist: ${folderPath}`, path: folderPath });
       return;
     }
 
@@ -347,7 +351,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
       res.json({ success: true, path: folderPath, windowsPath: result.windowsPath });
     } catch (error) {
       console.error('Failed to open folder:', error);
-      res.status(500).json({ success: false, error: String(error) });
+      res.status(500).json({ success: false, error: String(error), path: folderPath });
     }
   });
 
@@ -424,7 +428,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
       res.json({ success: true, path: filePath, windowsPath: result.windowsPath });
     } catch (error) {
       console.error('Failed to open file:', error);
-      res.status(500).json({ success: false, error: String(error) });
+      res.status(500).json({ success: false, error: String(error), path: filePath });
     }
   });
 
@@ -479,7 +483,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
       res.json({ success: true, path: filePath, windowsPath: result.windowsPath });
     } catch (error) {
       console.error('[FR-127] Failed to open file:', error);
-      res.status(500).json({ success: false, error: String(error) });
+      res.status(500).json({ success: false, error: String(error), path: filePath });
     }
   });
 
