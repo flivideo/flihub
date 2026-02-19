@@ -279,7 +279,9 @@ export function createS3StagingRoutes(getConfig: () => Config) {
       let flatFiles: string[] = [];
       try {
         const stagingEntries = await fs.readdir(stagingDir, { withFileTypes: true });
-        flatFiles = stagingEntries.filter((e) => e.isFile()).map((e) => e.name);
+        flatFiles = stagingEntries
+          .filter((e) => e.isFile() && !e.name.startsWith('.'))
+          .map((e) => e.name);
       } catch {
         // s3-staging folder doesn't exist
       }
@@ -428,7 +430,7 @@ export function createS3StagingRoutes(getConfig: () => Config) {
 
       // Get files in root of s3-staging (not in subfolders)
       const entries = await fs.readdir(stagingDir, { withFileTypes: true });
-      const flatFiles = entries.filter((e) => e.isFile()).map((e) => e.name);
+      const flatFiles = entries.filter((e) => e.isFile() && !e.name.startsWith('.')).map((e) => e.name);
 
       if (flatFiles.length === 0) {
         return res.json({

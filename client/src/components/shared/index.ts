@@ -9,6 +9,7 @@ export { SelectionBadge } from './SelectionBadge';
 export { ToolsSidebar } from './ToolsSidebar';
 export { SlideOutDrawer } from './SlideOutDrawer';
 export { ConfirmationModal } from './ConfirmationModal';
-export { ExportS3Tool } from './ExportS3Tool';
+export { GlingEditTool } from './GlingEditTool';
+export { S3StagingTool } from './S3StagingTool';
 export { RenamePanel } from './RenamePanel';
 export { ChapterListPanel } from './ChapterListPanel';

@@ -18,6 +18,7 @@ Requirements index for FliHub.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-142 | [Split Export/S3 Tool: Separate Gling Prep from S3 Staging](prd/fr-142-split-export-s3-tool.md) | 2026-02-18 | Pending                                                         |
 | FR-141 | [Export & S3 Workflow Overhaul](prd/fr-141-export-s3-workflow-overhaul.md)                    | 2026-02-16 | ✓ Implemented                                                   |
 | FR-140 | [Chapter Move & Cascade Renumbering](prd/fr-140-bulk-chapter-renumbering.md)                  | 2026-01-06 | ✓ Implemented                                                   |
 | FR-139 | [Folders Tool Specification](prd/fr-139-folders-tool-specification.md)                        | 2026-01-06 | 🟢 Ready - Remove undefined button (30 min)                     |

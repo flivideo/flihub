@@ -19,7 +19,8 @@ import {
   ToolsSidebar,
   SlideOutDrawer,
   ConfirmationModal,
-  ExportS3Tool,
+  GlingEditTool,
+  S3StagingTool,
   RenamePanel,
   ChapterListPanel,
 } from './shared';
@@ -82,8 +83,8 @@ export function ManagePanel() {
   // const [bulkRenameLabel, setBulkRenameLabel] = useState('')
   // const [isRenaming, setIsRenaming] = useState(false)
 
-  // FR-136: Tool-oriented design (FR-139: removed 'folders', FR-140: added 'renumber', FR-141: export-s3)
-  const [activeTool, setActiveTool] = useState<'rename' | 'export-s3' | 'renumber' | null>(null);
+  // FR-136: Tool-oriented design (FR-139: removed 'folders', FR-140: added 'renumber', FR-142: split export-s3 into gling-edit + s3-staging)
+  const [activeTool, setActiveTool] = useState<'rename' | 'gling-edit' | 's3-staging' | 'renumber' | null>(null);
 
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -369,7 +370,7 @@ export function ManagePanel() {
     });
   };
 
-  const handleComplexToolClick = (tool: 'rename' | 'export-s3' | 'renumber') => {
+  const handleComplexToolClick = (tool: 'rename' | 'gling-edit' | 's3-staging' | 'renumber') => {
     setActiveTool(activeTool === tool ? null : tool);
   };
 
@@ -573,12 +574,21 @@ export function ManagePanel() {
       </SlideOutDrawer>
 
       <SlideOutDrawer
-        isOpen={activeTool === 'export-s3'}
-        title="Export / S3 Staging"
+        isOpen={activeTool === 'gling-edit'}
+        title="Gling / Edit Prep"
         onClose={() => setActiveTool(null)}
         width="w-[560px]"
       >
-        <ExportS3Tool />
+        <GlingEditTool />
+      </SlideOutDrawer>
+
+      <SlideOutDrawer
+        isOpen={activeTool === 's3-staging'}
+        title="S3 Staging"
+        onClose={() => setActiveTool(null)}
+        width="w-[560px]"
+      >
+        <S3StagingTool />
       </SlideOutDrawer>
 
       <SlideOutDrawer

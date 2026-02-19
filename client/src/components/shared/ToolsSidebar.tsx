@@ -13,7 +13,7 @@ interface ToolsSidebarProps {
   onSimpleToolClick: (
     tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all'
   ) => void;
-  onComplexToolClick: (tool: 'rename' | 'export-s3' | 'renumber') => void;
+  onComplexToolClick: (tool: 'rename' | 'gling-edit' | 's3-staging' | 'renumber') => void;
 }
 
 export function ToolsSidebar({
@@ -106,11 +106,18 @@ export function ToolsSidebar({
             }
           />
           <ToolButton
-            label="Export / S3"
+            label="Gling / Edit"
             disabled={false}
-            active={activeTool === 'export-s3'}
-            onClick={() => onComplexToolClick('export-s3')}
-            tooltip="Export preparation & S3 staging"
+            active={activeTool === 'gling-edit'}
+            onClick={() => onComplexToolClick('gling-edit')}
+            tooltip="Gling preparation & edit folders"
+          />
+          <ToolButton
+            label="S3 Staging"
+            disabled={false}
+            active={activeTool === 's3-staging'}
+            onClick={() => onComplexToolClick('s3-staging')}
+            tooltip="S3 file transfer & collaboration"
           />
           <ToolButton
             label="Renumber"
