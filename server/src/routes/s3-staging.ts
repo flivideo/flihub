@@ -214,8 +214,9 @@ export function createS3StagingRoutes(getConfig: () => Config) {
             files
               .filter((f) => !f.startsWith('.'))
               .map(async (f) => {
-                const stat = await fs.stat(path.join(dir, f));
-                return { name: f, size: stat.size };
+                const absolutePath = path.join(dir, f);
+                const stat = await fs.stat(absolutePath);
+                return { name: f, size: stat.size, path: absolutePath };
               })
           );
         } catch {
@@ -492,8 +493,13 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         parsedPrep = parsed.prep || {};
         parsedPost = parsed.post || {};
       } catch {
-        // DAM might return text format - check for indicators in text output
-        // If we can't parse, default to "not uploaded" to avoid false positives
+        // DAM returns text format - parse key indicators
+        // e.g. "S3 files: 2, Local files: 2"
+        const s3FilesMatch = output.match(/S3 files:\s*(\d+)/);
+        const s3FileCount = s3FilesMatch ? parseInt(s3FilesMatch[1], 10) : 0;
+        if (s3FileCount > 0) {
+          parsedPrep = { fileCount: s3FileCount, uploaded: true };
+        }
       }
 
       // Determine upload status: only true if DAM explicitly confirms files exist
@@ -679,6 +685,41 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         success: true,
         totalSize,
       });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  // FR-143: GET /api/s3-staging/srt-text - Read SRT file and return stripped plain text
+  router.get('/srt-text', async (req, res) => {
+    try {
+      const filePath = req.query.path as string | undefined;
+
+      if (!filePath) {
+        return res.status(400).json({ success: false, error: 'path parameter is required' });
+      }
+
+      try {
+        await fs.access(filePath);
+      } catch {
+        return res.status(404).json({ success: false, error: 'File not found' });
+      }
+
+      const content = await fs.readFile(filePath, 'utf-8');
+
+      // Strip SRT formatting: remove sequence numbers, timestamps, and blank lines
+      const lines = content.split('\n');
+      const result: string[] = [];
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        if (/^\d+$/.test(trimmed)) continue; // sequence number
+        if (/^\d{2}:\d{2}:\d{2},\d{1,3} --> \d{2}:\d{2}:\d{2},\d{1,3}$/.test(trimmed)) continue; // timestamp
+        result.push(trimmed);
+      }
+
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.send(result.join('\n'));
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
     }

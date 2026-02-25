@@ -16,6 +16,31 @@ Track what was implemented, fixed, or changed and when.
 
 ## Per-Item History
 
+### FR-143: SRT Clipboard Copy Button
+
+| Date       | Change                                                              | Commit |
+| ---------- | ------------------------------------------------------------------- | ------ |
+| 2026-02-25 | Implemented clipboard copy for SRT files in S3 Staging PREP section | -      |
+
+**What was implemented:**
+- New `GET /api/s3-staging/srt-text?path=<filepath>` endpoint — reads SRT file, strips sequence numbers and timestamp lines, returns clean plain text
+- `listFiles()` in `/status` endpoint now includes absolute `path` per file
+- `FileInfo` interface in `useS3StagingApi.ts` gains optional `path` field
+- `FileList` component gains `showSrtClipboard` prop — renders inline 📋 button on `.srt` files only
+- PREP Source and PREP Staging columns pass `showSrtClipboard={true}`; POST section unchanged
+- Clicking button copies stripped transcript text via `navigator.clipboard.writeText()`
+- Success toast "Copied to clipboard" / error toast "Copy failed"
+- Bug fix: timestamp regex changed from `\d{3}` to `\d{1,3}` to handle Whisper SRTs with inconsistent millisecond digits (e.g. `,00` vs `,630`)
+
+**Files changed:**
+- `server/src/routes/s3-staging.ts` (modified — listFiles path + new srt-text route + regex fix)
+- `client/src/hooks/useS3StagingApi.ts` (modified — FileInfo.path field)
+- `client/src/components/shared/S3StagingTool.tsx` (modified — FileList + API_URL import)
+
+**Status:** ✓ Complete
+
+---
+
 ### FR-141: Export & S3 Workflow Overhaul
 
 | Date       | Change                                                    | Commit  |

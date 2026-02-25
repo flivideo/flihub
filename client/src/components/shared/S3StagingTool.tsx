@@ -9,6 +9,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { API_URL } from '../../config';
 import {
   useS3StagingStatus,
   useSyncPrep,
@@ -188,6 +189,7 @@ export function S3StagingTool() {
                   emptyText="(folder does not exist)"
                   noFilesText="(no files)"
                   showSync
+                  showSrtClipboard
                 />
               </div>
 
@@ -213,6 +215,7 @@ export function S3StagingTool() {
                   emptyText="(folder does not exist)"
                   noFilesText="(no files - click Sync to copy)"
                   showCheck
+                  showSrtClipboard
                 />
               </div>
 
@@ -545,15 +548,44 @@ function SectionHeader({ title }: { title: string }) {
 
 interface FileListProps {
   exists: boolean;
-  files: Array<{ name: string; size: number; synced?: boolean; hasSrt?: boolean }>;
+  files: Array<{ name: string; size: number; path?: string; synced?: boolean; hasSrt?: boolean }>;
   emptyText: string;
   noFilesText: string;
   showSync?: boolean;
   showCheck?: boolean;
   showSrt?: boolean;
+  showSrtClipboard?: boolean;
 }
 
-function FileList({ exists, files, emptyText, noFilesText, showSync, showCheck, showSrt }: FileListProps) {
+// FR-143: Copy SRT plain text to clipboard
+async function copySrtToClipboard(filePath: string) {
+  const res = await fetch(`${API_URL}/api/s3-staging/srt-text?path=${encodeURIComponent(filePath)}`);
+  if (!res.ok) {
+    throw new Error(`Server error: ${res.status}`);
+  }
+  const text = await res.text();
+  await navigator.clipboard.writeText(text);
+}
+
+function FileList({ exists, files, emptyText, noFilesText, showSync, showCheck, showSrt, showSrtClipboard }: FileListProps) {
+  const [copyingFile, setCopyingFile] = useState<string | null>(null);
+
+  const handleCopySrt = async (file: { name: string; path?: string }) => {
+    if (!file.path) {
+      toast.error('File path not available');
+      return;
+    }
+    setCopyingFile(file.name);
+    try {
+      await copySrtToClipboard(file.path);
+      toast.success('Copied to clipboard');
+    } catch {
+      toast.error('Copy failed');
+    } finally {
+      setCopyingFile(null);
+    }
+  };
+
   return (
     <div className="bg-gray-50 border border-gray-200 rounded max-h-32 overflow-y-auto">
       {!exists ? (
@@ -566,7 +598,7 @@ function FileList({ exists, files, emptyText, noFilesText, showSync, showCheck, 
             key={f.name}
             className="flex justify-between px-3 py-1.5 text-sm border-b border-gray-100 last:border-0"
           >
-            <span className="font-mono text-gray-700">
+            <span className="font-mono text-gray-700 flex items-center gap-1">
               {showSync && f.synced && <span className="text-green-600 mr-1">✓</span>}
               {showCheck && <span className="text-green-600 mr-1">✓</span>}
               {showSrt && (
@@ -577,6 +609,16 @@ function FileList({ exists, files, emptyText, noFilesText, showSync, showCheck, 
                 )
               )}
               {f.name}
+              {showSrtClipboard && f.name.endsWith('.srt') && (
+                <button
+                  onClick={() => handleCopySrt(f)}
+                  disabled={copyingFile === f.name}
+                  title="Copy transcript text"
+                  className="ml-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                >
+                  {copyingFile === f.name ? '...' : '📋'}
+                </button>
+              )}
             </span>
             <span className="text-gray-400">
               {formatSize(f.size)}

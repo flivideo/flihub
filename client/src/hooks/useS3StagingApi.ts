@@ -6,6 +6,7 @@ import { API_URL } from '../config';
 interface FileInfo {
   name: string;
   size: number;
+  path?: string;
   synced?: boolean;
   hasSrt?: boolean;
   srtName?: string;
