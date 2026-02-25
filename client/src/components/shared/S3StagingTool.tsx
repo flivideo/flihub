@@ -54,8 +54,10 @@ export function S3StagingTool() {
   // ─── S3 Handlers ───
 
   const handleViewS3 = () => {
-    if (s3Data?.project && s3Status?.brand) {
-      const url = `https://s3.console.aws.amazon.com/s3/buckets/v-${s3Status.brand}/${s3Data.project}/`;
+    if (s3Data?.project && s3Status?.aws) {
+      const { bucket, region, s3Prefix } = s3Status.aws;
+      const prefix = encodeURIComponent(`${s3Prefix}${s3Data.project}/`);
+      const url = `https://${region}.console.aws.amazon.com/s3/buckets/${bucket}?region=${region}&prefix=${prefix}&tab=objects`;
       window.open(url, '_blank');
     }
   };
@@ -251,7 +253,7 @@ export function S3StagingTool() {
                     </button>
                     <button
                       onClick={handleViewS3}
-                      disabled={!s3Status?.brand}
+                      disabled={!s3Status?.aws}
                       className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       View
@@ -302,7 +304,7 @@ export function S3StagingTool() {
                     </button>
                     <button
                       onClick={handleViewS3}
-                      disabled={!s3Status?.brand}
+                      disabled={!s3Status?.aws}
                       className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       View

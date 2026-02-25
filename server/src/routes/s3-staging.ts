@@ -37,6 +37,30 @@ function extractBrand(projectPath: string): string {
   return 'appydave'; // default fallback
 }
 
+// Read AWS config for a brand from ~/.config/appydave/brands.json
+interface BrandAwsConfig {
+  bucket: string;
+  region: string;
+  s3Prefix: string;
+}
+
+async function getBrandAwsConfig(brand: string): Promise<BrandAwsConfig | null> {
+  try {
+    const brandsPath = path.join(process.env.HOME || '~', '.config', 'appydave', 'brands.json');
+    const raw = await fs.readFile(brandsPath, 'utf-8');
+    const data = JSON.parse(raw);
+    const b = (data.brands ?? data)[brand]?.aws;
+    if (!b) return null;
+    return {
+      bucket: b.s3_bucket,
+      region: b.region,
+      s3Prefix: b.s3_prefix || '',
+    };
+  } catch {
+    return null;
+  }
+}
+
 // FR-105: Run DAM CLI command
 async function runDamCommand(
   action: DamAction,
@@ -467,6 +491,7 @@ export function createS3StagingRoutes(getConfig: () => Config) {
       const projectDir = expandPath(config.projectDirectory);
       const projectCode = path.basename(projectDir);
       const brand = extractBrand(projectDir);
+      const awsConfig = await getBrandAwsConfig(brand);
 
       // Get S3 status via DAM command
       const damResult = await runDamCommand('status', brand, projectCode, projectDir);
@@ -476,6 +501,7 @@ export function createS3StagingRoutes(getConfig: () => Config) {
           success: true,
           project: projectCode,
           brand,
+          aws: awsConfig,
           prep: { uploaded: false, error: damResult.error },
           post: { fileCount: 0, newFilesAvailable: 0, newFiles: [] },
         });
@@ -510,6 +536,7 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         success: true,
         project: projectCode,
         brand,
+        aws: awsConfig,
         prep: {
           uploaded: prepUploaded,
           fileCount: parsedPrep.fileCount || 0,

@@ -151,6 +151,11 @@ interface S3Status {
   error?: string;
   project?: string;
   brand?: string;
+  aws?: {
+    bucket: string;
+    region: string;
+    s3Prefix: string;
+  };
   prep: {
     uploaded: boolean;
     fileCount?: number;
