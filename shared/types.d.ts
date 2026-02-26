@@ -30,6 +30,8 @@ export interface Config {
   chapterRecordings?: ChapterRecordingConfig;
   shadowResolution?: number;
   glingDictionary?: string[];
+  poemWuiUrl?: string;
+  brandConfigPath?: string;
 }
 export interface RenameRequest {
   originalPath: string;

@@ -40,6 +40,8 @@ export interface Config {
   chapterRecordings?: ChapterRecordingConfig; // FR-58: Chapter recording settings
   shadowResolution?: number; // FR-89 Part 6: Shadow video resolution (default: 240)
   glingDictionary?: string[]; // FR-102: Custom dictionary words for Gling transcription
+  poemWuiUrl?: string; // FR-144: POEM WUI base URL (default: http://localhost:3001)
+  brandConfigPath?: string; // FR-144: Path to brand-config.json for YouTube Launch Optimizer
 }
 
 export interface RenameRequest {

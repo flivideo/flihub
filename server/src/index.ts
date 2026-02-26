@@ -23,6 +23,7 @@ import { createShadowsRouter } from './routes/shadows.js';
 import { createEditRoutes } from './routes/edit.js';
 import { createManageRoutes } from './routes/manage.js';
 import { createS3StagingRoutes } from './routes/s3-staging.js';
+import { createPoemWuiRoutes } from './routes/poem-wui.js';
 import { createStateRoutes } from './routes/state.js';
 import { createDeveloperRoutes } from './routes/developer.js';
 import { migrateTargetToProject } from '../../shared/paths.js';
@@ -394,6 +395,10 @@ app.use('/api/manage', manageRoutes);
 // FR-103: Setup S3 staging routes
 const s3StagingRoutes = createS3StagingRoutes(() => currentConfig);
 app.use('/api/s3-staging', s3StagingRoutes);
+
+// FR-144: Setup POEM WUI routes
+const poemWuiRoutes = createPoemWuiRoutes(() => currentConfig);
+app.use('/api/poem-wui', poemWuiRoutes);
 
 // FR-111: Setup project state routes (FR-123: pass io for socket events)
 const stateRoutes = createStateRoutes(() => currentConfig, io);

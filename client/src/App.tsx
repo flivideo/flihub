@@ -29,6 +29,7 @@ import { MockupsPage } from './components/MockupsPage';
 import { WatchPage } from './components/WatchPage';
 // FR-141: S3StagingPage removed - consolidated into ExportS3Tool in Manage panel
 import { ManagePanel } from './components/ManagePanel';
+import { PoemWuiPage } from './components/PoemWuiPage';
 import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
 import { OpenFolderButton } from './components/shared';
@@ -47,6 +48,7 @@ type ViewTab =
   | 'assets'
   | 'thumbs'
   | 'export'
+  | 'poem-wui'
   | 'projects'
   | 'config'
   | 'mockups'
@@ -61,6 +63,7 @@ const VALID_TABS: ViewTab[] = [
   'assets',
   'thumbs',
   'export',
+  'poem-wui',
   'projects',
   'config',
   'mockups',
@@ -677,6 +680,17 @@ function App() {
               Manage
             </button>
             <button
+              onClick={() => changeTab('poem-wui')}
+              className={`text-sm transition-colors ${
+                activeTab === 'poem-wui'
+                  ? 'text-purple-600 font-medium'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              title="Send transcript to POEM WUI YouTube Launch Optimizer"
+            >
+              POEM WUI
+            </button>
+            <button
               onClick={() => changeTab('projects')}
               className={`text-sm transition-colors ${
                 activeTab === 'projects'
@@ -838,6 +852,13 @@ function App() {
           <section>
             <h2 className="text-lg font-medium text-gray-700 mb-4">Manage & Export</h2>
             <ManagePanel />
+          </section>
+        )}
+
+        {/* FR-144: POEM WUI Tab */}
+        {activeTab === 'poem-wui' && (
+          <section>
+            <PoemWuiPage />
           </section>
         )}
 

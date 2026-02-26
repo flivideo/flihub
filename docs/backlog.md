@@ -18,6 +18,7 @@ Requirements index for FliHub.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-144 | [Send Transcript to POEM WUI Workflow Intake](prd/fr-144-workflow-intake.md)                    | 2026-02-25 | Pending                                                         |
 | FR-143 | [SRT Clipboard Copy Button](prd/fr-143-srt-clipboard.md)                                        | 2026-02-24 | ✓ Implemented                                                   |
 | FR-142 | [Split Export/S3 Tool: Separate Gling Prep from S3 Staging](prd/fr-142-split-export-s3-tool.md) | 2026-02-18 | ✓ Implemented                                                   |
 | FR-141 | [Export & S3 Workflow Overhaul](prd/fr-141-export-s3-workflow-overhaul.md)                    | 2026-02-16 | ✓ Implemented                                                   |
