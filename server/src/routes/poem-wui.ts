@@ -91,6 +91,7 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
         srtRaw,
         brandConfigFound: brandConfig.found,
         brandConfigPath: brandConfig.path,
+        brandConfig: brandConfig.data,
       });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });

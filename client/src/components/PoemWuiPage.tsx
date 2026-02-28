@@ -15,7 +15,7 @@ export function PoemWuiPage() {
         transcript: data.transcript ?? '',
         chapterFolderNames: [],
         srt: data.srtRaw ?? null,
-        brandConfig: null,
+        brandConfig: data.brandConfig ?? null,
       },
     };
     return JSON.stringify(payload, null, 2);

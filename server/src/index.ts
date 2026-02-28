@@ -204,6 +204,13 @@ function saveConfig(config: Config): void {
     if (config.shadowResolution) {
       toSave.shadowResolution = config.shadowResolution;
     }
+    // FR-144: Persist POEM WUI settings
+    if (config.poemWuiUrl) {
+      toSave.poemWuiUrl = config.poemWuiUrl;
+    }
+    if (config.brandConfigPath) {
+      toSave.brandConfigPath = config.brandConfigPath;
+    }
     fs.writeJsonSync(CONFIG_FILE, toSave, { spaces: 2 });
     console.log('Config saved to:', CONFIG_FILE);
   } catch (error) {

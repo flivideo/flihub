@@ -13,6 +13,7 @@ export interface PoemWuiStatus {
   srtRaw?: string | null;
   brandConfigFound?: boolean;
   brandConfigPath?: string | null;
+  brandConfig?: unknown;
 }
 
 interface SendResult {
