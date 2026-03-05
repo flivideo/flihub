@@ -23,8 +23,8 @@ let recentJobs: TranscriptionJob[] = []; // Keep last 5
 let activeProcess: ChildProcess | null = null;
 
 // Config (could move to server config.json in future)
-const WHISPER_PYTHON = '~/.pyenv/versions/3.11.12/bin/python';
-const WHISPER_MODEL = 'medium';
+const WHISPER_BINARY = '~/.pyenv/versions/3.14.3/bin/mlx_whisper';
+const WHISPER_MODEL = 'mlx-community/whisper-large-v3-turbo';
 const WHISPER_LANGUAGE = 'en';
 const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 
@@ -125,11 +125,11 @@ export function createTranscriptionRoutes(
     const transcriptsDir = getTranscriptsDirFromVideoPath(activeJob.videoPath);
     fs.ensureDirSync(transcriptsDir);
 
-    const pythonPath = expandPath(WHISPER_PYTHON);
+    const whisperBinary = expandPath(WHISPER_BINARY);
     const videoPath = activeJob.videoPath;
 
     console.log(`Starting transcription: ${activeJob.videoFilename}`);
-    console.log(`Using Python: ${pythonPath}`);
+    console.log(`Using Whisper: ${whisperBinary}`);
     console.log(`Output dir: ${transcriptsDir}`);
 
     // FR-99: Capture timing data for telemetry
@@ -146,17 +146,15 @@ export function createTranscriptionRoutes(
     // FR-74: Output TXT (plain text), SRT (timed subtitles), and JSON (word-level timestamps)
     // FR-98: Use 'all' format then delete unwanted vtt/tsv files after completion
     // (Whisper only accepts a single format argument, not multiple)
-    activeProcess = spawn(pythonPath, [
-      '-m',
-      'whisper',
+    activeProcess = spawn(whisperBinary, [
       videoPath,
       '--model',
       WHISPER_MODEL,
       '--language',
       WHISPER_LANGUAGE,
-      '--output_format',
+      '--output-format',
       'all',
-      '--output_dir',
+      '--output-dir',
       transcriptsDir,
     ]);
 
