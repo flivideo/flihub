@@ -19,15 +19,38 @@ function stripSrt(content: string): string {
   return result.join('\n');
 }
 
-// Load brand config from configured path, returns null if not found
+// Bundled fallback brand config (committed to repo, works on any machine)
+const BUNDLED_BRAND_CONFIG = path.resolve(
+  path.dirname(new URL(import.meta.url).pathname),
+  '../../brand-config.json'
+);
+
+// Map raw brand-config.json shape → WUI seed data contract shape
+function mapBrandConfig(raw: unknown): unknown {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  const ctas = (r.ctas ?? {}) as Record<string, unknown>;
+  const descTpl = (r.descriptionTemplate ?? {}) as Record<string, unknown>;
+  return {
+    primaryCta:      ctas.primaryCta ?? null,
+    foldCta:         ctas.foldCta ?? null,
+    affiliates:      r.affiliates ?? [],
+    socialLinks:     r.socialLinks ?? {},
+    legalDisclosure: descTpl.legalDisclosure ?? '',
+    relatedVideos:   [],
+  };
+}
+
+// Load brand config: try configured path first, then fall back to bundled file
 async function loadBrandConfig(configPath: string | undefined): Promise<{ data: unknown; found: boolean; path: string | null }> {
-  if (!configPath) return { data: null, found: false, path: null };
-  try {
-    const raw = await fs.readFile(configPath, 'utf-8');
-    return { data: JSON.parse(raw), found: true, path: configPath };
-  } catch {
-    return { data: null, found: false, path: configPath };
+  const candidates = configPath ? [configPath, BUNDLED_BRAND_CONFIG] : [BUNDLED_BRAND_CONFIG];
+  for (const p of candidates) {
+    try {
+      const raw = await fs.readFile(p, 'utf-8');
+      return { data: mapBrandConfig(JSON.parse(raw)), found: true, path: p };
+    } catch { /* try next */ }
   }
+  return { data: null, found: false, path: configPath ?? null };
 }
 
 // Find first SRT file: s3-staging/post/ → final/ → recording-transcripts/

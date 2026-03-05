@@ -1,0 +1,78 @@
+{
+  "brand": {
+    "name": "AppyDave",
+    "realName": "David Cruwys",
+    "profession": "AI Strategist, Workflows & Agents for Content Creators",
+    "tagline": "Prompt Engineering, AI Workflows, AI Agents for YouTube & Content Creators"
+  },
+  "socialLinks": {
+    "website": "https://appydave.com",
+    "twitter": "https://twitter.com/appyDave",
+    "youtubeMain": "https://youtube.com/@appydave",
+    "youtubeAITLDR": "https://youtube.com/@aitldr",
+    "skool": "https://skool.com/appydave-6257"
+  },
+  "ctas": {
+    "foldCta": {
+      "label": "Join Skool Community",
+      "url": "https://skool.com/appydave-6257"
+    },
+    "primaryCta": {
+      "label": "Access Benefits",
+      "url": "https://www.appydave.com/opt-in"
+    }
+  },
+  "affiliates": [
+    {
+      "name": "Buy Me a Coffee",
+      "url": "https://buymeacoffee.com/appydave",
+      "active": true
+    },
+    {
+      "name": "DZine",
+      "url": "https://www.dzine.ai/?via=aitldr",
+      "active": true
+    },
+    {
+      "name": "ECamm Live",
+      "url": "https://www.ecamm.com/mac/ecammlive/?fp_ref=appydave",
+      "active": true
+    },
+    {
+      "name": "Gling.AI",
+      "url": "https://gling.ai/?via=appydave",
+      "active": true
+    },
+    {
+      "name": "Digital Stage Summit",
+      "url": "https://www.takeonetech.io/a/2147948540/PrfAQcmG",
+      "active": true
+    },
+    {
+      "name": "ElevenLabs",
+      "url": "https://try.elevenlabs.io/zh43n4omex1o",
+      "active": true
+    }
+  ],
+  "playlists": {
+    "chatgptPrompts": "PLx0FU01Q5blzTcMCDYissKpfQoPLcc97T",
+    "promptEngineering": "PLx0FU01Q5blxTmki_sgTrDTz53KwOTBNV",
+    "agentWorkflowBuilder": "PLx0FU01Q5blxxrH7-FCEgx0RTxqujVnkP",
+    "aiAgents": "PLx0FU01Q5blzvD1-qcCtx-ZAJs6GZuzyA",
+    "aiTools": "PLx0FU01Q5blxA2eYrK-EYH2kJ5fVBREjG",
+    "aiArt": "PLx0FU01Q5blzxAabtAI6NkvnCGsXbDf5p",
+    "youtubeAutomation": "PLx0FU01Q5blxd7pRs8cp-sxtvlPC2rr7K",
+    "buildYourBrand": "PLx0FU01Q5blye76TlzxDAWWf5RbeR54CB",
+    "contextEngineering": "PLx0FU01Q5blyN8hoB4JFo4hHBeBpXNIbH",
+    "bmadMethod": "PLx0FU01Q5blz2sIg9u2glQDNB3x0qh1Ih"
+  },
+  "descriptionTemplate": {
+    "legalDisclosure": "Some links may be affiliate links. I may earn a small commission at no extra cost to you.",
+    "endNote": "Thanks for watching! Don't forget to like and subscribe for more content."
+  },
+  "_meta": {
+    "lastUpdated": "2025-12-03",
+    "source": "Extracted from Dropbox/team-awb/awb-appydave/-outcome-template.md",
+    "notes": "Skool community is primary CTA. Removed: DigitalOcean, PickAxe, Kajabi"
+  }
+}
