@@ -2,8 +2,11 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs/promises';
+import { exec } from 'child_process';
 import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
+import { getProjectPaths } from '../../../shared/paths.js';
+import { readDirSafe } from '../utils/filesystem.js';
 
 // Strip SRT formatting: same logic as FR-143 srt-text endpoint
 function stripSrt(content: string): string {
@@ -53,8 +56,58 @@ async function loadBrandConfig(configPath: string | undefined): Promise<{ data: 
   return { data: null, found: false, path: configPath ?? null };
 }
 
-// Find first SRT file: s3-staging/post/ → final/ → recording-transcripts/
-async function findSrt(projectDir: string): Promise<{ filePath: string; dir: string; name: string } | null> {
+// Read .awb.json metadata from project root
+async function readAwbJson(projectDir: string): Promise<{
+  exists: boolean;
+  savedAt: string | null;
+  currentStepId: string | null;
+  sizeKb: number | null;
+  fullPath: string;
+}> {
+  const fullPath = path.join(projectDir, '.awb.json');
+  try {
+    const [stat, raw] = await Promise.all([fs.stat(fullPath), fs.readFile(fullPath, 'utf-8')]);
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    return {
+      exists: true,
+      savedAt: typeof parsed.savedAt === 'string' ? parsed.savedAt : null,
+      currentStepId: typeof parsed.currentStepId === 'string' ? parsed.currentStepId : null,
+      sizeKb: Math.round(stat.size / 1024),
+      fullPath,
+    };
+  } catch {
+    return { exists: false, savedAt: null, currentStepId: null, sizeKb: null, fullPath };
+  }
+}
+
+// Extract first ~50 words from plain text (strips SRT formatting first)
+function firstWords(content: string, count = 50): string {
+  const plain = stripSrt(content);
+  return plain.split(/\s+/).filter(Boolean).slice(0, count).join(' ');
+}
+
+// Find first transcript (.txt preferred, .srt fallback) for a chapter prefix
+async function readChapterTranscript(transcriptsDir: string, chapterPrefix: string): Promise<string | null> {
+  try {
+    const files = await readDirSafe(transcriptsDir);
+    const prefix = `${chapterPrefix}-`;
+    // .txt files only, skip -chapter.txt combined files
+    const txt = files.find((f) => f.startsWith(prefix) && f.endsWith('.txt') && !f.endsWith('-chapter.txt'));
+    if (txt) return fs.readFile(path.join(transcriptsDir, txt), 'utf-8');
+    // fallback to .srt
+    const srt = files.find((f) => f.startsWith(prefix) && f.endsWith('.srt'));
+    if (srt) return fs.readFile(path.join(transcriptsDir, srt), 'utf-8');
+  } catch { /* dir not found */ }
+  return null;
+}
+
+// Find ALL SRT files: s3-staging/post/ → final/ → recording-transcripts/
+// Uses the first directory that has any SRTs, concatenates all of them.
+async function findAllSrts(projectDir: string): Promise<{
+  names: string[];
+  rawContent: string;
+  transcript: string;
+} | null> {
   const scanDirs = [
     path.join(projectDir, 's3-staging', 'post'),
     path.join(projectDir, 'final'),
@@ -66,7 +119,12 @@ async function findSrt(projectDir: string): Promise<{ filePath: string; dir: str
         .filter((f) => !f.startsWith('.') && f.endsWith('.srt'))
         .sort();
       if (files.length > 0) {
-        return { filePath: path.join(dir, files[0]), dir, name: files[0] };
+        const contents = await Promise.all(
+          files.map((f) => fs.readFile(path.join(dir, f), 'utf-8'))
+        );
+        const rawContent = contents.join('\n');
+        const transcript = contents.map(stripSrt).join('\n');
+        return { names: files, rawContent, transcript };
       }
     } catch { /* dir not found */ }
   }
@@ -87,8 +145,11 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       const projectDir = expandPath(config.projectDirectory);
       const projectFolder = path.basename(projectDir);
 
-      const srtInfo = await findSrt(projectDir);
-      const brandConfig = await loadBrandConfig(config.brandConfigPath);
+      const [srtInfo, brandConfig, awbJson] = await Promise.all([
+        findAllSrts(projectDir),
+        loadBrandConfig(config.brandConfigPath),
+        readAwbJson(projectDir),
+      ]);
 
       if (!srtInfo) {
         return res.json({
@@ -96,25 +157,26 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
           projectFolder,
           transcriptFound: false,
           srtFile: null,
+          srtFiles: [],
           transcript: null,
           brandConfigFound: brandConfig.found,
           brandConfigPath: brandConfig.path,
+          awbJson,
         });
       }
-
-      const srtRaw = await fs.readFile(srtInfo.filePath, 'utf-8');
-      const transcript = stripSrt(srtRaw);
 
       res.json({
         success: true,
         projectFolder,
         transcriptFound: true,
-        srtFile: srtInfo.name,
-        transcript,
-        srtRaw,
+        srtFile: srtInfo.names.length === 1 ? srtInfo.names[0] : `${srtInfo.names.length} files`,
+        srtFiles: srtInfo.names,
+        transcript: srtInfo.transcript,
+        srtRaw: srtInfo.rawContent,
         brandConfigFound: brandConfig.found,
         brandConfigPath: brandConfig.path,
         brandConfig: brandConfig.data,
+        awbJson,
       });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
@@ -133,13 +195,10 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       const projectFolder = path.basename(projectDir);
       const poemWuiUrl = config.poemWuiUrl || 'http://localhost:3001';
 
-      const srtInfo = await findSrt(projectDir);
+      const srtInfo = await findAllSrts(projectDir);
       if (!srtInfo) {
         return res.json({ ok: false, error: 'No SRT file found to use as transcript' });
       }
-
-      const raw = await fs.readFile(srtInfo.filePath, 'utf-8');
-      const transcript = stripSrt(raw);
 
       const brandConfig = await loadBrandConfig(config.brandConfigPath);
 
@@ -147,14 +206,14 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
         workflowId: 'youtube-launch-optimizer',
         store: {
           projectFolder,
-          transcript,
+          transcript: srtInfo.transcript,
           chapterFolderNames: [],
-          srt: raw,
+          srt: srtInfo.rawContent,
           brandConfig: brandConfig.data,
         },
       };
 
-      console.log(`[POEM WUI] Sending to ${poemWuiUrl}/api/workflow/intake`);
+      console.log(`[AWB] Sending to ${poemWuiUrl}/api/workflow/intake`);
 
       let poemRes: Response;
       try {
@@ -166,7 +225,7 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       } catch {
         const portMatch = poemWuiUrl.match(/:(\d+)/);
         const port = portMatch ? portMatch[1] : '3001';
-        return res.json({ ok: false, error: `POEM WUI not reachable — is it running on port ${port}?` });
+        return res.json({ ok: false, error: `AWB not reachable — is it running on port ${port}?` });
       }
 
       const poemBody = await poemRes.json().catch(() => ({})) as { ok?: boolean; error?: string };
@@ -177,6 +236,99 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       res.json({ ok: true });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error) });
+    }
+  });
+
+  // POST /api/poem-wui/resume — load saved .awb.json back into AWB and open browser
+  router.post('/resume', async (req, res) => {
+    try {
+      const config = getConfig();
+      if (!config.projectDirectory) {
+        return res.json({ ok: false, error: 'No project selected' });
+      }
+
+      const projectDir = expandPath(config.projectDirectory);
+      const awbJsonPath = path.join(projectDir, '.awb.json');
+
+      let awbJson: Record<string, unknown>;
+      try {
+        const raw = await fs.readFile(awbJsonPath, 'utf-8');
+        awbJson = JSON.parse(raw) as Record<string, unknown>;
+      } catch {
+        return res.json({ ok: false, error: '.awb.json not found in project directory' });
+      }
+
+      const poemWuiUrl = config.poemWuiUrl || 'http://localhost:3001';
+
+      try {
+        await fetch(`${poemWuiUrl}/api/workflow/intake`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workflowId: awbJson.workflowId,
+            store: awbJson.store,
+            currentStepId: awbJson.currentStepId,
+            autoStart: true,
+          }),
+        });
+      } catch {
+        const portMatch = poemWuiUrl.match(/:(\d+)/);
+        const port = portMatch ? portMatch[1] : '3001';
+        return res.json({ ok: false, error: `AWB not reachable — is it running on port ${port}?` });
+      }
+
+      // Open AWB client (port 5173), not API server
+      const clientUrl = poemWuiUrl.replace(/:(\d+)/, ':5173');
+      exec(`open ${clientUrl}`);
+
+      res.json({ ok: true });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error) });
+    }
+  });
+
+  // GET /api/poem-wui/chapter-data — chapter list with firstWords from raw transcripts
+  router.get('/chapter-data', async (req, res) => {
+    try {
+      const config = getConfig();
+      if (!config.projectDirectory) {
+        return res.json({ success: false, error: 'No project selected' });
+      }
+
+      const projectDir = expandPath(config.projectDirectory);
+      const paths = getProjectPaths(projectDir);
+
+      // Collect unique chapter prefixes + first descriptive name from recordings/ and recordings/-safe/
+      // Recording naming: {chapter}-{sequence}-{name}-{tags}.mov → e.g. 01-1-intro-CTA.mov → name="intro"
+      const chapterMap = new Map<string, string>(); // prefix → chapterName
+      for (const dir of [paths.recordings, paths.safe]) {
+        const files = (await readDirSafe(dir)).sort();
+        for (const file of files) {
+          const match = file.match(/^(\d{2})-\d+-([a-z][a-z0-9-]*?)(?:-[A-Z]+)*\.[a-z0-9]+$/);
+          if (match) {
+            const [, prefix, name] = match;
+            // Only set name from first file encountered for this prefix (already sorted)
+            if (!chapterMap.has(prefix)) chapterMap.set(prefix, name);
+          }
+        }
+      }
+
+      const chapterPrefixes = [...chapterMap.keys()].sort();
+
+      const chapters = await Promise.all(
+        chapterPrefixes.map(async (prefix) => {
+          const content = await readChapterTranscript(paths.transcripts, prefix);
+          return {
+            folderNumber: prefix,
+            chapterName: chapterMap.get(prefix) ?? '',
+            firstWords: content ? firstWords(content) : null,
+          };
+        })
+      );
+
+      res.json({ success: true, chapters });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
     }
   });
 

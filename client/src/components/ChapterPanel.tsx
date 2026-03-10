@@ -1,6 +1,7 @@
 // FR-56: Chapter Navigation Panel - Fixed sidebar showing chapter table of contents
 import { toast } from 'sonner';
 import { formatDuration, formatChapterTitle } from '../utils/formatting';
+import { API_URL } from '../config';
 
 interface ChapterInfo {
   chapterKey: string;
@@ -16,20 +17,16 @@ interface ChapterPanelProps {
 }
 
 export function ChapterPanel({ chapters, currentChapter, onChapterClick }: ChapterPanelProps) {
-  // Copy YouTube-format chapter list to clipboard
+  // Copy structured chapter data JSON for POEM consumption
   const handleCopyChapters = async () => {
-    const lines = chapters.map((ch) => {
-      const timestamp = formatDuration(ch.startTime, 'youtube');
-      const title = formatChapterTitle(ch.title);
-      return `${timestamp} ${title}`;
-    });
-    const text = lines.join('\n');
-
     try {
-      await navigator.clipboard.writeText(text);
-      toast.success('Copied chapter list');
+      const res = await fetch(`${API_URL}/api/poem-wui/chapter-data`);
+      const data = await res.json() as { success: boolean; chapters?: unknown[]; error?: string };
+      if (!data.success) throw new Error(data.error || 'Failed to load chapter data');
+      await navigator.clipboard.writeText(JSON.stringify(data.chapters, null, 2));
+      toast.success('Copied chapter data for POEM');
     } catch {
-      toast.error('Failed to copy');
+      toast.error('Failed to copy chapter data');
     }
   };
 
@@ -40,10 +37,20 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
   return (
     <div className="bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-lg h-full flex flex-col">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100">
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
           Chapters ({chapters.length})
         </h3>
+        <button
+          onClick={handleCopyChapters}
+          className="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors flex items-center gap-1"
+          title="Copy chapter data for POEM"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+          </svg>
+          Copy
+        </button>
       </div>
 
       {/* Chapter list */}
@@ -91,24 +98,6 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
         </div>
       </div>
 
-      {/* Footer with Copy button */}
-      <div className="px-4 py-3 border-t border-gray-100 flex-shrink-0">
-        <button
-          onClick={handleCopyChapters}
-          className="w-full px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors flex items-center justify-center gap-1.5"
-          title="Copy YouTube-format chapter list"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-            />
-          </svg>
-          Copy for YouTube
-        </button>
-      </div>
     </div>
   );
 }

@@ -1,10 +1,11 @@
 // FR-144: POEM WUI Workflow Intake Page
 import { useMemo, useState } from 'react';
-import { usePoemWuiStatus, useSendToPoem } from '../hooks/usePoemWuiApi';
+import { usePoemWuiStatus, useSendToPoem, useResumeInAwb } from '../hooks/usePoemWuiApi';
 
 export function PoemWuiPage() {
   const { data, isLoading, refetch } = usePoemWuiStatus();
   const send = useSendToPoem();
+  const resume = useResumeInAwb();
 
   const payloadJson = useMemo(() => {
     if (!data?.transcriptFound) return null;
@@ -37,7 +38,7 @@ export function PoemWuiPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-gray-700">POEM WUI</h2>
+        <h2 className="text-lg font-medium text-gray-700">AWB</h2>
         <button
           onClick={() => refetch()}
           className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
@@ -64,7 +65,11 @@ export function PoemWuiPage() {
                   <span className="font-medium text-gray-700">SRT:</span>
                   {data.transcriptFound ? (
                     <>
-                      <span className="font-mono text-gray-700">{data.srtFile}</span>
+                      <span className="font-mono text-gray-700">
+                        {data.srtFiles && data.srtFiles.length > 1
+                          ? `${data.srtFiles.length} files concatenated`
+                          : data.srtFile}
+                      </span>
                       <span className="text-green-600">✓</span>
                     </>
                   ) : (
@@ -79,22 +84,55 @@ export function PoemWuiPage() {
                     <span className="text-amber-500">⚠ not found — brandConfig will be null</span>
                   )}
                 </div>
+                <div className="text-xs text-gray-500 flex items-center gap-2">
+                  <span className="font-medium text-gray-700">.awb.json:</span>
+                  {data.awbJson?.exists ? (
+                    <>
+                      <span
+                        className="font-mono text-gray-700 cursor-default"
+                        title={data.awbJson.fullPath}
+                      >
+                        .awb.json
+                      </span>
+                      <span className="text-green-600">✓</span>
+                      <span className="text-gray-400">
+                        {data.awbJson.savedAt
+                          ? new Date(data.awbJson.savedAt).toLocaleString()
+                          : ''}
+                        {data.awbJson.currentStepId && ` · step: ${data.awbJson.currentStepId}`}
+                        {data.awbJson.sizeKb != null && ` · ${data.awbJson.sizeKb}kb`}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-gray-400">not found</span>
+                  )}
+                </div>
               </div>
-              <button
-                onClick={handleSend}
-                disabled={!data.transcriptFound || send.isPending}
-                title={!data.transcriptFound ? 'No SRT file found' : undefined}
-                className="px-4 py-2 text-sm bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
-              >
-                {send.isPending ? (
-                  <>
-                    <span className="animate-spin inline-block">⟳</span>
-                    <span>Sending...</span>
-                  </>
-                ) : (
-                  'Send to POEM WUI →'
-                )}
-              </button>
+              <div className="flex flex-col gap-2 flex-shrink-0">
+                <button
+                  onClick={handleSend}
+                  disabled={!data.transcriptFound || send.isPending}
+                  title={!data.transcriptFound ? 'No SRT file found' : undefined}
+                  className="px-4 py-2 text-sm bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {send.isPending ? (
+                    <>
+                      <span className="animate-spin inline-block">⟳</span>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    'Send to AWB →'
+                  )}
+                </button>
+                <button
+                  onClick={() => resume.mutateAsync()}
+                  disabled={!data.awbJson?.exists || resume.isPending}
+                  title={!data.awbJson?.exists ? 'No .awb.json found in project directory' : 'Resume AWB from saved session'}
+                  className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {resume.isPending ? 'Resuming...' : 'Resume in AWB →'}
+                </button>
+              </div>
             </div>
           </div>
 

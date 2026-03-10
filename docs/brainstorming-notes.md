@@ -1640,3 +1640,300 @@ Awaiting PO decisions on:
 3. Whether to proceed with requirements or continue exploring
 
 ---
+
+## Session Notes — 2026-03-10
+
+**Source:** David live session — usage observations and UX friction points
+
+**Status:** Raw capture — not yet promoted to FRs
+
+---
+
+### 1. "Copy for YouTube" — Relocate + Change Output Format
+
+**Current behaviour:**
+- Button sits at the very bottom of the floating CHAPTERS panel (below chapter 08 in the screenshot)
+- Copies plain text timestamps for YouTube description, e.g.:
+  ```
+  00:00 Intro
+  00:14 Overview
+  01:52 Setup
+  ```
+
+**Two changes needed:**
+
+#### 1a. Relocate the button
+Move to somewhere consistently visible without scrolling. Options:
+- Top of Chapters panel (above chapter list)
+- Sticky/fixed at bottom of Chapters panel (always visible regardless of scroll)
+- Header-level button near "Recordings" / "Safe" folder breadcrumb
+
+#### 1b. Change what it copies — new JSON payload for POEM
+
+The YouTube Launch Optimizer workflow in POEM/AWB needs structured chapter data to generate YouTube chapter timestamps. The new "Copy for YouTube" button should copy this JSON:
+
+```json
+[
+  {
+    "number": 0,
+    "folderName": "01-intro",
+    "firstWords": "Hey everyone, welcome back. Today we're going to look at..."
+  },
+  {
+    "number": 1,
+    "folderName": "02-setup",
+    "firstWords": "So let's get started with the installation. First thing..."
+  }
+]
+```
+
+**Fields:**
+- `number` — zero-based chapter index, in folder order
+- `folderName` — the recording folder/chapter key exactly as-is (authoritative chapter structure)
+- `firstWords` — first ~50 words from the **raw chapter transcript** (recording-level, not final edited)
+
+**Important caveat on `firstWords`:**
+These come from raw recording transcripts, not the final edited video. That's intentional — they're semantic hints to help POEM locate approximate chapter boundaries in the edited SRT, not exact match targets.
+
+**What POEM does with this:**
+1. Uses `folderName` as authoritative chapter structure + anchor for title generation
+2. Uses `firstWords` to locate each chapter's start position in the edited SRT
+3. Extracts timestamps from the edited SRT at those positions
+4. Generates compressed YouTube chapter titles (≤49 chars) per chapter
+
+**Note:** The edited SRT is provided separately to POEM (direct paste or file input) — FliHub doesn't need to bundle it in this payload.
+
+**Decision on old plain text button (2026-03-10):**
+The old `00:00 Intro` format was David's manual 2-hour process — POEM's create-chapters step now handles timestamp generation automatically. The plain text copy button is **retired**. Replace it entirely with the JSON copy. Can keep plain text as a fallback toggle if David wants it, but POEM is the primary consumer going forward.
+
+**Implementation spec:**
+- New server endpoint: `GET /api/poem-wui/chapter-data`
+  - Reads chapter folders from project (same source as the chapter list in Recordings view)
+  - For each chapter folder, finds transcripts in `recording-transcripts/` matching that chapter
+  - Extracts first ~50 words from the transcript text (strip timestamps/SRT formatting first)
+  - Returns the JSON array
+- Client: button calls endpoint, copies resulting JSON to clipboard
+- `folderName` = chapter key exactly as stored (e.g. `01-intro`, `02-setup`)
+- `number` = zero-based index in folder order
+- `firstWords` = first ~50 words, raw text only — approximate is fine, used as semantic hints not exact match
+
+**Priority:** Medium-High — directly feeds the AWB youtube-launch-optimizer workflow
+
+---
+
+### 2. Recordings Page Header Stats — Visual Cleanup
+
+**Pain:** The stats bar on the Recordings page is cramped and hard to parse. From screenshot:
+```
+19 files (19 active, 0 safe, 0 parked) | 22:08 | 879.8 MB   (shadows: 26.9 MB)
+[✓ Safe] [✓ Parked]   🎙 Transcribe 2   📄 Transcript   🎬 Chap Recordings
+```
+
+**Issues identified:**
+- Too much information packed into one line
+- "Transcribe 2" label is unclear (does "2" mean 2 files? 2 pending?)
+- Shadows info is in parentheses (easy to miss, feels like an afterthought)
+- Checkboxes (Safe, Parked) and action buttons (Transcribe, Transcript, Chapter Recordings) are mixed together without clear visual grouping
+- "Chapter Recordings" is cut off in the UI (truncated)
+- The whole area feels like it grew organically rather than being designed
+
+**Ask:** Get a frontend designer to look at this area and propose a cleaner layout. Goals:
+- Clear visual grouping: stats vs filters vs actions
+- Labels that don't need guessing (what does "Transcribe 2" mean?)
+- Nothing truncated
+- Shadows stat should be visible but secondary
+
+**Priority:** Low-Medium — cosmetic but affects daily usability
+
+---
+
+### 3. AWB Output File Visibility on AWB Page
+
+**Context:** The AWB (Agent Workflow Builder) workflow at `~/dev/clients/supportsignal/prompt.supportsignal.com.au` saves output files to a specific output folder after processing. Currently the AWB tab in FliHub only shows the send UI (transcript + JSON payload) — there's no visibility into what the AWB workflow produced.
+
+**Pain:** After sending to AWB, David has no way to see the resulting output files from within FliHub.
+
+**Desired:** Show AWB output files on the AWB tab.
+
+**Options to explore (in order of complexity):**
+
+1. **Option A — Open Folder button** *(simplest)*
+   - A button "Open AWB Output" that opens the output folder in Finder
+   - Zero backend complexity, immediate value
+
+2. **Option B — Show filename with path on hover** *(low effort)*
+   - Scan the output folder and display the file name(s) found
+   - Hover to reveal full path
+   - Makes it clear output was generated without leaving FliHub
+
+3. **Option C — Transcript/JSON style side-by-side view** *(medium effort)*
+   - Similar to the current TRANSCRIPT | JSON PAYLOAD panels
+   - Show raw output file content in a scrollable panel
+   - Useful if the output is readable (JSON/markdown/text)
+
+**File confirmed (2026-03-10):** The AWB output is `.awb.json` — a hidden JSON file saved directly into the **project root directory** (same folder as `.flihub-state.json`). Example:
+```
+/Users/davidcruwys/dev/video-projects/v-appydave/c15-opus-4.6-appystack/.awb.json
+```
+
+**What this means:**
+- No config needed — FliHub already knows `projectDirectory`, just look for `.awb.json` there
+- It's JSON (150 KB for a real project) — readable, so Option C (side-by-side panel) is very viable
+- It's a hidden file (dot-prefix) so it won't clutter the project folder visually
+- The file appears to be updated in real-time / on send ("Today at 7:29 pm")
+- `.flihub-state.json` also lives at project root — consistent pattern
+
+**Revised options:**
+
+1. **Option A — Open in Finder** *(5 min)*: Button to `open` the project directory in Finder — user can then see `.awb.json`
+
+2. **Option B — Status badge** *(30 min)*: Show `.awb.json` found/not found with file size and modified date. Hover for full path.
+
+3. **Option C — JSON viewer panel** *(2-4 hrs)*: Add a third panel to the AWB page (alongside TRANSCRIPT and JSON PAYLOAD) showing the `.awb.json` content — the AWB workflow result. This completes the full send→view loop without leaving FliHub.
+
+**Recommendation:** Option B first (quick win), then Option C once the AWB workflow is established.
+
+**Priority:** Medium — closes the feedback loop after sending to AWB
+
+---
+
+### 3b. Open AWB with Pre-Loaded .awb.json (Resume Session)
+
+**Idea:** From FliHub's AWB tab, clicking on the `.awb.json` file (or a "Resume in AWB" button) should open the AWB app in the browser with that saved session pre-loaded — so David can continue where the workflow left off, rather than starting fresh.
+
+**AWB capability check (done 2026-03-10):**
+
+The AWB app already has **two loading mechanisms:**
+
+**A. `POST /api/workflow/intake` (already used by FliHub)**
+- FliHub currently sends `{ workflowId, store }` to this endpoint to kick off a new workflow
+- The `.awb.json` file contains `{ workflowId, store, savedAt, sessionId, workflowVersion }`
+- We *could* re-POST the saved `.awb.json` content to intake — but this would replay as a *new intake*, not resume a saved session. The state would reload but session context/history may be lost.
+
+**B. LandingScreen File Upload / Paste JSON**
+- The AWB app has a landing screen with drag-drop file upload and paste-JSON tabs
+- These map loaded JSON to the internal store — designed for loading incident data
+- Unknown: whether the `youtube-launch-optimizer` workflow has a compatible landing screen
+
+**The gap:** There is no "resume from .awb.json" endpoint — no mechanism to reload a saved session with its history intact. The intake endpoint starts fresh; the landing screen may work but it's UI-only (user has to manually locate and upload the file).
+
+**What we need:**
+
+Option 1 — **Re-intake approach** *(may already work, needs testing)*
+- FliHub reads `.awb.json`, extracts `{ workflowId, store }`, POSTs to `/api/workflow/intake`
+- Then opens AWB in browser (`open http://localhost:3001` or similar)
+- AWB picks up the pending intake on next page load and restores state
+- Downside: Session history lost, treated as new workflow run
+
+Option 2 — **Direct URL with state** *(needs AWB work)*
+- AWB adds a URL param like `?resume=<sessionId>` or `?load=.awb.json`
+- FliHub constructs that URL and opens it in browser
+- AWB server reads the `.awb.json` from project directory and hydrates the session
+- Cleanest UX but requires AWB feature work
+
+Option 3 — **"Load from path" API endpoint** *(needs AWB work)*
+- New AWB endpoint: `POST /api/workflow/load` with body `{ filePath: "/path/to/.awb.json" }`
+- AWB reads the file, restores full session state, returns sessionId
+- FliHub calls this, then opens browser to AWB
+- Best for full session restoration
+
+**AWB FULLY IMPLEMENTED (2026-03-10)** — AWB made all changes, 11/11 tests pass.
+
+**AWB app location:** `~/dev/clients/supportsignal/prompt.supportsignal.com.au`
+**AWB ports:** Server 3001, Client 5173 (open browser to 5173, not 3001)
+
+---
+
+#### What AWB Implemented (already done, do not redo)
+
+**`server/routes/save.js`** — Now accepts `currentStepId` from request body and writes it into `.awb.json`. Backward compatible (omitted if not sent).
+
+**`client/src/components/WizardShell.jsx`** (3 spots):
+- Both save call sites (`when: 'end'` and `when: 'step'`) now send `currentStepId`
+- `handleLandingStart` extracts `_resumeStepId`, validates it exists in the graph, sets `currentStepId` to it (falls back to step 1 if stale/not found)
+
+**`client/src/components/LandingScreen.jsx`** — When intake payload has `autoStart: true`, immediately calls `onStart` with store + `_resumeStepId` forwarded. No confirmation clicks required.
+
+**`server/routes/save.test.js`** — 2 new tests: `currentStepId` present, and absent.
+
+**Updated `.awb.json` shape** (going forward):
+```json
+{
+  "savedAt": "...",
+  "sessionId": "...",
+  "workflowId": "youtube-launch-optimizer",
+  "workflowVersion": "1.0.0",
+  "currentStepId": "step-review",
+  "store": { ... }
+}
+```
+
+---
+
+#### What FliHub Needs to Implement
+
+**New FliHub server route** (add to `poem-wui.ts` or a new `awb-resume.ts`):
+
+```ts
+// POST /api/poem-wui/resume
+router.post('/resume', async (req, res) => {
+  const config = loadConfig();
+  const projectDir = config.projectDirectory;
+  const awbJsonPath = path.join(projectDir, '.awb.json');
+
+  if (!fs.existsSync(awbJsonPath)) {
+    return res.json({ ok: false, error: '.awb.json not found in project directory' });
+  }
+
+  const awbJson = JSON.parse(fs.readFileSync(awbJsonPath, 'utf8'));
+  const awbUrl = config.poemWuiUrl || 'http://localhost:3001';
+
+  await fetch(`${awbUrl}/api/workflow/intake`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      workflowId: awbJson.workflowId,
+      store: awbJson.store,
+      currentStepId: awbJson.currentStepId,  // ← new field, may be undefined on old saves
+      autoStart: true,
+    }),
+  });
+
+  // Open AWB client (5173), not API server (3001)
+  const clientUrl = awbUrl.replace(':3001', ':5173');
+  exec(`open ${clientUrl}`);
+
+  res.json({ ok: true });
+});
+```
+
+**New FliHub `GET /api/poem-wui/status` additions** — extend the existing status endpoint to also return `.awb.json` info:
+```ts
+// Add to status response:
+{
+  awbJson: {
+    exists: boolean,
+    savedAt: string | null,       // from .awb.json
+    currentStepId: string | null, // from .awb.json
+    sizeKb: number | null,
+    path: string | null,          // full path (for hover tooltip)
+    filename: '.awb.json'
+  }
+}
+```
+
+**`PoemWuiPage.tsx` UI changes:**
+- Show `.awb.json` status badge (similar to SRT/brand config status): exists ✓ or missing ✗, with `savedAt` date and `currentStepId`
+- Hover on filename → show full path tooltip
+- "Resume in AWB →" button — calls `POST /api/poem-wui/resume`, disabled if `.awb.json` not found
+- Keep existing "Send to AWB →" button as-is (for initial send)
+
+**User experience after FliHub change:**
+1. FliHub AWB tab shows: "`.awb.json` found — saved today at 7:29pm, at step `step-review`"
+2. User clicks "Resume in AWB →"
+3. Browser opens/focuses `localhost:5173`
+4. Within ~3 seconds, workflow auto-starts at exactly the step they were on
+
+**Priority:** Medium-High — makes AWB tab genuinely two-way
+
+---

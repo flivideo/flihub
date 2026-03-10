@@ -686,9 +686,9 @@ function App() {
                   ? 'text-purple-600 font-medium'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
-              title="Send transcript to POEM WUI YouTube Launch Optimizer"
+              title="Send transcript to AWB YouTube Launch Optimizer"
             >
-              POEM WUI
+              AWB
             </button>
             <button
               onClick={() => changeTab('projects')}

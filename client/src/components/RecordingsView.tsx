@@ -650,33 +650,30 @@ export function RecordingsView() {
 
   return (
     <div>
-      {/* Toggle options - compact inline */}
-      <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
+      {/* Row 1 — Stats */}
+      <div className="flex items-center gap-2 mb-1 text-xs text-gray-500 flex-wrap">
         <span className="text-gray-700 font-medium">
           {totalFiles} files
-          <span className="font-normal text-gray-400 ml-1">
-            ({activeFiles} active, {safeFiles} safe, {parkedFiles} parked)
-          </span>
-          {/* FR-35: Total duration in header */}
-          {totalDuration > 0 && (
-            <span className="font-normal text-gray-400 ml-1">
-              | {formatDuration(totalDuration, 'smart')}
-            </span>
-          )}
-          {/* FR-95: Total recording and shadow sizes */}
-          {data?.totalRecordingsSize != null && data.totalRecordingsSize > 0 && (
-            <span className="font-normal text-gray-400 ml-1">
-              | {formatFileSize(data.totalRecordingsSize)}
-              {data.totalShadowsSize != null && data.totalShadowsSize > 0 && (
-                <span className="text-purple-400">
-                  {' '}
-                  (shadows: {formatFileSize(data.totalShadowsSize)})
-                </span>
-              )}
-            </span>
-          )}
         </span>
-        <span className="text-gray-300">|</span>
+        <span className="text-gray-400">
+          ({activeFiles} active, {safeFiles} safe, {parkedFiles} parked)
+        </span>
+        {/* FR-35: Total duration */}
+        {totalDuration > 0 && (
+          <span className="text-gray-400">| {formatDuration(totalDuration, 'smart')}</span>
+        )}
+        {/* FR-95: Recording size */}
+        {data?.totalRecordingsSize != null && data.totalRecordingsSize > 0 && (
+          <span className="text-gray-400">| {formatFileSize(data.totalRecordingsSize)}</span>
+        )}
+        {/* FR-95: Shadow size — secondary, purple */}
+        {data?.totalShadowsSize != null && data.totalShadowsSize > 0 && (
+          <span className="text-purple-400">· shadows: {formatFileSize(data.totalShadowsSize)}</span>
+        )}
+      </div>
+
+      {/* Row 2 — Filters */}
+      <div className="flex items-center gap-3 mb-1 text-xs text-gray-500">
         <label className="flex items-center gap-1.5 cursor-pointer hover:text-gray-700">
           <input
             type="checkbox"
@@ -705,7 +702,10 @@ export function RecordingsView() {
             ← Restore All
           </button>
         )}
-        <span className="text-gray-300">|</span>
+      </div>
+
+      {/* Row 3 — Actions */}
+      <div className="flex items-center gap-3 mb-3 text-xs">
         <button
           onClick={handleTranscribeProject}
           disabled={transcribeAll.isPending || pendingCount === 0}
@@ -716,7 +716,7 @@ export function RecordingsView() {
               : 'All videos already have transcripts'
           }
         >
-          🎙️ {pendingCount > 0 ? `Transcribe ${pendingCount}` : 'All Transcribed'}
+          🎙️ {pendingCount > 0 ? `Transcribe (${pendingCount} pending)` : 'All Transcribed'}
         </button>
         {/* FR-55: Video-level transcript export */}
         <span className="text-gray-300">|</span>
