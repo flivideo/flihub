@@ -2,7 +2,6 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs/promises';
-import { exec } from 'child_process';
 import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
@@ -264,22 +263,13 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
         await fetch(`${poemWuiUrl}/api/workflow/intake`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            workflowId: awbJson.workflowId,
-            store: awbJson.store,
-            currentStepId: awbJson.currentStepId,
-            autoStart: true,
-          }),
+          body: JSON.stringify(awbJson),
         });
       } catch {
         const portMatch = poemWuiUrl.match(/:(\d+)/);
         const port = portMatch ? portMatch[1] : '3001';
         return res.json({ ok: false, error: `AWB not reachable — is it running on port ${port}?` });
       }
-
-      // Open AWB client (port 5173), not API server
-      const clientUrl = poemWuiUrl.replace(/:(\d+)/, ':5173');
-      exec(`open ${clientUrl}`);
 
       res.json({ ok: true });
     } catch (error) {
