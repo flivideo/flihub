@@ -1,6 +1,7 @@
 #!/bin/bash
 # Project: FliHub
 # Description: Video project system - query projects, recordings, transcripts, chapters, images
+cd "$(dirname "$0")"
 
 echo "================================================"
 echo "FliHub - Development Server"
