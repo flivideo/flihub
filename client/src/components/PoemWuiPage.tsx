@@ -14,12 +14,23 @@ export function PoemWuiPage() {
       store: {
         projectFolder: data.projectFolder ?? '',
         transcript: data.transcript ?? '',
-        chapterFolderNames: [],
-        srt: data.srtRaw ?? null,
+        fliHubChapters: data.fliHubChapters ?? [],
+        srtContent: data.srtRaw ?? null,
         brandConfig: data.brandConfig ?? null,
       },
     };
     return JSON.stringify(payload, null, 2);
+  }, [data]);
+
+  const storeKeys = useMemo(() => {
+    if (!data?.transcriptFound) return null;
+    return [
+      { key: 'projectFolder', summary: data.projectFolder ?? '—' },
+      { key: 'transcript', summary: `${data.transcript?.length.toLocaleString() ?? 0} chars` },
+      { key: 'fliHubChapters', summary: `${data.fliHubChapters?.length ?? 0} chapters` },
+      { key: 'srtContent', summary: `${data.srtRaw?.length.toLocaleString() ?? 0} chars` },
+      { key: 'brandConfig', summary: data.brandConfig ? '✓ loaded' : 'null' },
+    ];
   }, [data]);
 
   const [copied, setCopied] = useState(false);
@@ -135,6 +146,21 @@ export function PoemWuiPage() {
               </div>
             </div>
           </div>
+
+          {/* Store keys summary */}
+          {storeKeys && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Store Keys</div>
+              <div className="flex flex-wrap gap-x-6 gap-y-1">
+                {storeKeys.map(({ key, summary }) => (
+                  <div key={key} className="flex items-baseline gap-1.5 text-xs">
+                    <span className="font-mono text-gray-600">{key}</span>
+                    <span className="text-gray-400">{summary}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Transcript + Payload side by side */}
           {data.transcriptFound && data.transcript ? (

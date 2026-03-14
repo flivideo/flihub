@@ -130,6 +130,33 @@ async function findAllSrts(projectDir: string): Promise<{
   return null;
 }
 
+// Build fliHubChapters array: scan recordings dirs, pull first 50 words from each chapter transcript
+async function buildFliHubChapters(projectDir: string): Promise<{ folderNumber: string; chapterName: string; firstWords: string | null }[]> {
+  const paths = getProjectPaths(projectDir);
+  const chapterMap = new Map<string, string>();
+  for (const dir of [paths.recordings, paths.safe]) {
+    const files = (await readDirSafe(dir)).sort();
+    for (const file of files) {
+      const match = file.match(/^(\d{2})-\d+-([a-z][a-z0-9-]*?)(?:-[A-Z]+)*\.[a-z0-9]+$/);
+      if (match) {
+        const [, prefix, name] = match;
+        if (!chapterMap.has(prefix)) chapterMap.set(prefix, name);
+      }
+    }
+  }
+  const chapterPrefixes = [...chapterMap.keys()].sort();
+  return Promise.all(
+    chapterPrefixes.map(async (prefix) => {
+      const content = await readChapterTranscript(paths.transcripts, prefix);
+      return {
+        folderNumber: prefix,
+        chapterName: chapterMap.get(prefix) ?? '',
+        firstWords: content ? firstWords(content) : null,
+      };
+    })
+  );
+}
+
 export function createPoemWuiRoutes(getConfig: () => Config) {
   const router = express.Router();
 
@@ -144,10 +171,11 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       const projectDir = expandPath(config.projectDirectory);
       const projectFolder = path.basename(projectDir);
 
-      const [srtInfo, brandConfig, awbJson] = await Promise.all([
+      const [srtInfo, brandConfig, awbJson, fliHubChapters] = await Promise.all([
         findAllSrts(projectDir),
         loadBrandConfig(config.brandConfigPath),
         readAwbJson(projectDir),
+        buildFliHubChapters(projectDir),
       ]);
 
       if (!srtInfo) {
@@ -175,6 +203,7 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
         brandConfigFound: brandConfig.found,
         brandConfigPath: brandConfig.path,
         brandConfig: brandConfig.data,
+        fliHubChapters,
         awbJson,
       });
     } catch (error) {
@@ -194,20 +223,23 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       const projectFolder = path.basename(projectDir);
       const poemWuiUrl = config.poemWuiUrl || 'http://localhost:3001';
 
-      const srtInfo = await findAllSrts(projectDir);
+      const [srtInfo, brandConfig, fliHubChapters] = await Promise.all([
+        findAllSrts(projectDir),
+        loadBrandConfig(config.brandConfigPath),
+        buildFliHubChapters(projectDir),
+      ]);
+
       if (!srtInfo) {
         return res.json({ ok: false, error: 'No SRT file found to use as transcript' });
       }
-
-      const brandConfig = await loadBrandConfig(config.brandConfigPath);
 
       const payload = {
         workflowId: 'youtube-launch-optimizer',
         store: {
           projectFolder,
           transcript: srtInfo.transcript,
-          chapterFolderNames: [],
-          srt: srtInfo.rawContent,
+          fliHubChapters,
+          srtContent: srtInfo.rawContent,
           brandConfig: brandConfig.data,
         },
       };
@@ -286,36 +318,7 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       }
 
       const projectDir = expandPath(config.projectDirectory);
-      const paths = getProjectPaths(projectDir);
-
-      // Collect unique chapter prefixes + first descriptive name from recordings/ and recordings/-safe/
-      // Recording naming: {chapter}-{sequence}-{name}-{tags}.mov → e.g. 01-1-intro-CTA.mov → name="intro"
-      const chapterMap = new Map<string, string>(); // prefix → chapterName
-      for (const dir of [paths.recordings, paths.safe]) {
-        const files = (await readDirSafe(dir)).sort();
-        for (const file of files) {
-          const match = file.match(/^(\d{2})-\d+-([a-z][a-z0-9-]*?)(?:-[A-Z]+)*\.[a-z0-9]+$/);
-          if (match) {
-            const [, prefix, name] = match;
-            // Only set name from first file encountered for this prefix (already sorted)
-            if (!chapterMap.has(prefix)) chapterMap.set(prefix, name);
-          }
-        }
-      }
-
-      const chapterPrefixes = [...chapterMap.keys()].sort();
-
-      const chapters = await Promise.all(
-        chapterPrefixes.map(async (prefix) => {
-          const content = await readChapterTranscript(paths.transcripts, prefix);
-          return {
-            folderNumber: prefix,
-            chapterName: chapterMap.get(prefix) ?? '',
-            firstWords: content ? firstWords(content) : null,
-          };
-        })
-      );
-
+      const chapters = await buildFliHubChapters(projectDir);
       res.json({ success: true, chapters });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });

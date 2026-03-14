@@ -81,6 +81,35 @@ npm run dev -w client    # Client only (Vite React dev server)
 npm run build -w client  # Build client: tsc -b && vite build
 ```
 
+## Dev Server Management
+
+Before starting any dev server, check if it is already running:
+
+```bash
+lsof -i :5100 | grep LISTEN
+lsof -i :5101 | grep LISTEN
+```
+
+If a process is listed, the service is UP — do not restart it, do not change ports. Never kill a running dev server unless explicitly asked.
+
+**To start persistently** (survives terminal close):
+
+```bash
+./start.sh           # builds shared, port-checks, then launches via Overmind
+overmind start       # direct launch (assumes shared already built)
+```
+
+**Overmind commands:**
+
+```bash
+overmind connect client  # attach to client logs (Ctrl+B D to detach)
+overmind connect server  # attach to server logs
+overmind restart client  # restart just the client
+overmind stop            # stop all processes
+```
+
+---
+
 ## Architecture
 
 **Monorepo Structure** (npm workspaces):

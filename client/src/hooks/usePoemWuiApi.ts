@@ -11,6 +11,12 @@ export interface AwbJsonInfo {
   fullPath: string;
 }
 
+export interface FliHubChapter {
+  folderNumber: string;
+  chapterName: string;
+  firstWords: string | null;
+}
+
 export interface PoemWuiStatus {
   success: boolean;
   error?: string;
@@ -23,6 +29,7 @@ export interface PoemWuiStatus {
   brandConfigFound?: boolean;
   brandConfigPath?: string | null;
   brandConfig?: unknown;
+  fliHubChapters?: FliHubChapter[];
   awbJson?: AwbJsonInfo;
 }
 

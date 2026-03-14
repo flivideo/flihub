@@ -1937,3 +1937,122 @@ router.post('/resume', async (req, res) => {
 **Priority:** Medium-High — makes AWB tab genuinely two-way
 
 ---
+
+---
+
+## Jan Collaboration + Git Sync + Nano Banana Context (2026-03-14)
+
+**Source:** David brainstorming session
+**Status:** Exploring — not yet in backlog, needs decisions before spec
+
+---
+
+### The Problem
+
+Need a bidirectional collaboration layer between David (recording) and Jan (image generation) using FliHub as the shared interface and git as the transport.
+
+---
+
+### Decision: Option A — Stay in project repo
+
+- S3 staging is ephemeral (deleted after handoff) — not suitable for collaboration state
+- Separate repo adds friction (Jan puts image in repo B, David needs it in FliHub's asset pipeline)
+- **Project repo is right**: Jan clones the same project. FliHub watches the filesystem. When Jan pushes an image and David pulls, FliHub's watcher fires immediately — the image appears in the incoming/assign pipeline without any extra steps.
+- `.mov` files and recordings are already gitignored — safe for git collaboration
+
+---
+
+### The Git Sync UI — Model from Signal Studio
+
+Signal Studio has a working git notification system to replicate in FliHub:
+
+**Detection:**
+- Poll `git status --porcelain` every 60s → dirty indicator (amber pulsing dot, top-right)
+- Chokidar file watcher on project folder → socket event → immediate re-check on any change
+- Manual "check remote" button → `git fetch` + `rev-list HEAD..origin/main` (count behind) + `rev-list origin/main..HEAD` (count ahead)
+
+**Sync flow:**
+- `git add <project>` → `git commit` → `git stash push` → `git fetch origin` → `git rebase origin/main` → `git push origin main` → `git stash pop`
+- Concurrency guard: one sync at a time
+
+**FliHub needs two distinct states (not one button):**
+- **"Jan has pushed"** → remote is ahead → "Pull — Jan has N commit(s)" prompt
+- **"You have changes"** → local dirty → "Push — N file(s) to share" prompt
+
+These are different actions and should be surfaced differently in the header.
+
+---
+
+### Where Does Nano Banana Context JSON Live?
+
+**Two data types:**
+
+1. **Context brief** — structured JSON describing the video chapter: concepts covered, BMAD chapter, tools used, agent flow, visual direction. Created by David (or shaped by a skill from observability/transcript data). This is *output* going to Jan, not *input* arriving.
+   - Proposed location: `context/` folder at project root
+   - Example: `context/ch05-overview.json`, `context/ch05-agent-flow.json`
+   - FliHub would watch this folder and surface it in the UI (new tab or alongside inbox)
+
+2. **Generated image** — Nano Banana output from Jan (or David running the skill himself).
+   - Lands in `assets/jan-incoming/` (new subfolder) or directly in `assets/images/` if Jan names it correctly
+   - FliHub treats `assets/jan-incoming/` like a second `imageSourceDirectory` — images appear in the incoming panel, David assigns them to chapters using the existing workflow
+   - This preserves David's review/control before the image is committed to the project
+
+---
+
+### Observability Events in the Project
+
+Claude Code hook events (session JSONL) could write to `obs/` in the project directory:
+
+```
+project-root/
+└── obs/
+    └── session-2026-03-14.jsonl    # Raw hook events
+    └── session-2026-03-14-summary.json  # Post-processed: concepts, tools, files touched
+```
+
+- Raw JSONL → gitignored (too large/noisy)
+- Summary JSON → committed → feeds Nano Banana context brief
+- This bridges observability (what Claude was doing) → context/ (what Jan needs to know)
+
+---
+
+### Full Collaboration Flow
+
+```
+David records → transcript + session obs → shape into context/chXX-brief.json
+    ↓
+FliHub header: "Local changes — Push" → git commit + push
+    ↓
+Jan's FliHub: "Remote has changes — Pull" → git pull
+    ↓
+Jan sees context/chXX-brief.json in FliHub context tab
+    ↓
+Jan runs /nano-banana skill → image generated → lands in assets/jan-incoming/
+    ↓
+Jan: FliHub header: "Local changes — Push" → git commit + push
+    ↓
+David's FliHub: "Remote has changes — Pull" → git pull
+    ↓
+Image appears in FliHub incoming panel (from assets/jan-incoming/)
+    ↓
+David assigns to chapter/sequence → image in assets/images/ → done
+```
+
+---
+
+### Open Questions (Before Spec)
+
+1. **Who writes the context brief?** David manually? A FliHub button that reads transcript + session obs and shapes it? Or the /nano-banana skill assembles it on demand?
+2. **Jan's image naming handshake** — does Jan use the full naming convention himself (`05-3-2a-workflow.png`), or does he drop into `assets/jan-incoming/` with any name and David assigns? (Full convention = more friction for Jan but less UI steps for David)
+3. **Auto-commit cadence** — timer, recording session end, adding to context/, or all of the above? Signal Studio does manual-on-click; FliHub might want auto with a configurable interval.
+4. **Conflict partition rule** — proposed: David owns `context/`, Jan owns `assets/jan-incoming/`. No overlap, no merge conflicts.
+5. **Does `context/` need a FliHub UI tab**, or is it just a folder that FliHub watches and includes in git sync status?
+
+---
+
+### Related Systems
+- Signal Studio git sync: `/clients/supportsignal/signal-studio/server/src/routes/git.ts`
+- Signal Studio GitSyncButton: `/clients/supportsignal/signal-studio/client/src/components/GitSyncButton.tsx`
+- Nano Banana skill: being developed separately (other Claude Code session)
+- Observability hooks: being designed in brains/agentic-os/claude-code-observability.md
+
