@@ -317,7 +317,7 @@ export function NamingControls({
             <span className="text-gray-300">→</span>
           </>
         )}
-        <span className="font-mono text-base text-blue-600">
+        <span className="font-mono text-lg text-blue-600">
           {buildPreviewFilename(chapter, sequence, name, tags, customTag)}
         </span>
       </div>

@@ -34,6 +34,13 @@ interface S3StagingStatus {
     hasLegacyFiles: boolean;
     flatFileCount: number;
   };
+  // FR-144: Publish-ready status
+  publishReady?: {
+    transcriptFile: string | null;
+    transcriptFound: boolean;
+    srtFile: string | null;
+    srtFound: boolean;
+  } | null;
 }
 
 // FR-104: Migration types
@@ -293,6 +300,32 @@ export function useLocalSize() {
     queryFn: async () => {
       const res = await fetch(`${API_URL}/api/s3-staging/local-size`);
       return res.json();
+    },
+  });
+}
+
+// FR-144: Publish transcript + SRT to POEM WUI
+interface PublishToPoemResult {
+  ok: boolean;
+  error?: string;
+}
+
+export function usePublishToPoem() {
+  return useMutation<PublishToPoemResult, Error, void>({
+    mutationFn: async () => {
+      // FR-144: Delegates to the authoritative poem-wui/send endpoint (full payload: SRT transcript, chapters, brand config)
+      const res = await fetch(`${API_URL}/api/poem-wui/send`, { method: 'POST' });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.ok) {
+        toast.success('Sent to POEM WUI');
+      } else {
+        toast.error(data.error || 'Failed to send to POEM WUI');
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to send to POEM WUI');
     },
   });
 }

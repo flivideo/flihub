@@ -221,7 +221,7 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
 
       const projectDir = expandPath(config.projectDirectory);
       const projectFolder = path.basename(projectDir);
-      const poemWuiUrl = config.poemWuiUrl || 'http://localhost:3001';
+      const poemWuiUrl = config.poemWuiUrl || 'http://localhost:5041';
 
       const [srtInfo, brandConfig, fliHubChapters] = await Promise.all([
         findAllSrts(projectDir),
@@ -255,7 +255,7 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
         });
       } catch {
         const portMatch = poemWuiUrl.match(/:(\d+)/);
-        const port = portMatch ? portMatch[1] : '3001';
+        const port = portMatch ? portMatch[1] : '5041';
         return res.json({ ok: false, error: `AWB not reachable — is it running on port ${port}?` });
       }
 
@@ -289,7 +289,7 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
         return res.json({ ok: false, error: '.awb.json not found in project directory' });
       }
 
-      const poemWuiUrl = config.poemWuiUrl || 'http://localhost:3001';
+      const poemWuiUrl = config.poemWuiUrl || 'http://localhost:5041';
 
       try {
         await fetch(`${poemWuiUrl}/api/workflow/intake`, {
@@ -299,7 +299,7 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
         });
       } catch {
         const portMatch = poemWuiUrl.match(/:(\d+)/);
-        const port = portMatch ? portMatch[1] : '3001';
+        const port = portMatch ? portMatch[1] : '5041';
         return res.json({ ok: false, error: `AWB not reachable — is it running on port ${port}?` });
       }
 

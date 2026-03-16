@@ -1,6 +1,7 @@
 // FR-103: S3 Staging Page API
 // FR-104: S3 Staging Migration Tool
 // FR-105: S3 DAM Integration
+// FR-144: POEM WUI workflow intake
 import express from 'express';
 import path from 'path';
 import fs from 'fs/promises';
@@ -311,6 +312,58 @@ export function createS3StagingRoutes(getConfig: () => Config) {
         // s3-staging folder doesn't exist
       }
 
+      // FR-144: Scan publishReady — transcript + SRT for POEM WUI
+      const transcriptDir = path.join(projectDir, 'recording-transcripts');
+      let publishReady: {
+        transcriptFile: string | null;
+        transcriptFound: boolean;
+        srtFile: string | null;
+        srtFound: boolean;
+      } | null = null;
+
+      try {
+        // First .txt file alphabetically in recording-transcripts/
+        let transcriptFile: string | null = null;
+        try {
+          const transcriptFiles = (await fs.readdir(transcriptDir))
+            .filter((f) => f.endsWith('.txt') && !f.startsWith('.'))
+            .sort();
+          transcriptFile = transcriptFiles[0] || null;
+        } catch {
+          // recording-transcripts/ doesn't exist
+        }
+
+        // SRT scan: s3-staging/post/ → final/ → recording-transcripts/
+        let srtFile: string | null = null;
+        const srtScanDirs = [
+          path.join(projectDir, 's3-staging', 'post'),
+          path.join(projectDir, 'final'),
+          transcriptDir,
+        ];
+        for (const srtDir of srtScanDirs) {
+          try {
+            const srtFiles = (await fs.readdir(srtDir))
+              .filter((f) => f.endsWith('.srt') && !f.startsWith('.'))
+              .sort();
+            if (srtFiles.length > 0) {
+              srtFile = srtFiles[0];
+              break;
+            }
+          } catch {
+            // Directory doesn't exist, try next
+          }
+        }
+
+        publishReady = {
+          transcriptFile,
+          transcriptFound: transcriptFile !== null,
+          srtFile,
+          srtFound: srtFile !== null,
+        };
+      } catch {
+        publishReady = null;
+      }
+
       res.json({
         success: true,
         project: projectCode,
@@ -344,6 +397,8 @@ export function createS3StagingRoutes(getConfig: () => Config) {
           hasLegacyFiles: flatFiles.length > 0,
           flatFileCount: flatFiles.length,
         },
+        // FR-144: Publish-ready status
+        publishReady,
       });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });

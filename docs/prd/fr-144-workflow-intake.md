@@ -1,6 +1,6 @@
 # FR-144: Send Transcript to POEM WUI Workflow Intake
 
-**Status:** Pending
+**Status:** Implemented
 **Priority:** HIGH - Required for YouTube Launch Optimizer workflow integration
 **Added:** 2026-02-25
 **Type:** Feature
@@ -34,7 +34,7 @@ This is a multi-step, context-switching, error-prone manual process. FliHub alre
 The POEM WUI app (SupportSignal `prompt.supportsignal.com.au`, running locally on port 3001) exposes a workflow intake endpoint:
 
 ```
-POST http://localhost:3001/api/workflow/intake
+POST http://localhost:5041/api/workflow/intake
 Content-Type: application/json
 ```
 
@@ -129,11 +129,11 @@ The button is placed in the **S3 Staging Tool POST section** — this is where t
 5. Clicking the button calls `POST /api/s3-staging/publish-to-poem` on the FliHub server
 6. The server reads the transcript `.txt` file from `recording-transcripts/` in the current project directory
 7. The server reads the SRT file from `s3-staging/` or `final/` if one exists (first match wins); sends null if not found
-8. The server POSTs to the configured POEM WUI URL (default `http://localhost:3001/api/workflow/intake`) with `workflowId: "youtube-launch-optimizer"` and the store payload
+8. The server POSTs to the configured POEM WUI URL (default `http://localhost:5041/api/workflow/intake`) with `workflowId: "youtube-launch-optimizer"` and the store payload
 9. If POEM WUI returns `{ ok: true }`, the client shows a toast: "Sent to POEM WUI"
 10. If POEM WUI returns `{ ok: false, error: "..." }`, the client shows an error toast with the message
 11. If the network call fails (POEM WUI not running), the client shows an error toast: "POEM WUI not reachable — is it running on port 3001?"
-12. The POEM WUI base URL is configurable via `server/config.json` (key: `poemWuiUrl`, default: `http://localhost:3001`)
+12. The POEM WUI base URL is configurable via `server/config.json` (key: `poemWuiUrl`, default: `http://localhost:5041`)
 13. The button shows a loading spinner while the request is in flight
 14. The feature does not block or interfere with any other S3 Staging Tool functionality
 
@@ -210,11 +210,11 @@ Scan order (first match wins):
 Add to `server/config.json`:
 ```json
 {
-  "poemWuiUrl": "http://localhost:3001"
+  "poemWuiUrl": "http://localhost:5041"
 }
 ```
 
-The server must fall back to `"http://localhost:3001"` if the key is absent (backwards compatibility).
+The server must fall back to `"http://localhost:5041"` if the key is absent (backwards compatibility).
 
 ### Client
 
@@ -247,7 +247,7 @@ If POEM WUI is not running, the FliHub call will fail at network level and show 
 
 **What was done:**
 - Added `poemWuiUrl?: string` to `Config` interface in `shared/types.ts` and `shared/types.d.ts`
-- Added `"poemWuiUrl": "http://localhost:3001"` to `server/config.json`
+- Added `"poemWuiUrl": "http://localhost:5041"` to `server/config.json`
 - Enhanced `GET /api/s3-staging/status` — added `publishReady` object (transcriptFile, transcriptFound, srtFile, srtFound) by scanning `recording-transcripts/*.txt` and SRT scan order: `s3-staging/post/` → `final/` → `recording-transcripts/`
 - Added `POST /api/s3-staging/publish-to-poem` endpoint in `server/src/routes/s3-staging.ts` — reads transcript + SRT, builds payload, POSTs to POEM WUI; handles network errors with "not reachable" message and POEM WUI `{ok: false}` responses
 - Added `publishReady` field to `S3StagingStatus` interface in `useS3StagingApi.ts`
@@ -296,11 +296,11 @@ If POEM WUI is not running, the FliHub call will fail at network level and show 
 - [ ] Clicking button triggers POST to `/api/s3-staging/publish-to-poem`
 - [ ] Server reads transcript from `recording-transcripts/*.txt`
 - [ ] Server reads SRT from `s3-staging/*.srt`, falls back to `final/*.srt`, then `recording-transcripts/*.srt`
-- [ ] Server POSTs to `http://localhost:3001/api/workflow/intake` (or configured URL)
+- [ ] Server POSTs to `http://localhost:5041/api/workflow/intake` (or configured URL)
 - [ ] Success toast "Sent to POEM WUI" on `{ ok: true }` response
 - [ ] Error toast with message on `{ ok: false, error: "..." }` response
 - [ ] Error toast "POEM WUI not reachable — is it running on port 3001?" on network failure
 - [ ] Loading spinner shown on button during in-flight request
 - [ ] `poemWuiUrl` in config.json overrides the default URL
-- [ ] Missing `poemWuiUrl` in config.json falls back to `http://localhost:3001`
+- [ ] Missing `poemWuiUrl` in config.json falls back to `http://localhost:5041`
 - [ ] No disruption to other S3 Staging Tool sections (PREP, CLEANUP)

@@ -16,6 +16,61 @@ Track what was implemented, fixed, or changed and when.
 
 ## Per-Item History
 
+### UX Improvements Batch (I-2, R-1, R-2, R-4, R-5, P-3, C-1, C-2, C-3, C-4)
+
+| Date       | Change                                      | Commit |
+| ---------- | ------------------------------------------- | ------ |
+| 2026-03-16 | UX polish pass — 3 changes, 7 already in place | -   |
+
+**What was implemented:**
+- I-2: Preview filename in NamingControls.tsx bumped from `text-base` → `text-lg`
+- R-2: Safe row styling changed from green highlight to muted gray (`bg-gray-50 border-gray-200`, text `text-gray-400`)
+- R-5: Toggle labels in RecordingsView.tsx made subtler (`text-gray-400`, lowercase, tighter gap)
+
+**Already in place (no changes needed):**
+- R-1: Chapter headings already show "01 Poem Planning" — no brackets
+- R-4: `formatTimestamp` already shows HH:MM for today, date for older files
+- P-3: "+ Add new project..." already sits at bottom of table
+- C-1: `collapsePath` already applied to all paths on load
+- C-2/C-3/C-4: `hasChanges`, "Unsaved changes" text, disabled Save — all in place
+
+**Files changed:**
+- `client/src/components/NamingControls.tsx` (I-2 — text-lg preview filename)
+- `client/src/components/RecordingsView.tsx` (R-2 safe row styling, R-5 toggle labels)
+
+**Status:** ✓ Complete
+
+---
+
+### FR-145: Escape Key Closes Video Preview Modal
+
+| Date       | Change                              | Commit |
+| ---------- | ----------------------------------- | ------ |
+| 2026-03-16 | Verified already implemented        | -      |
+
+**Already in place:**
+- `RecordingVideoModal.tsx:68-76` — useEffect keydown listener calling `onClose()` on Escape
+- `IncomingVideoModal.tsx:63-71` — same pattern
+- Watch screen uses inline player (no modal)
+
+**Status:** ✓ Complete (pre-existing)
+
+---
+
+### FR-139: Folders Tool — Remove Undefined Button
+
+| Date       | Change                              | Commit |
+| ---------- | ----------------------------------- | ------ |
+| 2026-03-16 | Verified already removed            | -      |
+
+**Already in place:**
+- No Folders button in `ToolsSidebar.tsx`
+- `activeTool` type in `ManagePanel.tsx` already excludes `'folders'` (comment: FR-139 removed)
+
+**Status:** ✓ Complete (pre-existing)
+
+---
+
 ### FR-143: SRT Clipboard Copy Button
 
 | Date       | Change                                                              | Commit |

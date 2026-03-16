@@ -19,6 +19,7 @@ import {
   useDamCommand,
   useCleanLocal,
   useLocalSize,
+  usePublishToPoem,
   type MigrationActions,
 } from '../../hooks/useS3StagingApi';
 import { OpenFolderButton } from './OpenFolderButton';
@@ -44,6 +45,7 @@ export function S3StagingTool() {
   const damCommand = useDamCommand();
   const cleanLocal = useCleanLocal();
   const { data: localSize } = useLocalSize();
+  const publishToPoem = usePublishToPoem();
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [showCleanConfirm, setShowCleanConfirm] = useState<'local' | 's3' | null>(null);
   const [showMigrationPreview, setShowMigrationPreview] = useState(false);
@@ -385,6 +387,40 @@ export function S3StagingTool() {
               )}
 
             </div>
+
+            {/* FR-144: POEM WUI Publish Section */}
+            {s3Data?.publishReady !== undefined && (
+              <div className="border border-purple-200 rounded-lg p-3 space-y-2">
+                <h4 className="text-sm font-semibold text-gray-700">Send to POEM WUI</h4>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className={s3Data.publishReady?.transcriptFound ? 'text-green-600' : 'text-gray-400'}>
+                        {s3Data.publishReady?.transcriptFound ? '✓' : '○'}
+                      </span>
+                      <span className="text-gray-600">
+                        Transcript: {s3Data.publishReady?.transcriptFile ?? 'not found'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={s3Data.publishReady?.srtFound ? 'text-green-600' : 'text-gray-400'}>
+                        {s3Data.publishReady?.srtFound ? '✓' : '○'}
+                      </span>
+                      <span className="text-gray-600">
+                        SRT: {s3Data.publishReady?.srtFile ?? 'not found'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => publishToPoem.mutate()}
+                    disabled={!s3Data.publishReady?.transcriptFound || publishToPoem.isPending}
+                    className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {publishToPoem.isPending ? 'Sending...' : 'Send to POEM WUI →'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* CLEANUP Section */}
             <div className="border border-gray-200 rounded-lg p-3 space-y-2">

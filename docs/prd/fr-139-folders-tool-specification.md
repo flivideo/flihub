@@ -289,23 +289,22 @@ This confirms the button serves no current purpose and should be removed.
 
 ## Completion Notes
 
-**Status:** Ready for Removal
+**Status:** Complete
 
-**Decision:** Remove button (Option A) - APPROVED by PO
+**What was done:**
+- Removed "Folders" `ToolButton` from `ToolsSidebar.tsx` (Complex Tools section)
+- Removed `SlideOutDrawer` for `activeTool === 'folders'` from `ManagePanel.tsx`
+- Updated `activeTool` type union to `'rename' | 'gling-edit' | 's3-staging' | 'renumber' | null` (no 'folders')
+- Added inline comment on line 86 of ManagePanel.tsx: `FR-139: removed 'folders'`
 
-**Reason:** User couldn't remember what it was for, confused it with Export tool functionality, and no clear use case has emerged after 6 months.
+**Files changed:**
+- `client/src/components/shared/ToolsSidebar.tsx` (removed Folders ToolButton)
+- `client/src/components/ManagePanel.tsx` (removed activeTool type entry + SlideOutDrawer)
 
-**Next steps:**
-
-1. Developer removes button from ToolsSidebar.tsx
-2. Developer removes SlideOutDrawer from ManagePanel.tsx
-3. Developer updates `activeTool` type
-4. Developer commits with message: "chore(FR-139): Remove undefined Folders button from Manage panel"
-5. Developer marks FR-139 as Complete
-
-**Estimated effort:** 30 minutes
-
-**Can be bundled with:** FR-140 implementation or done separately as quick cleanup
+**Testing notes:**
+- Manage panel loads without errors
+- No Folders button visible in Complex Tools sidebar
+- All other tools (Rename, Gling/Edit, S3 Staging, Renumber) still work
 
 ---
 

@@ -673,24 +673,24 @@ export function RecordingsView() {
       </div>
 
       {/* Row 2 — Filters */}
-      <div className="flex items-center gap-3 mb-1 text-xs text-gray-500">
-        <label className="flex items-center gap-1.5 cursor-pointer hover:text-gray-700">
+      <div className="flex items-center gap-3 mb-1 text-xs text-gray-400">
+        <label className="flex items-center gap-1 cursor-pointer hover:text-gray-600">
           <input
             type="checkbox"
             checked={showSafe}
             onChange={(e) => setShowSafe(e.target.checked)}
             className="w-3 h-3 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
           />
-          Safe
+          safe
         </label>
-        <label className="flex items-center gap-1.5 cursor-pointer hover:text-gray-700">
+        <label className="flex items-center gap-1 cursor-pointer hover:text-gray-600">
           <input
             type="checkbox"
             checked={showParked}
             onChange={(e) => setShowParked(e.target.checked)}
             className="w-3 h-3 rounded border-gray-300 text-pink-500 focus:ring-pink-500"
           />
-          Parked
+          parked
         </label>
         {safeFiles > 0 && (
           <button
@@ -861,9 +861,9 @@ export function RecordingsView() {
                     rowClasses = 'bg-purple-50 border-purple-200';
                     textClasses = 'text-purple-700';
                   } else if (file.isSafe) {
-                    // FR-111: Safe files (green background)
-                    rowClasses = 'bg-green-50 border-green-200 text-gray-500';
-                    textClasses = 'text-gray-500';
+                    // R-2: Safe files — no badge, rely on ← Restore button to signal status
+                    rowClasses = 'bg-gray-50 border-gray-200';
+                    textClasses = 'text-gray-400';
                   } else if (file.isParked) {
                     // FR-120: Parked files (pink background)
                     rowClasses = 'bg-pink-50 border-pink-200 text-gray-500';

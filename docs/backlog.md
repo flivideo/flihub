@@ -18,12 +18,13 @@ Requirements index for FliHub.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
-| FR-144 | [Send Transcript to POEM WUI Workflow Intake](prd/fr-144-workflow-intake.md)                    | 2026-02-25 | Pending                                                         |
+| FR-145 | [Escape Key Closes Video Preview Modal](prd/fr-145-escape-closes-video-modal.md)                | 2026-03-16 | ✓ Implemented                                                   |
+| FR-144 | [Send Transcript to POEM WUI Workflow Intake](prd/fr-144-workflow-intake.md)                    | 2026-02-25 | ✓ Implemented                                                   |
 | FR-143 | [SRT Clipboard Copy Button](prd/fr-143-srt-clipboard.md)                                        | 2026-02-24 | ✓ Implemented                                                   |
 | FR-142 | [Split Export/S3 Tool: Separate Gling Prep from S3 Staging](prd/fr-142-split-export-s3-tool.md) | 2026-02-18 | ✓ Implemented                                                   |
 | FR-141 | [Export & S3 Workflow Overhaul](prd/fr-141-export-s3-workflow-overhaul.md)                    | 2026-02-16 | ✓ Implemented                                                   |
 | FR-140 | [Chapter Move & Cascade Renumbering](prd/fr-140-bulk-chapter-renumbering.md)                  | 2026-01-06 | ✓ Implemented                                                   |
-| FR-139 | [Folders Tool Specification](prd/fr-139-folders-tool-specification.md)                        | 2026-01-06 | 🟢 Ready - Remove undefined button (30 min)                     |
+| FR-139 | [Folders Tool Specification](prd/fr-139-folders-tool-specification.md)                        | 2026-01-06 | ✓ Implemented                                                   |
 | FR-138 | [Rename Tool Specification](prd/fr-138-rename-tool-specification.md)                          | 2026-01-06 | ✓ Implemented (Validated - no updates needed)                   |
 | FR-137 | [SlideOutDrawer Tool Pattern](prd/fr-137-slideout-drawer-pattern.md)                          | 2026-01-06 | ✓ Implemented (Documented retroactively)                        |
 | FR-136 | [Tool-Oriented Manage Panel](prd/fr-136-tool-oriented-manage-panel.md)                        | 2026-01-04 | ✓ Complete (Core Architecture - See FR-137/138/139)             |
@@ -86,15 +87,16 @@ Requirements index for FliHub.
 
 See [ux-improvements.md](prd/ux-improvements.md) for detailed list.
 
-**Selected items pending:**
+**Implemented (2026-03-16):**
 
-- I-2: More prominent preview filename
-- R-1: Cleaner chapter heading format
-- R-2: Less repetitive safe indicators
-- R-4: Add time for same-day files
-- R-5: Smaller/subtler toggle buttons
-- P-3: Alternative "New Project" placement
-- C-1 through C-4: Config page improvements
+- I-2: Preview filename bumped to text-lg — NamingControls.tsx:320
+- R-1: Already done — no brackets, Title Case format was in place
+- R-2: Removed green background from safe rows — RecordingsView.tsx:864
+- R-4: Already done — formatTimestamp shows HH:MM today, date otherwise
+- R-5: Safe/parked toggles made more subtle (text-gray-400, lowercase) — RecordingsView.tsx:676
+- P-3: Already done — "+ Add new project..." was already at bottom of table
+- C-1: Already done — collapsePath applied to all paths on load
+- C-2/C-3/C-4: Already done — hasChanges, "Unsaved changes" text, disabled Save
 
 ---
 
