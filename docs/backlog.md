@@ -74,6 +74,7 @@ Requirements index for FliHub.
 
 | ID      | Requirement                                                                       | Added      | Status                                                                                                       |
 | ------- | --------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| NFR-146 | [Test Coverage Foundation](prd/nfr-146-test-coverage-foundation.md)               | 2026-03-16 | Pending                                                                                                      |
 | NFR-141 | [Lenient Tag Parser (Uppercase Conversion)](prd/nfr-141-lenient-tag-parser.md)    | 2026-01-06 | ❌ **CANCELLED** - Based on incorrect scanner analysis (scanner bugs fixed, app parser validated as correct) |
 | NFR-87  | [Starred Projects Visual Update](prd/nfr-87-starred-projects-visual.md)           | 2025-12-16 | Implemented                                                                                                  |
 | NFR-86  | [Git Leak Detection](prd/nfr-86-git-leak-detection.md)                            | 2025-12-15 | Pending                                                                                                      |
