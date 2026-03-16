@@ -2,7 +2,7 @@
 
 **Last updated**: 2026-03-16
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 17 | Pending: 8 | Deferred: 7 | Rejected: 2
+**Total open**: 15 | Pending: 8 | Deferred: 5 | Rejected: 4
 
 ---
 
@@ -21,9 +21,9 @@
 
 - [-] B015 — Inconsistency Detection & Auto-Fix (FR-134) | Reason: PRD ready, no user demand | PRD: `docs/prd/fr-134-inconsistency-detection.md`
 - [-] B016 — File Status Indicators (FR-133) | Reason: PRD ready, no user demand | PRD: `docs/prd/fr-133-file-status-indicators.md`
-- [-] B002 — Manage Panel Bulk Rename Phase 2 (FR-131) | Reason: likely superseded by FR-136/141 toolchain — confirm before resuming | PRD: `docs/prd/fr-131-manage-panel-bulk-rename.md`
-- [-] B004 — Project Name Shows Full Path on Windows (FR-93) | Reason: WSL/Windows-only, no activity since 2025-12-16 | PRD: `docs/prd/fr-93-windows-project-path-display.md`
-- [-] B005 — Cross-Platform Path Support Parts 1b/2 (FR-89) | Reason: WSL-related, no activity since 2025-12-16; Mac-only primary workflow | PRD: `docs/prd/fr-89-cross-platform-path-support.md`
+- [-] B002 — Manage Panel Regen Toolbar + Chapter Rename (FR-131 Phase 2) | Reason: UI approach needs updating to SlideOutDrawer pattern (FR-137) before building — the feature (regen shadows/transcripts/chapters buttons + chapter-level rename) is still valid but the original toolbar mockup is obsolete. Reassess when needed.
+- [r] B004 — Project Name Shows Full Path on Windows (FR-93) | Reason: all users now on Mac — Windows/WSL workflow retired
+- [r] B005 — Cross-Platform Path Support Parts 1b/2 (FR-89) | Reason: all users now on Mac — Windows/WSL workflow retired
 - [-] B008 — Git Leak Detection (NFR-86) | Reason: no activity since 2025-12-15, lower priority than test coverage | PRD: `docs/prd/nfr-86-git-leak-detection.md`
 - [-] B009 — Project List Scanning Optimization (NFR-81) | Reason: future, no urgency | PRD: `docs/prd/nfr-81-project-list-optimization.md`
 
