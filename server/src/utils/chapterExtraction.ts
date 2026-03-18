@@ -49,9 +49,9 @@ interface ChapterInfo {
  * Parse SRT timestamp to seconds
  * Format: "00:02:34,500" -> 154.5
  */
-function parseSrtTimestamp(timestamp: string): number {
+export function parseSrtTimestamp(timestamp: string): number | null {
   const match = timestamp.match(/(\d{2}):(\d{2}):(\d{2}),(\d{3})/);
-  if (!match) return 0;
+  if (!match) return null;
 
   const [, hours, minutes, seconds, millis] = match;
   return (
@@ -67,7 +67,7 @@ function parseSrtTimestamp(timestamp: string): number {
  * Under 1 hour: MM:SS
  * Over 1 hour: H:MM:SS
  */
-function formatYouTubeTimestamp(seconds: number): string {
+export function formatYouTubeTimestamp(seconds: number): string {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
   const secs = Math.floor(seconds % 60);
@@ -107,10 +107,16 @@ async function parseSrt(srtPath: string): Promise<SrtSegment[]> {
     // Lines 3+: Text
     const text = lines.slice(2).join(' ').trim();
 
+    const startSeconds = parseSrtTimestamp(startTs);
+    const endSeconds = parseSrtTimestamp(endTs);
+
+    // Skip segments with unparseable timestamps
+    if (startSeconds === null || endSeconds === null) continue;
+
     segments.push({
       index,
-      startSeconds: parseSrtTimestamp(startTs),
-      endSeconds: parseSrtTimestamp(endTs),
+      startSeconds,
+      endSeconds,
       startTimestamp: startTs,
       text,
     });
@@ -223,16 +229,6 @@ function normalizeText(text: string): string {
     .trim();
 }
 
-/**
- * Extract first N words from text
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getFirstWords(text: string, n: number): string {
-  const normalized = normalizeText(text);
-  const words = normalized.split(' ');
-  return words.slice(0, n).join(' ');
-}
-
 // Phase 3: Similarity score threshold for rejecting poor matches
 const SIMILARITY_THRESHOLD = 0.6; // Reject matches below this score
 
@@ -265,7 +261,7 @@ function calculateSimilarity(
 }
 
 // Match result with detailed info for confidence calculation
-interface MatchResult {
+export interface MatchResult {
   segmentIndex: number;
   matchType: 'exact_phrase' | 'partial_words' | 'similarity'; // Added 'similarity' type
   wordCount: number; // Number of words in matched phrase
@@ -311,7 +307,7 @@ function generateMatchReason(match: MatchResult): string {
  *
  * Out-of-order penalty (-20) applied in extractChapters
  */
-function calculateConfidence(match: MatchResult): number {
+export function calculateConfidence(match: MatchResult): number {
   // Phase 3: Similarity-based matching
   if (match.matchType === 'similarity' && match.similarityScore !== undefined) {
     // Map similarity score (0-1) to confidence (0-100)

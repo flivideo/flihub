@@ -5,41 +5,41 @@
 **Target**: `npm test` runs all three workspaces, zero failures, no placeholders, critical paths covered
 
 ## Summary
-- Total: 15 | Complete: 0 | In Progress: 0 | Pending: 15 | Failed: 0
+- Total: 15 | Complete: 15 | In Progress: 0 | Pending: 0 | Failed: 0
 
 ---
 
 ## Pending
 
 ### Wave 1 — Infrastructure (do first, unblocks everything)
-- [ ] wire-shared-test-script — Add `"test": "vitest run"` to `shared/package.json`; update root `npm test` to include `-w shared`; verify `naming.test.ts` now appears in test run output (even failing is fine — visible is the goal)
+- [x] wire-shared-test-script — Added `"test": "vitest run"` + vitest dep to `shared/package.json`, created `shared/vitest.config.ts` (copied from server), updated root test script to run shared first. Result: 14 shared tests now visible (7 pass, 7 fail — pre-existing failures, no production code touched).
 
 ### Wave 2 — Fix Broken Tests
-- [ ] fix-naming-tests — Fix all 7 failing tests in `shared/naming.test.ts`: update `parseRecordingFilename` assertions to match current return shape (`RecordingFileParts | null`, no `isValid`/`extension`/`tags` fields), fix `validateChapter('00')` and `validateSequence('0')` to match actual implementation semantics, remove placeholder `expect(true).toBe(true)` from client and server
+- [x] fix-naming-tests — Fixed 7 failing tests in `shared/naming.test.ts`: updated `parseRecordingFilename` assertions to `RecordingFileParts | null` shape (no `isValid`/`extension`/`tags`), fixed `validateChapter('00')` and `validateSequence('0'/'00')` to expect `null` (min-value not enforced in implementation), removed placeholders from client + server. All 16 tests now pass.
 
 ### Wave 3 — Export Testable Functions
-- [ ] export-server-utils — Export `extractBrand` and `categorizeMigrationFiles` from `server/src/routes/s3-staging.ts` (or extract to `server/src/utils/s3Utils.ts`); export `stripSrt` and `firstWords` from `server/src/routes/poem-wui.ts` (or extract to utility); export `checkTranscriptionQueue`, `migrateRecordingKey`, `updateManifestFilename` from `server/src/utils/renameRecording.ts`
+- [x] export-server-utils — Exported `extractBrand` + `categorizeMigrationFiles` (s3-staging.ts), `stripSrt` + `firstWords` (poem-wui.ts). `checkTranscriptionQueue`/`migrateRecordingKey`/`updateManifestFilename` were already exported. `sanitizeCustomTag` extracted to module level + exported from NamingControls.tsx; `shouldShowTemplate` exported in place. Both builds clean.
 
 ### Wave 4 — Path & Config Tests (highest transitive risk)
-- [ ] test-path-utils — Unit tests for `server/src/utils/pathUtils.ts`: `expandPath` (tilde expansion, already-expanded path, empty string) and `queryString` (string, array, object, undefined branches)
-- [ ] test-project-paths — Unit tests for `shared/paths.ts`: `getProjectPaths` (verify every key resolves correctly relative to projectDirectory) and `migrateTargetToProject` (strips trailing `/recordings`, handles trailing slash, non-matching path)
+- [x] test-path-utils — 16 tests. `expandPath`: tilde→homedir, other paths unchanged. `queryString`: normalises Express query values (string, array first-element, object→default, empty→default). All passing.
+- [x] test-project-paths — 24 tests. `getProjectPaths`: returns 16-key ProjectPaths object, all derived via path.join. `migrateTargetToProject`: strips trailing `/recordings` via regex, returns unchanged if no match. All passing.
 
 ### Wave 5 — State & Rename Tests (highest data-loss risk)
-- [ ] test-project-state — Unit tests for `server/src/utils/projectState.ts`: `setRecordingSafe` (set true, set false, prune-when-all-default logic), `setRecordingParked` (same pattern), `mergeRecordingStates` (deep merge preserves untouched fields, shallow-merge regression detection)
-- [ ] test-rename-pipeline — Unit tests for the three exported `renameRecording.ts` functions: `checkTranscriptionQueue` (active job found, no active jobs), `migrateRecordingKey` (key copied, old key deleted, missing key handled), `updateManifestFilename` (manifest updated, manifest missing handled gracefully)
+- [x] test-project-state — 40 tests. Prune fires when ALL 4 flags (safe/parked/stage/annotation) are falsy. Uses fs-extra (not fs/promises) — mock accordingly. `mergeRecordingStates` is pure. All passing.
+- [x] test-rename-pipeline — 22 tests. All 3 functions are pure (no mocking needed). `checkTranscriptionQueue(filename, activeJob, queue): boolean`. `migrateRecordingKey(state, old, new): ProjectState`. `updateManifestFilename(state, old, new): ProjectState`. All passing.
 
 ### Wave 6 — Business Logic Tests
-- [ ] test-s3-utils — Unit tests for the exported s3-staging utilities: `extractBrand` (v-appydave path, v-joy path, no v- segment fallback), `categorizeMigrationFiles` (final files → post/, regular files → prep/, junk → delete, conflict detection)
-- [ ] test-chapter-extraction — Unit tests for `server/src/utils/chapterExtraction.ts` inner functions: `parseSrtTimestamp` (standard format, millis precision, zero values), `formatYouTubeTimestamp` (sub-hour, hours branch, zero), `calculateConfidence` (high-match, low-match, short-phrase penalty)
-- [ ] test-final-media — Unit tests for `server/src/utils/finalMedia.ts`: `extractVersion` (v1, v3, no version → null), `isAdditionalSegment` (main video patterns, segment patterns, edge cases)
+- [x] test-s3-utils — 23 tests. `extractBrand`: scans right-to-left for `v-` segment, falls back to 'appydave'. `categorizeMigrationFiles`: returns `{delete, toPost, toPrep, conflicts}`. Non-mp4/srt/mov files silently ignored. Import path: `../routes/s3-staging.js`. All passing.
+- [x] test-chapter-extraction — 22 tests. Exported `parseSrtTimestamp`/`formatYouTubeTimestamp`/`calculateConfidence` (none were exported). NOTE: `parseSrtTimestamp` returns **seconds** (not ms). All passing.
+- [x] test-final-media — 25 tests. Exported `extractVersion` + `isAdditionalSegment`. `extractVersion` returns `number | undefined` (not string/null). `isAdditionalSegment(filename, projectCode)` takes 2 params. Keyword patterns only fire when filename has 2+ dashes after code. All passing.
 
 ### Wave 7 — Client Utils Tests
-- [ ] test-naming-controls-utils — Unit tests for functions extracted/exported from `client/src/components/NamingControls.tsx`: `sanitizeCustomTag` (spaces→dashes, commas→dashes, strips invalid chars, leading dash trim, uppercase), `shouldShowTemplate` (min only, max only, both bounds, no filter)
-- [ ] test-client-formatting — Unit tests for `client/src/utils/formatting.ts`: `formatDuration` (all 3 styles — smart/youtube/seconds, hours branch, zero), `toKebabCase` (spaces, unicode, leading/trailing dashes), `formatChapterTitle`
-- [ ] test-client-naming — Unit tests for `client/src/utils/naming.ts`: `buildPreviewFilename` (standard, empty tags, empty name, custom tag combinations)
+- [x] test-naming-controls-utils — 28 tests. `sanitizeCustomTag`: uppercase, spaces/commas→dashes, strip non-[A-Z0-9-], trim leading dash. `shouldShowTemplate`: checks `chapterFilter` object with min?/max?. All passing.
+- [x] test-client-formatting — 43 tests across 9 functions. `formatChapterTitle('HELLO-WORLD')→''` (all-uppercase stripped as tags). `toKebabCase('hello@world.com')→'helloworldcom'` (dot stripped). All passing.
+- [x] test-client-naming — 22 tests. `buildPreviewFilename(chapter, sequence|null, name, tags[], customTag?)`: returns `'...'` when chapter/name falsy, appends `.mov`. All passing.
 
 ### Wave 8 — Route Integration Test
-- [ ] test-poem-wui-send — Integration test for `POST /api/poem-wui/send`: mock `fetch` and filesystem reads, cover happy path (SRT found, 200 response), no SRT found, AWB unreachable (ECONNREFUSED), AWB returns `{ok: false}`, no project selected
+- [x] test-poem-wui-send — 13 tests. Scans 3 dirs for SRT (s3-staging/post → final → recording-transcripts). Two mocks needed: `fs/promises` + `fs-extra` (for readDirSafe). `fetch` throws → "AWB not reachable". AWB `{ok:false}` → error forwarded. AWB `{}` (no ok field) → treated as success. 166 server tests total, all passing.
 
 ---
 

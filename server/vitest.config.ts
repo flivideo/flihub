@@ -6,4 +6,13 @@ export default defineConfig({
     testTimeout: 10000,
     hookTimeout: 10000,
   },
+  coverage: {
+    provider: 'v8',
+    reporter: ['text', 'lcov'],
+    thresholds: {
+      lines: 16,
+      functions: 20,
+      branches: 18,
+    },
+  },
 });

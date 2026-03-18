@@ -49,7 +49,7 @@ export interface FinalMediaResponse {
  * e.g., "b64-final-v3.mp4" → 3
  *       "b64-final.mp4" → undefined
  */
-function extractVersion(filename: string): number | undefined {
+export function extractVersion(filename: string): number | undefined {
   const match = filename.match(/-v(\d+)\.[^.]+$/);
   return match ? parseInt(match[1], 10) : undefined;
 }
@@ -81,14 +81,15 @@ function findLatestVersion(files: string[]): { path: string; version?: number } 
  * Main video patterns: {code}.mp4, {code}-final*.mp4
  * Segments: {descriptive-name}.mp4, {code}-outro.mp4, etc.
  */
-function isAdditionalSegment(filename: string, projectCode: string): boolean {
+export function isAdditionalSegment(filename: string, projectCode: string): boolean {
   const base = path.basename(filename, path.extname(filename));
+  const escapedCode = projectCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   // Main video patterns to exclude
   const mainPatterns = [
-    new RegExp(`^${projectCode}$`), // b64.mp4
-    new RegExp(`^${projectCode}-final`), // b64-final.mp4, b64-final-v1.mp4
-    new RegExp(`^${projectCode}-[^-]+$`), // b64-bmad-claude-sdk.mp4 (code-suffix)
+    new RegExp(`^${escapedCode}$`), // b64.mp4
+    new RegExp(`^${escapedCode}-final`), // b64-final.mp4, b64-final-v1.mp4
+    new RegExp(`^${escapedCode}-[^-]+$`), // b64-bmad-claude-sdk.mp4 (code-suffix)
   ];
 
   // Check if it's a main video

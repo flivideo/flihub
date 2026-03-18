@@ -1,7 +1,7 @@
 // FR-102: Edit Prep Page API
 import express from 'express';
 import path from 'path';
-import fs from 'fs/promises';
+import fs from 'fs-extra';
 import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { readProjectState } from '../utils/projectState.js';

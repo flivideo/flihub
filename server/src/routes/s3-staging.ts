@@ -4,11 +4,14 @@
 // FR-144: POEM WUI workflow intake
 import express from 'express';
 import path from 'path';
-import fs from 'fs/promises';
+import fs from 'fs-extra';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
+import { stripSrt } from '../utils/srtUtils.js';
+import { extractBrand, categorizeMigrationFiles, isPathWithinProject } from '../utils/s3Utils.js';
+import type { MigrationActions } from '../utils/s3Utils.js';
 
 const execAsync = promisify(exec);
 
@@ -23,19 +26,6 @@ interface DamResult {
   error?: string;
   exitCode?: number;
   duration?: number;
-}
-
-// FR-105: Extract brand from project path
-// e.g., /video-projects/v-appydave/b85-clauding-01/ -> appydave
-function extractBrand(projectPath: string): string {
-  const parts = projectPath.split(path.sep);
-  // Find the v-* directory
-  for (let i = parts.length - 1; i >= 0; i--) {
-    if (parts[i].startsWith('v-')) {
-      return parts[i].slice(2);
-    }
-  }
-  return 'appydave'; // default fallback
 }
 
 // Read AWS config for a brand from ~/.config/appydave/brands.json
@@ -122,61 +112,6 @@ async function runDamCommand(
       duration,
     };
   }
-}
-
-// FR-104: Migration types
-interface MigrationActions {
-  delete: string[];
-  toPrep: Array<{ from: string; to: string }>;
-  toPost: Array<{ from: string; to: string }>;
-  conflicts: Array<{ file: string; reason: string }>;
-}
-
-// FR-104: Categorize files for migration
-function categorizeMigrationFiles(files: string[], projectName: string): MigrationActions {
-  const actions: MigrationActions = {
-    delete: [],
-    toPrep: [],
-    toPost: [],
-    conflicts: [],
-  };
-
-  // Track versions we've seen to detect conflicts
-  const seenVersions = new Set<string>();
-
-  for (const file of files) {
-    // Junk files - delete
-    if (file === '.DS_Store' || file.endsWith('.Zone.Identifier')) {
-      actions.delete.push(file);
-      continue;
-    }
-
-    // Final files go to post/ with version rename
-    // Pattern: *-final*.mp4 or *-final*.srt
-    const finalMatch = file.match(/^(.+)-final(-v(\d+))?\.(mp4|srt|mov)$/i);
-    if (finalMatch) {
-      const baseName = projectName || finalMatch[1];
-      const version = finalMatch[3] || '1'; // Default to v1 if no version
-      const ext = finalMatch[4];
-      const targetName = `${baseName}-v${version}.${ext}`;
-
-      // Check for conflicts
-      if (seenVersions.has(targetName)) {
-        actions.conflicts.push({ file, reason: `Would overwrite existing v${version}` });
-      } else {
-        seenVersions.add(targetName);
-        actions.toPost.push({ from: file, to: `post/${targetName}` });
-      }
-      continue;
-    }
-
-    // Everything else goes to prep/
-    if (/\.(mp4|srt|mov)$/i.test(file)) {
-      actions.toPrep.push({ from: file, to: `prep/${file}` });
-    }
-  }
-
-  return actions;
 }
 
 // FR-104: Execute migration
@@ -775,10 +710,19 @@ export function createS3StagingRoutes(getConfig: () => Config) {
   // FR-143: GET /api/s3-staging/srt-text - Read SRT file and return stripped plain text
   router.get('/srt-text', async (req, res) => {
     try {
+      const config = getConfig();
       const filePath = req.query.path as string | undefined;
 
       if (!filePath) {
         return res.status(400).json({ success: false, error: 'path parameter is required' });
+      }
+
+      // Guard: reject paths that escape the project directory
+      if (config.projectDirectory) {
+        const projectRoot = expandPath(config.projectDirectory);
+        if (!isPathWithinProject(filePath, projectRoot)) {
+          return res.status(403).json({ success: false, error: 'Path outside project directory' });
+        }
       }
 
       try {
@@ -789,19 +733,8 @@ export function createS3StagingRoutes(getConfig: () => Config) {
 
       const content = await fs.readFile(filePath, 'utf-8');
 
-      // Strip SRT formatting: remove sequence numbers, timestamps, and blank lines
-      const lines = content.split('\n');
-      const result: string[] = [];
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        if (/^\d+$/.test(trimmed)) continue; // sequence number
-        if (/^\d{2}:\d{2}:\d{2},\d{1,3} --> \d{2}:\d{2}:\d{2},\d{1,3}$/.test(trimmed)) continue; // timestamp
-        result.push(trimmed);
-      }
-
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      res.send(result.join('\n'));
+      res.send(stripSrt(content));
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
     }

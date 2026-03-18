@@ -4,5 +4,11 @@
   "private": true,
   "type": "module",
   "main": "types.ts",
-  "types": "types.ts"
+  "types": "types.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
 }

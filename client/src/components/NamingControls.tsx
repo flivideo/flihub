@@ -4,8 +4,19 @@ import type { CommonName, ChapterFilter } from '../../../shared/types';
 import { DEFAULT_TAGS } from '../../../shared/types';
 import { buildPreviewFilename } from '../utils/naming';
 
+// FR-21/FR-54: Sanitize custom tag input (spaces/commas → dashes, strip invalid chars, uppercase)
+// Note: Only trim leading dashes, keep trailing so user can type TAG1-TAG2
+export function sanitizeCustomTag(value: string): string {
+  return value
+    .toUpperCase()
+    .replace(/[\s,]+/g, '-') // spaces and commas to dashes
+    .replace(/[^A-Z0-9-]/g, '') // strip invalid chars
+    .replace(/-+/g, '-') // multiple dashes to single
+    .replace(/^-/, ''); // trim leading dash only
+}
+
 // FR-73: Filter templates by current chapter
-function shouldShowTemplate(template: CommonName, currentChapter: number): boolean {
+export function shouldShowTemplate(template: CommonName, currentChapter: number): boolean {
   const filter = template.chapterFilter ?? 'all';
   if (filter === 'all') return true;
 
@@ -141,17 +152,6 @@ export function NamingControls({
   const toggleTag = (tag: string) => {
     const newTags = tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
     updateNaming('tags', newTags);
-  };
-
-  // FR-21/FR-54: Sanitize custom tag input (spaces/commas → dashes, strip invalid chars, uppercase)
-  // Note: Only trim leading dashes, keep trailing so user can type TAG1-TAG2
-  const sanitizeCustomTag = (value: string): string => {
-    return value
-      .toUpperCase()
-      .replace(/[\s,]+/g, '-') // spaces and commas to dashes
-      .replace(/[^A-Z0-9-]/g, '') // strip invalid chars
-      .replace(/-+/g, '-') // multiple dashes to single
-      .replace(/^-/, ''); // trim leading dash only
   };
 
   // FR-13: Apply common name with rules

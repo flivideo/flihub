@@ -2,15 +2,16 @@
 
 **Last updated**: 2026-03-16
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 15 | Pending: 8 | Deferred: 5 | Rejected: 4
+**Total open**: 17 | Pending: 9 | Deferred: 5 | Rejected: 4
 
 ---
 
 ## Pending
 
-- [ ] B017 — Test Coverage Foundation (NFR-146) | Priority: **high** | PRD: `docs/prd/nfr-146-test-coverage-foundation.md`
+- [x] B018 — Code Quality Round 1 | Completed: 2026-03-16 | Campaign: `docs/planning/nfr-code-quality-1/`
+- [x] B019 — Architecture Refactor | Completed: 2026-03-16 | Campaign: `docs/planning/nfr-architecture-refactor/`
+- [x] B013 — Extract Shared Server Utilities (NFR-65) | Absorbed and completed by B019 | 2026-03-16
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
-- [ ] B013 — Extract Shared Server Utilities (NFR-65) | Priority: medium | Note: overlaps with B017 — `extractBrand`, `stripSrt` must be exported before unit tests work
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
 - [ ] B011 — Standardize Server Error Handling (NFR-67) | Priority: low | PRD: `docs/prd/nfr-67-standardize-error-handling.md`
 - [ ] B012 — Consolidate TypeScript Response Types (NFR-66) | Priority: low | PRD: `docs/prd/nfr-66-consolidate-response-types.md`
@@ -38,6 +39,7 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B017 / NFR-146 | Test Coverage Foundation — 3 placeholders → 298 real tests | 2026-03-16 |
 | FR-145 | Escape Key Closes Video Preview Modal | 2026-03-16 |
 | FR-144 | Send Transcript to POEM WUI / AWB | 2026-03-16 |
 | FR-143 | SRT Clipboard Copy Button | 2026-02-24 |
