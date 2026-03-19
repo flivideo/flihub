@@ -10,10 +10,10 @@
 
 ## Must Fix Before Major Feature (from 3-lens audit 2026-03-19)
 
-- [ ] B024 — Replace hardcoded PROJECTS_ROOT with `getConfig().projectsRootDirectory` | Priority: **blocker** | In 7+ files: routes/projects.ts, routes/transcriptions.ts, routes/state.ts, routes/query/projects.ts, routes/query/transcripts.ts, routes/video.ts, utils/projectResolver.ts, routes/index.ts | Audit: code-quality BLOCKER + architecture CRITICAL
-- [ ] B025 — Make `writeProjectState` atomic (write to .tmp then fs.rename) | Priority: **blocker** | 3-line change. Crash mid-write currently corrupts all safe/parked/annotation flags | Audit: code-quality MAJOR
-- [ ] B026 — Normalize config access — all route factories use `() => getConfig()` getter; replace `Object.assign` bypass in projects.ts + chapters.ts with `updateConfig` | Priority: **blocker** | Audit: architecture CRITICAL + code-quality MAJOR
-- [ ] B027 — Add chapter 99 existence check before swap-chapters | Priority: high | Swap uses ch99 as temp staging; silently clobbers real ch99 content | Audit: code-quality MAJOR
+- [x] B024 — Replace hardcoded PROJECTS_ROOT with `getConfig().projectsRootDirectory` | Priority: **blocker** | In 7+ files: routes/projects.ts, routes/transcriptions.ts, routes/state.ts, routes/query/projects.ts, routes/query/transcripts.ts, routes/video.ts, utils/projectResolver.ts, routes/index.ts | Audit: code-quality BLOCKER + architecture CRITICAL
+- [x] B025 — Make `writeProjectState` atomic (write to .tmp then fs.rename) | Priority: **blocker** | 3-line change. Crash mid-write currently corrupts all safe/parked/annotation flags | Audit: code-quality MAJOR
+- [x] B026 — Normalize config access — all route factories use `() => getConfig()` getter; replace `Object.assign` bypass in projects.ts + chapters.ts with `updateConfig` | Priority: **blocker** | Audit: architecture CRITICAL + code-quality MAJOR
+- [x] B027 — Add chapter 99 existence check before swap-chapters | Priority: high | Swap uses ch99 as temp staging; silently clobbers real ch99 content | Audit: code-quality MAJOR
 
 ## Test Coverage Gaps (high regression risk — from test-quality audit 2026-03-19)
 
