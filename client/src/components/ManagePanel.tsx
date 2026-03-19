@@ -10,7 +10,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useRecordings, useConfig } from '../hooks/useApi';
+import { useRecordings, useConfig, useGitSync } from '../hooks/useApi';
 import { useRecordingsSocket, getSocket } from '../hooks/useSocket';
 import { formatFileSize, formatChapterTitle } from '../utils/formatting';
 import {
@@ -21,6 +21,7 @@ import {
   ConfirmationModal,
   GlingEditTool,
   S3StagingTool,
+  RelayTool,
   RenamePanel,
   ChapterListPanel,
 } from './shared';
@@ -79,12 +80,15 @@ export function ManagePanel() {
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [showParked, setShowParked] = useState(false); // FR-122: Default to hidden
 
+  // B038: relay collaboration — git pull-only sync
+  const gitSync = useGitSync();
+
   // FR-138: Bulk rename (removed - now handled in RenamePanel)
   // const [bulkRenameLabel, setBulkRenameLabel] = useState('')
   // const [isRenaming, setIsRenaming] = useState(false)
 
-  // FR-136: Tool-oriented design (FR-139: removed 'folders', FR-140: added 'renumber', FR-142: split export-s3 into gling-edit + s3-staging)
-  const [activeTool, setActiveTool] = useState<'rename' | 'gling-edit' | 's3-staging' | 'renumber' | null>(null);
+  // FR-136: Tool-oriented design (FR-139: removed 'folders', FR-140: added 'renumber', FR-142: split export-s3 into gling-edit + s3-staging, B038: added relay)
+  const [activeTool, setActiveTool] = useState<'rename' | 'gling-edit' | 's3-staging' | 'renumber' | 'relay' | null>(null);
 
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -257,8 +261,14 @@ export function ManagePanel() {
 
   // FR-136: Tool handlers
   const handleSimpleToolClick = (
-    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all'
+    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all' | 'git-sync'
   ) => {
+    // B038: relay collaboration — git pull-only sync
+    if (tool === 'git-sync') {
+      gitSync.mutate();
+      return;
+    }
+
     const selectedFilesArray = Array.from(selectedFiles);
 
     // Determine scope
@@ -370,7 +380,7 @@ export function ManagePanel() {
     });
   };
 
-  const handleComplexToolClick = (tool: 'rename' | 'gling-edit' | 's3-staging' | 'renumber') => {
+  const handleComplexToolClick = (tool: 'rename' | 'gling-edit' | 's3-staging' | 'renumber' | 'relay') => {
     setActiveTool(activeTool === tool ? null : tool);
   };
 
@@ -553,6 +563,7 @@ export function ManagePanel() {
           activeTool={activeTool}
           onSimpleToolClick={handleSimpleToolClick}
           onComplexToolClick={handleComplexToolClick}
+          isGitSyncPending={gitSync.isPending}
         />
       </div>
 
@@ -589,6 +600,16 @@ export function ManagePanel() {
         width="w-[560px]"
       >
         <S3StagingTool />
+      </SlideOutDrawer>
+
+      {/* B038: relay collaboration */}
+      <SlideOutDrawer
+        isOpen={activeTool === 'relay'}
+        title="Relay Collaboration"
+        onClose={() => setActiveTool(null)}
+        width="w-[480px]"
+      >
+        <RelayTool />
       </SlideOutDrawer>
 
       <SlideOutDrawer

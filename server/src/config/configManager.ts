@@ -129,6 +129,9 @@ export function saveConfig(configPath: string, config: Config): void {
     if (config.brandConfigPath) {
       toSave.brandConfigPath = config.brandConfigPath;
     }
+    // B038: relay collaboration — use !== undefined so relayEnabled: false is saveable
+    if (config.relayDirectory !== undefined) toSave.relayDirectory = config.relayDirectory;
+    if (config.relayEnabled !== undefined) toSave.relayEnabled = config.relayEnabled;
     fs.writeJsonSync(configPath, toSave, { spaces: 2 });
     console.log('Config saved to:', configPath);
   } catch (error) {

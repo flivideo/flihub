@@ -38,9 +38,12 @@
  */
 import { Router, Request, Response } from 'express';
 import { exec, execSync } from 'child_process';
+import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs-extra';
 import os from 'os';
+
+const execAsync = promisify(exec);
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import type { Config, EnvironmentResponse } from '../../../shared/types.js';
@@ -557,6 +560,33 @@ export function createSystemRoutes(getConfig: () => Config, watcherManager?: Wat
 
     const watchers = watcherManager.getWatcherInfo();
     res.json({ watchers });
+  });
+
+  /**
+   * POST /api/system/git-sync
+   *
+   * B038: relay-collaboration — pull latest project state (text files, images, transcripts)
+   * without touching the terminal. Pull-only, no push, no commit.
+   *
+   * Response:
+   *   Success: { success: true, output: string }
+   *   Error:   { success: false, error: string }
+   */
+  router.post('/git-sync', async (_req: Request, res: Response) => {
+    // B038: relay collaboration
+    try {
+      const config = getConfig();
+      if (!config.projectsRootDirectory) {
+        res.json({ success: false, error: 'No projects root directory configured' });
+        return;
+      }
+      const repoDir = expandPath(config.projectsRootDirectory);
+      const shellCommand = `bash -lc "cd '${repoDir}' && git pull --rebase"`;
+      const { stdout, stderr } = await execAsync(shellCommand, { timeout: 120000 });
+      res.json({ success: true, output: stdout || stderr });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
   });
 
   return router;

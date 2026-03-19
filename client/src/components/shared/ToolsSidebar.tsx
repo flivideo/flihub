@@ -11,9 +11,10 @@ interface ToolsSidebarProps {
   totalFiles: number;
   activeTool: string | null;
   onSimpleToolClick: (
-    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all'
+    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all' | 'git-sync'
   ) => void;
-  onComplexToolClick: (tool: 'rename' | 'gling-edit' | 's3-staging' | 'renumber') => void;
+  onComplexToolClick: (tool: 'rename' | 'gling-edit' | 's3-staging' | 'renumber' | 'relay') => void;
+  isGitSyncPending?: boolean;
 }
 
 export function ToolsSidebar({
@@ -22,6 +23,7 @@ export function ToolsSidebar({
   activeTool,
   onSimpleToolClick,
   onComplexToolClick,
+  isGitSyncPending = false,
 }: ToolsSidebarProps) {
   const disabled = totalFiles === 0;
 
@@ -85,6 +87,14 @@ export function ToolsSidebar({
                   : `Regenerate all derivative files`
             }
           />
+          {/* B038: relay collaboration — git pull-only sync */}
+          <ToolButton
+            label={isGitSyncPending ? 'Syncing...' : 'Git Sync'}
+            disabled={isGitSyncPending}
+            active={false}
+            onClick={() => onSimpleToolClick('git-sync')}
+            tooltip={isGitSyncPending ? 'Git sync in progress...' : 'Pull latest project state (git pull --rebase)'}
+          />
         </div>
       </div>
 
@@ -125,6 +135,14 @@ export function ToolsSidebar({
             active={activeTool === 'renumber'}
             onClick={() => onComplexToolClick('renumber')}
             tooltip={disabled ? 'No files' : 'Move chapters with automatic cascade'}
+          />
+          {/* B038: relay collaboration */}
+          <ToolButton
+            label="Relay"
+            disabled={false}
+            active={activeTool === 'relay'}
+            onClick={() => onComplexToolClick('relay')}
+            tooltip="Push recordings to relay folder / collect edits back"
           />
         </div>
       </div>

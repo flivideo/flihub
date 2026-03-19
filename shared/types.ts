@@ -42,6 +42,9 @@ export interface Config {
   glingDictionary?: string[]; // FR-102: Custom dictionary words for Gling transcription
   poemWuiUrl?: string; // FR-144: AWB server URL (default: http://localhost:5041)
   brandConfigPath?: string; // FR-144: Path to brand-config.json for YouTube Launch Optimizer
+  // B038: relay collaboration
+  relayDirectory?: string; // ~/Relay/FliHub-appydave — machine-specific, gitignored
+  relayEnabled?: boolean; // Feature gate — false/undefined until configured
 }
 
 export interface RenameRequest {
@@ -338,6 +341,10 @@ export interface ServerToClientEvents {
   'recordings:changed': () => void; // Recording renamed/moved/deleted
   'projects:changed': () => void; // Project folder changed
   'inbox:changed': () => void; // FR-59: Inbox file added/removed
+  // B038: relay collaboration
+  'relay:recordings-available': (data: { projectCode: string; count: number }) => void;
+  'relay:edit-received': (data: { projectCode: string; filename: string }) => void;
+  'relay:sync-status': (data: { status: 'idle' | 'syncing' | 'error'; message?: string }) => void;
   'transcripts:changed': () => void; // NFR-85: Transcript added/removed/changed
   // FR-58: Chapter recording events
   'chapters:generating': (data: { chapter: string; total: number; current: number }) => void;

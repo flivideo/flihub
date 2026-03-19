@@ -221,6 +221,59 @@ export class WatcherManager {
   }
 
   /**
+   * B038: relay collaboration — Start relay watcher for incoming collaborator recordings
+   * Uses awaitWriteFinish to handle large video files safely
+   */
+  startRelayWatcher(relayDir: string): void {
+    if (!relayDir) return;
+
+    const expandedRelay = expandPath(relayDir);
+    // Stop existing watcher if any
+    this.stopWatcher('relay');
+
+    console.log(`Setting up relay watcher for: ${expandedRelay}`);
+
+    const watcher = chokidar.watch(expandedRelay, {
+      persistent: true,
+      ignoreInitial: true,
+      depth: 3, // Catch files in subdirectories like b17/recordings/
+      ignored: /(^|[/\\])\../,
+      awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 500 },
+    });
+
+    const emitChange = () => {
+      const existingTimeout = this.debounceTimeouts.get('relay');
+      if (existingTimeout) clearTimeout(existingTimeout);
+
+      const timeout = setTimeout(() => {
+        try {
+          console.log('relay change detected');
+          this.io.emit('relay:recordings-available', { projectCode: '', count: 0 });
+          console.log('relay event emitted successfully');
+        } catch (err) {
+          console.error('Error emitting relay event:', err);
+        }
+      }, 1000);
+
+      this.debounceTimeouts.set('relay', timeout);
+    };
+
+    for (const event of ['add', 'unlink'] as const) {
+      watcher.on(event, emitChange);
+    }
+
+    watcher.on('error', (error: Error) => {
+      console.log('relay watcher note:', error.message);
+    });
+
+    watcher.on('ready', () => {
+      console.log('relay watcher ready');
+    });
+
+    this.watchers.set('relay', watcher);
+  }
+
+  /**
    * Update watchers based on config changes
    */
   updateFromConfig(oldConfig: Config | null, newConfig: Config): void {
@@ -238,6 +291,16 @@ export class WatcherManager {
     if (!oldConfig || oldConfig.imageSourceDirectory !== newConfig.imageSourceDirectory) {
       this.startIncomingImagesWatcher(newConfig.imageSourceDirectory);
     }
+
+    // B038: relay collaboration — restart relay watcher if relay directory changed
+    // Note: relay is machine-global, not per-project — do NOT restart on projectDirectory changes
+    if (!oldConfig || oldConfig.relayDirectory !== newConfig.relayDirectory) {
+      if (newConfig.relayEnabled && newConfig.relayDirectory) {
+        this.startRelayWatcher(newConfig.relayDirectory);
+      } else {
+        this.stopWatcher('relay');
+      }
+    }
   }
 
   /**
@@ -252,6 +315,10 @@ export class WatcherManager {
     this.startInboxWatcher(config.projectDirectory); // FR-59
     this.startTranscriptsWatcher(config.projectDirectory); // NFR-85
     this.startThumbsWatcher(config.projectDirectory); // NFR-85
+    // B038: relay collaboration — only start if relay is configured and enabled
+    if (config.relayEnabled && config.relayDirectory) {
+      this.startRelayWatcher(config.relayDirectory);
+    }
   }
 
   /**

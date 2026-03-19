@@ -35,7 +35,7 @@
 
 ## Feature Backlog
 
-- [ ] B038 — Relay Collaboration Phase 1 (push/collect recordings + edits via rsync + relay folder) | Priority: high | Dry-run diff preview before confirm. Same/same path mirroring between `v-appydave/b17/` and `~/relay/flihub-appydave/b17/`. Bidirectional: David pushes recordings, Jan pushes edits back. PRD: `docs/planning/requirements-relay-collaboration.md` + `docs/planning/requirements-workflow-braindump-2026-03-19.md` + `docs/planning/architectural-review-relay-2026-03-19.md`
+- [~] B038 — Relay Collaboration Phase 1 (push/collect recordings + edits via rsync + relay folder) | Priority: high | Campaign: relay-collaboration-phase-1 | Dry-run diff preview before confirm. Same/same path mirroring between `v-appydave/b17/` and `~/relay/flihub-appydave/b17/`. Bidirectional: David pushes recordings, Jan pushes edits back. PRD: `docs/planning/requirements-relay-collaboration.md` + `docs/planning/requirements-workflow-braindump-2026-03-19.md` + `docs/planning/architectural-review-relay-2026-03-19.md`
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`

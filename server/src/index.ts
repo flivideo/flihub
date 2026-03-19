@@ -25,6 +25,7 @@ import { createS3StagingRoutes } from './routes/s3-staging.js';
 import { createPoemWuiRoutes } from './routes/poem-wui.js';
 import { createStateRoutes } from './routes/state.js';
 import { createDeveloperRoutes } from './routes/developer.js';
+import { createRelayRoutes } from './routes/relay.js';
 import { migrateSafeFolder, needsMigration } from './utils/safeMigration.js';
 import { loadConfig, saveConfig } from './config/configManager.js';
 import { WatcherManager } from './WatcherManager.js';
@@ -300,6 +301,10 @@ app.use('/api', stateRoutes);
 // FR-127: Setup developer tools routes
 const developerRoutes = createDeveloperRoutes(currentConfig);
 app.use('/api/developer', developerRoutes);
+
+// B038: Setup relay collaboration routes
+const relayRoutes = createRelayRoutes(() => currentConfig);
+app.use('/api/relay', relayRoutes);
 
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);

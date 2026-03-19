@@ -2,6 +2,26 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { API_URL } from '../config';
 
+// B038: relay-collaboration — git pull-only sync
+export function useGitSync() {
+  return useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`${API_URL}/api/system/git-sync`, { method: 'POST' });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success('Git sync complete');
+      } else {
+        toast.error(data.error || 'Git sync failed');
+      }
+    },
+    onError: () => {
+      toast.error('Git sync failed');
+    },
+  });
+}
+
 // FR-64: Open inbox file in external application (browser for HTML)
 export function useOpenInboxFile() {
   return useMutation({

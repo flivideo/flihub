@@ -333,6 +333,15 @@ vi.mock('fs-extra', () => ({ default: { pathExists: vi.fn(), readFile: vi.fn(), 
 - `parseSrtTimestamp` returns `number | null` — callers must handle null (skip the segment)
 - Coverage thresholds (floors, not targets): server lines 16%, functions 20%, branches 18%
 
+### relay-collaboration-phase-1 (2026-03-19) — Relay Collaboration
+
+- **Use `execFile` not string interpolation for user-supplied paths** — `bash -lc "cd '${path}'"` is safe only for hardcoded system paths. User-configured paths (`projectDirectory`, `relayDirectory`) can contain single-quotes, breaking shell quoting. Use `execFile('rsync', [...args])` or `execFile('git', ['pull', '--rebase'], { cwd: repoDir })` for user-supplied paths.
+- **Route guards must check both configured AND enabled** — when a feature has both a path field and a boolean toggle, action routes must check both. The pattern: `if (!config.relayDirectory || !config.relayEnabled || !config.projectDirectory) return res.json({ success: false, error: '...' });`
+- **`startWatcher()` helper is mandatory** — WatcherManager has a private `startWatcher(config: WatcherConfig)` abstraction. Do NOT bypass it with direct chokidar calls. If a new option (like `awaitWriteFinish`) is needed, extend the `WatcherConfig` interface and add support inside `startWatcher()`.
+- **Validate `path.basename()` results before use** — `path.basename(config.projectDirectory)` returns `''` if `projectDirectory` has a trailing slash. Always validate the result is non-empty before using it to construct a subdirectory path.
+- **`updateFromConfig` must check all relevant config fields** — if a feature has both a path and an enable flag, the `updateFromConfig` relay logic must handle: (a) path changes, (b) enable toggled true, (c) enable toggled false. Checking only path changes leaves the watcher running when `enabled` is set to false.
+- **Test count after campaign: 668** (38 shared + 504 server + 126 client)
+
 ### test-coverage-gaps-2 (2026-03-19) — Test Coverage Round 2
 
 - **ESM `vi.spyOn` cannot intercept internal module calls** — verify phase ordering through mocked external dependencies (e.g. `fs.unlink` before `fs.rename`), not by spying on sibling functions in the same module
