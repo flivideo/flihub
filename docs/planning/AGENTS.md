@@ -289,19 +289,33 @@ vi.mock('fs-extra', () => ({ default: { pathExists: vi.fn(), readFile: vi.fn(), 
 
 ## Known Issues / Gotchas
 
-1. **`npm run build -w shared` is easy to forget.** The client and server import from shared via path aliases. If shared types change and you don't rebuild, the app uses stale types silently.
+### Active Structural Problems (from 3-lens audit 2026-03-19 — fix before major feature)
 
-2. **`server/config.json` is gitignored.** Config changes made during development do not commit. If a Ralphy wave modifies config.json, it will not appear in the diff.
+1. **`PROJECTS_ROOT` is hardcoded in 7+ server files.** The constant `~/dev/video-projects/v-appydave` bypasses `config.projectsRootDirectory` entirely. Any new feature touching multi-project logic will silently fail on any machine except the original author's. See B024. Files: `routes/projects.ts`, `routes/transcriptions.ts`, `routes/state.ts`, `routes/query/projects.ts`, `routes/query/transcripts.ts`, `routes/video.ts`, `utils/projectResolver.ts`, `routes/index.ts`.
 
-3. **NFR-141 is permanently cancelled.** Planning docs from Jan 2026 treat it as critical. It was cancelled after discovering scanner bugs. The tag parser in `shared/naming.ts` is correct as-is.
+2. **`writeProjectState` is non-atomic.** `fs.writeFile` truncates then writes. A crash mid-write produces a corrupt or zero-byte state file, silently losing all safe/parked/annotation flags. Fix: write to `.tmp` then `fs.rename`. See B025.
 
-4. **FR-131 Phase 2 may be superseded.** The ManagePanel bulk rename Phase 2 work may have been made obsolete by FR-136/141 toolchain. Confirm before implementing.
+3. **Config access is inconsistent across route factories.** Three route factories (`assets`, `thumbs`, `system`) receive the live `currentConfig` object by direct reference rather than the `() => getConfig()` getter used everywhere else. Two routes (`projects`, `chapters`) bypass `updateConfig` via `Object.assign`, skipping watcher restarts and persistence ordering. See B026.
 
-5. **`updateConfig` in index.ts is intentionally un-extracted.** It closes over `currentConfig` and `io` (Socket.io) for real-time config push to clients. Do not extract it — the coupling is intentional.
+4. **`renameRecording()` orchestration is untested.** The 3-phase rename pipeline (delete derivable → rename core → regenerate) has zero integration test coverage. Phase-ordering regressions and removal of the transcription-block guard would pass the suite silently. See B028.
 
-6. **Two config migration paths exist in configManager.ts.** NFR-6 (`targetDirectory → projectDirectory`) and FR-89 (`projectDirectory` split into root + active). Do not remove either without verifying no users have pre-migration config files.
+5. **`swap-chapters` uses chapter `99` as a collision-unsafe temp workspace.** If the project has real recordings in chapter 99, the swap silently clobbers them. See B027.
 
-7. **`formatTimestamp`/`formatTime` are locale-sensitive in tests.** Use `/\d{1,2}:\d{2}/` regex patterns rather than exact strings — output depends on `en-US` locale and will break in CI with different locales.
+### Pre-existing Gotchas
+
+6. **`npm run build -w shared` is easy to forget.** The client and server import from shared via path aliases. If shared types change and you don't rebuild, the app uses stale types silently.
+
+7. **`server/config.json` is gitignored.** Config changes made during development do not commit. If a Ralphy wave modifies config.json, it will not appear in the diff.
+
+8. **NFR-141 is permanently cancelled.** Planning docs from Jan 2026 treat it as critical. It was cancelled after discovering scanner bugs. The tag parser in `shared/naming.ts` is correct as-is.
+
+9. **FR-131 Phase 2 may be superseded.** The ManagePanel bulk rename Phase 2 work may have been made obsolete by FR-136/141 toolchain. Confirm before implementing.
+
+10. **`updateConfig` in index.ts is intentionally un-extracted.** It closes over `currentConfig` and `io` (Socket.io) for real-time config push to clients. Do not extract it — the coupling is intentional.
+
+11. **Two config migration paths exist in configManager.ts.** NFR-6 (`targetDirectory → projectDirectory`) and FR-89 (`projectDirectory` split into root + active). Do not remove either without verifying no users have pre-migration config files.
+
+12. **`formatTimestamp`/`formatTime` are locale-sensitive in tests.** Use `/\d{1,2}:\d{2}/` regex patterns rather than exact strings — output depends on `en-US` locale and will break in CI with different locales.
 
 ---
 

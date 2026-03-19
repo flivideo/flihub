@@ -18,33 +18,42 @@ The codebase now has a trustworthy test baseline. The next wave should either:
 
 ---
 
+## ⚠️ Must-Fix Before Major Feature (from 3-lens audit 2026-03-19)
+
+Three structural fixes recommended before any new major feature. Est. 1–2 days total.
+
+- **B024** — Replace hardcoded PROJECTS_ROOT in 7+ files with `getConfig().projectsRootDirectory`
+- **B025** — Make `writeProjectState` atomic (write to .tmp, then fs.rename) — 3-line change
+- **B026** — Normalize config access — all route factories use `() => getConfig()` getter; remove `Object.assign` bypass
+- **B027** — Add chapter 99 existence check before swap-chapters
+
+These are a natural campaign: `pre-feature-stabilisation` — 4 targeted fixes, no new features, all have clear done-when criteria.
+
+---
+
 ## Suggested Next Campaign Options
 
-### Option A — Test Infrastructure Round 2 (NFR)
-Low-risk, builds on existing momentum.
+### Option A — Pre-Feature Stabilisation (RECOMMENDED FIRST)
+4 structural fixes from the 3-lens audit. Low-risk, unblocks everything else safely.
+Work units: B024, B025, B026, B027
 
-Suggested work units:
-- B022: Run vitest --coverage, document real baselines, tighten thresholds
-- B023: Replace sample.test.ts placeholder with a real server smoke test
-- B020: React hook tests for useSocket.ts + domain useApi hooks
+### Option B — Test Coverage Gaps (high regression risk)
+Address the critical untested paths found in test-quality audit.
+Work units: B028 (rename orchestration), B029 (extractChapters), B030 (client srt.ts), B031 (editManifest)
 
-### Option B — Dual Transcription System (FR-132)
+### Option C — Dual Transcription System (FR-132)
 Highest-priority feature in backlog. Has a full PRD.
-PRD: `docs/prd/fr-132-dual-transcription-progress.md`
-Recommend running test suite before starting — verify 331 tests still pass.
+**Do B024+B026 first** — this feature touches config and multi-project logic.
 
-### Option C — Server Refactoring NFRs
-Bundle B010 + B011 + B012 (query routes, error handling, response types) as a single cleanup wave.
+### Option D — Server Refactoring NFRs
+Bundle B010 + B011 + B012 (query routes, error handling, response types).
 All have PRDs. Low complexity individually, high value as a bundle.
 
 ---
 
-## Pre-Campaign Recommendation
+## Pre-Campaign Checklist
 
-Before planning whichever option is chosen, run:
 ```bash
 npm test        # verify 331 tests still pass
 npm run build   # verify TypeScript clean
 ```
-
-Also consider: `appydave:architectural-review` to catch structural concerns before building on top of them.

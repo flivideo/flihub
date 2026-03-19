@@ -2,11 +2,38 @@
 
 **Last updated**: 2026-03-19
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 10 | Pending: 10 | Deferred: 7 | Rejected: 4
+**Total open**: 21 | Pending: 21 | Deferred: 7 | Rejected: 4
 
 ---
 
 ## Pending
+
+## Must Fix Before Major Feature (from 3-lens audit 2026-03-19)
+
+- [ ] B024 — Replace hardcoded PROJECTS_ROOT with `getConfig().projectsRootDirectory` | Priority: **blocker** | In 7+ files: routes/projects.ts, routes/transcriptions.ts, routes/state.ts, routes/query/projects.ts, routes/query/transcripts.ts, routes/video.ts, utils/projectResolver.ts, routes/index.ts | Audit: code-quality BLOCKER + architecture CRITICAL
+- [ ] B025 — Make `writeProjectState` atomic (write to .tmp then fs.rename) | Priority: **blocker** | 3-line change. Crash mid-write currently corrupts all safe/parked/annotation flags | Audit: code-quality MAJOR
+- [ ] B026 — Normalize config access — all route factories use `() => getConfig()` getter; replace `Object.assign` bypass in projects.ts + chapters.ts with `updateConfig` | Priority: **blocker** | Audit: architecture CRITICAL + code-quality MAJOR
+- [ ] B027 — Add chapter 99 existence check before swap-chapters | Priority: high | Swap uses ch99 as temp staging; silently clobbers real ch99 content | Audit: code-quality MAJOR
+
+## Test Coverage Gaps (high regression risk — from test-quality audit 2026-03-19)
+
+- [ ] B028 — Test `renameRecording()` orchestration (3-phase pipeline integration) | Priority: high | Core rename pipeline has zero integration coverage; phase-ordering regression and missing transcription-block guard would pass suite silently | Audit: test-quality #1
+- [ ] B029 — Test `extractChapters()` matching logic | Priority: high | 230-line function completely untested; threshold or strategy-weighting regression invisible | Audit: test-quality #2
+- [ ] B030 — Test `client/src/utils/srt.ts` (parseSrt, srtToTimedWords, findCurrentEntry, findCurrentWord) | Priority: high | Powers transcript sync; divide-by-zero on single-word segment unguarded; off-by-one in boundary check invisible | Audit: test-quality #3
+- [ ] B031 — Test `editManifest.ts` (getManifestStatus, cleanEditFolder, restoreEditFolder) | Priority: high | Wrong status logic could allow cleanEditFolder to delete unexported recordings | Audit: test-quality #4
+- [ ] B032 — Test `shared/naming.ts` missing functions (parseImageFilename, buildImageFilename, findNextSequence, calculateSuggestedNaming) | Priority: medium | Image filename parsing and suggested-naming logic completely untested | Audit: test-quality #5
+
+## Structural Debt (from architecture + code-quality audits 2026-03-19)
+
+- [ ] B033 — Extract transcription queue state into a class (remove module-level mutable globals) | Priority: medium | queue/activeJob/recentJobs/activeProcess as module globals; no concurrency protection; untestable as singleton | Audit: code-quality MAJOR + architecture CRITICAL
+- [ ] B034 — Fix asyncHandler — wrap all routes or remove and document Express 5 contract | Priority: medium | asyncHandler defined but never used; error response format inconsistent across routes | Audit: code-quality MAJOR
+- [ ] B035 — Add React error boundary around tab components in App.tsx | Priority: medium | Render crash in any tab blanks entire SPA | Audit: code-quality
+- [ ] B036 — Replace hardcoded WHISPER_BINARY path with config value | Priority: medium | Points to pyenv 3.14.3 — breaks on any other machine or Python upgrade | Audit: code-quality
+- [ ] B037 — Remove `[FR-89 DEBUG]` console.log statements from production routes/index.ts | Priority: low | Debug logs from Jan 2026 still in production path | Audit: code-quality
+
+---
+
+## Feature Backlog
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
