@@ -2,7 +2,7 @@
 
 **Last updated**: 2026-03-19
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 21 | Pending: 21 | Deferred: 7 | Rejected: 4
+**Total open**: 17 | Pending: 17 | Deferred: 7 | Rejected: 4
 
 ---
 

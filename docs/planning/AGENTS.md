@@ -289,17 +289,9 @@ vi.mock('fs-extra', () => ({ default: { pathExists: vi.fn(), readFile: vi.fn(), 
 
 ## Known Issues / Gotchas
 
-### Active Structural Problems (from 3-lens audit 2026-03-19 — fix before major feature)
+### Active Structural Problems (from 3-lens audit 2026-03-19)
 
-1. **`PROJECTS_ROOT` is hardcoded in 7+ server files.** The constant `~/dev/video-projects/v-appydave` bypasses `config.projectsRootDirectory` entirely. Any new feature touching multi-project logic will silently fail on any machine except the original author's. See B024. Files: `routes/projects.ts`, `routes/transcriptions.ts`, `routes/state.ts`, `routes/query/projects.ts`, `routes/query/transcripts.ts`, `routes/video.ts`, `utils/projectResolver.ts`, `routes/index.ts`.
-
-2. **`writeProjectState` is non-atomic.** `fs.writeFile` truncates then writes. A crash mid-write produces a corrupt or zero-byte state file, silently losing all safe/parked/annotation flags. Fix: write to `.tmp` then `fs.rename`. See B025.
-
-3. **Config access is inconsistent across route factories.** Three route factories (`assets`, `thumbs`, `system`) receive the live `currentConfig` object by direct reference rather than the `() => getConfig()` getter used everywhere else. Two routes (`projects`, `chapters`) bypass `updateConfig` via `Object.assign`, skipping watcher restarts and persistence ordering. See B026.
-
-4. **`renameRecording()` orchestration is untested.** The 3-phase rename pipeline (delete derivable → rename core → regenerate) has zero integration test coverage. Phase-ordering regressions and removal of the transcription-block guard would pass the suite silently. See B028.
-
-5. **`swap-chapters` uses chapter `99` as a collision-unsafe temp workspace.** If the project has real recordings in chapter 99, the swap silently clobbers them. See B027.
+1. **`renameRecording()` orchestration is untested.** The 3-phase rename pipeline (delete derivable → rename core → regenerate) has zero integration test coverage. Phase-ordering regressions and removal of the transcription-block guard would pass the suite silently. See B028.
 
 ### Pre-existing Gotchas
 
