@@ -1160,6 +1160,15 @@ export function createManageRoutes(
       const allFiles = await fs.readdir(recordingsDir);
       const recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
 
+      // Guard: chapter 99 is used as staging area — reject if it already has files
+      const ch99Files = recordings.filter((f) => f.startsWith('99-'));
+      if (ch99Files.length > 0 && chapter1 !== '99' && chapter2 !== '99') {
+        return res.json({
+          success: false,
+          error: `Chapter 99 is in use (${ch99Files.length} file(s)) — cannot use it as swap staging. Rename chapter 99 files first.`,
+        });
+      }
+
       console.log(`[FR-140] Swapping chapters ${chapter1} ↔ ${chapter2}`);
 
       const tempChapter = '99'; // Temporary chapter for 3-phase swap

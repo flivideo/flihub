@@ -29,7 +29,7 @@ interface UnifiedRecording extends QueryRecording {
   shadowSize?: number | null;
 }
 
-export function createRecordingsRoutes(_getConfig: () => Config): Router {
+export function createRecordingsRoutes(getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
 
   // ============================================
@@ -42,7 +42,7 @@ export function createRecordingsRoutes(_getConfig: () => Config): Router {
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-      const resolved = await resolveProjectCode(codeInput);
+      const resolved = await resolveProjectCode(codeInput, getConfig().projectsRootDirectory!);
       if (!resolved) {
         res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;

@@ -6,6 +6,7 @@ vi.mock('fs-extra', () => ({
     pathExists: vi.fn(),
     readFile: vi.fn(),
     writeFile: vi.fn(),
+    rename: vi.fn(),
   },
 }))
 
@@ -29,6 +30,7 @@ const fsMock = fsExtra as unknown as {
   pathExists: ReturnType<typeof vi.fn>
   readFile: ReturnType<typeof vi.fn>
   writeFile: ReturnType<typeof vi.fn>
+  rename: ReturnType<typeof vi.fn>
 }
 
 beforeEach(() => vi.clearAllMocks())
@@ -90,6 +92,7 @@ describe('readProjectState', () => {
 describe('writeProjectState', () => {
   it('writes serialised JSON to the state file path', async () => {
     fsMock.writeFile.mockResolvedValue(undefined)
+    fsMock.rename.mockResolvedValue(undefined)
     const state: ProjectState = {
       version: 1,
       recordings: { '02-3-outro.mov': { safe: false } },
@@ -97,14 +100,20 @@ describe('writeProjectState', () => {
     await writeProjectState('/some/project', state)
     expect(fsMock.writeFile).toHaveBeenCalledOnce()
     const [writtenPath, writtenContent] = fsMock.writeFile.mock.calls[0]
-    expect(writtenPath).toContain('.flihub-state.json')
+    expect(writtenPath).toContain('.flihub-state.json.tmp')
     const parsed = JSON.parse(writtenContent as string)
     expect(parsed.version).toBe(1)
     expect(parsed.recordings).toEqual(state.recordings)
+    expect(fsMock.rename).toHaveBeenCalledOnce()
+    const [tmpPath, finalPath] = fsMock.rename.mock.calls[0]
+    expect(tmpPath).toContain('.flihub-state.json.tmp')
+    expect(finalPath).toContain('.flihub-state.json')
+    expect(finalPath).not.toContain('.tmp')
   })
 
   it('preserves glingDictionary when non-empty', async () => {
     fsMock.writeFile.mockResolvedValue(undefined)
+    fsMock.rename.mockResolvedValue(undefined)
     const state: ProjectState = {
       version: 1,
       recordings: {},
@@ -118,6 +127,7 @@ describe('writeProjectState', () => {
 
   it('omits glingDictionary when empty array', async () => {
     fsMock.writeFile.mockResolvedValue(undefined)
+    fsMock.rename.mockResolvedValue(undefined)
     const state: ProjectState = {
       version: 1,
       recordings: {},

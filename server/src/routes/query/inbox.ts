@@ -15,7 +15,7 @@ import { getProjectPaths } from '../../../../shared/paths.js';
 import { readDirEntriesSafe, statSafe } from '../../utils/filesystem.js';
 import type { Config, InboxSubfolder } from '../../../../shared/types.js';
 
-export function createInboxRoutes(_getConfig: () => Config): Router {
+export function createInboxRoutes(getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
 
   // ============================================
@@ -26,7 +26,7 @@ export function createInboxRoutes(_getConfig: () => Config): Router {
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-      const resolved = await resolveProjectCode(codeInput);
+      const resolved = await resolveProjectCode(codeInput, getConfig().projectsRootDirectory!);
       if (!resolved) {
         res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
@@ -158,7 +158,7 @@ export function createInboxRoutes(_getConfig: () => Config): Router {
       }
 
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-      const resolved = await resolveProjectCode(codeInput);
+      const resolved = await resolveProjectCode(codeInput, getConfig().projectsRootDirectory!);
       if (!resolved) {
         res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;

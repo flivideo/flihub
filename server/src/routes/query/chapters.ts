@@ -14,7 +14,7 @@ import { readDirSafe } from '../../utils/filesystem.js';
 import { formatChaptersReport } from '../../utils/reporters.js';
 import type { Config, QueryChapter } from '../../../../shared/types.js';
 
-export function createChaptersRoutes(_getConfig: () => Config): Router {
+export function createChaptersRoutes(getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
 
   // ============================================
@@ -25,7 +25,7 @@ export function createChaptersRoutes(_getConfig: () => Config): Router {
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-      const resolved = await resolveProjectCode(codeInput);
+      const resolved = await resolveProjectCode(codeInput, getConfig().projectsRootDirectory!);
       if (!resolved) {
         res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;

@@ -201,7 +201,7 @@ function openInDefaultApp(filePath: string): Promise<{ windowsPath?: string }> {
 // FR-90: Import WatcherManager type
 import type { WatcherManager } from '../WatcherManager.js';
 
-export function createSystemRoutes(config: Config, watcherManager?: WatcherManager): Router {
+export function createSystemRoutes(getConfig: () => Config, watcherManager?: WatcherManager): Router {
   const router = Router();
 
   /**
@@ -290,6 +290,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
 
     // Determine project path - use projectCode if provided, else current project
     // FR-97: Use config.projectsRootDirectory instead of hardcoded path
+    const config = getConfig();
     let projectPath: string;
     if (projectCode) {
       // Validate projectCode doesn't contain path traversal
@@ -362,6 +363,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
    * Returns server status and current project info.
    */
   router.get('/health', (_req: Request, res: Response) => {
+    const config = getConfig();
     res.json({
       success: true,
       status: 'ok',
@@ -405,6 +407,7 @@ export function createSystemRoutes(config: Config, watcherManager?: WatcherManag
       return;
     }
 
+    const config = getConfig();
     const paths = getProjectPaths(expandPath(config.projectDirectory));
 
     // Handle (root) subfolder - files directly in inbox/

@@ -226,16 +226,16 @@ const routes = createRoutes(
 app.use('/api', routes);
 
 // FR-17: Setup asset routes for image management
-const assetRoutes = createAssetRoutes(currentConfig);
+const assetRoutes = createAssetRoutes(() => currentConfig);
 app.use('/api/assets', assetRoutes);
 
 // FR-27: Setup thumbnail routes for YouTube thumbnail management
-const thumbRoutes = createThumbRoutes(currentConfig);
+const thumbRoutes = createThumbRoutes(() => currentConfig);
 app.use('/api/thumbs', thumbRoutes);
 
 // FR-29: Setup system routes for folder operations
 // FR-90: Pass watcherManager to system routes
-const systemRoutes = createSystemRoutes(currentConfig, watcherManager);
+const systemRoutes = createSystemRoutes(() => currentConfig, watcherManager);
 app.use('/api/system', systemRoutes);
 
 // FR-32: Setup project routes for stats and priority management

@@ -35,12 +35,13 @@ async function calculateFileHash(filePath: string): Promise<string> {
   return crypto.createHash('md5').update(fileBuffer).digest('hex');
 }
 
-export function createAssetRoutes(config: Config): Router {
+export function createAssetRoutes(getConfig: () => Config): Router {
   const router = Router();
 
   // GET /api/assets/incoming - Scan image source directory for pending images
   router.get('/incoming', async (_req: Request, res: Response) => {
     try {
+      const config = getConfig();
       const imageSourceDir = expandPath(config.imageSourceDirectory);
 
       if (!(await fs.pathExists(imageSourceDir))) {
@@ -104,6 +105,7 @@ export function createAssetRoutes(config: Config): Router {
   // NFR-6: Using projectDirectory with getProjectPaths()
   router.get('/images', async (_req: Request, res: Response) => {
     try {
+      const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
       if (!(await fs.pathExists(paths.images))) {
@@ -186,6 +188,7 @@ export function createAssetRoutes(config: Config): Router {
         return;
       }
 
+      const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
 
       let existingCount = 0;
@@ -321,6 +324,7 @@ export function createAssetRoutes(config: Config): Router {
       );
 
       // Determine target directory
+      const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const newPath = path.join(paths.images, newFilename);
 
@@ -503,6 +507,7 @@ export function createAssetRoutes(config: Config): Router {
       const filename = buildImageFilename(chapter, sequence, imageOrder, variant, label, '.txt');
 
       // Determine target directory
+      const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const filePath = path.join(paths.images, filename);
 
@@ -574,6 +579,7 @@ export function createAssetRoutes(config: Config): Router {
       }
 
       // Determine file path
+      const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const filePath = path.join(paths.images, filename);
 
@@ -616,6 +622,7 @@ export function createAssetRoutes(config: Config): Router {
       }
 
       // Determine file path
+      const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const filePath = path.join(paths.images, filename);
 
@@ -652,6 +659,7 @@ export function createAssetRoutes(config: Config): Router {
       }
 
       // Get paths
+      const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const filePath = path.join(paths.images, filename);
 
@@ -743,6 +751,7 @@ export function createAssetRoutes(config: Config): Router {
       );
 
       // Get target path
+      const config = getConfig();
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const targetPath = path.join(paths.images, filename);
 
@@ -795,6 +804,7 @@ export function createAssetRoutes(config: Config): Router {
       const filename = `clip-${timestamp}${ext}`;
 
       // Get incoming folder path
+      const config = getConfig();
       const incomingDir = expandPath(config.imageSourceDirectory || '~/Downloads');
       const targetPath = path.join(incomingDir, filename);
 

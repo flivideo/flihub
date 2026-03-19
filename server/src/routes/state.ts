@@ -28,8 +28,6 @@ import type {
   ClientToServerEvents,
 } from '../../../shared/types.js';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
 export function createStateRoutes(
   getConfig: () => Config,
   io: SocketServer<ClientToServerEvents, ServerToClientEvents>
@@ -51,7 +49,11 @@ export function createStateRoutes(
 
     try {
       // Resolve project directory
-      const projectsRoot = expandPath(PROJECTS_ROOT);
+      const config = getConfig();
+      if (!config.projectsRootDirectory) {
+        return res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+      }
+      const projectsRoot = expandPath(config.projectsRootDirectory);
       const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
 
       // Find project folder matching code
@@ -106,7 +108,11 @@ export function createStateRoutes(
 
     try {
       // Resolve project directory
-      const projectsRoot = expandPath(PROJECTS_ROOT);
+      const config = getConfig();
+      if (!config.projectsRootDirectory) {
+        return res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+      }
+      const projectsRoot = expandPath(config.projectsRootDirectory);
       const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
 
       // Find project folder matching code
@@ -171,7 +177,11 @@ export function createStateRoutes(
 
     try {
       // Resolve project directory
-      const projectsRoot = expandPath(PROJECTS_ROOT);
+      const config = getConfig();
+      if (!config.projectsRootDirectory) {
+        return res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+      }
+      const projectsRoot = expandPath(config.projectsRootDirectory);
       const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
 
       // Find project folder matching code

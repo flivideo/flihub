@@ -9,13 +9,11 @@ import path from 'path';
 import fs from 'fs-extra';
 import { expandPath } from './pathUtils.js';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
 /**
  * Get all valid project folders
  */
-async function getProjectFolders(): Promise<string[]> {
-  const projectsDir = expandPath(PROJECTS_ROOT);
+async function getProjectFolders(projectsRootDir: string): Promise<string[]> {
+  const projectsDir = expandPath(projectsRootDir);
 
   if (!(await fs.pathExists(projectsDir))) {
     return [];
@@ -49,10 +47,11 @@ async function getProjectFolders(): Promise<string[]> {
  * // -> { code: "c10-poem-epic-3", path: "/path/to/c10-poem-epic-3" }
  */
 export async function resolveProjectCode(
-  codeInput: string
+  codeInput: string,
+  projectsRootDir: string
 ): Promise<{ code: string; path: string } | null> {
-  const projectsDir = expandPath(PROJECTS_ROOT);
-  const folders = await getProjectFolders();
+  const projectsDir = expandPath(projectsRootDir);
+  const folders = await getProjectFolders(projectsRootDir);
 
   // First check if it's already a full code (exact match)
   if (folders.includes(codeInput)) {
@@ -82,9 +81,10 @@ export async function resolveProjectCode(
  * Convenience function for Express route handlers
  */
 export async function resolveProjectCodeOrFail(
-  codeInput: string
+  codeInput: string,
+  projectsRootDir: string
 ): Promise<{ code: string; path: string }> {
-  const result = await resolveProjectCode(codeInput);
+  const result = await resolveProjectCode(codeInput, projectsRootDir);
 
   if (!result) {
     throw new Error(`Project not found: ${codeInput}`);

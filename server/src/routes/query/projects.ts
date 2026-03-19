@@ -33,8 +33,6 @@ import type {
   QueryProjectDetail,
 } from '../../../../shared/types.js';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
 /**
  * FR-80: Migrate legacy stage values to new stage model
  */
@@ -54,8 +52,8 @@ function migrateOldStage(oldStage: string | undefined): ProjectStage | undefined
 }
 
 // Get all valid project folders
-async function getProjectFolders(): Promise<string[]> {
-  const projectsDir = expandPath(PROJECTS_ROOT);
+async function getProjectFolders(projectsRootDir: string): Promise<string[]> {
+  const projectsDir = expandPath(projectsRootDir);
 
   if (!(await fs.pathExists(projectsDir))) {
     return [];
@@ -88,8 +86,8 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
     }
 
     try {
-      const folders = await getProjectFolders();
-      const projectsDir = expandPath(PROJECTS_ROOT);
+      const projectsDir = expandPath(getConfig().projectsRootDirectory!);
+      const folders = await getProjectFolders(getConfig().projectsRootDirectory!);
 
       // Find projects matching the prefix
       const matches = folders.filter((code) => code.startsWith(q)).sort();
@@ -129,8 +127,8 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
     const { filter, stage, recent } = req.query;
 
     try {
-      const folders = await getProjectFolders();
-      const projectsDir = expandPath(PROJECTS_ROOT);
+      const projectsDir = expandPath(config.projectsRootDirectory!);
+      const folders = await getProjectFolders(config.projectsRootDirectory!);
       const projects: QueryProjectSummary[] = [];
 
       for (const code of folders) {
@@ -253,7 +251,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-      const resolved = await resolveProjectCode(codeInput);
+      const resolved = await resolveProjectCode(codeInput, getConfig().projectsRootDirectory!);
       if (!resolved) {
         res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
@@ -316,7 +314,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-      const resolved = await resolveProjectCode(codeInput);
+      const resolved = await resolveProjectCode(codeInput, config.projectsRootDirectory!);
       if (!resolved) {
         res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;

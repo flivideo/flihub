@@ -48,7 +48,8 @@ function zipContainsImages(zipPath: string): {
 
 // Get the thumbs directory for the current project
 // NFR-6: Using projectDirectory with getProjectPaths()
-function getThumbsDir(config: Config): string {
+function getThumbsDir(getConfig: () => Config): string {
+  const config = getConfig();
   const paths = getProjectPaths(expandPath(config.projectDirectory));
   return paths.thumbs;
 }
@@ -75,7 +76,7 @@ export interface ZipImagePreview {
   dataUrl: string; // base64 encoded image for preview
 }
 
-export function createThumbRoutes(config: Config): Router {
+export function createThumbRoutes(getConfig: () => Config): Router {
   const router = Router();
 
   // GET /api/thumbs/zips - List ZIP files in ~/Downloads that contain images
@@ -198,7 +199,7 @@ export function createThumbRoutes(config: Config): Router {
         return;
       }
 
-      const thumbsDir = getThumbsDir(config);
+      const thumbsDir = getThumbsDir(getConfig);
       await fs.ensureDir(thumbsDir);
 
       // Clear existing thumbs
@@ -249,7 +250,7 @@ export function createThumbRoutes(config: Config): Router {
   // GET /api/thumbs - List current thumbnails in assets/thumbs/
   router.get('/', async (_req: Request, res: Response) => {
     try {
-      const thumbsDir = getThumbsDir(config);
+      const thumbsDir = getThumbsDir(getConfig);
 
       if (!(await fs.pathExists(thumbsDir))) {
         res.json({ thumbs: [] });
@@ -295,7 +296,7 @@ export function createThumbRoutes(config: Config): Router {
   router.get('/image/:filename', async (req: Request, res: Response) => {
     try {
       const filename = queryString(req.params.filename);
-      const thumbsDir = getThumbsDir(config);
+      const thumbsDir = getThumbsDir(getConfig);
       const filePath = path.join(thumbsDir, filename);
 
       if (!(await fs.pathExists(filePath))) {
@@ -324,7 +325,7 @@ export function createThumbRoutes(config: Config): Router {
         return;
       }
 
-      const thumbsDir = getThumbsDir(config);
+      const thumbsDir = getThumbsDir(getConfig);
 
       if (!(await fs.pathExists(thumbsDir))) {
         res.status(404).json({ success: false, error: 'Thumbnails directory not found' });
@@ -401,7 +402,7 @@ export function createThumbRoutes(config: Config): Router {
   router.delete('/:filename', async (req: Request, res: Response) => {
     try {
       const filename = queryString(req.params.filename);
-      const thumbsDir = getThumbsDir(config);
+      const thumbsDir = getThumbsDir(getConfig);
       const filePath = path.join(thumbsDir, filename);
 
       if (!(await fs.pathExists(filePath))) {

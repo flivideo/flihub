@@ -90,7 +90,9 @@ export async function writeProjectState(projectDir: string, state: ProjectState)
     ...(state.editManifest ? { editManifest: state.editManifest } : {}),
   };
 
-  await fs.writeFile(stateFilePath, JSON.stringify(stateToWrite, null, 2), 'utf-8');
+  const tmpPath = stateFilePath + '.tmp';
+  await fs.writeFile(tmpPath, JSON.stringify(stateToWrite, null, 2), 'utf-8');
+  await fs.rename(tmpPath, stateFilePath);
 }
 
 /**

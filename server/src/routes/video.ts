@@ -18,8 +18,6 @@ import fs from 'fs-extra';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import type { Config } from '../../../shared/types.js';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
 // MIME types for video files
 const VIDEO_MIME_TYPES: Record<string, string> = {
   '.mov': 'video/quicktime',
@@ -67,7 +65,12 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       // Build full path to video file
       // Note: -chapters is inside recordings/ folder
       // FR-83: recording-shadows-safe maps to recording-shadows/-safe
-      const projectsDir = expandPath(PROJECTS_ROOT);
+      const config = getConfig();
+      if (!config.projectsRootDirectory) {
+        res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+        return;
+      }
+      const projectsDir = expandPath(config.projectsRootDirectory);
       let actualFolder: string;
       if (folder === '-chapters') {
         actualFolder = 'recordings/-chapters';

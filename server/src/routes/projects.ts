@@ -23,8 +23,6 @@ import type {
   TranscriptSyncResponse,
 } from '../../../shared/types.js';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
 export function createProjectRoutes(
   getConfig: () => Config,
   saveConfig: (config: Config) => void
@@ -73,7 +71,7 @@ export function createProjectRoutes(
   // GET /api/projects/stats - Get extended stats for all projects
   router.get('/stats', async (_req: Request, res: Response) => {
     const config = getConfig();
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(config.projectsRootDirectory!);
 
     try {
       // Check if projects directory exists
@@ -123,7 +121,7 @@ export function createProjectRoutes(
     }
 
     // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-    const resolved = await resolveProjectCode(codeInput);
+    const resolved = await resolveProjectCode(codeInput, getConfig().projectsRootDirectory!);
     if (!resolved) {
       res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
       return;
@@ -210,7 +208,7 @@ export function createProjectRoutes(
   // FR-48: GET /api/projects/:code/transcript-sync - Get detailed transcript sync status
   router.get('/:code/transcript-sync', async (req: Request, res: Response) => {
     const code = queryString(req.params.code);
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
 
     // Verify project exists
@@ -254,7 +252,7 @@ export function createProjectRoutes(
   // GET /api/projects/:code/final - Get final video and SRT info for a project
   router.get('/:code/final', async (req: Request, res: Response) => {
     const code = queryString(req.params.code);
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
 
     // Verify project exists
@@ -275,7 +273,7 @@ export function createProjectRoutes(
   // GET /api/projects/:code/chapters - FR-34: Extract chapter timestamps from SRT
   router.get('/:code/chapters', async (req: Request, res: Response) => {
     const code = queryString(req.params.code);
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
 
     // Verify project exists
@@ -352,7 +350,7 @@ export function createProjectRoutes(
   // GET /api/projects/:code/chapters/overrides - Get all chapter overrides for a project
   router.get('/:code/chapters/overrides', async (req: Request, res: Response) => {
     const code = queryString(req.params.code);
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
     const overridesPath = path.join(projectPath, '.chapter-overrides.json');
 
@@ -390,7 +388,7 @@ export function createProjectRoutes(
       return;
     }
 
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
     const overridesPath = path.join(projectPath, '.chapter-overrides.json');
 
@@ -454,7 +452,7 @@ export function createProjectRoutes(
     const name = queryString(req.params.name);
     const chapterNum = parseInt(chapter, 10);
 
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
     const overridesPath = path.join(projectPath, '.chapter-overrides.json');
 
@@ -513,7 +511,7 @@ export function createProjectRoutes(
       return;
     }
 
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
 
     // Verify project exists

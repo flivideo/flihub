@@ -17,9 +17,7 @@ import { readFileSafe } from '../../utils/filesystem.js';
 import { formatTranscriptsReport } from '../../utils/reporters.js';
 import type { Config, QueryTranscript } from '../../../../shared/types.js';
 
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
-
-export function createTranscriptsRoutes(_getConfig: () => Config): Router {
+export function createTranscriptsRoutes(getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
 
   // ============================================
@@ -32,7 +30,7 @@ export function createTranscriptsRoutes(_getConfig: () => Config): Router {
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-      const resolved = await resolveProjectCode(codeInput);
+      const resolved = await resolveProjectCode(codeInput, getConfig().projectsRootDirectory!);
       if (!resolved) {
         res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
@@ -135,7 +133,7 @@ export function createTranscriptsRoutes(_getConfig: () => Config): Router {
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-      const resolved = await resolveProjectCode(codeInput);
+      const resolved = await resolveProjectCode(codeInput, getConfig().projectsRootDirectory!);
       if (!resolved) {
         res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;
@@ -188,7 +186,7 @@ export function createTranscriptsRoutes(_getConfig: () => Config): Router {
   router.get('/chapters/:chapterName/srt', async (req: Request, res: Response) => {
     const code = queryString(req.params.code);
     const chapterName = queryString(req.params.chapterName);
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
 
     try {
@@ -231,7 +229,7 @@ export function createTranscriptsRoutes(_getConfig: () => Config): Router {
   router.get('/:recording/srt', async (req: Request, res: Response) => {
     const code = queryString(req.params.code);
     const recording = queryString(req.params.recording);
-    const projectsDir = expandPath(PROJECTS_ROOT);
+    const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
 
     try {

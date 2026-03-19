@@ -361,7 +361,7 @@ export function createRoutes(
     }
 
     try {
-      const projectsRoot = expandPath('~/dev/video-projects/v-appydave');
+      const projectsRoot = expandPath(config.projectsRootDirectory!);
       const projectPath = path.join(projectsRoot, code);
       const recordingsPath = path.join(projectPath, 'recordings');
 

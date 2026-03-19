@@ -14,7 +14,7 @@ import { parseImageFilename, compareImageAssets } from '../../../../shared/namin
 import { formatImagesReport } from '../../utils/reporters.js';
 import type { Config, QueryImage } from '../../../../shared/types.js';
 
-export function createImagesRoutes(_getConfig: () => Config): Router {
+export function createImagesRoutes(getConfig: () => Config): Router {
   const router = Router({ mergeParams: true });
 
   // ============================================
@@ -26,7 +26,7 @@ export function createImagesRoutes(_getConfig: () => Config): Router {
 
     try {
       // FR-119: Resolve short codes (e.g., "c10" -> "c10-poem-epic-3")
-      const resolved = await resolveProjectCode(codeInput);
+      const resolved = await resolveProjectCode(codeInput, getConfig().projectsRootDirectory!);
       if (!resolved) {
         res.status(404).json({ success: false, error: `Project not found: ${codeInput}` });
         return;

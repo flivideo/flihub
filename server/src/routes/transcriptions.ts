@@ -26,7 +26,6 @@ let activeProcess: ChildProcess | null = null;
 const WHISPER_BINARY = '~/.pyenv/versions/3.14.3/bin/mlx_whisper';
 const WHISPER_MODEL = 'mlx-community/whisper-large-v3-turbo';
 const WHISPER_LANGUAGE = 'en';
-const PROJECTS_ROOT = '~/dev/video-projects/v-appydave';
 
 function generateJobId(): string {
   return `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -463,7 +462,7 @@ export function createTranscriptionRoutes(
     // Determine transcripts directory: use project param if provided, else current project
     let transcriptsDir: string;
     if (project && typeof project === 'string') {
-      const projectsDir = expandPath(PROJECTS_ROOT);
+      const projectsDir = expandPath(getConfig().projectsRootDirectory!);
       const projectPath = path.join(projectsDir, project);
       const paths = getProjectPaths(projectPath);
       transcriptsDir = paths.transcripts;
