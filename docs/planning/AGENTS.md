@@ -1,7 +1,7 @@
 # AGENTS.md — FliHub Baseline
 
 **Project**: FliHub — video recording workflow management tool
-**Last updated**: 2026-03-16 (Project Heal — initial baseline from ~45 shipped features)
+**Last updated**: 2026-03-19 (Updated after nfr-146-test-coverage, nfr-code-quality-1, nfr-architecture-refactor campaigns)
 **Purpose**: Operational knowledge for Ralphy agents. Self-contained — an agent receives this file + a work unit prompt and nothing else.
 
 ---
@@ -31,10 +31,11 @@ npm run build -w shared    # ALWAYS run after changing shared/
 npm run build -w server
 npm run build -w client    # tsc -b && vite build
 
-# Run tests (WARNING: shared workspace tests not wired — see Known Issues)
-npm test -w client
+# Run tests (all three workspaces — NFR-146 complete, all real tests)
+npm test                   # runs shared → server → client
+npm test -w shared
 npm test -w server
-npm test -w shared         # must be run separately — no test script in shared/package.json yet
+npm test -w client
 
 # Check if server is running
 lsof -i :5101 | grep LISTEN
@@ -57,16 +58,23 @@ flihub/
 │   ├── components/                # UI components (PascalCase.tsx)
 │   │   └── shared/                # Reusable tool panels (SlideOutDrawer, S3StagingTool, etc.)
 │   ├── hooks/                     # React Query hooks (use*Api.ts pattern)
+│   │   └── useApi.ts              # BARREL RE-EXPORT ONLY — add new hooks to domain files, not here
 │   └── utils/                     # Pure utility functions (formatting, naming)
+│       └── namingControlsUtils.ts # sanitizeCustomTag, shouldShowTemplate (extracted from NamingControls.tsx)
 ├── server/src/
-│   ├── index.ts                   # Express app, Socket.io, config management
+│   ├── index.ts                   # Express app, Socket.io, config push (updateConfig lives here — closes over io)
+│   ├── config/
+│   │   └── configManager.ts       # loadConfig, saveConfig, config migrations — canonical config persistence
 │   ├── routes/                    # Express routers (one file per domain)
 │   └── utils/                     # Server-side utilities (pure functions + I/O)
-│       ├── projectState.ts        # Read/write .flihub-state.json
+│       ├── projectState.ts        # Read/write .flihub-state.json (uses fs-extra, not fs/promises)
 │       ├── renameRecording.ts     # Safe file rename + state migration
 │       ├── pathUtils.ts           # expandPath, queryString
 │       ├── chapterExtraction.ts   # YouTube chapter timestamp logic
-│       └── scanning.ts            # Project file scanning + transcript sync status
+│       ├── scanning.ts            # Project file scanning + transcript sync status
+│       ├── s3Utils.ts             # extractBrand, categorizeMigrationFiles, isPathWithinProject, MigrationActions
+│       ├── poemWuiUtils.ts        # mapBrandConfig, loadBrandConfig, firstWords, readChapterTranscript, findAllSrts, buildFliHubChapters
+│       └── srtUtils.ts            # SRT processing — do NOT add SRT logic to route files
 ├── shared/
 │   ├── types.ts                   # ALL shared TypeScript interfaces
 │   ├── naming.ts                  # Filename parsing, building, validation
@@ -147,6 +155,7 @@ Before marking any work unit complete:
 - [ ] New shared types added to `shared/types.ts` (not duplicated in client or server)
 - [ ] FR annotation comment added to new code (`// FR-XXX: description`)
 - [ ] If the PRD has a Testing Checklist — verify each item manually
+- [ ] `npm test` exits 0 — all 331+ tests pass (zero failures)
 
 ---
 
@@ -233,6 +242,37 @@ The authoritative send route is `POST /api/poem-wui/send` in `server/src/routes/
 - **Do not build a new tool into ManagePanel without using SlideOutDrawer** — the old RegenToolbar/ToolsSidebar approach is legacy.
 - **Do not create a new `IMPLEMENTATION_PLAN.md` at the repo root** — campaign artifacts belong in `docs/planning/[campaign-name]/`.
 - **Do not update the main repo KDD during a Ralphy loop** — local KDD in `docs/planning/[campaign]/learnings/` is the scratchpad; human promotes selectively.
+- **Do not add new hooks directly to `useApi.ts`** — it is now a barrel re-export. Add domain hooks to their own `use*Api.ts` file, then re-export from `useApi.ts`.
+- **Do not add SRT processing logic to route files** — `server/src/utils/srtUtils.ts` is the canonical location.
+- **Do not mock `fs/promises` when testing server utils** — all server I/O uses `fs-extra`. Mock target is `vi.mock('fs-extra')`, not `vi.mock('fs/promises')`.
+
+---
+
+## Mock Patterns
+
+**All server I/O uses `fs-extra`** (standardised in nfr-architecture-refactor). The single mock target is `vi.mock('fs-extra')`.
+
+```typescript
+// Standard server util mock — use this for projectState, configManager, and route files
+vi.mock('fs-extra', () => ({
+  default: {
+    pathExists: vi.fn(),
+    readFile: vi.fn(),
+    writeFile: vi.fn(),
+    ensureDir: vi.fn(),
+    readdir: vi.fn(),
+  },
+}));
+```
+
+**Exception**: `poem-wui.ts` route integration tests still need `vi.mock('fs/promises')` in addition to `vi.mock('fs-extra')` because `readDirSafe` goes through an indirect `fs-extra` wrapper. When in doubt — check the import in the file you're testing.
+
+```typescript
+// configManager.ts tests — mock fs-extra directly
+vi.mock('fs-extra', () => ({ default: { pathExists: vi.fn(), readFile: vi.fn(), writeFile: vi.fn() } }));
+```
+
+**External shell commands** (`dam`, `mlx-whisper`): mock via `vi.mock('../utils/execAsync.js')` or equivalent. Never let real shell commands run in tests.
 
 ---
 
@@ -249,25 +289,55 @@ The authoritative send route is `POST /api/poem-wui/send` in `server/src/routes/
 
 ## Known Issues / Gotchas
 
-1. **Test suite is silently broken.** `npm test` reports 3 passing tests (all placeholders). `shared/naming.test.ts` has 7 failing tests and is never executed — `shared/package.json` has no test script. See NFR-146 before writing any new tests.
+1. **`npm run build -w shared` is easy to forget.** The client and server import from shared via path aliases. If shared types change and you don't rebuild, the app uses stale types silently.
 
-2. **`npm run build -w shared` is easy to forget.** The client and server import from shared via path aliases. If shared types change and you don't rebuild, the app uses stale types silently.
+2. **`server/config.json` is gitignored.** Config changes made during development do not commit. If a Ralphy wave modifies config.json, it will not appear in the diff.
 
-3. **Rename pipeline has zero test coverage.** `renameRecording.ts` — `checkTranscriptionQueue`, `migrateRecordingKey`, `updateManifestFilename` — are the most-used functions in the app and completely untested. Be conservative when modifying this file.
+3. **NFR-141 is permanently cancelled.** Planning docs from Jan 2026 treat it as critical. It was cancelled after discovering scanner bugs. The tag parser in `shared/naming.ts` is correct as-is.
 
-4. **`server/config.json` is gitignored.** Config changes made during development do not commit. If a Ralphy wave modifies config.json, it will not appear in the diff.
+4. **FR-131 Phase 2 may be superseded.** The ManagePanel bulk rename Phase 2 work may have been made obsolete by FR-136/141 toolchain. Confirm before implementing.
 
-5. **NFR-141 is permanently cancelled.** Planning docs from Jan 2026 treat it as critical. It was cancelled after discovering scanner bugs. The tag parser in `shared/naming.ts` is correct as-is.
+5. **`updateConfig` in index.ts is intentionally un-extracted.** It closes over `currentConfig` and `io` (Socket.io) for real-time config push to clients. Do not extract it — the coupling is intentional.
 
-6. **FR-131 Phase 2 may be superseded.** The ManagePanel bulk rename Phase 2 work may have been made obsolete by FR-136/141 toolchain. Confirm before implementing.
+6. **Two config migration paths exist in configManager.ts.** NFR-6 (`targetDirectory → projectDirectory`) and FR-89 (`projectDirectory` split into root + active). Do not remove either without verifying no users have pre-migration config files.
 
-7. **The shared workspace has no test script.** Add `"test": "vitest run"` to `shared/package.json` and update root `npm test` to include `-w shared` as part of NFR-146 work.
+7. **`formatTimestamp`/`formatTime` are locale-sensitive in tests.** Use `/\d{1,2}:\d{2}/` regex patterns rather than exact strings — output depends on `en-US` locale and will break in CI with different locales.
 
 ---
 
 ## Learnings (updated per campaign)
 
-*No campaigns completed yet under Ralphy. This section will accumulate per-wave learnings.*
+### nfr-146-test-coverage (2026-03-16) — Test Coverage Foundation
+
+- `projectState.ts` uses **`fs-extra`**, not `fs/promises` — mock with `{ pathExists, readFile, writeFile }`
+- Prune fires when **all 4 flags** (safe, parked, stage, annotation) are falsy — not just one
+- `parseSrtTimestamp` returns **seconds (float)**, not ms — `'00:02:34,500'` → `154.5`
+- `extractVersion` returns **`number | undefined`** — not string, not null
+- `isAdditionalSegment` takes **2 params** — `(filename, projectCode)`
+- `formatChapterTitle('HELLO-WORLD')` → `''` — all-uppercase treated as tags, nothing left
+- AWB body `{}` (no `ok` field) is treated as **success** — strict `=== false` check
+- `categorizeMigrationFiles` **silently ignores** non-mp4/srt/mov files
+- Server test import paths from `server/src/test/`: routes are `../routes/X.js`, utils are `../utils/X.js`
+
+### nfr-code-quality-1 (2026-03-16) — Code Quality Round 1
+
+- `isPathWithinProject` is now an exported, tested helper in `s3Utils.ts` — use it for all path validation
+- `srtUtils.ts` is the canonical location for SRT processing — do not add SRT logic to route files
+- `loadBrandConfig` returns `{ data, found, path?, error? }` — `error` present when file exists but is corrupt
+- `parseSrtTimestamp` returns `number | null` — callers must handle null (skip the segment)
+- Coverage thresholds (floors, not targets): server lines 16%, functions 20%, branches 18%
+
+### nfr-architecture-refactor (2026-03-16) — Architecture Refactor
+
+- `server/src/config/configManager.ts` owns `loadConfig`, `saveConfig`, config migrations — future config shape changes go here
+- `server/src/utils/s3Utils.ts` owns `extractBrand`, `categorizeMigrationFiles`, `isPathWithinProject`, `MigrationActions`
+- `server/src/utils/poemWuiUtils.ts` owns `mapBrandConfig`, `loadBrandConfig`, `firstWords`, `readChapterTranscript`, `findAllSrts`, `buildFliHubChapters`
+- All server I/O uses `fs-extra` — `vi.mock('fs-extra')` is the single mock target for all server util tests
+- `useApi.ts` is now a **barrel re-export** — add new hooks to domain files, re-export from useApi.ts
+- `readAwbJson` intentionally stays in `poem-wui.ts` — it is infrastructure, not pure domain
+- `useOpenFolder` was a dead duplicate — all components import from `hooks/useOpenFolder.ts` directly
+- Total tests after 3 campaigns: **331** (38 shared, 196 server, 97 client) — verified 2026-03-19
+- `server/src/test/sample.test.ts` is still a placeholder (1+1=2) — a future wave should replace it with a real test
 
 ---
 

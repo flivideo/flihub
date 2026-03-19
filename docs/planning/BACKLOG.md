@@ -1,22 +1,23 @@
 # Project Backlog — FliHub
 
-**Last updated**: 2026-03-16
+**Last updated**: 2026-03-19
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 17 | Pending: 9 | Deferred: 5 | Rejected: 4
+**Total open**: 10 | Pending: 10 | Deferred: 7 | Rejected: 4
 
 ---
 
 ## Pending
 
-- [x] B018 — Code Quality Round 1 | Completed: 2026-03-16 | Campaign: `docs/planning/nfr-code-quality-1/`
-- [x] B019 — Architecture Refactor | Completed: 2026-03-16 | Campaign: `docs/planning/nfr-architecture-refactor/`
-- [x] B013 — Extract Shared Server Utilities (NFR-65) | Absorbed and completed by B019 | 2026-03-16
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
 - [ ] B011 — Standardize Server Error Handling (NFR-67) | Priority: low | PRD: `docs/prd/nfr-67-standardize-error-handling.md`
 - [ ] B012 — Consolidate TypeScript Response Types (NFR-66) | Priority: low | PRD: `docs/prd/nfr-66-consolidate-response-types.md`
 - [ ] B014 — Chapter Tools: Move, Swap, Undo (FR-135) | Priority: low | PRD ready, no user demand yet | PRD: `docs/prd/fr-135-chapter-tools.md`
 - [ ] B003 — Transcript Quick Access Phases 2-3 (FR-114) | Priority: low | Phase 1 complete; phases 2-3 not started | PRD: `docs/prd/fr-114-transcript-quick-access.md`
+- [ ] B020 — React Hook Tests (useSocket.ts + domain useApi hooks) | Priority: low | Suggested by nfr-146 + nfr-architecture-refactor assessments; useApi.ts now partitioned making this feasible
+- [ ] B021 — Playwright E2E: Recording Rename Flow | Priority: low | Suggested by nfr-146 assessment; highest-value E2E scenario not covered by unit tests
+- [ ] B022 — Run vitest --coverage and document real coverage baselines | Priority: low | Suggested by nfr-code-quality-1 assessment; thresholds are floors not targets, actual % unknown
+- [ ] B023 — Replace server/src/test/sample.test.ts placeholder | Priority: low | Discovered 2026-03-19; still contains 1+1=2 smoke test — replace with real server smoke test
 
 ## Deferred
 
@@ -39,7 +40,10 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
-| B017 / NFR-146 | Test Coverage Foundation — 3 placeholders → 298 real tests | 2026-03-16 |
+| B019 | Architecture Refactor (nfr-architecture-refactor) — configManager, s3Utils, poemWuiUtils extracted; useApi.ts barrel; fs-extra unified | 2026-03-16 |
+| B018 | Code Quality Round 1 (nfr-code-quality-1) — srtUtils extracted, path traversal fixed, isPathWithinProject tested, 24 new tests | 2026-03-16 |
+| B013 / NFR-65 | Extract Shared Server Utilities — absorbed and completed by B019 (nfr-architecture-refactor) | 2026-03-16 |
+| B017 / NFR-146 | Test Coverage Foundation — 3 placeholders → 331 real tests (verified 2026-03-19) | 2026-03-16 |
 | FR-145 | Escape Key Closes Video Preview Modal | 2026-03-16 |
 | FR-144 | Send Transcript to POEM WUI / AWB | 2026-03-16 |
 | FR-143 | SRT Clipboard Copy Button | 2026-02-24 |
