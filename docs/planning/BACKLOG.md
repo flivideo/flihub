@@ -2,7 +2,7 @@
 
 **Last updated**: 2026-03-19
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 17 | Pending: 17 | Deferred: 7 | Rejected: 4
+**Total open**: 14 | Pending: 14 | Deferred: 7 | Rejected: 4
 
 ---
 
@@ -17,10 +17,10 @@
 
 ## Test Coverage Gaps (high regression risk — from test-quality audit 2026-03-19)
 
-- [ ] B028 — Test `renameRecording()` orchestration (3-phase pipeline integration) | Priority: high | Core rename pipeline has zero integration coverage; phase-ordering regression and missing transcription-block guard would pass suite silently | Audit: test-quality #1
-- [ ] B029 — Test `extractChapters()` matching logic | Priority: high | 230-line function completely untested; threshold or strategy-weighting regression invisible | Audit: test-quality #2
-- [ ] B030 — Test `client/src/utils/srt.ts` (parseSrt, srtToTimedWords, findCurrentEntry, findCurrentWord) | Priority: high | Powers transcript sync; divide-by-zero on single-word segment unguarded; off-by-one in boundary check invisible | Audit: test-quality #3
-- [ ] B031 — Test `editManifest.ts` (getManifestStatus, cleanEditFolder, restoreEditFolder) | Priority: high | Wrong status logic could allow cleanEditFolder to delete unexported recordings | Audit: test-quality #4
+- [x] B028 — Test `renameRecording()` orchestration | Completed: test-coverage-gaps-2 | +8 tests
+- [x] B029 — Test `extractChapters()` matching logic | Completed: test-coverage-gaps-2 | +25 tests, 3 exports added
+- [x] B030 — Test `client/src/utils/srt.ts` | Completed: test-coverage-gaps-2 | +29 tests
+- [x] B031 — Test `editManifest.ts` | Completed: test-coverage-gaps-2 | +24 tests
 - [ ] B032 — Test `shared/naming.ts` missing functions (parseImageFilename, buildImageFilename, findNextSequence, calculateSuggestedNaming) | Priority: medium | Image filename parsing and suggested-naming logic completely untested | Audit: test-quality #5
 
 ## Structural Debt (from architecture + code-quality audits 2026-03-19)
@@ -34,6 +34,8 @@
 ---
 
 ## Feature Backlog
+
+- [ ] B038 — Relay Collaboration Phase 1 (push/collect recordings + edits via rsync + relay folder) | Priority: high | Dry-run diff preview before confirm. Same/same path mirroring between `v-appydave/b17/` and `~/relay/flihub-appydave/b17/`. Bidirectional: David pushes recordings, Jan pushes edits back. PRD: `docs/planning/requirements-relay-collaboration.md` + `docs/planning/requirements-workflow-braindump-2026-03-19.md` + `docs/planning/architectural-review-relay-2026-03-19.md`
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`

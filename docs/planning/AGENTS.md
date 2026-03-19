@@ -333,6 +333,16 @@ vi.mock('fs-extra', () => ({ default: { pathExists: vi.fn(), readFile: vi.fn(), 
 - `parseSrtTimestamp` returns `number | null` — callers must handle null (skip the segment)
 - Coverage thresholds (floors, not targets): server lines 16%, functions 20%, branches 18%
 
+### test-coverage-gaps-2 (2026-03-19) — Test Coverage Round 2
+
+- **ESM `vi.spyOn` cannot intercept internal module calls** — verify phase ordering through mocked external dependencies (e.g. `fs.unlink` before `fs.rename`), not by spying on sibling functions in the same module
+- **`calculateFileHash` uses `fs.promises.open`** — mock must include `{ default: { promises: { open: vi.fn() } } }` returning a fake FileHandle with `read()` and `close()`. Standard `readFile` mock is insufficient.
+- **`SrtSegment` interface is not exported** from `chapterExtraction.ts` — tests construct fixtures as structural literals; alternatively add `export` (one-line fix)
+- **Conditional assertions silently pass on false negatives** — `if (result !== null) { expect(...) }` without a prior `expect(result).not.toBeNull()` is a latent bug. Always assert null/non-null state before branching.
+- **3 new exports in `chapterExtraction.ts`**: `normalizeText`, `calculateSimilarity`, `findMatchInSrt` — all pure, stateless, safe to export. Missing `// NFR-146: exported for unit testing` annotation.
+- **Total tests after campaign: 447** (390 baseline + 57 new)
+- **`dist/` test duplication**: vitest runs both `src/test/*.ts` and `dist/server/src/test/*.js`. The dist files lag behind until `npm run build -w server` is run. Cosmetic — not a real failure.
+
 ### nfr-architecture-refactor (2026-03-16) — Architecture Refactor
 
 - `server/src/config/configManager.ts` owns `loadConfig`, `saveConfig`, config migrations — future config shape changes go here

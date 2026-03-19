@@ -221,7 +221,7 @@ function toDisplayName(name: string): string {
  * - Remove punctuation
  * - Collapse whitespace
  */
-function normalizeText(text: string): string {
+export function normalizeText(text: string): string {
   return text
     .toLowerCase()
     .replace(/[^\w\s]/g, '') // Remove punctuation
@@ -236,7 +236,7 @@ const SIMILARITY_THRESHOLD = 0.6; // Reject matches below this score
  * Calculate combined similarity score using Trigram, SorensenDice, and Jaro
  * Returns a score between 0 and 1
  */
-function calculateSimilarity(
+export function calculateSimilarity(
   text1: string,
   text2: string
 ): {
@@ -349,7 +349,7 @@ export function calculateConfidence(match: MatchResult): number {
  * @param excludeSegments - Set of segment indices to exclude (for resolving duplicates)
  * @param skipFirstWords - Number of words to skip from start (for resolving duplicates)
  */
-function findMatchInSrt(
+export function findMatchInSrt(
   chapterText: string,
   segments: SrtSegment[],
   excludeSegments: Set<number> = new Set(),
