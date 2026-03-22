@@ -6,6 +6,8 @@
  * - Export to Gling AI (FR-122/124/125/126)
  * - Edit folder management
  * - Visual style matching RecordingsView
+ *
+ * B041: Tool pages — each tool owns center content, no slide-out drawers.
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
@@ -17,7 +19,6 @@ import {
   LoadingSpinner,
   ErrorMessage,
   ToolsSidebar,
-  SlideOutDrawer,
   ConfirmationModal,
   GlingEditTool,
   RelayTool,
@@ -73,6 +74,17 @@ function groupByChapter(recordings: RecordingFile[]): ChapterGroup[] {
   return result.sort((a, b) => parseInt(a.chapterKey) - parseInt(b.chapterKey));
 }
 
+// B041: Contextual headings per tool
+const toolHeadings: Record<string, string> = {
+  regen: 'Recordings',
+  rename: 'Rename Recordings',
+  renumber: 'Chapter Management',
+  'gling-edit': 'Gling / Edit Prep',
+  relay: 'Relay Collaboration',
+};
+
+type ActiveTool = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay';
+
 export function ManagePanel() {
   const { data, isLoading, error } = useRecordings();
   const { data: config } = useConfig();
@@ -82,12 +94,8 @@ export function ManagePanel() {
   // B038: relay collaboration — git pull-only sync
   const gitSync = useGitSync();
 
-  // FR-138: Bulk rename (removed - now handled in RenamePanel)
-  // const [bulkRenameLabel, setBulkRenameLabel] = useState('')
-  // const [isRenaming, setIsRenaming] = useState(false)
-
-  // FR-136: Tool-oriented design (FR-139: removed 'folders', FR-140: added 'renumber', FR-142: split export-s3 into gling-edit + s3-staging, B038: added relay)
-  const [activeTool, setActiveTool] = useState<'rename' | 'gling-edit' | 'renumber' | 'relay' | null>(null);
+  // B041: Tool-oriented design — each tool owns center content, default to regen
+  const [activeTool, setActiveTool] = useState<ActiveTool>('regen');
 
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -204,8 +212,6 @@ export function ManagePanel() {
     return { selectedCount: count, selectedSize: size };
   }, [data?.recordings, selectedFiles]);
 
-  // FR-131: No auto-selection - user must manually select files
-
   // Select all files
   const selectAll = useCallback(() => {
     const recordings = data?.recordings || [];
@@ -255,19 +261,10 @@ export function ManagePanel() {
     });
   }, []);
 
-  // FR-138: Bulk rename - now handled in RenamePanel component
-  // (handleBulkRename removed)
-
-  // FR-136: Tool handlers
-  const handleSimpleToolClick = (
-    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-all' | 'git-sync'
+  // B041: Regen action handler (inline buttons trigger confirmation modal)
+  const handleRegenClick = (
+    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-all'
   ) => {
-    // B038: relay collaboration — git pull-only sync
-    if (tool === 'git-sync') {
-      gitSync.mutate();
-      return;
-    }
-
     const selectedFilesArray = Array.from(selectedFiles);
 
     // Determine scope
@@ -379,8 +376,14 @@ export function ManagePanel() {
     });
   };
 
-  const handleComplexToolClick = (tool: 'rename' | 'gling-edit' | 'renumber' | 'relay') => {
-    setActiveTool(activeTool === tool ? null : tool);
+  // B041: Git Sync handler (separate from tool navigation)
+  const handleGitSync = () => {
+    gitSync.mutate();
+  };
+
+  // B041: Tool navigation — clicking same tool returns to regen (default)
+  const handleToolClick = (tool: ActiveTool) => {
+    setActiveTool(activeTool === tool ? 'regen' : tool);
   };
 
   if (isLoading) {
@@ -407,212 +410,225 @@ export function ManagePanel() {
   const parkedFiles = data.recordings.filter((r) => r.isParked).length;
   const activeFiles = totalFiles - parkedFiles;
 
+  // B041: Determine if the active tool needs the file list
+  const needsFileList = activeTool === 'regen' || activeTool === 'rename' || activeTool === 'renumber';
+
   return (
     <div className="relative">
-      {/* FR-136: Center Content - 896px centered */}
+      {/* B041: Center Content — tool-specific views */}
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Stats and filter toggle - matching RecordingsView style */}
-        <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
-          <span className="text-gray-700 font-medium">
-            {selectedCount} of {filteredRecordings.length} selected
-            <span className="font-normal text-gray-400 ml-1">({formatFileSize(selectedSize)})</span>
-            <span className="font-normal text-gray-400 ml-1">
-              | {activeFiles} active, {parkedFiles} parked
-            </span>
-          </span>
-          <span className="text-gray-300">|</span>
-          <label className="flex items-center gap-1.5 cursor-pointer hover:text-gray-700">
-            <input
-              type="checkbox"
-              checked={showParked}
-              onChange={(e) => setShowParked(e.target.checked)}
-              className="w-3 h-3 rounded border-gray-300 text-pink-500 focus:ring-pink-500"
-            />
-            Show Parked
-          </label>
-          <span className="text-gray-300">|</span>
-          {selectedCount === 0 ? (
-            <button
-              onClick={selectAll}
-              className="text-xs text-blue-600 hover:text-blue-700 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
-            >
-              Select All
-            </button>
-          ) : (
-            <button
-              onClick={clearSelection}
-              className="text-xs text-gray-600 hover:text-gray-700 px-2 py-0.5 hover:bg-gray-50 rounded transition-colors"
-            >
-              Clear Selection
-            </button>
-          )}
-        </div>
+        {/* B041: Contextual heading per tool */}
+        <h2 className="text-lg font-medium text-gray-700 mb-4">
+          {toolHeadings[activeTool]}
+        </h2>
 
-        {/* FR-136: Bulk Rename moved to slide-out drawer */}
-
-        {/* Recordings list - matching RecordingsView style */}
-        <div className="space-y-6">
-          {chapters.map((chapterData) => {
-            const selectedInChapter = chapterData.files.filter((f) =>
-              selectedFiles.has(f.filename)
-            ).length;
-            const allSelected = selectedInChapter === chapterData.files.length;
-            const someSelected = selectedInChapter > 0 && !allSelected;
-
-            return (
-              <div key={chapterData.chapterKey}>
-                {/* Chapter separator - matching RecordingsView */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-px bg-gray-300 flex-1" />
-                  <span className="text-sm font-semibold px-2 text-gray-700">
-                    {chapterData.chapterKey} {formatChapterTitle(chapterData.title)}
-                    <span className="font-normal text-xs ml-2">
-                      ({chapterData.files.length} file{chapterData.files.length !== 1 ? 's' : ''} ·{' '}
-                      {formatFileSize(chapterData.totalSize)})
-                    </span>
-                  </span>
-                  {/* Chapter-level select/deselect */}
-                  {someSelected ? (
-                    <button
-                      onClick={() => deselectAllInChapter(chapterData)}
-                      className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
-                    >
-                      ☐ Deselect{' '}
-                      <span className="text-blue-600 font-medium">{chapterData.chapterKey}</span>
-                    </button>
-                  ) : allSelected ? (
-                    <button
-                      onClick={() => deselectAllInChapter(chapterData)}
-                      className="text-xs text-blue-600 hover:text-gray-500 px-2 py-0.5 hover:bg-gray-50 rounded transition-colors"
-                    >
-                      ☑ Deselect <span className="font-medium">{chapterData.chapterKey}</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => selectAllInChapter(chapterData)}
-                      className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
-                    >
-                      ☐ Select{' '}
-                      <span className="text-blue-600 font-medium">{chapterData.chapterKey}</span>
-                    </button>
-                  )}
-                  <div className="h-px bg-gray-300 flex-1" />
-                </div>
-
-                {/* Files in this chapter - matching RecordingsView */}
-                <div className="space-y-1">
-                  {chapterData.files.map((file) => {
-                    const isSelected = selectedFiles.has(file.filename);
-                    const isParked = file.isParked;
-
-                    // Determine row styling - matching RecordingsView
-                    let rowClasses: string;
-                    let textClasses: string;
-
-                    if (isParked) {
-                      rowClasses = 'bg-pink-50 border-pink-200 text-gray-500';
-                      textClasses = 'text-gray-500';
-                    } else if (isSelected) {
-                      rowClasses = 'bg-blue-50 border-blue-200';
-                      textClasses = 'text-gray-700';
-                    } else {
-                      rowClasses = 'bg-gray-50 border-gray-200';
-                      textClasses = 'text-gray-500';
-                    }
-
-                    return (
-                      <label
-                        key={file.filename}
-                        className={`flex items-center justify-between px-4 py-2 rounded-lg border cursor-pointer hover:border-blue-300 transition-colors ${rowClasses}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleFile(file.filename)}
-                            className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
-                          />
-                          <span className={`font-mono text-sm ${textClasses}`}>
-                            {file.filename}
-                          </span>
-                          {isParked && (
-                            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-pink-200 text-pink-800 rounded">
-                              PARKED
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-sm text-gray-400 ml-4">
-                          {formatFileSize(file.size || 0)}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
+        {needsFileList ? (
+          <>
+            {/* B041: Regen inline toolbar — only when regen is active */}
+            {activeTool === 'regen' && (
+              <div className="flex items-center gap-2 mb-4">
+                <button
+                  onClick={() => handleRegenClick('regen-shadows')}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                >
+                  Regen Shadows
+                </button>
+                <button
+                  onClick={() => handleRegenClick('regen-transcripts')}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                >
+                  Regen Transcripts
+                </button>
+                <button
+                  onClick={() => handleRegenClick('regen-all')}
+                  className="px-3 py-1.5 text-sm font-medium text-orange-600 bg-white border border-orange-300 rounded-md hover:bg-orange-50 hover:text-orange-700 transition-colors"
+                >
+                  Regen All
+                </button>
               </div>
-            );
-          })}
-        </div>
+            )}
+
+            {/* B041: Rename panel — inline above file list */}
+            {activeTool === 'rename' && (
+              <div className="mb-6 border border-gray-200 rounded-lg p-4 bg-white">
+                <RenamePanel
+                  selectedFiles={Array.from(selectedFiles)}
+                  onClose={() => setActiveTool('regen')}
+                  onSuccess={() => {
+                    setSelectedFiles(new Set());
+                  }}
+                />
+              </div>
+            )}
+
+            {/* B041: Renumber — inline above file list */}
+            {activeTool === 'renumber' && (
+              <div className="mb-6">
+                <ChapterListPanel
+                  recordings={data.recordings.map((r) => r.filename)}
+                  onClose={() => setActiveTool('regen')}
+                />
+              </div>
+            )}
+
+            {/* Stats and filter toggle - matching RecordingsView style */}
+            <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
+              <span className="text-gray-700 font-medium">
+                {selectedCount} of {filteredRecordings.length} selected
+                <span className="font-normal text-gray-400 ml-1">({formatFileSize(selectedSize)})</span>
+                <span className="font-normal text-gray-400 ml-1">
+                  | {activeFiles} active, {parkedFiles} parked
+                </span>
+              </span>
+              <span className="text-gray-300">|</span>
+              <label className="flex items-center gap-1.5 cursor-pointer hover:text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={showParked}
+                  onChange={(e) => setShowParked(e.target.checked)}
+                  className="w-3 h-3 rounded border-gray-300 text-pink-500 focus:ring-pink-500"
+                />
+                Show Parked
+              </label>
+              <span className="text-gray-300">|</span>
+              {selectedCount === 0 ? (
+                <button
+                  onClick={selectAll}
+                  className="text-xs text-blue-600 hover:text-blue-700 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
+                >
+                  Select All
+                </button>
+              ) : (
+                <button
+                  onClick={clearSelection}
+                  className="text-xs text-gray-600 hover:text-gray-700 px-2 py-0.5 hover:bg-gray-50 rounded transition-colors"
+                >
+                  Clear Selection
+                </button>
+              )}
+            </div>
+
+            {/* Recordings list - matching RecordingsView style */}
+            <div className="space-y-6">
+              {chapters.map((chapterData) => {
+                const selectedInChapter = chapterData.files.filter((f) =>
+                  selectedFiles.has(f.filename)
+                ).length;
+                const allSelected = selectedInChapter === chapterData.files.length;
+                const someSelected = selectedInChapter > 0 && !allSelected;
+
+                return (
+                  <div key={chapterData.chapterKey}>
+                    {/* Chapter separator - matching RecordingsView */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-px bg-gray-300 flex-1" />
+                      <span className="text-sm font-semibold px-2 text-gray-700">
+                        {chapterData.chapterKey} {formatChapterTitle(chapterData.title)}
+                        <span className="font-normal text-xs ml-2">
+                          ({chapterData.files.length} file{chapterData.files.length !== 1 ? 's' : ''} ·{' '}
+                          {formatFileSize(chapterData.totalSize)})
+                        </span>
+                      </span>
+                      {/* Chapter-level select/deselect */}
+                      {someSelected ? (
+                        <button
+                          onClick={() => deselectAllInChapter(chapterData)}
+                          className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
+                        >
+                          ☐ Deselect{' '}
+                          <span className="text-blue-600 font-medium">{chapterData.chapterKey}</span>
+                        </button>
+                      ) : allSelected ? (
+                        <button
+                          onClick={() => deselectAllInChapter(chapterData)}
+                          className="text-xs text-blue-600 hover:text-gray-500 px-2 py-0.5 hover:bg-gray-50 rounded transition-colors"
+                        >
+                          ☑ Deselect <span className="font-medium">{chapterData.chapterKey}</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => selectAllInChapter(chapterData)}
+                          className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
+                        >
+                          ☐ Select{' '}
+                          <span className="text-blue-600 font-medium">{chapterData.chapterKey}</span>
+                        </button>
+                      )}
+                      <div className="h-px bg-gray-300 flex-1" />
+                    </div>
+
+                    {/* Files in this chapter - matching RecordingsView */}
+                    <div className="space-y-1">
+                      {chapterData.files.map((file) => {
+                        const isSelected = selectedFiles.has(file.filename);
+                        const isParked = file.isParked;
+
+                        // Determine row styling - matching RecordingsView
+                        let rowClasses: string;
+                        let textClasses: string;
+
+                        if (isParked) {
+                          rowClasses = 'bg-pink-50 border-pink-200 text-gray-500';
+                          textClasses = 'text-gray-500';
+                        } else if (isSelected) {
+                          rowClasses = 'bg-blue-50 border-blue-200';
+                          textClasses = 'text-gray-700';
+                        } else {
+                          rowClasses = 'bg-gray-50 border-gray-200';
+                          textClasses = 'text-gray-500';
+                        }
+
+                        return (
+                          <label
+                            key={file.filename}
+                            className={`flex items-center justify-between px-4 py-2 rounded-lg border cursor-pointer hover:border-blue-300 transition-colors ${rowClasses}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleFile(file.filename)}
+                                className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                              />
+                              <span className={`font-mono text-sm ${textClasses}`}>
+                                {file.filename}
+                              </span>
+                              {isParked && (
+                                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-pink-200 text-pink-800 rounded">
+                                  PARKED
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-sm text-gray-400 ml-4">
+                              {formatFileSize(file.size || 0)}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* B041: Standalone tools — full-width, no file list */}
+            {activeTool === 'relay' && <RelayTool />}
+            {activeTool === 'gling-edit' && <GlingEditTool />}
+          </>
+        )}
       </div>
 
-      {/* FR-136: Left Sidebar - Fixed in left margin */}
+      {/* B041: Left Sidebar - Fixed in left margin, pure navigation */}
       <div className="fixed left-8 top-32 bottom-8 w-[200px] z-30">
         <ToolsSidebar
-          selectedFiles={Array.from(selectedFiles)}
-          totalFiles={filteredRecordings.length}
           activeTool={activeTool}
-          onSimpleToolClick={handleSimpleToolClick}
-          onComplexToolClick={handleComplexToolClick}
+          onToolClick={handleToolClick}
+          onGitSync={handleGitSync}
           isGitSyncPending={gitSync.isPending}
         />
       </div>
-
-      {/* FR-138: Rename Tool - Full-featured rename drawer */}
-      <SlideOutDrawer
-        isOpen={activeTool === 'rename'}
-        title="Rename Tool"
-        onClose={() => setActiveTool(null)}
-        width="w-[600px]"
-      >
-        <RenamePanel
-          selectedFiles={Array.from(selectedFiles)}
-          onClose={() => setActiveTool(null)}
-          onSuccess={() => {
-            // Clear selection after successful rename
-            setSelectedFiles(new Set());
-          }}
-        />
-      </SlideOutDrawer>
-
-      <SlideOutDrawer
-        isOpen={activeTool === 'gling-edit'}
-        title="Gling / Edit Prep"
-        onClose={() => setActiveTool(null)}
-        width="w-[560px]"
-      >
-        <GlingEditTool />
-      </SlideOutDrawer>
-
-      {/* B038: relay collaboration */}
-      <SlideOutDrawer
-        isOpen={activeTool === 'relay'}
-        title="Relay Collaboration"
-        onClose={() => setActiveTool(null)}
-        width="w-[700px]"
-      >
-        <RelayTool />
-      </SlideOutDrawer>
-
-      <SlideOutDrawer
-        isOpen={activeTool === 'renumber'}
-        title="Chapter Management"
-        onClose={() => setActiveTool(null)}
-        width="w-[600px]"
-      >
-        <ChapterListPanel
-          recordings={data.recordings.map((r) => r.filename)}
-          onClose={() => setActiveTool(null)}
-        />
-      </SlideOutDrawer>
 
       {/* Confirmation Modal */}
       {confirmationModal && (

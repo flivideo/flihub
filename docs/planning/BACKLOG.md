@@ -2,7 +2,7 @@
 
 **Last updated**: 2026-03-22
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 15 | Pending: 14 | In Progress: 1 | Deferred: 7 | Rejected: 4
+**Total open**: 14 | Pending: 13 | In Progress: 1 | Deferred: 7 | Rejected: 4
 
 ---
 
@@ -35,8 +35,8 @@
 
 ## Feature Backlog
 
-- [ ] B041 — Manage page redesign — rethink "Manage & Export" as context-sensitive tool pages, not a generic shell with drawers | Priority: high | Feedback: F002, F003
-- [ ] B042 — Remove Regen Chapters from ToolsSidebar (temporary system, no longer useful) | Priority: medium | Feedback: F001
+- [~] B041 — Manage page redesign — rethink "Manage & Export" as context-sensitive tool pages, not a generic shell with drawers | Priority: high | Feedback: F002, F003 | Campaign: manage-page-redesign
+- [x] B042 — Remove Regen Chapters from ToolsSidebar (temporary system, no longer useful) | Priority: medium | Feedback: F001 | Completed: pre-campaign quick fix
 - [ ] B043 — Type relay API responses and add HTTP status checking in hooks (audit M1, M2, M4) | Priority: medium | Audit: code-quality 2026-03-22
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`

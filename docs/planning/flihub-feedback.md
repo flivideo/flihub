@@ -12,13 +12,6 @@ The Manage page layout and naming continues to be a pain point. "Manage & Export
 
 ## Open Items
 
-### F001 — Remove "Regen Chapters" from sidebar
-**Type**: feature
-**Priority**: medium
-**Where**: ToolsSidebar.tsx — Record group
-**What I saw**: "Regen Chapters" button in the sidebar
-**What I expected**: This is a temporary chapter system that's no longer useful — remove it from the sidebar
-
 ### F002 — "Manage & Export" heading is meaningless noise
 **Type**: ux
 **Priority**: high
@@ -37,4 +30,6 @@ The Manage page layout and naming continues to be a pain point. "Manage & Export
 
 ## Resolved
 
-(none yet)
+| ID | Title | Resolution | Round |
+|----|-------|-----------|-------|
+| F001 | Remove "Regen Chapters" from sidebar | Removed button + narrowed type union. Server route preserved for Regen All. | Pre-campaign quick fix (B042) |

@@ -1,5 +1,6 @@
 // FR-140: Visual Chapter Management with Click-to-Rename
 import { useState, useMemo } from 'react';
+import { toast } from 'sonner';
 import { parseRecordingFilename } from '../../../../shared/naming';
 
 interface ChapterListPanelProps {
@@ -73,11 +74,10 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
         const result = await response.json();
 
         if (result.success) {
-          console.log(`[FR-140] Swapped chapters ${oldChapter} ↔ ${newChapter}`);
-          // Trigger re-fetch via parent (recordings will update via Socket.io)
-          window.location.reload(); // Simple approach - Socket.io will handle in production
+          toast.success(`Swapped chapters ${oldChapter} ↔ ${newChapter}`);
+          onClose();
         } else {
-          alert(`Failed to swap chapters: ${result.error}`);
+          toast.error(`Failed to swap chapters: ${result.error}`);
         }
       } else {
         // RENAME: oldChapter → newChapter
@@ -93,18 +93,17 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
         const result = await response.json();
 
         if (result.success) {
-          console.log(
-            `[FR-140] Renamed chapter ${oldChapter} → ${newChapter} (${result.filesRenamed} files)`
+          toast.success(
+            `Renamed chapter ${oldChapter} → ${newChapter} (${result.filesRenamed} files)`
           );
-          // Trigger re-fetch via parent
-          window.location.reload();
+          onClose();
         } else {
-          alert(`Failed to rename chapter: ${result.error}`);
+          toast.error(`Failed to rename chapter: ${result.error}`);
         }
       }
     } catch (err) {
       console.error('[FR-140] Rename error:', err);
-      alert('Failed to rename chapter');
+      toast.error('Failed to rename chapter');
     } finally {
       setIsRenaming(false);
       setEditingChapter(null);
@@ -124,7 +123,7 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
     const newChapter = parseInt(editValue, 10);
 
     if (isNaN(newChapter) || newChapter < 1 || newChapter > 99) {
-      alert('Chapter number must be between 01 and 99');
+      toast.error('Chapter number must be between 01 and 99');
       return;
     }
 
@@ -138,103 +137,85 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Chapter Management</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
-            disabled={isRenaming}
-          >
-            ×
-          </button>
-        </div>
+    <div className="space-y-4">
+      {/* Chapter List */}
+      <div className="space-y-2">
+        {chapters.map((chapter, index) => {
+          const isEditing = editingChapter === chapter.number;
+          const previousChapter = index > 0 ? chapters[index - 1].number : 0;
+          const hasGap = chapter.number - previousChapter > 1;
 
-        {/* Chapter List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {chapters.map((chapter, index) => {
-            const isEditing = editingChapter === chapter.number;
-            const previousChapter = index > 0 ? chapters[index - 1].number : 0;
-            const hasGap = chapter.number - previousChapter > 1;
-
-            return (
-              <div key={chapter.number}>
-                {/* Gap Indicator */}
-                {hasGap &&
-                  gaps.map((gap) => {
-                    if (gap > previousChapter && gap < chapter.number) {
-                      return (
-                        <div
-                          key={gap}
-                          className="text-sm text-yellow-600 bg-yellow-50 px-3 py-2 rounded mb-2"
-                        >
-                          ⚠️ Gap at {String(gap).padStart(2, '0')}
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
-
-                {/* Chapter Panel */}
-                <div className="border border-gray-200 rounded-lg p-3 bg-white hover:border-blue-300 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">📄</span>
-
-                    {isEditing ? (
-                      <div className="flex-1 flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Chapter</span>
-                        <input
-                          type="text"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          onBlur={saveEdit}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') saveEdit();
-                            if (e.key === 'Escape') cancelEdit();
-                          }}
-                          maxLength={2}
-                          autoFocus
-                          className="w-14 px-2 py-1 border border-blue-500 rounded text-center font-mono"
-                          disabled={isRenaming}
-                        />
-                        <span className="text-sm text-gray-500">
-                          ({chapter.fileCount} {chapter.fileCount === 1 ? 'file' : 'files'})
-                        </span>
+          return (
+            <div key={chapter.number}>
+              {/* Gap Indicator */}
+              {hasGap &&
+                gaps.map((gap) => {
+                  if (gap > previousChapter && gap < chapter.number) {
+                    return (
+                      <div
+                        key={gap}
+                        className="text-sm text-yellow-600 bg-yellow-50 px-3 py-2 rounded mb-2"
+                      >
+                        ⚠️ Gap at {String(gap).padStart(2, '0')}
                       </div>
-                    ) : (
-                      <div className="flex-1 flex items-center gap-2">
-                        <button
-                          onClick={() => startEditing(chapter.number)}
-                          className="px-2 py-1 hover:bg-blue-50 rounded font-mono font-semibold text-blue-600 hover:text-blue-700"
-                          disabled={isRenaming}
-                        >
-                          Chapter {String(chapter.number).padStart(2, '0')}
-                        </button>
-                        <span className="text-sm text-gray-500">
-                          ({chapter.fileCount} {chapter.fileCount === 1 ? 'file' : 'files'})
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                    );
+                  }
+                  return null;
+                })}
+
+              {/* Chapter Panel */}
+              <div className="border border-gray-200 rounded-lg p-3 bg-white hover:border-blue-300 transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📄</span>
+
+                  {isEditing ? (
+                    <div className="flex-1 flex items-center gap-2">
+                      <span className="text-sm text-gray-600">Chapter</span>
+                      <input
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={saveEdit}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEdit();
+                          if (e.key === 'Escape') cancelEdit();
+                        }}
+                        maxLength={2}
+                        autoFocus
+                        className="w-14 px-2 py-1 border border-blue-500 rounded text-center font-mono"
+                        disabled={isRenaming}
+                      />
+                      <span className="text-sm text-gray-500">
+                        ({chapter.fileCount} {chapter.fileCount === 1 ? 'file' : 'files'})
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex items-center gap-2">
+                      <button
+                        onClick={() => startEditing(chapter.number)}
+                        className="px-2 py-1 hover:bg-blue-50 rounded font-mono font-semibold text-blue-600 hover:text-blue-700"
+                        disabled={isRenaming}
+                      >
+                        Chapter {String(chapter.number).padStart(2, '0')}
+                      </button>
+                      <span className="text-sm text-gray-500">
+                        ({chapter.fileCount} {chapter.fileCount === 1 ? 'file' : 'files'})
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
 
-          {chapters.length === 0 && (
-            <div className="text-center text-gray-400 py-8">No chapters found</div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="border-t p-4 bg-gray-50">
-          <p className="text-sm text-gray-600">
-            Click any chapter number to rename it. Auto-swaps if target exists.
-          </p>
-        </div>
+        {chapters.length === 0 && (
+          <div className="text-center text-gray-400 py-8">No chapters found</div>
+        )}
       </div>
+      <p className="text-sm text-gray-500">
+        Click any chapter number to rename it. Auto-swaps if target exists.
+      </p>
     </div>
   );
 }

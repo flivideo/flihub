@@ -4,33 +4,26 @@
 /**
  * ToolsSidebar - Vertical tool palette for Manage Panel
  *
- * FR-136: Tool-oriented design, grouped by workflow stage:
- * - Record: Regen operations (shadows, transcripts, chapters, all)
- * - Edit: Rename, Gling / Edit, Renumber
- * - Collaborate: Git Sync, Relay
+ * B041: Pure navigation sidebar — each tool click swaps center content.
+ * Regen actions are now inline in the center content, not sidebar buttons.
+ * Git Sync is a separate action (not a tool page).
  */
 
+type ToolType = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay';
+
 interface ToolsSidebarProps {
-  selectedFiles: string[];
-  totalFiles: number;
   activeTool: string | null;
-  onSimpleToolClick: (
-    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-all' | 'git-sync'
-  ) => void;
-  onComplexToolClick: (tool: 'rename' | 'gling-edit' | 'renumber' | 'relay') => void;
+  onToolClick: (tool: ToolType) => void;
+  onGitSync: () => void;
   isGitSyncPending?: boolean;
 }
 
 export function ToolsSidebar({
-  selectedFiles,
-  totalFiles,
   activeTool,
-  onSimpleToolClick,
-  onComplexToolClick,
+  onToolClick,
+  onGitSync,
   isGitSyncPending = false,
 }: ToolsSidebarProps) {
-  const disabled = totalFiles === 0;
-
   return (
     <div className="h-full bg-gray-50 border-r border-gray-200 p-4 flex flex-col gap-6">
       {/* Record group */}
@@ -40,43 +33,10 @@ export function ToolsSidebar({
         </div>
         <div className="flex flex-col gap-1">
           <ToolButton
-            label="Regen Shadows"
-            disabled={disabled}
-            active={false}
-            onClick={() => onSimpleToolClick('regen-shadows')}
-            tooltip={
-              disabled
-                ? 'No files'
-                : selectedFiles.length > 0
-                  ? `Regenerate shadows for ${selectedFiles.length} selected`
-                  : `Regenerate shadows for all ${totalFiles}`
-            }
-          />
-          <ToolButton
-            label="Regen Transcripts"
-            disabled={disabled}
-            active={false}
-            onClick={() => onSimpleToolClick('regen-transcripts')}
-            tooltip={
-              disabled
-                ? 'No files'
-                : selectedFiles.length > 0
-                  ? `Queue ${selectedFiles.length} for transcription`
-                  : `Queue all ${totalFiles} for transcription`
-            }
-          />
-          <ToolButton
-            label="Regen All"
-            disabled={disabled}
-            active={false}
-            onClick={() => onSimpleToolClick('regen-all')}
-            tooltip={
-              disabled
-                ? 'No files'
-                : selectedFiles.length > 0
-                  ? `Regen all for ${selectedFiles.length} selected`
-                  : `Regenerate all derivative files`
-            }
+            label="Regen"
+            active={activeTool === 'regen'}
+            onClick={() => onToolClick('regen')}
+            tooltip="Regenerate shadows, transcripts, and chapters"
           />
         </div>
       </div>
@@ -89,28 +49,21 @@ export function ToolsSidebar({
         <div className="flex flex-col gap-1">
           <ToolButton
             label="Rename"
-            disabled={selectedFiles.length === 0}
             active={activeTool === 'rename'}
-            onClick={() => onComplexToolClick('rename')}
-            tooltip={
-              selectedFiles.length === 0
-                ? 'Select files to rename'
-                : `Rename ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}`
-            }
+            onClick={() => onToolClick('rename')}
+            tooltip="Rename selected recordings"
           />
           <ToolButton
             label="Gling / Edit"
-            disabled={false}
             active={activeTool === 'gling-edit'}
-            onClick={() => onComplexToolClick('gling-edit')}
+            onClick={() => onToolClick('gling-edit')}
             tooltip="Gling preparation & edit folders"
           />
           <ToolButton
             label="Renumber"
-            disabled={disabled}
             active={activeTool === 'renumber'}
-            onClick={() => onComplexToolClick('renumber')}
-            tooltip={disabled ? 'No files' : 'Move chapters with automatic cascade'}
+            onClick={() => onToolClick('renumber')}
+            tooltip="Move chapters with automatic cascade"
           />
         </div>
       </div>
@@ -122,18 +75,26 @@ export function ToolsSidebar({
         </div>
         <div className="flex flex-col gap-1">
           <ToolButton
+            label="Relay"
+            active={activeTool === 'relay'}
+            onClick={() => onToolClick('relay')}
+            tooltip="Push recordings to relay folder / collect edits back"
+          />
+        </div>
+      </div>
+
+      {/* Actions group — visually separated */}
+      <div className="border-t border-gray-200 pt-4 mt-2">
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+          Actions
+        </div>
+        <div className="flex flex-col gap-1">
+          <ToolButton
             label={isGitSyncPending ? 'Syncing...' : 'Git Sync'}
             disabled={isGitSyncPending}
             active={false}
-            onClick={() => onSimpleToolClick('git-sync')}
+            onClick={onGitSync}
             tooltip={isGitSyncPending ? 'Git sync in progress...' : 'Pull latest project state (git pull --rebase)'}
-          />
-          <ToolButton
-            label="Relay"
-            disabled={false}
-            active={activeTool === 'relay'}
-            onClick={() => onComplexToolClick('relay')}
-            tooltip="Push recordings to relay folder / collect edits back"
           />
         </div>
       </div>
@@ -143,13 +104,13 @@ export function ToolsSidebar({
 
 interface ToolButtonProps {
   label: string;
-  disabled: boolean;
+  disabled?: boolean;
   active: boolean;
   onClick: () => void;
   tooltip: string;
 }
 
-function ToolButton({ label, disabled, active, onClick, tooltip }: ToolButtonProps) {
+function ToolButton({ label, disabled = false, active, onClick, tooltip }: ToolButtonProps) {
   return (
     <button
       onClick={onClick}

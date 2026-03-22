@@ -850,7 +850,6 @@ function App() {
         {/* FR-131: Manage Tab (formerly Export) */}
         {activeTab === 'export' && (
           <section>
-            <h2 className="text-lg font-medium text-gray-700 mb-4">Manage & Export</h2>
             <ManagePanel />
           </section>
         )}
