@@ -1,9 +1,10 @@
 /**
  * ToolsSidebar - Vertical tool palette for Manage Panel
  *
- * FR-136: Tool-oriented design
- * - Simple Tools: Instant actions (regen operations)
- * - Complex Tools: Opens slide-out config drawer (rename, export, folders)
+ * FR-136: Tool-oriented design, grouped by workflow stage:
+ * - Record: Regen operations (shadows, transcripts, chapters, all)
+ * - Edit: Rename, Gling / Edit, Renumber
+ * - Collaborate: Git Sync, Relay
  */
 
 interface ToolsSidebarProps {
@@ -13,7 +14,7 @@ interface ToolsSidebarProps {
   onSimpleToolClick: (
     tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all' | 'git-sync'
   ) => void;
-  onComplexToolClick: (tool: 'rename' | 'gling-edit' | 's3-staging' | 'renumber' | 'relay') => void;
+  onComplexToolClick: (tool: 'rename' | 'gling-edit' | 'renumber' | 'relay') => void;
   isGitSyncPending?: boolean;
 }
 
@@ -29,10 +30,10 @@ export function ToolsSidebar({
 
   return (
     <div className="h-full bg-gray-50 border-r border-gray-200 p-4 flex flex-col gap-6">
-      {/* Simple Tools Section */}
+      {/* Record group */}
       <div>
         <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
-          Simple Tools
+          Record
         </div>
         <div className="flex flex-col gap-1">
           <ToolButton
@@ -87,21 +88,13 @@ export function ToolsSidebar({
                   : `Regenerate all derivative files`
             }
           />
-          {/* B038: relay collaboration — git pull-only sync */}
-          <ToolButton
-            label={isGitSyncPending ? 'Syncing...' : 'Git Sync'}
-            disabled={isGitSyncPending}
-            active={false}
-            onClick={() => onSimpleToolClick('git-sync')}
-            tooltip={isGitSyncPending ? 'Git sync in progress...' : 'Pull latest project state (git pull --rebase)'}
-          />
         </div>
       </div>
 
-      {/* Complex Tools Section */}
+      {/* Edit group */}
       <div>
         <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
-          Complex Tools
+          Edit
         </div>
         <div className="flex flex-col gap-1">
           <ToolButton
@@ -123,20 +116,28 @@ export function ToolsSidebar({
             tooltip="Gling preparation & edit folders"
           />
           <ToolButton
-            label="S3 Staging"
-            disabled={false}
-            active={activeTool === 's3-staging'}
-            onClick={() => onComplexToolClick('s3-staging')}
-            tooltip="S3 file transfer & collaboration"
-          />
-          <ToolButton
             label="Renumber"
             disabled={disabled}
             active={activeTool === 'renumber'}
             onClick={() => onComplexToolClick('renumber')}
             tooltip={disabled ? 'No files' : 'Move chapters with automatic cascade'}
           />
-          {/* B038: relay collaboration */}
+        </div>
+      </div>
+
+      {/* Collaborate group */}
+      <div>
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+          Collaborate
+        </div>
+        <div className="flex flex-col gap-1">
+          <ToolButton
+            label={isGitSyncPending ? 'Syncing...' : 'Git Sync'}
+            disabled={isGitSyncPending}
+            active={false}
+            onClick={() => onSimpleToolClick('git-sync')}
+            tooltip={isGitSyncPending ? 'Git sync in progress...' : 'Pull latest project state (git pull --rebase)'}
+          />
           <ToolButton
             label="Relay"
             disabled={false}

@@ -37,13 +37,14 @@
  * - POST /api/system/restart-watchers - Reinitialize file watchers
  */
 import { Router, Request, Response } from 'express';
-import { exec, execSync } from 'child_process';
+import { exec, execFile, execSync } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs-extra';
 import os from 'os';
 
 const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import type { Config, EnvironmentResponse } from '../../../shared/types.js';
@@ -214,6 +215,7 @@ export function createSystemRoutes(getConfig: () => Config, watcherManager?: Wat
    * Returns platform info, WSL detection, and path format examples.
    */
   router.get('/environment', (_req: Request, res: Response) => {
+    const config = getConfig();
     const platform = os.platform() as 'win32' | 'linux' | 'darwin';
 
     // WSL detection: Linux with WSL_DISTRO_NAME environment variable
@@ -260,6 +262,7 @@ export function createSystemRoutes(getConfig: () => Config, watcherManager?: Wat
       isWSL,
       pathFormat,
       guidance,
+      machineRole: config.machineRole || 'recorder', // B039: default to recorder
     };
 
     res.json(response);
@@ -581,8 +584,10 @@ export function createSystemRoutes(getConfig: () => Config, watcherManager?: Wat
         return;
       }
       const repoDir = expandPath(config.projectsRootDirectory);
-      const shellCommand = `bash -lc "cd '${repoDir}' && git pull --rebase"`;
-      const { stdout, stderr } = await execAsync(shellCommand, { timeout: 120000 });
+      const { stdout, stderr } = await execFileAsync('git', ['pull', '--rebase'], {
+        cwd: repoDir,
+        timeout: 120000,
+      });
       res.json({ success: true, output: stdout || stderr });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });

@@ -21,7 +21,6 @@ import { createVideoRoutes } from './routes/video.js';
 import { createShadowsRouter } from './routes/shadows.js';
 import { createEditRoutes } from './routes/edit.js';
 import { createManageRoutes } from './routes/manage.js';
-import { createS3StagingRoutes } from './routes/s3-staging.js';
 import { createPoemWuiRoutes } from './routes/poem-wui.js';
 import { createStateRoutes } from './routes/state.js';
 import { createDeveloperRoutes } from './routes/developer.js';
@@ -187,6 +186,11 @@ function updateConfig(newConfig: Partial<Config>): Config {
   // FR-116: Handle common names
   if (newConfig.commonNames !== undefined) currentConfig.commonNames = newConfig.commonNames;
 
+  // B039: Handle relay + machine role fields
+  if (newConfig.relayEnabled !== undefined) currentConfig.relayEnabled = newConfig.relayEnabled;
+  if (newConfig.relayDirectory !== undefined) currentConfig.relayDirectory = newConfig.relayDirectory;
+  if (newConfig.machineRole !== undefined) currentConfig.machineRole = newConfig.machineRole;
+
   // Persist config to file
   saveConfigToFile(currentConfig);
 
@@ -285,10 +289,6 @@ const manageRoutes = createManageRoutes(
   getQueue
 );
 app.use('/api/manage', manageRoutes);
-
-// FR-103: Setup S3 staging routes
-const s3StagingRoutes = createS3StagingRoutes(() => currentConfig);
-app.use('/api/s3-staging', s3StagingRoutes);
 
 // FR-144: Setup POEM WUI routes
 const poemWuiRoutes = createPoemWuiRoutes(() => currentConfig);

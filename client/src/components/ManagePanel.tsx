@@ -20,7 +20,6 @@ import {
   SlideOutDrawer,
   ConfirmationModal,
   GlingEditTool,
-  S3StagingTool,
   RelayTool,
   RenamePanel,
   ChapterListPanel,
@@ -88,7 +87,7 @@ export function ManagePanel() {
   // const [isRenaming, setIsRenaming] = useState(false)
 
   // FR-136: Tool-oriented design (FR-139: removed 'folders', FR-140: added 'renumber', FR-142: split export-s3 into gling-edit + s3-staging, B038: added relay)
-  const [activeTool, setActiveTool] = useState<'rename' | 'gling-edit' | 's3-staging' | 'renumber' | 'relay' | null>(null);
+  const [activeTool, setActiveTool] = useState<'rename' | 'gling-edit' | 'renumber' | 'relay' | null>(null);
 
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -380,7 +379,7 @@ export function ManagePanel() {
     });
   };
 
-  const handleComplexToolClick = (tool: 'rename' | 'gling-edit' | 's3-staging' | 'renumber' | 'relay') => {
+  const handleComplexToolClick = (tool: 'rename' | 'gling-edit' | 'renumber' | 'relay') => {
     setActiveTool(activeTool === tool ? null : tool);
   };
 
@@ -572,7 +571,7 @@ export function ManagePanel() {
         isOpen={activeTool === 'rename'}
         title="Rename Tool"
         onClose={() => setActiveTool(null)}
-        width="w-[480px]"
+        width="w-[600px]"
       >
         <RenamePanel
           selectedFiles={Array.from(selectedFiles)}
@@ -593,21 +592,12 @@ export function ManagePanel() {
         <GlingEditTool />
       </SlideOutDrawer>
 
-      <SlideOutDrawer
-        isOpen={activeTool === 's3-staging'}
-        title="S3 Staging"
-        onClose={() => setActiveTool(null)}
-        width="w-[560px]"
-      >
-        <S3StagingTool />
-      </SlideOutDrawer>
-
       {/* B038: relay collaboration */}
       <SlideOutDrawer
         isOpen={activeTool === 'relay'}
         title="Relay Collaboration"
         onClose={() => setActiveTool(null)}
-        width="w-[480px]"
+        width="w-[600px]"
       >
         <RelayTool />
       </SlideOutDrawer>
@@ -616,7 +606,7 @@ export function ManagePanel() {
         isOpen={activeTool === 'renumber'}
         title="Chapter Management"
         onClose={() => setActiveTool(null)}
-        width="w-[480px]"
+        width="w-[600px]"
       >
         <ChapterListPanel
           recordings={data.recordings.map((r) => r.filename)}

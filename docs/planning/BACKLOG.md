@@ -1,8 +1,8 @@
 # Project Backlog — FliHub
 
-**Last updated**: 2026-03-19
+**Last updated**: 2026-03-22
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 14 | Pending: 14 | Deferred: 7 | Rejected: 4
+**Total open**: 15 | Pending: 14 | In Progress: 1 | Deferred: 7 | Rejected: 4
 
 ---
 
@@ -35,7 +35,7 @@
 
 ## Feature Backlog
 
-- [~] B038 — Relay Collaboration Phase 1 (push/collect recordings + edits via rsync + relay folder) | Priority: high | Campaign: relay-collaboration-phase-1 | Dry-run diff preview before confirm. Same/same path mirroring between `v-appydave/b17/` and `~/relay/flihub-appydave/b17/`. Bidirectional: David pushes recordings, Jan pushes edits back. PRD: `docs/planning/requirements-relay-collaboration.md` + `docs/planning/requirements-workflow-braindump-2026-03-19.md` + `docs/planning/architectural-review-relay-2026-03-19.md`
+- [ ] B040 — Manage + Relay Refactor Wave 2 (relay folder browser, push/collect all edit levels, promote-to-final, role-based visibility, visual indicators) | Priority: high | PRD: `docs/planning/requirements-manage-relay-refactor.md`
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
@@ -69,6 +69,8 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B039 | Manage + Relay Refactor Wave 1 (manage-relay-refactor) — security fixes (execFile), route guards, machineRole, layout refactor, retire S3, 48 relay tests. 6/6 complete. | 2026-03-22 |
+| B038 | Relay Collaboration Phase 1 (relay-collaboration-phase-1) — push/collect/preview + git sync, 5/5 work units | 2026-03-19 |
 | B019 | Architecture Refactor (nfr-architecture-refactor) — configManager, s3Utils, poemWuiUtils extracted; useApi.ts barrel; fs-extra unified | 2026-03-16 |
 | B018 | Code Quality Round 1 (nfr-code-quality-1) — srtUtils extracted, path traversal fixed, isPathWithinProject tested, 24 new tests | 2026-03-16 |
 | B013 / NFR-65 | Extract Shared Server Utilities — absorbed and completed by B019 (nfr-architecture-refactor) | 2026-03-16 |

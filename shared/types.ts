@@ -1,5 +1,8 @@
 // Shared types between client and server
 
+// B039: machine role — determines which UI capabilities are visible
+export type MachineRole = 'recorder' | 'editor';
+
 export interface FileInfo {
   path: string;
   filename: string;
@@ -45,6 +48,7 @@ export interface Config {
   // B038: relay collaboration
   relayDirectory?: string; // ~/Relay/FliHub-appydave — machine-specific, gitignored
   relayEnabled?: boolean; // Feature gate — false/undefined until configured
+  machineRole?: MachineRole; // B039: Machine role — recorder shows archive/promote/cleanup, editor hides them
 }
 
 export interface RenameRequest {
@@ -814,6 +818,7 @@ export interface EnvironmentResponse {
     windowsFiles: string; // e.g., '/mnt/c/...' or 'C:\\...'
     wslFiles: string; // e.g., '/home/jan/...' or '\\\\wsl$\\...'
   };
+  machineRole: MachineRole; // B039: machine role for role-based UI visibility
 }
 
 // ============================================

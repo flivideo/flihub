@@ -10,7 +10,6 @@ export { ToolsSidebar } from './ToolsSidebar';
 export { SlideOutDrawer } from './SlideOutDrawer';
 export { ConfirmationModal } from './ConfirmationModal';
 export { GlingEditTool } from './GlingEditTool';
-export { S3StagingTool } from './S3StagingTool';
 export { RelayTool } from './RelayTool';
 export { RenamePanel } from './RenamePanel';
 export { ChapterListPanel } from './ChapterListPanel';

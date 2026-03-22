@@ -294,7 +294,9 @@ export class WatcherManager {
 
     // B038: relay collaboration — restart relay watcher if relay directory changed
     // Note: relay is machine-global, not per-project — do NOT restart on projectDirectory changes
-    if (!oldConfig || oldConfig.relayDirectory !== newConfig.relayDirectory) {
+    if (!oldConfig ||
+        oldConfig.relayDirectory !== newConfig.relayDirectory ||
+        oldConfig.relayEnabled !== newConfig.relayEnabled) {
       if (newConfig.relayEnabled && newConfig.relayDirectory) {
         this.startRelayWatcher(newConfig.relayDirectory);
       } else {
