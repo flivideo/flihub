@@ -1,8 +1,8 @@
 # Project Backlog — FliHub
 
-**Last updated**: 2026-03-22
+**Last updated**: 2026-03-23
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 14 | Pending: 13 | In Progress: 1 | Deferred: 7 | Rejected: 4
+**Total open**: 14 | Pending: 13 | In Progress: 0 | Deferred: 7 | Rejected: 4
 
 ---
 
@@ -35,7 +35,7 @@
 
 ## Feature Backlog
 
-- [~] B041 — Manage page redesign — rethink "Manage & Export" as context-sensitive tool pages, not a generic shell with drawers | Priority: high | Feedback: F002, F003 | Campaign: manage-page-redesign
+- [x] B041 — Manage page redesign — rethink "Manage & Export" as context-sensitive tool pages, not a generic shell with drawers | Priority: high | Feedback: F002, F003 | Completed: manage-page-redesign
 - [x] B042 — Remove Regen Chapters from ToolsSidebar (temporary system, no longer useful) | Priority: medium | Feedback: F001 | Completed: pre-campaign quick fix
 - [ ] B043 — Type relay API responses and add HTTP status checking in hooks (audit M1, M2, M4) | Priority: medium | Audit: code-quality 2026-03-22
 
@@ -71,6 +71,7 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B041 | Manage page redesign (manage-page-redesign) — context-sensitive tool pages, drawers eliminated, sidebar as pure navigation. 3/3 complete. Feedback F002+F003 resolved. | 2026-03-23 |
 | B040 | Manage + Relay Refactor Wave 2 (manage-relay-refactor-w2) — relay folder browser, subfolder-aware push/collect, promote-to-final, role-based visibility, visual indicators. 6/6 complete. 842 tests. | 2026-03-22 |
 | B039 | Manage + Relay Refactor Wave 1 (manage-relay-refactor) — security fixes (execFile), route guards, machineRole, layout refactor, retire S3, 48 relay tests. 6/6 complete. | 2026-03-22 |
 | B038 | Relay Collaboration Phase 1 (relay-collaboration-phase-1) — push/collect/preview + git sync, 5/5 work units | 2026-03-19 |
