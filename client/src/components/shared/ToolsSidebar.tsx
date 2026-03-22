@@ -15,7 +15,7 @@ interface ToolsSidebarProps {
   totalFiles: number;
   activeTool: string | null;
   onSimpleToolClick: (
-    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all' | 'git-sync'
+    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-all' | 'git-sync'
   ) => void;
   onComplexToolClick: (tool: 'rename' | 'gling-edit' | 'renumber' | 'relay') => void;
   isGitSyncPending?: boolean;
@@ -63,19 +63,6 @@ export function ToolsSidebar({
                 : selectedFiles.length > 0
                   ? `Queue ${selectedFiles.length} for transcription`
                   : `Queue all ${totalFiles} for transcription`
-            }
-          />
-          <ToolButton
-            label="Regen Chapters"
-            disabled={disabled}
-            active={false}
-            onClick={() => onSimpleToolClick('regen-chapters')}
-            tooltip={
-              disabled
-                ? 'No chapters'
-                : selectedFiles.length > 0
-                  ? `Regen chapters from ${selectedFiles.length} selected`
-                  : `Regenerate all chapter videos`
             }
           />
           <ToolButton

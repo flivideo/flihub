@@ -260,7 +260,7 @@ export function ManagePanel() {
 
   // FR-136: Tool handlers
   const handleSimpleToolClick = (
-    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-chapters' | 'regen-all' | 'git-sync'
+    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-all' | 'git-sync'
   ) => {
     // B038: relay collaboration — git pull-only sync
     if (tool === 'git-sync') {
