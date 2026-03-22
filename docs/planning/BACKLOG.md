@@ -35,7 +35,9 @@
 
 ## Feature Backlog
 
-- [ ] B040 — Manage + Relay Refactor Wave 2 (relay folder browser, push/collect all edit levels, promote-to-final, role-based visibility, visual indicators) | Priority: high | PRD: `docs/planning/requirements-manage-relay-refactor.md`
+- [ ] B041 — Manage page redesign — rethink "Manage & Export" as context-sensitive tool pages, not a generic shell with drawers | Priority: high | Feedback: F002, F003
+- [ ] B042 — Remove Regen Chapters from ToolsSidebar (temporary system, no longer useful) | Priority: medium | Feedback: F001
+- [ ] B043 — Type relay API responses and add HTTP status checking in hooks (audit M1, M2, M4) | Priority: medium | Audit: code-quality 2026-03-22
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
@@ -69,6 +71,7 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B040 | Manage + Relay Refactor Wave 2 (manage-relay-refactor-w2) — relay folder browser, subfolder-aware push/collect, promote-to-final, role-based visibility, visual indicators. 6/6 complete. 842 tests. | 2026-03-22 |
 | B039 | Manage + Relay Refactor Wave 1 (manage-relay-refactor) — security fixes (execFile), route guards, machineRole, layout refactor, retire S3, 48 relay tests. 6/6 complete. | 2026-03-22 |
 | B038 | Relay Collaboration Phase 1 (relay-collaboration-phase-1) — push/collect/preview + git sync, 5/5 work units | 2026-03-19 |
 | B019 | Architecture Refactor (nfr-architecture-refactor) — configManager, s3Utils, poemWuiUtils extracted; useApi.ts barrel; fs-extra unified | 2026-03-16 |

@@ -1,64 +1,64 @@
 # Next Round Brief — FliHub
 
-**Written**: 2026-03-22 (post manage-relay-refactor wave 1)
+**Written**: 2026-03-22 (post manage-relay-refactor-w2)
 
 ---
 
 ## Resume Point
 
-**Mode**: Ralphy Extend — ready to plan IMPLEMENTATION_PLAN.md for wave 2
+**Wave 2 complete**: `docs/planning/manage-relay-refactor-w2/` — 6/6 done, assessment written, audits run, 842 tests passing.
 
-**Wave 1 complete**: `docs/planning/manage-relay-refactor/` — 6/6 done, assessment written, AGENTS.md updated with learnings.
-
-**Requirements brief**: `docs/planning/requirements-manage-relay-refactor.md` — Wave 2 items defined (section "Wave 2: Relay Features").
-
----
-
-## Campaign: manage-relay-refactor (Wave 2)
-
-### Wave 2: Relay Features (from requirements brief)
-
-Estimated 4-5 work units:
-1. **relay-folder-browser** — API to scan relay directory; show per-project breakdown (recordings, edit-1st, edit-2nd); file counts + sizes
-2. **relay-push-collect-full** — push/collect for all edit levels (not just recordings); proper preview with correct file naming
-3. **promote-to-final** — select approved version from edit-2nd, copy to final/
-4. **role-based-visibility** — show/hide buttons based on machineRole (recorder: push/archive/cleanup; editor: ingest/push-edits)
-5. **visual-indicators** — project pipeline status at a glance (what's in relay, what's been sent/received, what stage)
-
-### Audit suggestions to incorporate:
-- Extract `getRelayPaths(config)` helper before adding more routes (reduces duplication)
-- Add error-path tests for relay routes (500 branch — 3 missing tests from wave 1)
-- Add `._*` exclusion verification to push/collect tests
-- Add "DO NOT MODIFY" section to AGENTS.md to prevent agent scope creep
-
-### Rsync exclusion patterns (from background scan of v-appydave 2026-03-22)
-
-Current excludes: `.DS_Store`, `._*`
-
-**Add these to relay.ts rsync calls** as a wave 2 prerequisite:
-- `.gitkeep` — git placeholder found in recordings/
-- `.stfolder` — SyncThing marker directory (found in relay folder)
-- `.stignore` — SyncThing config file (found in relay folder)
-- `.stversions` — SyncThing versioning directory
-- `.Spotlight-V100` — macOS Spotlight index
-- `.Trashes` — macOS Trash
-- `Thumbs.db` — Windows thumbnail cache
-
-**Do NOT exclude** `*.mp3` or any media files — editors place these intentionally (e.g. music assets in edit-1st/).
-
-Scan found 41 .DS_Store files (38 in recordings/, 2 in relay, 1 in edit-1st) — already handled. No other junk types found. Projects are clean.
+**Uncommitted work**: All wave 2 changes are on main branch, uncommitted. Run `git status` on entry to see what needs committing.
 
 ---
 
 ## What Was Done This Session
 
-1. Extended from next-round brief into IMPLEMENTATION_PLAN.md + AGENTS.md
-2. Built wave 1: 3 waves (3→2→1 agents), 6/6 complete
-3. Ran code-quality + test-quality audits, fixed BLOCKER (updateConfig propagation)
-4. Committed everything, assessment written
-5. Retired S3 Staging (3 files deleted, -20KB bundle)
-6. 48 new relay tests (504→552 total)
-7. Background scan of v-appydave projects launched for rsync junk files
+1. Planned wave 2 in Extend mode from previous next-round brief
+2. Built 3 waves (2→2→2 agents), 6/6 complete:
+   - relay-foundation (getRelayPaths, rsyncExcludeArgs, RELAY_SUBFOLDERS, rsync exclusions, 11 tests)
+   - relay-folder-browser (GET /browse, RelayBrowser table, useRelayBrowse, 6 tests)
+   - relay-push-collect-full (subfolder-aware push/collect/preview, UI dropdown, collect bug fix, 10 tests)
+   - promote-to-final (GET /versions, POST /promote, version list UI, 11 tests)
+   - role-based-visibility (machineRole gating on push/collect/promote)
+   - visual-indicators (color dots, summary footer, legend)
+3. Ran code-quality + test-quality audits, fixed 3 issues:
+   - Replaced duplicated subfolderNames with RELAY_SUBFOLDERS constant
+   - Added invalid subfolder rejection tests for push/collect
+   - Enhanced promote test to verify fs.copy source/dest paths
+4. Widened Relay drawer from 600px → 700px
+5. Created feedback file with F001-F003 (David's Manage page frustration)
+6. Updated BACKLOG.md — B040 done, B041-B043 added
+7. Test count: 552 → 842
+
+---
+
+## David's Feedback (Important — Address Next Session)
+
+David is frustrated with the Manage page. Key points:
+- **F001**: Remove Regen Chapters — temporary system, no longer useful (B042, quick fix)
+- **F002**: "Manage & Export" heading is meaningless noise when using Relay (B041)
+- **F003**: Manage page needs full design review — tools bolted onto a generic shell, never properly designed (B041)
+
+**David's words**: "I don't really get what the manage and export is even doing... it's never fit... here I am on a relay screen, and I've got this manage and export which doesn't seem to do anything and just adds noise rather than the relay collaboration."
+
+**Recommended approach**: Run a `/frontend-design` or `/critique` pass on the Manage page before planning the next wave. The page layout problem is a design problem, not a feature gap.
+
+---
+
+## Pending Work (from audits + feedback)
+
+### Quick wins (do first)
+- B042: Remove Regen Chapters from ToolsSidebar — 5-minute change
+- Stale diff after push (audit m3) — clear diff state on push success
+
+### Design work (needs thought)
+- B041: Manage page redesign — context-sensitive tool pages instead of generic shell with drawers
+
+### Technical debt (from audit)
+- B043: Type relay API responses (M1), add HTTP status checking (M2), proper HTTP error codes (M4)
+- Promote overwrite warning (audit m5) — check if dest exists before fs.copy
+- Remove dead `*deleting` handling in parseRsyncDiff or add `--delete` flag (audit m6)
 
 ---
 
@@ -68,16 +68,14 @@ Scan found 41 .DS_Store files (38 in recordings/, 2 in relay, 1 in edit-1st) —
 /ralphy
 ```
 
-Then say: "Continue from the next-round brief — Extend mode, plan wave 2."
-
-The brief, requirements doc, wave 1 AGENTS.md (with inherited learnings), and assessment all have what's needed.
+Then say: "Continue from the next-round brief. Start with the quick fixes (B042, stale diff), then run /critique on the Manage page for B041."
 
 ---
 
 ## Reference Files
 
-- `docs/planning/requirements-manage-relay-refactor.md` — full requirements (wave 2 section)
-- `docs/planning/manage-relay-refactor/AGENTS.md` — relay AGENTS.md with wave 1 learnings
-- `docs/planning/manage-relay-refactor/assessment.md` — wave 1 assessment + audit findings
-- `docs/planning/AGENTS.md` — baseline AGENTS.md
-- `docs/planning/BACKLOG.md` — B040 pending for wave 2
+- `docs/planning/manage-relay-refactor-w2/AGENTS.md` — wave 2 AGENTS.md
+- `docs/planning/manage-relay-refactor-w2/assessment.md` — wave 2 assessment + audit findings
+- `docs/planning/flihub-feedback.md` — F001-F003 feedback items
+- `docs/planning/BACKLOG.md` — B041-B043 pending
+- `docs/planning/requirements-manage-relay-refactor.md` — full requirements

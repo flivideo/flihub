@@ -3,6 +3,36 @@
 // B039: machine role — determines which UI capabilities are visible
 export type MachineRole = 'recorder' | 'editor';
 
+// Relay subfolder types for push/collect/preview operations
+export type RelaySubfolder = 'recordings' | 'edit-1st' | 'edit-2nd';
+
+// Relay folder browser types
+export interface RelaySubfolderInfo {
+  fileCount: number;
+  totalSize: number;
+}
+
+export interface RelayProjectInfo {
+  projectCode: string;
+  subfolders: {
+    recordings: RelaySubfolderInfo;
+    'edit-1st': RelaySubfolderInfo;
+    'edit-2nd': RelaySubfolderInfo;
+  };
+}
+
+export interface RelayBrowseResult {
+  projects: RelayProjectInfo[];
+  relayDirectory: string;
+}
+
+// Promote-to-final: version file in edit-2nd/
+export interface EditVersion {
+  filename: string;
+  size: number;
+  modified: string; // ISO date string
+}
+
 export interface FileInfo {
   path: string;
   filename: string;

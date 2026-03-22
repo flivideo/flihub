@@ -597,7 +597,7 @@ export function ManagePanel() {
         isOpen={activeTool === 'relay'}
         title="Relay Collaboration"
         onClose={() => setActiveTool(null)}
-        width="w-[600px]"
+        width="w-[700px]"
       >
         <RelayTool />
       </SlideOutDrawer>

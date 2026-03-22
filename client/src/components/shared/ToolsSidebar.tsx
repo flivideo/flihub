@@ -1,3 +1,6 @@
+// TODO: Gate sidebar tools by machineRole in a future wave
+// (e.g., hide Record group for editors, show editor-specific tools)
+
 /**
  * ToolsSidebar - Vertical tool palette for Manage Panel
  *
