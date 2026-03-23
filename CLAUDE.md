@@ -193,6 +193,27 @@ Socket.io events:
 - `thumbs:changed`, `thumbs:zip-added` - Thumbnail changes
 - `projects:changed` - Project folder changes
 
+## Machine Inventory
+
+FliHub runs on multiple machines. **Never rediscover this — use this table.**
+
+| Machine | Hostname | SSH User | machineRole | Network | Notes |
+|---------|----------|----------|-------------|---------|-------|
+| Mac Mini M4 (David) | `mac-mini-m4.local` | `davidcruwys` | `creator` | .local + Tailscale | Primary workstation, Ecamm recordings |
+| MacBook Pro M4 (Roamy) | `MacBook-Pro.local` | `davidcruwys` | `editor` | .local + Tailscale | David's laptop, field machine |
+| Mac Mini M2 (Bot) | `mac-mini-m2.local` | `davidcruwys` | — | .local + Tailscale | Headless bot, no FliHub |
+| Jan's Mac Mini | `mac-mini-jan` | `janreyes` | `editor` | Tailscale ONLY | Philippines — no .local |
+| Mary's Mac Mini | `mac-mini-mary` | `mary` | `editor` | Tailscale ONLY | Philippines — no .local |
+
+**Key rules:**
+- Jan is **he/him**, username `janreyes` — NOT `davidcruwys`
+- Philippines machines are Tailscale-only — `.local` will NOT resolve
+- `machineRole` is set in `server/config.json` — `creator` (records video) or `editor` (edits video)
+- If `machineRole` is missing, it defaults to `recorder` (legacy alias for creator)
+- Mac Mini M2 does not run FliHub
+
+**Authoritative source**: `~/dev/ad/agent-os/ansible/inventory/hosts.yml`
+
 ## Git Workflow
 
 Semantic commit helpers:

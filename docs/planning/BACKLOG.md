@@ -2,7 +2,7 @@
 
 **Last updated**: 2026-03-23
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 11 | Pending: 10 | In Progress: 0 | Deferred: 5 | Rejected: 4
+**Total open**: 12 | Pending: 10 | In Progress: 1 | Deferred: 5 | Rejected: 4
 
 ---
 
@@ -40,6 +40,7 @@
 - [x] B043 — Type relay API responses and add HTTP status checking in hooks (audit M1, M2, M4) | Priority: medium | Completed: tech-debt-round1 | 7 response types + HTTP status checks on all 7 hooks
 - [ ] B044 — App auto-update for collaborators — version check + notification + one-click update button | Priority: high | Feedback: F004
 - [x] B045 — Move AWB from top nav into Manage sidebar | Priority: medium | Feedback: F005 | Completed: tech-debt-round1
+- [~] B046 — Relay UX redesign — workflow lanes, file drawers, activity feed, toasts, setup guide, project-list indicators | Priority: high | Campaign: relay-redesign
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
