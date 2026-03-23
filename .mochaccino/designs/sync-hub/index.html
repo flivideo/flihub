@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sync Hub — B044 Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; color: #111827; }
+
+  .mochaccino-banner { background: #f9fafb; border-bottom: 1px solid #e5e7eb; padding: 6px 24px; font-size: 11px; color: #9ca3af; }
+
+  /* Simulated FliHub chrome */
+  .app-header { background: white; border-bottom: 1px solid #e5e7eb; padding: 12px 24px; display: flex; align-items: center; gap: 8px; }
+  .app-header h1 { font-size: 18px; font-weight: 700; }
+  .app-header .breadcrumb { color: #9ca3af; font-size: 14px; }
+  .app-header .project { color: #2563eb; font-size: 14px; font-weight: 500; }
+  .app-header .spacer { flex: 1; }
+
+  /* Persistent sync indicators — always visible in header */
+  .sync-indicators { display: flex; align-items: center; gap: 12px; margin-right: 8px; }
+  .sync-ind { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #6b7280; padding: 3px 8px; border-radius: 4px; cursor: pointer; }
+  .sync-ind:hover { background: #f3f4f6; }
+  .sync-ind .ind-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .sync-ind .ind-label { font-weight: 500; }
+  .sync-ind.clean .ind-dot { background: #16a34a; }
+  .sync-ind.clean .ind-label { color: #6b7280; }
+  .sync-ind.dirty .ind-dot { background: #dc2626; }
+  .sync-ind.dirty .ind-label { color: #dc2626; }
+  .sync-ind.dirty { background: #fef2f2; }
+  .sync-ind.behind .ind-dot { background: #ea580c; }
+  .sync-ind.behind .ind-label { color: #ea580c; }
+  .sync-ind.behind { background: #fff7ed; }
+  .sync-ind.conflict .ind-dot { background: #7c3aed; }
+  .sync-ind.conflict .ind-label { color: #7c3aed; }
+  .sync-ind.conflict { background: #f5f3ff; }
+  .sync-ind .ind-count { font-size: 10px; font-weight: 600; background: currentColor; color: white; border-radius: 8px; padding: 0 5px; line-height: 16px; }
+  .sync-ind.dirty .ind-count { background: #dc2626; }
+  .sync-ind.behind .ind-count { background: #ea580c; }
+  .sync-ind.conflict .ind-count { background: #7c3aed; }
+  .sync-divider { width: 1px; height: 20px; background: #e5e7eb; }
+
+  .nav { display: flex; gap: 4px; padding: 0 24px; background: white; border-bottom: 1px solid #e5e7eb; }
+  .nav button { padding: 8px 12px; font-size: 13px; color: #6b7280; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+  .nav button.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 500; }
+
+  .layout { display: flex; min-height: calc(100vh - 120px); }
+
+  /* Sidebar */
+  .sidebar { width: 160px; background: #f9fafb; border-right: 1px solid #e5e7eb; padding: 16px; }
+  .sidebar .group-label { font-size: 10px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; padding: 0 8px; }
+  .sidebar .group { margin-bottom: 20px; }
+  .sidebar .tool-btn { display: block; width: 100%; text-align: left; padding: 6px 10px; font-size: 13px; color: #6b7280; background: none; border: none; border-left: 2px solid transparent; border-radius: 4px; cursor: pointer; margin-bottom: 2px; }
+  .sidebar .tool-btn:hover { background: #f3f4f6; color: #111827; }
+  .sidebar .tool-btn.active { background: #f3f4f6; color: #2563eb; border-left-color: #2563eb; font-weight: 500; }
+  .sidebar .divider { border-top: 1px solid #e5e7eb; margin: 12px 0; padding-top: 12px; }
+
+  /* Main content */
+  .content { flex: 1; padding: 24px 32px; max-width: 900px; }
+  .content h2 { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 20px; }
+  .content h2 span { color: #9ca3af; font-weight: 400; }
+
+  /* Sync channel card */
+  .channel { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .channel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .channel-title { display: flex; align-items: center; gap: 10px; }
+  .channel-title .icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .channel-title .icon.code { background: #eff6ff; color: #2563eb; }
+  .channel-title .icon.video { background: #fef3c7; color: #d97706; }
+  .channel-title h3 { font-size: 14px; font-weight: 600; }
+  .channel-title .subtitle { font-size: 11px; color: #9ca3af; font-family: monospace; }
+
+  .status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 12px; }
+  .status-badge.clean { background: #f0fdf4; color: #16a34a; }
+  .status-badge.dirty { background: #fef2f2; color: #dc2626; }
+  .status-badge.behind { background: #fff7ed; color: #ea580c; }
+  .status-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .status-badge.clean .dot { background: #16a34a; }
+  .status-badge.dirty .dot { background: #dc2626; }
+  .status-badge.behind .dot { background: #ea580c; }
+
+  /* State row */
+  .state-row { display: flex; gap: 16px; margin-bottom: 16px; }
+  .state-item { flex: 1; background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 6px; padding: 12px; }
+  .state-item .label { font-size: 10px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .state-item .value { font-size: 13px; font-weight: 500; color: #374151; }
+  .state-item .detail { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  /* Action row */
+  .action-row { display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6; }
+  .btn { padding: 6px 16px; font-size: 12px; font-weight: 500; border: none; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: #2563eb; color: white; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+  .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+  .btn-secondary:hover { background: #e5e7eb; }
+  .action-hint { font-size: 11px; color: #9ca3af; }
+
+  /* Notification banner */
+  .notify-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .notify-banner .icon { font-size: 16px; }
+  .notify-banner .text { font-size: 12px; color: #9a3412; flex: 1; }
+  .notify-banner .text strong { font-weight: 600; }
+  .notify-banner .btn { font-size: 11px; }
+
+  /* Scenario tabs */
+  .scenarios { margin-bottom: 24px; }
+  .scenario-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+  .scenario-tab { padding: 6px 14px; font-size: 12px; border: 1px solid #e5e7eb; background: white; border-radius: 6px; cursor: pointer; color: #6b7280; }
+  .scenario-tab.active { background: #2563eb; color: white; border-color: #2563eb; }
+
+  .scenario-content { display: none; }
+  .scenario-content.active { display: block; }
+
+  /* Footer */
+  .footer { font-size: 11px; color: #d1d5db; padding: 16px 0; border-top: 1px solid #f3f4f6; margin-top: 24px; display: flex; justify-content: space-between; }
+  .footer code { font-family: monospace; color: #9ca3af; }
+
+  /* Notification dot on sidebar */
+  .notify-dot { width: 7px; height: 7px; border-radius: 50%; background: #f97316; display: inline-block; margin-left: 6px; vertical-align: middle; }
+
+  /* Conflict UI */
+  .conflict-banner { background: #f5f3ff; border: 1px solid #c4b5fd; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px; }
+  .conflict-banner .icon { font-size: 16px; margin-top: 1px; }
+  .conflict-banner .text { font-size: 12px; color: #5b21b6; flex: 1; }
+  .conflict-banner .text strong { font-weight: 600; }
+
+  .conflict-file { background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; }
+  .conflict-file .file-path { font-family: monospace; font-size: 12px; color: #6b21a8; margin-bottom: 8px; }
+  .conflict-file .conflict-actions { display: flex; gap: 8px; }
+  .conflict-file .conflict-actions .btn { font-size: 11px; padding: 4px 12px; }
+  .btn-conflict { background: #7c3aed; color: white; }
+  .btn-conflict:hover { background: #6d28d9; }
+
+  .status-badge.conflict { background: #f5f3ff; color: #7c3aed; }
+  .status-badge.conflict .dot { background: #7c3aed; }
+</style>
+</head>
+<body>
+
+<div class="mochaccino-banner">Mochaccino — sync-hub — 2026-03-23</div>
+
+<!-- FliHub app chrome -->
+<div class="app-header">
+  <h1>FliHub</h1>
+  <span class="breadcrumb">›</span>
+  <span class="project">c32-bmad-v6-epic1-foundation ▾</span>
+  <span class="spacer"></span>
+  <!-- Persistent sync indicators — visible on every page -->
+  <div class="sync-indicators" id="header-indicators">
+    <div class="sync-ind dirty" title="Video Project: 3 uncommitted files — click to open Sync">
+      <span class="ind-dot"></span>
+      <span class="ind-label">🎬 Project</span>
+      <span class="ind-count">3</span>
+    </div>
+    <div class="sync-ind clean" title="App Code: up to date">
+      <span class="ind-dot"></span>
+      <span class="ind-label">⌘ Code</span>
+    </div>
+  </div>
+  <div class="sync-divider"></div>
+</div>
+<div class="nav">
+  <button>Incoming</button>
+  <button>Recordings</button>
+  <button>Watch</button>
+  <button>Transcripts</button>
+  <button>Inbox</button>
+  <button>Assets</button>
+  <button>Thumbs</button>
+  <button class="active">Manage</button>
+  <button>Projects</button>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="group">
+      <div class="group-label">Record</div>
+      <button class="tool-btn">Regen</button>
+    </div>
+    <div class="group">
+      <div class="group-label">Edit</div>
+      <button class="tool-btn">Rename</button>
+      <button class="tool-btn">Gling / Edit</button>
+      <button class="tool-btn">Renumber</button>
+      <button class="tool-btn">AWB</button>
+    </div>
+    <div class="group">
+      <div class="group-label">Collaborate</div>
+      <button class="tool-btn">Relay</button>
+      <button class="tool-btn active">Sync<span class="notify-dot"></span></button>
+    </div>
+    <div class="divider"></div>
+    <div class="group">
+      <div class="group-label">Actions</div>
+      <button class="tool-btn" style="color: #9ca3af; text-decoration: line-through;">Git Sync</button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="content">
+
+    <!-- Scenario switcher -->
+    <div class="scenarios">
+      <div class="scenario-tabs">
+        <button class="scenario-tab active" onclick="showScenario('david-dirty')">David: recordings changed</button>
+        <button class="scenario-tab" onclick="showScenario('david-code')">David: code pushed</button>
+        <button class="scenario-tab" onclick="showScenario('jan-behind')">Jan: update available</button>
+        <button class="scenario-tab" onclick="showScenario('conflict')">Conflict on pull</button>
+        <button class="scenario-tab" onclick="showScenario('clean')">All clean</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- SCENARIO: David has dirty recordings       -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="david-dirty" class="scenario-content active">
+
+      <h2>Sync <span>— c32-bmad-v6-epic1-foundation</span></h2>
+
+      <!-- Notification banner -->
+      <div class="notify-banner">
+        <span class="icon">⚠️</span>
+        <span class="text"><strong>Video project has uncommitted changes.</strong> 3 new recordings since last push. Push so Jan can pull.</span>
+        <button class="btn btn-primary" style="white-space: nowrap;">Push Project</button>
+      </div>
+
+      <!-- Channel 1: App Code -->
+      <div class="channel">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon code">⌘</div>
+            <div>
+              <h3>App Code</h3>
+              <div class="subtitle">~/dev/ad/flivideo/flihub</div>
+            </div>
+          </div>
+          <span class="status-badge clean"><span class="dot"></span> Up to date</span>
+        </div>
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Local version</div>
+            <div class="value">dc0d1f9</div>
+            <div class="detail">2 hours ago</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Remote version</div>
+            <div class="value">dc0d1f9</div>
+            <div class="detail">Same as local</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Last synced</div>
+            <div class="value">Today 4:12 PM</div>
+            <div class="detail">by David</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" disabled>Push Code</button>
+          <button class="btn btn-secondary" disabled>Pull Code</button>
+          <span class="action-hint">Nothing to sync — you're up to date</span>
+        </div>
+      </div>
+
+      <!-- Channel 2: Video Project -->
+      <div class="channel" style="border-color: #fecaca;">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon video">🎬</div>
+            <div>
+              <h3>Video Project</h3>
+              <div class="subtitle">~/dev/video-projects/v-appydave</div>
+            </div>
+          </div>
+          <span class="status-badge dirty"><span class="dot"></span> 3 files changed</span>
+        </div>
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Uncommitted</div>
+            <div class="value" style="color: #dc2626;">3 new recordings</div>
+            <div class="detail">03-9, 03-10, 03-11</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Local commit</div>
+            <div class="value">a4f2c8e</div>
+            <div class="detail">Yesterday 2:30 PM</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Last push</div>
+            <div class="value">Yesterday 2:30 PM</div>
+            <div class="detail">by David</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary">Push Project</button>
+          <button class="btn btn-secondary" disabled>Pull Project</button>
+          <span class="action-hint">Commits and pushes project state — Jan will be notified</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Role: <strong>Recorder</strong> (David)</span>
+        <span>Collaborators: <code>Jan (editor)</code>, <code>Roamy (viewer)</code></span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- SCENARIO: David pushed code                -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="david-code" class="scenario-content">
+
+      <h2>Sync <span>— c32-bmad-v6-epic1-foundation</span></h2>
+
+      <!-- Channel 1: App Code — just pushed -->
+      <div class="channel">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon code">⌘</div>
+            <div>
+              <h3>App Code</h3>
+              <div class="subtitle">~/dev/ad/flivideo/flihub</div>
+            </div>
+          </div>
+          <span class="status-badge clean"><span class="dot"></span> Just pushed</span>
+        </div>
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Local version</div>
+            <div class="value">f8fffb2</div>
+            <div class="detail">Just now</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Remote version</div>
+            <div class="value">f8fffb2</div>
+            <div class="detail">Same as local</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Collaborator status</div>
+            <div class="value" style="color: #ea580c;">Jan: 2 behind</div>
+            <div class="detail">Roamy: 2 behind</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" disabled>Push Code</button>
+          <button class="btn btn-secondary" disabled>Pull Code</button>
+          <span class="action-hint">✓ Pushed — Jan and Roamy will see a notification to update</span>
+        </div>
+      </div>
+
+      <!-- Channel 2: Video Project — clean -->
+      <div class="channel">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon video">🎬</div>
+            <div>
+              <h3>Video Project</h3>
+              <div class="subtitle">~/dev/video-projects/v-appydave</div>
+            </div>
+          </div>
+          <span class="status-badge clean"><span class="dot"></span> Up to date</span>
+        </div>
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Local commit</div>
+            <div class="value">a4f2c8e</div>
+            <div class="detail">2 hours ago</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Remote</div>
+            <div class="value">a4f2c8e</div>
+            <div class="detail">Same as local</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Last push</div>
+            <div class="value">Today 2:30 PM</div>
+            <div class="detail">by David</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" disabled>Push Project</button>
+          <button class="btn btn-secondary" disabled>Pull Project</button>
+          <span class="action-hint">Nothing to sync</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Role: <strong>Recorder</strong> (David)</span>
+        <span>Collaborators: <code>Jan (editor)</code>, <code>Roamy (viewer)</code></span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- SCENARIO: Jan's view — update available    -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="jan-behind" class="scenario-content">
+
+      <h2>Sync <span>— c32-bmad-v6-epic1-foundation</span></h2>
+
+      <!-- Notification banner -->
+      <div class="notify-banner">
+        <span class="icon">🔔</span>
+        <span class="text"><strong>App update available.</strong> David pushed 2 new commits. Pull to get the latest FliHub + restart server.</span>
+        <button class="btn btn-primary" style="white-space: nowrap;">Pull &amp; Restart</button>
+      </div>
+
+      <div class="notify-banner">
+        <span class="icon">🎬</span>
+        <span class="text"><strong>New recordings available.</strong> David pushed 3 new recordings to the video project. Pull to sync.</span>
+        <button class="btn btn-primary" style="white-space: nowrap;">Pull Project</button>
+      </div>
+
+      <!-- Channel 1: App Code — behind -->
+      <div class="channel" style="border-color: #fed7aa;">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon code">⌘</div>
+            <div>
+              <h3>App Code</h3>
+              <div class="subtitle">~/dev/ad/flivideo/flihub</div>
+            </div>
+          </div>
+          <span class="status-badge behind"><span class="dot"></span> 2 commits behind</span>
+        </div>
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Your version</div>
+            <div class="value">a974121</div>
+            <div class="detail">Yesterday</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Latest version</div>
+            <div class="value" style="color: #ea580c;">f8fffb2</div>
+            <div class="detail">2 hours ago (David)</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Changes</div>
+            <div class="value">2 commits</div>
+            <div class="detail">Relay fixes, setup guide</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary">Pull &amp; Restart</button>
+          <span class="action-hint">Pulls latest code, rebuilds, and restarts the server</span>
+        </div>
+      </div>
+
+      <!-- Channel 2: Video Project — behind -->
+      <div class="channel" style="border-color: #fed7aa;">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon video">🎬</div>
+            <div>
+              <h3>Video Project</h3>
+              <div class="subtitle">~/dev/video-projects/v-appydave</div>
+            </div>
+          </div>
+          <span class="status-badge behind"><span class="dot"></span> 3 files behind</span>
+        </div>
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Your version</div>
+            <div class="value">b2e1a9c</div>
+            <div class="detail">Yesterday</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Latest version</div>
+            <div class="value" style="color: #ea580c;">d7f3e2a</div>
+            <div class="detail">1 hour ago (David)</div>
+          </div>
+          <div class="state-item">
+            <div class="label">New files</div>
+            <div class="value">3 recordings</div>
+            <div class="detail">03-9, 03-10, 03-11</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary">Pull Project</button>
+          <span class="action-hint">Pulls latest recordings and project state</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Role: <strong>Editor</strong> (Jan)</span>
+        <span>Collaborators: <code>David (recorder)</code>, <code>Roamy (viewer)</code></span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- SCENARIO: Conflict on pull                 -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="conflict" class="scenario-content">
+
+      <h2>Sync <span>— c32-bmad-v6-epic1-foundation</span></h2>
+
+      <!-- Conflict banner -->
+      <div class="conflict-banner">
+        <span class="icon">⚡</span>
+        <span class="text"><strong>Merge conflict in Video Project.</strong> Pull found 1 file that was changed both locally and remotely. Resolve below before continuing.</span>
+      </div>
+
+      <!-- Channel 1: App Code — clean -->
+      <div class="channel">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon code">⌘</div>
+            <div>
+              <h3>App Code</h3>
+              <div class="subtitle">~/dev/ad/flivideo/flihub</div>
+            </div>
+          </div>
+          <span class="status-badge clean"><span class="dot"></span> Up to date</span>
+        </div>
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Version</div>
+            <div class="value">dc0d1f9</div>
+            <div class="detail">All machines in sync</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Last sync</div>
+            <div class="value">Today 4:12 PM</div>
+            <div class="detail">by David</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Collaborators</div>
+            <div class="value" style="color: #16a34a;">All current</div>
+            <div class="detail">Jan ✓ Roamy ✓</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" disabled>Push Code</button>
+          <button class="btn btn-secondary" disabled>Pull Code</button>
+          <span class="action-hint">No issues here</span>
+        </div>
+      </div>
+
+      <!-- Channel 2: Video Project — conflict -->
+      <div class="channel" style="border-color: #c4b5fd;">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon video">🎬</div>
+            <div>
+              <h3>Video Project</h3>
+              <div class="subtitle">~/dev/video-projects/v-appydave</div>
+            </div>
+          </div>
+          <span class="status-badge conflict"><span class="dot"></span> 1 conflict</span>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: #5b21b6; margin-bottom: 8px;">Conflicting files:</div>
+
+          <div class="conflict-file">
+            <div class="file-path">recordings/02-3-setup.mov</div>
+            <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px;">Both you and David modified this file. Choose which version to keep:</div>
+            <div class="conflict-actions">
+              <button class="btn btn-conflict">Keep mine</button>
+              <button class="btn btn-secondary" style="font-size: 11px;">Keep theirs (David's)</button>
+              <button class="btn btn-secondary" style="font-size: 11px;">Show diff</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Pulled successfully</div>
+            <div class="value" style="color: #16a34a;">12 files</div>
+            <div class="detail">No issues</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Conflicted</div>
+            <div class="value" style="color: #7c3aed;">1 file</div>
+            <div class="detail">Needs resolution</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Status</div>
+            <div class="value" style="color: #7c3aed;">Blocked</div>
+            <div class="detail">Resolve conflict to continue</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" disabled>Push Project</button>
+          <button class="btn btn-secondary" disabled>Pull Project</button>
+          <span class="action-hint">Resolve the conflict above, then push to complete the merge</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Role: <strong>Editor</strong> (Jan)</span>
+        <span>Collaborators: <code>David (recorder)</code>, <code>Roamy (viewer)</code></span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- SCENARIO: All clean                        -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="clean" class="scenario-content">
+
+      <h2>Sync <span>— c32-bmad-v6-epic1-foundation</span></h2>
+
+      <!-- Channel 1: App Code -->
+      <div class="channel">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon code">⌘</div>
+            <div>
+              <h3>App Code</h3>
+              <div class="subtitle">~/dev/ad/flivideo/flihub</div>
+            </div>
+          </div>
+          <span class="status-badge clean"><span class="dot"></span> Up to date</span>
+        </div>
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Version</div>
+            <div class="value">dc0d1f9</div>
+            <div class="detail">All machines in sync</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Last sync</div>
+            <div class="value">Today 4:12 PM</div>
+            <div class="detail">by David</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Collaborators</div>
+            <div class="value" style="color: #16a34a;">All current</div>
+            <div class="detail">Jan ✓ Roamy ✓</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" disabled>Push Code</button>
+          <button class="btn btn-secondary" disabled>Pull Code</button>
+          <span class="action-hint">Everyone is on the same version</span>
+        </div>
+      </div>
+
+      <!-- Channel 2: Video Project -->
+      <div class="channel">
+        <div class="channel-header">
+          <div class="channel-title">
+            <div class="icon video">🎬</div>
+            <div>
+              <h3>Video Project</h3>
+              <div class="subtitle">~/dev/video-projects/v-appydave</div>
+            </div>
+          </div>
+          <span class="status-badge clean"><span class="dot"></span> Up to date</span>
+        </div>
+        <div class="state-row">
+          <div class="state-item">
+            <div class="label">Version</div>
+            <div class="value">a4f2c8e</div>
+            <div class="detail">All machines in sync</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Last sync</div>
+            <div class="value">Today 2:30 PM</div>
+            <div class="detail">by David</div>
+          </div>
+          <div class="state-item">
+            <div class="label">Collaborators</div>
+            <div class="value" style="color: #16a34a;">All current</div>
+            <div class="detail">Jan ✓ Roamy ✓</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" disabled>Push Project</button>
+          <button class="btn btn-secondary" disabled>Pull Project</button>
+          <span class="action-hint">Everyone is on the same version</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Role: <strong>Recorder</strong> (David)</span>
+        <span>Collaborators: <code>Jan (editor)</code>, <code>Roamy (viewer)</code></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const headerStates = {
+  'david-dirty': `
+    <div class="sync-ind dirty" title="Video Project: 3 uncommitted files">
+      <span class="ind-dot"></span><span class="ind-label">🎬 Project</span><span class="ind-count">3</span>
+    </div>
+    <div class="sync-ind clean" title="App Code: up to date">
+      <span class="ind-dot"></span><span class="ind-label">⌘ Code</span>
+    </div>`,
+  'david-code': `
+    <div class="sync-ind clean" title="Video Project: up to date">
+      <span class="ind-dot"></span><span class="ind-label">🎬 Project</span>
+    </div>
+    <div class="sync-ind clean" title="App Code: just pushed">
+      <span class="ind-dot"></span><span class="ind-label">⌘ Code</span>
+    </div>`,
+  'jan-behind': `
+    <div class="sync-ind behind" title="Video Project: 3 files behind">
+      <span class="ind-dot"></span><span class="ind-label">🎬 Project</span><span class="ind-count">3</span>
+    </div>
+    <div class="sync-ind behind" title="App Code: 2 commits behind">
+      <span class="ind-dot"></span><span class="ind-label">⌘ Code</span><span class="ind-count">2</span>
+    </div>`,
+  'conflict': `
+    <div class="sync-ind conflict" title="Video Project: 1 merge conflict">
+      <span class="ind-dot"></span><span class="ind-label">🎬 Project</span><span class="ind-count">!</span>
+    </div>
+    <div class="sync-ind clean" title="App Code: up to date">
+      <span class="ind-dot"></span><span class="ind-label">⌘ Code</span>
+    </div>`,
+  'clean': `
+    <div class="sync-ind clean" title="Video Project: up to date">
+      <span class="ind-dot"></span><span class="ind-label">🎬 Project</span>
+    </div>
+    <div class="sync-ind clean" title="App Code: up to date">
+      <span class="ind-dot"></span><span class="ind-label">⌘ Code</span>
+    </div>`
+};
+
+function showScenario(id) {
+  document.querySelectorAll('.scenario-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.scenario-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  document.getElementById('header-indicators').innerHTML = headerStates[id] || headerStates['clean'];
+}
+</script>
+
+</body>
+</html>
