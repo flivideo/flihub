@@ -565,34 +565,7 @@ export function createSystemRoutes(getConfig: () => Config, watcherManager?: Wat
     res.json({ watchers });
   });
 
-  /**
-   * POST /api/system/git-sync
-   *
-   * B038: relay-collaboration — pull latest project state (text files, images, transcripts)
-   * without touching the terminal. Pull-only, no push, no commit.
-   *
-   * Response:
-   *   Success: { success: true, output: string }
-   *   Error:   { success: false, error: string }
-   */
-  router.post('/git-sync', async (_req: Request, res: Response) => {
-    // B038: relay collaboration
-    try {
-      const config = getConfig();
-      if (!config.projectsRootDirectory) {
-        res.json({ success: false, error: 'No projects root directory configured' });
-        return;
-      }
-      const repoDir = expandPath(config.projectsRootDirectory);
-      const { stdout, stderr } = await execFileAsync('git', ['pull', '--rebase'], {
-        cwd: repoDir,
-        timeout: 120000,
-      });
-      res.json({ success: true, output: stdout || stderr });
-    } catch (error) {
-      res.status(500).json({ success: false, error: String(error) });
-    }
-  });
+  // B044: git-sync removed — replaced by POST /api/sync/pull with channel='video-project'
 
   return router;
 }

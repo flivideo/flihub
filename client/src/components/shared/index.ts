@@ -12,5 +12,7 @@ export { ConfirmationModal } from './ConfirmationModal';
 export type { ChapterSettings } from './ConfirmationModal';
 export { GlingEditTool } from './GlingEditTool';
 export { RelayTool } from './RelayTool';
+export { SyncTool } from './SyncTool';
 export { RenamePanel } from './RenamePanel';
 export { ChapterListPanel } from './ChapterListPanel';
+export { SyncIndicator } from './SyncIndicator';

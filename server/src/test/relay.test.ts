@@ -1157,67 +1157,7 @@ describe('GET /api/relay/activity', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Git-sync route integration tests
-// ---------------------------------------------------------------------------
-
-describe('POST /api/system/git-sync', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('returns error when projectsRootDirectory not configured', async () => {
-    const app = buildSystemApp({ projectsRootDirectory: undefined });
-    const res = await request(app).post('/api/system/git-sync');
-    expect(res.body.success).toBe(false);
-    expect(res.body.error).toMatch(/projects root directory/i);
-  });
-
-  it('calls execFile with git pull --rebase on success', async () => {
-    mockExecFile.mockReturnValue({ stdout: 'Already up to date.\n', stderr: '' });
-    const app = buildSystemApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
-    await request(app).post('/api/system/git-sync');
-    expect(mockExecFile).toHaveBeenCalled();
-    const args = mockExecFile.mock.calls[0];
-    expect(args[0]).toBe('git');
-    expect(args[1]).toEqual(['pull', '--rebase']);
-  });
-
-  it('returns stdout on success', async () => {
-    mockExecFile.mockReturnValue({ stdout: 'Already up to date.\n', stderr: '' });
-    const app = buildSystemApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
-    const res = await request(app).post('/api/system/git-sync');
-    expect(res.body.success).toBe(true);
-    expect(res.body.output).toContain('Already up to date.');
-  });
-
-  it('returns stderr as output when stdout is empty', async () => {
-    mockExecFile.mockReturnValue({ stdout: '', stderr: 'Current branch main is up to date.' });
-    const app = buildSystemApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
-    const res = await request(app).post('/api/system/git-sync');
-    expect(res.body.success).toBe(true);
-    expect(res.body.output).toContain('Current branch main is up to date.');
-  });
-
-  it('returns 500 on exec failure', async () => {
-    mockExecFile.mockImplementationOnce(() => {
-      throw new Error('fatal: not a git repository');
-    });
-    const app = buildSystemApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
-    const res = await request(app).post('/api/system/git-sync');
-    expect(res.status).toBe(500);
-    expect(res.body.success).toBe(false);
-    expect(res.body.error).toContain('not a git repository');
-  });
-
-  it('passes cwd option to execFile', async () => {
-    mockExecFile.mockReturnValue({ stdout: 'ok', stderr: '' });
-    const app = buildSystemApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
-    await request(app).post('/api/system/git-sync');
-    const args = mockExecFile.mock.calls[0];
-    expect(args[2]).toHaveProperty('cwd', '/Users/test/dev/video-projects/v-appydave');
-  });
-});
+// B044: git-sync tests removed — endpoint replaced by POST /api/sync/pull (see sync.test.ts)
 
 // ---------------------------------------------------------------------------
 // GET /api/relay/files — per-file detail for subfolders

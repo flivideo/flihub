@@ -1047,3 +1047,63 @@ export interface RelayActivityResponse {
   events?: RelayActivityEvent[];
   error?: string;
 }
+
+// B044: Sync Hub — git sync status types
+export type SyncState = 'clean' | 'dirty' | 'behind' | 'ahead' | 'diverged' | 'conflict' | 'unknown';
+
+export interface SyncChannelStatus {
+  channel: string;
+  state: SyncState;
+  localHash: string;
+  remoteHash: string;
+  dirtyCount: number;
+  behindCount: number;
+  aheadCount: number;
+  lastFetch: string; // ISO date
+  dirtyFiles?: string[];
+  error?: string;
+}
+
+export interface SyncStatusResponse {
+  success: boolean;
+  appCode?: SyncChannelStatus;
+  videoProject?: SyncChannelStatus;
+  error?: string;
+}
+
+// B044: Sync Hub — push/pull/resolve action types
+
+export interface SyncPushResponse {
+  success: boolean;
+  commitHash?: string;
+  commitMessage?: string;
+  filesCommitted?: number;
+  output?: string;
+  error?: string;
+}
+
+export interface SyncConflictFile {
+  path: string;
+  status: 'both-modified' | 'deleted-by-them' | 'deleted-by-us' | 'added-by-both';
+}
+
+export interface SyncPullResponse {
+  success: boolean;
+  output?: string;
+  behindCount?: number;
+  conflicts?: SyncConflictFile[];
+  restartInstructions?: string;
+  error?: string;
+}
+
+export interface SyncResolveRequest {
+  channel: 'app-code' | 'video-project';
+  file: string;
+  resolution: 'keep-mine' | 'keep-theirs';
+}
+
+export interface SyncResolveResponse {
+  success: boolean;
+  remainingConflicts?: number;
+  error?: string;
+}
