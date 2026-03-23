@@ -12,7 +12,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useRecordings, useConfig, useGitSync } from '../hooks/useApi';
+import { useRecordings, useConfig } from '../hooks/useApi';
 import { useRecordingsSocket, getSocket } from '../hooks/useSocket';
 import { formatFileSize, formatChapterTitle } from '../utils/formatting';
 import {
@@ -22,6 +22,7 @@ import {
   ConfirmationModal,
   GlingEditTool,
   RelayTool,
+  SyncTool,
   RenamePanel,
   ChapterListPanel,
 } from './shared';
@@ -83,22 +84,33 @@ const toolHeadings: Record<string, string> = {
   renumber: 'Chapter Management',
   'gling-edit': 'Gling / Edit Prep',
   relay: 'Relay Collaboration',
+  sync: 'Sync',
   awb: 'AWB',
 };
 
-export type ActiveTool = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay' | 'awb';
+export type ActiveTool = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay' | 'awb' | 'sync';
 
-export function ManagePanel() {
+export interface ManagePanelProps {
+  initialTool?: string | null;
+  onToolActivated?: () => void;
+}
+
+export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps = {}) {
   const { data, isLoading, error } = useRecordings();
   const { data: config } = useConfig();
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [showParked, setShowParked] = useState(false); // FR-122: Default to hidden
 
-  // B038: relay collaboration — git pull-only sync
-  const gitSync = useGitSync();
-
   // B041: Tool-oriented design — each tool owns center content, default to regen
   const [activeTool, setActiveTool] = useState<ActiveTool>('regen');
+
+  // B044: Allow parent to navigate to a specific tool (e.g. from SyncIndicator)
+  useEffect(() => {
+    if (initialTool && initialTool !== activeTool) {
+      setActiveTool(initialTool as ActiveTool);
+      onToolActivated?.();
+    }
+  }, [initialTool]);
 
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -365,11 +377,6 @@ export function ManagePanel() {
     });
   };
 
-  // B041: Git Sync handler (separate from tool navigation)
-  const handleGitSync = () => {
-    gitSync.mutate();
-  };
-
   // B041: Tool navigation — clicking same tool returns to regen (default)
   const handleToolClick = (tool: ActiveTool) => {
     setActiveTool(activeTool === tool ? 'regen' : tool);
@@ -407,7 +414,7 @@ export function ManagePanel() {
       {/* B041: Center Content — tool-specific views */}
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* B041: Contextual heading per tool — relay has its own project-scoped heading */}
-        {activeTool !== 'relay' && (
+        {activeTool !== 'relay' && activeTool !== 'sync' && (
           <h2 className="text-lg font-medium text-gray-700 mb-4">
             {toolHeadings[activeTool]}
           </h2>
@@ -606,6 +613,7 @@ export function ManagePanel() {
           <>
             {/* B041: Standalone tools — full-width, no file list */}
             {activeTool === 'relay' && <RelayTool />}
+            {activeTool === 'sync' && <SyncTool />}
             {activeTool === 'gling-edit' && <GlingEditTool />}
             {activeTool === 'awb' && <PoemWuiPage />}
           </>
@@ -617,8 +625,6 @@ export function ManagePanel() {
         <ToolsSidebar
           activeTool={activeTool}
           onToolClick={handleToolClick}
-          onGitSync={handleGitSync}
-          isGitSyncPending={gitSync.isPending}
         />
       </div>
 

@@ -32,7 +32,7 @@ import { ManagePanel } from './components/ManagePanel';
 // B045: PoemWuiPage moved into ManagePanel as AWB tool
 import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
-import { OpenFolderButton } from './components/shared';
+import { OpenFolderButton, SyncIndicator } from './components/shared';
 import { HeaderDropdown } from './components/HeaderDropdown';
 import { useOpenFolder } from './hooks/useOpenFolder';
 import ApiExplorer from './components/ApiExplorer';
@@ -123,6 +123,8 @@ function App() {
   const [configFocusSection, setConfigFocusSection] = useState<ConfigFocusSection>(null);
   // FR-127: Developer drawer state
   const [isDevDrawerOpen, setIsDevDrawerOpen] = useState(false);
+  // B044: Manage tool navigation (for SyncIndicator click-through)
+  const [manageTool, setManageTool] = useState<string | null>(null);
 
   const { files, connected, isReconnecting, removeFile } = useSocket();
   const { data: config } = useConfig();
@@ -529,6 +531,14 @@ function App() {
                 </>
               )}
             </div>
+            {/* B044: Persistent sync indicators */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <SyncIndicator onNavigateToSync={() => {
+                changeTab('export');
+                setManageTool('sync');
+              }} />
+              <div className="w-px h-5 bg-gray-200" />
+            </div>
             {/* FR-69: Settings dropdown */}
             <HeaderDropdown
               trigger={
@@ -838,7 +848,7 @@ function App() {
         {/* FR-131: Manage Tab (formerly Export) */}
         {activeTab === 'export' && (
           <section>
-            <ManagePanel />
+            <ManagePanel initialTool={manageTool} onToolActivated={() => setManageTool(null)} />
           </section>
         )}
 

@@ -12,12 +12,8 @@ The Manage page was redesigned in B041 (manage-page-redesign). "Manage & Export"
 
 ## Open Items
 
-### F004 — App auto-update for collaborators (Jan/Roamy)
-**Type**: feature
-**Priority**: high
-**Where**: System-wide — server + client
-**What I saw**: Jan and Roamy need to go to terminal and run `git pull` to get FliHub code updates after David pushes from Creator (M4 Mini). No notification that a new version is available.
-**What I expected**: Clear messaging when a new FliHub version is available, with a one-click button to update (git pull + restart). Collaborators shouldn't need terminal access.
+### ~~F004 — App auto-update for collaborators (Jan/Roamy)~~ → RESOLVED
+**Resolution**: B044 Sync Hub. App Code channel shows behind-count in header pill + pull button with restart instructions. Editors see "Pull & Restart" banner when behind. Campaign: sync-hub.
 
 ---
 

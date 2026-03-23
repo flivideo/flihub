@@ -6,12 +6,10 @@ import type { ActiveTool } from '../components/ManagePanel';
 const defaultProps = {
   activeTool: 'regen' as ActiveTool,
   onToolClick: vi.fn(),
-  onGitSync: vi.fn(),
-  isGitSyncPending: false,
 };
 
 function renderSidebar(overrides: Partial<typeof defaultProps> = {}) {
-  const props = { ...defaultProps, onToolClick: vi.fn(), onGitSync: vi.fn(), ...overrides };
+  const props = { ...defaultProps, onToolClick: vi.fn(), ...overrides };
   render(<ToolsSidebar {...props} />);
   return props;
 }
@@ -24,11 +22,6 @@ describe('ToolsSidebar', () => {
     expect(screen.getByText('Gling / Edit')).toBeInTheDocument();
     expect(screen.getByText('Renumber')).toBeInTheDocument();
     expect(screen.getByText('Relay')).toBeInTheDocument();
-  });
-
-  it('renders Git Sync button', () => {
-    renderSidebar();
-    expect(screen.getByText('Git Sync')).toBeInTheDocument();
   });
 
   it('active tool button has active styling (text-blue-600)', () => {
@@ -61,24 +54,6 @@ describe('ToolsSidebar', () => {
     });
   });
 
-  it('clicking Git Sync calls onGitSync', () => {
-    const props = renderSidebar();
-    fireEvent.click(screen.getByText('Git Sync'));
-    expect(props.onGitSync).toHaveBeenCalled();
-  });
-
-  it('shows "Syncing..." when isGitSyncPending is true', () => {
-    renderSidebar({ isGitSyncPending: true });
-    expect(screen.getByText('Syncing...')).toBeInTheDocument();
-    expect(screen.queryByText('Git Sync')).not.toBeInTheDocument();
-  });
-
-  it('Git Sync button is disabled when pending', () => {
-    renderSidebar({ isGitSyncPending: true });
-    const button = screen.getByText('Syncing...');
-    expect(button).toBeDisabled();
-  });
-
   describe('group headings', () => {
     it('renders Record heading', () => {
       renderSidebar();
@@ -93,11 +68,6 @@ describe('ToolsSidebar', () => {
     it('renders Collaborate heading', () => {
       renderSidebar();
       expect(screen.getByText('Collaborate')).toBeInTheDocument();
-    });
-
-    it('renders Actions heading', () => {
-      renderSidebar();
-      expect(screen.getByText('Actions')).toBeInTheDocument();
     });
   });
 });

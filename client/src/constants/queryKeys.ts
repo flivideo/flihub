@@ -60,4 +60,6 @@ export const QUERY_KEYS = {
   relayVersions: ['relay-versions'] as const,
   relayFiles: (subfolder: string) => ['relay-files', subfolder] as const,
   relayActivity: ['relay-activity'] as const,
+  // B044: Sync Hub
+  syncStatus: ['sync-status'] as const,
 } as const;
