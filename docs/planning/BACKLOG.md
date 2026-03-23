@@ -2,7 +2,7 @@
 
 **Last updated**: 2026-03-23
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 14 | Pending: 13 | In Progress: 0 | Deferred: 7 | Rejected: 4
+**Total open**: 11 | Pending: 10 | In Progress: 0 | Deferred: 5 | Rejected: 4
 
 ---
 
@@ -21,7 +21,7 @@
 - [x] B029 — Test `extractChapters()` matching logic | Completed: test-coverage-gaps-2 | +25 tests, 3 exports added
 - [x] B030 — Test `client/src/utils/srt.ts` | Completed: test-coverage-gaps-2 | +29 tests
 - [x] B031 — Test `editManifest.ts` | Completed: test-coverage-gaps-2 | +24 tests
-- [ ] B032 — Test `shared/naming.ts` missing functions (parseImageFilename, buildImageFilename, findNextSequence, calculateSuggestedNaming) | Priority: medium | Image filename parsing and suggested-naming logic completely untested | Audit: test-quality #5
+- [x] B032 — Test `shared/naming.ts` missing functions (parseImageFilename, buildImageFilename, findNextSequence, calculateSuggestedNaming) | Priority: medium | Completed: tech-debt-round1 | +42 tests
 
 ## Structural Debt (from architecture + code-quality audits 2026-03-19)
 
@@ -37,9 +37,9 @@
 
 - [x] B041 — Manage page redesign — rethink "Manage & Export" as context-sensitive tool pages, not a generic shell with drawers | Priority: high | Feedback: F002, F003 | Completed: manage-page-redesign
 - [x] B042 — Remove Regen Chapters from ToolsSidebar (temporary system, no longer useful) | Priority: medium | Feedback: F001 | Completed: pre-campaign quick fix
-- [~] B043 — Type relay API responses and add HTTP status checking in hooks (audit M1, M2, M4) | Priority: medium | Audit: code-quality 2026-03-22 | Campaign: tech-debt-round1
+- [x] B043 — Type relay API responses and add HTTP status checking in hooks (audit M1, M2, M4) | Priority: medium | Completed: tech-debt-round1 | 7 response types + HTTP status checks on all 7 hooks
 - [ ] B044 — App auto-update for collaborators — version check + notification + one-click update button | Priority: high | Feedback: F004
-- [~] B045 — Move AWB from top nav into Manage sidebar | Priority: medium | Feedback: F005 | Campaign: tech-debt-round1
+- [x] B045 — Move AWB from top nav into Manage sidebar | Priority: medium | Feedback: F005 | Completed: tech-debt-round1
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
@@ -73,6 +73,9 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B045 | Move AWB from top nav into Manage sidebar (tech-debt-round1). Removed from ViewTab/VALID_TABS, added as Manage tool. F005 resolved. | 2026-03-23 |
+| B043 | Type relay API responses (tech-debt-round1). 7 response type interfaces + HTTP status checks on all 7 hooks. | 2026-03-23 |
+| B032 | Test shared/naming.ts missing functions (tech-debt-round1). +42 tests for parseImageFilename, buildImageFilename, findNextSequence, calculateSuggestedNaming. | 2026-03-23 |
 | B041 | Manage page redesign (manage-page-redesign) — context-sensitive tool pages, drawers eliminated, sidebar as pure navigation. 3/3 complete. Feedback F002+F003 resolved. | 2026-03-23 |
 | B040 | Manage + Relay Refactor Wave 2 (manage-relay-refactor-w2) — relay folder browser, subfolder-aware push/collect, promote-to-final, role-based visibility, visual indicators. 6/6 complete. 842 tests. | 2026-03-22 |
 | B039 | Manage + Relay Refactor Wave 1 (manage-relay-refactor) — security fixes (execFile), route guards, machineRole, layout refactor, retire S3, 48 relay tests. 6/6 complete. | 2026-03-22 |

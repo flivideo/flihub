@@ -1,34 +1,36 @@
 # Next Round Brief — FliHub
 
-**Written**: 2026-03-23 (post manage-panel-polish)
+**Written**: 2026-03-23 (post tech-debt-round1)
 
 ---
 
 ## Goal
 
-Address remaining technical debt — relay API typing, test coverage gaps, and structural cleanup items.
+Ship the app auto-update feature for collaborators (B044) and address remaining structural debt.
 
 ## Background
 
-Two campaigns shipped this session:
+Three campaigns shipped this session:
 - **B041 (manage-page-redesign)**: Drawers removed, tool-owned center content, sidebar as pure navigation
-- **manage-panel-polish**: Fixed stale closure, dead code, loose types, +41 tests (client: 126 → 167)
+- **manage-panel-polish**: Fixed stale closure, dead code, loose types, +41 tests
+- **tech-debt-round1**: Typed relay API (B043), +42 naming tests (B032), AWB moved to Manage sidebar (B045)
 
-Total test count: 883. Build clean. All feedback items (F001-F003) resolved.
+Total test count: 925 (80 shared + 167 client + 678 server). Build clean.
+
+## Pending Config Task
+
+- **Jan's machineRole**: `ssh janreyes@mac-mini-jan` — set `"machineRole": "editor"` in `~/dev/ad/flivideo/flihub/server/config.json`. Machine was offline during this session.
+- **Roamy git pull**: `ssh davidcruwys@MacBook-Pro.local 'cd ~/dev/ad/flivideo/flihub && git pull'` — needs today's code changes.
 
 ## Suggested Work Items
 
-### B043 — Type relay API responses + HTTP status checking (medium)
-- Relay hooks use untyped API responses — add TypeScript interfaces
-- No HTTP status checking on fetch calls — add error handling
-- From code-quality audit on manage-relay-refactor-w2
+### B044 — App auto-update for collaborators (high)
+- Jan and Roamy need version notifications + one-click update (git pull + restart)
+- Currently must go to terminal and run `git pull` manually
+- Server: version check endpoint (compare local git hash to remote). Client: notification banner + update button.
+- From feedback F004.
 
-### B032 — Test shared/naming.ts missing functions (medium)
-- parseImageFilename, buildImageFilename, findNextSequence, calculateSuggestedNaming
-- Image filename parsing and suggested-naming logic completely untested
-- From test-quality audit
-
-### Structural debt (lower priority)
+### Structural debt (medium)
 - B033: Extract transcription queue state into a class (module-level mutable globals)
 - B034: Fix asyncHandler — wrap all routes or remove
 - B035: Add React error boundary around tab components
@@ -36,13 +38,12 @@ Total test count: 883. Build clean. All feedback items (F001-F003) resolved.
 - B037: Remove `[FR-89 DEBUG]` console.log statements
 
 ### Design iteration (future)
-- ManagePanel is 620+ lines — extract regen handler + file list into sub-components
-- Fixed sidebar positioning (`fixed left-8 top-32`) is fragile — consider layout grid
-- Promote overwrite warning — check if dest exists before fs.copy
+- ManagePanel is 650+ lines with 6 tools — extract tool rendering into sub-components
+- Fixed sidebar positioning is fragile — consider layout grid
 
 ## Reference
-- Assessment: `docs/planning/manage-panel-polish/assessment.md`
-- AGENTS.md: `docs/planning/manage-panel-polish/AGENTS.md` (inherit for next wave)
+- Assessment: `docs/planning/tech-debt-round1/assessment.md`
+- AGENTS.md: `docs/planning/tech-debt-round1/AGENTS.md` (inherit for next wave)
 - BACKLOG.md: `docs/planning/BACKLOG.md`
 
 ## To Start Next Session
