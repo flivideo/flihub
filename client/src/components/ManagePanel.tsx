@@ -406,10 +406,12 @@ export function ManagePanel() {
     <div className="relative">
       {/* B041: Center Content — tool-specific views */}
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* B041: Contextual heading per tool */}
-        <h2 className="text-lg font-medium text-gray-700 mb-4">
-          {toolHeadings[activeTool]}
-        </h2>
+        {/* B041: Contextual heading per tool — relay has its own project-scoped heading */}
+        {activeTool !== 'relay' && (
+          <h2 className="text-lg font-medium text-gray-700 mb-4">
+            {toolHeadings[activeTool]}
+          </h2>
+        )}
 
         {needsFileList ? (
           <>
