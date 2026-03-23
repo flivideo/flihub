@@ -92,7 +92,7 @@ export function RelayTool() {
   const { data: env } = useEnvironment();
   const { data: config } = useConfig();
   const role = env?.machineRole || 'recorder';
-  const isCreator = role === 'recorder';
+  const isCreator = role !== 'editor';
 
   const { data: status, isLoading: statusLoading } = useRelayStatus();
   const { data: browseData } = useRelayBrowse();
