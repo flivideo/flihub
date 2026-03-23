@@ -2,7 +2,7 @@
 
 **Last updated**: 2026-03-23
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 12 | Pending: 10 | In Progress: 1 | Deferred: 5 | Rejected: 4
+**Total open**: 11 | Pending: 10 | In Progress: 0 | Deferred: 5 | Rejected: 4
 
 ---
 
@@ -38,7 +38,7 @@
 - [x] B041 — Manage page redesign — rethink "Manage & Export" as context-sensitive tool pages, not a generic shell with drawers | Priority: high | Feedback: F002, F003 | Completed: manage-page-redesign
 - [x] B042 — Remove Regen Chapters from ToolsSidebar (temporary system, no longer useful) | Priority: medium | Feedback: F001 | Completed: pre-campaign quick fix
 - [x] B043 — Type relay API responses and add HTTP status checking in hooks (audit M1, M2, M4) | Priority: medium | Completed: tech-debt-round1 | 7 response types + HTTP status checks on all 7 hooks
-- [ ] B044 — Sync Hub — two-channel push/pull for app code + video projects with dirty-state notifications | Priority: high | Feedback: F004 | Scope: (1) App code sync: David pushes FliHub repo, collaborators get notified + one-click pull + server restart. (2) Video project sync: David pushes project recordings via git, collaborators pull. Both directions show dirty/clean state and notify the other side. Replaces manual terminal git commands. | UX requirements: (a) Persistent header indicator visible on ALL pages — colour-coded status dots for each channel (green=clean, amber=behind, red=dirty). Not flashing but always visible so you know at a glance without navigating to Sync page. (b) Conflict handling — detect merge conflicts on pull, show clear resolution UI (accept theirs / accept mine / open in editor). Low frequency but must not fail silently. (c) Mockup: `.mochaccino/designs/sync-hub/index.html`
+- [x] B044 — Sync Hub — two-channel push/pull for app code + video projects with dirty-state notifications | Priority: high | Campaign: sync-hub | Feedback: F004 | Completed: sync-hub
 - [x] B045 — Move AWB from top nav into Manage sidebar | Priority: medium | Feedback: F005 | Completed: tech-debt-round1
 - [x] B046 — Relay UX redesign — workflow lanes, file drawers, activity feed, toasts, setup guide, project-list indicators | Priority: high | Campaign: relay-redesign | Completed: relay-redesign
 
@@ -74,6 +74,7 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B044 | Sync Hub (sync-hub) — two-channel git sync with persistent header indicators, auto-commit push, pull, conflict resolution. 6/6 complete. F004 resolved. | 2026-03-23 |
 | B045 | Move AWB from top nav into Manage sidebar (tech-debt-round1). Removed from ViewTab/VALID_TABS, added as Manage tool. F005 resolved. | 2026-03-23 |
 | B043 | Type relay API responses (tech-debt-round1). 7 response type interfaces + HTTP status checks on all 7 hooks. | 2026-03-23 |
 | B032 | Test shared/naming.ts missing functions (tech-debt-round1). +42 tests for parseImageFilename, buildImageFilename, findNextSequence, calculateSuggestedNaming. | 2026-03-23 |
