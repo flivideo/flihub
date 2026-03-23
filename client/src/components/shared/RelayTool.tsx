@@ -532,12 +532,12 @@ function SetupGuide() {
 
         {/* Creator config */}
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">3. Configure FliHub — Creator (David)</h4>
+          <h4 className="font-semibold text-gray-700 mb-2">3. Configure FliHub — Recorder (David)</h4>
           <div className="text-xs text-gray-500 mb-1">Add to <code className="font-mono bg-gray-100 px-1 rounded">server/config.json</code>:</div>
           <pre className="font-mono text-xs bg-gray-50 border border-gray-200 rounded p-2 overflow-x-auto">
 {`"relayDirectory": "/Users/davidcruwys/relay/flihub-appydave",
 "relayEnabled": true,
-"machineRole": "creator"`}
+"machineRole": "recorder"`}
           </pre>
         </div>
 
