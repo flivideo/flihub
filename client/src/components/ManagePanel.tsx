@@ -25,10 +25,11 @@ import {
   RenamePanel,
   ChapterListPanel,
 } from './shared';
+import type { ChapterSettings } from './shared';
 import { extractTagsFromName } from '../../../shared/naming';
 import type { RecordingFile } from '../../../shared/types';
 
-interface ChapterGroup {
+export interface ChapterGroup {
   chapterKey: string;
   title: string;
   files: RecordingFile[];
@@ -36,7 +37,7 @@ interface ChapterGroup {
 }
 
 // Extract display name from first file in chapter
-function getChapterDisplayName(files: RecordingFile[]): string {
+export function getChapterDisplayName(files: RecordingFile[]): string {
   const firstFile = files.find((f) => f.sequence === '1') || files[0];
   if (!firstFile) return '';
   const { name } = extractTagsFromName(firstFile.name);
@@ -44,7 +45,7 @@ function getChapterDisplayName(files: RecordingFile[]): string {
 }
 
 // Group recordings by chapter
-function groupByChapter(recordings: RecordingFile[]): ChapterGroup[] {
+export function groupByChapter(recordings: RecordingFile[]): ChapterGroup[] {
   const groups = new Map<string, { files: RecordingFile[]; totalSize: number }>();
 
   for (const recording of recordings) {
@@ -83,7 +84,7 @@ const toolHeadings: Record<string, string> = {
   relay: 'Relay Collaboration',
 };
 
-type ActiveTool = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay';
+export type ActiveTool = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay';
 
 export function ManagePanel() {
   const { data, isLoading, error } = useRecordings();
@@ -104,19 +105,9 @@ export function ManagePanel() {
     files?: string[];
     warning?: string;
     variant?: 'primary' | 'danger' | 'warning';
-    chapterSettings?: {
-      resolution: '720p' | '1080p';
-      includeTitleSlides: boolean;
-      slideDuration: number;
-    };
-    onConfirm: () => void;
-  } | null>(null);
-
-  // Chapter settings state for editing in modal
-  const [modalChapterSettings, setModalChapterSettings] = useState<{
-    resolution: '720p' | '1080p';
-    includeTitleSlides: boolean;
-    slideDuration: number;
+    chapterSettings?: ChapterSettings;
+    onChapterSettingsChange?: (settings: ChapterSettings) => void;
+    onConfirm: (chapterSettings?: ChapterSettings) => void;
   } | null>(null);
 
   // Subscribe to real-time updates
@@ -281,17 +272,14 @@ export function ManagePanel() {
         ? 'shadows'
         : type === 'transcripts'
           ? 'transcripts'
-          : type === 'chapters'
-            ? 'chapter videos'
-            : 'all derivative files';
+          : 'all derivative files';
 
     // Build warning message and chapter settings
     let warning: string | undefined;
-    let initialChapterSettings:
-      | { resolution: '720p' | '1080p'; includeTitleSlides: boolean; slideDuration: number }
-      | undefined;
+    let initialChapterSettings: ChapterSettings | undefined;
+    let onChapterSettingsChange: ((settings: ChapterSettings) => void) | undefined;
 
-    if (type === 'chapters' || type === 'all') {
+    if (type === 'all') {
       // Initialize chapter settings from config
       const chapterConfig = config?.chapterRecordings || {
         resolution: '720p' as '720p' | '1080p',
@@ -305,14 +293,15 @@ export function ManagePanel() {
         slideDuration: chapterConfig.slideDuration ?? 1.0,
       };
 
-      setModalChapterSettings(initialChapterSettings);
+      onChapterSettingsChange = (settings: ChapterSettings) => {
+        // Re-render modal with updated settings
+        setConfirmationModal((prev) =>
+          prev ? { ...prev, chapterSettings: settings } : prev
+        );
+      };
 
-      if (type === 'chapters') {
-        warning = 'This may take 30-60 seconds per chapter.';
-      } else {
-        warning =
-          'This will run all three operations sequentially:\n1. Regenerate shadows\n2. Queue transcriptions\n3. Regenerate chapter videos\n\nThis may take a long time.';
-      }
+      warning =
+        'This will run all three operations sequentially:\n1. Regenerate shadows\n2. Queue transcriptions\n3. Regenerate chapter videos\n\nThis may take a long time.';
     }
 
     // Show confirmation modal
@@ -323,7 +312,8 @@ export function ManagePanel() {
       warning,
       variant: type === 'all' ? 'warning' : 'primary',
       chapterSettings: initialChapterSettings,
-      onConfirm: async () => {
+      onChapterSettingsChange,
+      onConfirm: async (confirmedSettings?: ChapterSettings) => {
         setConfirmationModal(null);
 
         // Show start toast
@@ -332,19 +322,16 @@ export function ManagePanel() {
             ? 'Shadow Files'
             : type === 'transcripts'
               ? 'Transcripts'
-              : type === 'chapters'
-                ? 'Chapter Videos'
-                : 'All Files';
+              : 'All Files';
         toast.info(`Regenerating ${toastLabel}...`);
 
         try {
           const endpoint = `/api/manage/${tool}`;
 
           // Build request body with optional chapter settings
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const requestBody: any = { files: targetFiles };
-          if ((type === 'chapters' || type === 'all') && modalChapterSettings) {
-            requestBody.chapterSettings = modalChapterSettings;
+          const requestBody: { files?: string[]; chapterSettings?: ChapterSettings } = { files: targetFiles };
+          if (type === 'all' && confirmedSettings) {
+            requestBody.chapterSettings = confirmedSettings;
           }
 
           const response = await fetch(`http://localhost:5101${endpoint}`, {
@@ -365,7 +352,7 @@ export function ManagePanel() {
             toast.success(`Queued ${queued} file${queued !== 1 ? 's' : ''} for transcription`);
           }
 
-          // For shadows, chapters, and all - Socket.io events will handle progress/completion
+          // For shadows and all - Socket.io events will handle progress/completion
         } catch (err) {
           console.error(`[Regen ${type}] Error:`, err);
           toast.error(
@@ -638,8 +625,8 @@ export function ManagePanel() {
           files={confirmationModal.files}
           warning={confirmationModal.warning}
           variant={confirmationModal.variant}
-          chapterSettings={modalChapterSettings ?? undefined}
-          onChapterSettingsChange={modalChapterSettings ? setModalChapterSettings : undefined}
+          chapterSettings={confirmationModal.chapterSettings}
+          onChapterSettingsChange={confirmationModal.onChapterSettingsChange}
           onConfirm={confirmationModal.onConfirm}
           onCancel={() => setConfirmationModal(null)}
         />

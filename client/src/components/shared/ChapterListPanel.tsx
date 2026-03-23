@@ -3,6 +3,40 @@ import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { parseRecordingFilename } from '../../../../shared/naming';
 
+// Extracted pure functions for testability
+
+export function extractChapters(recordings: string[]): { number: number; fileCount: number }[] {
+  const chapterMap = new Map<number, number>();
+
+  recordings.forEach((filename) => {
+    const parsed = parseRecordingFilename(filename);
+    if (parsed) {
+      const chapterNum = parseInt(parsed.chapter, 10);
+      chapterMap.set(chapterNum, (chapterMap.get(chapterNum) || 0) + 1);
+    }
+  });
+
+  return Array.from(chapterMap.entries())
+    .map(([number, fileCount]) => ({ number, fileCount }))
+    .sort((a, b) => a.number - b.number);
+}
+
+export function detectGaps(chapters: { number: number }[]): number[] {
+  const gapNumbers: number[] = [];
+  for (let i = 0; i < chapters.length - 1; i++) {
+    const current = chapters[i].number;
+    const next = chapters[i + 1].number;
+
+    // If next chapter is more than 1 away, we have gaps
+    if (next - current > 1) {
+      for (let gap = current + 1; gap < next; gap++) {
+        gapNumbers.push(gap);
+      }
+    }
+  }
+  return gapNumbers;
+}
+
 interface ChapterListPanelProps {
   recordings: string[];
   onClose: () => void;
@@ -14,38 +48,10 @@ export function ChapterListPanel({ recordings, onClose }: ChapterListPanelProps)
   const [isRenaming, setIsRenaming] = useState(false);
 
   // Extract chapters from recordings
-  const chapters = useMemo(() => {
-    const chapterMap = new Map<number, number>();
-
-    recordings.forEach((filename) => {
-      const parsed = parseRecordingFilename(filename);
-      if (parsed) {
-        const chapterNum = parseInt(parsed.chapter, 10);
-        chapterMap.set(chapterNum, (chapterMap.get(chapterNum) || 0) + 1);
-      }
-    });
-
-    return Array.from(chapterMap.entries())
-      .map(([number, fileCount]) => ({ number, fileCount }))
-      .sort((a, b) => a.number - b.number);
-  }, [recordings]);
+  const chapters = useMemo(() => extractChapters(recordings), [recordings]);
 
   // Detect gaps (missing chapter numbers)
-  const gaps = useMemo(() => {
-    const gapNumbers: number[] = [];
-    for (let i = 0; i < chapters.length - 1; i++) {
-      const current = chapters[i].number;
-      const next = chapters[i + 1].number;
-
-      // If next chapter is more than 1 away, we have gaps
-      if (next - current > 1) {
-        for (let gap = current + 1; gap < next; gap++) {
-          gapNumbers.push(gap);
-        }
-      }
-    }
-    return gapNumbers;
-  }, [chapters]);
+  const gaps = useMemo(() => detectGaps(chapters), [chapters]);
 
   // Handle chapter rename
   const handleRename = async (oldChapter: number, newChapter: number) => {

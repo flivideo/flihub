@@ -5,7 +5,7 @@
 
 import { useEffect } from 'react';
 
-interface ChapterSettings {
+export interface ChapterSettings {
   resolution: '720p' | '1080p';
   includeTitleSlides: boolean;
   slideDuration: number;
@@ -30,7 +30,7 @@ interface ConfirmationModalProps {
   chapterSettings?: ChapterSettings;
   onChapterSettingsChange?: (settings: ChapterSettings) => void;
   /** Callbacks */
-  onConfirm: () => void;
+  onConfirm: (chapterSettings?: ChapterSettings) => void;
   onCancel: () => void;
 }
 
@@ -176,7 +176,7 @@ export function ConfirmationModal({
             {cancelText}
           </button>
           <button
-            onClick={onConfirm}
+            onClick={() => onConfirm(chapterSettings)}
             className={`px-4 py-2 text-sm rounded transition-colors ${buttonClasses}`}
           >
             {confirmText}

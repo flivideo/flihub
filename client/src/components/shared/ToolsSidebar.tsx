@@ -9,11 +9,11 @@
  * Git Sync is a separate action (not a tool page).
  */
 
-type ToolType = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay';
+import type { ActiveTool } from '../ManagePanel';
 
 interface ToolsSidebarProps {
-  activeTool: string | null;
-  onToolClick: (tool: ToolType) => void;
+  activeTool: ActiveTool;
+  onToolClick: (tool: ActiveTool) => void;
   onGitSync: () => void;
   isGitSyncPending?: boolean;
 }
