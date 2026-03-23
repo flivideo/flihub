@@ -197,6 +197,7 @@ export function RelayTool() {
               actionLabel={actionLabel}
               onAction={() => handleAction(lane.key)}
               isPending={isActionPending}
+              isPush={isPushAction(lane.key, isCreator)}
               isDrawerOpen={openDrawer === lane.key}
               onToggleDrawer={() => setOpenDrawer(openDrawer === lane.key ? null : lane.key)}
               isCreator={isCreator}
@@ -247,6 +248,7 @@ interface LaneCardProps {
   actionLabel: string;
   onAction: () => void;
   isPending: boolean;
+  isPush: boolean;
   isDrawerOpen: boolean;
   onToggleDrawer: () => void;
   isCreator: boolean;
@@ -262,6 +264,7 @@ function LaneCard({
   actionLabel,
   onAction,
   isPending,
+  isPush,
   isDrawerOpen,
   onToggleDrawer,
   isCreator,
@@ -331,7 +334,7 @@ function LaneCard({
       {/* Action button */}
       <button
         onClick={onAction}
-        disabled={isPending || (!hasFiles && !(isFinalLane && isCreator))}
+        disabled={isPending || (!hasFiles && !isPush && !(isFinalLane && isCreator))}
         className="w-full px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending ? 'Working...' : actionLabel}
