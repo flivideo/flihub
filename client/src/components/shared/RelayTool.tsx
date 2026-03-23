@@ -63,10 +63,10 @@ function formatRelativeTime(isoDate: string): string {
 
 function getDirectionLabel(lane: RelaySubfolder, isCreator: boolean): string {
   if (lane === 'recordings') {
-    return isCreator ? 'YOU \u2192 EDITOR' : 'CREATOR \u2192 YOU';
+    return isCreator ? 'YOU → EDITOR' : 'CREATOR → YOU';
   }
   // edit-1st and edit-2nd flow editor → creator
-  return isCreator ? 'EDITOR \u2192 YOU' : 'YOU \u2192 CREATOR';
+  return isCreator ? 'EDITOR → YOU' : 'YOU → CREATOR';
 }
 
 function getActionLabel(lane: RelaySubfolder, isCreator: boolean): string {
@@ -346,7 +346,7 @@ function LaneCard({
           onClick={onToggleDrawer}
           className="w-full text-xs text-gray-500 hover:text-blue-600 transition-colors text-center"
         >
-          {isDrawerOpen ? 'Hide files' : `Show ${stats.fileCount} files \u25BC`}
+          {isDrawerOpen ? 'Hide files' : `Show ${stats.fileCount} files ▼`}
         </button>
       )}
     </div>
@@ -396,7 +396,7 @@ function FileDrawer({ subfolder, label, isCreator, onClose }: FileDrawerProps) {
           className="text-gray-400 hover:text-gray-600 text-sm px-1"
           title="Close"
         >
-          \u2715
+          ✕
         </button>
       </div>
 
@@ -427,7 +427,7 @@ function FileDrawer({ subfolder, label, isCreator, onClose }: FileDrawerProps) {
       {/* Footer */}
       {files.length > 0 && (
         <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-t border-gray-200 text-xs text-gray-500">
-          <span>{totalChapters} {totalChapters === 1 ? 'chapter' : 'chapters'} \u00B7 {totalFiles} {totalFiles === 1 ? 'file' : 'files'}</span>
+          <span>{totalChapters} {totalChapters === 1 ? 'chapter' : 'chapters'} · {totalFiles} {totalFiles === 1 ? 'file' : 'files'}</span>
           <span>{formatSize(totalSize)}</span>
         </div>
       )}
@@ -471,11 +471,11 @@ function ActivityFeed({ events }: { events?: RelayActivityEvent[] }) {
 
   const getArrow = (action: RelayActivityEvent['action']): string => {
     switch (action) {
-      case 'push': return '\u2191';      // ↑
-      case 'collect': return '\u2193';    // ↓
-      case 'promote': return '\u21BB';    // ↻
-      case 'file-detected': return '\u2193'; // ↓
-      default: return '\u2022';
+      case 'push': return '↑';      // ↑
+      case 'collect': return '↓';    // ↓
+      case 'promote': return '↻';    // ↻
+      case 'file-detected': return '↓'; // ↓
+      default: return '•';
     }
   };
 

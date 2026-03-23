@@ -2,7 +2,7 @@ import { useRelayBrowse } from '../../hooks/useRelayApi';
 import type { RelayProjectInfo } from '../../../../shared/types';
 
 function formatSize(bytes: number): string {
-  if (bytes === 0) return '\u2014';
+  if (bytes === 0) return '—';
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
@@ -14,7 +14,7 @@ function SubfolderCell({ fileCount, totalSize, type }: {
   type: 'recordings' | 'edit-1st' | 'edit-2nd';
 }) {
   if (fileCount === 0) {
-    return <span className="text-gray-300">{'\u2014'}</span>;
+    return <span className="text-gray-300">{'—'}</span>;
   }
 
   const dotColors = {
@@ -95,13 +95,13 @@ export function RelayBrowser() {
                 {projects.length} project{projects.length !== 1 ? 's' : ''}
               </td>
               <td className="px-3 py-2">
-                {totalRecordings > 0 ? `${totalRecordings} files` : '\u2014'}
+                {totalRecordings > 0 ? `${totalRecordings} files` : '—'}
               </td>
               <td className="px-3 py-2">
-                {totalEdit1st > 0 ? `${totalEdit1st} files` : '\u2014'}
+                {totalEdit1st > 0 ? `${totalEdit1st} files` : '—'}
               </td>
               <td className="px-3 py-2">
-                {totalEdit2nd > 0 ? `${totalEdit2nd} files` : '\u2014'}
+                {totalEdit2nd > 0 ? `${totalEdit2nd} files` : '—'}
               </td>
             </tr>
           </tfoot>

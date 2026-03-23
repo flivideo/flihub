@@ -93,8 +93,8 @@ export function SyncIndicator({ onNavigateToSync }: SyncIndicatorProps) {
   if (isLoading || isError || !data) {
     return (
       <div className="flex items-center gap-3">
-        <Pill icon="\u2318" label="Code" status={undefined} onClick={onNavigateToSync} />
-        <Pill icon="\uD83C\uDFAC" label="Project" status={undefined} onClick={onNavigateToSync} />
+        <Pill icon="⌘" label="Code" status={undefined} onClick={onNavigateToSync} />
+        <Pill icon="🎬" label="Project" status={undefined} onClick={onNavigateToSync} />
       </div>
     );
   }
@@ -102,10 +102,10 @@ export function SyncIndicator({ onNavigateToSync }: SyncIndicatorProps) {
   return (
     <div className="flex items-center gap-3">
       {data.appCode && (
-        <Pill icon="\u2318" label="Code" status={data.appCode} onClick={onNavigateToSync} />
+        <Pill icon="⌘" label="Code" status={data.appCode} onClick={onNavigateToSync} />
       )}
       {data.videoProject && (
-        <Pill icon="\uD83C\uDFAC" label="Project" status={data.videoProject} onClick={onNavigateToSync} />
+        <Pill icon="🎬" label="Project" status={data.videoProject} onClick={onNavigateToSync} />
       )}
     </div>
   );

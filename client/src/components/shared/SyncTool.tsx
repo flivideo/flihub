@@ -24,7 +24,7 @@ function formatRelativeTime(isoDate: string): string {
 }
 
 function shortHash(hash: string): string {
-  return hash ? hash.slice(0, 7) : '\u2014';
+  return hash ? hash.slice(0, 7) : '—';
 }
 
 interface StatusBadgeConfig {
@@ -296,7 +296,7 @@ function ChannelCard({
         <div>
           <div className="flex items-center gap-2">
             <span className="text-base">
-              {icon === 'code' ? '\u{1F4BB}' : '\u{1F3AC}'}
+              {icon === 'code' ? '💻' : '🎬'}
             </span>
             <span className="text-sm font-semibold text-gray-900">{title}</span>
           </div>
@@ -386,7 +386,7 @@ function ConflictSection({ conflicts, onResolve, isPending }: ConflictSectionPro
   return (
     <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 space-y-3">
       <div className="flex items-center gap-2">
-        <span className="text-base">{'\u26A1'}</span>
+        <span className="text-base">⚡</span>
         <span className="text-sm font-semibold text-purple-800">
           Merge conflict in Video Project
         </span>
