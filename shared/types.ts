@@ -1048,6 +1048,22 @@ export interface RelayActivityResponse {
   error?: string;
 }
 
+// B047: Recording Editor — split chapter types
+export interface SplitChapterRequest {
+  chapter: string;          // source chapter, e.g. "04"
+  splitAtSequence: number;  // files with seq >= this move to new chapter
+}
+
+export interface SplitChapterResponse {
+  success: boolean;
+  sourceChapter: string;
+  newChapter: string;
+  filesMoved: number;
+  cascadedChapters: number;
+  undoMapping: Array<{ oldFilename: string; newFilename: string }>;
+  error?: string;
+}
+
 // B044: Sync Hub — git sync status types
 export type SyncState = 'clean' | 'dirty' | 'behind' | 'ahead' | 'diverged' | 'conflict' | 'unknown';
 
@@ -1105,5 +1121,12 @@ export interface SyncResolveRequest {
 export interface SyncResolveResponse {
   success: boolean;
   remainingConflicts?: number;
+  error?: string;
+}
+
+// B047: Recording Editor — undo types
+export interface UndoRenameResponse {
+  success: boolean;
+  filesReverted: number;
   error?: string;
 }

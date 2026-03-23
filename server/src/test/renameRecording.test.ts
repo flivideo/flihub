@@ -261,18 +261,14 @@ describe('updateManifestFilename', () => {
 });
 
 // ---------------------------------------------------------------------------
-// renameRecording — main pipeline orchestration (B028)
+// renameRecording — main pipeline orchestration (B047 smart-rename)
 // ---------------------------------------------------------------------------
 //
 // Mocking strategy:
-//   renameRecording() calls deleteDerivableFiles / renameCoreFiles /
-//   regenerateDerivableFiles via direct ESM references — vi.spyOn on the
-//   exported bindings cannot intercept those internal calls.
-//
-//   Instead we track phase execution through the mocked dependencies:
-//     delete phase  → fs.unlink  (deleteDerivableFiles calls fs.unlink per file)
-//     rename phase  → fs.rename  (renameCoreFiles calls fs.rename)
-//     regen phase   → createShadowFile (regenerateDerivableFiles calls createShadowFile)
+//   renameRecording() now calls renameDerivableFiles / renameCoreFiles (2-phase).
+//   We track phase execution through the mocked fs dependency:
+//     rename-derivative phase → fs.rename (renameDerivableFiles calls fs.rename per derivative)
+//     rename-core phase       → fs.rename (renameCoreFiles calls fs.rename for the recording)
 //
 // Mock fs-extra so file system calls don't touch disk
 vi.mock('fs-extra', () => ({
@@ -301,8 +297,8 @@ vi.mock('../utils/shadowFiles.js', () => ({
 
 describe('renameRecording', () => {
   let renameRecording: typeof import('../utils/renameRecording.js').renameRecording;
-  let fsMock: typeof import('fs-extra').default;
-  let createShadowFileMock: ReturnType<typeof vi.fn>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let fsMock: any;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -312,9 +308,6 @@ describe('renameRecording', () => {
     // Grab references to mocked objects so tests can assert / override them
     const fsExtra = await import('fs-extra');
     fsMock = fsExtra.default;
-
-    const shadowMod = await import('../utils/shadowFiles.js');
-    createShadowFileMock = shadowMod.createShadowFile as ReturnType<typeof vi.fn>;
   });
 
   /** Build a minimal ProjectPaths fixture — real paths not needed (all fs calls are mocked) */
@@ -363,10 +356,8 @@ describe('renameRecording', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/transcri/i);
-    // No phase started — delete/rename/regen dependency functions untouched
-    expect(fsMock.unlink).not.toHaveBeenCalled();
+    // No phase started — fs.rename should not have been called
     expect(fsMock.rename).not.toHaveBeenCalled();
-    expect(createShadowFileMock).not.toHaveBeenCalled();
   });
 
   it('returns error without touching phases when file is queued for transcription', async () => {
@@ -382,42 +373,41 @@ describe('renameRecording', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBeDefined();
-    expect(fsMock.unlink).not.toHaveBeenCalled();
     expect(fsMock.rename).not.toHaveBeenCalled();
-    expect(createShadowFileMock).not.toHaveBeenCalled();
   });
 
-  // ── 2. Phase ordering ──────────────────────────────────────────────────────
-  //
-  // Track order through mocked dependency calls:
-  //   fs.unlink  → delete phase (deleteDerivableFiles)
-  //   fs.rename  → rename phase (renameCoreFiles)
-  //   createShadowFile → regenerate phase (regenerateDerivableFiles)
+  // ── 2. Smart-rename uses fs.rename for derivatives (not delete+regenerate) ─
 
-  it('delete phase fires before rename phase, which fires before regenerate phase', async () => {
-    const callOrder: string[] = [];
-
-    // Use *Once variants so implementations don't bleed into subsequent tests
-    (fsMock.unlink as ReturnType<typeof vi.fn>).mockImplementationOnce(async () => {
-      if (!callOrder.includes('delete')) callOrder.push('delete');
-    });
-    (fsMock.rename as ReturnType<typeof vi.fn>).mockImplementationOnce(async () => {
-      callOrder.push('rename');
-    });
-    createShadowFileMock.mockImplementationOnce(async () => {
-      callOrder.push('regenerate');
-      return { success: true, shadowPath: '/fake/shadow.mp4' };
-    });
+  it('calls fs.rename for derivative files (shadow + transcripts) before core rename', async () => {
+    const renameCalls: string[] = [];
+    const trackingImpl = async (oldPath: string) => {
+      const basename = oldPath.split('/').pop() || '';
+      renameCalls.push(basename);
+    };
+    // 7 calls: shadow (1) + transcripts (5) + core recording (1)
+    for (let i = 0; i < 7; i++) {
+      (fsMock.rename as ReturnType<typeof vi.fn>).mockImplementationOnce(trackingImpl);
+    }
 
     await renameRecording('01-1-intro.mov', '01-1-introduction.mov', makePaths(), null, []);
 
-    expect(callOrder).toEqual(['delete', 'rename', 'regenerate']);
+    // Should have renamed: shadow (.mp4), 5 transcript extensions, plus the core recording
+    expect(renameCalls).toContain('01-1-intro.mp4'); // shadow file
+    expect(renameCalls).toContain('01-1-intro.txt');
+    expect(renameCalls).toContain('01-1-intro.srt');
+    expect(renameCalls).toContain('01-1-intro.json');
+    expect(renameCalls).toContain('01-1-intro.vtt');
+    expect(renameCalls).toContain('01-1-intro.tsv');
+    expect(renameCalls).toContain('01-1-intro.mov'); // core recording
   });
 
-  // ── 3. If the core rename fails, regenerate does NOT fire ──────────────────
+  // ── 3. If the core rename fails, it surfaces the error ─────────────────────
 
-  it('does not call createShadowFile when fs.rename throws (recording file not found)', async () => {
-    // *Once so the rejection doesn't bleed into the happy-path tests that follow
+  it('does not succeed when fs.rename throws for the core recording file', async () => {
+    // First 6 calls (derivatives) succeed, 7th call (core recording) fails
+    for (let i = 0; i < 6; i++) {
+      (fsMock.rename as ReturnType<typeof vi.fn>).mockResolvedValueOnce(undefined);
+    }
     (fsMock.rename as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
       new Error('ENOENT: file not found')
     );
@@ -432,18 +422,29 @@ describe('renameRecording', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/file not found/i);
-    expect(createShadowFileMock).not.toHaveBeenCalled();
   });
 
-  it('surfaces the error message from the thrown Error when fs.rename fails', async () => {
+  it('surfaces the error message from the thrown Error when rename fails', async () => {
+    // safeRename swallows ENOENT (by code), so make derivatives succeed with ENOENT code,
+    // then the core rename (7th call) fails with a real error
+    const enoent = () => {
+      const e = new Error('ENOENT') as NodeJS.ErrnoException;
+      e.code = 'ENOENT';
+      return e;
+    };
+    // 6 derivative calls (shadow + 5 transcripts) — safeRename swallows these
+    for (let i = 0; i < 6; i++) {
+      (fsMock.rename as ReturnType<typeof vi.fn>).mockRejectedValueOnce(enoent());
+    }
+    // 7th call: core rename fails with a real error
     (fsMock.rename as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-      new Error('ENOENT: no such file or directory')
+      new Error('EACCES: permission denied')
     );
 
     const result = await renameRecording('missing.mov', 'new.mov', makePaths(), null, []);
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe('ENOENT: no such file or directory');
+    expect(result.error).toBe('EACCES: permission denied');
   });
 
   // ── 4. Happy path ──────────────────────────────────────────────────────────
@@ -461,38 +462,199 @@ describe('renameRecording', () => {
     expect(result.error).toBeUndefined();
   });
 
-  it('invokes the queueTranscription callback on happy path', async () => {
-    const queueTranscription = vi.fn();
-
-    const result = await renameRecording(
-      '01-1-intro.mov',
-      '01-1-introduction.mov',
-      makePaths(),
-      null,
-      [],
-      queueTranscription
-    );
-
-    expect(result.success).toBe(true);
-    expect(queueTranscription).toHaveBeenCalledOnce();
-    // The path passed to queueTranscription should contain the NEW filename
-    const calledWith: string = queueTranscription.mock.calls[0][0] as string;
-    expect(calledWith).toContain('01-1-introduction.mov');
-  });
-
-  it('does NOT invoke queueTranscription when rename is blocked by transcription', async () => {
-    const queueTranscription = vi.fn();
-    const activeJob = makePipelineJob('01-1-intro.mov');
+  it('does not call createShadowFile (no regeneration in smart-rename)', async () => {
+    const shadowMod = await import('../utils/shadowFiles.js');
+    const createShadowFileMock = shadowMod.createShadowFile as ReturnType<typeof vi.fn>;
 
     await renameRecording(
       '01-1-intro.mov',
       '01-1-introduction.mov',
       makePaths(),
-      activeJob,
-      [],
-      queueTranscription
+      null,
+      []
     );
 
-    expect(queueTranscription).not.toHaveBeenCalled();
+    // Smart-rename should NOT call createShadowFile — it renames in-place
+    expect(createShadowFileMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renameDerivableFiles — B047 smart-rename derivative handling
+// ---------------------------------------------------------------------------
+
+describe('renameDerivableFiles', () => {
+  let renameDerivableFiles: typeof import('../utils/renameRecording.js').renameDerivableFiles;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let fsMock: any;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const mod = await import('../utils/renameRecording.js');
+    renameDerivableFiles = mod.renameDerivableFiles;
+
+    const fsExtra = await import('fs-extra');
+    fsMock = fsExtra.default;
+  });
+
+  function makePaths() {
+    return {
+      project: '/fake/project',
+      recordings: '/fake/project/recordings',
+      safe: '/fake/project/recordings/-safe',
+      chapters: '/fake/project/recordings/-chapters',
+      trash: '/fake/project/-trash',
+      assets: '/fake/project/assets',
+      images: '/fake/project/assets/images',
+      thumbs: '/fake/project/assets/thumbs',
+      transcripts: '/fake/project/recording-transcripts',
+      final: '/fake/project/final',
+      s3Staging: '/fake/project/s3-staging',
+      inbox: '/fake/project/inbox',
+      inboxRaw: '/fake/project/inbox/raw',
+      inboxDataset: '/fake/project/inbox/dataset',
+      inboxPresentation: '/fake/project/inbox/presentation',
+      stateFile: '/fake/project/.flihub-state.json',
+    };
+  }
+
+  it('renames the shadow file from old to new base name', async () => {
+    await renameDerivableFiles('01-1-intro.mov', '01-1-introduction.mov', makePaths());
+
+    expect(fsMock.rename).toHaveBeenCalledWith(
+      '/fake/project/recording-shadows/01-1-intro.mp4',
+      '/fake/project/recording-shadows/01-1-introduction.mp4'
+    );
+  });
+
+  it('renames all 5 transcript extensions', async () => {
+    await renameDerivableFiles('01-1-intro.mov', '01-1-introduction.mov', makePaths());
+
+    const exts = ['.txt', '.srt', '.json', '.vtt', '.tsv'];
+    for (const ext of exts) {
+      expect(fsMock.rename).toHaveBeenCalledWith(
+        `/fake/project/recording-transcripts/01-1-intro${ext}`,
+        `/fake/project/recording-transcripts/01-1-introduction${ext}`
+      );
+    }
+  });
+
+  it('ignores missing files (ENOENT) without throwing', async () => {
+    const enoent = new Error('ENOENT') as NodeJS.ErrnoException;
+    enoent.code = 'ENOENT';
+    (fsMock.rename as ReturnType<typeof vi.fn>).mockRejectedValue(enoent);
+
+    // Should not throw
+    await expect(
+      renameDerivableFiles('01-1-intro.mov', '01-1-introduction.mov', makePaths())
+    ).resolves.toBeUndefined();
+  });
+
+  it('throws non-ENOENT errors', async () => {
+    const eperm = new Error('EPERM') as NodeJS.ErrnoException;
+    eperm.code = 'EPERM';
+    (fsMock.rename as ReturnType<typeof vi.fn>).mockRejectedValueOnce(eperm);
+
+    await expect(
+      renameDerivableFiles('01-1-intro.mov', '01-1-introduction.mov', makePaths())
+    ).rejects.toThrow('EPERM');
+  });
+
+  it('deletes chapter video when chapter number changes', async () => {
+    // Make pathExists return true so deleteChapterVideo enters the directory
+    (fsMock.pathExists as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    // Return a chapter video file in the -chapters directory
+    (fsMock.readdir as ReturnType<typeof vi.fn>).mockResolvedValue(['01-intro.mov']);
+
+    await renameDerivableFiles('01-1-intro.mov', '02-1-intro.mov', makePaths());
+
+    // Should have called unlink to delete the stale chapter video
+    expect(fsMock.unlink).toHaveBeenCalledWith('/fake/project/recordings/-chapters/01-intro.mov');
+  });
+
+  it('does NOT delete chapter video when chapter stays the same', async () => {
+    (fsMock.pathExists as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    (fsMock.readdir as ReturnType<typeof vi.fn>).mockResolvedValue(['01-intro.mov']);
+
+    await renameDerivableFiles('01-1-intro.mov', '01-1-introduction.mov', makePaths());
+
+    // Chapter didn't change (both are 01), so no unlink calls
+    expect(fsMock.unlink).not.toHaveBeenCalled();
+  });
+
+  it('handles .mp4 source files correctly (strips extension for base name)', async () => {
+    await renameDerivableFiles('05-3-demo.mp4', '05-3-walkthrough.mp4', makePaths());
+
+    expect(fsMock.rename).toHaveBeenCalledWith(
+      '/fake/project/recording-shadows/05-3-demo.mp4',
+      '/fake/project/recording-shadows/05-3-walkthrough.mp4'
+    );
+    expect(fsMock.rename).toHaveBeenCalledWith(
+      '/fake/project/recording-transcripts/05-3-demo.txt',
+      '/fake/project/recording-transcripts/05-3-walkthrough.txt'
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// deleteChapterVideo — extracted helper
+// ---------------------------------------------------------------------------
+
+describe('deleteChapterVideo', () => {
+  let deleteChapterVideo: typeof import('../utils/renameRecording.js').deleteChapterVideo;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let fsMock: any;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const mod = await import('../utils/renameRecording.js');
+    deleteChapterVideo = mod.deleteChapterVideo;
+
+    const fsExtra = await import('fs-extra');
+    fsMock = fsExtra.default;
+  });
+
+  function makePaths() {
+    return {
+      project: '/fake/project',
+      recordings: '/fake/project/recordings',
+      safe: '/fake/project/recordings/-safe',
+      chapters: '/fake/project/recordings/-chapters',
+      trash: '/fake/project/-trash',
+      assets: '/fake/project/assets',
+      images: '/fake/project/assets/images',
+      thumbs: '/fake/project/assets/thumbs',
+      transcripts: '/fake/project/recording-transcripts',
+      final: '/fake/project/final',
+      s3Staging: '/fake/project/s3-staging',
+      inbox: '/fake/project/inbox',
+      inboxRaw: '/fake/project/inbox/raw',
+      inboxDataset: '/fake/project/inbox/dataset',
+      inboxPresentation: '/fake/project/inbox/presentation',
+      stateFile: '/fake/project/.flihub-state.json',
+    };
+  }
+
+  it('deletes chapter video and its .srt when -chapters dir exists', async () => {
+    (fsMock.pathExists as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    (fsMock.readdir as ReturnType<typeof vi.fn>).mockResolvedValue(['01-intro.mov', '02-setup.mov']);
+
+    await deleteChapterVideo('01', makePaths());
+
+    expect(fsMock.unlink).toHaveBeenCalledWith('/fake/project/recordings/-chapters/01-intro.mov');
+    expect(fsMock.unlink).toHaveBeenCalledWith('/fake/project/recordings/-chapters/01-intro.srt');
+    // Should NOT delete chapter 02
+    expect(fsMock.unlink).not.toHaveBeenCalledWith(
+      expect.stringContaining('02-setup')
+    );
+  });
+
+  it('does nothing when -chapters dir does not exist', async () => {
+    (fsMock.pathExists as ReturnType<typeof vi.fn>).mockResolvedValue(false);
+
+    await deleteChapterVideo('01', makePaths());
+
+    expect(fsMock.readdir).not.toHaveBeenCalled();
+    expect(fsMock.unlink).not.toHaveBeenCalled();
   });
 });

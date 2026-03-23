@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -10,6 +10,7 @@ import {
   useTranscribeAll,
   useGenerateChapterRecordings,
   usePendingTranscriptionCount,
+  useRenameRecording,
 } from '../hooks/useApi';
 import { useRecordingsSocket, useChapterRecordingSocket } from '../hooks/useSocket';
 import { QUERY_KEYS } from '../constants/queryKeys';
@@ -19,8 +20,15 @@ import { VideoTranscriptModal } from './VideoTranscriptModal';
 import { ChapterPanel } from './ChapterPanel';
 import { ChapterRecordingModal } from './ChapterRecordingModal';
 import { RecordingVideoModal } from './RecordingVideoModal';
+import { EditableFileRow } from './shared/EditableFileRow';
+import { BatchToolbar } from './shared/BatchToolbar';
+import { PreviewPanel } from './shared/PreviewPanel';
+import type { PreviewChange } from './shared/PreviewPanel';
+import { SplitMarker } from './shared/SplitMarker';
+import { UndoToast } from './shared/UndoToast';
+import { useBulkRename, useSplitChapter, useBatchUndoRename } from '../hooks/useEditingApi';
 import type { RecordingFile, TranscriptionStatusResponse } from '../../../shared/types';
-import { extractTagsFromName } from '../../../shared/naming';
+import { extractTagsFromName, buildRecordingFilename, formatChapter } from '../../../shared/naming';
 import {
   formatFileSize,
   formatDuration,
@@ -303,6 +311,33 @@ function CombineChapterButton({
   );
 }
 
+// B047: Compute chapter info string for selected files
+function getSelectedChapterInfo(selectedFiles: Set<string>, recordings: RecordingFile[]): string {
+  const chapters = new Set<string>();
+  for (const filename of selectedFiles) {
+    const rec = recordings.find((r) => r.filename === filename);
+    if (rec) chapters.add(rec.chapter);
+  }
+  const sorted = Array.from(chapters).sort();
+  if (sorted.length === 0) return '';
+  if (sorted.length === 1) return `Chapter ${sorted[0]}`;
+  return `Chapters ${sorted.join(', ')}`;
+}
+
+// B047: Collect unique tags from selected files
+function getSelectedTags(selectedFiles: Set<string>, recordings: RecordingFile[]): string[] {
+  const tagSet = new Set<string>();
+  for (const filename of selectedFiles) {
+    const rec = recordings.find((r) => r.filename === filename);
+    if (rec) {
+      for (const tag of rec.tags) {
+        tagSet.add(tag);
+      }
+    }
+  }
+  return Array.from(tagSet).sort();
+}
+
 export function RecordingsView() {
   const { data, isLoading, error } = useRecordings();
   const moveToSafe = useMoveToSafe();
@@ -312,6 +347,7 @@ export function RecordingsView() {
   const transcribeAll = useTranscribeAll();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const generateChapter = useGenerateChapterRecordings();
+  const renameMutation = useRenameRecording(); // B047: For inline single-file renames
   // FR-92: Get count of files pending transcription
   const { data: pendingData } = usePendingTranscriptionCount();
   const pendingCount = pendingData?.pendingCount ?? 0;
@@ -328,6 +364,21 @@ export function RecordingsView() {
 
   // FR-128: State for recording preview modal
   const [previewRecording, setPreviewRecording] = useState<RecordingFile | null>(null);
+
+  // B047: Selection state
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  const [pendingChanges, setPendingChanges] = useState<Map<string, { oldFilename: string; newFilename: string }>>(new Map());
+  const [splitPoint, setSplitPoint] = useState<{ chapter: string; afterSequence: number } | null>(null);
+  const [undoMessage, setUndoMessage] = useState<string | null>(null);
+  const [pendingOperation, setPendingOperation] = useState<{
+    type: 'rename' | 'moveChapter' | 'addTag' | 'removeTag' | 'split';
+    params: Record<string, string | string[]>;
+  } | null>(null);
+
+  // B047: Mutations for batch operations
+  const bulkRenameMutation = useBulkRename();
+  const splitChapterMutation = useSplitChapter();
+  const undoMutation = useBatchUndoRename();
 
   // FR-56: Refs and state for chapter navigation panel
   const chapterRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -549,6 +600,332 @@ export function RecordingsView() {
     );
   };
 
+  // B047: Selection handlers
+  const toggleSelect = useCallback((filename: string) => {
+    setSelectedFiles((prev) => {
+      const next = new Set(prev);
+      if (next.has(filename)) next.delete(filename);
+      else next.add(filename);
+      return next;
+    });
+  }, []);
+
+  const selectAllInChapter = useCallback(
+    (chapter: string) => {
+      const chapterFiles = filteredRecordings.filter((r) => r.chapter === chapter);
+      setSelectedFiles((prev) => {
+        const next = new Set(prev);
+        const allSelected = chapterFiles.every((f) => next.has(f.filename));
+        if (allSelected) {
+          chapterFiles.forEach((f) => next.delete(f.filename));
+        } else {
+          chapterFiles.forEach((f) => next.add(f.filename));
+        }
+        return next;
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data?.recordings, showSafe, showParked]
+  );
+
+  const deselectAll = useCallback(() => setSelectedFiles(new Set()), []);
+
+  // B047: Inline rename handler — single file, calls rename API directly
+  const handleInlineRename = useCallback(
+    (filename: string, field: 'chapter' | 'name', newValue: string) => {
+      const recording = data?.recordings.find((r) => r.filename === filename);
+      if (!recording) return;
+
+      const newChapter = field === 'chapter' ? newValue : recording.chapter;
+      const newName = field === 'name' ? newValue : recording.name;
+
+      const newFilename = buildRecordingFilename(
+        newChapter,
+        recording.sequence,
+        newName,
+        recording.tags.length > 0 ? recording.tags : []
+      );
+
+      if (newFilename === recording.filename) return; // no change
+
+      renameMutation.mutate(
+        {
+          originalPath: recording.path,
+          chapter: newChapter,
+          sequence: recording.sequence,
+          name: newName,
+          tags: recording.tags,
+        },
+        {
+          onSuccess: () => toast.success(`Renamed to ${newFilename}`),
+          onError: (err) => toast.error(err.message),
+        }
+      );
+    },
+    [data?.recordings, renameMutation]
+  );
+
+  // B047: Tag removal handler — single file
+  const handleTagRemove = useCallback(
+    (filename: string, tag: string) => {
+      const recording = data?.recordings.find((r) => r.filename === filename);
+      if (!recording) return;
+
+      const newTags = recording.tags.filter((t) => t !== tag);
+      const newFilename = buildRecordingFilename(
+        recording.chapter,
+        recording.sequence,
+        recording.name,
+        newTags.length > 0 ? newTags : []
+      );
+
+      if (newFilename === recording.filename) return;
+
+      renameMutation.mutate(
+        {
+          originalPath: recording.path,
+          chapter: recording.chapter,
+          sequence: recording.sequence,
+          name: recording.name,
+          tags: newTags,
+        },
+        {
+          onSuccess: () => toast.success(`Removed tag ${tag}`),
+          onError: (err) => toast.error(err.message),
+        }
+      );
+    },
+    [data?.recordings, renameMutation]
+  );
+
+  // B047: Batch rename handler — sets pending changes for preview
+  const handleBatchRename = useCallback(
+    (newName: string) => {
+      const changes = new Map<string, { oldFilename: string; newFilename: string }>();
+      const selected = data?.recordings.filter((r) => selectedFiles.has(r.filename)) || [];
+      for (const file of selected) {
+        const newFilename = buildRecordingFilename(
+          file.chapter,
+          file.sequence,
+          newName,
+          file.tags.length > 0 ? file.tags : []
+        );
+        if (newFilename !== file.filename) {
+          changes.set(file.filename, { oldFilename: file.filename, newFilename });
+        }
+      }
+      setPendingChanges(changes);
+      setPendingOperation({ type: 'rename', params: { label: newName } });
+      if (changes.size === 0) {
+        toast.info('No changes needed');
+      }
+    },
+    [data?.recordings, selectedFiles]
+  );
+
+  // B047: Batch move-to-chapter handler
+  const handleBatchMoveToChapter = useCallback(
+    (chapter: string) => {
+      const changes = new Map<string, { oldFilename: string; newFilename: string }>();
+      const selected = data?.recordings.filter((r) => selectedFiles.has(r.filename)) || [];
+      for (const file of selected) {
+        const newFilename = buildRecordingFilename(
+          chapter,
+          file.sequence,
+          file.name,
+          file.tags.length > 0 ? file.tags : []
+        );
+        if (newFilename !== file.filename) {
+          changes.set(file.filename, { oldFilename: file.filename, newFilename });
+        }
+      }
+      setPendingChanges(changes);
+      setPendingOperation({ type: 'moveChapter', params: { chapter } });
+      if (changes.size === 0) {
+        toast.info('No changes needed');
+      }
+    },
+    [data?.recordings, selectedFiles]
+  );
+
+  // B047: Batch add tag handler
+  const handleBatchAddTag = useCallback(
+    (tag: string) => {
+      const changes = new Map<string, { oldFilename: string; newFilename: string }>();
+      const selected = data?.recordings.filter((r) => selectedFiles.has(r.filename)) || [];
+      for (const file of selected) {
+        if (file.tags.includes(tag)) continue;
+        const newTags = [...file.tags, tag];
+        const newFilename = buildRecordingFilename(
+          file.chapter,
+          file.sequence,
+          file.name,
+          newTags
+        );
+        if (newFilename !== file.filename) {
+          changes.set(file.filename, { oldFilename: file.filename, newFilename });
+        }
+      }
+      setPendingChanges(changes);
+      setPendingOperation({ type: 'addTag', params: { tag } });
+      if (changes.size === 0) {
+        toast.info('No changes needed');
+      }
+    },
+    [data?.recordings, selectedFiles]
+  );
+
+  // B047: Batch remove tag handler
+  const handleBatchRemoveTag = useCallback(
+    (tag: string) => {
+      const changes = new Map<string, { oldFilename: string; newFilename: string }>();
+      const selected = data?.recordings.filter((r) => selectedFiles.has(r.filename)) || [];
+      for (const file of selected) {
+        if (!file.tags.includes(tag)) continue;
+        const newTags = file.tags.filter((t) => t !== tag);
+        const newFilename = buildRecordingFilename(
+          file.chapter,
+          file.sequence,
+          file.name,
+          newTags.length > 0 ? newTags : []
+        );
+        if (newFilename !== file.filename) {
+          changes.set(file.filename, { oldFilename: file.filename, newFilename });
+        }
+      }
+      setPendingChanges(changes);
+      setPendingOperation({ type: 'removeTag', params: { tag } });
+      if (changes.size === 0) {
+        toast.info('No changes needed');
+      }
+    },
+    [data?.recordings, selectedFiles]
+  );
+
+  // B047: Split here handler (from batch toolbar)
+  const handleSplitHere = useCallback(() => {
+    // Use the first selected file's position as the split point
+    if (selectedFiles.size === 0) return;
+    const selected = data?.recordings.filter((r) => selectedFiles.has(r.filename)) || [];
+    if (selected.length === 0) return;
+    // Find the lowest sequence in the selection
+    const sorted = [...selected].sort(
+      (a, b) => parseInt(a.sequence, 10) - parseInt(b.sequence, 10)
+    );
+    const first = sorted[0];
+    setSplitPoint({
+      chapter: first.chapter,
+      afterSequence: parseInt(first.sequence, 10),
+    });
+    toast.info(`Split point set at chapter ${first.chapter}, sequence ${first.sequence}`);
+    setPendingOperation({ type: 'split', params: {} });
+  }, [data?.recordings, selectedFiles]);
+
+  // B047: Apply handler — called from PreviewPanel
+  const handleApplyChanges = useCallback(async () => {
+    if (pendingChanges.size === 0 && !splitPoint) return;
+
+    if (splitPoint) {
+      splitChapterMutation.mutate(
+        { chapter: splitPoint.chapter, splitAtSequence: splitPoint.afterSequence },
+        {
+          onSuccess: (result) => {
+            toast.success(`Split chapter ${splitPoint.chapter} → ${result.newChapter} (${result.filesMoved} files)`);
+            setUndoMessage(`Split ch${splitPoint.chapter} → ch${splitPoint.chapter} + ch${result.newChapter}`);
+            setPendingChanges(new Map());
+            setSplitPoint(null);
+            setSelectedFiles(new Set());
+            setPendingOperation(null);
+          },
+          onError: (err) => toast.error(err.message),
+        }
+      );
+    } else if (pendingOperation) {
+      const selected = data?.recordings.filter((r) => selectedFiles.has(r.filename)) || [];
+      if (selected.length === 0) return;
+
+      // Determine bulk-rename params from pendingOperation
+      const firstFile = selected[0];
+      const firstChange = pendingChanges.values().next().value;
+      if (!firstChange) return;
+
+      // Parse the new filename to extract the common transformation
+      const newFilenameMatch = firstChange.newFilename.match(/^(\d{2})-\d+-(.+?)(?:-([A-Z0-9]+(?:-[A-Z0-9]+)*))?\.(\w+)$/);
+      const newChapter = newFilenameMatch ? newFilenameMatch[1] : firstFile.chapter;
+      const newLabel = newFilenameMatch ? newFilenameMatch[2] : firstFile.name;
+      const newTagsStr = newFilenameMatch ? (newFilenameMatch[3] || '') : '';
+      const newTags = newTagsStr ? newTagsStr.split('-') : [];
+
+      bulkRenameMutation.mutate(
+        {
+          files: selected.map((f) => f.filename),
+          chapter: newChapter,
+          sequenceMode: 'preserve' as const,
+          label: newLabel,
+          tags: newTags,
+        },
+        {
+          onSuccess: (result) => {
+            toast.success(`Renamed ${result.renamedCount} files`);
+            setUndoMessage(`Renamed ${result.renamedCount} files`);
+            setPendingChanges(new Map());
+            setSelectedFiles(new Set());
+            setPendingOperation(null);
+          },
+          onError: (err) => toast.error(err.message),
+        }
+      );
+    }
+  }, [pendingChanges, splitPoint, pendingOperation, data?.recordings, selectedFiles, splitChapterMutation, bulkRenameMutation]);
+
+  // B047: Cancel handler
+  const handleCancelChanges = useCallback(() => {
+    setPendingChanges(new Map());
+    setSplitPoint(null);
+    setPendingOperation(null);
+  }, []);
+
+  // B047: Undo handler
+  const handleUndo = useCallback(() => {
+    undoMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        toast.success(`Reverted ${result.filesReverted} files`);
+        setUndoMessage(null);
+      },
+      onError: (err) => toast.error(err.message),
+    });
+  }, [undoMutation]);
+
+  // B047: Compute preview changes from pendingChanges Map
+  const computePreviewChanges = useCallback((): PreviewChange[] => {
+    return Array.from(pendingChanges.values()).map((change) => {
+      const recording = data?.recordings.find((r) => r.filename === change.oldFilename);
+      return {
+        oldFilename: change.oldFilename,
+        newFilename: change.newFilename,
+        hasShadow: recording?.hasShadow ?? false,
+        transcriptCount: 5,
+        needsReTranscription: false,
+      };
+    });
+  }, [pendingChanges, data?.recordings]);
+
+  // B047: Split here handler (from single row)
+  const handleSplitHereFromRow = useCallback(
+    (filename: string) => {
+      const rec = data?.recordings.find((r) => r.filename === filename);
+      if (rec) {
+        setSplitPoint({
+          chapter: rec.chapter,
+          afterSequence: parseInt(rec.sequence, 10),
+        });
+        setPendingOperation({ type: 'split', params: {} });
+        toast.info(`Split point set at chapter ${rec.chapter}, sequence ${rec.sequence}`);
+      }
+    },
+    [data?.recordings]
+  );
+
   // Filter recordings based on showSafe and showParked toggles
   // FR-111/FR-120: Filter by isSafe and isParked flags
   const filteredRecordings = useMemo(() => {
@@ -582,6 +959,18 @@ export function RecordingsView() {
       fileCount: ch.files.length,
     }));
   }, [chaptersWithTiming]);
+
+  // B047: Compute selected chapter info for BatchToolbar
+  const selectedChapterInfo = useMemo(
+    () => getSelectedChapterInfo(selectedFiles, data?.recordings || []),
+    [selectedFiles, data?.recordings]
+  );
+
+  // B047: Compute selected tags for BatchToolbar
+  const selectedTags = useMemo(
+    () => getSelectedTags(selectedFiles, data?.recordings || []),
+    [selectedFiles, data?.recordings]
+  );
 
   // FR-56: Intersection Observer to track current chapter in viewport
   useEffect(() => {
@@ -737,6 +1126,35 @@ export function RecordingsView() {
         </button>
       </div>
 
+      {/* B047: Batch toolbar — appears when files are selected */}
+      {selectedFiles.size > 0 && (
+        <BatchToolbar
+          selectedCount={selectedFiles.size}
+          selectedChapterInfo={selectedChapterInfo}
+          onRename={handleBatchRename}
+          onMoveToChapter={handleBatchMoveToChapter}
+          onAddTag={handleBatchAddTag}
+          onRemoveTag={handleBatchRemoveTag}
+          onSplitHere={handleSplitHere}
+          onDeselectAll={deselectAll}
+          selectedTags={selectedTags}
+        />
+      )}
+
+      {/* B047: Preview panel — shows pending changes before applying */}
+      {(pendingChanges.size > 0 || splitPoint) && (
+        <PreviewPanel
+          changes={computePreviewChanges()}
+          splitInfo={splitPoint ? {
+            sourceChapter: splitPoint.chapter,
+            newChapter: formatChapter(parseInt(splitPoint.chapter, 10) + 1),
+          } : undefined}
+          isApplying={bulkRenameMutation.isPending || splitChapterMutation.isPending}
+          onApply={handleApplyChanges}
+          onCancel={handleCancelChanges}
+        />
+      )}
+
       {/* Recordings list */}
       <div className="space-y-6">
         {chaptersWithTiming.map((chapterData) => {
@@ -753,6 +1171,11 @@ export function RecordingsView() {
           // FR-120: Track parked files in chapter
           const parkedFilesInChapter = group.files.filter((f) => f.isParked);
           const hasParkedFiles = parkedFilesInChapter.length > 0;
+
+          // B047: Check if all files in chapter are selected
+          const allSelectedInChapter = group.files.every((f) =>
+            selectedFiles.has(f.filename)
+          );
 
           return (
             <div
@@ -785,13 +1208,13 @@ export function RecordingsView() {
                 <span className="text-xs text-gray-400 font-mono">
                   @ {formatDuration(chapterData.startTime, 'youtube')}
                 </span>
-                {/* FR-131: Removed rename button - use Manage panel instead */}
-                <span
-                  className="text-xs text-gray-400 italic"
-                  title="To rename multiple files, use the Manage panel"
+                {/* B047: Select all in chapter button */}
+                <button
+                  onClick={() => selectAllInChapter(chapter)}
+                  className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
                 >
-                  (Use Manage panel to rename)
-                </span>
+                  {allSelectedInChapter ? '✓ All selected' : `Select ${chapter}`}
+                </button>
                 {/* Chapter action buttons */}
                 {hasActiveFiles && (
                   <button
@@ -846,131 +1269,57 @@ export function RecordingsView() {
                 <div className="h-px bg-gray-300 flex-1" />
               </div>
 
-              {/* Files in this chapter */}
+              {/* Files in this chapter — now using EditableFileRow */}
               <div className="space-y-1">
                 {group.files.map((file) => {
-                  // FR-88: Check if shadow-only file
-                  const isShadow = 'isShadow' in file && file.isShadow;
+                  // B047: Show split marker before this file if it's at the split point
+                  const showSplitMarker = splitPoint &&
+                    file.chapter === splitPoint.chapter &&
+                    parseInt(file.sequence, 10) === splitPoint.afterSequence;
 
-                  // FR-83/FR-111/FR-120: Determine row styling based on shadow/safe/parked status
-                  let rowClasses: string;
-                  let textClasses: string;
-
-                  if (isShadow) {
-                    // Shadow-only file: purple tint for collaborator mode
-                    rowClasses = 'bg-purple-50 border-purple-200';
-                    textClasses = 'text-purple-700';
-                  } else if (file.isSafe) {
-                    // R-2: Safe files — no badge, rely on ← Restore button to signal status
-                    rowClasses = 'bg-gray-50 border-gray-200';
-                    textClasses = 'text-gray-400';
-                  } else if (file.isParked) {
-                    // FR-120: Parked files (pink background)
-                    rowClasses = 'bg-pink-50 border-pink-200 text-gray-500';
-                    textClasses = 'text-gray-500';
-                  } else {
-                    // Active files (blue background)
-                    rowClasses = 'bg-blue-50 border-blue-200';
-                    textClasses = 'text-gray-700';
-                  }
+                  // Count files after split point for the marker label
+                  const filesAfterSplit = showSplitMarker
+                    ? group.files.filter((f) => parseInt(f.sequence, 10) >= splitPoint.afterSequence).length
+                    : 0;
 
                   return (
-                    <div
-                      key={file.path}
-                      className={`flex items-center justify-between px-4 py-2 rounded-lg border ${rowClasses}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {/* FR-128: Play button for video preview */}
-                        <button
-                          onClick={() => setPreviewRecording(file)}
-                          disabled={isShadow}
-                          className={`text-blue-600 hover:text-blue-700 transition-colors ${
-                            isShadow ? 'opacity-30 cursor-not-allowed' : ''
-                          }`}
-                          title={isShadow ? 'Video not available locally' : 'Preview recording'}
-                        >
-                          ▶
-                        </button>
-                        {/* FR-88: Only show ghost icon for shadow-only files */}
-                        {isShadow && (
-                          <span
-                            className="text-sm"
-                            title="Shadow only - video not available locally"
-                          >
-                            👻
-                          </span>
-                        )}
-                        <span className={`font-mono text-sm ${textClasses}`}>{file.filename}</span>
-                        {file.tags.length > 0 && (
-                          <span className="text-xs text-gray-500">[{file.tags.join(', ')}]</span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
-                        <span className="font-mono">{formatDuration(file.duration)}</span>
-                        {/* FR-95: File size with shadow tooltip */}
-                        <span
-                          title={
-                            file.shadowSize
-                              ? `Shadow: ${formatFileSize(file.shadowSize)}`
-                              : 'No shadow'
-                          }
-                          className="cursor-help"
-                        >
-                          {formatFileSize(file.size)}
-                        </span>
-                        <span>{formatTimestamp(file.timestamp)}</span>
-                        {/* FR-83: Transcription works for both real and shadow files (video shadows have audio) */}
-                        <TranscriptionBadge
-                          filename={file.filename}
-                          filePath={file.path}
-                          onViewTranscript={setViewingTranscript}
+                    <React.Fragment key={file.path}>
+                      {showSplitMarker && (
+                        <SplitMarker
+                          newChapter={formatChapter(parseInt(splitPoint.chapter, 10) + 1)}
+                          fileCount={filesAfterSplit}
+                          onRemove={() => {
+                            setSplitPoint(null);
+                            setPendingOperation(null);
+                          }}
                         />
-                        {/* Action buttons - disabled for shadow-only files */}
-                        {/* FR-111/FR-120: Safe and Park actions */}
-                        {isShadow ? (
-                          <span
-                            className="text-xs text-gray-300 px-2 py-0.5"
-                            title="Actions unavailable for shadow files"
-                          >
-                            -
-                          </span>
-                        ) : file.isSafe ? (
-                          <button
-                            onClick={() => handleRestore(file.filename)}
-                            disabled={restoreFromSafe.isPending}
-                            className="text-xs text-green-600 hover:text-green-700 px-2 py-0.5 hover:bg-green-100 rounded transition-colors disabled:opacity-50"
-                          >
-                            ← Restore
-                          </button>
-                        ) : file.isParked ? (
-                          <button
-                            onClick={() => handleUnpark(file.filename)}
-                            disabled={unparkRecording.isPending}
-                            className="text-xs text-pink-600 hover:text-pink-700 px-2 py-0.5 hover:bg-pink-100 rounded transition-colors disabled:opacity-50"
-                          >
-                            ← Unpark
-                          </button>
-                        ) : (
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => handleMoveToSafe(file.filename)}
-                              disabled={moveToSafe.isPending}
-                              className="text-xs text-gray-500 hover:text-green-600 px-2 py-0.5 hover:bg-green-100 rounded transition-colors disabled:opacity-50"
-                            >
-                              → Safe
-                            </button>
-                            <button
-                              onClick={() => handlePark(file.filename)}
-                              disabled={parkRecording.isPending}
-                              className="text-xs text-gray-500 hover:text-pink-600 px-2 py-0.5 hover:bg-pink-100 rounded transition-colors disabled:opacity-50"
-                            >
-                              → Park
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                      )}
+                  <EditableFileRow
+                    recording={file}
+                    isSelected={selectedFiles.has(file.filename)}
+                    onToggleSelect={toggleSelect}
+                    onInlineRename={handleInlineRename}
+                    onTagRemove={handleTagRemove}
+                    onPlay={setPreviewRecording}
+                    onSplitHere={handleSplitHereFromRow}
+                    onPark={handlePark}
+                    onSafe={handleMoveToSafe}
+                    onRestore={handleRestore}
+                    onUnpark={handleUnpark}
+                    transcriptionBadge={
+                      <TranscriptionBadge
+                        filename={file.filename}
+                        filePath={file.path}
+                        onViewTranscript={setViewingTranscript}
+                      />
+                    }
+                    pendingChange={pendingChanges.get(file.filename)}
+                    disabled={!!file.isShadow}
+                    formatDuration={formatDuration}
+                    formatFileSize={formatFileSize}
+                    formatTimestamp={formatTimestamp}
+                  />
+                    </React.Fragment>
                   );
                 })}
               </div>
@@ -1034,6 +1383,16 @@ export function RecordingsView() {
         <div className="mt-6 pt-4 border-t border-gray-200 text-sm text-gray-500 text-right">
           Total: {formatDuration(totalDuration, 'smart')}
         </div>
+      )}
+
+      {/* B047: Undo toast — floating bar after batch operations */}
+      {undoMessage && (
+        <UndoToast
+          message={`✓ ${undoMessage}`}
+          onUndo={handleUndo}
+          durationMs={30000}
+          onExpire={() => setUndoMessage(null)}
+        />
       )}
     </div>
   );

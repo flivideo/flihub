@@ -23,8 +23,6 @@ import {
   GlingEditTool,
   RelayTool,
   SyncTool,
-  RenamePanel,
-  ChapterListPanel,
 } from './shared';
 import type { ChapterSettings } from './shared';
 import { extractTagsFromName } from '../../../shared/naming';
@@ -80,15 +78,13 @@ export function groupByChapter(recordings: RecordingFile[]): ChapterGroup[] {
 // B041: Contextual headings per tool
 const toolHeadings: Record<string, string> = {
   regen: 'Recordings',
-  rename: 'Rename Recordings',
-  renumber: 'Chapter Management',
   'gling-edit': 'Gling / Edit Prep',
   relay: 'Relay Collaboration',
   sync: 'Sync',
   awb: 'AWB',
 };
 
-export type ActiveTool = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay' | 'awb' | 'sync';
+export type ActiveTool = 'regen' | 'gling-edit' | 'relay' | 'awb' | 'sync';
 
 export interface ManagePanelProps {
   initialTool?: string | null;
@@ -407,7 +403,7 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
   const activeFiles = totalFiles - parkedFiles;
 
   // B041: Determine if the active tool needs the file list
-  const needsFileList = activeTool === 'regen' || activeTool === 'rename' || activeTool === 'renumber';
+  const needsFileList = activeTool === 'regen';
 
   return (
     <div className="relative">
@@ -443,29 +439,6 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
                 >
                   Regen All
                 </button>
-              </div>
-            )}
-
-            {/* B041: Rename panel — inline above file list */}
-            {activeTool === 'rename' && (
-              <div className="mb-6 border border-gray-200 rounded-lg p-4 bg-white">
-                <RenamePanel
-                  selectedFiles={Array.from(selectedFiles)}
-                  onClose={() => setActiveTool('regen')}
-                  onSuccess={() => {
-                    setSelectedFiles(new Set());
-                  }}
-                />
-              </div>
-            )}
-
-            {/* B041: Renumber — inline above file list */}
-            {activeTool === 'renumber' && (
-              <div className="mb-6">
-                <ChapterListPanel
-                  recordings={data.recordings.map((r) => r.filename)}
-                  onClose={() => setActiveTool('regen')}
-                />
               </div>
             )}
 

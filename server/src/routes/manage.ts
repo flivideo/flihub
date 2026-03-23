@@ -9,6 +9,7 @@ import {
   parseRecordingFilename,
   buildRecordingFilename,
   extractTagsFromName,
+  formatChapter,
 } from '../../../shared/naming.js';
 import { renameRecording } from '../utils/renameRecording.js';
 import { createShadowFile } from '../utils/shadowFiles.js';
@@ -21,6 +22,7 @@ import type {
   ServerToClientEvents,
   ClientToServerEvents,
   RecordingFile,
+  UndoRenameResponse,
 } from '../../../shared/types.js';
 
 /**
@@ -39,6 +41,9 @@ export function createManageRoutes(
   getQueue?: () => TranscriptionJob[]
 ): Router {
   const router = Router();
+
+  // B047: Last batch undo mapping — single array, replaced on every bulk operation
+  let lastBatchMapping: Array<{ oldFilename: string; newFilename: string }> = [];
 
   /**
    * GET /api/manage/recordings-folder-path
@@ -156,8 +161,7 @@ export function createManageRoutes(
             newFilename,
             paths,
             activeJob,
-            queue,
-            queueTranscription
+            queue
           );
 
           if (result.success) {
@@ -181,11 +185,17 @@ export function createManageRoutes(
         `[FR-138] Bulk rename complete: ${renamed.length} renamed, ${errors.length} errors`
       );
 
+      // B047: Store undo mapping after successful renames
+      if (renamed.length > 0) {
+        lastBatchMapping = renamed.map((r) => ({ oldFilename: r.old, newFilename: r.new }));
+      }
+
       res.json({
         success: errors.length === 0,
         renamedCount: renamed.length,
         transcriptionQueued: renamed.length > 0,
         files: renamed,
+        undoAvailable: renamed.length > 0,
         errors: errors.length > 0 ? errors : undefined,
       });
     } catch (err) {
@@ -1063,8 +1073,7 @@ export function createManageRoutes(
           newFilename,
           paths,
           activeJob,
-          queue,
-          queueTranscription
+          queue
         );
 
         if (result.success) {
@@ -1194,8 +1203,7 @@ export function createManageRoutes(
           newFilename,
           paths,
           activeJob,
-          queue,
-          queueTranscription
+          queue
         );
 
         if (result.success) swappedCount++;
@@ -1221,8 +1229,7 @@ export function createManageRoutes(
           newFilename,
           paths,
           activeJob,
-          queue,
-          queueTranscription
+          queue
         );
 
         if (result.success) swappedCount++;
@@ -1255,8 +1262,7 @@ export function createManageRoutes(
           newFilename,
           paths,
           activeJob,
-          queue,
-          queueTranscription
+          queue
         );
 
         if (result.success) swappedCount++;
@@ -1276,6 +1282,272 @@ export function createManageRoutes(
       return res.status(500).json({
         success: false,
         error: err instanceof Error ? err.message : 'Failed to swap chapters',
+      });
+    }
+  });
+
+  /**
+   * POST /api/manage/undo-rename
+   * B047: Undo the last bulk rename operation
+   *
+   * Returns:
+   * {
+   *   success: boolean;
+   *   filesReverted: number;
+   *   error?: string;
+   * }
+   */
+  router.post('/undo-rename', async (_req, res) => {
+    if (lastBatchMapping.length === 0) {
+      return res.json({ success: false, filesReverted: 0, error: 'Nothing to undo' } satisfies UndoRenameResponse);
+    }
+
+    const config = getConfig();
+    const paths = getProjectPaths(expandPath(config.projectDirectory));
+    const activeJob = getActiveJob ? getActiveJob() : null;
+    const queue = getQueue ? getQueue() : [];
+    const errors: string[] = [];
+    let revertedCount = 0;
+
+    // Reverse in reverse order to avoid conflicts
+    const reversedMapping = [...lastBatchMapping].reverse();
+
+    for (const { oldFilename, newFilename } of reversedMapping) {
+      // Undo: rename newFilename back to oldFilename
+      const result = await renameRecording(
+        newFilename,    // current name (was the "new" name)
+        oldFilename,    // target name (was the "old" name)
+        paths,
+        activeJob,
+        queue
+      );
+
+      if (result.success) {
+        revertedCount++;
+      } else {
+        errors.push(`Failed to revert ${newFilename}: ${result.error}`);
+      }
+    }
+
+    // Clear the mapping — no undo-of-undo
+    lastBatchMapping = [];
+
+    // Notify clients
+    io.emit('recordings:changed');
+
+    return res.json({
+      success: errors.length === 0,
+      filesReverted: revertedCount,
+      ...(errors.length > 0 && { error: errors.join('; ') }),
+    } satisfies UndoRenameResponse);
+  });
+
+  /**
+   * POST /api/manage/split-chapter
+   * B047: Split a chapter at a given sequence number, cascading higher chapters up
+   *
+   * Body:
+   * {
+   *   chapter: string;          // source chapter, e.g. "04"
+   *   splitAtSequence: number;  // files with seq >= this move to new chapter
+   * }
+   *
+   * Returns: SplitChapterResponse
+   */
+  router.post('/split-chapter', async (req, res) => {
+    try {
+      const { chapter, splitAtSequence } = req.body;
+
+      // Validate chapter: must be a 2-digit string
+      if (!chapter || typeof chapter !== 'string' || !/^\d{2}$/.test(chapter)) {
+        return res.json({
+          success: false,
+          sourceChapter: chapter || '',
+          newChapter: '',
+          filesMoved: 0,
+          cascadedChapters: 0,
+          undoMapping: [],
+          error: 'chapter must be a 2-digit string (e.g. "04")',
+        });
+      }
+
+      // Validate splitAtSequence: must be a positive integer
+      if (
+        splitAtSequence === undefined ||
+        splitAtSequence === null ||
+        typeof splitAtSequence !== 'number' ||
+        !Number.isInteger(splitAtSequence) ||
+        splitAtSequence < 1
+      ) {
+        return res.json({
+          success: false,
+          sourceChapter: chapter,
+          newChapter: '',
+          filesMoved: 0,
+          cascadedChapters: 0,
+          undoMapping: [],
+          error: 'splitAtSequence must be a positive integer',
+        });
+      }
+
+      const config = getConfig();
+      const paths = getProjectPaths(expandPath(config.projectDirectory));
+      const recordingsDir = paths.recordings;
+      const activeJob = getActiveJob ? getActiveJob() : null;
+      const queue = getQueue ? getQueue() : [];
+
+      // Read all recording files
+      const allFiles = await fs.readdir(recordingsDir);
+      const recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
+
+      // Parse all filenames and group by chapter
+      const chapterMap = new Map<
+        number,
+        Array<{ filename: string; chapter: string; sequence: number; name: string }>
+      >();
+
+      for (const filename of recordings) {
+        const parsed = parseRecordingFilename(filename);
+        if (!parsed || parsed.sequence === null) continue;
+        const chNum = parseInt(parsed.chapter, 10);
+        if (!chapterMap.has(chNum)) {
+          chapterMap.set(chNum, []);
+        }
+        chapterMap.get(chNum)!.push({
+          filename,
+          chapter: parsed.chapter,
+          sequence: parseInt(parsed.sequence, 10),
+          name: parsed.name,
+        });
+      }
+
+      const sourceChapterNum = parseInt(chapter, 10);
+      const sourceFiles = chapterMap.get(sourceChapterNum) || [];
+
+      // Partition into keep and move
+      const moveFiles = sourceFiles
+        .filter((f) => f.sequence >= splitAtSequence)
+        .sort((a, b) => a.sequence - b.sequence);
+
+      if (moveFiles.length === 0) {
+        return res.json({
+          success: false,
+          sourceChapter: chapter,
+          newChapter: '',
+          filesMoved: 0,
+          cascadedChapters: 0,
+          undoMapping: [],
+          error: 'No files to split',
+        });
+      }
+
+      const targetChapterNum = sourceChapterNum + 1;
+
+      // Find all chapters >= targetChapterNum that have files (need to cascade)
+      const chaptersToShift = Array.from(chapterMap.keys())
+        .filter((ch) => ch >= targetChapterNum)
+        .sort((a, b) => b - a); // Sort descending — rename from top down to avoid collisions
+
+      // Guard: check if cascade would push chapters past 99
+      if (chaptersToShift.length > 0) {
+        const highestExisting = Math.max(...chaptersToShift);
+        if (highestExisting + 1 > 99) {
+          return res.json({
+            success: false,
+            sourceChapter: chapter,
+            newChapter: '',
+            filesMoved: 0,
+            cascadedChapters: 0,
+            undoMapping: [],
+            error: 'Split would push chapters past limit (99)',
+          });
+        }
+      }
+
+      const undoMapping: Array<{ oldFilename: string; newFilename: string }> = [];
+      let cascadedChapters = 0;
+
+      // CASCADE: Rename higher chapters from top down
+      console.log(
+        `[B047] Split chapter ${chapter} at seq ${splitAtSequence}: cascading ${chaptersToShift.length} chapters`
+      );
+
+      for (const chNum of chaptersToShift) {
+        const files = chapterMap.get(chNum)!;
+        const newChapterStr = formatChapter(chNum + 1);
+
+        for (const file of files) {
+          const newFilename =
+            buildRecordingFilename(newChapterStr, String(file.sequence), file.name);
+
+          console.log(`[B047]   Cascade: ${file.filename} → ${newFilename}`);
+
+          const result = await renameRecording(
+            file.filename,
+            newFilename,
+            paths,
+            activeJob,
+            queue
+          );
+
+          if (result.success) {
+            undoMapping.push({ oldFilename: file.filename, newFilename });
+          }
+        }
+        cascadedChapters++;
+      }
+
+      // Move split files to target chapter with sequences starting from 1
+      const targetChapterStr = formatChapter(targetChapterNum);
+      let filesMoved = 0;
+
+      console.log(`[B047] Moving ${moveFiles.length} files to chapter ${targetChapterStr}`);
+
+      for (let i = 0; i < moveFiles.length; i++) {
+        const file = moveFiles[i];
+        const newSeq = String(i + 1);
+        const newFilename =
+          buildRecordingFilename(targetChapterStr, newSeq, file.name);
+
+        console.log(`[B047]   Move: ${file.filename} → ${newFilename}`);
+
+        const result = await renameRecording(
+          file.filename,
+          newFilename,
+          paths,
+          activeJob,
+          queue
+        );
+
+        if (result.success) {
+          undoMapping.push({ oldFilename: file.filename, newFilename });
+          filesMoved++;
+        }
+      }
+
+      // Emit Socket.io event
+      io.emit('recordings:changed');
+
+      console.log(`[B047] Split complete: ${filesMoved} moved, ${cascadedChapters} cascaded`);
+
+      return res.json({
+        success: true,
+        sourceChapter: chapter,
+        newChapter: targetChapterStr,
+        filesMoved,
+        cascadedChapters,
+        undoMapping,
+      });
+    } catch (err) {
+      console.error('[B047] Split chapter error:', err);
+      return res.status(500).json({
+        success: false,
+        sourceChapter: req.body?.chapter || '',
+        newChapter: '',
+        filesMoved: 0,
+        cascadedChapters: 0,
+        undoMapping: [],
+        error: err instanceof Error ? err.message : 'Failed to split chapter',
       });
     }
   });

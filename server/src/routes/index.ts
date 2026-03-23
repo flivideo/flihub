@@ -1083,8 +1083,7 @@ export function createRoutes(
           newFilename,
           paths,
           activeJob,
-          queue,
-          queueTranscription
+          queue
         );
 
         if (result.success) {

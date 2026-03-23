@@ -1,4 +1,4 @@
-// FR-130: Simplified rename logic using delete+regenerate pattern
+// B047: Smart rename — renames derivative files in-place instead of delete+regenerate
 import fs from 'fs-extra';
 import path from 'path';
 import type { ProjectPaths } from '../../../shared/paths.js';
@@ -40,10 +40,88 @@ export function checkTranscriptionQueue(
 }
 
 /**
+ * Rename a file, silently ignoring ENOENT (file doesn't exist)
+ */
+async function safeRename(oldPath: string, newPath: string): Promise<void> {
+  try {
+    await fs.rename(oldPath, newPath);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    if (err.code !== 'ENOENT') throw err;
+  }
+}
+
+/**
+ * Delete chapter video for a given chapter number
+ * Chapter videos are named like: 01-intro.mov (chapter-label.mov)
+ */
+export async function deleteChapterVideo(
+  chapter: string,
+  paths: ProjectPaths
+): Promise<void> {
+  const chapterVideosDir = path.join(paths.recordings, '-chapters');
+  if (await fs.pathExists(chapterVideosDir)) {
+    const chapterFiles = await fs.readdir(chapterVideosDir);
+    const chapterVideoPattern = new RegExp(`^${chapter}-.*\\.(mov|mp4)$`);
+
+    for (const file of chapterFiles) {
+      if (chapterVideoPattern.test(file)) {
+        await fs.unlink(path.join(chapterVideosDir, file)).catch(() => {});
+        // Also delete the matching .srt if it exists
+        const srtFile = file.replace(/\.(mov|mp4)$/, '.srt');
+        await fs.unlink(path.join(chapterVideosDir, srtFile)).catch(() => {});
+      }
+    }
+  }
+}
+
+/**
+ * Rename derivative files (shadows, transcripts) in-place via fs.rename
+ * If chapter number changed, delete the old chapter video (it's now stale)
+ */
+export async function renameDerivableFiles(
+  oldFilename: string,
+  newFilename: string,
+  paths: ProjectPaths
+): Promise<void> {
+  const oldBase = oldFilename.replace(/\.(mov|mp4)$/, '');
+  const newBase = newFilename.replace(/\.(mov|mp4)$/, '');
+
+  console.log(`[B047] Renaming derivative files: ${oldBase} → ${newBase}`);
+
+  // Rename shadow file (.mp4 in recording-shadows/)
+  const shadowDir = path.join(paths.project, 'recording-shadows');
+  await safeRename(
+    path.join(shadowDir, `${oldBase}.mp4`),
+    path.join(shadowDir, `${newBase}.mp4`)
+  );
+
+  // Rename transcript files (all 5 extensions)
+  const transcriptExts = ['.txt', '.srt', '.json', '.vtt', '.tsv'];
+  await Promise.all(
+    transcriptExts.map((ext) =>
+      safeRename(
+        path.join(paths.transcripts, `${oldBase}${ext}`),
+        path.join(paths.transcripts, `${newBase}${ext}`)
+      )
+    )
+  );
+
+  // If chapter number changed, delete old chapter video (it's now stale)
+  const oldChapter = oldFilename.match(/^(\d{2})-/)?.[1];
+  const newChapter = newFilename.match(/^(\d{2})-/)?.[1];
+  if (oldChapter && newChapter && oldChapter !== newChapter) {
+    await deleteChapterVideo(oldChapter, paths);
+  }
+}
+
+/**
  * Delete derivable files that can be regenerated
  * - Shadow files (both main and -safe directories)
  * - Transcript files (.txt and .srt)
  * - Chapter videos (if exists)
+ *
+ * NOTE: Still exported for use by Regen endpoints in manage.ts
  */
 export async function deleteDerivableFiles(
   oldFilename: string,
@@ -82,29 +160,9 @@ export async function deleteDerivableFiles(
   );
 
   // Delete chapter video (if exists)
-  // Chapter videos are named like: 01-intro.mov (chapter-label.mov)
-  // We need to detect if this recording's chapter had a generated video
-  const chapterVideosDir = path.join(paths.recordings, '-chapters');
-  if (await fs.pathExists(chapterVideosDir)) {
-    // Parse chapter from filename (e.g., "01-1-intro.mov" -> "01")
-    const chapterMatch = oldFilename.match(/^(\d{2})-/);
-    if (chapterMatch) {
-      const chapter = chapterMatch[1];
-
-      // Delete any chapter video starting with this chapter number
-      // (e.g., "01-intro.mov", "01-introduction.mov")
-      const chapterFiles = await fs.readdir(chapterVideosDir);
-      const chapterVideoPattern = new RegExp(`^${chapter}-.*\\.(mov|mp4)$`);
-
-      for (const file of chapterFiles) {
-        if (chapterVideoPattern.test(file)) {
-          await fs.unlink(path.join(chapterVideosDir, file)).catch(() => {});
-          // Also delete the matching .srt if it exists
-          const srtFile = file.replace(/\.(mov|mp4)$/, '.srt');
-          await fs.unlink(path.join(chapterVideosDir, srtFile)).catch(() => {});
-        }
-      }
-    }
+  const chapterMatch = oldFilename.match(/^(\d{2})-/);
+  if (chapterMatch) {
+    await deleteChapterVideo(chapterMatch[1], paths);
   }
 }
 
@@ -200,6 +258,8 @@ export async function renameCoreFiles(
  * Regenerate derivable files using existing systems
  * - Shadow files: instant regeneration
  * - Transcripts: queued for async processing
+ *
+ * NOTE: Still exported for use by Regen endpoints in manage.ts
  */
 export async function regenerateDerivableFiles(
   newFilename: string,
@@ -230,45 +290,41 @@ export async function regenerateDerivableFiles(
 }
 
 /**
- * Rename recording using delete+regenerate pattern
- * Simplified from 152 lines to ~80 lines (47% reduction)
+ * Rename recording using smart-rename pattern (B047)
+ * Phase 1: Rename derivative files in-place (shadows, transcripts)
+ * Phase 2: Rename core files (recording + state migration)
  */
 export async function renameRecording(
   oldFilename: string,
   newFilename: string,
   paths: ProjectPaths,
   activeJob: TranscriptionJob | null,
-  queue: TranscriptionJob[],
-  queueTranscription?: (videoPath: string) => void
+  queue: TranscriptionJob[]
 ): Promise<{ success: boolean; error?: string }> {
-  console.log(`[FR-130] Starting rename: ${oldFilename} → ${newFilename}`);
+  console.log(`[B047] Starting rename: ${oldFilename} → ${newFilename}`);
 
   try {
     // Check if file is being transcribed
     if (checkTranscriptionQueue(oldFilename, activeJob, queue)) {
-      console.log(`[FR-130] Rename blocked - file is being transcribed`);
+      console.log(`[B047] Rename blocked - file is being transcribed`);
       return {
         success: false,
         error: 'Cannot rename while transcribing. Wait for completion or cancel transcription.',
       };
     }
 
-    // Phase 1: Delete derivable files
-    console.log(`[FR-130] Phase 1: Delete derivable files`);
-    await deleteDerivableFiles(oldFilename, paths);
+    // Phase 1: Rename derivative files in-place
+    console.log(`[B047] Phase 1: Rename derivative files`);
+    await renameDerivableFiles(oldFilename, newFilename, paths);
 
     // Phase 2: Rename core files (recording + state migration)
-    console.log(`[FR-130] Phase 2: Rename core files`);
+    console.log(`[B047] Phase 2: Rename core files`);
     await renameCoreFiles(oldFilename, newFilename, paths);
 
-    // Phase 3: Regenerate derivable files
-    console.log(`[FR-130] Phase 3: Regenerate derivable files`);
-    await regenerateDerivableFiles(newFilename, paths, queueTranscription);
-
-    console.log(`[FR-130] Rename complete: ${newFilename}`);
+    console.log(`[B047] Rename complete: ${newFilename}`);
     return { success: true };
   } catch (error) {
-    console.error(`[FR-130] Rename failed:`, error);
+    console.error(`[B047] Rename failed:`, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to rename recording',

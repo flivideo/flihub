@@ -28,3 +28,4 @@ export * from './useDeveloperApi.js';
 export * from './useSystemApi.js';
 export * from './useRelayApi.js';
 export * from './useSyncApi.js';
+export * from './useEditingApi.js';

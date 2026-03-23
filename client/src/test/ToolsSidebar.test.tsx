@@ -15,34 +15,34 @@ function renderSidebar(overrides: Partial<typeof defaultProps> = {}) {
 }
 
 describe('ToolsSidebar', () => {
-  it('renders all 5 tool labels', () => {
+  it('renders tool labels', () => {
     renderSidebar();
     expect(screen.getByText('Regen')).toBeInTheDocument();
-    expect(screen.getByText('Rename')).toBeInTheDocument();
     expect(screen.getByText('Gling / Edit')).toBeInTheDocument();
-    expect(screen.getByText('Renumber')).toBeInTheDocument();
     expect(screen.getByText('Relay')).toBeInTheDocument();
+    expect(screen.getByText('AWB')).toBeInTheDocument();
+    expect(screen.getByText('Sync')).toBeInTheDocument();
   });
 
   it('active tool button has active styling (text-blue-600)', () => {
-    renderSidebar({ activeTool: 'rename' });
-    const button = screen.getByText('Rename');
+    renderSidebar({ activeTool: 'gling-edit' });
+    const button = screen.getByText('Gling / Edit');
     expect(button.className).toContain('text-blue-600');
   });
 
   it('non-active tools have default styling (text-gray-600)', () => {
     renderSidebar({ activeTool: 'regen' });
-    const button = screen.getByText('Rename');
+    const button = screen.getByText('Gling / Edit');
     expect(button.className).toContain('text-gray-600');
   });
 
   describe('onToolClick', () => {
     const tools: { label: string; tool: ActiveTool }[] = [
       { label: 'Regen', tool: 'regen' },
-      { label: 'Rename', tool: 'rename' },
       { label: 'Gling / Edit', tool: 'gling-edit' },
-      { label: 'Renumber', tool: 'renumber' },
       { label: 'Relay', tool: 'relay' },
+      { label: 'AWB', tool: 'awb' },
+      { label: 'Sync', tool: 'sync' },
     ];
 
     tools.forEach(({ label, tool }) => {

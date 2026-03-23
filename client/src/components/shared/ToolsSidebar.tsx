@@ -43,22 +43,10 @@ export function ToolsSidebar({
         </div>
         <div className="flex flex-col gap-1">
           <ToolButton
-            label="Rename"
-            active={activeTool === 'rename'}
-            onClick={() => onToolClick('rename')}
-            tooltip="Rename selected recordings"
-          />
-          <ToolButton
             label="Gling / Edit"
             active={activeTool === 'gling-edit'}
             onClick={() => onToolClick('gling-edit')}
             tooltip="Gling preparation & edit folders"
-          />
-          <ToolButton
-            label="Renumber"
-            active={activeTool === 'renumber'}
-            onClick={() => onToolClick('renumber')}
-            tooltip="Move chapters with automatic cascade"
           />
           <ToolButton
             label="AWB"

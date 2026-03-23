@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractChapters, detectGaps } from '../components/shared/ChapterListPanel';
+import { extractChapters, detectGaps } from '../utils/chapterUtils';
 
 // ============================================================
 // extractChapters
