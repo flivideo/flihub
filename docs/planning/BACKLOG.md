@@ -37,7 +37,9 @@
 
 - [x] B041 — Manage page redesign — rethink "Manage & Export" as context-sensitive tool pages, not a generic shell with drawers | Priority: high | Feedback: F002, F003 | Completed: manage-page-redesign
 - [x] B042 — Remove Regen Chapters from ToolsSidebar (temporary system, no longer useful) | Priority: medium | Feedback: F001 | Completed: pre-campaign quick fix
-- [ ] B043 — Type relay API responses and add HTTP status checking in hooks (audit M1, M2, M4) | Priority: medium | Audit: code-quality 2026-03-22
+- [~] B043 — Type relay API responses and add HTTP status checking in hooks (audit M1, M2, M4) | Priority: medium | Audit: code-quality 2026-03-22 | Campaign: tech-debt-round1
+- [ ] B044 — App auto-update for collaborators — version check + notification + one-click update button | Priority: high | Feedback: F004
+- [~] B045 — Move AWB from top nav into Manage sidebar | Priority: medium | Feedback: F005 | Campaign: tech-debt-round1
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`

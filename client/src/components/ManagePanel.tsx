@@ -27,6 +27,7 @@ import {
 } from './shared';
 import type { ChapterSettings } from './shared';
 import { extractTagsFromName } from '../../../shared/naming';
+import { PoemWuiPage } from './PoemWuiPage';
 import type { RecordingFile } from '../../../shared/types';
 
 export interface ChapterGroup {
@@ -82,9 +83,10 @@ const toolHeadings: Record<string, string> = {
   renumber: 'Chapter Management',
   'gling-edit': 'Gling / Edit Prep',
   relay: 'Relay Collaboration',
+  awb: 'AWB',
 };
 
-export type ActiveTool = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay';
+export type ActiveTool = 'regen' | 'rename' | 'gling-edit' | 'renumber' | 'relay' | 'awb';
 
 export function ManagePanel() {
   const { data, isLoading, error } = useRecordings();
@@ -603,6 +605,7 @@ export function ManagePanel() {
             {/* B041: Standalone tools — full-width, no file list */}
             {activeTool === 'relay' && <RelayTool />}
             {activeTool === 'gling-edit' && <GlingEditTool />}
+            {activeTool === 'awb' && <PoemWuiPage />}
           </>
         )}
       </div>

@@ -26,6 +26,53 @@ export interface RelayBrowseResult {
   relayDirectory: string;
 }
 
+// B043: Relay API response types
+export interface RelayStatusResponse {
+  success: boolean;
+  configured: boolean;
+  enabled: boolean;
+  relayDirectory?: string | null;
+}
+
+export interface RelayBrowseResponse {
+  success: boolean;
+  projects: RelayProjectInfo[];
+  relayDirectory: string;
+}
+
+export interface RelayPreviewResponse {
+  success: boolean;
+  diff: { new: string[]; updated: string[]; deleted: string[] };
+  subfolder: string;
+  error?: string;
+}
+
+export interface RelayPushResponse {
+  success: boolean;
+  output?: string;
+  subfolder?: string;
+  error?: string;
+}
+
+export interface RelayCollectResponse {
+  success: boolean;
+  output?: string;
+  subfolder?: string;
+  error?: string;
+}
+
+export interface RelayVersionsResponse {
+  success: boolean;
+  versions?: { filename: string; size: number; modified: string }[];
+  error?: string;
+}
+
+export interface RelayPromoteResponse {
+  success: boolean;
+  promoted?: string;
+  error?: string;
+}
+
 // Promote-to-final: version file in edit-2nd/
 export interface EditVersion {
   filename: string;

@@ -12,7 +12,19 @@ The Manage page was redesigned in B041 (manage-page-redesign). "Manage & Export"
 
 ## Open Items
 
-(No open items)
+### F004 — App auto-update for collaborators (Jan/Roamy)
+**Type**: feature
+**Priority**: high
+**Where**: System-wide — server + client
+**What I saw**: Jan and Roamy need to go to terminal and run `git pull` to get FliHub code updates after David pushes from Creator (M4 Mini). No notification that a new version is available.
+**What I expected**: Clear messaging when a new FliHub version is available, with a one-click button to update (git pull + restart). Collaborators shouldn't need terminal access.
+
+### F005 — Move AWB from top nav into Manage sidebar
+**Type**: ux
+**Priority**: medium
+**Where**: App.tsx top nav, ManagePanel, ToolsSidebar
+**What I saw**: AWB is a separate top-level tab, but it's a tool like Relay or Gling — it should live under Manage.
+**What I expected**: AWB as a tool in the Manage sidebar, rendered as center content when selected. Remove from top nav.
 
 ---
 

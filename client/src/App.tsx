@@ -29,7 +29,7 @@ import { MockupsPage } from './components/MockupsPage';
 import { WatchPage } from './components/WatchPage';
 // FR-141: S3StagingPage removed - consolidated into ExportS3Tool in Manage panel
 import { ManagePanel } from './components/ManagePanel';
-import { PoemWuiPage } from './components/PoemWuiPage';
+// B045: PoemWuiPage moved into ManagePanel as AWB tool
 import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
 import { OpenFolderButton } from './components/shared';
@@ -48,7 +48,6 @@ type ViewTab =
   | 'assets'
   | 'thumbs'
   | 'export'
-  | 'poem-wui'
   | 'projects'
   | 'config'
   | 'mockups'
@@ -63,7 +62,6 @@ const VALID_TABS: ViewTab[] = [
   'assets',
   'thumbs',
   'export',
-  'poem-wui',
   'projects',
   'config',
   'mockups',
@@ -680,17 +678,6 @@ function App() {
               Manage
             </button>
             <button
-              onClick={() => changeTab('poem-wui')}
-              className={`text-sm transition-colors ${
-                activeTab === 'poem-wui'
-                  ? 'text-purple-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              title="Send transcript to AWB YouTube Launch Optimizer"
-            >
-              AWB
-            </button>
-            <button
               onClick={() => changeTab('projects')}
               className={`text-sm transition-colors ${
                 activeTab === 'projects'
@@ -851,13 +838,6 @@ function App() {
         {activeTab === 'export' && (
           <section>
             <ManagePanel />
-          </section>
-        )}
-
-        {/* FR-144: POEM WUI Tab */}
-        {activeTab === 'poem-wui' && (
-          <section>
-            <PoemWuiPage />
           </section>
         )}
 

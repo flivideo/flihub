@@ -65,6 +65,12 @@ export function ToolsSidebar({
             onClick={() => onToolClick('renumber')}
             tooltip="Move chapters with automatic cascade"
           />
+          <ToolButton
+            label="AWB"
+            active={activeTool === 'awb'}
+            onClick={() => onToolClick('awb')}
+            tooltip="Send transcript to AWB YouTube Launch Optimizer"
+          />
         </div>
       </div>
 
