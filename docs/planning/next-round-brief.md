@@ -1,37 +1,48 @@
 # Next Round Brief — FliHub
 
-**Written**: 2026-03-23 (post manage-page-redesign)
+**Written**: 2026-03-23 (post manage-panel-polish)
 
 ---
 
 ## Goal
 
-Fix bugs and dead code from the B041 campaign, then add test coverage for the Manage panel components.
+Address remaining technical debt — relay API typing, test coverage gaps, and structural cleanup items.
 
 ## Background
 
-B041 (manage-page-redesign) shipped: drawers removed, tool-owned center content, sidebar as pure navigation. Code quality audit found a stale closure bug and dead code. Test quality audit found zero test coverage on all 4 changed files.
+Two campaigns shipped this session:
+- **B041 (manage-page-redesign)**: Drawers removed, tool-owned center content, sidebar as pure navigation
+- **manage-panel-polish**: Fixed stale closure, dead code, loose types, +41 tests (client: 126 → 167)
+
+Total test count: 883. Build clean. All feedback items (F001-F003) resolved.
 
 ## Suggested Work Items
 
-### Must-fix (wave 1)
-1. **Fix stale closure** in ManagePanel `handleRegenClick` — `modalChapterSettings` captured at closure creation, user edits silently ignored. Use ref or pass settings as param from ConfirmationModal.
-2. **Remove dead `chapters` branches** — `type === 'chapters'` unreachable after B042 removed Regen Chapters button. ~15 lines of dead code in ManagePanel.tsx.
-3. **Fix loose type** — ToolsSidebar `activeTool` prop is `string | null`, should be `ActiveTool`.
+### B043 — Type relay API responses + HTTP status checking (medium)
+- Relay hooks use untyped API responses — add TypeScript interfaces
+- No HTTP status checking on fetch calls — add error handling
+- From code-quality audit on manage-relay-refactor-w2
 
-### Test coverage (wave 1 or 2)
-4. **Extract and unit-test pure functions**: `groupByChapter()`, `getChapterDisplayName()` from ManagePanel
-5. **Test ChapterListPanel logic**: chapter extraction, gap detection — pure computation, no mocking needed
-6. **ToolsSidebar render test**: verify 5 tools render, active state toggles, callbacks fire
-7. **ManagePanel integration test**: verify tool switching renders correct center content
+### B032 — Test shared/naming.ts missing functions (medium)
+- parseImageFilename, buildImageFilename, findNextSequence, calculateSuggestedNaming
+- Image filename parsing and suggested-naming logic completely untested
+- From test-quality audit
 
-### Technical debt (from prior audit, still pending)
-8. B043: Type relay API responses and add HTTP status checking
-9. Promote overwrite warning — check if dest exists before fs.copy
+### Structural debt (lower priority)
+- B033: Extract transcription queue state into a class (module-level mutable globals)
+- B034: Fix asyncHandler — wrap all routes or remove
+- B035: Add React error boundary around tab components
+- B036: Replace hardcoded WHISPER_BINARY path with config
+- B037: Remove `[FR-89 DEBUG]` console.log statements
+
+### Design iteration (future)
+- ManagePanel is 620+ lines — extract regen handler + file list into sub-components
+- Fixed sidebar positioning (`fixed left-8 top-32`) is fragile — consider layout grid
+- Promote overwrite warning — check if dest exists before fs.copy
 
 ## Reference
-- Assessment: `docs/planning/manage-page-redesign/assessment.md`
-- AGENTS.md: `docs/planning/manage-page-redesign/AGENTS.md` (inherit for next wave)
+- Assessment: `docs/planning/manage-panel-polish/assessment.md`
+- AGENTS.md: `docs/planning/manage-panel-polish/AGENTS.md` (inherit for next wave)
 - BACKLOG.md: `docs/planning/BACKLOG.md`
 
 ## To Start Next Session
