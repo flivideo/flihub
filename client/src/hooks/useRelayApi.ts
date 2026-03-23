@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { API_URL } from '../config';
+import { QUERY_KEYS } from '../constants/queryKeys';
 import type {
   RelaySubfolder,
   RelayBrowseResponse,
@@ -11,11 +12,13 @@ import type {
   RelayCollectResponse,
   RelayVersionsResponse,
   RelayPromoteResponse,
+  RelayActivityResponse,
+  RelayFilesResponse,
 } from '../../../shared/types';
 
 export function useRelayBrowse() {
   return useQuery({
-    queryKey: ['relay-browse'],
+    queryKey: QUERY_KEYS.relayBrowse,
     queryFn: async (): Promise<RelayBrowseResponse> => {
       const res = await fetch(`${API_URL}/api/relay/browse`);
       if (!res.ok) {
@@ -30,7 +33,7 @@ export function useRelayBrowse() {
 
 export function useRelayStatus() {
   return useQuery({
-    queryKey: ['relay-status'],
+    queryKey: QUERY_KEYS.relayStatus,
     queryFn: async (): Promise<RelayStatusResponse> => {
       const res = await fetch(`${API_URL}/api/relay/status`);
       if (!res.ok) {
@@ -81,8 +84,8 @@ export function useRelayPush() {
     onSuccess: (data) => {
       if (data.success) {
         toast.success(`${data.subfolder || 'Files'} pushed to relay`);
-        queryClient.invalidateQueries({ queryKey: ['relay-status'] });
-        queryClient.invalidateQueries({ queryKey: ['relay-browse'] });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayStatus });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
       } else {
         toast.error(data.error || 'Push failed');
       }
@@ -109,8 +112,8 @@ export function useRelayCollect() {
     onSuccess: (data) => {
       if (data.success) {
         toast.success(`${data.subfolder || 'Files'} collected from relay`);
-        queryClient.invalidateQueries({ queryKey: ['relay-status'] });
-        queryClient.invalidateQueries({ queryKey: ['relay-browse'] });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayStatus });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
       } else {
         toast.error(data.error || 'Collect failed');
       }
@@ -121,7 +124,7 @@ export function useRelayCollect() {
 
 export function useRelayVersions() {
   return useQuery({
-    queryKey: ['relay-versions'],
+    queryKey: QUERY_KEYS.relayVersions,
     queryFn: async (): Promise<RelayVersionsResponse> => {
       const res = await fetch(`${API_URL}/api/relay/versions`);
       if (!res.ok) {
@@ -151,12 +154,41 @@ export function useRelayPromote() {
     onSuccess: (data) => {
       if (data.success) {
         toast.success(`Promoted ${data.promoted} to final/`);
-        queryClient.invalidateQueries({ queryKey: ['relay-versions'] });
-        queryClient.invalidateQueries({ queryKey: ['relay-browse'] });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayVersions });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
       } else {
         toast.error(data.error || 'Promote failed');
       }
     },
     onError: () => toast.error('Promote failed'),
+  });
+}
+
+export function useRelayActivity(projectCode?: string) {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.relayActivity, projectCode],
+    queryFn: async (): Promise<RelayActivityResponse> => {
+      const qs = projectCode ? `?projectCode=${projectCode}` : '';
+      const res = await fetch(`${API_URL}/api/relay/activity${qs}`);
+      if (!res.ok) {
+        throw new Error(`Relay API error: ${res.status} ${res.statusText}`);
+      }
+      return res.json() as Promise<RelayActivityResponse>;
+    },
+    refetchInterval: 30000,
+  });
+}
+
+export function useRelayFiles(subfolder: RelaySubfolder, source: 'project' | 'relay' = 'project') {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.relayFiles(subfolder), source],
+    queryFn: async (): Promise<RelayFilesResponse> => {
+      const res = await fetch(`${API_URL}/api/relay/files?subfolder=${subfolder}&source=${source}`);
+      if (!res.ok) {
+        throw new Error(`Relay API error: ${res.status} ${res.statusText}`);
+      }
+      return res.json() as Promise<RelayFilesResponse>;
+    },
+    refetchInterval: 30000,
   });
 }

@@ -54,4 +54,10 @@ export const QUERY_KEYS = {
   developerProjectState: ['developer', 'project-state'] as const,
   developerConfig: ['developer', 'config'] as const,
   developerTelemetry: ['developer', 'telemetry'] as const,
+  // Relay collaboration
+  relayBrowse: ['relay-browse'] as const,
+  relayStatus: ['relay-status'] as const,
+  relayVersions: ['relay-versions'] as const,
+  relayFiles: (subfolder: string) => ['relay-files', subfolder] as const,
+  relayActivity: ['relay-activity'] as const,
 } as const;

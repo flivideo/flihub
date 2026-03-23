@@ -4,7 +4,7 @@ import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs-extra';
-import type { Config, RelaySubfolder, RelayProjectInfo } from '../../../shared/types.js';
+import type { Config, RelaySubfolder, RelayProjectInfo, RelayActivityEvent, RelayFileInfo } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 
 const execFileAsync = promisify(execFile);
@@ -40,6 +40,21 @@ export function getRelayPaths(config: Config): RelayPaths | { error: string } {
   }
   const relayProjectDir = path.join(expandPath(config.relayDirectory), projectCode);
   return { projectDir, projectCode, relayProjectDir };
+}
+
+// In-memory ring buffer — last 50 events, no persistence needed
+const activityLog: RelayActivityEvent[] = [];
+const MAX_ACTIVITY = 50;
+
+export function logRelayActivity(event: Omit<RelayActivityEvent, 'id'>) {
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  activityLog.unshift({ ...event, id });
+  if (activityLog.length > MAX_ACTIVITY) activityLog.length = MAX_ACTIVITY;
+}
+
+// Exported for testing — allows clearing the activity log between tests
+export function clearActivityLog() {
+  activityLog.length = 0;
 }
 
 export function createRelayRoutes(getConfig: () => Config) {
@@ -115,6 +130,66 @@ export function createRelayRoutes(getConfig: () => Config) {
     }
   });
 
+  // GET /api/relay/activity — recent relay activity events
+  router.get('/activity', (req, res) => {
+    const projectCode = req.query.projectCode as string | undefined;
+    const events = projectCode
+      ? activityLog.filter(e => e.projectCode === projectCode)
+      : activityLog;
+    res.json({ success: true, events });
+  });
+
+  // GET /api/relay/files?subfolder=recordings&source=project|relay
+  // source=project: files in local project dir (for push preview)
+  // source=relay: files in relay dir (for collect preview)
+  router.get('/files', async (req, res) => {
+    try {
+      const config = getConfig();
+      const paths = getRelayPaths(config);
+      if ('error' in paths) return res.json({ success: false, error: paths.error });
+
+      const subfolder = (req.query.subfolder as string) || 'recordings';
+      if (!RELAY_SUBFOLDERS.includes(subfolder as RelaySubfolder)) {
+        return res.json({ success: false, error: `Invalid subfolder: ${subfolder}` });
+      }
+
+      const source = (req.query.source as string) || 'project';
+      const baseDir = source === 'relay' ? paths.relayProjectDir : paths.projectDir;
+      const targetDir = path.join(baseDir, subfolder);
+
+      try {
+        const entries = await fs.readdir(targetDir);
+        const files: RelayFileInfo[] = [];
+
+        for (const entry of entries) {
+          if (entry.startsWith('.')) continue;
+          const fullPath = path.join(targetDir, entry);
+          const stat = await fs.stat(fullPath);
+          if (!stat.isFile()) continue;
+
+          // Extract chapter from naming convention: "01-1-intro.mov" → "01"
+          const chapterMatch = entry.match(/^(\d{2})-/);
+          const chapter = chapterMatch ? chapterMatch[1] : '00';
+
+          files.push({
+            filename: entry,
+            size: stat.size,
+            modified: stat.mtime.toISOString(),
+            chapter,
+          });
+        }
+
+        // Sort by chapter, then filename
+        files.sort((a, b) => a.chapter.localeCompare(b.chapter) || a.filename.localeCompare(b.filename));
+        res.json({ success: true, files, subfolder });
+      } catch {
+        res.json({ success: true, files: [], subfolder }); // Dir doesn't exist yet
+      }
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
   // POST /api/relay/preview — rsync dry-run, returns structured diff
   router.post('/preview', async (req, res) => {
     try {
@@ -167,6 +242,15 @@ export function createRelayRoutes(getConfig: () => Config) {
         ...rsyncExcludeArgs(),
         sourceDir, destDir
       ], { timeout: 300000 });
+
+      logRelayActivity({
+        projectCode: paths.projectCode,
+        subfolder,
+        action: 'push',
+        description: `Pushed ${subfolder} to relay`,
+        timestamp: new Date().toISOString(),
+      });
+
       res.json({ success: true, output: stdout, subfolder });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
@@ -196,6 +280,15 @@ export function createRelayRoutes(getConfig: () => Config) {
         ...rsyncExcludeArgs(),
         sourceDir, destDir
       ], { timeout: 300000 });
+
+      logRelayActivity({
+        projectCode: paths.projectCode,
+        subfolder,
+        action: 'collect',
+        description: `Collected ${subfolder} from relay`,
+        timestamp: new Date().toISOString(),
+      });
+
       res.json({ success: true, output: stdout, subfolder });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
@@ -262,6 +355,15 @@ export function createRelayRoutes(getConfig: () => Config) {
       const destDir = path.join(paths.projectDir, 'final');
       await fs.ensureDir(destDir);
       await fs.copy(source, path.join(destDir, filename));
+
+      logRelayActivity({
+        projectCode: paths.projectCode,
+        subfolder: 'edit-2nd',
+        action: 'promote',
+        description: `Promoted ${filename} to final`,
+        timestamp: new Date().toISOString(),
+      });
+
       res.json({ success: true, promoted: filename });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });

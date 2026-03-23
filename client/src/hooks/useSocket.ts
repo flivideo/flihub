@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { API_URL } from '../config';
-import type { FileInfo, ServerToClientEvents, ClientToServerEvents } from '../../../shared/types';
+import type { FileInfo, ServerToClientEvents, ClientToServerEvents, RelayChangeEvent } from '../../../shared/types';
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
 
@@ -259,6 +259,36 @@ export function useTranscriptsSocket() {
     return () => {
       socket.off('transcripts:changed', handleTranscriptsChanged);
     };
+  }, [queryClient]);
+}
+
+// B038: Hook for relay socket events - invalidates React Query cache
+export function useRelaySocket() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    const handleRelayChanged = (data: RelayChangeEvent) => {
+      console.log(`Socket: relay:changed — ${data.action} ${data.projectCode}/${data.subfolder}/${data.filename}`);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayFiles(data.subfolder) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayActivity });
+      if (data.subfolder === 'edit-2nd') {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayVersions });
+      }
+
+      // Toast notification for new files
+      if (data.action === 'add') {
+        const label = data.subfolder === 'recordings' ? 'New recordings'
+          : data.subfolder === 'edit-1st' ? 'First edit update'
+          : 'Final version update';
+        toast.info(`${label} for ${data.projectCode}`);
+      }
+    };
+
+    socket.on('relay:changed', handleRelayChanged);
+    return () => { socket.off('relay:changed', handleRelayChanged); };
   }, [queryClient]);
 }
 

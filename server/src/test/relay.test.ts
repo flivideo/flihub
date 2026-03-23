@@ -69,7 +69,7 @@ vi.mock('../utils/pathUtils.js', () => ({
 }));
 
 // Imports must come AFTER vi.mock() declarations
-import { createRelayRoutes, parseRsyncDiff, getRelayPaths, rsyncExcludeArgs, RELAY_SUBFOLDERS } from '../routes/relay.js';
+import { createRelayRoutes, parseRsyncDiff, getRelayPaths, rsyncExcludeArgs, RELAY_SUBFOLDERS, logRelayActivity, clearActivityLog } from '../routes/relay.js';
 import { createSystemRoutes } from '../routes/system.js';
 import type { Config } from '../../../shared/types.js';
 
@@ -1044,6 +1044,120 @@ describe('POST /api/relay/promote', () => {
 });
 
 // ---------------------------------------------------------------------------
+// GET /api/relay/activity — activity ring buffer tests
+// ---------------------------------------------------------------------------
+
+describe('GET /api/relay/activity', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearActivityLog();
+  });
+
+  it('returns empty events array initially', async () => {
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/activity');
+    expect(res.body.success).toBe(true);
+    expect(res.body.events).toEqual([]);
+  });
+
+  it('returns activity logged after successful push', async () => {
+    mockExecFile.mockReturnValue({ stdout: 'sent files' });
+    const app = buildRelayApp();
+    await request(app).post('/api/relay/push').send({ subfolder: 'recordings' });
+
+    const res = await request(app).get('/api/relay/activity');
+    expect(res.body.success).toBe(true);
+    expect(res.body.events).toHaveLength(1);
+    expect(res.body.events[0].action).toBe('push');
+    expect(res.body.events[0].subfolder).toBe('recordings');
+    expect(res.body.events[0].projectCode).toBe('b17-test');
+    expect(res.body.events[0].description).toContain('Pushed recordings to relay');
+    expect(res.body.events[0].id).toBeDefined();
+    expect(res.body.events[0].timestamp).toBeDefined();
+  });
+
+  it('returns activity logged after successful collect', async () => {
+    mockExecFile.mockReturnValue({ stdout: 'received files' });
+    const app = buildRelayApp();
+    await request(app).post('/api/relay/collect').send({ subfolder: 'edit-1st' });
+
+    const res = await request(app).get('/api/relay/activity');
+    expect(res.body.success).toBe(true);
+    expect(res.body.events).toHaveLength(1);
+    expect(res.body.events[0].action).toBe('collect');
+    expect(res.body.events[0].subfolder).toBe('edit-1st');
+    expect(res.body.events[0].description).toContain('Collected edit-1st from relay');
+  });
+
+  it('returns activity logged after successful promote', async () => {
+    mockPathExists.mockResolvedValueOnce(true);
+    const app = buildRelayApp();
+    await request(app).post('/api/relay/promote').send({ filename: 'b17-final-v2.mp4' });
+
+    const res = await request(app).get('/api/relay/activity');
+    expect(res.body.success).toBe(true);
+    expect(res.body.events).toHaveLength(1);
+    expect(res.body.events[0].action).toBe('promote');
+    expect(res.body.events[0].subfolder).toBe('edit-2nd');
+    expect(res.body.events[0].description).toContain('Promoted b17-final-v2.mp4 to final');
+  });
+
+  it('filters by projectCode query param', async () => {
+    // Log events for two different projects
+    logRelayActivity({
+      projectCode: 'b17-test',
+      subfolder: 'recordings',
+      action: 'push',
+      description: 'Pushed recordings to relay',
+      timestamp: new Date().toISOString(),
+    });
+    logRelayActivity({
+      projectCode: 'c32-bmad',
+      subfolder: 'edit-1st',
+      action: 'collect',
+      description: 'Collected edit-1st from relay',
+      timestamp: new Date().toISOString(),
+    });
+
+    const app = buildRelayApp();
+
+    // Filter for b17-test only
+    const res = await request(app).get('/api/relay/activity?projectCode=b17-test');
+    expect(res.body.success).toBe(true);
+    expect(res.body.events).toHaveLength(1);
+    expect(res.body.events[0].projectCode).toBe('b17-test');
+
+    // Without filter — returns all
+    const resAll = await request(app).get('/api/relay/activity');
+    expect(resAll.body.events).toHaveLength(2);
+  });
+
+  it('ring buffer overflow — caps at 50 events', () => {
+    // Log 55 events
+    for (let i = 0; i < 55; i++) {
+      logRelayActivity({
+        projectCode: `proj-${i}`,
+        subfolder: 'recordings',
+        action: 'push',
+        description: `Event ${i}`,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Verify via the endpoint
+    const app = buildRelayApp();
+    return request(app).get('/api/relay/activity').then((res) => {
+      expect(res.body.success).toBe(true);
+      expect(res.body.events).toHaveLength(50);
+      // Most recent event should be first (unshift)
+      expect(res.body.events[0].description).toBe('Event 54');
+      // Oldest kept event should be event 5 (events 0-4 were pushed out)
+      expect(res.body.events[49].description).toBe('Event 5');
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Git-sync route integration tests
 // ---------------------------------------------------------------------------
 
@@ -1102,5 +1216,144 @@ describe('POST /api/system/git-sync', () => {
     await request(app).post('/api/system/git-sync');
     const args = mockExecFile.mock.calls[0];
     expect(args[2]).toHaveProperty('cwd', '/Users/test/dev/video-projects/v-appydave');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/relay/files — per-file detail for subfolders
+// ---------------------------------------------------------------------------
+
+describe('GET /api/relay/files', () => {
+  const fixedDate = new Date('2026-03-22T14:10:00Z');
+
+  beforeEach(() => {
+    mockReaddir.mockReset();
+    mockStat.mockReset();
+  });
+
+  it('returns recordings with correct chapter extraction', async () => {
+    mockReaddir.mockResolvedValueOnce(['01-1-intro.mov', '01-2-outro.mov', '02-1-setup.mov']);
+    mockStat.mockImplementation(async () => ({
+      isFile: () => true,
+      isDirectory: () => false,
+      size: 27800000,
+      mtime: fixedDate,
+    }));
+
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/files?subfolder=recordings');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.subfolder).toBe('recordings');
+    expect(res.body.files).toHaveLength(3);
+    expect(res.body.files[0]).toMatchObject({
+      filename: '01-1-intro.mov',
+      chapter: '01',
+      size: 27800000,
+    });
+    expect(res.body.files[1]).toMatchObject({ filename: '01-2-outro.mov', chapter: '01' });
+    expect(res.body.files[2]).toMatchObject({ filename: '02-1-setup.mov', chapter: '02' });
+  });
+
+  it('filters out hidden files (.DS_Store)', async () => {
+    mockReaddir.mockResolvedValueOnce(['.DS_Store', '01-1-intro.mov', '.hidden-file']);
+    mockStat.mockImplementation(async () => ({
+      isFile: () => true,
+      isDirectory: () => false,
+      size: 1000,
+      mtime: fixedDate,
+    }));
+
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/files?subfolder=recordings');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.files).toHaveLength(1);
+    expect(res.body.files[0].filename).toBe('01-1-intro.mov');
+  });
+
+  it('returns empty array for empty directory', async () => {
+    mockReaddir.mockResolvedValueOnce([]);
+
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/files?subfolder=recordings');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.files).toEqual([]);
+  });
+
+  it('returns empty array for non-existent directory (not error)', async () => {
+    mockReaddir.mockRejectedValueOnce(new Error('ENOENT: no such file or directory'));
+
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/files?subfolder=recordings');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.files).toEqual([]);
+  });
+
+  it('returns error for invalid subfolder', async () => {
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/files?subfolder=../etc');
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toContain('Invalid subfolder');
+  });
+
+  it('reads from relay dir when source=relay', async () => {
+    mockReaddir.mockResolvedValueOnce(['01-1-intro.mov']);
+    mockStat.mockImplementation(async () => ({
+      isFile: () => true,
+      isDirectory: () => false,
+      size: 5000,
+      mtime: fixedDate,
+    }));
+
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/files?subfolder=recordings&source=relay');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.files).toHaveLength(1);
+    // Verify readdir was called with relay path (contains relay dir)
+    const readdirPath = mockReaddir.mock.calls[0][0] as string;
+    expect(readdirPath).toContain('/Users/test/relay/flihub-appydave/b17-test/recordings');
+  });
+
+  it('returns error when relay not configured', async () => {
+    const app = buildRelayApp({ relayEnabled: false });
+    const res = await request(app).get('/api/relay/files?subfolder=recordings');
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toContain('not enabled');
+  });
+
+  it('sorts files by chapter then filename', async () => {
+    mockReaddir.mockResolvedValueOnce([
+      '02-1-setup.mov',
+      '01-2-outro.mov',
+      '01-1-intro.mov',
+      'random-file.mov',
+    ]);
+    mockStat.mockImplementation(async () => ({
+      isFile: () => true,
+      isDirectory: () => false,
+      size: 1000,
+      mtime: fixedDate,
+    }));
+
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/files?subfolder=recordings');
+
+    expect(res.body.success).toBe(true);
+    const filenames = res.body.files.map((f: { filename: string }) => f.filename);
+    // "00" chapter (random-file.mov) first, then "01" chapter files, then "02"
+    expect(filenames).toEqual([
+      'random-file.mov',
+      '01-1-intro.mov',
+      '01-2-outro.mov',
+      '02-1-setup.mov',
+    ]);
+    // Verify chapter fallback to "00" for non-matching filenames
+    expect(res.body.files[0].chapter).toBe('00');
   });
 });

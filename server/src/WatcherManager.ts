@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import type { FSWatcher } from 'chokidar';
 import type { Server } from 'socket.io';
-import type { ServerToClientEvents, ClientToServerEvents, Config } from '../../shared/types.js';
+import type { ServerToClientEvents, ClientToServerEvents, Config, RelaySubfolder } from '../../shared/types.js';
 import { expandPath } from './utils/pathUtils.js';
 import { getProjectPaths } from '../../shared/paths.js';
 
@@ -241,15 +241,31 @@ export class WatcherManager {
       awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 500 },
     });
 
-    const emitChange = () => {
+    const emitChange = (filePath: string, action: 'add' | 'unlink') => {
       const existingTimeout = this.debounceTimeouts.get('relay');
       if (existingTimeout) clearTimeout(existingTimeout);
 
       const timeout = setTimeout(() => {
         try {
-          console.log('relay change detected');
-          this.io.emit('relay:recordings-available', { projectCode: '', count: 0 });
-          console.log('relay event emitted successfully');
+          // Parse: /relay-dir/projectCode/subfolder/filename
+          const relative = path.relative(expandedRelay, filePath);
+          const parts = relative.split(path.sep);
+          if (parts.length < 3) return; // Not deep enough to be a relay file
+
+          const projectCode = parts[0];
+          const subfolder = parts[1] as RelaySubfolder;
+          const filename = parts.slice(2).join(path.sep);
+
+          if (!['recordings', 'edit-1st', 'edit-2nd'].includes(subfolder)) return;
+
+          console.log(`relay:changed — ${action} ${projectCode}/${subfolder}/${filename}`);
+          this.io.emit('relay:changed', {
+            projectCode,
+            subfolder,
+            action,
+            filename,
+            timestamp: new Date().toISOString(),
+          });
         } catch (err) {
           console.error('Error emitting relay event:', err);
         }
@@ -259,7 +275,7 @@ export class WatcherManager {
     };
 
     for (const event of ['add', 'unlink'] as const) {
-      watcher.on(event, emitChange);
+      watcher.on(event, (filePath: string) => emitChange(filePath, event));
     }
 
     watcher.on('error', (error: Error) => {

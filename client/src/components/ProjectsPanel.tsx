@@ -16,6 +16,7 @@ import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket';
 import { useDelayedHover } from '../hooks/useDelayedHover';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { useOpenFolder } from '../hooks/useOpenFolder';
+import { useRelayBrowse } from '../hooks/useRelayApi';
 import { LoadingSpinner, ErrorMessage, PageContainer } from './shared';
 import { ProjectStatsPopup } from './ProjectStatsPopup';
 import { formatFileSize } from '../utils/formatting';
@@ -24,6 +25,7 @@ import type {
   ProjectPriority,
   ProjectStage,
   ProjectStageOverride,
+  RelayProjectInfo,
 } from '../../../shared/types';
 
 // FR-80: Tab type for navigation callback
@@ -260,6 +262,47 @@ function ChaptersIndicator({
   );
 }
 
+// B040: Relay indicator dots for project list — shows relay file presence per subfolder
+function RelayIndicator({ relayProject }: { relayProject?: RelayProjectInfo }) {
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
+
+  if (!relayProject) return null;
+
+  const rec = relayProject.subfolders.recordings;
+  const edit1 = relayProject.subfolders['edit-1st'];
+  const edit2 = relayProject.subfolders['edit-2nd'];
+
+  const hasAny = rec.fileCount > 0 || edit1.fileCount > 0 || edit2.fileCount > 0;
+  if (!hasAny) return null;
+
+  // Build tooltip parts
+  const parts: string[] = [];
+  if (rec.fileCount > 0) parts.push(`${rec.fileCount} recording${rec.fileCount !== 1 ? 's' : ''}`);
+  if (edit1.fileCount > 0) parts.push(`${edit1.fileCount} first edit`);
+  if (edit2.fileCount > 0) parts.push(`${edit2.fileCount} final`);
+
+  return (
+    <span
+      className="inline-flex items-center gap-0.5 cursor-help relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {rec.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+      {edit1.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+      {edit2.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-emerald-500" />}
+      {isHovered && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+          <div className="font-medium">Relay</div>
+          {parts.map((p) => (
+            <div key={p} className="text-gray-300">{p}</div>
+          ))}
+        </div>
+      )}
+    </span>
+  );
+}
+
 // FR-110: Stage cell with dropdown selector
 const STAGE_ORDER: (keyof typeof STAGE_DISPLAY)[] = [
   'planning',
@@ -460,6 +503,18 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   const updatePriority = useUpdateProjectPriority();
   const updateStage = useUpdateProjectStage();
   const { mutate: openFolder } = useOpenFolder();
+  const { data: relayBrowseData } = useRelayBrowse();
+
+  // Build a lookup map for relay projects by project code
+  const relayByCode = useMemo(() => {
+    const map = new Map<string, RelayProjectInfo>();
+    if (relayBrowseData?.projects) {
+      for (const p of relayBrowseData.projects) {
+        map.set(p.projectCode, p);
+      }
+    }
+    return map;
+  }, [relayBrowseData?.projects]);
 
   // NFR-5: Subscribe to real-time project changes via socket
   useProjectsSocket();
@@ -617,6 +672,9 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                 <th className="pb-2 font-medium text-center w-8" title="Final Video">
                   ✅
                 </th>
+                <th className="pb-2 font-medium text-center w-12" title="Relay">
+                  Relay
+                </th>
                 <th className="pb-2 font-medium w-8"></th>
               </tr>
             </thead>
@@ -759,6 +817,11 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                     {/* FR-33: Final Video */}
                     <td className="py-2 text-center">
                       <FinalMediaCell code={project.code} />
+                    </td>
+
+                    {/* B040: Relay indicators */}
+                    <td className="py-2 text-center">
+                      <RelayIndicator relayProject={relayByCode.get(project.code)} />
                     </td>
 
                     {/* Info Button */}

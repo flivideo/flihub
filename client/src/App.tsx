@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Toaster, toast } from 'sonner';
-import { useSocket, useRecordingsSocket, useDeveloperSocket } from './hooks/useSocket';
+import { useSocket, useRecordingsSocket, useDeveloperSocket, useRelaySocket } from './hooks/useSocket';
 import {
   useConfig,
   useSuggestedNaming,
@@ -146,6 +146,7 @@ function App() {
   const { data: recordingsData } = useRecordings();
   // FR-115: Real-time updates for recordings (invalidates cache on socket event)
   useRecordingsSocket();
+  useRelaySocket();  // B046: relay change notifications
   // FR-127: Real-time updates for developer tools (invalidates cache on socket event)
   useDeveloperSocket();
   // NFR-6: Track project directory changes

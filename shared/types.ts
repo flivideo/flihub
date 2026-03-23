@@ -6,6 +6,15 @@ export type MachineRole = 'recorder' | 'editor';
 // Relay subfolder types for push/collect/preview operations
 export type RelaySubfolder = 'recordings' | 'edit-1st' | 'edit-2nd';
 
+// Relay change event for real-time socket notifications
+export interface RelayChangeEvent {
+  projectCode: string;
+  subfolder: RelaySubfolder;
+  action: 'add' | 'unlink';
+  filename: string;
+  timestamp: string; // ISO date
+}
+
 // Relay folder browser types
 export interface RelaySubfolderInfo {
   fileCount: number;
@@ -78,6 +87,21 @@ export interface EditVersion {
   filename: string;
   size: number;
   modified: string; // ISO date string
+}
+
+// Relay per-file detail for file drawers
+export interface RelayFileInfo {
+  filename: string;
+  size: number;
+  modified: string; // ISO date
+  chapter: string;  // extracted from filename, e.g. "01" from "01-1-intro.mov"
+}
+
+export interface RelayFilesResponse {
+  success: boolean;
+  files?: RelayFileInfo[];
+  subfolder?: RelaySubfolder;
+  error?: string;
 }
 
 export interface FileInfo {
@@ -423,9 +447,7 @@ export interface ServerToClientEvents {
   'projects:changed': () => void; // Project folder changed
   'inbox:changed': () => void; // FR-59: Inbox file added/removed
   // B038: relay collaboration
-  'relay:recordings-available': (data: { projectCode: string; count: number }) => void;
-  'relay:edit-received': (data: { projectCode: string; filename: string }) => void;
-  'relay:sync-status': (data: { status: 'idle' | 'syncing' | 'error'; message?: string }) => void;
+  'relay:changed': (data: RelayChangeEvent) => void;
   'transcripts:changed': () => void; // NFR-85: Transcript added/removed/changed
   // FR-58: Chapter recording events
   'chapters:generating': (data: { chapter: string; total: number; current: number }) => void;
@@ -1005,5 +1027,23 @@ export interface RestoreEditFolderResponse {
   restored: string[]; // Files copied back
   restoredCount: number;
   warnings?: string[]; // Hash mismatch warnings
+  error?: string;
+}
+
+// Relay activity event for activity feed
+export interface RelayActivityEvent {
+  id: string;           // unique id (timestamp + random)
+  projectCode: string;
+  subfolder: RelaySubfolder;
+  action: 'push' | 'collect' | 'promote' | 'file-detected';
+  description: string;  // "You pushed 15 recordings (338 MB)"
+  timestamp: string;    // ISO date
+  fileCount?: number;
+  totalSize?: number;
+}
+
+export interface RelayActivityResponse {
+  success: boolean;
+  events?: RelayActivityEvent[];
   error?: string;
 }
