@@ -507,26 +507,58 @@ function SetupGuide() {
         Setup Help — How to configure Relay for a new collaborator
       </summary>
       <div className="px-4 pb-4 pt-1 space-y-4 text-sm text-gray-600">
-        {/* Creator steps */}
+        {/* SyncThing install */}
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">For David (Creator)</h4>
-          <ol className="list-decimal list-inside space-y-1 text-xs text-gray-600">
-            <li>Install SyncThing on this machine and the editor's machine</li>
-            <li>Create relay folder: <code className="font-mono bg-gray-100 px-1 rounded">mkdir -p ~/relay/flihub-appydave</code></li>
-            <li>Share in SyncThing: Add the relay folder and share with editor</li>
-            <li>Set config: <code className="font-mono bg-gray-100 px-1 rounded">relayDirectory</code> + <code className="font-mono bg-gray-100 px-1 rounded">relayEnabled</code> in server/config.json</li>
-            <li>Set role: <code className="font-mono bg-gray-100 px-1 rounded">machineRole: "creator"</code></li>
-            <li>Verify: Relay Status shows green checkmark</li>
+          <h4 className="font-semibold text-gray-700 mb-2">1. Install &amp; Start SyncThing</h4>
+          <ol className="list-decimal list-inside space-y-1.5 text-xs text-gray-600">
+            <li>Install on both machines: <code className="font-mono bg-gray-100 px-1 rounded">brew install syncthing</code></li>
+            <li>Start the service: <code className="font-mono bg-gray-100 px-1 rounded">brew services start syncthing</code></li>
+            <li>Open the SyncThing web UI: <code className="font-mono bg-gray-100 px-1 rounded">http://localhost:8384</code></li>
+            <li>Both machines need SyncThing running — repeat on the editor's machine</li>
           </ol>
         </div>
 
-        {/* Editor steps */}
+        {/* Folder setup */}
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">For Jan (Editor)</h4>
-          <ol className="list-decimal list-inside space-y-1 text-xs text-gray-600">
-            <li>Accept SyncThing share from David</li>
-            <li>Set config: <code className="font-mono bg-gray-100 px-1 rounded">relayDirectory</code> + <code className="font-mono bg-gray-100 px-1 rounded">relayEnabled</code> + <code className="font-mono bg-gray-100 px-1 rounded">machineRole: "editor"</code></li>
-            <li>Verify: Relay Status shows green checkmark</li>
+          <h4 className="font-semibold text-gray-700 mb-2">2. Create &amp; Share the Relay Folder</h4>
+          <ol className="list-decimal list-inside space-y-1.5 text-xs text-gray-600">
+            <li>Create relay folder: <code className="font-mono bg-gray-100 px-1 rounded">mkdir -p ~/relay/flihub-appydave</code></li>
+            <li>In SyncThing UI → <strong>Add Folder</strong> → set path to <code className="font-mono bg-gray-100 px-1 rounded">~/relay/flihub-appydave</code></li>
+            <li>Add a <strong>Remote Device</strong> — copy the Device ID from the editor's SyncThing UI (<strong>Actions → Show ID</strong>)</li>
+            <li>Share the folder with the editor's device</li>
+            <li>On the editor's machine: accept the incoming folder share in their SyncThing UI</li>
+          </ol>
+        </div>
+
+        {/* Creator config */}
+        <div>
+          <h4 className="font-semibold text-gray-700 mb-2">3. Configure FliHub — Creator (David)</h4>
+          <div className="text-xs text-gray-500 mb-1">Add to <code className="font-mono bg-gray-100 px-1 rounded">server/config.json</code>:</div>
+          <pre className="font-mono text-xs bg-gray-50 border border-gray-200 rounded p-2 overflow-x-auto">
+{`"relayDirectory": "/Users/davidcruwys/relay/flihub-appydave",
+"relayEnabled": true,
+"machineRole": "creator"`}
+          </pre>
+        </div>
+
+        {/* Editor config */}
+        <div>
+          <h4 className="font-semibold text-gray-700 mb-2">4. Configure FliHub — Editor (Jan)</h4>
+          <div className="text-xs text-gray-500 mb-1">Add to <code className="font-mono bg-gray-100 px-1 rounded">server/config.json</code> on the editor's machine:</div>
+          <pre className="font-mono text-xs bg-gray-50 border border-gray-200 rounded p-2 overflow-x-auto">
+{`"relayDirectory": "/home/jan/relay/flihub-appydave",
+"relayEnabled": true,
+"machineRole": "editor"`}
+          </pre>
+        </div>
+
+        {/* Verify */}
+        <div>
+          <h4 className="font-semibold text-gray-700 mb-2">5. Verify</h4>
+          <ol className="list-decimal list-inside space-y-1.5 text-xs text-gray-600">
+            <li>Restart FliHub server on both machines</li>
+            <li>Check this page shows <span className="text-green-600 font-medium">● Relay connected</span></li>
+            <li>Check SyncThing UI at <code className="font-mono bg-gray-100 px-1 rounded">http://localhost:8384</code> shows the folder as "Up to Date"</li>
           </ol>
         </div>
       </div>
