@@ -14,6 +14,7 @@ import type {
   RelayPromoteResponse,
   RelayActivityResponse,
   RelayFilesResponse,
+  RelayDivergenceResponse,
 } from '../../../shared/types';
 
 export function useRelayBrowse() {
@@ -190,5 +191,45 @@ export function useRelayFiles(subfolder: RelaySubfolder, source: 'project' | 're
       return res.json() as Promise<RelayFilesResponse>;
     },
     refetchInterval: 30000,
+  });
+}
+
+export function useRelayDivergence() {
+  return useQuery({
+    queryKey: QUERY_KEYS.relayDivergence,
+    queryFn: async (): Promise<RelayDivergenceResponse> => {
+      const res = await fetch(`${API_URL}/api/relay/divergence`);
+      if (!res.ok) {
+        throw new Error(`Relay API error: ${res.status} ${res.statusText}`);
+      }
+      return res.json() as Promise<RelayDivergenceResponse>;
+    },
+    refetchInterval: 15000,
+  });
+}
+
+export function useEnsureEditFolders() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<{ success: boolean; error?: string }> => {
+      const res = await fetch(`${API_URL}/api/relay/ensure-edit-folders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        throw new Error(`Relay API error: ${res.status} ${res.statusText}`);
+      }
+      return res.json() as Promise<{ success: boolean; error?: string }>;
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success('Edit folders created');
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayDivergence });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
+      } else {
+        toast.error(data.error || 'Failed to create edit folders');
+      }
+    },
+    onError: () => toast.error('Failed to create edit folders'),
   });
 }

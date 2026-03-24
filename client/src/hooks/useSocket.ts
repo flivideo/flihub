@@ -272,6 +272,7 @@ export function useRelaySocket() {
     const handleRelayChanged = (data: RelayChangeEvent) => {
       console.log(`Socket: relay:changed — ${data.action} ${data.projectCode}/${data.subfolder}/${data.filename}`);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayDivergence });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayFiles(data.subfolder) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayActivity });
       if (data.subfolder === 'edit-2nd') {
