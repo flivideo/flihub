@@ -228,11 +228,11 @@ export function useRelayDivergence() {
   });
 }
 
-export function useEnsureEditFolders() {
+export function useEnsureFolders() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (): Promise<{ success: boolean; error?: string }> => {
-      const res = await fetch(`${API_URL}/api/relay/ensure-edit-folders`, {
+      const res = await fetch(`${API_URL}/api/relay/ensure-folders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -243,13 +243,16 @@ export function useEnsureEditFolders() {
     },
     onSuccess: (data) => {
       if (data.success) {
-        toast.success('Edit folders created');
+        toast.success('Project folders created');
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayDivergence });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
       } else {
-        toast.error(data.error || 'Failed to create edit folders');
+        toast.error(data.error || 'Failed to create folders');
       }
     },
-    onError: () => toast.error('Failed to create edit folders'),
+    onError: () => toast.error('Failed to create folders'),
   });
 }
+
+/** @deprecated Use useEnsureFolders instead */
+export const useEnsureEditFolders = useEnsureFolders;

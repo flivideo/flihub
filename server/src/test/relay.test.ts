@@ -1522,6 +1522,44 @@ describe('GET /api/relay/divergence', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Collect when local subfolder doesn't exist — should create it and succeed
+// ---------------------------------------------------------------------------
+
+describe('POST /api/relay/collect — folder auto-creation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearActivityLog();
+    mockExecFile.mockReturnValue({ stdout: 'received files', stderr: '' });
+  });
+
+  it('creates local subfolder via ensureDir when it does not exist, then rsync succeeds', async () => {
+    const app = buildRelayApp();
+    const res = await request(app)
+      .post('/api/relay/collect')
+      .send({ subfolder: 'recordings' });
+
+    expect(res.body.success).toBe(true);
+    // ensureDir is called with the project recordings dir before rsync
+    expect(mockEnsureDir).toHaveBeenCalled();
+    const ensureDirArg = mockEnsureDir.mock.calls[0][0] as string;
+    expect(ensureDirArg).toContain('recordings');
+    expect(ensureDirArg).toContain('b17-test');
+    // rsync was called after ensureDir
+    expect(mockExecFile).toHaveBeenCalled();
+  });
+
+  it('collect succeeds even when local subfolder already exists', async () => {
+    const app = buildRelayApp();
+    const res = await request(app)
+      .post('/api/relay/collect')
+      .send({ subfolder: 'recordings' });
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.output).toBe('received files');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Auto-create edit folders on collect + ensure-edit-folders endpoint
 // ---------------------------------------------------------------------------
 
@@ -1589,21 +1627,74 @@ describe('auto-create edit folders on collect', () => {
   });
 });
 
-describe('POST /api/relay/ensure-edit-folders', () => {
+describe('POST /api/relay/ensure-folders', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearActivityLog();
   });
 
-  it('creates edit-1st and edit-2nd when both missing', async () => {
+  it('creates recordings, edit-1st, and edit-2nd when all missing', async () => {
+    mockPathExists.mockResolvedValue(false);
+    const app = buildRelayApp();
+    const res = await request(app).post('/api/relay/ensure-folders');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).toContain('recordings');
+    expect(res.body.foldersCreated).toContain('edit-1st');
+    expect(res.body.foldersCreated).toContain('edit-2nd');
+    expect(mockMkdir).toHaveBeenCalledTimes(3);
+  });
+
+  it('skips folders that already exist', async () => {
+    mockPathExists.mockResolvedValue(true);
+    const app = buildRelayApp();
+    const res = await request(app).post('/api/relay/ensure-folders');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).toEqual([]);
+    expect(mockMkdir).not.toHaveBeenCalled();
+  });
+
+  it('creates only missing folders when some exist', async () => {
+    mockPathExists.mockImplementation(async (p: string) => {
+      if (typeof p === 'string' && p.includes('recordings')) return true;
+      return false;
+    });
+    const app = buildRelayApp();
+    const res = await request(app).post('/api/relay/ensure-folders');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).not.toContain('recordings');
+    expect(res.body.foldersCreated).toContain('edit-1st');
+    expect(res.body.foldersCreated).toContain('edit-2nd');
+    expect(mockMkdir).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns error when relay not configured', async () => {
+    const app = buildRelayApp({ relayEnabled: false });
+    const res = await request(app).post('/api/relay/ensure-folders');
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toMatch(/not enabled/i);
+  });
+});
+
+describe('POST /api/relay/ensure-edit-folders (backward compat alias)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearActivityLog();
+  });
+
+  it('creates all three folders when all missing (same handler as ensure-folders)', async () => {
     mockPathExists.mockResolvedValue(false);
     const app = buildRelayApp();
     const res = await request(app).post('/api/relay/ensure-edit-folders');
 
     expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).toContain('recordings');
     expect(res.body.foldersCreated).toContain('edit-1st');
     expect(res.body.foldersCreated).toContain('edit-2nd');
-    expect(mockMkdir).toHaveBeenCalledTimes(2);
+    expect(mockMkdir).toHaveBeenCalledTimes(3);
   });
 
   it('skips folders that already exist', async () => {
@@ -1625,22 +1716,23 @@ describe('POST /api/relay/ensure-edit-folders', () => {
   });
 
   it('logs activity for each created folder', async () => {
-    // Both edit folders don't exist yet
+    // All folders don't exist yet
     mockPathExists.mockResolvedValue(false);
 
     const app = buildRelayApp();
     const res = await request(app).post('/api/relay/ensure-edit-folders');
 
     expect(res.body.success).toBe(true);
-    expect(res.body.foldersCreated).toEqual(['edit-1st', 'edit-2nd']);
+    expect(res.body.foldersCreated).toEqual(['recordings', 'edit-1st', 'edit-2nd']);
 
-    // Check activity log has entries for both created folders
+    // Check activity log has entries for all created folders
     const actRes = await request(app).get('/api/relay/activity');
     const events = actRes.body.events;
     const createEvents = events.filter((e: { description: string }) => e.description.includes('Created'));
-    expect(createEvents).toHaveLength(2);
+    expect(createEvents).toHaveLength(3);
     expect(createEvents[0].description).toContain('edit-2nd');
     expect(createEvents[1].description).toContain('edit-1st');
+    expect(createEvents[2].description).toContain('recordings');
   });
 
   it('returns all three subfolders in response', async () => {

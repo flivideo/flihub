@@ -20,6 +20,7 @@ export type { SplitMarkerProps } from './SplitMarker';
 export { UndoToast } from './UndoToast';
 export type { UndoToastProps } from './UndoToast';
 export { SyncIndicator } from './SyncIndicator';
+export { RelayIndicator } from './RelayIndicator';
 export { EditableFileRow } from './EditableFileRow';
 export type { EditableFileRowProps } from './EditableFileRow';
 export { BatchToolbar } from './BatchToolbar';

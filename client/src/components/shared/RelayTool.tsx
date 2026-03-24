@@ -10,7 +10,7 @@ import {
   useRelayCollect,
   useRelayVersions,
   useRelayPromote,
-  useEnsureEditFolders,
+  useEnsureFolders,
 } from '../../hooks/useRelayApi';
 import { useEnvironment } from '../../hooks/useConfigApi';
 import { useConfig } from '../../hooks/useApi';
@@ -136,7 +136,7 @@ export function RelayTool() {
   const push = useRelayPush();
   const collect = useRelayCollect();
   const promote = useRelayPromote();
-  const ensureFolders = useEnsureEditFolders();
+  const ensureFolders = useEnsureFolders();
 
   const [openDrawer, setOpenDrawer] = useState<RelaySubfolder | null>(null);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -312,17 +312,31 @@ function KanbanLane({
   const direction: SyncDirection = divergence?.direction ?? 'synced';
   const localCount = divergence?.local.fileCount ?? 0;
   const localSize = divergence?.local.totalSize ?? 0;
+  const relayCount = divergence?.relay.fileCount ?? 0;
+  const relaySize = divergence?.relay.totalSize ?? 0;
   const localOnlyCount = divergence?.localOnly.length ?? 0;
   const relayOnlyCount = divergence?.relayOnly.length ?? 0;
 
-  const borderClass = folderExists ? getDirectionBorderClass(direction) : 'border-gray-400';
-  const dotClass = folderExists ? getDirectionDotClass(direction) : 'bg-gray-400';
+  // Show relay-aware styling even when folder is missing but relay has files
+  const hasRelayFiles = relayCount > 0;
+  const borderClass = folderExists ? getDirectionBorderClass(direction) : (hasRelayFiles ? 'border-amber-500' : 'border-gray-400');
+  const dotClass = folderExists ? getDirectionDotClass(direction) : (hasRelayFiles ? 'bg-amber-500' : 'bg-gray-400');
   const statusText = folderExists
     ? getDirectionStatusText(direction, localOnlyCount, relayOnlyCount)
-    : 'No folder';
+    : (hasRelayFiles ? `\u2193 ${relayCount} incoming` : 'No folder');
   const statusColorClass = folderExists
     ? getDirectionStatusColorClass(direction)
-    : 'text-gray-500';
+    : (hasRelayFiles ? 'text-amber-500' : 'text-gray-500');
+
+  // Determine whether action button should be disabled
+  const actionDisabled = isPending
+    || (direction === 'synced' && !isPush)
+    || (isPush && localCount === 0);
+
+  // Show action button when folder exists OR when folder is missing but relay has files to collect
+  const showActionButton = folderExists || (!folderExists && hasRelayFiles && !isPush);
+  // Show create folders only when folder missing AND no relay files to collect
+  const showCreateFolders = !folderExists && !hasRelayFiles;
 
   return (
     <div className={`bg-surface border-2 ${borderClass} rounded-lg p-3 space-y-2.5 flex-1 min-w-0`}>
@@ -343,6 +357,20 @@ function KanbanLane({
           </div>
           <div className="text-xs text-warm-muted">{formatSize(localSize)}</div>
         </div>
+      ) : hasRelayFiles ? (
+        <div>
+          <div className="flex items-center gap-1 text-sm text-amber-600 mb-1">
+            <span>&#9888;</span>
+            <span>Folder missing</span>
+          </div>
+          <div className="text-lg font-bold text-warm-primary">
+            {relayCount}
+            <span className="text-sm font-normal text-warm-muted ml-1">
+              in relay
+            </span>
+          </div>
+          <div className="text-xs text-warm-muted">{formatSize(relaySize)}</div>
+        </div>
       ) : (
         <div className="py-1">
           <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -357,16 +385,19 @@ function KanbanLane({
         {statusText}
       </div>
 
-      {/* Action button or create folders button */}
-      {folderExists ? (
+      {/* Action button — shown when folder exists or relay has files to collect */}
+      {showActionButton && (
         <button
           onClick={onAction}
-          disabled={isPending || (direction === 'synced' && !isPush)}
+          disabled={actionDisabled}
           className="w-full px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? 'Working...' : actionLabel}
         </button>
-      ) : (
+      )}
+
+      {/* Create folders — only when no relay files and folder missing */}
+      {showCreateFolders && (
         <button
           onClick={onEnsureFolders}
           disabled={isPending}

@@ -272,7 +272,7 @@ const SYNC_BADGE_CONFIG: Record<RelaySyncStatus, { bg: string; text: string; ico
   behind: { bg: 'bg-amber-100', text: 'text-amber-700', icon: (n) => `\u2193${n}` },
   diverged: { bg: 'bg-amber-100', text: 'text-amber-700', icon: () => '\u2195' },
   'local-only': { bg: 'bg-green-100', text: 'text-green-700', icon: () => '\u2713' },
-  'relay-only': { bg: 'bg-red-100', text: 'text-red-600', icon: () => '!' },
+  'relay-only': { bg: 'bg-amber-100', text: 'text-amber-700', icon: (n) => `↓${n}` },
 };
 
 const SUBFOLDER_LABELS: Record<RelaySubfolder, string> = {
@@ -298,7 +298,7 @@ function subfolderTooltipLine(
     case 'behind': statusText = `${relayCount - localCount} incoming`; break;
     case 'diverged': statusText = 'diverged'; break;
     case 'local-only': statusText = 'local only'; break;
-    case 'relay-only': statusText = 'relay only'; break;
+    case 'relay-only': statusText = `${relayCount} to collect`; break;
     default: statusText = String(status);
   }
   return `${label}: ${localPart}, ${relayPart} \u2014 ${statusText}`;

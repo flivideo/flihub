@@ -32,7 +32,7 @@ import { ManagePanel } from './components/ManagePanel';
 // B045: PoemWuiPage moved into ManagePanel as AWB tool
 import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
-import { OpenFolderButton, SyncIndicator } from './components/shared';
+import { OpenFolderButton, SyncIndicator, RelayIndicator } from './components/shared';
 import { HeaderDropdown } from './components/HeaderDropdown';
 import { useOpenFolder } from './hooks/useOpenFolder';
 import ApiExplorer from './components/ApiExplorer';
@@ -494,6 +494,10 @@ function App() {
               <SyncIndicator onNavigateToSync={() => {
                 changeTab('export');
                 setManageTool('sync');
+              }} />
+              <RelayIndicator onNavigateToRelay={() => {
+                changeTab('export');
+                setManageTool('relay');
               }} />
               <div className="w-px h-5 bg-warm-divider" />
             </div>
