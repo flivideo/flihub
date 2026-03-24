@@ -56,6 +56,7 @@ export const QUERY_KEYS = {
   developerTelemetry: ['developer', 'telemetry'] as const,
   // Relay collaboration
   relayBrowse: ['relay-browse'] as const,
+  relayEnhancedBrowse: ['relay-enhanced-browse'] as const,
   relayStatus: ['relay-status'] as const,
   relayVersions: ['relay-versions'] as const,
   relayFiles: (subfolder: string) => ['relay-files', subfolder] as const,

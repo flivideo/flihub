@@ -144,6 +144,13 @@ export interface RelayDivergenceResponse {
   error?: string;
 }
 
+// B050: Enhanced browse response for kanban badges
+export interface RelayEnhancedBrowseResponse {
+  success: boolean;
+  projects: RelayProjectSyncInfo[];
+  relayDirectory: string;
+}
+
 export interface FileInfo {
   path: string;
   filename: string;
