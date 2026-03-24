@@ -14,6 +14,7 @@ import {
 } from '../../hooks/useRelayApi';
 import { useEnvironment } from '../../hooks/useConfigApi';
 import { useConfig } from '../../hooks/useApi';
+import { useOpenFolder } from '../../hooks/useOpenFolder';
 import type {
   RelaySubfolder,
   RelayFileInfo,
@@ -137,6 +138,7 @@ export function RelayTool() {
   const collect = useRelayCollect();
   const promote = useRelayPromote();
   const ensureFolders = useEnsureFolders();
+  const { mutate: openRelay } = useOpenFolder();
 
   const [openDrawer, setOpenDrawer] = useState<RelaySubfolder | null>(null);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -272,7 +274,18 @@ export function RelayTool() {
       {/* Footer */}
       {status.relayDirectory && (
         <div className="flex items-center justify-between text-xs text-warm-muted border-t border-warm pt-3">
-          <span className="font-mono truncate">{status.relayDirectory}</span>
+          <span className="inline-flex items-center gap-1 font-mono truncate">
+            {status.relayDirectory}
+            <button
+              onClick={() => openRelay('relay')}
+              className="p-0.5 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors shrink-0"
+              title="Open relay folder in Finder"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+            </button>
+          </span>
           <span className="inline-flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
             Connected
@@ -308,6 +321,7 @@ function KanbanLane({
   onToggleDrawer,
   onEnsureFolders,
 }: KanbanLaneProps) {
+  const { mutate: openFolder } = useOpenFolder();
   const folderExists = divergence?.folderExists ?? true;
   const direction: SyncDirection = divergence?.direction ?? 'synced';
   const localCount = divergence?.local.fileCount ?? 0;
@@ -344,6 +358,17 @@ function KanbanLane({
       <div className="flex items-center gap-2">
         <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotClass}`} />
         <span className="text-sm font-semibold text-warm-primary truncate">{lane.label}</span>
+        {folderExists && lane.subfolder && (
+          <button
+            onClick={() => openFolder(lane.subfolder!)}
+            className="p-0.5 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors ml-auto shrink-0"
+            title={`Open ${lane.label} in Finder`}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Stats */}

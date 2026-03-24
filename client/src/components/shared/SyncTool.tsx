@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useSyncStatus, useSyncPush, useSyncPull, useSyncResolve } from '../../hooks/useSyncApi';
 import { useEnvironment } from '../../hooks/useConfigApi';
 import { useConfig } from '../../hooks/useApi';
+import { useOpenFolder } from '../../hooks/useOpenFolder';
 import type { SyncChannelStatus, SyncConflictFile } from '../../../../shared/types';
 
 // ─── Helpers ───
@@ -432,6 +433,7 @@ function ChannelCard({
 }: ChannelCardProps) {
   const [showFiles, setShowFiles] = useState(false);
   const badge = getStatusBadge(channel);
+  const { mutate: openFolder } = useOpenFolder();
 
   const canPush = onPush && !pushDisabled && (channel.state === 'dirty' || channel.state === 'diverged');
   const canPull = channel.state === 'behind' || channel.state === 'diverged';
@@ -451,7 +453,18 @@ function ChannelCard({
             </span>
             <span className="text-sm font-semibold text-warm-primary">{title}</span>
           </div>
-          <div className="text-xs text-warm-muted font-mono mt-0.5">{path}</div>
+          <div className="flex items-center gap-1 mt-0.5">
+            <span className="text-xs text-warm-muted font-mono">{path}</span>
+            <button
+              onClick={() => openFolder(icon === 'code' ? 'project' : 'recordings')}
+              className="p-0.5 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors"
+              title="Open in Finder"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+            </button>
+          </div>
         </div>
         <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${badge.text} ${badge.bg} border rounded-full px-2.5 py-0.5`}>
           <span className={`w-1.5 h-1.5 rounded-full ${
