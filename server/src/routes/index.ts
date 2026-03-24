@@ -126,6 +126,9 @@ export function createRoutes(
       shadowResolution,
       glingDictionary,
       commonNames,
+      relayDirectory,
+      relayEnabled,
+      machineRole,
     } = req.body;
     const updatedConfig = updateConfig({
       watchDirectory,
@@ -136,6 +139,9 @@ export function createRoutes(
       shadowResolution,
       glingDictionary,
       commonNames,
+      relayDirectory,
+      relayEnabled,
+      machineRole,
     });
     console.log('Config updated:', updatedConfig);
     res.json(updatedConfig);

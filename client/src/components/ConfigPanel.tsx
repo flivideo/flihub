@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { ConfigFocusSection } from '../App';
-import type { CommonName, ChapterFilter } from '../../../shared/types';
+import type { CommonName, ChapterFilter, MachineRole } from '../../../shared/types';
 import { toast } from 'sonner';
 import {
   useConfig,
@@ -217,6 +217,40 @@ function PathMismatchWarning({
   );
 }
 
+// Collapsible section wrapper for config groups
+function CollapsibleSection({
+  title,
+  defaultOpen = true,
+  badge,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  badge?: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-warm rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-warm-header text-sm font-medium text-warm-secondary hover:bg-surface-hover transition-colors"
+      >
+        <span className="flex items-center gap-2">
+          {title}
+          {badge && (
+            <span className="text-xs bg-surface-muted text-warm-muted px-1.5 py-0.5 rounded-full">
+              {badge}
+            </span>
+          )}
+        </span>
+        <span className="text-warm-muted text-xs">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && <div className="px-4 py-3 space-y-3">{children}</div>}
+    </div>
+  );
+}
+
 // FR-89 Part 2: Path existence indicator component
 function PathExistsIndicator({
   status,
@@ -283,6 +317,11 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const [projectsRootDirectory, setProjectsRootDirectory] = useState('');
   const [activeProject, setActiveProject] = useState('');
   const [imageSourceDirectory, setImageSourceDirectory] = useState('');
+  // B038/B039: Relay collaboration settings
+  const [relayDirectory, setRelayDirectory] = useState('');
+  const [relayEnabled, setRelayEnabled] = useState(false);
+  const [machineRole, setMachineRole] = useState<MachineRole>('recorder');
+
   // FR-102: Gling dictionary words (global)
   const [glingDictionary, setGlingDictionary] = useState('');
   // FR-116/FR-73: Common names editing with chapter filters
@@ -295,6 +334,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const [watchDirExists, setWatchDirExists] = useState<PathExistsStatus>('unknown');
   const [rootDirExists, setRootDirExists] = useState<PathExistsStatus>('unknown');
   const [imageDirExists, setImageDirExists] = useState<PathExistsStatus>('unknown');
+  const [relayDirExists, setRelayDirExists] = useState<PathExistsStatus>('unknown');
 
   // FR-89 Part 2: Check path existence via API
   const checkPathExists = useCallback(
@@ -345,6 +385,12 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       setActiveProject(config.activeProject || '');
       setImageSourceDirectory(imagePath);
 
+      // B038/B039: Initialize relay settings
+      const relayPath = collapsePath(config.relayDirectory || '');
+      setRelayDirectory(relayPath);
+      setRelayEnabled(config.relayEnabled || false);
+      setMachineRole(config.machineRole || 'recorder');
+
       // FR-102: Initialize Gling dictionary (one word per line)
       setGlingDictionary((config.glingDictionary || []).join('\n'));
 
@@ -358,6 +404,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       checkPathExists(watchPath, setWatchDirExists);
       checkPathExists(rootPath, setRootDirExists);
       checkPathExists(imagePath, setImageDirExists);
+      if (relayPath) checkPathExists(relayPath, setRelayDirExists);
     }
   }, [config, checkPathExists]);
 
@@ -397,6 +444,12 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       (config.activeProject || '') !== activeProject ||
       collapsePath(config.imageSourceDirectory) !== imageSourceDirectory;
 
+    // B038/B039: Check relay config changes
+    const relayChanged =
+      collapsePath(config.relayDirectory || '') !== relayDirectory ||
+      (config.relayEnabled || false) !== relayEnabled ||
+      (config.machineRole || 'recorder') !== machineRole;
+
     // FR-102: Check Gling dictionary changes
     const currentDict = (config.glingDictionary || []).join('\n');
     const dictChanged = currentDict !== glingDictionary;
@@ -416,13 +469,16 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     const commonNamesChanged =
       JSON.stringify(config.commonNames || []) !== JSON.stringify(commonNames);
 
-    return pathsChanged || dictChanged || chapterChanged || shadowChanged || commonNamesChanged;
+    return pathsChanged || relayChanged || dictChanged || chapterChanged || shadowChanged || commonNamesChanged;
   }, [
     config,
     watchDirectory,
     projectsRootDirectory,
     activeProject,
     imageSourceDirectory,
+    relayDirectory,
+    relayEnabled,
+    machineRole,
     glingDictionary,
     chapterConfig,
     includeTitleSlides,
@@ -438,7 +494,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const watchError = validatePath(watchDirectory);
   const rootError = validatePath(projectsRootDirectory);
   const imageSourceError = validatePath(imageSourceDirectory);
-  const hasErrors = !!(watchError || rootError || imageSourceError);
+  const relayError = relayDirectory.trim() ? validatePath(relayDirectory) : null;
+  const hasErrors = !!(watchError || rootError || imageSourceError || relayError);
 
   const handleSave = async () => {
     if (hasErrors) {
@@ -483,6 +540,10 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       // FR-89 Part 6: Include shadow resolution
       // FR-102: Include Gling dictionary
       // FR-116: Include common names
+      // B038: Sanitize relay directory
+      const relaySanitized = sanitizePath(relayDirectory);
+      if (relaySanitized.sanitized !== relayDirectory) setRelayDirectory(relaySanitized.sanitized);
+
       await updateConfig.mutateAsync({
         watchDirectory: watchSanitized.sanitized,
         projectsRootDirectory: rootSanitized.sanitized,
@@ -491,6 +552,9 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         shadowResolution,
         glingDictionary: dictWords,
         commonNames: updatedCommonNames,
+        relayDirectory: relaySanitized.sanitized || undefined,
+        relayEnabled,
+        machineRole,
       });
 
       // FR-76: Save chapter recording defaults
@@ -562,23 +626,28 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const imageMismatch = envData
     ? detectPathMismatch(imageSourceDirectory, envData.pathFormat)
     : { mismatch: false, message: '', suggestedPath: null };
+  const relayMismatch = envData && relayDirectory.trim()
+    ? detectPathMismatch(relayDirectory, envData.pathFormat)
+    : { mismatch: false, message: '', suggestedPath: null };
 
   return (
     <PageContainer>
       <div className="space-y-4">
-        {/* FR-96: Environment info box */}
-        {envData && (
-          <EnvironmentInfoBox
-            platform={envData.platform}
-            isWSL={envData.isWSL}
-            guidance={envData.guidance}
-            collapsed={envCollapsed}
-            onToggle={() => setEnvCollapsed(!envCollapsed)}
-          />
-        )}
+        {/* Directories Section */}
+        <CollapsibleSection title="Directories" defaultOpen={false}>
+          {/* FR-96: Environment info box */}
+          {envData && (
+            <EnvironmentInfoBox
+              platform={envData.platform}
+              isWSL={envData.isWSL}
+              guidance={envData.guidance}
+              collapsed={envCollapsed}
+              onToggle={() => setEnvCollapsed(!envCollapsed)}
+            />
+          )}
 
-        <div>
-          <label className="block text-sm text-warm-secondary mb-1">Ecamm Watch Directory</label>
+          <div>
+            <label className="block text-sm text-warm-secondary mb-1">Ecamm Watch Directory</label>
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -653,13 +722,9 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         <div>
           <label className="block text-sm text-warm-secondary mb-1">Active Project</label>
           <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={activeProject}
-              readOnly
-              className="flex-1 px-3 py-2 text-sm border border-warm rounded bg-surface-muted text-warm-secondary cursor-not-allowed"
-              placeholder="(none selected)"
-            />
+            <span className="flex-1 px-3 py-2 text-sm text-warm-secondary">
+              {activeProject || <span className="text-warm-muted italic">No project selected</span>}
+            </span>
             <OpenFolderButton folder="project" />
           </div>
           <p className="text-xs text-warm-muted mt-1">
@@ -703,9 +768,79 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
           )}
         </div>
 
-        {/* FR-102: Gling Dictionary (Global) */}
-        <div>
-          <label className="block text-sm text-warm-secondary mb-1">Global Dictionary Words</label>
+        </CollapsibleSection>
+
+        {/* B038/B039: Relay Collaboration Settings */}
+        <CollapsibleSection title="Relay Collaboration" defaultOpen={false}>
+
+          <div className="mb-3">
+            <label className="block text-sm text-warm-secondary mb-1">Relay Directory</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={relayDirectory}
+                onChange={(e) => {
+                  setRelayDirectory(e.target.value);
+                  setRelayDirExists('unknown');
+                }}
+                onBlur={() => relayDirectory.trim() && checkPathExists(relayDirectory, setRelayDirExists)}
+                className={`flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  relayError ? 'border-red-300 bg-red-50' : 'border-warm-strong'
+                }`}
+                placeholder="~/relay/flihub-appydave"
+              />
+            </div>
+            {relayError ? (
+              <p className="text-xs text-red-500 mt-1">{relayError}</p>
+            ) : relayMismatch.mismatch ? (
+              <PathMismatchWarning
+                message={relayMismatch.message}
+                suggestedPath={relayMismatch.suggestedPath}
+                onUseSuggested={() =>
+                  relayMismatch.suggestedPath && setRelayDirectory(relayMismatch.suggestedPath)
+                }
+              />
+            ) : relayDirectory.trim() ? (
+              <PathExistsIndicator
+                status={relayDirExists}
+                description="SyncThing relay folder shared with collaborators"
+              />
+            ) : (
+              <p className="text-xs text-warm-muted mt-1">
+                Path to the SyncThing relay folder (leave empty to disable)
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={relayEnabled}
+                onChange={(e) => setRelayEnabled(e.target.checked)}
+                className="w-4 h-4 text-blue-500 rounded"
+              />
+              <span className="text-sm text-warm-secondary">Relay Enabled</span>
+            </label>
+
+            <div className={relayEnabled ? '' : 'opacity-40 pointer-events-none'}>
+              <label className="block text-sm text-warm-secondary mb-1">Machine Role</label>
+              <select
+                value={machineRole}
+                onChange={(e) => setMachineRole(e.target.value as MachineRole)}
+                className="text-sm border border-warm-strong rounded px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="recorder">Recorder</option>
+                <option value="editor">Editor</option>
+              </select>
+            </div>
+          </div>
+        </CollapsibleSection>
+
+        {/* Recording Names & Dictionary */}
+        <CollapsibleSection title="Recording Names" badge={`${commonNames.length} names`} defaultOpen={true}>
+          <div>
+            <label className="block text-sm text-warm-secondary mb-1">Global Dictionary Words</label>
           <textarea
             value={glingDictionary}
             onChange={(e) => setGlingDictionary(e.target.value)}
@@ -773,7 +908,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               return (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 py-1 px-2 bg-surface-muted rounded border border-warm"
+                  className="flex items-center gap-2 py-0.5 px-2 bg-surface-muted rounded border border-warm"
                 >
                   {/* Reorder buttons */}
                   <div className="flex flex-col -my-1">
@@ -908,8 +1043,10 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
           </p>
         </div>
 
-        {/* FR-76: Chapter Recording Defaults */}
-        <div className="border-t pt-4 mt-4">
+        </CollapsibleSection>
+
+        {/* Chapter & Shadow Settings */}
+        <CollapsibleSection title="Chapter & Shadow Settings" defaultOpen={false}>
           <h3 className="text-sm font-medium text-warm-secondary mb-3">Chapter Recording Defaults</h3>
 
           {/* Include Title Slides */}
@@ -987,10 +1124,9 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               <span className="text-sm text-warm-secondary">Auto-generate when creating new chapter</span>
             </label>
           </div>
-        </div>
 
         {/* FR-83: Shadow Recordings Section */}
-        <div className="border-t pt-4 mt-4">
+        <div className="border-t border-warm pt-3 mt-1">
           <h3 className="text-sm font-medium text-warm-secondary mb-3">Shadow Recordings</h3>
           <p className="text-xs text-warm-muted mb-3">
             Shadow files allow collaborators to see project structure without the actual video
@@ -1144,16 +1280,18 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             </button>
           </div>
         </div>
+        </CollapsibleSection>
+      </div>
 
-        <div className="flex items-center justify-end gap-3 pt-2">
-          {/* C-2: Dirty state indicator */}
-          {hasChanges && <span className="text-xs text-amber-600">Unsaved changes</span>}
-          {/* C-3: Disable Save when unchanged or has errors */}
+      {/* Sticky save bar — only visible when there are unsaved changes */}
+      {hasChanges && (
+        <div className="sticky bottom-0 left-0 right-0 bg-surface border-t border-warm-strong px-6 py-3 flex items-center justify-end gap-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)] z-10">
+          <span className="text-xs text-amber-600">Unsaved changes</span>
           <button
             onClick={handleSave}
-            disabled={updateConfig.isPending || !hasChanges || hasErrors}
+            disabled={updateConfig.isPending || hasErrors}
             className={`px-4 py-2 text-sm rounded transition-colors ${
-              hasChanges && !hasErrors
+              !hasErrors
                 ? 'bg-blue-500 text-white hover:bg-blue-600'
                 : 'bg-surface-muted text-warm-muted cursor-not-allowed'
             }`}
@@ -1161,7 +1299,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             {updateConfig.isPending ? 'Saving...' : 'Save'}
           </button>
         </div>
-      </div>
+      )}
     </PageContainer>
   );
 }
