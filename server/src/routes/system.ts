@@ -72,7 +72,8 @@ type FolderKey =
   | 'chapters'
   | 'edit-1st'
   | 'edit-2nd'
-  | 'edit-final';
+  | 'edit-final'
+  | 'relay';
 
 /**
  * FR-89 Part 3: Cross-platform file explorer opener
@@ -336,6 +337,7 @@ export function createSystemRoutes(getConfig: () => Config, watcherManager?: Wat
       'edit-1st': path.join(projectPath, 'edit-1st'),
       'edit-2nd': path.join(projectPath, 'edit-2nd'),
       'edit-final': path.join(projectPath, 'edit-final'),
+      relay: expandPath(config.relayDirectory || '~/relay/flihub-appydave'),
     };
 
     const folderPath = folderMap[folder];

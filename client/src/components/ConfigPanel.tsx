@@ -789,6 +789,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                 }`}
                 placeholder="~/relay/flihub-appydave"
               />
+              <OpenFolderButton folder="relay" />
             </div>
             {relayError ? (
               <p className="text-xs text-red-500 mt-1">{relayError}</p>
@@ -812,7 +813,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             )}
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-8">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -823,8 +824,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               <span className="text-sm text-warm-secondary">Relay Enabled</span>
             </label>
 
-            <div className={relayEnabled ? '' : 'opacity-40 pointer-events-none'}>
-              <label className="block text-sm text-warm-secondary mb-1">Machine Role</label>
+            <label className={`flex items-center gap-2 ${relayEnabled ? '' : 'opacity-40 pointer-events-none'}`}>
+              <span className="text-sm text-warm-secondary">Machine Role</span>
               <select
                 value={machineRole}
                 onChange={(e) => setMachineRole(e.target.value as MachineRole)}
@@ -833,7 +834,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                 <option value="recorder">Recorder</option>
                 <option value="editor">Editor</option>
               </select>
-            </div>
+            </label>
           </div>
         </CollapsibleSection>
 

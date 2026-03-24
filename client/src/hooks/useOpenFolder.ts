@@ -19,7 +19,8 @@ export type FolderKey =
   | 's3Post'
   | 'inbox'
   | 'shadows'
-  | 'chapters';
+  | 'chapters'
+  | 'relay';
 
 export interface OpenFolderOptions {
   folder: FolderKey;
