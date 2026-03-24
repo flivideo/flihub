@@ -23,17 +23,6 @@ export class AppError extends Error {
 }
 
 /**
- * Wrap async route handlers to catch unhandled rejections
- */
-export function asyncHandler(
-  fn: (req: Request, res: Response, next: NextFunction) => Promise<void>
-) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-}
-
-/**
  * Global error handler middleware
  * Must be registered after all routes
  */

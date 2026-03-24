@@ -2,7 +2,7 @@
 
 **Last updated**: 2026-03-24
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 9 | Pending: 9 | In Progress: 0 | Deferred: 5 | Rejected: 4
+**Total open**: 7 | Pending: 7 | In Progress: 0 | Deferred: 6 | Rejected: 4
 
 ---
 
@@ -25,11 +25,11 @@
 
 ## Structural Debt (from architecture + code-quality audits 2026-03-19)
 
-- [ ] B033 — Extract transcription queue state into a class (remove module-level mutable globals) | Priority: medium | queue/activeJob/recentJobs/activeProcess as module globals; no concurrency protection; untestable as singleton | Audit: code-quality MAJOR + architecture CRITICAL
-- [ ] B034 — Fix asyncHandler — wrap all routes or remove and document Express 5 contract | Priority: medium | asyncHandler defined but never used; error response format inconsistent across routes | Audit: code-quality MAJOR
-- [ ] B035 — Add React error boundary around tab components in App.tsx | Priority: medium | Render crash in any tab blanks entire SPA | Audit: code-quality
-- [ ] B036 — Replace hardcoded WHISPER_BINARY path with config value | Priority: medium | Points to pyenv 3.14.3 — breaks on any other machine or Python upgrade | Audit: code-quality
-- [ ] B037 — Remove `[FR-89 DEBUG]` console.log statements from production routes/index.ts | Priority: low | Debug logs from Jan 2026 still in production path | Audit: code-quality
+- [ ] B033 — Add transcription queue tests + optionally extract into class | Priority: medium | Reshaped: concurrency risk overstated (single-process Node.js), real issue is zero test coverage for most complex server module (839 lines). Class extraction is polish, not critical.
+- [x] B034 — Remove dead asyncHandler code (Express 5 handles async natively) | Priority: medium | Completed: recordings-page-polish | Reshaped: both asyncHandler definitions were dead code (never imported). Removed. Broader error response standardization (281 inconsistent formats) is a separate future campaign (NFR-67).
+- [-] B035 — Add React error boundary around tab components in App.tsx | Priority: deferred | Reshaped: all 12 tab components already handle errors defensively with early returns. No active crashes. Defensive pattern only — implement if a crash actually occurs.
+- [ ] B036 — Externalize Whisper configuration to config (binary + model + language) | Priority: medium-high | Reshaped from just WHISPER_BINARY to include MODEL + LANGUAGE. Blocks Jan/Mary on remote machines. Follows existing config pattern (relayDirectory, machineRole).
+- [x] B037 — Remove debug console.log statements from production code | Priority: low | Completed: recordings-page-polish | Removed 15 FR-89/FR-112 debug logs from App.tsx, FileCard.tsx, routes/index.ts. Broader logging strategy (100+ feature-tagged logs) is a separate future item.
 
 ---
 
@@ -44,6 +44,7 @@
 - [x] B047 — Recording Editor — inline rename, renumber, chapter split on Recordings page. Replace Manage panel rename/renumber tools. Smart rename (skip re-transcription). Undo support. | Priority: high | Campaign: recording-editor | Completed: recording-editor
 
 - [x] B048 — Warm Linen Theme — replace bright white UI with warm linen palette (v2-linen from AngelEye Mochaccino) to reduce camera reflection during recording | Priority: high | Campaign: warm-linen-theme | Completed: warm-linen-theme
+- [x] B049 — Recordings Page Polish — fix blue/brown color clash, hide checkboxes behind selection mode, harmonize TranscriptionBadge with warm palette, remove debug logs (B037), remove dead asyncHandler (B034) | Priority: high | Completed: recordings-page-polish
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
@@ -77,6 +78,7 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B049 | Recordings Page Polish — fixed blue/brown color clash (default rows warm, TranscriptionBadge harmonized), checkboxes hidden behind selection mode, removed 15 debug console.logs (B037), removed dead asyncHandler code (B034). Reshaped B033/B035/B036. 1,028 tests pass. | 2026-03-24 |
 | B048 | Warm Linen Theme (warm-linen-theme) — replaced bright white UI with warm linen palette across 40+ components. 12 semantic @theme tokens, 500+ class replacements, 3 waves. Zero bright white surfaces remain. 1,042 tests pass. | 2026-03-24 |
 | B047 | Recording Editor (recording-editor) — inline rename/renumber/split on Recordings page. Smart rename (no re-transcription). Batch toolbar, preview panel, split marker, 30s undo. Deleted RenamePanel, ChapterListPanel, RenameLabelModal. 5/5 complete, +30 tests. | 2026-03-23 |
 | B044 | Sync Hub (sync-hub) — two-channel git sync with persistent header indicators, auto-commit push, pull, conflict resolution. 6/6 complete. F004 resolved. | 2026-03-23 |

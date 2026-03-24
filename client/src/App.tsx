@@ -162,31 +162,11 @@ function App() {
   // FR-4: Apply suggested naming when project directory changes or on initial load
   // NFR-6: Renamed from targetDirectory to projectDirectory
   useEffect(() => {
-    console.log('[FR-89 DEBUG App.tsx] useEffect triggered:', {
-      hasSuggestedNaming: !!suggestedNaming,
-      suggestedNaming,
-      configProjectDir: config?.projectDirectory,
-      configActiveProject: config?.activeProject,
-      configRootDir: config?.projectsRootDirectory,
-      previousProjectDir: previousProjectDir.current,
-    });
-
     if (suggestedNaming) {
       const isInitialLoad = previousProjectDir.current === undefined;
       const projectDirChanged = previousProjectDir.current !== config?.projectDirectory;
 
-      console.log('[FR-89 DEBUG App.tsx] Update conditions:', {
-        isInitialLoad,
-        projectDirChanged,
-        willUpdate: isInitialLoad || projectDirChanged,
-      });
-
       if (isInitialLoad || projectDirChanged) {
-        console.log('[FR-89 DEBUG App.tsx] Setting namingState to:', {
-          chapter: suggestedNaming.chapter,
-          sequence: suggestedNaming.sequence,
-          name: suggestedNaming.name,
-        });
         setNamingState({
           chapter: suggestedNaming.chapter,
           sequence: suggestedNaming.sequence,
@@ -203,10 +183,6 @@ function App() {
       }
 
       previousProjectDir.current = config?.projectDirectory;
-      console.log(
-        '[FR-89 DEBUG App.tsx] Updated previousProjectDir to:',
-        previousProjectDir.current
-      );
     }
   }, [
     suggestedNaming,
@@ -220,18 +196,12 @@ function App() {
   // FR-54: Custom tag now persists after rename (user must clear manually)
   const handleRenamed = useCallback(
     (filePath: string) => {
-      console.log('[FR-89 DEBUG App.tsx] handleRenamed called for:', filePath);
       removeFile(filePath);
       setNamingState((prev) => {
-        const newState = {
+        return {
           ...prev,
           sequence: String(parseInt(prev.sequence || '0', 10) + 1),
         };
-        console.log('[FR-89 DEBUG App.tsx] handleRenamed - updating namingState:', {
-          prev,
-          newState,
-        });
-        return newState;
       });
 
       // FR-16: Check if other files remain (files state hasn't updated yet, so subtract 1)
@@ -362,7 +332,6 @@ function App() {
   // FR-112: Calculate next chapter from highest recorded chapter (idempotent)
   // Preserve the name from previous chapter - user can change if needed
   const handleNewChapter = useCallback(() => {
-    console.log('[FR-112 DEBUG App.tsx] handleNewChapter called');
     // FR-112: Increment click counter for glow detection in NamingControls
     setNewChapterClickCount((c) => c + 1);
     setNamingState((prev) => {
@@ -381,24 +350,13 @@ function App() {
         tags: [],
         customTag: '',
       };
-      console.log('[FR-112 DEBUG App.tsx] handleNewChapter - updating namingState:', {
-        highestRecordedChapter,
-        nextChapter,
-        prev,
-        newState,
-      });
       return newState;
     });
   }, [recordingsData]);
 
   // Update individual naming fields
   const updateNaming = useCallback((field: keyof NamingState, value: string | string[]) => {
-    console.log('[FR-89 DEBUG App.tsx] updateNaming called:', { field, value });
-    setNamingState((prev) => {
-      const newState = { ...prev, [field]: value };
-      console.log('[FR-89 DEBUG App.tsx] updateNaming - state update:', { prev, newState });
-      return newState;
-    });
+    setNamingState((prev) => ({ ...prev, [field]: value }));
   }, []);
 
   // FR-8: Best take detection (extracted to hook)

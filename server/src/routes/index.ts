@@ -84,12 +84,7 @@ export function createRoutes(
   // NFR-6: Using projectDirectory with getProjectPaths()
   router.get('/suggested-naming', async (_req: Request, res: Response) => {
     try {
-      console.log(
-        '[FR-89 DEBUG suggested-naming] config.projectDirectory:',
-        config.projectDirectory
-      );
       const paths = getProjectPaths(expandPath(config.projectDirectory));
-      console.log('[FR-89 DEBUG suggested-naming] paths.recordings:', paths.recordings);
 
       // Check if directory exists
       if (!(await fs.pathExists(paths.recordings))) {
@@ -99,10 +94,6 @@ export function createRoutes(
           name: 'intro',
           existingFiles: [],
         } as SuggestedNaming;
-        console.log(
-          '[FR-89 DEBUG suggested-naming] Directory not found, returning defaults:',
-          defaultResponse
-        );
         res.json(defaultResponse);
         return;
       }
@@ -110,11 +101,8 @@ export function createRoutes(
       // Read all .mov files in recordings directory
       const files = await fs.readdir(paths.recordings);
       const movFiles = files.filter((f) => f.endsWith('.mov')).sort();
-      console.log('[FR-89 DEBUG suggested-naming] Found mov files:', movFiles);
-
       const suggestion = calculateSuggested(movFiles);
       const response = { ...suggestion, existingFiles: movFiles } as SuggestedNaming;
-      console.log('[FR-89 DEBUG suggested-naming] Returning suggestion:', response);
       res.json(response);
     } catch (error) {
       console.error('Error calculating suggested naming:', error);

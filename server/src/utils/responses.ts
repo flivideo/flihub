@@ -61,21 +61,3 @@ export function sendServerError(res: Response, message: string, error?: unknown)
   sendErrorResponse(res, 500, message, error);
 }
 
-/**
- * Wrap an async route handler with error catching.
- * Automatically sends 500 response for unhandled errors.
- *
- * Usage:
- *   router.get('/path', asyncHandler(async (req, res) => {
- *     // ... your code
- *   }))
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function asyncHandler(fn: (req: any, res: Response) => Promise<void>) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (req: any, res: Response) => {
-    Promise.resolve(fn(req, res)).catch((err) => {
-      sendServerError(res, 'Internal server error', err);
-    });
-  };
-}

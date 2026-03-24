@@ -170,7 +170,7 @@ function TranscriptionBadge({
     case 'queued':
       return (
         <span
-          className="text-xs text-yellow-600 px-1.5 py-0.5 bg-yellow-50 rounded font-medium"
+          className="text-xs text-amber-700 px-1.5 py-0.5 bg-amber-50 rounded font-medium"
           title="Queued for transcription"
         >
           T
@@ -179,7 +179,7 @@ function TranscriptionBadge({
     case 'transcribing':
       return (
         <span
-          className="text-xs text-blue-600 px-1.5 py-0.5 bg-blue-50 rounded font-medium animate-pulse"
+          className="text-xs text-amber-700 px-1.5 py-0.5 bg-amber-50 rounded font-medium animate-pulse"
           title="Transcribing..."
         >
           T
@@ -189,7 +189,7 @@ function TranscriptionBadge({
       return (
         <button
           onClick={() => onViewTranscript(filename)}
-          className="text-xs text-green-600 hover:text-green-700 px-1.5 py-0.5 bg-green-50 hover:bg-green-100 rounded font-medium transition-colors"
+          className="text-xs text-green-700 hover:text-green-800 px-1.5 py-0.5 bg-green-50 hover:bg-green-100 rounded font-medium transition-colors"
           title="View transcript"
         >
           T
@@ -200,7 +200,7 @@ function TranscriptionBadge({
         <button
           onClick={() => queueMutation.mutate(filePath)}
           disabled={queueMutation.isPending}
-          className="text-xs text-red-600 hover:text-red-700 px-1.5 py-0.5 bg-red-50 hover:bg-red-100 rounded font-medium transition-colors disabled:opacity-50"
+          className="text-xs text-red-700 hover:text-red-800 px-1.5 py-0.5 bg-red-50 hover:bg-red-100 rounded font-medium transition-colors disabled:opacity-50"
           title="Retry transcription"
         >
           T
@@ -211,7 +211,7 @@ function TranscriptionBadge({
         <button
           onClick={() => queueMutation.mutate(filePath)}
           disabled={queueMutation.isPending}
-          className="text-xs text-warm-muted hover:text-blue-600 px-1.5 py-0.5 bg-surface-muted hover:bg-blue-50 rounded font-medium transition-colors disabled:opacity-50"
+          className="text-xs text-warm-muted hover:text-warm-secondary px-1.5 py-0.5 bg-surface-muted hover:bg-surface-hover rounded font-medium transition-colors disabled:opacity-50"
           title="Start transcription"
         >
           T
@@ -365,7 +365,8 @@ export function RecordingsView() {
   // FR-128: State for recording preview modal
   const [previewRecording, setPreviewRecording] = useState<RecordingFile | null>(null);
 
-  // B047: Selection state
+  // B047: Selection state — checkboxes hidden until selection mode activated
+  const [selectionMode, setSelectionMode] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [pendingChanges, setPendingChanges] = useState<Map<string, { oldFilename: string; newFilename: string }>>(new Map());
   const [splitPoint, setSplitPoint] = useState<{ chapter: string; afterSequence: number } | null>(null);
@@ -612,6 +613,7 @@ export function RecordingsView() {
 
   const selectAllInChapter = useCallback(
     (chapter: string) => {
+      setSelectionMode(true);
       const chapterFiles = filteredRecordings.filter((r) => r.chapter === chapter);
       setSelectedFiles((prev) => {
         const next = new Set(prev);
@@ -628,7 +630,10 @@ export function RecordingsView() {
     [data?.recordings, showSafe, showParked]
   );
 
-  const deselectAll = useCallback(() => setSelectedFiles(new Set()), []);
+  const deselectAll = useCallback(() => {
+    setSelectedFiles(new Set());
+    setSelectionMode(false);
+  }, []);
 
   // B047: Inline rename handler — single file, calls rename API directly
   const handleInlineRename = useCallback(
@@ -1208,10 +1213,14 @@ export function RecordingsView() {
                 <span className="text-xs text-warm-muted font-mono">
                   @ {formatDuration(chapterData.startTime, 'youtube')}
                 </span>
-                {/* B047: Select all in chapter button */}
+                {/* B047: Select all in chapter button — toggles selection mode */}
                 <button
                   onClick={() => selectAllInChapter(chapter)}
-                  className="text-xs text-warm-muted hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
+                  className={`text-xs px-2 py-0.5 rounded transition-colors ${
+                    allSelectedInChapter
+                      ? 'text-warm-secondary bg-surface-muted'
+                      : 'text-warm-muted hover:text-warm-secondary hover:bg-surface-hover'
+                  }`}
                 >
                   {allSelectedInChapter ? '✓ All selected' : `Select ${chapter}`}
                 </button>
@@ -1220,7 +1229,7 @@ export function RecordingsView() {
                   <button
                     onClick={() => handleMoveChapterToSafe(chapter)}
                     disabled={moveToSafe.isPending}
-                    className="text-xs text-warm-muted hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+                    className="text-xs text-warm-muted hover:text-green-600 px-2 py-0.5 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
                   >
                     → Safe All
                   </button>
@@ -1297,6 +1306,7 @@ export function RecordingsView() {
                   <EditableFileRow
                     recording={file}
                     isSelected={selectedFiles.has(file.filename)}
+                    showCheckbox={selectionMode}
                     onToggleSelect={toggleSelect}
                     onInlineRename={handleInlineRename}
                     onTagRemove={handleTagRemove}

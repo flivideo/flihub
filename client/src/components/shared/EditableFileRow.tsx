@@ -31,6 +31,8 @@ export interface EditableFileRowProps {
   transcriptionBadge?: ReactNode;
   pendingChange?: { oldFilename: string; newFilename: string };
   disabled?: boolean;
+  /** When false, checkbox is hidden (selection mode off) */
+  showCheckbox?: boolean;
   formatDuration: (duration?: number) => string;
   formatFileSize: (size: number) => string;
   formatTimestamp: (timestamp: string) => string;
@@ -51,6 +53,7 @@ export function EditableFileRow({
   transcriptionBadge,
   pendingChange,
   disabled,
+  showCheckbox = true,
   formatDuration: fmtDuration,
   formatFileSize: fmtFileSize,
   formatTimestamp: fmtTimestamp,
@@ -144,7 +147,7 @@ export function EditableFileRow({
   } else if (pendingChange) {
     rowClasses = 'bg-green-50 border-green-200';
   } else {
-    rowClasses = 'bg-blue-50 border-blue-200';
+    rowClasses = 'bg-surface border-warm';
   }
 
   return (
@@ -152,8 +155,8 @@ export function EditableFileRow({
       className={`group flex items-center justify-between px-4 py-2 rounded-lg border ${rowClasses} transition-colors`}
     >
       <div className="flex items-center gap-3">
-        {/* Checkbox */}
-        {!isShadow && (
+        {/* Checkbox — only visible in selection mode */}
+        {showCheckbox && !isShadow && (
           <input
             type="checkbox"
             checked={isSelected}
@@ -161,7 +164,7 @@ export function EditableFileRow({
             className="w-3.5 h-3.5 rounded border-warm-strong text-blue-600 focus:ring-blue-500 cursor-pointer"
           />
         )}
-        {isShadow && <span className="w-3.5" />}
+        {showCheckbox && isShadow && <span className="w-3.5" />}
 
         {/* Play button */}
         <button
@@ -213,7 +216,7 @@ export function EditableFileRow({
               onClick={() => startEditing('chapter')}
               className={`text-warm-muted ${
                 !isDisabled
-                  ? 'cursor-pointer hover:bg-blue-100 hover:text-blue-700 px-0.5 rounded'
+                  ? 'cursor-pointer hover:bg-surface-hover hover:text-warm-primary px-0.5 rounded'
                   : ''
               }`}
               title={isDisabled ? undefined : 'Click to edit chapter'}
@@ -258,7 +261,7 @@ export function EditableFileRow({
               onClick={() => startEditing('name')}
               className={`text-warm-secondary ${
                 !isDisabled
-                  ? 'cursor-pointer hover:bg-blue-100 hover:text-blue-700 px-0.5 rounded'
+                  ? 'cursor-pointer hover:bg-surface-hover hover:text-warm-primary px-0.5 rounded'
                   : ''
               }`}
               title={isDisabled ? undefined : 'Click to edit name'}
