@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FliHub Config — Variation B: Card Grid</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwindcss.config = {
+      theme: {
+        extend: {
+          colors: {
+            page: '#e8e0d4',
+            surface: {
+              DEFAULT: '#f5f1eb',
+              muted: '#eee8de',
+              hover: '#ede5d8',
+            },
+            warm: {
+              header: '#f0ebe3',
+              divider: '#d4cdc4',
+              strong: '#b8a99a',
+              DEFAULT: '#d4cdc4',
+              muted: '#7a6e5e',
+              secondary: '#4a3e30',
+            },
+            text: {
+              primary: '#2a2018',
+              secondary: '#4a3e30',
+              muted: '#7a6e5e',
+              faint: '#9a8a78',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { background: #e8e0d4; color: #4a3e30; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .card { background: #f5f1eb; border: 1px solid #d4cdc4; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(42,32,24,0.06), 0 1px 2px rgba(42,32,24,0.04); }
+    .card-header { background: #f0ebe3; border-bottom: 1px solid #d4cdc4; padding: 0.75rem 1.25rem; border-radius: 0.75rem 0.75rem 0 0; }
+    .card-header h3 { font-size: 0.875rem; font-weight: 600; color: #2a2018; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+    .card-body { padding: 1.25rem; }
+    .field-label { font-size: 0.75rem; font-weight: 500; color: #7a6e5e; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .field-input {
+      width: 100%; padding: 0.5rem 0.75rem; font-size: 0.875rem;
+      background: #eee8de; border: 1px solid #d4cdc4; border-radius: 0.5rem;
+      color: #2a2018; outline: none; transition: border-color 0.15s;
+    }
+    .field-input:focus { border-color: #b8a99a; box-shadow: 0 0 0 2px rgba(184,169,154,0.25); }
+    .field-hint { font-size: 0.6875rem; color: #9a8a78; margin-top: 0.25rem; }
+    .path-ok { font-size: 0.6875rem; color: #16a34a; margin-top: 0.25rem; }
+    .badge { font-size: 0.6875rem; background: #eee8de; color: #7a6e5e; padding: 0.125rem 0.5rem; border-radius: 9999px; font-weight: 500; }
+    .toggle-track {
+      width: 2.5rem; height: 1.375rem; border-radius: 9999px;
+      position: relative; cursor: pointer; transition: background 0.2s;
+    }
+    .toggle-track.on { background: #16a34a; }
+    .toggle-track.off { background: #b8a99a; }
+    .toggle-thumb {
+      width: 1.125rem; height: 1.125rem; background: white; border-radius: 9999px;
+      position: absolute; top: 0.125rem; transition: left 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+    .toggle-track.on .toggle-thumb { left: 1.25rem; }
+    .toggle-track.off .toggle-thumb { left: 0.125rem; }
+    .name-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.375rem 0.75rem; background: #eee8de; border: 1px solid #d4cdc4;
+      border-radius: 0.5rem; font-size: 0.875rem;
+    }
+    .name-row .grip { color: #b8a99a; cursor: grab; font-size: 0.75rem; }
+    .name-row .name-text { font-weight: 500; color: #2a2018; min-width: 7rem; }
+    .name-row .filter-badge { font-size: 0.6875rem; background: #f5f1eb; color: #7a6e5e; padding: 0.125rem 0.5rem; border-radius: 0.375rem; border: 1px solid #d4cdc4; }
+    .name-row .tag-badge { font-size: 0.6875rem; background: #f5f1eb; color: #9a8a78; padding: 0.125rem 0.375rem; border-radius: 0.25rem; border: 1px solid #d4cdc4; font-style: italic; }
+    .name-row .remove-btn { color: #b8a99a; cursor: pointer; margin-left: auto; font-size: 0.75rem; }
+    .name-row .remove-btn:hover { color: #ef4444; }
+    .save-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #f0ebe3; border-top: 2px solid #b8a99a;
+      padding: 0.75rem 2rem; display: flex; align-items: center; justify-content: flex-end; gap: 1rem;
+      box-shadow: 0 -2px 8px rgba(42,32,24,0.1); z-index: 50;
+    }
+    .btn-primary {
+      background: #4a3e30; color: #f5f1eb; padding: 0.5rem 1.5rem; border-radius: 0.5rem;
+      font-size: 0.875rem; font-weight: 500; border: none; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #2a2018; }
+    .btn-secondary {
+      background: transparent; color: #7a6e5e; padding: 0.5rem 1.5rem; border-radius: 0.5rem;
+      font-size: 0.875rem; font-weight: 500; border: 1px solid #d4cdc4; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-secondary:hover { background: #eee8de; color: #4a3e30; }
+    select.field-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237a6e5e' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2rem; }
+    textarea.field-input { resize: vertical; min-height: 5rem; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.8125rem; line-height: 1.5; }
+    .radio-option { display: flex; align-items: center; gap: 0.375rem; cursor: pointer; font-size: 0.8125rem; color: #4a3e30; }
+    .radio-dot { width: 1rem; height: 1rem; border-radius: 9999px; border: 2px solid #b8a99a; display: flex; align-items: center; justify-content: center; }
+    .radio-dot.selected { border-color: #4a3e30; }
+    .radio-dot.selected::after { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 9999px; background: #4a3e30; }
+    .checkbox-box { width: 1rem; height: 1rem; border-radius: 0.25rem; border: 2px solid #b8a99a; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .checkbox-box.checked { background: #4a3e30; border-color: #4a3e30; }
+    .checkbox-box.checked::after { content: ''; width: 0.375rem; height: 0.625rem; border: solid #f5f1eb; border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
+  </style>
+</head>
+<body class="min-h-screen pb-20">
+
+  <!-- Top label -->
+  <div style="background: #2a2018; color: #eee8de; padding: 0.5rem 1.5rem; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">
+    Variation B — Card Grid &nbsp;&middot;&nbsp; FliHub Configuration Redesign Mockup
+  </div>
+
+  <!-- Header bar -->
+  <div style="background: #f5f1eb; border-bottom: 1px solid #d4cdc4; padding: 0.75rem 2rem; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="font-size: 1.125rem; font-weight: 700; color: #2a2018;">FliHub</span>
+      <span style="color: #b8a99a;">&rsaquo;</span>
+      <span style="font-size: 0.875rem; color: #7a6e5e;">c17-cowork-second-brain-productivity-plugin</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1.25rem; font-size: 0.8125rem; color: #7a6e5e;">
+      <span>Incoming</span><span>Recordings</span><span>Watch</span><span>Transcripts</span><span>Inbox</span><span>Assets</span><span>Thumbs</span><span>Manage</span><span>Projects</span>
+      <span style="font-weight: 600; color: #2a2018; border-bottom: 2px solid #4a3e30; padding-bottom: 2px;">Config</span>
+    </div>
+  </div>
+
+  <!-- Page content -->
+  <div style="max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 5rem;">
+
+    <!-- Page title -->
+    <div style="margin-bottom: 1.5rem;">
+      <h1 style="font-size: 1.25rem; font-weight: 700; color: #2a2018; margin: 0;">Configuration</h1>
+      <p style="font-size: 0.8125rem; color: #9a8a78; margin-top: 0.25rem;">Manage directories, relay settings, recording names, and chapter defaults.</p>
+    </div>
+
+    <!-- Environment badge -->
+    <div style="display: inline-flex; align-items: center; gap: 0.375rem; background: #eee8de; border: 1px solid #d4cdc4; border-radius: 0.5rem; padding: 0.375rem 0.75rem; margin-bottom: 1.25rem; font-size: 0.8125rem; color: #4a3e30;">
+      <span>macOS</span>
+      <span style="color: #b8a99a;">&middot;</span>
+      <span style="color: #7a6e5e;">darwin</span>
+      <span style="color: #b8a99a;">&middot;</span>
+      <span style="font-size: 0.6875rem; color: #9a8a78;">Paths: ~/folder or /absolute/path</span>
+    </div>
+
+    <!-- Card Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+
+      <!-- ==================== DIRECTORIES (full width) ==================== -->
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-header">
+          <h3>
+            <svg width="16" height="16" fill="none" stroke="#7a6e5e" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+            Directories
+          </h3>
+        </div>
+        <div class="card-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <!-- Watch Directory -->
+            <div>
+              <div class="field-label">Watch Directory</div>
+              <input class="field-input" value="~/ecamm" />
+              <div class="path-ok">&#10003; Path exists &mdash; Ecamm Live recording folder</div>
+            </div>
+            <!-- Image Source -->
+            <div>
+              <div class="field-label">Image Source Directory</div>
+              <input class="field-input" value="~/Downloads" />
+              <div class="path-ok">&#10003; Path exists &mdash; Where to look for incoming images</div>
+            </div>
+            <!-- Projects Root -->
+            <div>
+              <div class="field-label">Projects Root Directory</div>
+              <input class="field-input" value="~/dev/video-projects/v-appydave" />
+              <div class="path-ok">&#10003; Path exists &mdash; Root folder containing all video projects</div>
+            </div>
+            <!-- Active Project -->
+            <div>
+              <div class="field-label">Active Project</div>
+              <input class="field-input" value="c17-cowork-second-brain-productivity-plugin" />
+              <div class="field-hint">Project folder name within the root directory</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== RELAY (half width) ==================== -->
+      <div class="card">
+        <div class="card-header">
+          <h3>
+            <svg width="16" height="16" fill="none" stroke="#7a6e5e" stroke-width="1.5" viewBox="0 0 24 24"><path d="M8.5 12.5l-3 3m0 0l-3-3m3 3V3m12 5.5l3 3m0 0l3-3m-3 3V3" transform="translate(-1,0)"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M18 8v4a4 4 0 01-4 4H8"/></svg>
+            Relay Collaboration
+          </h3>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Enabled toggle -->
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.875rem; font-weight: 500; color: #2a2018;">Relay Sync</div>
+              <div class="field-hint">Sync recordings with collaborators via shared folder</div>
+            </div>
+            <div class="toggle-track on">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+          <!-- Relay Directory -->
+          <div>
+            <div class="field-label">Relay Directory</div>
+            <input class="field-input" value="/Users/davidcruwys/relay/flihub-appydave" />
+            <div class="path-ok">&#10003; Path exists</div>
+          </div>
+          <!-- Machine Role -->
+          <div>
+            <div class="field-label">Machine Role</div>
+            <div style="display: flex; gap: 1.25rem; margin-top: 0.375rem;">
+              <label class="radio-option">
+                <div class="radio-dot selected"><span></span></div>
+                Creator
+              </label>
+              <label class="radio-option">
+                <div class="radio-dot"><span></span></div>
+                Editor
+              </label>
+            </div>
+            <div class="field-hint">Creator records video; Editor receives for post-production</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== MACHINE INFO (half width) ==================== -->
+      <div class="card">
+        <div class="card-header">
+          <h3>
+            <svg width="16" height="16" fill="none" stroke="#7a6e5e" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+            Machine Info
+          </h3>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 0.875rem;">
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.375rem 1rem; font-size: 0.8125rem;">
+            <span style="color: #7a6e5e;">Hostname</span>
+            <span style="color: #2a2018; font-family: 'SF Mono', monospace; font-size: 0.8125rem;">mac-mini-m4.local</span>
+            <span style="color: #7a6e5e;">Platform</span>
+            <span style="color: #2a2018;">macOS (darwin)</span>
+            <span style="color: #7a6e5e;">Role</span>
+            <span style="display: inline-flex; align-items: center; gap: 0.375rem; color: #2a2018;">
+              Creator
+              <span style="display: inline-block; width: 0.5rem; height: 0.5rem; background: #16a34a; border-radius: 9999px;"></span>
+            </span>
+            <span style="color: #7a6e5e;">POEM WUI</span>
+            <span style="color: #2a2018; font-family: 'SF Mono', monospace; font-size: 0.8125rem;">http://localhost:5041</span>
+          </div>
+
+          <!-- Active Watchers -->
+          <div style="border-top: 1px solid #d4cdc4; padding-top: 0.75rem; margin-top: 0.25rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <div class="field-label" style="margin-bottom: 0;">Active Watchers</div>
+              <span class="badge">5 active</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.375rem;">
+              <span style="font-size: 0.6875rem; background: #eee8de; border: 1px solid #d4cdc4; border-radius: 0.375rem; padding: 0.125rem 0.5rem; color: #4a3e30;">recordings</span>
+              <span style="font-size: 0.6875rem; background: #eee8de; border: 1px solid #d4cdc4; border-radius: 0.375rem; padding: 0.125rem 0.5rem; color: #4a3e30;">assets</span>
+              <span style="font-size: 0.6875rem; background: #eee8de; border: 1px solid #d4cdc4; border-radius: 0.375rem; padding: 0.125rem 0.5rem; color: #4a3e30;">thumbs</span>
+              <span style="font-size: 0.6875rem; background: #eee8de; border: 1px solid #d4cdc4; border-radius: 0.375rem; padding: 0.125rem 0.5rem; color: #4a3e30;">inbox</span>
+              <span style="font-size: 0.6875rem; background: #eee8de; border: 1px solid #d4cdc4; border-radius: 0.375rem; padding: 0.125rem 0.5rem; color: #4a3e30;">ecamm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== RECORDING NAMES (full width) ==================== -->
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-header">
+          <h3>
+            <svg width="16" height="16" fill="none" stroke="#7a6e5e" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 3v18m-7-4l7 4 7-4M5 7l7-4 7 4"/></svg>
+            Recording Names
+            <span class="badge">10 names</span>
+          </h3>
+        </div>
+        <div class="card-body">
+          <!-- Dictionary -->
+          <div style="margin-bottom: 1.25rem;">
+            <div class="field-label">Global Dictionary Words</div>
+            <textarea class="field-input" rows="4">AppyDave
+AppyStack
+FliVideo
+FliDeck
+FliGen
+FliStory
+Suno
+ShadCN
+NPM
+PRD
+Kybernesis
+Eleven Labs
+Fal.AI
+Kie.AI
+Veo 3
+N8N
+ab
+KyberBot
+agentic-os
+ssh
+OpenClaw
+tmux</textarea>
+            <div class="field-hint">Brand-wide words for Gling transcription (one per line). Applies to all projects.</div>
+          </div>
+
+          <!-- Common Names -->
+          <div>
+            <div class="field-label" style="margin-bottom: 0.5rem;">Common Names</div>
+            <div style="display: flex; flex-direction: column; gap: 0.375rem;">
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">intro</span>
+                <span class="filter-badge">Early (1-4)</span>
+                <span style="font-size: 0.6875rem; color: #9a8a78; font-style: italic;">auto-seq</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">overview</span>
+                <span class="filter-badge">Early (1-4)</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">setup</span>
+                <span class="filter-badge">Early (1-4)</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">livestream</span>
+                <span class="filter-badge">Custom (1-1)</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">planning</span>
+                <span class="filter-badge">Custom (2-6)</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">requirements</span>
+                <span class="filter-badge">All chapters</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">development</span>
+                <span class="filter-badge">All chapters</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">summary</span>
+                <span class="filter-badge">All chapters</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">demo</span>
+                <span class="filter-badge">All chapters</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+              <div class="name-row">
+                <span class="grip">&#8942;&#8942;</span>
+                <span class="name-text">outro</span>
+                <span class="filter-badge">All chapters</span>
+                <span class="tag-badge">RECAP</span>
+                <span class="tag-badge">ENDCARD</span>
+                <span class="remove-btn">&times;</span>
+              </div>
+
+            </div>
+
+            <!-- Add new name -->
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+              <input class="field-input" placeholder="Add new name..." style="flex: 1;" />
+              <button style="background: #b8a99a; color: #f5f1eb; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 500; border: none; cursor: pointer;">Add</button>
+            </div>
+            <div class="field-hint">Filter which chapters each name appears in. Auto-saves on change.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== CHAPTER DEFAULTS (half width) ==================== -->
+      <div class="card">
+        <div class="card-header">
+          <h3>
+            <svg width="16" height="16" fill="none" stroke="#7a6e5e" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7l-5-5z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Chapter Defaults
+          </h3>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Include Title Slides -->
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.875rem; font-weight: 500; color: #2a2018;">Include Title Slides</div>
+              <div class="field-hint">Add title card at start of each chapter</div>
+            </div>
+            <div class="toggle-track off">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+          <!-- Slide Duration -->
+          <div>
+            <div class="field-label">Slide Duration</div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <input class="field-input" type="number" value="1.0" step="0.5" min="0.5" max="5" style="width: 5rem;" />
+              <span style="font-size: 0.8125rem; color: #7a6e5e;">seconds</span>
+            </div>
+          </div>
+          <!-- Resolution -->
+          <div>
+            <div class="field-label">Resolution</div>
+            <div style="display: flex; gap: 1.25rem; margin-top: 0.375rem;">
+              <label class="radio-option">
+                <div class="radio-dot selected"><span></span></div>
+                720p
+              </label>
+              <label class="radio-option">
+                <div class="radio-dot"><span></span></div>
+                1080p
+              </label>
+            </div>
+          </div>
+          <!-- Auto-generate -->
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.875rem; font-weight: 500; color: #2a2018;">Auto-generate on rename</div>
+              <div class="field-hint">Automatically create chapters when recordings are renamed</div>
+            </div>
+            <div class="toggle-track off">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== SHADOW SETTINGS (half width) ==================== -->
+      <div class="card">
+        <div class="card-header">
+          <h3>
+            <svg width="16" height="16" fill="none" stroke="#7a6e5e" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Shadow Settings
+          </h3>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Shadow Resolution -->
+          <div>
+            <div class="field-label">Shadow Resolution</div>
+            <div style="display: flex; gap: 1.25rem; margin-top: 0.375rem;">
+              <label class="radio-option">
+                <div class="radio-dot"><span></span></div>
+                160p
+              </label>
+              <label class="radio-option">
+                <div class="radio-dot"><span></span></div>
+                180p
+              </label>
+              <label class="radio-option">
+                <div class="radio-dot selected"><span></span></div>
+                240p
+              </label>
+            </div>
+            <div class="field-hint">Lower resolution = smaller files for remote collaborators</div>
+          </div>
+
+          <!-- Shadow Status -->
+          <div style="border-top: 1px solid #d4cdc4; padding-top: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.625rem;">
+              <div class="field-label" style="margin-bottom: 0;">Shadow Status</div>
+              <span class="badge">3 of 8 generated</span>
+            </div>
+            <div style="height: 0.375rem; background: #eee8de; border-radius: 9999px; overflow: hidden; margin-bottom: 0.75rem;">
+              <div style="width: 37.5%; height: 100%; background: #16a34a; border-radius: 9999px;"></div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button style="flex: 1; background: #eee8de; color: #4a3e30; padding: 0.375rem 0.75rem; border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 500; border: 1px solid #d4cdc4; cursor: pointer;">Generate Missing</button>
+              <button style="flex: 1; background: #eee8de; color: #4a3e30; padding: 0.375rem 0.75rem; border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 500; border: 1px solid #d4cdc4; cursor: pointer;">Regenerate All</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end grid -->
+  </div><!-- end page content -->
+
+  <!-- Sticky Save Bar -->
+  <div class="save-bar">
+    <span style="font-size: 0.8125rem; color: #7a6e5e; margin-right: auto;">
+      <span style="display: inline-block; width: 0.5rem; height: 0.5rem; background: #f59e0b; border-radius: 9999px; margin-right: 0.375rem;"></span>
+      Unsaved changes
+    </span>
+    <button class="btn-secondary">Discard</button>
+    <button class="btn-primary">Save Configuration</button>
+  </div>
+
+</body>
+</html>

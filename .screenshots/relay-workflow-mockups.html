@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FliHub Relay Workflow Mockups</title>
+<style>
+  /* ─── Reset & Base ─── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0ebe5;
+    color: #3d3529;
+    line-height: 1.5;
+  }
+
+  /* ─── Warm Linen Palette ─── */
+  :root {
+    --page: #faf8f5;
+    --surface: #f5f0eb;
+    --surface-muted: #eee8e0;
+    --surface-hover: #e8e0d6;
+    --text-primary: #3d3529;
+    --text-secondary: #6b5d4d;
+    --text-muted: #9a8b78;
+    --text-faint: #c4b8a9;
+    --border-warm: #e0d5c8;
+    --border-strong: #d4c7b8;
+    --divider: #ebe3d9;
+    --blue-50: #eff6ff;
+    --blue-100: #dbeafe;
+    --blue-500: #3b82f6;
+    --blue-600: #2563eb;
+    --blue-700: #1d4ed8;
+    --green-50: #f0fdf4;
+    --green-100: #dcfce7;
+    --green-500: #22c55e;
+    --green-600: #16a34a;
+    --green-700: #15803d;
+    --amber-50: #fffbeb;
+    --amber-100: #fef3c7;
+    --amber-500: #f59e0b;
+    --amber-600: #d97706;
+    --red-50: #fef2f2;
+    --red-500: #ef4444;
+    --purple-100: #f3e8ff;
+    --purple-600: #9333ea;
+    --purple-700: #7e22ce;
+    --emerald-500: #10b981;
+  }
+
+  /* ─── Top Navigation ─── */
+  .top-nav {
+    background: var(--page);
+    border-bottom: 1px solid var(--border-warm);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .top-nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 8px;
+  }
+  .top-nav-header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .top-nav-header h1 span { color: var(--text-muted); }
+  .top-nav-header .project-code {
+    color: var(--blue-600);
+    font-weight: 500;
+  }
+  .role-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-warm);
+    border-radius: 8px;
+    padding: 4px;
+  }
+  .role-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--text-muted);
+  }
+  .role-btn.active {
+    background: var(--blue-600);
+    color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .role-btn:not(.active):hover {
+    background: var(--surface-hover);
+    color: var(--text-secondary);
+  }
+
+  /* Variation Tabs */
+  .var-tabs {
+    display: flex;
+    gap: 0;
+    border-top: 1px solid var(--border-warm);
+    padding-top: 8px;
+    padding-bottom: 0;
+  }
+  .var-tab {
+    padding: 8px 20px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .var-tab:hover { color: var(--text-secondary); }
+  .var-tab.active {
+    color: var(--blue-600);
+    border-bottom-color: var(--blue-600);
+  }
+
+  /* ─── Main Container ─── */
+  .main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* ─── Sub-tabs (Projects vs Relay) ─── */
+  .sub-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border-warm);
+    border-radius: 8px;
+    padding: 4px;
+    width: fit-content;
+  }
+  .sub-tab {
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--text-muted);
+  }
+  .sub-tab.active {
+    background: white;
+    color: var(--text-primary);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .sub-tab:not(.active):hover {
+    color: var(--text-secondary);
+    background: var(--surface-hover);
+  }
+
+  /* ─── Cards ─── */
+  .card {
+    background: var(--page);
+    border: 1px solid var(--border-warm);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--divider);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-body { padding: 16px; }
+
+  /* ─── Status Dots ─── */
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .dot-blue { background: var(--blue-500); }
+  .dot-amber { background: var(--amber-500); }
+  .dot-green { background: var(--emerald-500); }
+  .dot-purple { background: var(--purple-600); }
+  .dot-connected {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-500);
+  }
+
+  /* ─── Badges ─── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-blue { background: var(--blue-100); color: var(--blue-700); }
+  .badge-amber { background: var(--amber-100); color: var(--amber-600); }
+  .badge-green { background: var(--green-100); color: var(--green-700); }
+  .badge-purple { background: var(--purple-100); color: var(--purple-700); }
+  .badge-muted { background: var(--surface-muted); color: var(--text-muted); }
+  .badge-sm { font-size: 10px; padding: 1px 6px; }
+
+  /* ─── Buttons ─── */
+  .btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--blue-600); color: white; }
+  .btn-primary:hover { background: var(--blue-700); }
+  .btn-green { background: var(--green-600); color: white; }
+  .btn-green:hover { background: var(--green-700); }
+  .btn-outline {
+    background: var(--page);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-outline:hover { background: var(--surface-hover); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ─── Text Utilities ─── */
+  .text-primary { color: var(--text-primary); }
+  .text-secondary { color: var(--text-secondary); }
+  .text-muted { color: var(--text-muted); }
+  .text-faint { color: var(--text-faint); }
+  .text-blue { color: var(--blue-600); }
+  .text-green { color: var(--green-600); }
+  .text-amber { color: var(--amber-600); }
+  .text-xs { font-size: 11px; }
+  .text-sm { font-size: 13px; }
+  .text-base { font-size: 14px; }
+  .text-lg { font-size: 16px; }
+  .text-xl { font-size: 20px; }
+  .text-2xl { font-size: 24px; }
+  .text-3xl { font-size: 32px; }
+  .font-mono { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .uppercase { text-transform: uppercase; }
+  .tracking-wide { letter-spacing: 0.05em; }
+  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ─── Layout Utilities ─── */
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+  .items-start { align-items: flex-start; }
+  .justify-between { justify-content: space-between; }
+  .justify-center { justify-content: center; }
+  .gap-1 { gap: 4px; }
+  .gap-2 { gap: 8px; }
+  .gap-3 { gap: 12px; }
+  .gap-4 { gap: 16px; }
+  .gap-5 { gap: 20px; }
+  .gap-6 { gap: 24px; }
+  .w-full { width: 100%; }
+  .flex-1 { flex: 1; }
+  .flex-shrink-0 { flex-shrink: 0; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .hidden { display: none; }
+
+  .mt-1 { margin-top: 4px; }
+  .mt-2 { margin-top: 8px; }
+  .mt-3 { margin-top: 12px; }
+  .mt-4 { margin-top: 16px; }
+  .mb-1 { margin-bottom: 4px; }
+  .mb-2 { margin-bottom: 8px; }
+  .mb-3 { margin-bottom: 12px; }
+  .mb-4 { margin-bottom: 16px; }
+  .ml-1 { margin-left: 4px; }
+  .ml-2 { margin-left: 8px; }
+  .mr-2 { margin-right: 8px; }
+  .p-3 { padding: 12px; }
+  .p-4 { padding: 16px; }
+  .px-3 { padding-left: 12px; padding-right: 12px; }
+  .px-4 { padding-left: 16px; padding-right: 16px; }
+  .py-1 { padding-top: 4px; padding-bottom: 4px; }
+  .py-2 { padding-top: 8px; padding-bottom: 8px; }
+  .py-3 { padding-top: 12px; padding-bottom: 12px; }
+
+  /* ─── Dividers ─── */
+  .divider {
+    height: 1px;
+    background: var(--border-warm);
+    margin: 16px 0;
+  }
+
+  /* ─── Section Headers ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .section-header .line { height: 1px; background: var(--border-strong); flex: 1; }
+  .section-header .label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  /* ─── Connected Pill ─── */
+  .connected-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--green-700);
+    background: var(--green-50);
+    border: 1px solid #bbf7d0;
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+
+  /* ═══════════════════════════════════════════
+     VARIATION 1: KANBAN FLOW
+     ═══════════════════════════════════════════ */
+
+  /* Kanban Lanes */
+  .kanban-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .kanban-lane {
+    background: var(--surface);
+    border: 1px solid var(--border-warm);
+    border-radius: 10px;
+    min-height: 300px;
+  }
+  .kanban-lane-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--divider);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .kanban-lane-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kanban-lane-body { padding: 10px; }
+
+  .kanban-card {
+    background: var(--page);
+    border: 1px solid var(--border-warm);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: default;
+  }
+  .kanban-card:hover {
+    border-color: var(--blue-500);
+    box-shadow: 0 1px 4px rgba(37,99,235,0.1);
+  }
+  .kanban-card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .kanban-card-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .kanban-swimlane-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 6px 12px 2px;
+  }
+
+  /* Kanban Project Row */
+  .kanban-progress-bar {
+    display: flex;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--surface-muted);
+    gap: 2px;
+  }
+  .kanban-progress-segment {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* ═══════════════════════════════════════════
+     VARIATION 2: SPLIT PANE MIRROR
+     ═══════════════════════════════════════════ */
+
+  .split-container {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+    align-items: stretch;
+  }
+  .split-panel {
+    background: var(--page);
+    border: 1px solid var(--border-warm);
+    border-radius: 10px;
+  }
+  .split-panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--divider);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .split-panel-body { padding: 0; }
+
+  .split-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .split-row:last-child { border-bottom: none; }
+
+  .split-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 0;
+  }
+  .sync-arrow-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    background: var(--page);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 18px;
+    color: var(--text-secondary);
+  }
+  .sync-arrow-btn:hover {
+    border-color: var(--blue-500);
+    color: var(--blue-600);
+    background: var(--blue-50);
+  }
+  .sync-arrow-btn.push { color: var(--blue-600); border-color: var(--blue-500); }
+  .sync-arrow-btn.collect { color: var(--green-600); border-color: var(--green-500); }
+  .sync-delta {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  /* Split Pane badge chips for projects */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+  }
+  .chip-incoming { background: var(--green-100); color: var(--green-700); }
+  .chip-outgoing { background: var(--blue-100); color: var(--blue-700); }
+  .chip-none { background: var(--surface-muted); color: var(--text-faint); }
+
+  /* ═══════════════════════════════════════════
+     VARIATION 3: TIMELINE PIPELINE
+     ═══════════════════════════════════════════ */
+
+  .timeline-container {
+    position: relative;
+    padding-left: 32px;
+  }
+  .timeline-container::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-warm);
+  }
+  .timeline-step {
+    position: relative;
+    margin-bottom: 4px;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -32px;
+    top: 14px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    background: var(--page);
+    z-index: 1;
+  }
+  .timeline-dot.active {
+    border-color: var(--blue-500);
+    background: var(--blue-500);
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+  }
+  .timeline-dot.completed {
+    border-color: var(--green-500);
+    background: var(--green-500);
+  }
+  .timeline-dot.syncthing {
+    border-color: var(--amber-500);
+    background: var(--amber-500);
+  }
+
+  .timeline-card {
+    background: var(--page);
+    border: 1px solid var(--border-warm);
+    border-radius: 8px;
+    padding: 12px 16px;
+    transition: border-color 0.15s;
+  }
+  .timeline-card.active {
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 1px var(--blue-500), 0 2px 8px rgba(59,130,246,0.1);
+  }
+  .timeline-card.completed {
+    border-color: var(--green-500);
+    opacity: 0.8;
+  }
+  .timeline-card.syncthing-card {
+    background: var(--amber-50);
+    border-color: #fde68a;
+    border-style: dashed;
+    padding: 8px 16px;
+  }
+
+  .timeline-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .timeline-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .timeline-files {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--divider);
+  }
+  .timeline-file-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 0;
+    font-size: 11px;
+  }
+
+  /* Pipeline dots for project rows */
+  .pipeline-dots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .pipeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    background: var(--page);
+  }
+  .pipeline-dot.done { background: var(--green-500); border-color: var(--green-500); }
+  .pipeline-dot.current { background: var(--blue-500); border-color: var(--blue-500); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+  .pipeline-dot.pending { background: var(--surface-muted); border-color: var(--border-warm); }
+  .pipeline-connector {
+    width: 8px;
+    height: 2px;
+    background: var(--border-warm);
+  }
+  .pipeline-connector.done { background: var(--green-500); }
+
+  /* ─── Projects Table ─── */
+  .projects-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .projects-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-strong);
+    background: var(--surface);
+  }
+  .projects-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--divider);
+    vertical-align: middle;
+  }
+  .projects-table tr:hover td {
+    background: var(--surface);
+  }
+  .project-code-link {
+    color: var(--blue-600);
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .project-code-link:hover { text-decoration: underline; }
+
+  /* ─── Activity Feed ─── */
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .activity-icon {
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+    font-family: monospace;
+    color: var(--text-muted);
+  }
+  .activity-time {
+    font-size: 11px;
+    color: var(--text-faint);
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  /* ─── Expandable ─── */
+  .expandable-trigger {
+    cursor: pointer;
+    user-select: none;
+  }
+  .expandable-trigger:hover { color: var(--blue-600); }
+  .expandable-content {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.2s ease;
+  }
+  .expandable-content.open {
+    max-height: 500px;
+  }
+
+  /* ─── Folder Creation Banner ─── */
+  .folder-banner {
+    background: var(--green-50);
+    border: 1px dashed #86efac;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* ─── Variation description ─── */
+  .variation-description {
+    background: var(--surface);
+    border: 1px solid var(--border-warm);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  .variation-description h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .variation-description p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ─── Connector lines in split pane ─── */
+  .subfolder-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .subfolder-icon.rec { background: var(--blue-100); color: var(--blue-700); }
+  .subfolder-icon.e1 { background: var(--amber-100); color: var(--amber-600); }
+  .subfolder-icon.e2 { background: var(--green-100); color: var(--green-700); }
+
+  /* Stage badge for projects table */
+  .stage-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     TOP NAVIGATION
+     ═══════════════════════════════════════════════════════ -->
+<div class="top-nav">
+  <div class="top-nav-inner">
+    <div class="top-nav-header">
+      <div class="flex items-center gap-3">
+        <h1>FliHub <span>&rsaquo;</span> <span class="project-code">b85-clauding-01</span></h1>
+        <span class="connected-pill"><span class="dot-connected"></span> Relay connected</span>
+      </div>
+      <div class="role-toggle" id="roleToggle">
+        <button class="role-btn active" data-role="creator" onclick="setRole('creator')">Creator (David)</button>
+        <button class="role-btn" data-role="editor" onclick="setRole('editor')">Editor (Jan)</button>
+      </div>
+    </div>
+    <div class="var-tabs" id="varTabs">
+      <button class="var-tab active" data-var="kanban" onclick="showVariation('kanban')">1. Kanban Flow</button>
+      <button class="var-tab" data-var="split" onclick="showVariation('split')">2. Split Pane Mirror</button>
+      <button class="var-tab" data-var="timeline" onclick="showVariation('timeline')">3. Timeline Pipeline</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     VARIATION 1: KANBAN FLOW
+     ═══════════════════════════════════════════════════════ -->
+<div class="main-container" id="variation-kanban">
+  <div class="variation-description">
+    <h3>Variation 1: Kanban Flow</h3>
+    <p>Horizontal kanban-style lanes showing the progression from Recordings through edits to Final. Cards represent chapters/files that move between Local, Relay, and Remote swim lanes. Project rows show a horizontal progress bar indicating which stage has relay activity. Compact and information-dense.</p>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div class="sub-tabs">
+    <button class="sub-tab" data-view="projects" onclick="showSubView('kanban', 'projects', this)">Projects View</button>
+    <button class="sub-tab active" data-view="relay" onclick="showSubView('kanban', 'relay', this)">Relay Dashboard</button>
+  </div>
+
+  <!-- ─── PROJECTS VIEW ─── -->
+  <div id="kanban-projects" class="hidden">
+    <div class="section-header">
+      <div class="line"></div>
+      <div class="label">Projects with Relay Activity</div>
+      <div class="line"></div>
+    </div>
+
+    <div class="card">
+      <table class="projects-table">
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th>Project</th>
+            <th>Stage</th>
+            <th>Relay Pipeline</th>
+            <th style="text-align:right">Activity</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#f59e0b">&#9733;</td>
+            <td><span class="project-code-link">b85-clauding-01</span></td>
+            <td><span class="stage-badge" style="background:var(--yellow-100,#fef9c3);color:#a16207">REC</span></td>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="kanban-progress-bar" style="width:200px">
+                  <div class="kanban-progress-segment" style="width:40%;background:var(--blue-500)"></div>
+                  <div class="kanban-progress-segment" style="width:25%;background:var(--amber-500)"></div>
+                  <div class="kanban-progress-segment" style="width:0%;background:var(--emerald-500)"></div>
+                  <div class="kanban-progress-segment" style="width:0%;background:var(--purple-600)"></div>
+                </div>
+                <span class="text-xs text-muted">REC active</span>
+              </div>
+            </td>
+            <td style="text-align:right">
+              <span class="badge badge-blue badge-sm">&#8593;5 REC</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="color:#f59e0b">&#9733;</td>
+            <td><span class="project-code-link">b84-omi-brain-setup</span></td>
+            <td><span class="stage-badge" style="background:var(--blue-100);color:var(--blue-700)">1st</span></td>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="kanban-progress-bar" style="width:200px">
+                  <div class="kanban-progress-segment" style="width:40%;background:var(--green-500)"></div>
+                  <div class="kanban-progress-segment" style="width:30%;background:var(--amber-500)"></div>
+                  <div class="kanban-progress-segment" style="width:0%;background:var(--emerald-500)"></div>
+                  <div class="kanban-progress-segment" style="width:0%;background:var(--purple-600)"></div>
+                </div>
+                <span class="text-xs text-muted">E1 pending</span>
+              </div>
+            </td>
+            <td style="text-align:right">
+              <span class="badge badge-amber badge-sm">&#8595;3 E1</span>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><span class="project-code-link">b83-agent-os-ansible</span></td>
+            <td><span class="stage-badge" style="background:#e9d5ff;color:#7e22ce">Rev</span></td>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="kanban-progress-bar" style="width:200px">
+                  <div class="kanban-progress-segment" style="width:30%;background:var(--green-500)"></div>
+                  <div class="kanban-progress-segment" style="width:30%;background:var(--green-500)"></div>
+                  <div class="kanban-progress-segment" style="width:25%;background:var(--emerald-500)"></div>
+                  <div class="kanban-progress-segment" style="width:0%;background:var(--purple-600)"></div>
+                </div>
+                <span class="text-xs text-muted">E2 ready</span>
+              </div>
+            </td>
+            <td style="text-align:right">
+              <span class="badge badge-green badge-sm">&#8595;2 E2</span>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><span class="project-code-link" style="color:var(--text-muted)">b82-flihub-config</span></td>
+            <td><span class="stage-badge" style="background:var(--green-100);color:var(--green-700)">Pub</span></td>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="kanban-progress-bar" style="width:200px">
+                  <div class="kanban-progress-segment" style="width:25%;background:var(--green-500)"></div>
+                  <div class="kanban-progress-segment" style="width:25%;background:var(--green-500)"></div>
+                  <div class="kanban-progress-segment" style="width:25%;background:var(--green-500)"></div>
+                  <div class="kanban-progress-segment" style="width:25%;background:var(--green-500)"></div>
+                </div>
+                <span class="text-xs text-green">Complete</span>
+              </div>
+            </td>
+            <td style="text-align:right">
+              <span class="badge badge-muted badge-sm">&#10003; synced</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── RELAY DASHBOARD (Kanban) ─── -->
+  <div id="kanban-relay">
+    <!-- Folder creation banner -->
+    <div class="folder-banner mb-4" id="kanban-folder-banner">
+      <div class="flex items-center gap-3">
+        <span style="font-size:18px">&#128193;</span>
+        <div>
+          <div class="text-sm font-semibold text-primary">Edit folders not yet created</div>
+          <div class="text-xs text-muted">Create edit-1st/ and edit-2nd/ to enable the full editing pipeline</div>
+        </div>
+      </div>
+      <button class="btn btn-green btn-sm" onclick="this.closest('.folder-banner').style.display='none'">Create All Folders</button>
+    </div>
+
+    <!-- Kanban Board -->
+    <div class="kanban-container">
+      <!-- Lane: Recordings -->
+      <div class="kanban-lane">
+        <div class="kanban-lane-header">
+          <div class="kanban-lane-title"><span class="dot dot-blue"></span> Recordings</div>
+          <span class="badge badge-blue badge-sm" id="kanban-rec-badge">5 files</span>
+        </div>
+        <div class="kanban-lane-body">
+          <div class="kanban-swimlane-label" id="kanban-rec-local-label">LOCAL (YOURS)</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">Ch 01 - Intro</div>
+            <div class="kanban-card-meta">
+              <span>3 files &middot; 1.2 GB</span>
+              <span class="badge badge-blue badge-sm" id="kanban-rec-push-label">Push &#8593;</span>
+            </div>
+          </div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">Ch 02 - Setup</div>
+            <div class="kanban-card-meta">
+              <span>2 files &middot; 840 MB</span>
+              <span class="badge badge-blue badge-sm" id="kanban-rec-push-label2">Push &#8593;</span>
+            </div>
+          </div>
+          <div class="kanban-swimlane-label">IN RELAY</div>
+          <div class="kanban-card" style="border-left: 3px solid var(--amber-500)">
+            <div class="kanban-card-title" style="color:var(--text-muted)">Ch 01 - Intro</div>
+            <div class="kanban-card-meta">
+              <span>3 files &middot; 1.2 GB</span>
+              <span class="text-xs" style="color:var(--amber-500)">Syncing...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lane: 1st Edit -->
+      <div class="kanban-lane">
+        <div class="kanban-lane-header">
+          <div class="kanban-lane-title"><span class="dot dot-amber"></span> 1st Edit</div>
+          <span class="badge badge-amber badge-sm">3 files</span>
+        </div>
+        <div class="kanban-lane-body">
+          <div class="kanban-swimlane-label">IN RELAY</div>
+          <div class="kanban-card" style="border-left: 3px solid var(--amber-500)" id="kanban-e1-relay">
+            <div class="kanban-card-title">Ch 01 - Intro (Gling)</div>
+            <div class="kanban-card-meta">
+              <span>1 file &middot; 380 MB</span>
+              <span class="badge badge-amber badge-sm" id="kanban-e1-collect-label">Collect &#8595;</span>
+            </div>
+          </div>
+          <div class="kanban-swimlane-label" id="kanban-e1-local-label">REMOTE (JAN)</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">Ch 01 - Intro (Gling)</div>
+            <div class="kanban-card-meta">
+              <span>1 file &middot; 380 MB</span>
+              <span class="text-xs text-green">&#10003; Delivered</span>
+            </div>
+          </div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">Ch 02 - Setup (Gling)</div>
+            <div class="kanban-card-meta">
+              <span>1 file &middot; 290 MB</span>
+              <span class="text-xs text-muted">Editing...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lane: 2nd Edit -->
+      <div class="kanban-lane">
+        <div class="kanban-lane-header">
+          <div class="kanban-lane-title"><span class="dot dot-green"></span> 2nd Edit</div>
+          <span class="badge badge-green badge-sm">0 files</span>
+        </div>
+        <div class="kanban-lane-body">
+          <div style="text-align:center;padding:40px 12px;color:var(--text-faint)">
+            <div style="font-size:24px;margin-bottom:8px">&#9673;</div>
+            <div class="text-xs">Waiting for 1st edit to complete</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lane: Final -->
+      <div class="kanban-lane" style="background:var(--green-50);border-color:#bbf7d0">
+        <div class="kanban-lane-header" style="border-color:#bbf7d0">
+          <div class="kanban-lane-title"><span class="dot dot-purple"></span> Final</div>
+          <span class="badge badge-muted badge-sm">0 files</span>
+        </div>
+        <div class="kanban-lane-body">
+          <div style="text-align:center;padding:40px 12px;color:var(--text-faint)">
+            <div style="font-size:24px;margin-bottom:8px">&#127942;</div>
+            <div class="text-xs">Promote best 2nd edit here</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Toolbar -->
+    <div class="flex items-center justify-between mt-4 p-3" style="background:var(--surface);border:1px solid var(--border-warm);border-radius:8px">
+      <div class="flex items-center gap-3">
+        <button class="btn btn-primary btn-sm" id="kanban-action-btn">&#8593; Push Recordings to Relay</button>
+        <button class="btn btn-outline btn-sm" id="kanban-collect-btn">&#8595; Collect 1st Edits</button>
+        <button class="btn btn-outline btn-sm btn-disabled">&#8593; Promote to Final</button>
+      </div>
+      <span class="text-xs text-muted">Last sync: 3 min ago</span>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="mt-4">
+      <div class="section-header">
+        <div class="line" style="width:32px"></div>
+        <div class="label">Recent Activity</div>
+        <div class="line"></div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:8px 16px">
+          <div class="activity-item">
+            <span class="activity-icon">&#8593;</span>
+            <span class="text-secondary">Pushed 3 recordings (Ch 01) to relay</span>
+            <span class="activity-time">3 min ago</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon">&#8595;</span>
+            <span class="text-secondary">Collected 1 edit from Jan (Ch 01 1st edit)</span>
+            <span class="activity-time">1 hour ago</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon">&#8634;</span>
+            <span class="text-secondary">SyncThing synced edit-1st/ (2 files)</span>
+            <span class="activity-time">2 hours ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     VARIATION 2: SPLIT PANE MIRROR
+     ═══════════════════════════════════════════════════════ -->
+<div class="main-container hidden" id="variation-split">
+  <div class="variation-description">
+    <h3>Variation 2: Split Pane Mirror</h3>
+    <p>Two-panel view showing YOUR MACHINE on the left and RELAY on the right. Each side shows the same 3 subfolders (recordings, edit-1st, edit-2nd) with arrows between them showing sync direction and delta counts. Big sync buttons sit in the middle column. Projects page uses simple badge chips showing incoming/outgoing counts per subfolder.</p>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div class="sub-tabs">
+    <button class="sub-tab" data-view="projects" onclick="showSubView('split', 'projects', this)">Projects View</button>
+    <button class="sub-tab active" data-view="relay" onclick="showSubView('split', 'relay', this)">Relay Dashboard</button>
+  </div>
+
+  <!-- ─── PROJECTS VIEW ─── -->
+  <div id="split-projects" class="hidden">
+    <div class="section-header">
+      <div class="line"></div>
+      <div class="label">Projects with Relay Activity</div>
+      <div class="line"></div>
+    </div>
+
+    <div class="card">
+      <table class="projects-table">
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th>Project</th>
+            <th>Stage</th>
+            <th>Final</th>
+            <th>Relay Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#f59e0b">&#9733;</td>
+            <td><span class="project-code-link">b85-clauding-01</span></td>
+            <td><span class="stage-badge" style="background:#fef9c3;color:#a16207">REC</span></td>
+            <td><span class="text-faint">-</span></td>
+            <td>
+              <div class="flex items-center gap-2">
+                <span class="chip chip-outgoing" id="split-proj-rec-chip">&#8593;5 REC</span>
+                <span class="chip chip-none">- E1</span>
+                <span class="chip chip-none">- E2</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="color:#f59e0b">&#9733;</td>
+            <td><span class="project-code-link">b84-omi-brain-setup</span></td>
+            <td><span class="stage-badge" style="background:var(--blue-100);color:var(--blue-700)">1st</span></td>
+            <td><span class="text-faint">-</span></td>
+            <td>
+              <div class="flex items-center gap-2">
+                <span class="chip chip-none">&#10003; REC</span>
+                <span class="chip chip-incoming" id="split-proj-e1-chip">&#8595;3 E1</span>
+                <span class="chip chip-none">- E2</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><span class="project-code-link">b83-agent-os-ansible</span></td>
+            <td><span class="stage-badge" style="background:#e9d5ff;color:#7e22ce">Rev</span></td>
+            <td><span class="text-faint">-</span></td>
+            <td>
+              <div class="flex items-center gap-2">
+                <span class="chip chip-none">&#10003; REC</span>
+                <span class="chip chip-none">&#10003; E1</span>
+                <span class="chip chip-incoming">&#8595;2 E2</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><span class="project-code-link" style="color:var(--text-muted)">b82-flihub-config</span></td>
+            <td><span class="stage-badge" style="background:var(--green-100);color:var(--green-700)">Pub</span></td>
+            <td>&#9989;</td>
+            <td>
+              <div class="flex items-center gap-2">
+                <span class="chip chip-none">&#10003; REC</span>
+                <span class="chip chip-none">&#10003; E1</span>
+                <span class="chip chip-none">&#10003; E2</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── RELAY DASHBOARD (Split Pane) ─── -->
+  <div id="split-relay">
+    <!-- Folder creation banner -->
+    <div class="folder-banner mb-4" id="split-folder-banner">
+      <div class="flex items-center gap-3">
+        <span style="font-size:18px">&#128193;</span>
+        <div>
+          <div class="text-sm font-semibold text-primary">Edit folders needed</div>
+          <div class="text-xs text-muted">edit-1st/ and edit-2nd/ will be created in the project directory</div>
+        </div>
+      </div>
+      <button class="btn btn-green btn-sm" onclick="this.closest('.folder-banner').style.display='none'">Create Folders</button>
+    </div>
+
+    <div class="split-container">
+      <!-- LEFT: Your Machine -->
+      <div class="split-panel">
+        <div class="split-panel-header" id="split-left-header">
+          <span style="font-size:16px">&#128187;</span>
+          YOUR MACHINE
+          <span class="text-xs text-muted font-mono" style="margin-left:auto">mac-mini-m4</span>
+        </div>
+        <div class="split-panel-body">
+          <!-- Recordings -->
+          <div class="split-row">
+            <div class="flex items-center gap-3">
+              <span class="subfolder-icon rec">R</span>
+              <div>
+                <div class="text-sm font-semibold" id="split-local-rec-label">recordings/</div>
+                <div class="text-xs text-muted">5 files &middot; 2.1 GB</div>
+              </div>
+            </div>
+            <span class="badge badge-blue badge-sm" id="split-local-rec-count">5 local</span>
+          </div>
+          <!-- Edit 1st -->
+          <div class="split-row">
+            <div class="flex items-center gap-3">
+              <span class="subfolder-icon e1">1</span>
+              <div>
+                <div class="text-sm font-semibold">edit-1st/</div>
+                <div class="text-xs text-muted">1 file &middot; 380 MB</div>
+              </div>
+            </div>
+            <span class="badge badge-green badge-sm">1 local</span>
+          </div>
+          <!-- Edit 2nd -->
+          <div class="split-row">
+            <div class="flex items-center gap-3">
+              <span class="subfolder-icon e2">2</span>
+              <div>
+                <div class="text-sm font-semibold">edit-2nd/</div>
+                <div class="text-xs text-muted">0 files</div>
+              </div>
+            </div>
+            <span class="badge badge-muted badge-sm">empty</span>
+          </div>
+          <!-- Final -->
+          <div class="split-row" style="background:var(--green-50)">
+            <div class="flex items-center gap-3">
+              <span class="subfolder-icon" style="background:#dcfce7;color:var(--green-700)">F</span>
+              <div>
+                <div class="text-sm font-semibold">final/</div>
+                <div class="text-xs text-muted">0 files</div>
+              </div>
+            </div>
+            <span class="badge badge-muted badge-sm">empty</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER: Sync Arrows -->
+      <div class="split-center">
+        <div style="height:48px"></div>
+        <!-- Recordings sync -->
+        <div style="text-align:center">
+          <div class="sync-arrow-btn push" title="Push recordings to relay" id="split-sync-rec">&#8594;</div>
+          <div class="sync-delta" id="split-delta-rec">+2 new</div>
+        </div>
+        <!-- Edit 1st sync -->
+        <div style="text-align:center;margin-top:4px">
+          <div class="sync-arrow-btn collect" title="Collect 1st edits from relay" id="split-sync-e1">&#8592;</div>
+          <div class="sync-delta" id="split-delta-e1">+3 incoming</div>
+        </div>
+        <!-- Edit 2nd sync -->
+        <div style="text-align:center;margin-top:4px">
+          <div class="sync-arrow-btn" title="No activity" id="split-sync-e2">&#8592;</div>
+          <div class="sync-delta">-</div>
+        </div>
+        <!-- Promote -->
+        <div style="text-align:center;margin-top:4px">
+          <div class="sync-arrow-btn" style="font-size:14px;border-style:dashed" title="Promote to final">&#8593;</div>
+          <div class="sync-delta">promote</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Relay -->
+      <div class="split-panel">
+        <div class="split-panel-header">
+          <span style="font-size:16px">&#9729;</span>
+          RELAY (SyncThing)
+          <span class="text-xs text-muted font-mono" style="margin-left:auto">~/relay/flihub-appydave</span>
+        </div>
+        <div class="split-panel-body">
+          <!-- Recordings -->
+          <div class="split-row">
+            <div class="flex items-center gap-3">
+              <span class="subfolder-icon rec">R</span>
+              <div>
+                <div class="text-sm font-semibold">recordings/</div>
+                <div class="text-xs text-muted">3 files &middot; 1.2 GB</div>
+              </div>
+            </div>
+            <span class="badge badge-amber badge-sm">3 in relay</span>
+          </div>
+          <!-- Edit 1st -->
+          <div class="split-row">
+            <div class="flex items-center gap-3">
+              <span class="subfolder-icon e1">1</span>
+              <div>
+                <div class="text-sm font-semibold">edit-1st/</div>
+                <div class="text-xs text-muted">3 files &middot; 920 MB</div>
+              </div>
+            </div>
+            <span class="badge badge-amber badge-sm">3 in relay</span>
+          </div>
+          <!-- Edit 2nd -->
+          <div class="split-row">
+            <div class="flex items-center gap-3">
+              <span class="subfolder-icon e2">2</span>
+              <div>
+                <div class="text-sm font-semibold">edit-2nd/</div>
+                <div class="text-xs text-muted">0 files</div>
+              </div>
+            </div>
+            <span class="badge badge-muted badge-sm">empty</span>
+          </div>
+          <!-- Final (not in relay) -->
+          <div class="split-row" style="opacity:0.5">
+            <div class="flex items-center gap-3">
+              <span class="subfolder-icon" style="background:var(--surface-muted);color:var(--text-faint)">F</span>
+              <div>
+                <div class="text-sm font-semibold text-muted">final/</div>
+                <div class="text-xs text-faint">local only</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divergence Summary -->
+    <div class="card mt-4">
+      <div class="card-body" style="padding:10px 16px">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="text-xs font-semibold text-muted uppercase tracking-wide">Divergence</span>
+            <span class="text-sm"><strong class="text-blue">+2</strong> <span class="text-muted">recordings not in relay</span></span>
+            <span class="text-sm"><strong class="text-green">+3</strong> <span class="text-muted">edits waiting to collect</span></span>
+          </div>
+          <button class="btn btn-primary btn-sm">Sync All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="mt-4">
+      <div class="section-header">
+        <div class="line" style="width:32px"></div>
+        <div class="label">Recent Activity</div>
+        <div class="line"></div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:8px 16px">
+          <div class="activity-item">
+            <span class="activity-icon">&#8594;</span>
+            <span class="text-secondary">Pushed 3 recordings to relay (Ch 01)</span>
+            <span class="activity-time">3 min ago</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon">&#8592;</span>
+            <span class="text-secondary">Collected 1st edit from relay (Ch 01)</span>
+            <span class="activity-time">1 hour ago</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon">&#8634;</span>
+            <span class="text-secondary">SyncThing: edit-1st/ synced (2 new files from Jan)</span>
+            <span class="activity-time">2 hours ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     VARIATION 3: TIMELINE PIPELINE
+     ═══════════════════════════════════════════════════════ -->
+<div class="main-container hidden" id="variation-timeline">
+  <div class="variation-description">
+    <h3>Variation 3: Timeline Pipeline</h3>
+    <p>Vertical timeline showing the project's journey through stages. Each stage is a card: Record, Push, SyncThing transfer, Collect, Edit in Gling, Push 1st Edit, and so on. The current stage is highlighted, completed stages are checked. Expandable cards show files at each stage. Story-driven and great for understanding workflow state at a glance.</p>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div class="sub-tabs">
+    <button class="sub-tab" data-view="projects" onclick="showSubView('timeline', 'projects', this)">Projects View</button>
+    <button class="sub-tab active" data-view="relay" onclick="showSubView('timeline', 'relay', this)">Relay Dashboard</button>
+  </div>
+
+  <!-- ─── PROJECTS VIEW ─── -->
+  <div id="timeline-projects" class="hidden">
+    <div class="section-header">
+      <div class="line"></div>
+      <div class="label">Projects Pipeline Status</div>
+      <div class="line"></div>
+    </div>
+
+    <div class="card">
+      <table class="projects-table">
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th>Project</th>
+            <th>Stage</th>
+            <th>Pipeline Progress</th>
+            <th style="text-align:right">Next Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#f59e0b">&#9733;</td>
+            <td><span class="project-code-link">b85-clauding-01</span></td>
+            <td><span class="stage-badge" style="background:#fef9c3;color:#a16207">REC</span></td>
+            <td>
+              <div class="flex items-center gap-1">
+                <div class="pipeline-dots">
+                  <div class="pipeline-dot done" title="Recording"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot current" title="Push Recordings"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending" title="SyncThing"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending" title="Collect"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending" title="Gling Edit"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending" title="Push 1st"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending" title="2nd Edit"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending" title="Final"></div>
+                </div>
+                <span class="text-xs text-muted ml-2">2/8</span>
+              </div>
+            </td>
+            <td style="text-align:right"><span class="badge badge-blue badge-sm">Push Recordings</span></td>
+          </tr>
+          <tr>
+            <td style="color:#f59e0b">&#9733;</td>
+            <td><span class="project-code-link">b84-omi-brain-setup</span></td>
+            <td><span class="stage-badge" style="background:var(--blue-100);color:var(--blue-700)">1st</span></td>
+            <td>
+              <div class="flex items-center gap-1">
+                <div class="pipeline-dots">
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot current"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending"></div>
+                </div>
+                <span class="text-xs text-muted ml-2">5/8</span>
+              </div>
+            </td>
+            <td style="text-align:right"><span class="badge badge-amber badge-sm">Collect 1st Edit</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><span class="project-code-link">b83-agent-os-ansible</span></td>
+            <td><span class="stage-badge" style="background:#e9d5ff;color:#7e22ce">Rev</span></td>
+            <td>
+              <div class="flex items-center gap-1">
+                <div class="pipeline-dots">
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot current"></div>
+                  <div class="pipeline-connector"></div>
+                  <div class="pipeline-dot pending"></div>
+                </div>
+                <span class="text-xs text-muted ml-2">7/8</span>
+              </div>
+            </td>
+            <td style="text-align:right"><span class="badge badge-green badge-sm">Promote to Final</span></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><span class="project-code-link" style="color:var(--text-muted)">b82-flihub-config</span></td>
+            <td><span class="stage-badge" style="background:var(--green-100);color:var(--green-700)">Pub</span></td>
+            <td>
+              <div class="flex items-center gap-1">
+                <div class="pipeline-dots">
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                  <div class="pipeline-connector done"></div>
+                  <div class="pipeline-dot done"></div>
+                </div>
+                <span class="text-xs text-green ml-2">8/8</span>
+              </div>
+            </td>
+            <td style="text-align:right"><span class="badge badge-muted badge-sm">Complete</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── RELAY DASHBOARD (Timeline) ─── -->
+  <div id="timeline-relay">
+    <!-- Folder creation banner -->
+    <div class="folder-banner mb-4" id="timeline-folder-banner">
+      <div class="flex items-center gap-3">
+        <span style="font-size:18px">&#128193;</span>
+        <div>
+          <div class="text-sm font-semibold text-primary">Auto-create edit folders?</div>
+          <div class="text-xs text-muted">Recordings detected -- create edit-1st/ and edit-2nd/ to start the editing pipeline</div>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-green btn-sm" onclick="this.closest('.folder-banner').style.display='none'">Create Now</button>
+        <button class="btn btn-outline btn-sm" onclick="this.closest('.folder-banner').style.display='none'">Later</button>
+      </div>
+    </div>
+
+    <div style="max-width:700px;margin:0 auto">
+      <div class="timeline-container">
+        <!-- Step 1: Recording (Completed) -->
+        <div class="timeline-step">
+          <div class="timeline-dot completed"></div>
+          <div class="timeline-card completed">
+            <div class="timeline-card-header">
+              <div class="timeline-card-title">
+                <span style="color:var(--green-500)">&#10003;</span>
+                Recording Complete
+              </div>
+              <span class="badge badge-green badge-sm">5 files &middot; 2.1 GB</span>
+            </div>
+            <div class="timeline-files expandable-trigger" onclick="toggleExpand(this)">
+              <span class="text-xs text-muted">Show 5 files &#9660;</span>
+              <div class="expandable-content">
+                <div class="timeline-file-row"><span class="font-mono text-secondary">01-1-intro.mov</span><span class="text-muted">450 MB</span></div>
+                <div class="timeline-file-row"><span class="font-mono text-secondary">01-2-intro.mov</span><span class="text-muted">380 MB</span></div>
+                <div class="timeline-file-row"><span class="font-mono text-secondary">01-3-intro-CTA.mov</span><span class="text-muted">290 MB</span></div>
+                <div class="timeline-file-row"><span class="font-mono text-secondary">02-1-setup.mov</span><span class="text-muted">520 MB</span></div>
+                <div class="timeline-file-row"><span class="font-mono text-secondary">02-2-setup.mov</span><span class="text-muted">460 MB</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Push Recordings (Active) -->
+        <div class="timeline-step">
+          <div class="timeline-dot active"></div>
+          <div class="timeline-card active">
+            <div class="timeline-card-header">
+              <div class="timeline-card-title">
+                <span style="color:var(--blue-500)">&#9679;</span>
+                Push Recordings to Relay
+                <span class="text-xs text-muted" id="timeline-push-role">(David)</span>
+              </div>
+              <button class="btn btn-primary btn-sm" id="timeline-push-btn">&#8593; Push Now</button>
+            </div>
+            <div class="flex items-center gap-3 mt-2">
+              <span class="text-xs text-muted">3 of 5 files already in relay</span>
+              <span class="badge badge-blue badge-sm">2 remaining</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: SyncThing Transfer -->
+        <div class="timeline-step">
+          <div class="timeline-dot syncthing"></div>
+          <div class="timeline-card syncthing-card">
+            <div class="flex items-center gap-2">
+              <span style="color:var(--amber-500)">&#8634;</span>
+              <span class="text-sm font-medium" style="color:var(--amber-600)">SyncThing syncs to Jan's machine</span>
+              <span class="text-xs text-muted" style="margin-left:auto">~5 min per GB</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Collect Recordings (Jan) -->
+        <div class="timeline-step">
+          <div class="timeline-dot completed"></div>
+          <div class="timeline-card completed">
+            <div class="timeline-card-header">
+              <div class="timeline-card-title">
+                <span style="color:var(--green-500)">&#10003;</span>
+                Jan Collects Recordings
+              </div>
+              <span class="badge badge-green badge-sm">3 files collected</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5: Gling Edit -->
+        <div class="timeline-step">
+          <div class="timeline-dot active"></div>
+          <div class="timeline-card active">
+            <div class="timeline-card-header">
+              <div class="timeline-card-title">
+                <span style="color:var(--blue-500)">&#9679;</span>
+                1st Edit in Gling
+                <span class="text-xs text-muted">(Jan)</span>
+              </div>
+              <span class="badge badge-amber badge-sm">In progress</span>
+            </div>
+            <div class="text-xs text-muted mt-1">Jan is editing Ch 01 in Gling. Ch 02 recordings pending.</div>
+          </div>
+        </div>
+
+        <!-- Step 6: Push 1st Edit -->
+        <div class="timeline-step">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="timeline-card-header">
+              <div class="timeline-card-title">
+                <span style="color:var(--text-faint)">&#9675;</span>
+                Push 1st Edit to Relay
+                <span class="text-xs text-muted">(Jan)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7: SyncThing Transfer -->
+        <div class="timeline-step">
+          <div class="timeline-dot" style="border-color:var(--text-faint)"></div>
+          <div class="timeline-card syncthing-card" style="opacity:0.5">
+            <div class="flex items-center gap-2">
+              <span style="color:var(--text-faint)">&#8634;</span>
+              <span class="text-sm" style="color:var(--text-faint)">SyncThing syncs edit-1st/ to David</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 8: Collect 1st Edit (David) -->
+        <div class="timeline-step">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card" style="opacity:0.6">
+            <div class="timeline-card-header">
+              <div class="timeline-card-title">
+                <span style="color:var(--text-faint)">&#9675;</span>
+                <span style="color:var(--text-muted)">David Collects 1st Edit &amp; Reviews</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 9: DaVinci 2nd Edit -->
+        <div class="timeline-step">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card" style="opacity:0.5">
+            <div class="timeline-card-header">
+              <div class="timeline-card-title">
+                <span style="color:var(--text-faint)">&#9675;</span>
+                <span style="color:var(--text-muted)">2nd Edit in DaVinci</span>
+                <span class="text-xs text-faint">(Jan)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 10: Push 2nd + Collect + Promote -->
+        <div class="timeline-step">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card" style="opacity:0.4">
+            <div class="timeline-card-header">
+              <div class="timeline-card-title">
+                <span style="color:var(--text-faint)">&#9675;</span>
+                <span style="color:var(--text-muted)">Push 2nd Edit &rarr; Collect &rarr; Promote to Final</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 11: Final -->
+        <div class="timeline-step">
+          <div class="timeline-dot" style="border-color:var(--text-faint)"></div>
+          <div class="timeline-card" style="opacity:0.4;background:var(--green-50);border-color:#bbf7d0">
+            <div class="timeline-card-header">
+              <div class="timeline-card-title">
+                <span style="color:var(--text-faint)">&#127942;</span>
+                <span style="color:var(--text-muted)">Final Video Published</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="mt-4" style="max-width:700px;margin:24px auto 0">
+      <div class="section-header">
+        <div class="line" style="width:32px"></div>
+        <div class="label">Recent Activity</div>
+        <div class="line"></div>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:8px 16px">
+          <div class="activity-item">
+            <span class="activity-icon">&#8593;</span>
+            <span class="text-secondary">Pushed 3 recordings to relay</span>
+            <span class="activity-time">3 min ago</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon">&#8595;</span>
+            <span class="text-secondary">Jan collected recordings (Ch 01)</span>
+            <span class="activity-time">45 min ago</span>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon">&#8634;</span>
+            <span class="text-secondary">SyncThing: recordings/ synced (3 files)</span>
+            <span class="activity-time">1 hour ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════════════════════ -->
+<script>
+  let currentVariation = 'kanban';
+  let currentRole = 'creator';
+
+  // ─── Variation Switching ───
+  function showVariation(name) {
+    currentVariation = name;
+    // Update tabs
+    document.querySelectorAll('.var-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.var === name);
+    });
+    // Show/hide variation containers
+    document.querySelectorAll('[id^="variation-"]').forEach(el => {
+      el.classList.toggle('hidden', el.id !== 'variation-' + name);
+    });
+  }
+
+  // ─── Sub-view Switching (Projects vs Relay) ───
+  function showSubView(variation, view, btn) {
+    const projectsEl = document.getElementById(variation + '-projects');
+    const relayEl = document.getElementById(variation + '-relay');
+    if (projectsEl) projectsEl.classList.toggle('hidden', view !== 'projects');
+    if (relayEl) relayEl.classList.toggle('hidden', view !== 'relay');
+
+    // Update sub-tab buttons
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // ─── Role Switching ───
+  function setRole(role) {
+    currentRole = role;
+    document.querySelectorAll('.role-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.role === role);
+    });
+    applyRoleChanges(role);
+  }
+
+  function applyRoleChanges(role) {
+    const isCreator = role === 'creator';
+
+    // ─── Kanban changes ───
+    const kanbanRecBadge = document.getElementById('kanban-rec-badge');
+    const kanbanRecLocalLabel = document.getElementById('kanban-rec-local-label');
+    const kanbanRecPush = document.getElementById('kanban-rec-push-label');
+    const kanbanRecPush2 = document.getElementById('kanban-rec-push-label2');
+    const kanbanE1Relay = document.getElementById('kanban-e1-relay');
+    const kanbanE1Collect = document.getElementById('kanban-e1-collect-label');
+    const kanbanE1Local = document.getElementById('kanban-e1-local-label');
+    const kanbanActionBtn = document.getElementById('kanban-action-btn');
+    const kanbanCollectBtn = document.getElementById('kanban-collect-btn');
+
+    if (kanbanRecLocalLabel) kanbanRecLocalLabel.textContent = isCreator ? 'LOCAL (YOURS)' : 'REMOTE (DAVID)';
+    if (kanbanRecPush) kanbanRecPush.innerHTML = isCreator ? 'Push &#8593;' : 'Collect &#8595;';
+    if (kanbanRecPush2) kanbanRecPush2.innerHTML = isCreator ? 'Push &#8593;' : 'Collect &#8595;';
+    if (kanbanE1Local) kanbanE1Local.textContent = isCreator ? 'REMOTE (JAN)' : 'LOCAL (YOURS)';
+    if (kanbanE1Collect) kanbanE1Collect.innerHTML = isCreator ? 'Collect &#8595;' : 'Push &#8593;';
+    if (kanbanActionBtn) kanbanActionBtn.innerHTML = isCreator ? '&#8593; Push Recordings to Relay' : '&#8595; Collect Recordings from Relay';
+    if (kanbanCollectBtn) kanbanCollectBtn.innerHTML = isCreator ? '&#8595; Collect 1st Edits' : '&#8593; Push 1st Edits to Relay';
+
+    // ─── Split Pane changes ───
+    const splitLeftHeader = document.getElementById('split-left-header');
+    if (splitLeftHeader) {
+      splitLeftHeader.innerHTML = isCreator
+        ? '<span style="font-size:16px">&#128187;</span> YOUR MACHINE <span class="text-xs text-muted font-mono" style="margin-left:auto">mac-mini-m4</span>'
+        : '<span style="font-size:16px">&#128187;</span> YOUR MACHINE <span class="text-xs text-muted font-mono" style="margin-left:auto">mac-mini-jan</span>';
+    }
+
+    const splitSyncRec = document.getElementById('split-sync-rec');
+    if (splitSyncRec) {
+      splitSyncRec.innerHTML = isCreator ? '&#8594;' : '&#8592;';
+      splitSyncRec.className = isCreator ? 'sync-arrow-btn push' : 'sync-arrow-btn collect';
+    }
+    const splitDeltaRec = document.getElementById('split-delta-rec');
+    if (splitDeltaRec) splitDeltaRec.textContent = isCreator ? '+2 new' : '+3 incoming';
+
+    const splitSyncE1 = document.getElementById('split-sync-e1');
+    if (splitSyncE1) {
+      splitSyncE1.innerHTML = isCreator ? '&#8592;' : '&#8594;';
+      splitSyncE1.className = isCreator ? 'sync-arrow-btn collect' : 'sync-arrow-btn push';
+    }
+    const splitDeltaE1 = document.getElementById('split-delta-e1');
+    if (splitDeltaE1) splitDeltaE1.textContent = isCreator ? '+3 incoming' : '+2 to push';
+
+    // Flip project chips
+    const splitProjRecChip = document.getElementById('split-proj-rec-chip');
+    if (splitProjRecChip) {
+      if (isCreator) {
+        splitProjRecChip.className = 'chip chip-outgoing';
+        splitProjRecChip.innerHTML = '&#8593;5 REC';
+      } else {
+        splitProjRecChip.className = 'chip chip-incoming';
+        splitProjRecChip.innerHTML = '&#8595;5 REC';
+      }
+    }
+    const splitProjE1Chip = document.getElementById('split-proj-e1-chip');
+    if (splitProjE1Chip) {
+      if (isCreator) {
+        splitProjE1Chip.className = 'chip chip-incoming';
+        splitProjE1Chip.innerHTML = '&#8595;3 E1';
+      } else {
+        splitProjE1Chip.className = 'chip chip-outgoing';
+        splitProjE1Chip.innerHTML = '&#8593;3 E1';
+      }
+    }
+
+    // ─── Timeline changes ───
+    const timelinePushRole = document.getElementById('timeline-push-role');
+    if (timelinePushRole) timelinePushRole.textContent = isCreator ? '(David)' : '(Jan collects)';
+    const timelinePushBtn = document.getElementById('timeline-push-btn');
+    if (timelinePushBtn) {
+      if (isCreator) {
+        timelinePushBtn.innerHTML = '&#8593; Push Now';
+        timelinePushBtn.className = 'btn btn-primary btn-sm';
+      } else {
+        timelinePushBtn.innerHTML = '&#8595; Collect';
+        timelinePushBtn.className = 'btn btn-green btn-sm';
+      }
+    }
+  }
+
+  // ─── Expandable Sections ───
+  function toggleExpand(el) {
+    const content = el.querySelector('.expandable-content');
+    if (content) {
+      content.classList.toggle('open');
+      const trigger = el.querySelector('.text-xs');
+      if (trigger && content.classList.contains('open')) {
+        trigger.innerHTML = 'Hide files &#9650;';
+      } else if (trigger) {
+        trigger.innerHTML = 'Show 5 files &#9660;';
+      }
+    }
+  }
+
+  // ─── Initialize ───
+  applyRoleChanges('creator');
+</script>
+
+</body>
+</html>

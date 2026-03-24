@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FliHub Config — Variation A: Tabbed Settings</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            page: '#e8e0d4',
+            surface: {
+              DEFAULT: '#f5f1eb',
+              muted: '#eee8de',
+              hover: '#ede5d8',
+            },
+            warm: {
+              header: '#f0ebe3',
+              divider: '#d4cdc4',
+              DEFAULT: '#d4cdc4',
+              strong: '#b8a99a',
+              muted: '#7a6e5e',
+              secondary: '#4a3e30',
+              faint: '#9a8a78',
+              primary: '#2a2018',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { background: #e8e0d4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    button:not(:disabled) { cursor: pointer; }
+    /* Custom scrollbar for warm theme */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #eee8de; }
+    ::-webkit-scrollbar-thumb { background: #b8a99a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9a8a78; }
+  </style>
+</head>
+<body class="min-h-screen p-0">
+
+  <!-- Variation label -->
+  <div class="bg-warm-secondary text-white text-center text-xs py-1.5 tracking-wide font-medium">
+    Variation A — Tabbed Settings
+  </div>
+
+  <!-- App header bar -->
+  <div class="bg-surface border-b border-warm-strong px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-lg font-bold text-warm-primary">FliHub</span>
+      <span class="text-warm-muted mx-1">&rsaquo;</span>
+      <a href="#" class="text-blue-700 underline decoration-1 underline-offset-2 text-sm font-medium">c17-cowork-second-brain-productivity-plugin</a>
+      <span class="text-warm-muted text-xs ml-1">&#9660;</span>
+    </div>
+    <div class="flex items-center gap-3 text-xs text-warm-muted">
+      <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-warm-muted rounded-full inline-block"></span> &#8984; Code</span>
+      <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-warm-muted rounded-full inline-block"></span> Project</span>
+      <button class="ml-2 text-warm-muted hover:text-warm-secondary">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main nav tabs -->
+  <div class="bg-surface border-b border-warm px-6 flex gap-1 text-sm">
+    <span class="px-3 py-2 text-warm-muted hover:text-warm-secondary">Incoming</span>
+    <span class="px-3 py-2 text-warm-muted hover:text-warm-secondary">Recordings</span>
+    <span class="px-3 py-2 text-warm-muted hover:text-warm-secondary">Watch</span>
+    <span class="px-3 py-2 text-warm-muted hover:text-warm-secondary">Transcripts</span>
+    <span class="px-3 py-2 text-warm-muted hover:text-warm-secondary">Inbox</span>
+    <span class="px-3 py-2 text-warm-muted hover:text-warm-secondary">Assets</span>
+    <span class="px-3 py-2 text-warm-muted hover:text-warm-secondary">Thumbs</span>
+    <span class="px-3 py-2 text-warm-muted hover:text-warm-secondary">Manage</span>
+    <span class="px-3 py-2 text-warm-muted hover:text-warm-secondary">Projects</span>
+  </div>
+
+  <!-- Page content -->
+  <div class="max-w-4xl mx-auto px-6 py-6">
+    <h1 class="text-xl font-semibold text-warm-primary mb-5">Configuration</h1>
+
+    <!-- Tabbed settings card -->
+    <div class="bg-surface rounded-xl border border-warm-strong shadow-sm overflow-hidden">
+
+      <!-- Tab bar -->
+      <div class="flex border-b border-warm bg-warm-header" id="tab-bar">
+        <button onclick="switchTab('directories')" data-tab="directories"
+          class="tab-btn px-5 py-3 text-sm font-medium text-warm-secondary border-b-2 border-warm-secondary -mb-px transition-colors">
+          Directories
+        </button>
+        <button onclick="switchTab('names')" data-tab="names"
+          class="tab-btn px-5 py-3 text-sm font-medium text-warm-muted border-b-2 border-transparent hover:text-warm-secondary hover:border-warm transition-colors">
+          Recording Names
+        </button>
+        <button onclick="switchTab('collaboration')" data-tab="collaboration"
+          class="tab-btn px-5 py-3 text-sm font-medium text-warm-muted border-b-2 border-transparent hover:text-warm-secondary hover:border-warm transition-colors">
+          Collaboration
+        </button>
+        <button onclick="switchTab('advanced')" data-tab="advanced"
+          class="tab-btn px-5 py-3 text-sm font-medium text-warm-muted border-b-2 border-transparent hover:text-warm-secondary hover:border-warm transition-colors">
+          Advanced
+        </button>
+      </div>
+
+      <!-- ======================== TAB: Directories ======================== -->
+      <div id="tab-directories" class="tab-content p-6 space-y-5">
+
+        <!-- Environment info -->
+        <div class="rounded-lg border border-warm bg-surface-muted px-3 py-2 flex items-center gap-2 text-sm">
+          <span>&#127822;</span>
+          <span class="font-medium text-warm-secondary">macOS</span>
+          <span class="text-warm-muted ml-2 text-xs">Use paths like <code class="bg-surface px-1.5 py-0.5 rounded text-xs">/Users/davidcruwys/...</code> or <code class="bg-surface px-1.5 py-0.5 rounded text-xs">~/...</code></span>
+        </div>
+
+        <!-- Ecamm Watch Directory -->
+        <div>
+          <label class="block text-sm text-warm-secondary mb-1.5 font-medium">Ecamm Watch Directory</label>
+          <div class="flex items-center gap-2">
+            <input type="text" value="~/ecamm"
+              class="flex-1 px-3 py-2 text-sm border border-warm-strong rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            <button class="p-2 text-warm-muted hover:text-warm-secondary rounded-lg hover:bg-surface-muted transition-colors" title="Open in Finder">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" /></svg>
+            </button>
+          </div>
+          <p class="text-xs text-green-600 mt-1"><span class="mr-1">&#10003;</span>Directory where Ecamm Live saves recordings</p>
+        </div>
+
+        <!-- Projects Root Directory -->
+        <div>
+          <label class="block text-sm text-warm-secondary mb-1.5 font-medium">Projects Root Directory</label>
+          <div class="flex items-center gap-2">
+            <input type="text" value="~/dev/video-projects/v-appydave"
+              class="flex-1 px-3 py-2 text-sm border border-warm-strong rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            <button class="p-2 text-warm-muted hover:text-warm-secondary rounded-lg hover:bg-surface-muted transition-colors" title="Open in Finder">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" /></svg>
+            </button>
+          </div>
+          <p class="text-xs text-green-600 mt-1"><span class="mr-1">&#10003;</span>Directory containing all project folders</p>
+        </div>
+
+        <!-- Active Project (read-only) -->
+        <div>
+          <label class="block text-sm text-warm-secondary mb-1.5 font-medium">Active Project</label>
+          <div class="flex items-center gap-2">
+            <div class="flex-1 px-3 py-2 text-sm text-warm-secondary bg-surface-muted border border-warm rounded-lg">
+              c17-cowork-second-brain-productivity-plugin
+            </div>
+            <button class="p-2 text-warm-muted hover:text-warm-secondary rounded-lg hover:bg-surface-muted transition-colors" title="Open in Finder">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" /></svg>
+            </button>
+          </div>
+          <p class="text-xs text-warm-muted mt-1">Select from Projects panel to change active project</p>
+        </div>
+
+        <!-- Image Watch Directory -->
+        <div>
+          <label class="block text-sm text-warm-secondary mb-1.5 font-medium">Image Watch Directory</label>
+          <div class="flex items-center gap-2">
+            <input type="text" value="~/Downloads"
+              class="flex-1 px-3 py-2 text-sm border border-warm-strong rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            <button class="p-2 text-warm-muted hover:text-warm-secondary rounded-lg hover:bg-surface-muted transition-colors" title="Open in Finder">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" /></svg>
+            </button>
+          </div>
+          <p class="text-xs text-green-600 mt-1"><span class="mr-1">&#10003;</span>Directory to scan for incoming images (Assets page)</p>
+        </div>
+
+        <!-- Save button -->
+        <div class="pt-3 border-t border-warm flex items-center justify-end gap-3">
+          <span class="text-xs text-amber-600">Unsaved changes</span>
+          <button class="px-5 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+            Save
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================== TAB: Recording Names ======================== -->
+      <div id="tab-names" class="tab-content p-6 space-y-5 hidden">
+
+        <!-- Global Dictionary Words -->
+        <div>
+          <label class="block text-sm text-warm-secondary mb-1.5 font-medium">Global Dictionary Words</label>
+          <textarea rows="5"
+            class="w-full px-3 py-2 text-sm border border-warm-strong rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono leading-relaxed"
+          >AppyDave
+AppyStack
+FliVideo
+FliDeck
+FliGen
+BMAD
+Klueless</textarea>
+          <p class="text-xs text-warm-muted mt-1">Brand-wide words for Gling transcription (one per line). Applies to all projects.</p>
+        </div>
+
+        <!-- Common Names -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm text-warm-secondary font-medium">Common Names</label>
+            <span class="text-xs bg-surface-muted text-warm-muted px-2 py-0.5 rounded-full">10 names</span>
+          </div>
+
+          <div class="space-y-1.5 mb-3">
+            <!-- Row 1: intro -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-faint" disabled>&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">intro</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option selected>Early (1-4)</option>
+                <option>All chapters</option>
+                <option>Late (10+)</option>
+                <option>Custom...</option>
+              </select>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+
+            <!-- Row 2: overview -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">overview</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option selected>Early (1-4)</option>
+                <option>All chapters</option>
+                <option>Late (10+)</option>
+                <option>Custom...</option>
+              </select>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+
+            <!-- Row 3: setup -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">setup</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option selected>Early (1-4)</option>
+                <option>All chapters</option>
+                <option>Late (10+)</option>
+                <option>Custom...</option>
+              </select>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+
+            <!-- Row 4: livestream (Custom 1-1) -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">livestream</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option>Early (1-4)</option>
+                <option>All chapters</option>
+                <option>Late (10+)</option>
+                <option selected>Custom...</option>
+              </select>
+              <div class="flex items-center gap-1 text-xs">
+                <input type="number" value="1" class="w-12 px-1.5 py-0.5 border border-warm-strong rounded text-center bg-white" />
+                <span class="text-warm-muted">to</span>
+                <input type="number" value="1" class="w-12 px-1.5 py-0.5 border border-warm-strong rounded text-center bg-white" />
+              </div>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+
+            <!-- Row 5: planning (Custom 2-6) -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">planning</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option>Early (1-4)</option>
+                <option>All chapters</option>
+                <option>Late (10+)</option>
+                <option selected>Custom...</option>
+              </select>
+              <div class="flex items-center gap-1 text-xs">
+                <input type="number" value="2" class="w-12 px-1.5 py-0.5 border border-warm-strong rounded text-center bg-white" />
+                <span class="text-warm-muted">to</span>
+                <input type="number" value="6" class="w-12 px-1.5 py-0.5 border border-warm-strong rounded text-center bg-white" />
+              </div>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+
+            <!-- Row 6: requirements -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">requirements</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option selected>All chapters</option>
+                <option>Early (1-4)</option>
+                <option>Late (10+)</option>
+                <option>Custom...</option>
+              </select>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+
+            <!-- Row 7: development -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">development</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option selected>All chapters</option>
+                <option>Early (1-4)</option>
+                <option>Late (10+)</option>
+                <option>Custom...</option>
+              </select>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+
+            <!-- Row 8: summary -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">summary</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option selected>All chapters</option>
+                <option>Early (1-4)</option>
+                <option>Late (10+)</option>
+                <option>Custom...</option>
+              </select>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+
+            <!-- Row 9: demo -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">demo</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option selected>All chapters</option>
+                <option>Early (1-4)</option>
+                <option>Late (10+)</option>
+                <option>Custom...</option>
+              </select>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+
+            <!-- Row 10: outro -->
+            <div class="flex items-center gap-2 py-1.5 px-3 bg-surface-muted rounded-lg border border-warm">
+              <div class="flex flex-col -my-0.5">
+                <button class="text-[10px] leading-none text-warm-muted hover:text-warm-secondary">&#9650;</button>
+                <button class="text-[10px] leading-none text-warm-faint" disabled>&#9660;</button>
+              </div>
+              <span class="font-mono text-sm text-warm-secondary w-28">outro</span>
+              <select class="text-xs border border-warm-strong rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <option selected>All chapters</option>
+                <option>Early (1-4)</option>
+                <option>Late (10+)</option>
+                <option>Custom...</option>
+              </select>
+              <span class="flex-1"></span>
+              <button class="text-warm-muted hover:text-red-500 transition-colors text-sm">&times;</button>
+            </div>
+          </div>
+
+          <!-- Add new name -->
+          <div class="flex gap-2">
+            <input type="text" placeholder="Add new name..."
+              class="flex-1 px-3 py-1.5 text-sm border border-warm-strong rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            <button class="px-4 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-surface-muted disabled:cursor-not-allowed transition-colors font-medium opacity-50 cursor-not-allowed" disabled>
+              Add
+            </button>
+          </div>
+          <p class="text-xs text-warm-muted mt-1">Filter which chapters each name appears in. Auto-saves on change.</p>
+        </div>
+
+        <!-- Save button -->
+        <div class="pt-3 border-t border-warm flex items-center justify-end gap-3">
+          <button class="px-5 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+            Save
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================== TAB: Collaboration ======================== -->
+      <div id="tab-collaboration" class="tab-content p-6 space-y-5 hidden">
+
+        <!-- Relay Directory -->
+        <div>
+          <label class="block text-sm text-warm-secondary mb-1.5 font-medium">Relay Directory</label>
+          <input type="text" value="~/relay/flihub-appydave"
+            class="w-full px-3 py-2 text-sm border border-warm-strong rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+          <p class="text-xs text-green-600 mt-1"><span class="mr-1">&#10003;</span>SyncThing relay folder shared with collaborators</p>
+        </div>
+
+        <!-- Relay Enabled + Machine Role -->
+        <div class="flex items-center gap-8">
+          <label class="flex items-center gap-2.5 cursor-pointer">
+            <input type="checkbox" checked
+              class="w-4 h-4 text-blue-500 rounded accent-blue-500" />
+            <span class="text-sm text-warm-secondary font-medium">Relay Enabled</span>
+          </label>
+
+          <div>
+            <label class="block text-xs text-warm-muted mb-1">Machine Role</label>
+            <select class="text-sm border border-warm-strong rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="recorder" selected>Recorder</option>
+              <option value="editor">Editor</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Collaboration info box -->
+        <div class="rounded-lg border border-warm bg-surface-muted p-4 text-sm text-warm-muted space-y-2">
+          <p class="font-medium text-warm-secondary text-xs uppercase tracking-wide">How Relay Works</p>
+          <ul class="text-xs space-y-1 list-disc list-inside">
+            <li>The relay folder is shared via SyncThing with remote editors</li>
+            <li><strong>Recorder</strong> role: pushes file lists, shadow recordings, and transcripts</li>
+            <li><strong>Editor</strong> role: receives project structure and shadow files for editing</li>
+            <li>Shadow recordings are low-res proxies so editors can preview without full video files</li>
+          </ul>
+        </div>
+
+        <!-- Save button -->
+        <div class="pt-3 border-t border-warm flex items-center justify-end gap-3">
+          <button class="px-5 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+            Save
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================== TAB: Advanced ======================== -->
+      <div id="tab-advanced" class="tab-content p-6 space-y-6 hidden">
+
+        <!-- Chapter Recording Defaults -->
+        <div>
+          <h3 class="text-sm font-semibold text-warm-primary mb-3">Chapter Recording Defaults</h3>
+
+          <!-- Include Title Slides -->
+          <div class="mb-3">
+            <label class="flex items-center gap-2.5 cursor-pointer">
+              <input type="checkbox" class="w-4 h-4 rounded accent-purple-500" />
+              <span class="text-sm text-warm-secondary">Include purple title slides between segments</span>
+            </label>
+          </div>
+
+          <!-- Resolution -->
+          <div class="mb-3">
+            <label class="block text-sm text-warm-secondary mb-1.5 font-medium">Default Resolution</label>
+            <div class="flex gap-5">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="resolution" value="720p" checked class="accent-blue-500" />
+                <span class="text-sm">720p</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="resolution" value="1080p" class="accent-blue-500" />
+                <span class="text-sm">1080p</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Auto-generate -->
+          <div>
+            <label class="flex items-center gap-2.5 cursor-pointer">
+              <input type="checkbox" class="w-4 h-4 rounded accent-blue-500" />
+              <span class="text-sm text-warm-secondary">Auto-generate when creating new chapter</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="border-t border-warm"></div>
+
+        <!-- Shadow Recordings -->
+        <div>
+          <h3 class="text-sm font-semibold text-warm-primary mb-1">Shadow Recordings</h3>
+          <p class="text-xs text-warm-muted mb-4">Shadow files allow collaborators to see project structure without the actual video files.</p>
+
+          <!-- Shadow Resolution -->
+          <div class="mb-4">
+            <label class="block text-sm text-warm-secondary mb-1.5 font-medium">Default Shadow Resolution</label>
+            <div class="flex gap-5">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="shadowRes" value="240" checked class="accent-purple-500" />
+                <span class="text-sm">240p</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="shadowRes" value="180" class="accent-purple-500" />
+                <span class="text-sm">180p</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="shadowRes" value="160" class="accent-purple-500" />
+                <span class="text-sm">160p</span>
+              </label>
+            </div>
+            <p class="text-xs text-warm-muted mt-1">Lower = smaller files, less detail</p>
+          </div>
+
+          <!-- Watch Dir status box -->
+          <div class="mb-4 p-3 bg-surface-muted rounded-lg space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-green-500 text-xs">&#11044;</span>
+              <span class="text-sm text-warm-secondary">
+                Ecamm: <code class="text-xs bg-surface px-1.5 py-0.5 rounded">~/ecamm</code>
+              </span>
+            </div>
+            <!-- Active watchers -->
+            <div class="pt-2 border-t border-warm">
+              <button onclick="document.getElementById('watchers-list').classList.toggle('hidden')" class="flex items-center gap-1 text-xs text-warm-muted hover:text-warm-secondary">
+                <span id="watcher-arrow" class="text-[10px]">&#9654;</span>
+                <span>5 active watchers</span>
+              </button>
+              <div id="watchers-list" class="hidden mt-2 space-y-1.5 text-xs">
+                <div class="flex items-start gap-2">
+                  <span class="text-green-500 mt-0.5 text-[10px]">&#11044;</span>
+                  <div>
+                    <span class="font-medium text-warm-secondary">Ecamm Recordings</span>
+                    <div class="text-warm-muted">~/ecamm/**/*.{mov,mp4}</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-green-500 mt-0.5 text-[10px]">&#11044;</span>
+                  <div>
+                    <span class="font-medium text-warm-secondary">Project Recordings</span>
+                    <div class="text-warm-muted">~/dev/video-projects/v-appydave/c17-.../recordings/**</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-green-500 mt-0.5 text-[10px]">&#11044;</span>
+                  <div>
+                    <span class="font-medium text-warm-secondary">Image Assets</span>
+                    <div class="text-warm-muted">~/Downloads/**/*.{png,jpg,jpeg}</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-green-500 mt-0.5 text-[10px]">&#11044;</span>
+                  <div>
+                    <span class="font-medium text-warm-secondary">Thumbnails</span>
+                    <div class="text-warm-muted">~/dev/video-projects/v-appydave/c17-.../assets/thumbs/**</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-green-500 mt-0.5 text-[10px]">&#11044;</span>
+                  <div>
+                    <span class="font-medium text-warm-secondary">Relay Sync</span>
+                    <div class="text-warm-muted">~/relay/flihub-appydave/**</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current project status -->
+          <div class="mb-4 text-sm text-warm-secondary">
+            Current project: <span class="font-medium">12</span> recordings, <span class="font-medium">10</span> shadows
+            <span class="text-amber-600"> (2 missing)</span>
+          </div>
+
+          <!-- Generate buttons -->
+          <div class="flex gap-3">
+            <button class="px-4 py-2 text-sm bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors font-medium">
+              Generate Shadows
+            </button>
+            <button class="px-4 py-2 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium">
+              Generate All Projects
+            </button>
+          </div>
+        </div>
+
+        <!-- Save button -->
+        <div class="pt-3 border-t border-warm flex items-center justify-end gap-3">
+          <button class="px-5 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="fixed bottom-0 left-0 right-0 bg-surface border-t border-warm px-6 py-2 flex items-center justify-between text-xs text-warm-muted">
+    <span>Project: ~/dev/video-projects/v-appydave/c17-cowork-second-brain-productivity-plugin</span>
+    <span class="text-green-500 text-sm">&#11044;</span>
+  </div>
+
+  <div class="h-12"></div>
+
+  <script>
+    function switchTab(tabName) {
+      // Hide all tab content
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      // Show selected tab content
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.dataset.tab === tabName) {
+          btn.classList.remove('text-warm-muted', 'border-transparent');
+          btn.classList.add('text-warm-secondary', 'border-warm-secondary');
+        } else {
+          btn.classList.remove('text-warm-secondary', 'border-warm-secondary');
+          btn.classList.add('text-warm-muted', 'border-transparent');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -361,7 +361,70 @@ export function createRelayRoutes(getConfig: () => Config) {
         timestamp: new Date().toISOString(),
       });
 
-      res.json({ success: true, output: stdout, subfolder });
+      // Auto-create edit-1st/ and edit-2nd/ when collecting recordings
+      const foldersCreated: string[] = [];
+      if (subfolder === 'recordings') {
+        for (const editFolder of ['edit-1st', 'edit-2nd'] as const) {
+          const editDir = path.join(projectDir, editFolder);
+          const exists = await fs.pathExists(editDir);
+          if (!exists) {
+            await fs.mkdir(editDir, { recursive: true });
+            foldersCreated.push(editFolder);
+            logRelayActivity({
+              projectCode: paths.projectCode,
+              subfolder: editFolder,
+              action: 'collect',
+              description: `Auto-created ${editFolder}/ folder`,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        }
+        if (foldersCreated.length > 0) {
+          console.log(`Auto-created edit folders: ${foldersCreated.join(', ')}`);
+        }
+      }
+
+      const response: Record<string, unknown> = { success: true, output: stdout, subfolder };
+      if (subfolder === 'recordings') {
+        response.foldersCreated = foldersCreated;
+      }
+      res.json(response);
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  // POST /api/relay/ensure-edit-folders — create edit-1st/ and edit-2nd/ if missing
+  router.post('/ensure-edit-folders', async (req, res) => {
+    try {
+      const config = getConfig();
+      const paths = getRelayPaths(config);
+      if ('error' in paths) return res.json({ success: false, error: paths.error });
+
+      const { projectDir } = paths;
+      const foldersCreated: string[] = [];
+
+      for (const editFolder of ['edit-1st', 'edit-2nd'] as const) {
+        const editDir = path.join(projectDir, editFolder);
+        const exists = await fs.pathExists(editDir);
+        if (!exists) {
+          await fs.mkdir(editDir, { recursive: true });
+          foldersCreated.push(editFolder);
+          logRelayActivity({
+            projectCode: paths.projectCode,
+            subfolder: editFolder,
+            action: 'collect',
+            description: `Created ${editFolder}/ folder`,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+
+      if (foldersCreated.length > 0) {
+        console.log(`Ensure-edit-folders created: ${foldersCreated.join(', ')}`);
+      }
+
+      res.json({ success: true, foldersCreated });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
     }

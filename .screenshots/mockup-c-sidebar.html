@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FliHub Config — Variation C: Sidebar Navigation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwindcss.config = {
+      theme: {
+        extend: {
+          colors: {
+            page: '#e8e0d4',
+            surface: { DEFAULT: '#f5f1eb', muted: '#eee8de', hover: '#ede5d8' },
+            'warm-header': '#f0ebe3',
+            warm: { DEFAULT: '#d4cdc4', strong: '#b8a99a', muted: '#7a6e5e', secondary: '#4a3e30', divider: '#d4cdc4' },
+            'text-warm': { primary: '#2a2018', secondary: '#4a3e30', muted: '#7a6e5e', faint: '#9a8a78' },
+            sidebar: { DEFAULT: '#e2d9cc', hover: '#ddd3c5', active: '#d8cdbf' },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    /* Scrollbar styling */
+    .content-scroll::-webkit-scrollbar { width: 6px; }
+    .content-scroll::-webkit-scrollbar-track { background: transparent; }
+    .content-scroll::-webkit-scrollbar-thumb { background: #c4b9aa; border-radius: 3px; }
+    .content-scroll::-webkit-scrollbar-thumb:hover { background: #b8a99a; }
+    /* Sidebar active indicator */
+    .sidebar-item.active { border-right: 3px solid #4a3e30; background: #d8cdbf; }
+    .sidebar-item:hover:not(.active) { background: #ddd3c5; }
+    /* Smooth scroll */
+    .content-scroll { scroll-behavior: smooth; }
+    /* Sticky save bar */
+    .save-bar { backdrop-filter: blur(8px); background: rgba(245, 241, 235, 0.92); }
+    /* Input focus */
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(74, 62, 48, 0.25);
+      border-color: #b8a99a;
+    }
+    /* Toggle switch */
+    .toggle-track { transition: background 0.2s; }
+    .toggle-thumb { transition: transform 0.2s; }
+    .toggle-on .toggle-track { background: #5a8a5a; }
+    .toggle-on .toggle-thumb { transform: translateX(18px); }
+    .toggle-off .toggle-track { background: #b8a99a; }
+  </style>
+</head>
+<body class="bg-page min-h-screen">
+
+  <!-- Top banner -->
+  <div class="bg-surface border-b border-warm px-6 py-2 text-center">
+    <span class="text-xs font-medium text-text-warm-muted tracking-wide uppercase">Variation C — Sidebar Navigation</span>
+  </div>
+
+  <!-- App header bar -->
+  <div class="bg-surface border-b border-warm px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-lg font-bold text-text-warm-primary">FliHub</span>
+      <span class="text-text-warm-faint mx-1">&rsaquo;</span>
+      <span class="text-sm text-blue-700 underline decoration-dotted cursor-pointer">c17-cowork-second-brain-productivity-plugin</span>
+      <span class="text-text-warm-faint text-xs ml-1">&#9660; &hellip;</span>
+    </div>
+    <div class="flex items-center gap-3 text-xs text-text-warm-muted">
+      <span>&#9679; &#8984; Code</span>
+      <span>&#9679; &#127916; Project</span>
+      <span class="text-base cursor-pointer ml-2">&#9881;</span>
+    </div>
+  </div>
+
+  <!-- Nav tabs -->
+  <div class="bg-surface border-b border-warm px-6">
+    <div class="flex gap-6 text-sm text-text-warm-muted">
+      <span class="py-2.5 cursor-pointer hover:text-text-warm-secondary">Incoming</span>
+      <span class="py-2.5 cursor-pointer hover:text-text-warm-secondary">Recordings</span>
+      <span class="py-2.5 cursor-pointer hover:text-text-warm-secondary">Watch</span>
+      <span class="py-2.5 cursor-pointer hover:text-text-warm-secondary">Transcripts</span>
+      <span class="py-2.5 cursor-pointer hover:text-text-warm-secondary">Inbox</span>
+      <span class="py-2.5 cursor-pointer hover:text-text-warm-secondary">Assets</span>
+      <span class="py-2.5 cursor-pointer hover:text-text-warm-secondary">Thumbs</span>
+      <span class="py-2.5 cursor-pointer hover:text-text-warm-secondary">Manage</span>
+      <span class="py-2.5 cursor-pointer hover:text-text-warm-secondary">Projects</span>
+    </div>
+  </div>
+
+  <!-- Main layout: sidebar + content -->
+  <div class="flex" style="height: calc(100vh - 145px);">
+
+    <!-- Sidebar -->
+    <nav class="w-56 bg-sidebar flex-shrink-0 border-r border-warm flex flex-col">
+      <div class="px-4 py-4">
+        <h2 class="text-sm font-semibold text-text-warm-primary tracking-wide">Configuration</h2>
+      </div>
+      <div class="flex-1 overflow-y-auto">
+        <ul class="text-sm" id="sidebar-nav">
+          <li>
+            <a href="#directories" class="sidebar-item active flex items-center gap-2.5 px-4 py-2.5 text-text-warm-secondary cursor-pointer" data-section="directories">
+              <span class="text-green-600 text-xs">&#10003;</span>
+              <span>Directories</span>
+            </a>
+          </li>
+          <li>
+            <a href="#collaboration" class="sidebar-item flex items-center gap-2.5 px-4 py-2.5 text-text-warm-secondary cursor-pointer" data-section="collaboration">
+              <span class="text-green-600 text-xs">&#10003;</span>
+              <span>Collaboration</span>
+            </a>
+          </li>
+          <li>
+            <a href="#recording-names" class="sidebar-item flex items-center gap-2.5 px-4 py-2.5 text-text-warm-secondary cursor-pointer" data-section="recording-names">
+              <span class="text-green-600 text-xs">&#10003;</span>
+              <span>Recording Names</span>
+            </a>
+          </li>
+          <li>
+            <a href="#chapter-settings" class="sidebar-item flex items-center gap-2.5 px-4 py-2.5 text-text-warm-secondary cursor-pointer" data-section="chapter-settings">
+              <span class="text-text-warm-faint text-xs">&#9675;</span>
+              <span>Chapter Settings</span>
+            </a>
+          </li>
+          <li>
+            <a href="#shadows" class="sidebar-item flex items-center gap-2.5 px-4 py-2.5 text-text-warm-secondary cursor-pointer" data-section="shadows">
+              <span class="text-green-600 text-xs">&#10003;</span>
+              <span>Shadows</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- Sidebar footer -->
+      <div class="border-t border-warm px-4 py-3">
+        <div class="flex items-center gap-2 text-xs text-text-warm-faint">
+          <span>&#127823;</span>
+          <span>macOS</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Content area -->
+    <main class="flex-1 overflow-y-auto content-scroll relative" id="content-area">
+      <div class="max-w-2xl mx-auto px-8 py-6 pb-24 space-y-10">
+
+        <!-- SECTION: Directories -->
+        <section id="directories">
+          <h3 class="text-base font-semibold text-text-warm-primary mb-1">Directories</h3>
+          <p class="text-xs text-text-warm-muted mb-5">File system paths for recordings, projects, and image sources.</p>
+
+          <div class="space-y-5">
+            <!-- Watch Directory -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Ecamm Watch Directory</label>
+              <div class="flex items-center gap-2">
+                <input type="text" value="~/ecamm" class="flex-1 px-3 py-2 text-sm border border-warm-strong rounded-md bg-white" readonly />
+                <button class="p-2 text-text-warm-muted hover:text-text-warm-secondary rounded border border-warm hover:bg-surface-hover" title="Open in Finder">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 4v8a1 1 0 001 1h10a1 1 0 001-1V4M5 1h6l1 3H4l1-3z"/></svg>
+                </button>
+              </div>
+              <p class="text-xs text-green-600 mt-1"><span class="mr-1">&#10003;</span> Directory where Ecamm Live saves recordings</p>
+            </div>
+
+            <!-- Projects Root -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Projects Root Directory</label>
+              <div class="flex items-center gap-2">
+                <input type="text" value="~/dev/video-projects/v-appydave" class="flex-1 px-3 py-2 text-sm border border-warm-strong rounded-md bg-white" readonly />
+                <button class="p-2 text-text-warm-muted hover:text-text-warm-secondary rounded border border-warm hover:bg-surface-hover" title="Open in Finder">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 4v8a1 1 0 001 1h10a1 1 0 001-1V4M5 1h6l1 3H4l1-3z"/></svg>
+                </button>
+              </div>
+              <p class="text-xs text-green-600 mt-1"><span class="mr-1">&#10003;</span> Root folder containing all video project directories</p>
+            </div>
+
+            <!-- Active Project -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Active Project</label>
+              <input type="text" value="c17-cowork-second-brain-productivity-plugin" class="w-full px-3 py-2 text-sm border border-warm-strong rounded-md bg-white" readonly />
+              <p class="text-xs text-text-warm-muted mt-1">Folder name within the projects root (no slashes)</p>
+            </div>
+
+            <!-- Image Source -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Image Source Directory</label>
+              <div class="flex items-center gap-2">
+                <input type="text" value="~/Desktop" class="flex-1 px-3 py-2 text-sm border border-warm-strong rounded-md bg-white" readonly />
+                <button class="p-2 text-text-warm-muted hover:text-text-warm-secondary rounded border border-warm hover:bg-surface-hover" title="Open in Finder">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 4v8a1 1 0 001 1h10a1 1 0 001-1V4M5 1h6l1 3H4l1-3z"/></svg>
+                </button>
+              </div>
+              <p class="text-xs text-green-600 mt-1"><span class="mr-1">&#10003;</span> Where to look for incoming image assets</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Divider -->
+        <hr class="border-warm" />
+
+        <!-- SECTION: Collaboration -->
+        <section id="collaboration">
+          <h3 class="text-base font-semibold text-text-warm-primary mb-1">Collaboration</h3>
+          <p class="text-xs text-text-warm-muted mb-5">Relay sync settings for multi-machine workflows.</p>
+
+          <div class="space-y-5">
+            <!-- Relay Enabled toggle -->
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-text-warm-secondary">Relay Sync</label>
+                <p class="text-xs text-text-warm-muted mt-0.5">Enable file synchronisation between machines</p>
+              </div>
+              <div class="toggle-on cursor-pointer" onclick="this.classList.toggle('toggle-on');this.classList.toggle('toggle-off');">
+                <div class="toggle-track w-10 h-5 rounded-full relative">
+                  <div class="toggle-thumb w-4 h-4 bg-white rounded-full absolute top-0.5 left-0.5 shadow-sm"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Relay Directory -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Relay Directory</label>
+              <div class="flex items-center gap-2">
+                <input type="text" value="~/Dropbox/flihub-relay" class="flex-1 px-3 py-2 text-sm border border-warm-strong rounded-md bg-white" readonly />
+                <button class="p-2 text-text-warm-muted hover:text-text-warm-secondary rounded border border-warm hover:bg-surface-hover" title="Open in Finder">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 4v8a1 1 0 001 1h10a1 1 0 001-1V4M5 1h6l1 3H4l1-3z"/></svg>
+                </button>
+              </div>
+              <p class="text-xs text-green-600 mt-1"><span class="mr-1">&#10003;</span> Shared folder for relay sync (e.g. Dropbox)</p>
+            </div>
+
+            <!-- Machine Role -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Machine Role</label>
+              <select class="w-48 px-3 py-2 text-sm border border-warm-strong rounded-md bg-white">
+                <option value="creator" selected>Creator</option>
+                <option value="editor">Editor</option>
+              </select>
+              <p class="text-xs text-text-warm-muted mt-1">Creator records video; Editor receives and edits</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Divider -->
+        <hr class="border-warm" />
+
+        <!-- SECTION: Recording Names -->
+        <section id="recording-names">
+          <h3 class="text-base font-semibold text-text-warm-primary mb-1">Recording Names</h3>
+          <p class="text-xs text-text-warm-muted mb-5">Dictionary words and common names for quick naming.</p>
+
+          <div class="space-y-5">
+            <!-- Gling Dictionary -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Global Dictionary Words</label>
+              <textarea class="w-full px-3 py-2 text-sm border border-warm-strong rounded-md bg-white font-mono leading-relaxed" rows="5" readonly>AppyDave
+AppyStack
+FliVideo
+FliDeck
+FliGen
+FliHub
+Storyline</textarea>
+              <p class="text-xs text-text-warm-muted mt-1">Brand-wide words for Gling transcription (one per line). Applies to all projects.</p>
+            </div>
+
+            <!-- Common Names -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-3">Common Names <span class="text-xs font-normal text-text-warm-muted ml-1">10 names</span></label>
+
+              <div class="space-y-1.5">
+                <!-- Row: intro -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">intro</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option selected>Early (1-4)</option>
+                    <option>All chapters</option>
+                    <option>Custom...</option>
+                  </select>
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+                <!-- Row: overview -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">overview</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option selected>Early (1-4)</option>
+                    <option>All chapters</option>
+                    <option>Custom...</option>
+                  </select>
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+                <!-- Row: setup -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">setup</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option selected>Early (1-4)</option>
+                    <option>All chapters</option>
+                    <option>Custom...</option>
+                  </select>
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+                <!-- Row: livestream (custom range) -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">livestream</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option>Early (1-4)</option>
+                    <option>All chapters</option>
+                    <option selected>Custom...</option>
+                  </select>
+                  <input type="number" value="1" class="w-12 text-xs px-2 py-1 border border-warm rounded bg-white text-center" />
+                  <span class="text-xs text-text-warm-muted">to</span>
+                  <input type="number" value="1" class="w-12 text-xs px-2 py-1 border border-warm rounded bg-white text-center" />
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+                <!-- Row: planning (custom range) -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">planning</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option>Early (1-4)</option>
+                    <option>All chapters</option>
+                    <option selected>Custom...</option>
+                  </select>
+                  <input type="number" value="2" class="w-12 text-xs px-2 py-1 border border-warm rounded bg-white text-center" />
+                  <span class="text-xs text-text-warm-muted">to</span>
+                  <input type="number" value="6" class="w-12 text-xs px-2 py-1 border border-warm rounded bg-white text-center" />
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+                <!-- Row: requirements -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">requirements</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option>Early (1-4)</option>
+                    <option selected>All chapters</option>
+                    <option>Custom...</option>
+                  </select>
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+                <!-- Row: development -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">development</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option>Early (1-4)</option>
+                    <option selected>All chapters</option>
+                    <option>Custom...</option>
+                  </select>
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+                <!-- Row: summary -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">summary</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option>Early (1-4)</option>
+                    <option selected>All chapters</option>
+                    <option>Custom...</option>
+                  </select>
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+                <!-- Row: demo -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">demo</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option>Early (1-4)</option>
+                    <option selected>All chapters</option>
+                    <option>Custom...</option>
+                  </select>
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+                <!-- Row: outro -->
+                <div class="flex items-center gap-2 bg-white border border-warm rounded-md px-3 py-2">
+                  <span class="text-text-warm-faint cursor-grab text-xs">&#8597;</span>
+                  <span class="text-sm text-text-warm-secondary font-medium w-32">outro</span>
+                  <select class="text-xs px-2 py-1 border border-warm rounded bg-surface-muted text-text-warm-secondary">
+                    <option>Early (1-4)</option>
+                    <option selected>All chapters</option>
+                    <option>Custom...</option>
+                  </select>
+                  <span class="flex-1"></span>
+                  <button class="text-text-warm-faint hover:text-red-400 text-xs">&times;</button>
+                </div>
+              </div>
+
+              <!-- Add new name -->
+              <div class="flex items-center gap-2 mt-3">
+                <input type="text" placeholder="Add new name..." class="flex-1 px-3 py-2 text-sm border border-warm rounded-md bg-white" />
+                <button class="px-4 py-2 text-sm font-medium text-white bg-warm-strong hover:bg-warm-secondary rounded-md transition-colors">Add</button>
+              </div>
+              <p class="text-xs text-text-warm-muted mt-1.5">Filter which chapters each name appears in. Auto-saves on change.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Divider -->
+        <hr class="border-warm" />
+
+        <!-- SECTION: Chapter Settings -->
+        <section id="chapter-settings">
+          <h3 class="text-base font-semibold text-text-warm-primary mb-1">Chapter Settings</h3>
+          <p class="text-xs text-text-warm-muted mb-5">Defaults for chapter recording generation.</p>
+
+          <div class="space-y-5">
+            <!-- Title Slides toggle -->
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-text-warm-secondary">Include Title Slides</label>
+                <p class="text-xs text-text-warm-muted mt-0.5">Add title cards at the start of each chapter</p>
+              </div>
+              <div class="toggle-off cursor-pointer" onclick="this.classList.toggle('toggle-on');this.classList.toggle('toggle-off');">
+                <div class="toggle-track w-10 h-5 rounded-full relative">
+                  <div class="toggle-thumb w-4 h-4 bg-white rounded-full absolute top-0.5 left-0.5 shadow-sm"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide Duration -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Slide Duration</label>
+              <div class="flex items-center gap-2">
+                <input type="number" value="1.0" step="0.1" min="0.5" max="5.0" class="w-24 px-3 py-2 text-sm border border-warm-strong rounded-md bg-white text-center" />
+                <span class="text-sm text-text-warm-muted">seconds</span>
+              </div>
+              <p class="text-xs text-text-warm-muted mt-1">Duration of title slide at the start of each chapter</p>
+            </div>
+
+            <!-- Resolution -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Resolution</label>
+              <div class="flex gap-3">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="resolution" value="720p" checked class="accent-warm-secondary" />
+                  <span class="text-sm text-text-warm-secondary">720p</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="resolution" value="1080p" class="accent-warm-secondary" />
+                  <span class="text-sm text-text-warm-secondary">1080p</span>
+                </label>
+              </div>
+              <p class="text-xs text-text-warm-muted mt-1">Output resolution for generated chapter recordings</p>
+            </div>
+
+            <!-- Auto Generate toggle -->
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="text-sm font-medium text-text-warm-secondary">Auto-Generate</label>
+                <p class="text-xs text-text-warm-muted mt-0.5">Automatically create chapter recordings when chapters are defined</p>
+              </div>
+              <div class="toggle-off cursor-pointer" onclick="this.classList.toggle('toggle-on');this.classList.toggle('toggle-off');">
+                <div class="toggle-track w-10 h-5 rounded-full relative">
+                  <div class="toggle-thumb w-4 h-4 bg-white rounded-full absolute top-0.5 left-0.5 shadow-sm"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Divider -->
+        <hr class="border-warm" />
+
+        <!-- SECTION: Shadows -->
+        <section id="shadows">
+          <h3 class="text-base font-semibold text-text-warm-primary mb-1">Shadows</h3>
+          <p class="text-xs text-text-warm-muted mb-5">Low-resolution video copies for remote collaborators.</p>
+
+          <div class="space-y-5">
+            <!-- Shadow Resolution -->
+            <div>
+              <label class="block text-sm font-medium text-text-warm-secondary mb-1.5">Shadow Resolution</label>
+              <select class="w-48 px-3 py-2 text-sm border border-warm-strong rounded-md bg-white">
+                <option value="160">160p</option>
+                <option value="180">180p</option>
+                <option value="240" selected>240p</option>
+              </select>
+              <p class="text-xs text-text-warm-muted mt-1">Resolution for shadow video files (lower = smaller files)</p>
+            </div>
+
+            <!-- Shadow Status -->
+            <div class="bg-surface-muted border border-warm rounded-lg p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-medium text-text-warm-secondary">Shadow Status</h4>
+                <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Up to date</span>
+              </div>
+              <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div class="text-lg font-semibold text-text-warm-primary">12</div>
+                  <div class="text-xs text-text-warm-muted">Recordings</div>
+                </div>
+                <div>
+                  <div class="text-lg font-semibold text-green-600">12</div>
+                  <div class="text-xs text-text-warm-muted">Shadows</div>
+                </div>
+                <div>
+                  <div class="text-lg font-semibold text-text-warm-faint">0</div>
+                  <div class="text-xs text-text-warm-muted">Missing</div>
+                </div>
+              </div>
+              <div class="flex gap-2 mt-4">
+                <button class="flex-1 px-3 py-2 text-xs font-medium text-text-warm-secondary border border-warm rounded-md hover:bg-surface-hover transition-colors">
+                  Generate for Project
+                </button>
+                <button class="flex-1 px-3 py-2 text-xs font-medium text-text-warm-secondary border border-warm rounded-md hover:bg-surface-hover transition-colors">
+                  Generate All Projects
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Sticky Save Bar -->
+      <div class="save-bar sticky bottom-0 left-0 right-0 border-t border-warm px-8 py-3 flex items-center justify-between" id="save-bar" style="display: none;">
+        <span class="text-xs text-text-warm-muted">You have unsaved changes</span>
+        <div class="flex gap-2">
+          <button class="px-4 py-1.5 text-sm text-text-warm-muted hover:text-text-warm-secondary border border-warm rounded-md hover:bg-surface-hover transition-colors" onclick="document.getElementById('save-bar').style.display='none'">
+            Discard
+          </button>
+          <button class="px-5 py-1.5 text-sm font-medium text-white bg-warm-secondary hover:bg-text-warm-primary rounded-md transition-colors" onclick="document.getElementById('save-bar').style.display='none'">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <div class="fixed bottom-0 left-0 right-0 bg-surface border-t border-warm px-6 py-1.5 flex items-center justify-between text-xs text-text-warm-muted z-10">
+    <span>Project: ~/dev/video-projects/v-appydave/c17-cowork-second-brain-productivity-plugin</span>
+    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+  </div>
+
+  <script>
+    // Sidebar navigation: highlight active section on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('#sidebar-nav .sidebar-item');
+    const contentArea = document.getElementById('content-area');
+
+    // Click handling
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('data-section');
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+          targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // Update active state immediately
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+
+    // Scroll spy
+    contentArea.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        const contentRect = contentArea.getBoundingClientRect();
+        if (rect.top - contentRect.top <= 80) {
+          current = section.getAttribute('id');
+        }
+      });
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-section') === current) {
+          link.classList.add('active');
+        }
+      });
+    });
+
+    // Show save bar when any input changes
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      el.addEventListener('input', () => {
+        document.getElementById('save-bar').style.display = 'flex';
+      });
+      el.addEventListener('change', () => {
+        document.getElementById('save-bar').style.display = 'flex';
+      });
+    });
+  </script>
+
+</body>
+</html>
