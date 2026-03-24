@@ -1625,20 +1625,22 @@ describe('POST /api/relay/ensure-edit-folders', () => {
   });
 
   it('logs activity for each created folder', async () => {
-    mockReaddir.mockImplementation(async (dir: string) => {
-      if (dir.includes('recordings')) return ['.DS_Store', '01-1-intro.mov', '._metadata'];
-      return [];
-    });
-    mockStat.mockResolvedValue({ isFile: () => true, isDirectory: () => true, size: 1000 });
+    // Both edit folders don't exist yet
+    mockPathExists.mockResolvedValue(false);
 
     const app = buildRelayApp();
-    const res = await request(app).get('/api/relay/divergence');
+    const res = await request(app).post('/api/relay/ensure-edit-folders');
 
-    const recordings = res.body.subfolders.find((s: { subfolder: string }) => s.subfolder === 'recordings');
-    expect(recordings.local.fileCount).toBe(1);
-    expect(recordings.relay.fileCount).toBe(1);
-    expect(recordings.local.files).toEqual(['01-1-intro.mov']);
-    expect(recordings.direction).toBe('synced');
+    expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).toEqual(['edit-1st', 'edit-2nd']);
+
+    // Check activity log has entries for both created folders
+    const actRes = await request(app).get('/api/relay/activity');
+    const events = actRes.body.events;
+    const createEvents = events.filter((e: { description: string }) => e.description.includes('Created'));
+    expect(createEvents).toHaveLength(2);
+    expect(createEvents[0].description).toContain('edit-2nd');
+    expect(createEvents[1].description).toContain('edit-1st');
   });
 
   it('returns all three subfolders in response', async () => {

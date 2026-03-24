@@ -5,22 +5,22 @@
 **Target**: David/Jan see Kanban lanes with divergence indicators on both the Relay tool and Projects page. Edit folders auto-create when recordings are collected. All endpoints tested.
 
 ## Summary
-- Total: 5 | Complete: 0 | In Progress: 0 | Pending: 5 | Failed: 0
+- Total: 5 | Complete: 5 | In Progress: 0 | Pending: 0 | Failed: 0
 
 ## Pending
-
-### Wave 1 — Backend (3 parallel work units, independent files)
-- [ ] divergence-endpoint — New `GET /api/relay/divergence` endpoint comparing local vs relay per subfolder for active project. Returns file counts, file lists, delta, and sync direction per subfolder.
-- [ ] auto-create-on-collect — After `POST /api/relay/collect` with subfolder=recordings succeeds, auto-create edit-1st/ and edit-2nd/ folders if they don't exist. Also add manual `POST /api/relay/ensure-edit-folders`.
-- [ ] enhanced-browse — Enhance `GET /api/relay/browse` to include local file counts alongside relay counts for each project. Powers project-level Kanban badges.
-
-### Wave 2 — Client UI (2 parallel work units, independent components)
-- [ ] kanban-relay-tool — Rewrite RelayTool.tsx as horizontal Kanban flow with divergence indicators, sync direction arrows, folder creation status, and action buttons. Lanes go green when synced.
-- [ ] project-kanban-badges — Upgrade ProjectsPanel RelayIndicator from plain dots to Kanban-style mini-badges showing sync direction and delta counts per subfolder. Stages go green when local matches relay.
 
 ## In Progress
 
 ## Complete
+
+### Wave 1 (merged to main — 888 tests pass)
+- [x] divergence-endpoint — `GET /api/relay/divergence` with listFiles helper. +15 tests (4 listFiles + 11 divergence). Compares local vs relay per subfolder, returns direction/localOnly/relayOnly/folderExists.
+- [x] auto-create-on-collect — `POST /collect` auto-creates edit-1st/ and edit-2nd/ when collecting recordings. `POST /ensure-edit-folders` for manual creation. +8 tests.
+- [x] enhanced-browse — `GET /api/relay/browse?detailed=true` with local counts and syncStatus per project. deriveSyncStatus helper. Backward compatible. +14 tests (7 deriveSyncStatus + 7 integration).
+
+### Wave 2 (merged to main — 888 tests pass)
+- [x] kanban-relay-tool — Full rewrite of RelayTool.tsx as 4-lane Kanban board. useRelayDivergence hook (15s refetch), useEnsureEditFolders mutation. Green/blue/amber/red lane borders. Folder creation buttons. Activity footer. 318 lines added, 140 removed.
+- [x] project-kanban-badges — Rewrote RelayIndicator with Kanban mini-badges (REC ✓, 1st ↓2, 2nd ↑1). useEnhancedRelayBrowse hook. Backward-compatible fallback to dots. Hover tooltip with detailed breakdown.
 
 ## Failed / Needs Retry
 

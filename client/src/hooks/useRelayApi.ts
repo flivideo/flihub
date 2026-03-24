@@ -103,6 +103,8 @@ export function useRelayPush() {
         toast.success(`${data.subfolder || 'Files'} pushed to relay`);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayStatus });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayDivergence });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayActivity });
       } else {
         toast.error(data.error || 'Push failed');
       }
@@ -131,6 +133,8 @@ export function useRelayCollect() {
         toast.success(`${data.subfolder || 'Files'} collected from relay`);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayStatus });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayDivergence });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayActivity });
       } else {
         toast.error(data.error || 'Collect failed');
       }
