@@ -4,7 +4,7 @@ import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs-extra';
-import type { Config, RelaySubfolder, RelayProjectInfo, RelayActivityEvent, RelayFileInfo, RelayDivergenceInfo } from '../../../shared/types.js';
+import type { Config, RelaySubfolder, RelayProjectInfo, RelayProjectSyncInfo, RelayActivityEvent, RelayFileInfo, RelayDivergenceInfo, RelayLocalSubfolderInfo, RelaySyncStatus } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 
 const execFileAsync = promisify(execFile);
@@ -75,6 +75,28 @@ export async function listFiles(dirPath: string): Promise<{ filename: string; si
   }
 }
 
+// enhanced-browse: Derive sync status by comparing relay vs local file counts
+export function deriveSyncStatus(relayCount: number, localCount: number, localExists: boolean): RelaySyncStatus {
+  if (!localExists && relayCount > 0) return 'relay-only';
+  if (!localExists && relayCount === 0) return 'synced';
+  if (localExists && relayCount === 0 && localCount > 0) return 'local-only';
+  if (relayCount === localCount) return 'synced';
+  if (relayCount > localCount) return 'behind';
+  if (relayCount < localCount) return 'ahead';
+  return 'diverged';
+}
+
+// enhanced-browse: Count non-hidden files in a directory (readdir + filter only, no stat)
+async function countFiles(dirPath: string): Promise<{ fileCount: number; exists: boolean }> {
+  try {
+    const entries = await fs.readdir(dirPath);
+    const fileCount = entries.filter((f: string) => !f.startsWith('.')).length;
+    return { fileCount, exists: true };
+  } catch {
+    return { fileCount: 0, exists: false };
+  }
+}
+
 export function createRelayRoutes(getConfig: () => Config) {
   const router = express.Router();
 
@@ -106,7 +128,10 @@ export function createRelayRoutes(getConfig: () => Config) {
         return res.json({ success: true, projects: [], relayDirectory: config.relayDirectory });
       }
 
-      const projects: RelayProjectInfo[] = [];
+      const detailed = req.query.detailed === 'true';
+      const projectsRootDir = config.projectsRootDirectory ? expandPath(config.projectsRootDirectory) : null;
+
+      const projects: (RelayProjectInfo | RelayProjectSyncInfo)[] = [];
       for (const entry of entries) {
         if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
         const projectPath = path.join(relayDir, entry.name);
@@ -136,10 +161,34 @@ export function createRelayRoutes(getConfig: () => Config) {
           }
         }
 
-        projects.push({
-          projectCode: entry.name,
-          subfolders: subfolders as RelayProjectInfo['subfolders'],
-        });
+        // enhanced-browse: When detailed=true, scan local project dirs in parallel for sync status
+        if (detailed && projectsRootDir) {
+          const localDir = path.join(projectsRootDir, entry.name);
+          const localResults = await Promise.all(
+            subfolderNames.map(sub => countFiles(path.join(localDir, sub)))
+          );
+          const localSubfolders: Record<string, RelayLocalSubfolderInfo> = {};
+          const syncStatus: Record<string, RelaySyncStatus> = {};
+          subfolderNames.forEach((sub, i) => {
+            localSubfolders[sub] = { fileCount: localResults[i].fileCount };
+            syncStatus[sub] = deriveSyncStatus(
+              subfolders[sub].fileCount,
+              localResults[i].fileCount,
+              localResults[i].exists
+            );
+          });
+          projects.push({
+            projectCode: entry.name,
+            subfolders: subfolders as RelayProjectInfo['subfolders'],
+            localSubfolders: localSubfolders as RelayProjectSyncInfo['localSubfolders'],
+            syncStatus: syncStatus as RelayProjectSyncInfo['syncStatus'],
+          });
+        } else {
+          projects.push({
+            projectCode: entry.name,
+            subfolders: subfolders as RelayProjectInfo['subfolders'],
+          });
+        }
       }
 
       res.json({ success: true, projects, relayDirectory: config.relayDirectory });
