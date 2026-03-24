@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Global: buttons should always show pointer cursor */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 /* B048: Warm Linen Theme — semantic color tokens for camera-friendly UI */
 @theme {
   /* Page & surface hierarchy (darkest → lightest) */

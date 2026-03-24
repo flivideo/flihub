@@ -200,7 +200,7 @@ function TranscriptionBadge({
         <button
           onClick={() => queueMutation.mutate(filePath)}
           disabled={queueMutation.isPending}
-          className="text-xs text-red-700 hover:text-red-800 px-1.5 py-0.5 bg-red-50 hover:bg-red-100 rounded font-medium transition-colors disabled:opacity-50"
+          className="text-xs text-red-700 hover:text-red-800 px-1.5 py-0.5 bg-red-50 hover:bg-red-100 rounded font-medium transition-colors cursor-pointer disabled:opacity-50"
           title="Retry transcription"
         >
           T
@@ -211,7 +211,7 @@ function TranscriptionBadge({
         <button
           onClick={() => queueMutation.mutate(filePath)}
           disabled={queueMutation.isPending}
-          className="text-xs text-warm-muted hover:text-warm-secondary px-1.5 py-0.5 bg-surface-muted hover:bg-surface-hover rounded font-medium transition-colors disabled:opacity-50"
+          className="text-xs text-warm-muted hover:text-warm-secondary px-1.5 py-0.5 bg-surface-muted hover:bg-surface-hover rounded font-medium transition-colors cursor-pointer disabled:opacity-50"
           title="Start transcription"
         >
           T
@@ -311,6 +311,162 @@ function CombineChapterButton({
   );
 }
 
+// B049: Chapter header — card style with overflow menu
+function ChapterHeader({
+  chapter,
+  name,
+  fileCount,
+  totalDuration,
+  startTime,
+  isAllSafe,
+  hasActiveFiles,
+  hasSafeFiles,
+  hasParkedFiles,
+  allSelectedInChapter,
+  onSelectAll,
+  onSafeAll,
+  onRestoreAll,
+  onParkAll,
+  onUnparkAll,
+  onTranscribeAll,
+  moveToSafePending,
+  restorePending,
+  parkPending,
+  unparkPending,
+  transcribePending,
+  onViewCombined,
+}: {
+  chapter: string;
+  name: string;
+  fileCount: number;
+  totalDuration: number;
+  startTime: number;
+  isAllSafe: boolean;
+  hasActiveFiles: boolean;
+  hasSafeFiles: boolean;
+  hasParkedFiles: boolean;
+  allSelectedInChapter: boolean;
+  onSelectAll: () => void;
+  onSafeAll: () => void;
+  onRestoreAll: () => void;
+  onParkAll: () => void;
+  onUnparkAll: () => void;
+  onTranscribeAll: () => void;
+  moveToSafePending: boolean;
+  restorePending: boolean;
+  parkPending: boolean;
+  unparkPending: boolean;
+  transcribePending: boolean;
+  onViewCombined: (filename: string) => void;
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openMenu = () => {
+    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
+    setMenuOpen(true);
+  };
+  const scheduleClose = () => {
+    closeTimer.current = setTimeout(() => setMenuOpen(false), 250);
+  };
+
+  return (
+    <div className="group relative flex items-center justify-between bg-surface-muted border border-warm rounded-lg px-4 py-2.5 mb-2 mt-5">
+      <div className="flex items-baseline gap-3">
+        <span className={`text-[15px] font-semibold ${isAllSafe ? 'text-warm-muted' : 'text-warm-primary'}`}>
+          {chapter} {formatChapterTitle(name)}
+        </span>
+        {totalDuration > 0 && (
+          <span className="text-sm font-medium text-warm-secondary font-mono bg-surface px-2.5 py-0.5 rounded-full">
+            {formatDuration(totalDuration, 'smart')}
+          </span>
+        )}
+        <span className="text-xs text-warm-faint">
+          {fileCount} file{fileCount !== 1 ? 's'  : ''} · starts @ {formatDuration(startTime, 'youtube')}
+        </span>
+      </div>
+
+      {/* Overflow menu trigger — opens on hover, no click needed */}
+      <div
+        className="relative"
+        onMouseEnter={openMenu}
+        onMouseLeave={scheduleClose}
+      >
+        <span
+          className="text-warm-faint hover:text-warm-secondary hover:bg-surface-hover px-2 py-0.5 rounded transition-all opacity-30 cursor-default select-none"
+          title="Chapter actions"
+        >
+          ⋯
+        </span>
+
+        {menuOpen && (
+          <div className="absolute right-0 top-8 bg-surface border border-warm rounded-lg shadow-lg z-20 min-w-[180px] py-1">
+            <button
+              onClick={() => { onSelectAll(); setMenuOpen(false); }}
+              className="w-full text-left px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover flex items-center gap-2"
+            >
+              <span className="w-4 text-center text-xs">✓</span>
+              {allSelectedInChapter ? 'Deselect all' : 'Select all'}
+            </button>
+            {hasActiveFiles && (
+              <button
+                onClick={() => { onSafeAll(); setMenuOpen(false); }}
+                disabled={moveToSafePending}
+                className="w-full text-left px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover flex items-center gap-2 disabled:opacity-50"
+              >
+                <span className="w-4 text-center text-xs">→</span>
+                Safe all
+              </button>
+            )}
+            {hasSafeFiles && (
+              <button
+                onClick={() => { onRestoreAll(); setMenuOpen(false); }}
+                disabled={restorePending}
+                className="w-full text-left px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover flex items-center gap-2 disabled:opacity-50"
+              >
+                <span className="w-4 text-center text-xs">←</span>
+                Restore all
+              </button>
+            )}
+            {hasActiveFiles && (
+              <button
+                onClick={() => { onParkAll(); setMenuOpen(false); }}
+                disabled={parkPending}
+                className="w-full text-left px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover flex items-center gap-2 disabled:opacity-50"
+              >
+                <span className="w-4 text-center text-xs">→</span>
+                Park all
+              </button>
+            )}
+            {hasParkedFiles && (
+              <button
+                onClick={() => { onUnparkAll(); setMenuOpen(false); }}
+                disabled={unparkPending}
+                className="w-full text-left px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover flex items-center gap-2 disabled:opacity-50"
+              >
+                <span className="w-4 text-center text-xs">←</span>
+                Unpark all
+              </button>
+            )}
+            <button
+              onClick={() => { onTranscribeAll(); setMenuOpen(false); }}
+              disabled={transcribePending}
+              className="w-full text-left px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover flex items-center gap-2 disabled:opacity-50"
+            >
+              <span className="w-4 text-center text-xs">🎙</span>
+              Transcribe all
+            </button>
+            <div className="border-t border-warm my-1" />
+            <div className="px-4 py-1">
+              <CombineChapterButton chapter={chapter} onViewCombined={onViewCombined} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // B047: Compute chapter info string for selected files
 function getSelectedChapterInfo(selectedFiles: Set<string>, recordings: RecordingFile[]): string {
   const chapters = new Set<string>();
@@ -365,8 +521,7 @@ export function RecordingsView() {
   // FR-128: State for recording preview modal
   const [previewRecording, setPreviewRecording] = useState<RecordingFile | null>(null);
 
-  // B047: Selection state — checkboxes hidden until selection mode activated
-  const [selectionMode, setSelectionMode] = useState(false);
+  // B047: Selection state
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [pendingChanges, setPendingChanges] = useState<Map<string, { oldFilename: string; newFilename: string }>>(new Map());
   const [splitPoint, setSplitPoint] = useState<{ chapter: string; afterSequence: number } | null>(null);
@@ -613,7 +768,6 @@ export function RecordingsView() {
 
   const selectAllInChapter = useCallback(
     (chapter: string) => {
-      setSelectionMode(true);
       const chapterFiles = filteredRecordings.filter((r) => r.chapter === chapter);
       setSelectedFiles((prev) => {
         const next = new Set(prev);
@@ -630,10 +784,7 @@ export function RecordingsView() {
     [data?.recordings, showSafe, showParked]
   );
 
-  const deselectAll = useCallback(() => {
-    setSelectedFiles(new Set());
-    setSelectionMode(false);
-  }, []);
+  const deselectAll = useCallback(() => setSelectedFiles(new Set()), []);
 
   // B047: Inline rename handler — single file, calls rename API directly
   const handleInlineRename = useCallback(
@@ -1194,89 +1345,31 @@ export function RecordingsView() {
                 }
               }}
             >
-              {/* Chapter separator */}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-px bg-warm-strong flex-1" />
-                <span
-                  className={`text-sm font-semibold px-2 ${isAllSafe ? 'text-warm-muted' : 'text-warm-secondary'}`}
-                >
-                  {chapter} {formatChapterTitle(name)}
-                  {/* FR-41: File count and total duration */}
-                  <span className="font-normal text-xs ml-2">
-                    ({group.files.length} file{group.files.length !== 1 ? 's' : ''}
-                    {group.totalDuration > 0 &&
-                      ` · ${formatDuration(group.totalDuration, 'smart')}`}
-                    )
-                  </span>
-                </span>
-                {/* FR-41: Cumulative start time (YouTube format) */}
-                <span className="text-xs text-warm-muted font-mono">
-                  @ {formatDuration(chapterData.startTime, 'youtube')}
-                </span>
-                {/* B047: Select all in chapter button — toggles selection mode */}
-                <button
-                  onClick={() => selectAllInChapter(chapter)}
-                  className={`text-xs px-2 py-0.5 rounded transition-colors ${
-                    allSelectedInChapter
-                      ? 'text-warm-secondary bg-surface-muted'
-                      : 'text-warm-muted hover:text-warm-secondary hover:bg-surface-hover'
-                  }`}
-                >
-                  {allSelectedInChapter ? '✓ All selected' : `Select ${chapter}`}
-                </button>
-                {/* Chapter action buttons */}
-                {hasActiveFiles && (
-                  <button
-                    onClick={() => handleMoveChapterToSafe(chapter)}
-                    disabled={moveToSafe.isPending}
-                    className="text-xs text-warm-muted hover:text-green-600 px-2 py-0.5 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
-                  >
-                    → Safe All
-                  </button>
-                )}
-                {hasSafeFiles && (
-                  <button
-                    onClick={() =>
-                      handleRestoreChapterFromSafe(safeFilesInChapter.map((f) => f.filename))
-                    }
-                    disabled={restoreFromSafe.isPending}
-                    className="text-xs text-green-600 hover:text-green-700 px-2 py-0.5 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
-                  >
-                    ← Restore All
-                  </button>
-                )}
-                {/* FR-120: Park/Unpark chapter buttons */}
-                {hasActiveFiles && (
-                  <button
-                    onClick={() => handleParkChapter(chapter)}
-                    disabled={parkRecording.isPending}
-                    className="text-xs text-warm-muted hover:text-pink-600 px-2 py-0.5 hover:bg-pink-50 rounded transition-colors disabled:opacity-50"
-                  >
-                    → Park All
-                  </button>
-                )}
-                {hasParkedFiles && (
-                  <button
-                    onClick={() => handleUnparkChapter(parkedFilesInChapter.map((f) => f.filename))}
-                    disabled={unparkRecording.isPending}
-                    className="text-xs text-pink-600 hover:text-pink-700 px-2 py-0.5 hover:bg-pink-50 rounded transition-colors disabled:opacity-50"
-                  >
-                    ← Unpark All
-                  </button>
-                )}
-                {/* FR-30 Enhancement: Transcribe chapter button */}
-                <button
-                  onClick={() => handleTranscribeChapter(chapter)}
-                  disabled={transcribeAll.isPending}
-                  className="text-xs text-purple-500 hover:text-purple-600 px-2 py-0.5 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
-                  title="Queue all untranscribed videos in this chapter"
-                >
-                  🎙️ All
-                </button>
-                {/* Enhancement B: Combine chapter transcripts button */}
-                <CombineChapterButton chapter={chapter} onViewCombined={setViewingTranscript} />
-                <div className="h-px bg-warm-strong flex-1" />
-              </div>
+              {/* Chapter header — card style with overflow menu */}
+              <ChapterHeader
+                chapter={chapter}
+                name={name}
+                fileCount={group.files.length}
+                totalDuration={group.totalDuration}
+                startTime={chapterData.startTime}
+                isAllSafe={isAllSafe}
+                hasActiveFiles={hasActiveFiles}
+                hasSafeFiles={hasSafeFiles}
+                hasParkedFiles={hasParkedFiles}
+                allSelectedInChapter={allSelectedInChapter}
+                onSelectAll={() => selectAllInChapter(chapter)}
+                onSafeAll={() => handleMoveChapterToSafe(chapter)}
+                onRestoreAll={() => handleRestoreChapterFromSafe(safeFilesInChapter.map((f) => f.filename))}
+                onParkAll={() => handleParkChapter(chapter)}
+                onUnparkAll={() => handleUnparkChapter(parkedFilesInChapter.map((f) => f.filename))}
+                onTranscribeAll={() => handleTranscribeChapter(chapter)}
+                moveToSafePending={moveToSafe.isPending}
+                restorePending={restoreFromSafe.isPending}
+                parkPending={parkRecording.isPending}
+                unparkPending={unparkRecording.isPending}
+                transcribePending={transcribeAll.isPending}
+                onViewCombined={setViewingTranscript}
+              />
 
               {/* Files in this chapter — now using EditableFileRow */}
               <div className="space-y-1">
@@ -1306,7 +1399,6 @@ export function RecordingsView() {
                   <EditableFileRow
                     recording={file}
                     isSelected={selectedFiles.has(file.filename)}
-                    showCheckbox={selectionMode}
                     onToggleSelect={toggleSelect}
                     onInlineRename={handleInlineRename}
                     onTagRemove={handleTagRemove}

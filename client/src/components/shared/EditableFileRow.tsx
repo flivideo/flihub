@@ -31,8 +31,6 @@ export interface EditableFileRowProps {
   transcriptionBadge?: ReactNode;
   pendingChange?: { oldFilename: string; newFilename: string };
   disabled?: boolean;
-  /** When false, checkbox is hidden (selection mode off) */
-  showCheckbox?: boolean;
   formatDuration: (duration?: number) => string;
   formatFileSize: (size: number) => string;
   formatTimestamp: (timestamp: string) => string;
@@ -53,7 +51,6 @@ export function EditableFileRow({
   transcriptionBadge,
   pendingChange,
   disabled,
-  showCheckbox = true,
   formatDuration: fmtDuration,
   formatFileSize: fmtFileSize,
   formatTimestamp: fmtTimestamp,
@@ -155,23 +152,25 @@ export function EditableFileRow({
       className={`group flex items-center justify-between px-4 py-2 rounded-lg border ${rowClasses} transition-colors`}
     >
       <div className="flex items-center gap-3">
-        {/* Checkbox — only visible in selection mode */}
-        {showCheckbox && !isShadow && (
+        {/* Checkbox — faint until row hover or checked */}
+        {!isShadow && (
           <input
             type="checkbox"
             checked={isSelected}
             onChange={() => onToggleSelect(recording.filename)}
-            className="w-3.5 h-3.5 rounded border-warm-strong text-blue-600 focus:ring-blue-500 cursor-pointer"
+            className={`w-3.5 h-3.5 rounded border-warm-strong focus:ring-blue-500 cursor-pointer transition-opacity ${
+              isSelected ? 'opacity-100 text-blue-600' : 'opacity-15 group-hover:opacity-60'
+            }`}
           />
         )}
-        {showCheckbox && isShadow && <span className="w-3.5" />}
+        {isShadow && <span className="w-3.5" />}
 
         {/* Play button */}
         <button
           onClick={() => onPlay(recording)}
           disabled={isShadow}
           className={`text-blue-600 hover:text-blue-700 transition-colors ${
-            isShadow ? 'opacity-30 cursor-not-allowed' : ''
+            isShadow ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
           }`}
           title={isShadow ? 'Video not available locally' : 'Preview recording'}
         >
