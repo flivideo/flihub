@@ -14,7 +14,7 @@ function SubfolderCell({ fileCount, totalSize, type }: {
   type: 'recordings' | 'edit-1st' | 'edit-2nd';
 }) {
   if (fileCount === 0) {
-    return <span className="text-gray-300">{'—'}</span>;
+    return <span className="text-warm-faint">{'—'}</span>;
   }
 
   const dotColors = {
@@ -28,7 +28,7 @@ function SubfolderCell({ fileCount, totalSize, type }: {
       <span className={`w-2 h-2 rounded-full ${dotColors[type]} shrink-0`} />
       <span>
         {fileCount}
-        <span className="text-gray-400 text-xs ml-1">({formatSize(totalSize)})</span>
+        <span className="text-warm-muted text-xs ml-1">({formatSize(totalSize)})</span>
       </span>
     </span>
   );
@@ -38,7 +38,7 @@ export function RelayBrowser() {
   const { data, isLoading } = useRelayBrowse();
 
   if (isLoading) {
-    return <div className="text-sm text-gray-500 py-2">Scanning relay folder...</div>;
+    return <div className="text-sm text-warm-muted py-2">Scanning relay folder...</div>;
   }
 
   if (!data?.success) {
@@ -49,7 +49,7 @@ export function RelayBrowser() {
 
   if (projects.length === 0) {
     return (
-      <div className="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded p-3">
+      <div className="text-sm text-warm-muted bg-surface-muted border border-warm rounded p-3">
         Relay folder is empty — no projects found.
       </div>
     );
@@ -61,20 +61,20 @@ export function RelayBrowser() {
 
   return (
     <div>
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-warm rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">
+            <tr className="bg-surface-muted text-left text-xs font-medium text-warm-muted uppercase">
               <th className="px-3 py-2">Project</th>
               <th className="px-3 py-2">Recordings</th>
               <th className="px-3 py-2">Edit 1st</th>
               <th className="px-3 py-2">Edit 2nd</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-warm">
             {projects.map((project) => (
-              <tr key={project.projectCode} className="hover:bg-gray-50">
-                <td className="px-3 py-2 font-mono text-xs font-medium text-gray-700">
+              <tr key={project.projectCode} className="hover:bg-surface-hover">
+                <td className="px-3 py-2 font-mono text-xs font-medium text-warm-secondary">
                   {project.projectCode}
                 </td>
                 <td className="px-3 py-2">
@@ -90,7 +90,7 @@ export function RelayBrowser() {
             ))}
           </tbody>
           <tfoot>
-            <tr className="bg-gray-50 text-xs text-gray-500 font-medium">
+            <tr className="bg-surface-muted text-xs text-warm-muted font-medium">
               <td className="px-3 py-2">
                 {projects.length} project{projects.length !== 1 ? 's' : ''}
               </td>
@@ -107,7 +107,7 @@ export function RelayBrowser() {
           </tfoot>
         </table>
       </div>
-      <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+      <div className="flex items-center gap-4 mt-2 text-xs text-warm-muted">
         <span className="inline-flex items-center gap-1">
           <span className="w-2 h-2 rounded-full bg-blue-500" /> Recordings
         </span>

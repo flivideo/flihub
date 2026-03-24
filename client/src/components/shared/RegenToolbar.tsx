@@ -277,18 +277,18 @@ export function RegenToolbar({
   };
 
   return (
-    <div className="border rounded-lg mb-4 bg-white">
+    <div className="border rounded-lg mb-4 bg-surface">
       {/* Collapsible header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-surface-hover transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="h-px bg-gray-300 w-8" />
-          <span className="text-sm font-semibold text-gray-700">Regeneration Tools</span>
-          <div className="h-px bg-gray-300 flex-1" />
+          <div className="h-px bg-warm-divider w-8" />
+          <span className="text-sm font-semibold text-warm-secondary">Regeneration Tools</span>
+          <div className="h-px bg-warm-divider flex-1" />
         </div>
-        <span className="text-gray-400">{isOpen ? '▼' : '▶'}</span>
+        <span className="text-warm-muted">{isOpen ? '▼' : '▶'}</span>
       </button>
 
       {isOpen && (
@@ -362,7 +362,7 @@ export function RegenToolbar({
           {progress && <RegenProgressDisplay progress={progress} />}
 
           {/* Help text */}
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-warm-muted">
             Regeneration tools delete and recreate derivative files. Shadows are fast (~1 minute),
             transcripts are queued (5-10 min/file), chapters are slow (~30-60s each).
           </p>
@@ -392,7 +392,7 @@ function RegenProgressDisplay({ progress }: { progress: RegenProgress }) {
       }`}
     >
       <div className="flex items-center gap-2">
-        <div className="flex-1 bg-gray-200 rounded-full h-2">
+        <div className="flex-1 bg-surface-muted rounded-full h-2">
           <div
             className={`h-2 rounded-full transition-all ${
               isComplete ? 'bg-green-500' : isError ? 'bg-red-500' : 'bg-blue-500'
@@ -401,12 +401,12 @@ function RegenProgressDisplay({ progress }: { progress: RegenProgress }) {
           />
         </div>
         {progress.total > 0 && (
-          <span className="text-sm text-gray-600 font-medium min-w-[60px] text-right">
+          <span className="text-sm text-warm-secondary font-medium min-w-[60px] text-right">
             {progress.current}/{progress.total}
           </span>
         )}
       </div>
-      {progress.currentItem && <p className="text-xs text-gray-600 mt-2">{progress.currentItem}</p>}
+      {progress.currentItem && <p className="text-xs text-warm-secondary mt-2">{progress.currentItem}</p>}
       {isComplete && <p className="text-xs text-green-600 font-medium mt-1">✓ Complete</p>}
       {isError && <p className="text-xs text-red-600 font-medium mt-1">✗ Error</p>}
     </div>

@@ -69,7 +69,7 @@ export function PreviewPanel({
         {Array.from(grouped.entries()).map(([chapter, chapterChanges]) => (
           <div key={chapter} className="mb-3 last:mb-0">
             {/* Section header */}
-            <div className="text-[10px] uppercase font-semibold tracking-wider text-gray-500 bg-gray-100 px-2 py-1 rounded mb-1">
+            <div className="text-[10px] uppercase font-semibold tracking-wider text-warm-muted bg-surface-muted px-2 py-1 rounded mb-1">
               Chapter {chapter}
               {splitInfo && chapter === splitInfo.sourceChapter && (
                 <span className="ml-1 normal-case">
@@ -89,7 +89,7 @@ export function PreviewPanel({
                 <div
                   key={change.oldFilename}
                   className={`flex items-center gap-2 px-2 py-1 text-xs font-mono rounded ${
-                    idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    idx % 2 === 0 ? 'bg-surface' : 'bg-surface-muted'
                   }`}
                 >
                   {/* Status dot */}
@@ -100,12 +100,12 @@ export function PreviewPanel({
                   />
 
                   {/* Old filename */}
-                  <span className="text-gray-400 line-through truncate max-w-[200px]">
+                  <span className="text-warm-muted line-through truncate max-w-[200px]">
                     {change.oldFilename}
                   </span>
 
                   {/* Arrow */}
-                  <span className="text-gray-400 flex-shrink-0">&#8594;</span>
+                  <span className="text-warm-muted flex-shrink-0">&#8594;</span>
 
                   {/* New filename */}
                   <span className="text-green-700 font-bold truncate max-w-[200px]">
@@ -114,7 +114,7 @@ export function PreviewPanel({
 
                   {/* Note */}
                   {note && (
-                    <span className="text-gray-400 text-[10px] flex-shrink-0">{note}</span>
+                    <span className="text-warm-muted text-[10px] flex-shrink-0">{note}</span>
                   )}
                 </div>
               );
@@ -126,7 +126,7 @@ export function PreviewPanel({
       {/* Footer */}
       <div className="border-t border-blue-200 px-4 py-3">
         {/* Legend */}
-        <div className="flex items-center gap-4 text-[10px] text-gray-500 mb-3">
+        <div className="flex items-center gap-4 text-[10px] text-warm-muted mb-3">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
             Instant: rename .mov + shadow + transcripts (no re-processing)
@@ -141,7 +141,7 @@ export function PreviewPanel({
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="px-4 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+            className="px-4 py-1.5 text-sm font-medium text-warm-secondary bg-surface-muted hover:bg-surface-hover rounded-md transition-colors"
           >
             Cancel
           </button>

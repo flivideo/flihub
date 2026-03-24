@@ -26,7 +26,7 @@ export function SlideOutDrawer({
     <div
       className={`
         fixed top-32 right-0 bottom-0 ${width}
-        bg-white border-l-2 border-blue-500
+        bg-surface border-l-2 border-blue-500
         shadow-xl
         transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : 'translate-x-full'}
@@ -35,11 +35,11 @@ export function SlideOutDrawer({
     >
       <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-warm">
+          <h3 className="text-lg font-semibold text-warm-primary">{title}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-warm-muted hover:text-warm-secondary transition-colors"
             title="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -96,7 +96,7 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
       tabIndex={0}
     >
       <div
-        className="bg-white rounded-lg w-full max-w-md mx-4"
+        className="bg-surface rounded-lg w-full max-w-md mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -105,7 +105,7 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
           <button
             onClick={() => !isGenerating && onClose()}
             disabled={isGenerating}
-            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors disabled:opacity-50"
+            className="p-1.5 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors disabled:opacity-50"
             title="Close"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,7 +131,7 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
                 className="w-4 h-4 text-purple-500 rounded"
                 disabled={isGenerating}
               />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-warm-secondary">
                 Include purple title slides between segments
               </span>
             </label>
@@ -140,7 +140,7 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
           {/* Slide Duration - only show when slides enabled */}
           {includeTitleSlides && (
             <div className="ml-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Slide Duration</label>
+              <label className="block text-sm font-medium text-warm-secondary mb-1">Slide Duration</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -149,17 +149,17 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
                   min={0.5}
                   max={5}
                   step={0.5}
-                  className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-20 px-2 py-1 border border-warm-strong rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={isGenerating}
                 />
-                <span className="text-sm text-gray-500">seconds</span>
+                <span className="text-sm text-warm-muted">seconds</span>
               </div>
             </div>
           )}
 
           {/* Resolution */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Resolution</label>
+            <label className="block text-sm font-medium text-warm-secondary mb-1">Resolution</label>
             <div className="space-y-1">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -198,13 +198,13 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
                 className="w-4 h-4 text-blue-500 rounded"
                 disabled={isGenerating}
               />
-              <span className="text-sm text-gray-700">Auto-generate when creating new chapter</span>
+              <span className="text-sm text-warm-secondary">Auto-generate when creating new chapter</span>
             </label>
           </div>
 
           {/* Chapter Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-warm-secondary mb-1">
               Chapters to generate
             </label>
             <div className="space-y-1">
@@ -237,7 +237,7 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
                     setSelectedChapter(e.target.value);
                     setScope('single');
                   }}
-                  className="px-2 py-0.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
+                  className="px-2 py-0.5 border border-warm-strong rounded text-sm focus:ring-2 focus:ring-blue-500"
                   disabled={isGenerating}
                 >
                   {chapters.map((ch) => (
@@ -277,7 +277,7 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
 
           {/* Existing Recordings Info */}
           {statusData?.existing && statusData.existing.length > 0 && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-warm-muted">
               <span className="font-medium">{statusData.existing.length}</span> existing chapter
               recording{statusData.existing.length !== 1 ? 's' : ''} will be overwritten
             </div>
@@ -285,11 +285,11 @@ export function ChapterRecordingModal({ onClose }: ChapterRecordingModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 p-4 border-t bg-gray-50 rounded-b-lg">
+        <div className="flex justify-end gap-2 p-4 border-t bg-surface-muted rounded-b-lg">
           <button
             onClick={onClose}
             disabled={isGenerating}
-            className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover rounded transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

@@ -61,10 +61,10 @@ export function ChapterContextPanel({ recordings }: ChapterContextPanelProps) {
 
   return (
     <div className="w-48">
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="bg-surface rounded-lg border border-warm shadow-sm">
         {/* Header */}
-        <div className="px-3 py-2 border-b border-gray-100">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Chapters</h3>
+        <div className="px-3 py-2 border-b border-warm">
+          <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wide">Chapters</h3>
         </div>
 
         {/* Chapter list */}
@@ -72,15 +72,15 @@ export function ChapterContextPanel({ recordings }: ChapterContextPanelProps) {
           {chapters.map((chapter) => (
             <div
               key={chapter.number}
-              className="flex items-center justify-between px-3 py-1.5 hover:bg-gray-50 group"
+              className="flex items-center justify-between px-3 py-1.5 hover:bg-surface-hover group"
             >
-              <span className="text-sm text-gray-700 truncate">
-                <span className="font-mono text-gray-400">{chapter.number}</span>{' '}
+              <span className="text-sm text-warm-secondary truncate">
+                <span className="font-mono text-warm-muted">{chapter.number}</span>{' '}
                 <span>{chapter.name}</span>
               </span>
               <button
                 onClick={() => handleCopy(chapter.name)}
-                className="p-1 text-gray-300 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="p-1 text-warm-faint hover:text-warm-secondary opacity-0 group-hover:opacity-100 transition-opacity"
                 title={`Copy "${chapter.name}"`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,9 +97,9 @@ export function ChapterContextPanel({ recordings }: ChapterContextPanelProps) {
         </div>
 
         {/* Next chapter indicator */}
-        <div className="px-3 py-2 border-t border-gray-100 bg-gray-50 rounded-b-lg">
-          <span className="text-xs text-gray-500">
-            Next: <span className="font-mono font-medium text-gray-700">{nextChapter}</span>
+        <div className="px-3 py-2 border-t border-warm bg-surface-muted rounded-b-lg">
+          <span className="text-xs text-warm-muted">
+            Next: <span className="font-mono font-medium text-warm-secondary">{nextChapter}</span>
           </span>
         </div>
       </div>

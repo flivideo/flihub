@@ -366,6 +366,56 @@ vi.mock('fs-extra', () => ({ default: { pathExists: vi.fn(), readFile: vi.fn(), 
 
 ---
 
+## Warm Linen Theme — Color Migration Guide (Campaign: warm-linen-theme)
+
+**Why**: FliHub's bright white UI reflects on David's face during recording, shifting the video's color profile. Replacing with warm linen tones from the AngelEye Mochaccino v2-linen palette.
+
+### Semantic Color Tokens (defined in client/src/index.css @theme block)
+
+| Token | CSS Variable | Hex | Replaces |
+|-------|-------------|-----|----------|
+| `bg-page` | `--color-page` | `#e8e0d4` | `bg-gray-100`, `bg-gray-50` (page backgrounds) |
+| `bg-surface` | `--color-surface` | `#f5f1eb` | `bg-white` (cards, panels, modals) |
+| `bg-surface-hover` | `--color-surface-hover` | `#ede7dc` | `hover:bg-gray-50`, `hover:bg-gray-100` |
+| `bg-surface-muted` | `--color-surface-muted` | `#ede7dc` | `bg-gray-50`, `bg-gray-100` (secondary surfaces) |
+| `border-warm` | `--color-border-warm` | `#d4cdc4` | `border-gray-200` |
+| `border-warm-strong` | `--color-border-warm-strong` | `#b8a99a` | `border-gray-300` |
+| `text-warm-primary` | `--color-text-warm-primary` | `#2a2018` | `text-gray-900`, `text-gray-800` |
+| `text-warm-secondary` | `--color-text-warm-secondary` | `#4a3e30` | `text-gray-700`, `text-gray-600` |
+| `text-warm-muted` | `--color-text-warm-muted` | `#7a6e5e` | `text-gray-500`, `text-gray-400` |
+| `text-warm-faint` | `--color-text-warm-faint` | `#9a8a78` | `text-gray-300` (disabled, placeholders) |
+
+### Replacement Rules
+
+1. **`bg-white`** → `bg-surface` (always — no exceptions)
+2. **`bg-gray-100`** → `bg-page` (for page backgrounds) or `bg-surface-muted` (for secondary panels)
+3. **`bg-gray-50`** → `bg-surface-muted`
+4. **`bg-gray-200`** and darker → evaluate case-by-case; may become `bg-surface-muted` or stay for contrast
+5. **`text-gray-900`** → `text-warm-primary`
+6. **`text-gray-700`** / **`text-gray-600`** → `text-warm-secondary`
+7. **`text-gray-500`** / **`text-gray-400`** → `text-warm-muted`
+8. **`text-gray-300`** → `text-warm-faint`
+9. **`border-gray-200`** → `border-warm`
+10. **`border-gray-300`** → `border-warm-strong`
+11. **`hover:bg-gray-50`** / **`hover:bg-gray-100`** → `hover:bg-surface-hover`
+12. **`shadow`** on the header → `shadow-sm` (softer shadow for warm palette)
+
+### What NOT to Replace
+
+- **`bg-blue-*`**, **`bg-red-*`**, **`bg-green-*`**, **`bg-yellow-*`** — keep all colored semantic indicators (status pills, buttons, alerts)
+- **`text-blue-*`** — keep interactive/link colors
+- **`bg-gray-800`**, **`bg-gray-900`** — keep dark backgrounds where used intentionally (e.g. dark card headers)
+- **`divide-gray-*`** — replace with `divide-warm` (same as border-warm)
+
+### Quality Check After Each File
+
+After replacing classes in a file:
+1. `npm run build -w client` must pass
+2. Visually verify the component renders with warm tones (no stray white panels or jarring gray borders)
+3. Check hover and focus states still work with the warm palette
+
+---
+
 ## Quality Gates (non-negotiable)
 
 1. `npm run build -w server` clean — no TypeScript errors

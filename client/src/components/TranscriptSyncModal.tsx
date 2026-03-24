@@ -98,18 +98,18 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-[600px] max-w-[90vw] max-h-[80vh] flex flex-col"
+        className="bg-surface rounded-lg shadow-xl w-[600px] max-w-[90vw] max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-4 border-b border-gray-200">
+        <div className="flex justify-between items-center p-4 border-b border-warm">
           <div>
-            <h3 className="font-semibold text-gray-800">Transcript Sync</h3>
-            <span className="text-sm text-gray-500 font-mono">{projectCode}</span>
+            <h3 className="font-semibold text-warm-primary">Transcript Sync</h3>
+            <span className="text-sm text-warm-muted font-mono">{projectCode}</span>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none px-2"
+            className="text-warm-muted hover:text-warm-secondary text-xl leading-none px-2"
           >
             &times;
           </button>
@@ -118,7 +118,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
-            <div className="text-center text-gray-400 py-8">Loading...</div>
+            <div className="text-center text-warm-muted py-8">Loading...</div>
           ) : !data ? (
             <div className="text-center text-red-500 py-8">Failed to load sync status</div>
           ) : (
@@ -131,13 +131,13 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
                       Missing Transcripts ({data.missingTranscripts.length})
                     </h4>
                   </div>
-                  <div className="space-y-1 max-h-48 overflow-y-auto border border-gray-100 rounded p-2">
+                  <div className="space-y-1 max-h-48 overflow-y-auto border border-warm rounded p-2">
                     {data.missingTranscripts.map((filename) => (
                       <div
                         key={filename}
-                        className="flex items-center justify-between py-1 px-2 hover:bg-gray-50 rounded"
+                        className="flex items-center justify-between py-1 px-2 hover:bg-surface-hover rounded"
                       >
-                        <span className="text-sm font-mono text-gray-700 truncate flex-1 mr-2">
+                        <span className="text-sm font-mono text-warm-secondary truncate flex-1 mr-2">
                           {filename}.mov
                         </span>
                         <button
@@ -161,13 +161,13 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
                       Orphaned Transcripts ({data.orphanedTranscripts.length})
                     </h4>
                   </div>
-                  <div className="space-y-1 max-h-48 overflow-y-auto border border-gray-100 rounded p-2">
+                  <div className="space-y-1 max-h-48 overflow-y-auto border border-warm rounded p-2">
                     {data.orphanedTranscripts.map((filename) => (
                       <div
                         key={filename}
-                        className="flex items-center justify-between py-1 px-2 hover:bg-gray-50 rounded"
+                        className="flex items-center justify-between py-1 px-2 hover:bg-surface-hover rounded"
                       >
-                        <span className="text-sm font-mono text-gray-700 truncate flex-1 mr-2">
+                        <span className="text-sm font-mono text-warm-secondary truncate flex-1 mr-2">
                           {filename}.txt
                         </span>
                         <button
@@ -186,12 +186,12 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
               {/* Matched (collapsed by default) */}
               {data.matched.length > 0 && (
                 <details className="text-sm">
-                  <summary className="cursor-pointer text-gray-500 hover:text-gray-700">
+                  <summary className="cursor-pointer text-warm-muted hover:text-warm-secondary">
                     Matched ({data.matched.length} recordings with transcripts)
                   </summary>
-                  <div className="mt-2 space-y-1 max-h-32 overflow-y-auto border border-gray-100 rounded p-2">
+                  <div className="mt-2 space-y-1 max-h-32 overflow-y-auto border border-warm rounded p-2">
                     {data.matched.map((filename) => (
-                      <div key={filename} className="text-xs font-mono text-gray-500 py-0.5">
+                      <div key={filename} className="text-xs font-mono text-warm-muted py-0.5">
                         {filename}
                       </div>
                     ))}
@@ -212,7 +212,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
 
         {/* Footer with bulk actions */}
         {data && (data.missingTranscripts.length > 0 || data.orphanedTranscripts.length > 0) && (
-          <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex justify-between items-center p-4 border-t border-warm bg-surface-muted">
             <div className="flex gap-2">
               {data.missingTranscripts.length > 0 && (
                 <button

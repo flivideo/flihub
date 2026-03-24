@@ -116,9 +116,9 @@ export function InboxPage() {
 
   if (!projectCode) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <p className="text-gray-500">No project selected</p>
-        <p className="text-sm text-gray-400 mt-1">Select a project to view its inbox</p>
+      <div className="text-center py-12 bg-surface rounded-lg border border-warm">
+        <p className="text-warm-muted">No project selected</p>
+        <p className="text-sm text-warm-muted mt-1">Select a project to view its inbox</p>
       </div>
     );
   }
@@ -136,8 +136,8 @@ export function InboxPage() {
 
   if (subfolders.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <p className="text-gray-500">No inbox folders found</p>
+      <div className="text-center py-12 bg-surface rounded-lg border border-warm">
+        <p className="text-warm-muted">No inbox folders found</p>
       </div>
     );
   }
@@ -147,8 +147,8 @@ export function InboxPage() {
       {/* Header with total count and open folder button */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-medium text-gray-700">Inbox</h2>
-          <span className="text-sm text-gray-500">
+          <h2 className="text-lg font-medium text-warm-secondary">Inbox</h2>
+          <span className="text-sm text-warm-muted">
             ({totalFiles} {totalFiles === 1 ? 'file' : 'files'})
           </span>
         </div>
@@ -169,9 +169,9 @@ export function InboxPage() {
 
       {/* Empty state message */}
       {totalFiles === 0 && (
-        <div className="text-center py-8 text-gray-500 text-sm">
+        <div className="text-center py-8 text-warm-muted text-sm">
           <p>No files in inbox yet.</p>
-          <p className="mt-1 text-gray-400">Files placed in inbox/ subfolders will appear here.</p>
+          <p className="mt-1 text-warm-muted">Files placed in inbox/ subfolders will appear here.</p>
         </div>
       )}
 
@@ -210,9 +210,9 @@ function SubfolderGroup({
     <div>
       {/* Separator row - matches RecordingsView chapter separator */}
       <div className="flex items-center gap-3 mb-3">
-        <div className="h-px bg-gray-300 flex-1" />
+        <div className="h-px bg-warm-strong flex-1" />
         <span
-          className={`text-sm font-semibold px-2 ${isEmpty ? 'text-gray-400' : 'text-gray-700'}`}
+          className={`text-sm font-semibold px-2 ${isEmpty ? 'text-warm-muted' : 'text-warm-secondary'}`}
         >
           {subfolder.name}
           {/* File count and total size */}
@@ -227,7 +227,7 @@ function SubfolderGroup({
             )}
           </span>
         </span>
-        <div className="h-px bg-gray-300 flex-1" />
+        <div className="h-px bg-warm-strong flex-1" />
       </div>
 
       {/* File list - indented under the separator */}
@@ -239,17 +239,17 @@ function SubfolderGroup({
             return (
               <div
                 key={file.filename}
-                className={`flex items-center justify-between px-4 py-2 rounded-lg border bg-gray-50 border-gray-200 ${
-                  viewable ? 'cursor-pointer hover:bg-gray-100 hover:border-gray-300' : ''
+                className={`flex items-center justify-between px-4 py-2 rounded-lg border bg-surface-muted border-warm ${
+                  viewable ? 'cursor-pointer hover:bg-surface-hover hover:border-warm-strong' : ''
                 }`}
                 onClick={() => onFileClick(subfolder.name, file)}
               >
                 <span
-                  className={`font-mono text-sm truncate max-w-md ${viewable ? 'text-blue-600' : 'text-gray-700'}`}
+                  className={`font-mono text-sm truncate max-w-md ${viewable ? 'text-blue-600' : 'text-warm-secondary'}`}
                 >
                   {file.filename}
                 </span>
-                <div className="flex items-center gap-4 text-sm text-gray-400">
+                <div className="flex items-center gap-4 text-sm text-warm-muted">
                   <span>{formatFileSize(file.size)}</span>
                   <span className="w-16 text-right">{formatDate(file.modifiedAt)}</span>
                   {/* Open in browser button for HTML files */}
@@ -259,7 +259,7 @@ function SubfolderGroup({
                         e.stopPropagation();
                         onOpenExternal(subfolder.name, file.filename);
                       }}
-                      className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded transition-colors"
+                      className="p-1 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors"
                       title="Open in browser"
                     >
                       <svg

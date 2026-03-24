@@ -109,8 +109,8 @@ const STAGE_DISPLAY: Record<
   },
   archived: {
     label: 'Arch',
-    bg: 'bg-gray-100',
-    text: 'text-gray-600',
+    bg: 'bg-surface-muted',
+    text: 'text-warm-secondary',
     description: 'Completed and archived',
   },
 };
@@ -122,14 +122,14 @@ function FinalMediaCell({ code }: { code: string }) {
   const { data, isLoading } = useFinalMedia(code);
 
   if (isLoading) {
-    return <span className="text-gray-300">...</span>;
+    return <span className="text-warm-faint">...</span>;
   }
 
   const hasVideo = !!data?.video;
   const hasSrt = !!data?.srt;
 
   if (!hasVideo && !hasSrt) {
-    return <span className="text-gray-300">-</span>;
+    return <span className="text-warm-faint">-</span>;
   }
 
   // Show status: ✅ both, 🎬 video only, 📝 srt only
@@ -353,16 +353,16 @@ function StageCell({
         }}
         className={`text-xs font-medium px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity ${
           stageConfig?.bg || ''
-        } ${stageConfig?.text || 'text-gray-400'}`}
+        } ${stageConfig?.text || 'text-warm-muted'}`}
       >
         {stageConfig?.label || project.stage}
       </button>
       {showDropdown && (
-        <div className="absolute z-50 top-full left-0 mt-1 bg-white border border-gray-200 rounded shadow-lg min-w-[120px]">
+        <div className="absolute z-50 top-full left-0 mt-1 bg-surface border border-warm rounded shadow-lg min-w-[120px]">
           {/* Auto option to reset */}
           <button
             onClick={() => handleSelect('auto')}
-            className="w-full px-2 py-1 text-left text-xs hover:bg-gray-100 flex items-center gap-1 text-gray-600 border-b border-gray-100"
+            className="w-full px-2 py-1 text-left text-xs hover:bg-surface-hover flex items-center gap-1 text-warm-secondary border-b border-warm"
           >
             <span>⟳</span> Auto
           </button>
@@ -374,7 +374,7 @@ function StageCell({
               <button
                 key={stage}
                 onClick={() => handleSelect(stage)}
-                className={`w-full px-2 py-1 text-left text-xs hover:bg-gray-100 flex items-center gap-1 ${
+                className={`w-full px-2 py-1 text-left text-xs hover:bg-surface-hover flex items-center gap-1 ${
                   isActive ? 'font-bold' : ''
                 }`}
               >
@@ -442,7 +442,7 @@ function TranscriptPercentCell({ project }: { project: ProjectStats }) {
   const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
 
   if (project.totalFiles === 0) {
-    return <span className="text-gray-400">-</span>;
+    return <span className="text-warm-muted">-</span>;
   }
 
   const { transcriptPercent, transcriptSync } = project;
@@ -465,7 +465,7 @@ function TranscriptPercentCell({ project }: { project: ProjectStats }) {
     colorClass = 'text-red-500';
     displayText = `${transcriptPercent}%`;
   } else {
-    colorClass = 'text-gray-400';
+    colorClass = 'text-warm-muted';
     displayText = '0%';
   }
 
@@ -622,9 +622,9 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   return (
     <PageContainer>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-medium text-gray-900">
+        <h3 className="font-medium text-warm-primary">
           AppyDave Projects
-          <span className="ml-2 text-sm font-normal text-gray-500">
+          <span className="ml-2 text-sm font-normal text-warm-muted">
             ({projects.length} projects)
           </span>
         </h3>
@@ -632,7 +632,7 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
           onClick={() => {
             queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
           }}
-          className="px-2 py-1 text-sm text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded cursor-pointer transition-colors"
+          className="px-2 py-1 text-sm text-warm-muted hover:text-blue-600 hover:bg-blue-50 rounded cursor-pointer transition-colors"
           title="Refresh project list"
         >
           ↻ Refresh
@@ -642,11 +642,11 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
       {data?.error && <p className="text-sm text-yellow-600 mb-3">{data.error}</p>}
 
       {projects.length === 0 ? (
-        <p className="text-gray-500 text-sm">No projects found</p>
+        <p className="text-warm-muted text-sm">No projects found</p>
       ) : (
         <div>
           <table className="w-full text-sm">
-            <thead className="text-left text-gray-500 border-b">
+            <thead className="text-left text-warm-muted border-b">
               <tr>
                 <th className="pb-2 font-medium w-8" title="Priority"></th>
                 <th className="pb-2 font-medium">Project</th>
@@ -678,7 +678,7 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                 <th className="pb-2 font-medium w-8"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-warm">
               {projects.map((project) => {
                 const isSelected = isProjectSelected(project.path);
                 // Handle legacy 'active' priority by treating as 'normal'
@@ -695,10 +695,10 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                     <td className="py-2">
                       <button
                         onClick={(e) => handlePriorityClick(e, project)}
-                        className="w-6 h-6 flex items-center justify-center hover:bg-gray-200 rounded transition-colors"
+                        className="w-6 h-6 flex items-center justify-center hover:bg-surface-hover rounded transition-colors"
                         title={priorityConfig.title}
                       >
-                        {priorityConfig.icon || <span className="text-gray-300">○</span>}
+                        {priorityConfig.icon || <span className="text-warm-faint">○</span>}
                       </button>
                     </td>
 
@@ -759,16 +759,16 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                             onClick={() =>
                               openFolder({ folder: 'chapters', projectCode: project.code })
                             }
-                            className="text-gray-600 hover:text-blue-600 hover:underline cursor-pointer"
+                            className="text-warm-secondary hover:text-blue-600 hover:underline cursor-pointer"
                             title="Open -chapters folder"
                           >
                             {project.chapterCount}
                           </button>
                         ) : (
-                          <span className="text-gray-600">{project.chapterCount}</span>
+                          <span className="text-warm-secondary">{project.chapterCount}</span>
                         )
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-warm-muted">-</span>
                       )}
                     </td>
 
@@ -779,13 +779,13 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                           onClick={() =>
                             openFolder({ folder: 'recordings', projectCode: project.code })
                           }
-                          className="text-gray-600 hover:text-blue-600 hover:underline cursor-pointer"
+                          className="text-warm-secondary hover:text-blue-600 hover:underline cursor-pointer"
                           title="Open recordings folder"
                         >
                           {project.totalFiles}
                         </button>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-warm-muted">-</span>
                       )}
                     </td>
 
@@ -796,13 +796,13 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                           onClick={() =>
                             openFolder({ folder: 'shadows', projectCode: project.code })
                           }
-                          className="text-gray-600 hover:text-blue-600 hover:underline cursor-pointer"
+                          className="text-warm-secondary hover:text-blue-600 hover:underline cursor-pointer"
                           title="Open recording-shadows folder"
                         >
                           {project.shadowCount}
                         </button>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-warm-muted">-</span>
                       )}
                     </td>
 
@@ -828,7 +828,7 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                     <td className="py-2 relative">
                       <button
                         onClick={(e) => handleInfoClick(e, project)}
-                        className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors"
+                        className="w-6 h-6 flex items-center justify-center text-warm-muted hover:text-blue-600 hover:bg-surface-hover rounded transition-colors"
                         title="View project stats"
                       >
                         ⓘ
@@ -850,14 +850,14 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
 
       {/* FR-12: New Project Form - at bottom of table */}
       {showNewProject ? (
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="mt-4 p-3 bg-surface-muted rounded-lg border border-warm">
           <div className="flex gap-2">
             <input
               type="text"
               value={newProjectCode}
               onChange={(e) => setNewProjectCode(e.target.value.toLowerCase())}
               placeholder="b73-project-name"
-              className="flex-1 px-3 py-1.5 text-sm font-mono border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 px-3 py-1.5 text-sm font-mono border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
               autoFocus
             />
@@ -873,12 +873,12 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                 setShowNewProject(false);
                 setNewProjectCode('');
               }}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 rounded transition-colors"
+              className="px-3 py-1.5 text-sm text-warm-secondary hover:bg-surface-hover rounded transition-colors"
             >
               Cancel
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-2">Use kebab-case (e.g., b73-my-new-video)</p>
+          <p className="text-xs text-warm-muted mt-2">Use kebab-case (e.g., b73-my-new-video)</p>
         </div>
       ) : (
         <button
@@ -891,10 +891,10 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
 
       {/* Bug fix: Show projects with invalid naming in Issues section */}
       {issueProjects.length > 0 && (
-        <div className="mt-6 pt-4 border-t-2 border-gray-300">
-          <h4 className="font-medium text-gray-600 mb-3">
+        <div className="mt-6 pt-4 border-t-2 border-warm-strong">
+          <h4 className="font-medium text-warm-secondary mb-3">
             Issues
-            <span className="ml-2 text-sm font-normal text-gray-400">
+            <span className="ml-2 text-sm font-normal text-warm-muted">
               ({issueProjects.length} projects with invalid naming)
             </span>
           </h4>
@@ -905,11 +905,11 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
                 {/* FR-44: Only project code is clickable */}
                 <button
                   onClick={() => handleSelectProject(project.path, project.code)}
-                  className="font-mono text-gray-600 hover:text-blue-600 hover:underline transition-colors"
+                  className="font-mono text-warm-secondary hover:text-blue-600 hover:underline transition-colors"
                 >
                   {project.code}
                 </button>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-warm-muted">
                   (expected: letter + 2 digits, e.g., b73-name)
                 </span>
               </div>

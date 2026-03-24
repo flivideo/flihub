@@ -220,7 +220,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
       case 'DELETE':
         return 'text-red-600';
       default:
-        return 'text-gray-600';
+        return 'text-warm-secondary';
     }
   };
 
@@ -237,7 +237,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
       case 'DELETE':
         return 'bg-red-100 text-red-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-surface-muted text-warm-secondary';
     }
   };
 
@@ -249,7 +249,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
         <select
           value={value}
           onChange={(e) => updateParam(param.name, e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-warm-strong rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="">-- Select --</option>
           {param.enum.map((option) => (
@@ -267,7 +267,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
           type="checkbox"
           checked={!!value}
           onChange={(e) => updateParam(param.name, e.target.checked)}
-          className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          className="w-5 h-5 text-blue-600 border-warm-strong rounded focus:ring-blue-500"
         />
       );
     }
@@ -278,7 +278,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
           type="number"
           value={value}
           onChange={(e) => updateParam(param.name, e.target.value ? Number(e.target.value) : '')}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-warm-strong rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder={param.example?.toString() || ''}
         />
       );
@@ -289,7 +289,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
         <textarea
           value={typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
           onChange={(e) => updateParam(param.name, e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+          className="w-full px-3 py-2 border border-warm-strong rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
           rows={4}
           placeholder={param.example ? JSON.stringify(param.example, null, 2) : '{}'}
         />
@@ -301,7 +301,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
         type="text"
         value={value}
         onChange={(e) => updateParam(param.name, e.target.value)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full px-3 py-2 border border-warm-strong rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         placeholder={param.example?.toString() || ''}
       />
     );
@@ -310,10 +310,10 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
   return (
     <div className="flex h-[calc(100vh-120px)] gap-4">
       {/* Left Panel: Endpoint List */}
-      <div className="w-80 border border-gray-300 rounded-lg overflow-y-auto bg-white">
-        <div className="sticky top-0 bg-gray-50 border-b border-gray-300 px-4 py-3">
-          <h2 className="font-semibold text-gray-900">Endpoints</h2>
-          <p className="text-xs text-gray-600 mt-1">{API_ENDPOINTS.length} total</p>
+      <div className="w-80 border border-warm-strong rounded-lg overflow-y-auto bg-surface">
+        <div className="sticky top-0 bg-surface-muted border-b border-warm-strong px-4 py-3">
+          <h2 className="font-semibold text-warm-primary">Endpoints</h2>
+          <p className="text-xs text-warm-secondary mt-1">{API_ENDPOINTS.length} total</p>
         </div>
 
         <div className="p-2">
@@ -325,11 +325,11 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
                 {/* Group Header */}
                 <button
                   onClick={() => toggleGroup(groupName)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left font-medium text-warm-secondary hover:bg-surface-hover rounded-md transition-colors"
                 >
-                  <span className="text-gray-500">{isCollapsed ? '▶' : '▼'}</span>
+                  <span className="text-warm-muted">{isCollapsed ? '▶' : '▼'}</span>
                   <span>{groupName}</span>
-                  <span className="ml-auto text-xs text-gray-500">({endpoints.length})</span>
+                  <span className="ml-auto text-xs text-warm-muted">({endpoints.length})</span>
                 </button>
 
                 {/* Endpoint List */}
@@ -342,7 +342,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
                         className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
                           selectedEndpoint?.id === endpoint.id
                             ? 'bg-blue-100 border border-blue-300'
-                            : 'hover:bg-gray-100 border border-transparent'
+                            : 'hover:bg-surface-hover border border-transparent'
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -351,7 +351,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
                           >
                             {endpoint.method}
                           </span>
-                          <span className="text-sm text-gray-700 truncate">
+                          <span className="text-sm text-warm-secondary truncate">
                             {endpoint.path.split('/').slice(3).join('/')}
                           </span>
                         </div>
@@ -366,7 +366,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
       </div>
 
       {/* Right Panel: Request Builder & Response */}
-      <div className="flex-1 border border-gray-300 rounded-lg overflow-y-auto bg-white">
+      <div className="flex-1 border border-warm-strong rounded-lg overflow-y-auto bg-surface">
         {selectedEndpoint ? (
           <div className="p-6">
             {/* Endpoint Header */}
@@ -377,30 +377,30 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
                 >
                   {selectedEndpoint.method}
                 </span>
-                <code className="text-lg text-gray-800">{selectedEndpoint.path}</code>
+                <code className="text-lg text-warm-primary">{selectedEndpoint.path}</code>
               </div>
-              <p className="text-gray-600">{selectedEndpoint.description}</p>
+              <p className="text-warm-secondary">{selectedEndpoint.description}</p>
               {selectedEndpoint.notes && (
-                <p className="text-sm text-gray-500 mt-2 italic">{selectedEndpoint.notes}</p>
+                <p className="text-sm text-warm-muted mt-2 italic">{selectedEndpoint.notes}</p>
               )}
             </div>
 
             {/* Parameters */}
             {selectedEndpoint.parameters.length > 0 && (
               <div className="mb-6">
-                <h3 className="font-semibold text-gray-900 mb-3">Parameters</h3>
+                <h3 className="font-semibold text-warm-primary mb-3">Parameters</h3>
                 <div className="space-y-4">
                   {selectedEndpoint.parameters.map((param) => (
                     <div key={param.name}>
                       <label className="block mb-1">
-                        <span className="text-sm font-medium text-gray-700">{param.name}</span>
+                        <span className="text-sm font-medium text-warm-secondary">{param.name}</span>
                         {param.required && <span className="text-red-500 ml-1">*</span>}
-                        <span className="ml-2 text-xs text-gray-500">
+                        <span className="ml-2 text-xs text-warm-muted">
                           ({param.type}) {param.dataType}
                         </span>
                       </label>
                       {param.description && (
-                        <p className="text-xs text-gray-600 mb-2">{param.description}</p>
+                        <p className="text-xs text-warm-secondary mb-2">{param.description}</p>
                       )}
                       {renderParameterInput(param)}
                     </div>
@@ -415,13 +415,13 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
                 <button
                   onClick={executeRequest}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-surface-muted disabled:cursor-not-allowed font-medium transition-colors"
                 >
                   {isLoading ? 'Sending...' : 'Send Request'}
                 </button>
                 <button
                   onClick={copyAsCurl}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 font-medium transition-colors"
+                  className="px-4 py-2 bg-surface-muted text-warm-secondary rounded-md hover:bg-surface-hover font-medium transition-colors"
                 >
                   Copy as cURL
                 </button>
@@ -440,12 +440,12 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
 
             {/* Response Section */}
             {response && (
-              <div className="border-t border-gray-300 pt-6">
+              <div className="border-t border-warm-strong pt-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900">Response</h3>
+                  <h3 className="font-semibold text-warm-primary">Response</h3>
                   <button
                     onClick={copyResponse}
-                    className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                    className="px-3 py-1 text-sm bg-surface-muted text-warm-secondary rounded-md hover:bg-surface-hover transition-colors"
                   >
                     Copy Response
                   </button>
@@ -467,11 +467,11 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
                 </div>
 
                 {/* Response Body */}
-                <div className="bg-gray-50 border border-gray-300 rounded-md p-4 overflow-x-auto">
+                <div className="bg-surface-muted border border-warm-strong rounded-md p-4 overflow-x-auto">
                   {response.error ? (
                     <div className="text-red-600 font-medium">{response.error}</div>
                   ) : (
-                    <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap">
+                    <pre className="text-sm text-warm-primary font-mono whitespace-pre-wrap">
                       {typeof response.data === 'string'
                         ? response.data
                         : JSON.stringify(response.data, null, 2)}
@@ -483,10 +483,10 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
 
             {/* Example Response */}
             {!response && selectedEndpoint.exampleResponse && (
-              <div className="border-t border-gray-300 pt-6">
-                <h3 className="font-semibold text-gray-900 mb-3">Example Response</h3>
-                <div className="bg-gray-50 border border-gray-300 rounded-md p-4 overflow-x-auto">
-                  <pre className="text-sm text-gray-600 font-mono whitespace-pre-wrap">
+              <div className="border-t border-warm-strong pt-6">
+                <h3 className="font-semibold text-warm-primary mb-3">Example Response</h3>
+                <div className="bg-surface-muted border border-warm-strong rounded-md p-4 overflow-x-auto">
+                  <pre className="text-sm text-warm-secondary font-mono whitespace-pre-wrap">
                     {JSON.stringify(selectedEndpoint.exampleResponse, null, 2)}
                   </pre>
                 </div>
@@ -494,7 +494,7 @@ export default function ApiExplorer({ currentProject }: ApiExplorerProps) {
             )}
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-warm-muted">
             <div className="text-center">
               <p className="text-lg mb-2">Select an endpoint to begin</p>
               <p className="text-sm">Choose from {API_ENDPOINTS.length} available endpoints</p>

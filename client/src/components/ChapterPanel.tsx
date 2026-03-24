@@ -35,15 +35,15 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
   }
 
   return (
-    <div className="bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-lg h-full flex flex-col">
+    <div className="bg-surface rounded-l-lg border border-r-0 border-warm shadow-lg h-full flex flex-col">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+      <div className="px-4 py-3 border-b border-warm flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-warm-secondary uppercase tracking-wide">
           Chapters ({chapters.length})
         </h3>
         <button
           onClick={handleCopyChapters}
-          className="px-2 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors flex items-center gap-1"
+          className="px-2 py-1 text-xs text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors flex items-center gap-1"
           title="Copy chapter data for POEM"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,26 +67,26 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
                 className={`w-full px-4 py-2 text-left flex items-start gap-2 transition-colors ${
                   isActive
                     ? 'bg-blue-50 border-l-2 border-blue-500'
-                    : 'hover:bg-gray-50 border-l-2 border-transparent'
+                    : 'hover:bg-surface-hover border-l-2 border-transparent'
                 }`}
               >
                 <span
                   className={`font-mono text-xs flex-shrink-0 pt-0.5 w-5 ${
-                    isActive ? 'text-blue-400' : 'text-gray-300'
+                    isActive ? 'text-blue-400' : 'text-warm-faint'
                   }`}
                 >
                   {chapter.chapterKey}
                 </span>
                 <span
                   className={`font-mono text-xs flex-shrink-0 pt-0.5 w-14 text-right ${
-                    isActive ? 'text-blue-600' : 'text-gray-400'
+                    isActive ? 'text-blue-600' : 'text-warm-muted'
                   }`}
                 >
                   {formatDuration(chapter.startTime, 'youtube')}
                 </span>
                 <span
                   className={`text-sm leading-tight ${
-                    isActive ? 'text-blue-700 font-medium' : 'text-gray-700'
+                    isActive ? 'text-blue-700 font-medium' : 'text-warm-secondary'
                   }`}
                 >
                   {title || `Chapter ${chapter.chapterKey}`}

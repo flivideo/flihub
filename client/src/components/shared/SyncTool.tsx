@@ -48,7 +48,7 @@ function getStatusBadge(channel: SyncChannelStatus): StatusBadgeConfig {
     case 'conflict':
       return { bg: 'bg-purple-50 border-purple-200', text: 'text-purple-700', label: `${channel.dirtyCount} conflict${channel.dirtyCount !== 1 ? 's' : ''}` };
     default:
-      return { bg: 'bg-gray-50 border-gray-200', text: 'text-gray-500', label: 'Unknown' };
+      return { bg: 'bg-surface-muted border-warm', text: 'text-warm-muted', label: 'Unknown' };
   }
 }
 
@@ -111,7 +111,7 @@ export function SyncTool() {
   };
 
   if (isLoading) {
-    return <div className="text-sm text-gray-500 p-4">Loading sync status...</div>;
+    return <div className="text-sm text-warm-muted p-4">Loading sync status...</div>;
   }
 
   if (!status?.success) {
@@ -131,8 +131,8 @@ export function SyncTool() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">
-          Sync {projectCode && <span className="text-gray-500">&mdash; {projectCode}</span>}
+        <h2 className="text-base font-semibold text-warm-primary">
+          Sync {projectCode && <span className="text-warm-muted">&mdash; {projectCode}</span>}
         </h2>
       </div>
 
@@ -243,7 +243,7 @@ export function SyncTool() {
       {hasConflicts && <ConflictSection conflicts={conflicts} onResolve={handleResolve} isPending={syncResolve.isPending} />}
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-gray-400 border-t border-gray-100 pt-3">
+      <div className="flex items-center justify-between text-xs text-warm-muted border-t border-warm pt-3">
         <span>Role: {isCreator ? 'Creator' : 'Editor'}</span>
       </div>
     </div>
@@ -290,17 +290,17 @@ function ChannelCard({
   const nothingToSync = channel.state === 'clean';
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div className="bg-surface border border-warm rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
+      <div className="px-4 py-3 flex items-center justify-between border-b border-warm">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-base">
               {icon === 'code' ? '💻' : '🎬'}
             </span>
-            <span className="text-sm font-semibold text-gray-900">{title}</span>
+            <span className="text-sm font-semibold text-warm-primary">{title}</span>
           </div>
-          <div className="text-xs text-gray-400 font-mono mt-0.5">{path}</div>
+          <div className="text-xs text-warm-muted font-mono mt-0.5">{path}</div>
         </div>
         <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${badge.text} ${badge.bg} border rounded-full px-2.5 py-0.5`}>
           <span className={`w-1.5 h-1.5 rounded-full ${
@@ -310,7 +310,7 @@ function ChannelCard({
             channel.state === 'ahead' ? 'bg-blue-500' :
             channel.state === 'diverged' ? 'bg-red-500' :
             channel.state === 'conflict' ? 'bg-purple-500' :
-            'bg-gray-400'
+            'bg-warm-muted'
           }`} />
           {badge.label}
         </span>
@@ -328,7 +328,7 @@ function ChannelCard({
       </div>
 
       {/* Actions */}
-      <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-2">
+      <div className="px-4 py-3 border-t border-warm flex items-center gap-2">
         {/* Push button */}
         <div className="relative group">
           <button
@@ -349,13 +349,13 @@ function ChannelCard({
         <button
           onClick={onPull}
           disabled={isPending || hasConflicts || !canPull}
-          className="px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200 rounded hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1.5 text-sm font-medium bg-surface-muted text-warm-secondary border border-warm rounded hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {pullLabel}
         </button>
 
         {nothingToSync && (
-          <span className="text-xs text-gray-400 ml-2">Nothing to sync</span>
+          <span className="text-xs text-warm-muted ml-2">Nothing to sync</span>
         )}
       </div>
     </div>
@@ -366,10 +366,10 @@ function ChannelCard({
 
 function InfoBox({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded px-3 py-2">
-      <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{label}</div>
-      <div className="text-sm font-mono font-medium text-gray-900 mt-0.5">{value}</div>
-      {sub && <div className="text-[10px] text-gray-400 mt-0.5">{sub}</div>}
+    <div className="bg-surface-muted border border-warm rounded px-3 py-2">
+      <div className="text-[10px] font-semibold text-warm-muted uppercase tracking-wider">{label}</div>
+      <div className="text-sm font-mono font-medium text-warm-primary mt-0.5">{value}</div>
+      {sub && <div className="text-[10px] text-warm-muted mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -397,9 +397,9 @@ function ConflictSection({ conflicts, onResolve, isPending }: ConflictSectionPro
 
       <div className="space-y-2">
         {conflicts.map((conflict) => (
-          <div key={conflict.path} className="bg-white border border-purple-200 rounded-lg px-4 py-3">
+          <div key={conflict.path} className="bg-surface border border-purple-200 rounded-lg px-4 py-3">
             <div className="font-mono text-sm text-purple-900 mb-1">{conflict.path}</div>
-            <div className="text-xs text-gray-500 mb-2">
+            <div className="text-xs text-warm-muted mb-2">
               {conflict.status === 'both-modified' ? 'Both modified. Choose which to keep:' :
                conflict.status === 'deleted-by-them' ? 'Deleted remotely, modified locally:' :
                conflict.status === 'deleted-by-us' ? 'Deleted locally, modified remotely:' :
@@ -416,7 +416,7 @@ function ConflictSection({ conflicts, onResolve, isPending }: ConflictSectionPro
               <button
                 onClick={() => onResolve(conflict.path, 'keep-theirs')}
                 disabled={isPending}
-                className="px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200 rounded hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-sm font-medium bg-surface-muted text-warm-secondary border border-warm rounded hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Keep theirs
               </button>

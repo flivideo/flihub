@@ -43,10 +43,10 @@ export function ClipboardPasteModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div className="bg-surface rounded-lg shadow-xl max-w-md w-full mx-4">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Paste Image from Clipboard</h3>
+        <div className="px-6 py-4 border-b border-warm">
+          <h3 className="text-lg font-semibold text-warm-primary">Paste Image from Clipboard</h3>
         </div>
 
         {/* Content */}
@@ -56,25 +56,25 @@ export function ClipboardPasteModal({
             <img
               src={imageData}
               alt="Clipboard preview"
-              className="max-w-full max-h-48 object-contain border border-gray-200 rounded"
+              className="max-w-full max-h-48 object-contain border border-warm rounded"
             />
           </div>
 
           {/* Filename Preview */}
-          <div className="text-sm text-gray-600 mb-2">Will be saved as:</div>
-          <div className="font-mono text-sm bg-gray-50 px-3 py-2 rounded border border-gray-200 text-gray-800">
+          <div className="text-sm text-warm-secondary mb-2">Will be saved as:</div>
+          <div className="font-mono text-sm bg-surface-muted px-3 py-2 rounded border border-warm text-warm-primary">
             {previewFilename || 'Set chapter/sequence/label first'}
           </div>
         </div>
 
         {/* Actions */}
-        <div className="px-6 py-4 border-t border-gray-200 space-y-3">
+        <div className="px-6 py-4 border-t border-warm space-y-3">
           {/* Primary actions row */}
           <div className="flex justify-between gap-3">
             <button
               onClick={onCancel}
               disabled={isPending}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm text-warm-secondary hover:text-warm-primary hover:bg-surface-hover rounded transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
@@ -92,7 +92,7 @@ export function ClipboardPasteModal({
             <button
               onClick={onSaveToIncoming}
               disabled={isPending}
-              className="text-sm text-gray-500 hover:text-gray-700 hover:underline transition-colors disabled:opacity-50"
+              className="text-sm text-warm-muted hover:text-warm-secondary hover:underline transition-colors disabled:opacity-50"
             >
               {isSavingToIncoming ? 'Saving...' : 'or save to incoming folder'}
             </button>

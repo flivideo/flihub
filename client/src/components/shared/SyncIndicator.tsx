@@ -22,13 +22,13 @@ interface StateStyle {
 }
 
 const stateStyles: Record<SyncState, StateStyle> = {
-  clean:    { dot: 'bg-green-600',  text: 'text-gray-500',   bg: '',              badgeBg: '' },
+  clean:    { dot: 'bg-green-600',  text: 'text-warm-muted',   bg: '',              badgeBg: '' },
   dirty:    { dot: 'bg-red-600',    text: 'text-red-600',    bg: 'bg-red-50',     badgeBg: 'bg-red-600' },
   behind:   { dot: 'bg-orange-500', text: 'text-orange-600', bg: 'bg-orange-50',  badgeBg: 'bg-orange-500' },
   ahead:    { dot: 'bg-blue-500',   text: 'text-blue-600',   bg: 'bg-blue-50',    badgeBg: 'bg-blue-500' },
   diverged: { dot: 'bg-red-600',    text: 'text-red-600',    bg: 'bg-red-50',     badgeBg: 'bg-red-600' },
   conflict: { dot: 'bg-purple-600', text: 'text-purple-600', bg: 'bg-purple-50',  badgeBg: 'bg-purple-600' },
-  unknown:  { dot: 'bg-gray-400',   text: 'text-gray-400',   bg: '',              badgeBg: '' },
+  unknown:  { dot: 'bg-warm-muted',   text: 'text-warm-muted',   bg: '',              badgeBg: '' },
 };
 
 function getBadgeContent(status: SyncChannelStatus): string | null {
@@ -73,7 +73,7 @@ function Pill({ icon, label, status, onClick }: PillProps) {
     <button
       onClick={onClick}
       title={tooltip}
-      className={`flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded cursor-pointer transition-colors hover:bg-gray-100 ${style.bg} ${style.text}`}
+      className={`flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded cursor-pointer transition-colors hover:bg-surface-hover ${style.bg} ${style.text}`}
     >
       <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0 ${style.dot}`} />
       <span className="font-medium">{icon} {label}</span>

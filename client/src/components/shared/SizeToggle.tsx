@@ -22,7 +22,7 @@ export function SizeToggle<T extends string>({
           className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
             value === size
               ? 'bg-blue-500 text-white'
-              : 'text-gray-500 hover:bg-gray-100 border border-gray-200'
+              : 'text-warm-muted hover:bg-surface-hover border border-warm'
           }`}
           title={labels?.[size] ?? size}
         >

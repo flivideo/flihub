@@ -84,7 +84,7 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg w-full max-w-3xl max-h-[85vh] flex flex-col mx-4"
+        className="bg-surface rounded-lg w-full max-w-3xl max-h-[85vh] flex flex-col mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -92,12 +92,12 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
           <div className="flex items-center gap-4">
             <h3 className="font-medium text-lg">Video Transcript</h3>
             {/* Toggle for chapter headings */}
-            <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+            <label className="flex items-center gap-1.5 text-sm text-warm-secondary cursor-pointer">
               <input
                 type="checkbox"
                 checked={showChapterHeadings}
                 onChange={(e) => setShowChapterHeadings(e.target.checked)}
-                className="w-3.5 h-3.5 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                className="w-3.5 h-3.5 rounded border-warm-strong text-blue-500 focus:ring-blue-500"
               />
               Chapter headings
             </label>
@@ -121,7 +121,7 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+              className="p-1.5 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors"
               title="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,13 +139,13 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
         {/* Content */}
         <div className="p-4 overflow-y-auto flex-1">
           {isLoading ? (
-            <div className="text-gray-500 text-center py-12">Loading transcript...</div>
+            <div className="text-warm-muted text-center py-12">Loading transcript...</div>
           ) : error ? (
             <div className="text-red-500 text-center py-12">
               {error instanceof Error ? error.message : 'Failed to load transcript'}
             </div>
           ) : !data?.chapters?.length ? (
-            <div className="text-gray-500 text-center py-12">
+            <div className="text-warm-muted text-center py-12">
               No transcripts available. Transcribe recordings first.
             </div>
           ) : showChapterHeadings ? (
@@ -155,11 +155,11 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
                 const title = formatChapterTitle(ch.title);
                 return (
                   <div key={ch.chapter}>
-                    <h4 className="font-semibold text-gray-800 mb-1">
+                    <h4 className="font-semibold text-warm-primary mb-1">
                       Chapter {parseInt(ch.chapter, 10)}: {title}
                     </h4>
-                    <div className="h-px bg-gray-200 mb-3" />
-                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    <div className="h-px bg-warm mb-3" />
+                    <div className="text-sm text-warm-secondary leading-relaxed whitespace-pre-wrap">
                       {ch.content}
                     </div>
                   </div>
@@ -168,7 +168,7 @@ export function VideoTranscriptModal({ onClose }: VideoTranscriptModalProps) {
             </div>
           ) : (
             // Raw transcript (no headings)
-            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+            <div className="text-sm text-warm-secondary leading-relaxed whitespace-pre-wrap">
               {data.chapters.map((ch) => ch.content).join('\n\n')}
             </div>
           )}

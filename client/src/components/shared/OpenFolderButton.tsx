@@ -14,7 +14,7 @@ export function OpenFolderButton({ folder, label, className = '' }: OpenFolderBu
     <button
       onClick={() => openFolder(folder)}
       disabled={isPending}
-      className={`p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors flex items-center gap-1 ${className}`}
+      className={`p-1 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors flex items-center gap-1 ${className}`}
       title="Open in Finder"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

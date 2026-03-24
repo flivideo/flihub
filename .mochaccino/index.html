@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mochaccino — FliHub Design Gallery</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f0f4f8;
+    color: #1a2332;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+  }
+  .header {
+    background: #1a2332;
+    padding: 24px 40px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .header-title {
+    color: #3b82f6;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .header-sub {
+    color: #64748b;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+  .header-badge {
+    margin-left: auto;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .banner {
+    background: #e2e8f0;
+    border-bottom: 1px solid #cbd5e1;
+    padding: 8px 40px;
+    font-size: 11px;
+    color: #64748b;
+    font-family: ui-monospace, 'SF Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+  .gallery {
+    padding: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+    gap: 28px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    box-shadow: 0 4px 16px rgba(15,23,42,0.12);
+    transform: translateY(-2px);
+  }
+  .card-header {
+    background: #1e293b;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .card-num {
+    color: #3b82f6;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    min-width: 32px;
+  }
+  .card-title {
+    color: #f1f5f9;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .card-tagline {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .card-date {
+    margin-left: auto;
+    color: #475569;
+    font-size: 11px;
+    font-family: ui-monospace, 'SF Mono', monospace;
+  }
+  .card-body {
+    padding: 16px 20px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .card-links {
+    display: flex;
+    gap: 10px;
+  }
+  .link-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: background 0.12s;
+  }
+  .link-primary {
+    background: #3b82f6;
+    color: #fff;
+  }
+  .link-primary:hover { background: #2563eb; }
+  .link-secondary {
+    background: #f1f5f9;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+  }
+  .link-secondary:hover { background: #e2e8f0; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="header-title">FliHub</span>
+  <span class="header-sub">Design Gallery — Mochaccino</span>
+  <span class="header-badge">3 designs</span>
+</div>
+<div class="banner">Mochaccino — flihub — 2026-03-24 — feature mockups for video recording workflows</div>
+<div class="gallery">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-num">1</span>
+      <div>
+        <div class="card-title">Recording Editor</div>
+        <div class="card-tagline">Inline rename, renumber, and chapter split</div>
+      </div>
+      <span class="card-date">2026-03-23</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">Edit where you see the problem. The Recordings page becomes the editor — click any filename segment to rename inline, select files for batch operations, and split chapters with a visual divider. Full preview panel shows every change before committing, with 30-second undo safety net.</p>
+      <div class="card-links">
+        <a href="designs/recording-editor/index.html" class="link-btn link-primary">View Mockup →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-num">2</span>
+      <div>
+        <div class="card-title">Sync Hub</div>
+        <div class="card-tagline">Two-channel git sync with conflict UI</div>
+      </div>
+      <span class="card-date">2026-03-23</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">Persistent sync status indicators in the header showing git push/pull state across two channels (code and project data). Conflict resolution UI surfaces merge issues inline rather than hiding them in terminal output.</p>
+      <div class="card-links">
+        <a href="designs/sync-hub/index.html" class="link-btn link-primary">View Mockup →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-num">3</span>
+      <div>
+        <div class="card-title">Relay Redesign</div>
+        <div class="card-tagline">Workflow lanes and file drawers</div>
+      </div>
+      <span class="card-date">2026-03-22</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">Relay collaboration UX reimagined with workflow lanes showing creator-to-editor handoff stages, and file drawers that group related assets (recordings, shadows, transcripts) for each workflow step.</p>
+      <div class="card-links">
+        <a href="designs/relay-redesign/index.html" class="link-btn link-primary">View Mockup →</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

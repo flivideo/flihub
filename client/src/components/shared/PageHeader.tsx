@@ -8,7 +8,7 @@ interface PageHeaderProps {
 export function PageHeader({ title, children }: PageHeaderProps) {
   return (
     <div className="flex items-center gap-2 mb-4">
-      <h2 className="text-lg font-medium text-gray-700">{title}</h2>
+      <h2 className="text-lg font-medium text-warm-secondary">{title}</h2>
       {children}
     </div>
   );

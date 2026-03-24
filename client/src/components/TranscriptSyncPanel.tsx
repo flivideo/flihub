@@ -157,29 +157,29 @@ export function TranscriptSyncPanel({
   // Render transcript with highlighting
   const renderTranscript = () => {
     if (loading) {
-      return <div className="text-center py-8 text-gray-400">Loading transcript...</div>;
+      return <div className="text-center py-8 text-warm-muted">Loading transcript...</div>;
     }
 
     if (error) {
-      return <div className="text-center py-8 text-gray-400">{error}</div>;
+      return <div className="text-center py-8 text-warm-muted">{error}</div>;
     }
 
     if (srtEntries.length === 0) {
-      return <div className="text-center py-8 text-gray-400">No transcript available</div>;
+      return <div className="text-center py-8 text-warm-muted">No transcript available</div>;
     }
 
     if (mode === 'none') {
       // None mode: plain text, no highlighting, but still clickable
       const fullText = srtEntries.map((e) => e.text).join(' ');
       return (
-        <div className="leading-relaxed text-sm text-gray-700 whitespace-pre-wrap">{fullText}</div>
+        <div className="leading-relaxed text-sm text-warm-secondary whitespace-pre-wrap">{fullText}</div>
       );
     }
 
     if (mode === 'phrase') {
       // Phrase mode: highlight entire SRT entries
       return (
-        <div className="leading-relaxed text-sm text-gray-700">
+        <div className="leading-relaxed text-sm text-warm-secondary">
           {srtEntries.map((entry, i) => {
             const isHighlighted = currentEntry?.index === entry.index;
             return (
@@ -188,7 +188,7 @@ export function TranscriptSyncPanel({
                 ref={isHighlighted ? highlightedRef : null}
                 onClick={() => handleWordClick(entry.startTime)}
                 className={`cursor-pointer transition-colors duration-150 ${
-                  isHighlighted ? 'bg-yellow-200 text-gray-900 px-1 rounded' : 'hover:bg-gray-100'
+                  isHighlighted ? 'bg-yellow-200 text-warm-primary px-1 rounded' : 'hover:bg-surface-hover'
                 }`}
               >
                 {entry.text}
@@ -202,7 +202,7 @@ export function TranscriptSyncPanel({
 
     // Word mode: highlight individual words
     return (
-      <div className="leading-relaxed text-sm text-gray-700">
+      <div className="leading-relaxed text-sm text-warm-secondary">
         {timedWords.map((tw, i) => {
           const isHighlighted = currentWord?.startTime === tw.startTime;
           return (
@@ -212,8 +212,8 @@ export function TranscriptSyncPanel({
               onClick={() => handleWordClick(tw.startTime)}
               className={`cursor-pointer transition-colors duration-100 ${
                 isHighlighted
-                  ? 'bg-yellow-300 text-gray-900 px-0.5 rounded font-medium'
-                  : 'hover:bg-gray-100'
+                  ? 'bg-yellow-300 text-warm-primary px-0.5 rounded font-medium'
+                  : 'hover:bg-surface-hover'
               }`}
             >
               {tw.word}
@@ -226,15 +226,15 @@ export function TranscriptSyncPanel({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface rounded-lg border border-warm overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-between bg-gray-50">
+      <div className="px-4 py-3 flex items-center justify-between bg-surface-muted">
         <button
           onClick={onToggleCollapse}
-          className="flex items-center gap-2 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-2 hover:text-warm-primary transition-colors"
         >
-          <span className="text-gray-500">📝</span>
-          <span className="font-medium text-gray-700">
+          <span className="text-warm-muted">📝</span>
+          <span className="font-medium text-warm-secondary">
             {chapterName ? 'Chapter Transcript Sync' : 'Transcript Sync'}
           </span>
           {chapterName && (
@@ -242,7 +242,7 @@ export function TranscriptSyncPanel({
               Chapter
             </span>
           )}
-          <span className="text-gray-400 text-sm">{isCollapsed ? '▼' : '▲'}</span>
+          <span className="text-warm-muted text-sm">{isCollapsed ? '▼' : '▲'}</span>
         </button>
 
         {/* Mode Toggle */}
@@ -251,8 +251,8 @@ export function TranscriptSyncPanel({
             onClick={handleModeToggle}
             className={`px-3 py-1 text-xs rounded-full transition-colors ${
               mode === 'none'
-                ? 'bg-gray-100 text-gray-400'
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                ? 'bg-surface-muted text-warm-muted'
+                : 'bg-surface-muted hover:bg-surface-hover text-warm-secondary'
             }`}
             title={`Currently: ${mode} mode. Click to cycle: Word → Phrase → None`}
           >

@@ -20,10 +20,10 @@ export function ToolsSidebar({
   onToolClick,
 }: ToolsSidebarProps) {
   return (
-    <div className="h-full bg-gray-50 border-r border-gray-200 p-4 flex flex-col gap-6">
+    <div className="h-full bg-surface-muted border-r border-warm p-4 flex flex-col gap-6">
       {/* Record group */}
       <div>
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+        <div className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-3 px-2">
           Record
         </div>
         <div className="flex flex-col gap-1">
@@ -38,7 +38,7 @@ export function ToolsSidebar({
 
       {/* Edit group */}
       <div>
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+        <div className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-3 px-2">
           Edit
         </div>
         <div className="flex flex-col gap-1">
@@ -59,7 +59,7 @@ export function ToolsSidebar({
 
       {/* Collaborate group */}
       <div>
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
+        <div className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-3 px-2">
           Collaborate
         </div>
         <div className="flex flex-col gap-1">
@@ -101,10 +101,10 @@ function ToolButton({ label, disabled = false, active, onClick, tooltip }: ToolB
         transition-all duration-200 border-l-2
         ${
           disabled
-            ? 'bg-transparent text-gray-300 cursor-not-allowed border-transparent'
+            ? 'bg-transparent text-warm-faint cursor-not-allowed border-transparent'
             : active
-              ? 'bg-gray-100 text-blue-600 border-blue-600'
-              : 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 border-transparent hover:border-gray-300'
+              ? 'bg-surface-muted text-blue-600 border-blue-600'
+              : 'bg-transparent text-warm-secondary hover:bg-surface-hover hover:text-warm-primary border-transparent hover:border-warm-strong'
         }
       `}
     >

@@ -35,7 +35,7 @@ function ChapterStatusIcon({ status }: { status: ChapterMatch['status'] }) {
 function StatRow({
   label,
   value,
-  valueClass = 'text-gray-700',
+  valueClass = 'text-warm-secondary',
 }: {
   label: string;
   value: React.ReactNode;
@@ -43,7 +43,7 @@ function StatRow({
 }) {
   return (
     <div className="flex justify-between text-sm">
-      <span className="text-gray-500">{label}</span>
+      <span className="text-warm-muted">{label}</span>
       <span className={valueClass}>{value}</span>
     </div>
   );
@@ -51,7 +51,7 @@ function StatRow({
 
 // Section header component
 function SectionHeader({ children }: { children: React.ReactNode }) {
-  return <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">{children}</div>;
+  return <div className="text-xs text-warm-muted uppercase tracking-wide mb-1">{children}</div>;
 }
 
 // Match method badge
@@ -84,41 +84,41 @@ function HelpAIModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl p-4 w-[500px] max-w-[90vw]"
+        className="bg-surface rounded-lg shadow-xl p-4 w-[500px] max-w-[90vw]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-3">
-          <h3 className="font-semibold text-gray-800">Help AI Fix Chapter {chapter.chapter}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <h3 className="font-semibold text-warm-primary">Help AI Fix Chapter {chapter.chapter}</h3>
+          <button onClick={onClose} className="text-warm-muted hover:text-warm-secondary">
             &times;
           </button>
         </div>
 
         <div className="mb-3">
-          <div className="text-sm text-gray-600 mb-2">
+          <div className="text-sm text-warm-secondary mb-2">
             <strong>{chapter.displayName}</strong>
             {chapter.timestamp && (
-              <span className="ml-2 text-gray-400">Current: {chapter.timestamp}</span>
+              <span className="ml-2 text-warm-muted">Current: {chapter.timestamp}</span>
             )}
           </div>
 
           {chapter.transcriptSnippet && (
-            <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded mb-2">
-              <div className="text-[10px] text-gray-400 uppercase mb-1">Transcript Start</div>
+            <div className="text-xs text-warm-muted bg-surface-muted p-2 rounded mb-2">
+              <div className="text-[10px] text-warm-muted uppercase mb-1">Transcript Start</div>
               {chapter.transcriptSnippet}
             </div>
           )}
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-warm-secondary mb-1">
             What happened with this chapter?
           </label>
           <textarea
             value={hint}
             onChange={(e) => setHint(e.target.value)}
             placeholder='e.g., "First 15 seconds were cut", "Starts around 53:04", "Chapter was merged with the previous one"'
-            className="w-full h-20 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full h-20 px-3 py-2 border border-warm-strong rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isLoading}
           />
         </div>
@@ -126,7 +126,7 @@ function HelpAIModal({
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+            className="px-4 py-2 text-sm text-warm-secondary hover:text-warm-primary"
             disabled={isLoading}
           >
             Cancel
@@ -165,41 +165,41 @@ function ManualEntryModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl p-4 w-[400px] max-w-[90vw]"
+        className="bg-surface rounded-lg shadow-xl p-4 w-[400px] max-w-[90vw]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-3">
-          <h3 className="font-semibold text-gray-800">
+          <h3 className="font-semibold text-warm-primary">
             Set Timestamp for Chapter {chapter.chapter}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-warm-muted hover:text-warm-secondary">
             &times;
           </button>
         </div>
 
-        <div className="text-sm text-gray-600 mb-3">
+        <div className="text-sm text-warm-secondary mb-3">
           <strong>{chapter.displayName}</strong>
         </div>
 
         <div className="mb-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Timestamp</label>
+          <label className="block text-sm font-medium text-warm-secondary mb-1">Timestamp</label>
           <input
             type="text"
             value={timestamp}
             onChange={(e) => setTimestamp(e.target.value)}
             placeholder="MM:SS or H:MM:SS"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-warm-strong rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Reason (optional)</label>
+          <label className="block text-sm font-medium text-warm-secondary mb-1">Reason (optional)</label>
           <input
             type="text"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="e.g., Manually verified, content was cut"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-warm-strong rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -213,7 +213,7 @@ function ManualEntryModal({
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              className="px-4 py-2 text-sm text-warm-secondary hover:text-warm-primary"
             >
               Cancel
             </button>
@@ -422,7 +422,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
 
   return (
     <div
-      className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-xl p-5"
+      className="absolute z-50 bg-surface border border-warm rounded-lg shadow-xl p-5"
       style={{ top: '100%', right: 0, marginTop: '4px', width: '720px' }}
     >
       {/* Help AI Modal */}
@@ -455,17 +455,17 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
       )}
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
+      <div className="flex justify-between items-center mb-4 pb-3 border-b border-warm">
         <div className="flex items-center gap-3">
           <span className="font-mono font-bold text-lg text-blue-600">{project.code}</span>
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-warm-muted">
             Created {formatDate(project.createdAt)} · Last edit{' '}
             {formatRelativeTime(project.lastModified)}
           </span>
         </div>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 text-xl leading-none px-2"
+          className="text-warm-muted hover:text-warm-secondary text-xl leading-none px-2"
         >
           &times;
         </button>
@@ -486,11 +486,11 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
           <StatRow label="Images" value={project.imageCount} />
           <StatRow label="Thumbs" value={project.thumbCount} />
           {/* FR-48: Enhanced transcript sync status */}
-          <div className="text-sm pt-1 border-t border-gray-100 mt-1">
-            <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Transcripts</div>
+          <div className="text-sm pt-1 border-t border-warm mt-1">
+            <div className="text-xs text-warm-muted uppercase tracking-wide mb-1">Transcripts</div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-500">✓ Matched:</span>
-              <span className="text-gray-700">{project.transcriptSync.matched}</span>
+              <span className="text-warm-muted">✓ Matched:</span>
+              <span className="text-warm-secondary">{project.transcriptSync.matched}</span>
             </div>
             {project.transcriptSync.missingCount > 0 && (
               <div className="flex items-center justify-between">
@@ -520,7 +520,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
         <div className="space-y-1">
           <SectionHeader>Final Media</SectionHeader>
           {loadingFinalMedia ? (
-            <div className="text-sm text-gray-400">Loading...</div>
+            <div className="text-sm text-warm-muted">Loading...</div>
           ) : (
             <>
               <StatRow
@@ -530,11 +530,11 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                     <span className="text-green-600">
                       ✅ {formatFileSize(finalMedia.video.size)}
                       {finalMedia.video.version && (
-                        <span className="text-gray-400 ml-1">v{finalMedia.video.version}</span>
+                        <span className="text-warm-muted ml-1">v{finalMedia.video.version}</span>
                       )}
                     </span>
                   ) : (
-                    <span className="text-gray-400">-</span>
+                    <span className="text-warm-muted">-</span>
                   )
                 }
               />
@@ -552,12 +552,12 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                         : finalMedia.srt.filename}
                     </span>
                   ) : (
-                    <span className="text-gray-400">-</span>
+                    <span className="text-warm-muted">-</span>
                   )
                 }
               />
               {finalMedia?.video && (
-                <div className="text-xs text-gray-400 mt-1">📁 {finalMedia.video.location}</div>
+                <div className="text-xs text-warm-muted mt-1">📁 {finalMedia.video.location}</div>
               )}
             </>
           )}
@@ -566,11 +566,11 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
 
       {/* Additional Segments (if any) */}
       {finalMedia?.additionalSegments && finalMedia.additionalSegments.length > 0 && (
-        <div className="mb-4 pb-3 border-b border-gray-100">
+        <div className="mb-4 pb-3 border-b border-warm">
           <SectionHeader>Additional Segments</SectionHeader>
           <div className="flex flex-wrap gap-2 mt-1">
             {finalMedia.additionalSegments.map((seg, i) => (
-              <span key={i} className="text-xs bg-gray-100 px-2 py-1 rounded">
+              <span key={i} className="text-xs bg-surface-muted px-2 py-1 rounded">
                 {seg.filename} {seg.hasSrt && '📝'}
               </span>
             ))}
@@ -580,12 +580,12 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
 
       {/* FR-34: Chapter Timestamps */}
       {finalMedia?.srt && (
-        <div className="border-t border-gray-200 pt-3">
+        <div className="border-t border-warm pt-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <SectionHeader>Chapters</SectionHeader>
               {chaptersData?.stats && (
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-warm-muted">
                   ({chaptersData.stats.chaptersFound}/{chaptersData.stats.chaptersTotal} matched in{' '}
                   {chaptersData.stats.elapsedMs}ms)
                 </span>
@@ -594,7 +594,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
             <div className="flex gap-2">
               <button
                 onClick={handleToggleChapters}
-                className="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-600"
+                className="text-xs px-3 py-1 bg-surface-muted hover:bg-surface-hover rounded text-warm-secondary"
                 title={showChapters ? 'Hide chapters' : 'Show chapters'}
               >
                 {showChapters ? '▲ Hide' : '▼ Show'}
@@ -618,7 +618,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
           {showChapters && (
             <div className="mt-2">
               {loadingChapters ? (
-                <div className="text-sm text-gray-400 py-4 text-center">Extracting chapters...</div>
+                <div className="text-sm text-warm-muted py-4 text-center">Extracting chapters...</div>
               ) : chaptersData?.error ? (
                 <div className="text-sm text-red-500 py-2">{chaptersData.error}</div>
               ) : chaptersData?.chapters && chaptersData.chapters.length > 0 ? (
@@ -691,22 +691,22 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                   };
 
                   return (
-                    <div className="max-h-80 overflow-y-auto border border-gray-100 rounded">
+                    <div className="max-h-80 overflow-y-auto border border-warm rounded">
                       <table className="w-full text-xs">
-                        <thead className="bg-gray-50 sticky top-0">
+                        <thead className="bg-surface-muted sticky top-0">
                           <tr>
-                            <th className="text-left py-1 px-2 text-gray-500 font-medium w-8">#</th>
-                            <th className="text-left py-1 px-2 text-gray-500 font-medium w-6"></th>
-                            <th className="text-left py-1 px-2 text-gray-500 font-medium w-16">
+                            <th className="text-left py-1 px-2 text-warm-muted font-medium w-8">#</th>
+                            <th className="text-left py-1 px-2 text-warm-muted font-medium w-6"></th>
+                            <th className="text-left py-1 px-2 text-warm-muted font-medium w-16">
                               Time
                             </th>
-                            <th className="text-left py-1 px-2 text-gray-500 font-medium">
+                            <th className="text-left py-1 px-2 text-warm-muted font-medium">
                               Chapter
                             </th>
-                            <th className="text-right py-1 px-2 text-gray-500 font-medium w-12">
+                            <th className="text-right py-1 px-2 text-warm-muted font-medium w-12">
                               Conf
                             </th>
-                            <th className="text-center py-1 px-2 text-gray-500 font-medium w-20">
+                            <th className="text-center py-1 px-2 text-warm-muted font-medium w-20">
                               Actions
                             </th>
                           </tr>
@@ -726,7 +726,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                             return (
                               <React.Fragment key={`${ch.chapter}-${ch.name}`}>
                                 <tr
-                                  className={`border-t border-gray-50 ${
+                                  className={`border-t border-warm ${
                                     ch.status === 'not_found'
                                       ? 'bg-red-50'
                                       : ch.status === 'low_confidence'
@@ -744,7 +744,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                   }
                                 >
                                   <td
-                                    className={`py-1 px-2 font-mono ${outOfOrder ? 'text-pink-600 font-semibold' : 'text-gray-400'}`}
+                                    className={`py-1 px-2 font-mono ${outOfOrder ? 'text-pink-600 font-semibold' : 'text-warm-muted'}`}
                                   >
                                     {ch.chapter}
                                     {outOfOrder && <span className="ml-1">⚡</span>}
@@ -752,11 +752,11 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                   <td className="py-1 px-2">
                                     <ChapterStatusIcon status={ch.status} />
                                   </td>
-                                  <td className="py-1 px-2 font-mono text-gray-600">
+                                  <td className="py-1 px-2 font-mono text-warm-secondary">
                                     {ch.timestamp || '???'}
                                   </td>
                                   <td
-                                    className={`py-1 px-2 ${ch.status === 'not_found' ? 'text-gray-400' : 'text-gray-700'} ${hasDetails ? 'cursor-pointer hover:text-blue-600' : ''}`}
+                                    className={`py-1 px-2 ${ch.status === 'not_found' ? 'text-warm-muted' : 'text-warm-secondary'} ${hasDetails ? 'cursor-pointer hover:text-blue-600' : ''}`}
                                     onClick={() =>
                                       hasDetails &&
                                       setExpandedChapter(isExpanded ? null : ch.chapter)
@@ -769,7 +769,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                       </span>
                                     )}
                                     {hasDetails && (
-                                      <span className="ml-1 text-gray-400">
+                                      <span className="ml-1 text-warm-muted">
                                         {isExpanded ? '▲' : '▼'}
                                       </span>
                                     )}
@@ -777,7 +777,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                   <td className="py-1 px-2 text-right">
                                     {/* 3-state confidence badge: CONFIDENT (>=80), REVIEW (50-79), UNCERTAIN (<50) */}
                                     {ch.status === 'not_found' ? (
-                                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">
+                                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-muted text-warm-secondary">
                                         —
                                       </span>
                                     ) : ch.confidence >= 80 ? (
@@ -807,7 +807,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                   </td>
                                   <td className="py-1 px-2 text-center">
                                     {isVerifying ? (
-                                      <span className="text-gray-400 animate-pulse">...</span>
+                                      <span className="text-warm-muted animate-pulse">...</span>
                                     ) : result ? (
                                       <span
                                         className={
@@ -834,7 +834,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                         </button>
                                         <button
                                           onClick={() => setManualEntryChapter(ch)}
-                                          className="text-[10px] px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded"
+                                          className="text-[10px] px-1.5 py-0.5 bg-surface-muted hover:bg-surface-hover text-warm-secondary rounded"
                                           title="Manual Entry"
                                         >
                                           ✏️
@@ -848,13 +848,13 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                 {isExpanded && hasDetails && (
                                   <tr
                                     key={`${ch.chapter}-${ch.name}-details`}
-                                    className="bg-gray-50"
+                                    className="bg-surface-muted"
                                   >
                                     <td colSpan={6} className="px-3 py-2">
                                       <div className="space-y-2">
                                         {/* Match reason - human readable explanation */}
                                         {ch.matchReason && (
-                                          <div className="text-xs text-gray-600 italic bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                                          <div className="text-xs text-warm-secondary italic bg-blue-50 px-2 py-1 rounded border border-blue-100">
                                             {ch.matchReason}
                                           </div>
                                         )}
@@ -862,24 +862,24 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                         {(ch.matchedText || ch.transcriptSnippet) && (
                                           <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                              <div className="text-[10px] text-gray-400 uppercase mb-1">
+                                              <div className="text-[10px] text-warm-muted uppercase mb-1">
                                                 Matched SRT Text
                                               </div>
-                                              <div className="text-xs text-gray-600 bg-white p-2 rounded border border-gray-200 max-h-16 overflow-y-auto">
+                                              <div className="text-xs text-warm-secondary bg-surface p-2 rounded border border-warm max-h-16 overflow-y-auto">
                                                 {ch.matchedText || (
-                                                  <span className="text-gray-400 italic">
+                                                  <span className="text-warm-muted italic">
                                                     No match
                                                   </span>
                                                 )}
                                               </div>
                                             </div>
                                             <div>
-                                              <div className="text-[10px] text-gray-400 uppercase mb-1">
+                                              <div className="text-[10px] text-warm-muted uppercase mb-1">
                                                 Transcript Start
                                               </div>
-                                              <div className="text-xs text-gray-600 bg-white p-2 rounded border border-gray-200 max-h-16 overflow-y-auto">
+                                              <div className="text-xs text-warm-secondary bg-surface p-2 rounded border border-warm max-h-16 overflow-y-auto">
                                                 {ch.transcriptSnippet || (
-                                                  <span className="text-gray-400 italic">
+                                                  <span className="text-warm-muted italic">
                                                     No transcript
                                                   </span>
                                                 )}
@@ -891,18 +891,18 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                         {/* Alternatives with "Use" buttons */}
                                         {hasAlternatives && (
                                           <div>
-                                            <div className="text-[10px] text-gray-400 uppercase mb-1">
+                                            <div className="text-[10px] text-warm-muted uppercase mb-1">
                                               Alternative Matches (click to use)
                                             </div>
                                             <div className="space-y-1">
                                               {ch.alternatives!.map((alt, i) => (
                                                 <div
                                                   key={i}
-                                                  className="flex items-center gap-2 text-xs bg-white p-2 rounded border border-gray-200 hover:border-blue-300 cursor-pointer"
+                                                  className="flex items-center gap-2 text-xs bg-surface p-2 rounded border border-warm hover:border-blue-300 cursor-pointer"
                                                   onClick={() => handleUseAlternative(ch, alt)}
                                                   title="Click to use this timestamp"
                                                 >
-                                                  <span className="font-mono text-gray-600 w-16">
+                                                  <span className="font-mono text-warm-secondary w-16">
                                                     {alt.timestamp}
                                                   </span>
                                                   <span
@@ -918,7 +918,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                                                   </span>
                                                   <MatchMethodBadge method={alt.matchMethod} />
                                                   <span
-                                                    className="text-gray-500 truncate flex-1"
+                                                    className="text-warm-muted truncate flex-1"
                                                     title={alt.matchedText}
                                                   >
                                                     {alt.matchedText}
@@ -944,7 +944,7 @@ export function ProjectStatsPopup({ project, onClose }: Props) {
                   );
                 })()
               ) : (
-                <div className="text-sm text-gray-400 py-4 text-center">No chapters found</div>
+                <div className="text-sm text-warm-muted py-4 text-center">No chapters found</div>
               )}
             </div>
           )}

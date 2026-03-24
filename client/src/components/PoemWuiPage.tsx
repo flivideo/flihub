@@ -49,34 +49,34 @@ export function PoemWuiPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-gray-700">AWB</h2>
+        <h2 className="text-lg font-medium text-warm-secondary">AWB</h2>
         <button
           onClick={() => refetch()}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-xs text-warm-muted hover:text-warm-secondary transition-colors"
         >
           Refresh
         </button>
       </div>
 
       {isLoading ? (
-        <div className="text-sm text-gray-500">Loading...</div>
+        <div className="text-sm text-warm-muted">Loading...</div>
       ) : !data?.success ? (
         <div className="text-sm text-red-500">{data?.error || 'No project selected'}</div>
       ) : (
         <div className="space-y-4">
           {/* Status bar */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="bg-surface border border-warm rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <div className="text-xs text-gray-500 flex items-center gap-2">
-                  <span className="font-medium text-gray-700">Project:</span>
+                <div className="text-xs text-warm-muted flex items-center gap-2">
+                  <span className="font-medium text-warm-secondary">Project:</span>
                   <span className="font-mono">{data.projectFolder || '—'}</span>
                 </div>
-                <div className="text-xs text-gray-500 flex items-center gap-2">
-                  <span className="font-medium text-gray-700">SRT:</span>
+                <div className="text-xs text-warm-muted flex items-center gap-2">
+                  <span className="font-medium text-warm-secondary">SRT:</span>
                   {data.transcriptFound ? (
                     <>
-                      <span className="font-mono text-gray-700">
+                      <span className="font-mono text-warm-secondary">
                         {data.srtFiles && data.srtFiles.length > 1
                           ? `${data.srtFiles.length} files concatenated`
                           : data.srtFile}
@@ -87,26 +87,26 @@ export function PoemWuiPage() {
                     <span className="text-red-500">No SRT found — check s3-staging/post/, final/, or recording-transcripts/</span>
                   )}
                 </div>
-                <div className="text-xs text-gray-500 flex items-center gap-2">
-                  <span className="font-medium text-gray-700">Brand config:</span>
+                <div className="text-xs text-warm-muted flex items-center gap-2">
+                  <span className="font-medium text-warm-secondary">Brand config:</span>
                   {data.brandConfigFound ? (
                     <span className="text-green-600">✓ loaded</span>
                   ) : (
                     <span className="text-amber-500">⚠ not found — brandConfig will be null</span>
                   )}
                 </div>
-                <div className="text-xs text-gray-500 flex items-center gap-2">
-                  <span className="font-medium text-gray-700">.awb.json:</span>
+                <div className="text-xs text-warm-muted flex items-center gap-2">
+                  <span className="font-medium text-warm-secondary">.awb.json:</span>
                   {data.awbJson?.exists ? (
                     <>
                       <span
-                        className="font-mono text-gray-700 cursor-default"
+                        className="font-mono text-warm-secondary cursor-default"
                         title={data.awbJson.fullPath}
                       >
                         .awb.json
                       </span>
                       <span className="text-green-600">✓</span>
-                      <span className="text-gray-400">
+                      <span className="text-warm-muted">
                         {data.awbJson.savedAt
                           ? new Date(data.awbJson.savedAt).toLocaleString()
                           : ''}
@@ -115,7 +115,7 @@ export function PoemWuiPage() {
                       </span>
                     </>
                   ) : (
-                    <span className="text-gray-400">not found</span>
+                    <span className="text-warm-muted">not found</span>
                   )}
                 </div>
               </div>
@@ -149,13 +149,13 @@ export function PoemWuiPage() {
 
           {/* Store keys summary */}
           {storeKeys && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Store Keys</div>
+            <div className="bg-surface-muted border border-warm rounded-lg px-4 py-2">
+              <div className="text-xs font-semibold text-warm-muted uppercase tracking-wide mb-1.5">Store Keys</div>
               <div className="flex flex-wrap gap-x-6 gap-y-1">
                 {storeKeys.map(({ key, summary }) => (
                   <div key={key} className="flex items-baseline gap-1.5 text-xs">
-                    <span className="font-mono text-gray-600">{key}</span>
-                    <span className="text-gray-400">{summary}</span>
+                    <span className="font-mono text-warm-secondary">{key}</span>
+                    <span className="text-warm-muted">{summary}</span>
                   </div>
                 ))}
               </div>
@@ -166,30 +166,30 @@ export function PoemWuiPage() {
           {data.transcriptFound && data.transcript ? (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <div className="text-xs font-medium text-gray-500 uppercase">
+                <div className="text-xs font-medium text-warm-muted uppercase">
                   Transcript
-                  <span className="ml-2 font-normal text-gray-400">
+                  <span className="ml-2 font-normal text-warm-muted">
                     ({data.transcript.split('\n').filter(Boolean).length} lines · {data.transcript.length.toLocaleString()} chars)
                   </span>
                 </div>
                 <textarea
                   readOnly
                   value={data.transcript}
-                  className="w-full h-[calc(100vh-300px)] min-h-64 text-xs font-mono bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  className="w-full h-[calc(100vh-300px)] min-h-64 text-xs font-mono bg-surface-muted border border-warm rounded-lg p-3 text-warm-secondary resize-none focus:outline-none focus:ring-2 focus:ring-purple-300"
                 />
               </div>
               <div className="space-y-1">
-                <div className="text-xs font-medium text-gray-500 uppercase flex items-center justify-between">
+                <div className="text-xs font-medium text-warm-muted uppercase flex items-center justify-between">
                   <span>
                     JSON Payload
-                    <span className="ml-2 font-normal text-gray-400 normal-case">
+                    <span className="ml-2 font-normal text-warm-muted normal-case">
                       ({payloadJson ? payloadJson.length.toLocaleString() : 0} chars)
                     </span>
                   </span>
                   <button
                     onClick={handleCopyPayload}
                     disabled={!payloadJson}
-                    className="text-xs font-normal normal-case px-2 py-0.5 rounded bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors disabled:opacity-50"
+                    className="text-xs font-normal normal-case px-2 py-0.5 rounded bg-surface-muted hover:bg-surface-hover text-warm-secondary transition-colors disabled:opacity-50"
                   >
                     {copied ? '✓ Copied' : '📋 Copy'}
                   </button>
@@ -197,12 +197,12 @@ export function PoemWuiPage() {
                 <textarea
                   readOnly
                   value={payloadJson ?? ''}
-                  className="w-full h-[calc(100vh-300px)] min-h-64 text-xs font-mono bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-purple-300"
+                  className="w-full h-[calc(100vh-300px)] min-h-64 text-xs font-mono bg-surface-muted border border-warm rounded-lg p-3 text-warm-secondary resize-none focus:outline-none focus:ring-2 focus:ring-purple-300"
                 />
               </div>
             </div>
           ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center text-sm text-gray-400">
+            <div className="bg-surface-muted border border-warm rounded-lg p-6 text-center text-sm text-warm-muted">
               No transcript available. Make sure an SRT file is present in one of:
               <div className="mt-2 font-mono text-xs space-y-0.5">
                 <div>s3-staging/post/*.srt</div>

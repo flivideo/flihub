@@ -388,9 +388,9 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
 
   if (!data?.recordings || data.recordings.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <p className="text-gray-500">No recordings found</p>
-        <p className="text-sm text-gray-400 mt-1">
+      <div className="text-center py-12 bg-surface rounded-lg border border-warm">
+        <p className="text-warm-muted">No recordings found</p>
+        <p className="text-sm text-warm-muted mt-1">
           Recordings will appear here after you rename incoming files
         </p>
       </div>
@@ -411,7 +411,7 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* B041: Contextual heading per tool — relay has its own project-scoped heading */}
         {activeTool !== 'relay' && activeTool !== 'sync' && (
-          <h2 className="text-lg font-medium text-gray-700 mb-4">
+          <h2 className="text-lg font-medium text-warm-secondary mb-4">
             {toolHeadings[activeTool]}
           </h2>
         )}
@@ -423,19 +423,19 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
               <div className="flex items-center gap-2 mb-4">
                 <button
                   onClick={() => handleRegenClick('regen-shadows')}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium text-warm-secondary bg-surface border border-warm-strong rounded-md hover:bg-surface-hover hover:text-warm-primary transition-colors"
                 >
                   Regen Shadows
                 </button>
                 <button
                   onClick={() => handleRegenClick('regen-transcripts')}
-                  className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium text-warm-secondary bg-surface border border-warm-strong rounded-md hover:bg-surface-hover hover:text-warm-primary transition-colors"
                 >
                   Regen Transcripts
                 </button>
                 <button
                   onClick={() => handleRegenClick('regen-all')}
-                  className="px-3 py-1.5 text-sm font-medium text-orange-600 bg-white border border-orange-300 rounded-md hover:bg-orange-50 hover:text-orange-700 transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium text-orange-600 bg-surface border border-orange-300 rounded-md hover:bg-orange-50 hover:text-orange-700 transition-colors"
                 >
                   Regen All
                 </button>
@@ -443,25 +443,25 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
             )}
 
             {/* Stats and filter toggle - matching RecordingsView style */}
-            <div className="flex items-center gap-3 mb-3 text-xs text-gray-500">
-              <span className="text-gray-700 font-medium">
+            <div className="flex items-center gap-3 mb-3 text-xs text-warm-muted">
+              <span className="text-warm-secondary font-medium">
                 {selectedCount} of {filteredRecordings.length} selected
-                <span className="font-normal text-gray-400 ml-1">({formatFileSize(selectedSize)})</span>
-                <span className="font-normal text-gray-400 ml-1">
+                <span className="font-normal text-warm-muted ml-1">({formatFileSize(selectedSize)})</span>
+                <span className="font-normal text-warm-muted ml-1">
                   | {activeFiles} active, {parkedFiles} parked
                 </span>
               </span>
-              <span className="text-gray-300">|</span>
-              <label className="flex items-center gap-1.5 cursor-pointer hover:text-gray-700">
+              <span className="text-warm-faint">|</span>
+              <label className="flex items-center gap-1.5 cursor-pointer hover:text-warm-secondary">
                 <input
                   type="checkbox"
                   checked={showParked}
                   onChange={(e) => setShowParked(e.target.checked)}
-                  className="w-3 h-3 rounded border-gray-300 text-pink-500 focus:ring-pink-500"
+                  className="w-3 h-3 rounded border-warm-strong text-pink-500 focus:ring-pink-500"
                 />
                 Show Parked
               </label>
-              <span className="text-gray-300">|</span>
+              <span className="text-warm-faint">|</span>
               {selectedCount === 0 ? (
                 <button
                   onClick={selectAll}
@@ -472,7 +472,7 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
               ) : (
                 <button
                   onClick={clearSelection}
-                  className="text-xs text-gray-600 hover:text-gray-700 px-2 py-0.5 hover:bg-gray-50 rounded transition-colors"
+                  className="text-xs text-warm-secondary hover:text-warm-secondary px-2 py-0.5 hover:bg-surface-hover rounded transition-colors"
                 >
                   Clear Selection
                 </button>
@@ -492,8 +492,8 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
                   <div key={chapterData.chapterKey}>
                     {/* Chapter separator - matching RecordingsView */}
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="h-px bg-gray-300 flex-1" />
-                      <span className="text-sm font-semibold px-2 text-gray-700">
+                      <div className="h-px bg-warm-strong flex-1" />
+                      <span className="text-sm font-semibold px-2 text-warm-secondary">
                         {chapterData.chapterKey} {formatChapterTitle(chapterData.title)}
                         <span className="font-normal text-xs ml-2">
                           ({chapterData.files.length} file{chapterData.files.length !== 1 ? 's' : ''} ·{' '}
@@ -504,7 +504,7 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
                       {someSelected ? (
                         <button
                           onClick={() => deselectAllInChapter(chapterData)}
-                          className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
+                          className="text-xs text-warm-muted hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
                         >
                           ☐ Deselect{' '}
                           <span className="text-blue-600 font-medium">{chapterData.chapterKey}</span>
@@ -512,20 +512,20 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
                       ) : allSelected ? (
                         <button
                           onClick={() => deselectAllInChapter(chapterData)}
-                          className="text-xs text-blue-600 hover:text-gray-500 px-2 py-0.5 hover:bg-gray-50 rounded transition-colors"
+                          className="text-xs text-blue-600 hover:text-warm-muted px-2 py-0.5 hover:bg-surface-hover rounded transition-colors"
                         >
                           ☑ Deselect <span className="font-medium">{chapterData.chapterKey}</span>
                         </button>
                       ) : (
                         <button
                           onClick={() => selectAllInChapter(chapterData)}
-                          className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
+                          className="text-xs text-warm-muted hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
                         >
                           ☐ Select{' '}
                           <span className="text-blue-600 font-medium">{chapterData.chapterKey}</span>
                         </button>
                       )}
-                      <div className="h-px bg-gray-300 flex-1" />
+                      <div className="h-px bg-warm-strong flex-1" />
                     </div>
 
                     {/* Files in this chapter - matching RecordingsView */}
@@ -539,14 +539,14 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
                         let textClasses: string;
 
                         if (isParked) {
-                          rowClasses = 'bg-pink-50 border-pink-200 text-gray-500';
-                          textClasses = 'text-gray-500';
+                          rowClasses = 'bg-pink-50 border-pink-200 text-warm-muted';
+                          textClasses = 'text-warm-muted';
                         } else if (isSelected) {
                           rowClasses = 'bg-blue-50 border-blue-200';
-                          textClasses = 'text-gray-700';
+                          textClasses = 'text-warm-secondary';
                         } else {
-                          rowClasses = 'bg-gray-50 border-gray-200';
-                          textClasses = 'text-gray-500';
+                          rowClasses = 'bg-surface-muted border-warm';
+                          textClasses = 'text-warm-muted';
                         }
 
                         return (
@@ -559,7 +559,7 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => toggleFile(file.filename)}
-                                className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                                className="w-4 h-4 rounded border-warm-strong text-blue-500 focus:ring-blue-500"
                               />
                               <span className={`font-mono text-sm ${textClasses}`}>
                                 {file.filename}
@@ -570,7 +570,7 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
                                 </span>
                               )}
                             </div>
-                            <span className="text-sm text-gray-400 ml-4">
+                            <span className="text-sm text-warm-muted ml-4">
                               {formatFileSize(file.size || 0)}
                             </span>
                           </label>

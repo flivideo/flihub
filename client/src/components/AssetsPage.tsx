@@ -692,18 +692,18 @@ export function AssetsPage() {
   return (
     <div className="space-y-6">
       {/* Assignment Controls */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="font-medium text-gray-900 mb-4">Assignment Controls</h3>
+      <div className="bg-surface rounded-lg border border-warm p-6">
+        <h3 className="font-medium text-warm-primary mb-4">Assignment Controls</h3>
 
         <div className="grid grid-cols-3 gap-4">
           {/* Row 1: Chapter, Sequence, Preview (row-span-3) */}
           {/* Chapter */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Chapter</label>
+            <label className="block text-sm text-warm-secondary mb-1">Chapter</label>
             <div className="flex">
               <button
                 onClick={goToPrevChapter}
-                className="px-2.5 py-2 text-gray-600 hover:bg-gray-100 border border-r-0 border-gray-300 rounded-l transition-colors"
+                className="px-2.5 py-2 text-warm-secondary hover:bg-surface-hover border border-r-0 border-warm-strong rounded-l transition-colors"
               >
                 −
               </button>
@@ -714,12 +714,12 @@ export function AssetsPage() {
                   const val = e.target.value.replace(/\D/g, '').slice(0, 2);
                   updateAssignment('chapter', val.padStart(2, '0'));
                 }}
-                className="w-full px-3 py-2 text-sm font-mono text-center border-y border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 text-sm font-mono text-center border-y border-warm-strong focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="01"
               />
               <button
                 onClick={goToNextChapter}
-                className="px-2.5 py-2 text-gray-600 hover:bg-gray-100 border border-l-0 border-gray-300 rounded-r transition-colors"
+                className="px-2.5 py-2 text-warm-secondary hover:bg-surface-hover border border-l-0 border-warm-strong rounded-r transition-colors"
               >
                 +
               </button>
@@ -728,11 +728,11 @@ export function AssetsPage() {
 
           {/* Sequence */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Sequence</label>
+            <label className="block text-sm text-warm-secondary mb-1">Sequence</label>
             <div className="flex">
               <button
                 onClick={goToPrevSequence}
-                className="px-2.5 py-2 text-gray-600 hover:bg-gray-100 border border-r-0 border-gray-300 rounded-l transition-colors"
+                className="px-2.5 py-2 text-warm-secondary hover:bg-surface-hover border border-r-0 border-warm-strong rounded-l transition-colors"
               >
                 −
               </button>
@@ -743,12 +743,12 @@ export function AssetsPage() {
                   const val = e.target.value.replace(/\D/g, '');
                   updateAssignment('sequence', val || '1');
                 }}
-                className="w-full px-3 py-2 text-sm font-mono text-center border-y border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 text-sm font-mono text-center border-y border-warm-strong focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="1"
               />
               <button
                 onClick={goToNextSequence}
-                className="px-2.5 py-2 text-gray-600 hover:bg-gray-100 border border-l-0 border-gray-300 rounded-r transition-colors"
+                className="px-2.5 py-2 text-warm-secondary hover:bg-surface-hover border border-l-0 border-warm-strong rounded-r transition-colors"
               >
                 +
               </button>
@@ -756,33 +756,33 @@ export function AssetsPage() {
           </div>
 
           {/* Recordings panel spanning 3 rows - windowed view */}
-          <div className="row-span-3 border-l border-gray-100 pl-4">
+          <div className="row-span-3 border-l border-warm pl-4">
             {/* Nav toolbar - full width */}
-            <div className="flex items-center justify-center gap-1 text-sm bg-gray-50 border border-gray-200 rounded-lg p-1 mb-2">
+            <div className="flex items-center justify-center gap-1 text-sm bg-surface-muted border border-warm rounded-lg p-1 mb-2">
               <button
                 onClick={goToPrevChapter}
-                className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-white hover:shadow-sm rounded border border-transparent hover:border-gray-200 font-medium"
+                className="w-7 h-7 flex items-center justify-center text-warm-secondary hover:bg-surface hover:shadow-sm rounded border border-transparent hover:border-warm font-medium"
               >
                 −
               </button>
-              <span className="w-8 text-center text-gray-700 font-mono">{assignment.chapter}</span>
+              <span className="w-8 text-center text-warm-secondary font-mono">{assignment.chapter}</span>
               <button
                 onClick={goToNextChapter}
-                className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-white hover:shadow-sm rounded border border-transparent hover:border-gray-200 font-medium"
+                className="w-7 h-7 flex items-center justify-center text-warm-secondary hover:bg-surface hover:shadow-sm rounded border border-transparent hover:border-warm font-medium"
               >
                 +
               </button>
-              <div className="w-px h-5 bg-gray-300 mx-1"></div>
+              <div className="w-px h-5 bg-warm-strong mx-1"></div>
               <button
                 onClick={goToPrevSequence}
-                className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-white hover:shadow-sm rounded border border-transparent hover:border-gray-200 font-medium"
+                className="w-7 h-7 flex items-center justify-center text-warm-secondary hover:bg-surface hover:shadow-sm rounded border border-transparent hover:border-warm font-medium"
               >
                 −
               </button>
-              <span className="w-6 text-center text-gray-700 font-mono">{assignment.sequence}</span>
+              <span className="w-6 text-center text-warm-secondary font-mono">{assignment.sequence}</span>
               <button
                 onClick={goToNextSequence}
-                className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-white hover:shadow-sm rounded border border-transparent hover:border-gray-200 font-medium"
+                className="w-7 h-7 flex items-center justify-center text-warm-secondary hover:bg-surface hover:shadow-sm rounded border border-transparent hover:border-warm font-medium"
               >
                 +
               </button>
@@ -801,7 +801,7 @@ export function AssetsPage() {
                       }))
                     }
                     className={`px-2 py-1 rounded text-xs font-mono truncate cursor-pointer ${
-                      isCurrent ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-50'
+                      isCurrent ? 'bg-blue-100 text-blue-800' : 'text-warm-secondary hover:bg-surface-hover'
                     }`}
                     title={rec.filename}
                   >
@@ -810,7 +810,7 @@ export function AssetsPage() {
                 );
               })}
               {windowedRecordings.items.length === 0 && (
-                <div className="text-xs text-gray-400 italic">No recordings</div>
+                <div className="text-xs text-warm-muted italic">No recordings</div>
               )}
             </div>
           </div>
@@ -818,7 +818,7 @@ export function AssetsPage() {
           {/* Row 2: Variant, Image # */}
           {/* Variant */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Variant</label>
+            <label className="block text-sm text-warm-secondary mb-1">Variant</label>
             <div className="flex">
               <button
                 onClick={() => {
@@ -827,11 +827,11 @@ export function AssetsPage() {
                   const prevIndex = currentIndex > 0 ? currentIndex - 1 : variants.length - 1;
                   updateAssignment('variant', variants[prevIndex]);
                 }}
-                className="px-2.5 py-2 text-gray-600 hover:bg-gray-100 border border-r-0 border-gray-300 rounded-l transition-colors"
+                className="px-2.5 py-2 text-warm-secondary hover:bg-surface-hover border border-r-0 border-warm-strong rounded-l transition-colors"
               >
                 −
               </button>
-              <div className="w-full px-3 py-2 text-sm font-mono text-center border-y border-gray-300 bg-white">
+              <div className="w-full px-3 py-2 text-sm font-mono text-center border-y border-warm-strong bg-surface">
                 {assignment.variant === null ? 'None' : assignment.variant.toUpperCase()}
               </div>
               <button
@@ -841,7 +841,7 @@ export function AssetsPage() {
                   const nextIndex = currentIndex < variants.length - 1 ? currentIndex + 1 : 0;
                   updateAssignment('variant', variants[nextIndex]);
                 }}
-                className="px-2.5 py-2 text-gray-600 hover:bg-gray-100 border border-l-0 border-gray-300 rounded-r transition-colors"
+                className="px-2.5 py-2 text-warm-secondary hover:bg-surface-hover border border-l-0 border-warm-strong rounded-r transition-colors"
               >
                 +
               </button>
@@ -850,20 +850,20 @@ export function AssetsPage() {
 
           {/* Image Order (auto) */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Image #</label>
+            <label className="block text-sm text-warm-secondary mb-1">Image #</label>
             <input
               type="text"
               value={currentImageOrder}
               disabled
-              className="w-full px-3 py-2 text-sm font-mono text-center border border-gray-200 rounded bg-gray-50 text-gray-500"
+              className="w-full px-3 py-2 text-sm font-mono text-center border border-warm rounded bg-surface-muted text-warm-muted"
             />
-            <p className="text-xs text-gray-400 mt-1">Auto-calculated</p>
+            <p className="text-xs text-warm-muted mt-1">Auto-calculated</p>
           </div>
 
           {/* Row 3: Label spanning 2 columns */}
           {/* FR-39: Auto-kebab-case on blur and paste */}
           <div className="col-span-2">
-            <label className="block text-sm text-gray-600 mb-1">Label</label>
+            <label className="block text-sm text-warm-secondary mb-1">Label</label>
             <input
               type="text"
               value={assignment.label}
@@ -887,7 +887,7 @@ export function AssetsPage() {
                 updateAssignment('label', kebab);
               }}
               className={`w-full px-3 py-2 text-sm font-mono border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                labelError ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                labelError ? 'border-red-300 bg-red-50' : 'border-warm-strong'
               }`}
               placeholder="workflow-diagram (or paste/type with spaces)"
             />
@@ -897,15 +897,15 @@ export function AssetsPage() {
 
         {/* Preview filename */}
         {previewFilename && (
-          <div className="mt-4 px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm font-mono text-gray-700">
+          <div className="mt-4 px-3 py-2 bg-surface-muted border border-warm rounded text-sm font-mono text-warm-secondary">
             {previewFilename}
           </div>
         )}
 
         {/* FR-22: Image Prompt section */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="mt-4 pt-4 border-t border-warm">
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm text-gray-600">
+            <label className="block text-sm text-warm-secondary">
               Image Prompt
               {editingPromptFilename && (
                 <span className="ml-2 text-xs text-blue-600">
@@ -916,7 +916,7 @@ export function AssetsPage() {
             {editingPromptFilename && (
               <button
                 onClick={handleCancelEdit}
-                className="text-xs text-gray-500 hover:text-gray-700"
+                className="text-xs text-warm-muted hover:text-warm-secondary"
               >
                 Cancel edit
               </button>
@@ -926,14 +926,14 @@ export function AssetsPage() {
             value={promptText}
             onChange={(e) => setPromptText(e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+            className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
             placeholder="Describe the image you want generated..."
           />
           <div className="flex justify-between items-center mt-2">
             {/* FR-40: Grab Transcript button */}
             <button
               onClick={handleGrabTranscript}
-              className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors flex items-center gap-1"
+              className="px-3 py-2 text-sm text-warm-secondary hover:text-warm-primary hover:bg-surface-hover rounded transition-colors flex items-center gap-1"
               title={`Load transcript for ${assignment.chapter}-${assignment.sequence}`}
             >
               <span>📄</span>
@@ -953,7 +953,7 @@ export function AssetsPage() {
                   ? !promptText.trim() && editingPromptFilename
                     ? 'bg-red-500 text-white hover:bg-red-600' // Delete mode
                     : 'bg-purple-500 text-white hover:bg-purple-600' // Save/Update mode
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-surface-muted text-warm-muted cursor-not-allowed'
               }`}
             >
               {savePromptMutation.isPending
@@ -973,12 +973,12 @@ export function AssetsPage() {
         className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8"
         style={{ width: '100vw', marginLeft: 'calc(-50vw + 50%)' }}
       >
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-surface rounded-lg border border-warm p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h3 className="font-medium text-gray-900">
+              <h3 className="font-medium text-warm-primary">
                 Incoming Images
-                <span className="ml-2 text-sm font-normal text-gray-500">
+                <span className="ml-2 text-sm font-normal text-warm-muted">
                   (
                   {config?.imageSourceDirectory
                     ? collapsePath(config.imageSourceDirectory)
@@ -998,7 +998,7 @@ export function AssetsPage() {
                     className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
                       incomingSize === size
                         ? 'bg-blue-500 text-white'
-                        : 'text-gray-500 hover:bg-gray-100 border border-gray-200'
+                        : 'text-warm-muted hover:bg-surface-hover border border-warm'
                     }`}
                     title={`${size === 'S' ? 'Small' : size === 'M' ? 'Medium' : size === 'L' ? 'Large' : 'Extra Large'} thumbnails`}
                   >
@@ -1008,7 +1008,7 @@ export function AssetsPage() {
               </div>
               <button
                 onClick={() => refetchIncoming()}
-                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                className="px-3 py-1.5 text-sm text-warm-secondary hover:text-warm-primary hover:bg-surface-hover rounded transition-colors"
               >
                 Refresh
               </button>
@@ -1033,7 +1033,7 @@ export function AssetsPage() {
 
           {incomingLoading ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">Loading images...</p>
+              <p className="text-warm-muted">Loading images...</p>
             </div>
           ) : incomingError ? (
             <div className="text-center py-12">
@@ -1041,8 +1041,8 @@ export function AssetsPage() {
             </div>
           ) : visibleImages.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">No images found in Downloads</p>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-warm-muted">No images found in Downloads</p>
+              <p className="text-sm text-warm-muted mt-1">
                 Images will appear here when you save from ChatGPT, Midjourney, or other tools
               </p>
             </div>
@@ -1074,12 +1074,12 @@ export function AssetsPage() {
         className="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8"
         style={{ width: '100vw', marginLeft: 'calc(-50vw + 50%)' }}
       >
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-surface rounded-lg border border-warm p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <h3 className="font-medium text-gray-900">
+              <h3 className="font-medium text-warm-primary">
                 Assigned Assets
-                <span className="ml-2 text-sm font-normal text-gray-500">
+                <span className="ml-2 text-sm font-normal text-warm-muted">
                   ({projectData?.images?.length || 0} images, {projectData?.prompts?.length || 0}{' '}
                   prompts)
                 </span>
@@ -1095,7 +1095,7 @@ export function AssetsPage() {
                   className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
                     assignedSize === size
                       ? 'bg-blue-500 text-white'
-                      : 'text-gray-500 hover:bg-gray-100 border border-gray-200'
+                      : 'text-warm-muted hover:bg-surface-hover border border-warm'
                   }`}
                   title={`${size === 'S' ? 'Small' : size === 'M' ? 'Medium' : size === 'L' ? 'Large' : 'Extra Large'} thumbnails`}
                 >
@@ -1107,12 +1107,12 @@ export function AssetsPage() {
 
           {projectLoading ? (
             <div className="text-center py-8">
-              <p className="text-gray-500">Loading...</p>
+              <p className="text-warm-muted">Loading...</p>
             </div>
           ) : (!projectData?.images || projectData.images.length === 0) &&
             (!projectData?.prompts || projectData.prompts.length === 0) ? (
             <div className="text-center py-8">
-              <p className="text-gray-500">No assets assigned to this project yet</p>
+              <p className="text-warm-muted">No assets assigned to this project yet</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -1222,7 +1222,7 @@ export function AssetsPage() {
                       {/* Thumbnail or placeholder */}
                       {hasImage ? (
                         <div
-                          className={`aspect-video flex-shrink-0 bg-gray-200 rounded overflow-hidden ${shiftHeld ? 'cursor-zoom-in' : ''}`}
+                          className={`aspect-video flex-shrink-0 bg-surface-muted rounded overflow-hidden ${shiftHeld ? 'cursor-zoom-in' : ''}`}
                           style={{ width: THUMBNAIL_SIZES[assignedSize].width }}
                           onMouseEnter={(e) => handleMouseEnter(imagePreviewData, e)}
                           onMouseMove={handleMouseMove}
@@ -1237,7 +1237,7 @@ export function AssetsPage() {
                         </div>
                       ) : (
                         <div
-                          className="aspect-video flex-shrink-0 bg-gray-100 rounded flex items-center justify-center text-2xl text-gray-400"
+                          className="aspect-video flex-shrink-0 bg-surface-muted rounded flex items-center justify-center text-2xl text-warm-muted"
                           style={{ width: THUMBNAIL_SIZES[assignedSize].width }}
                         >
                           📝
@@ -1245,7 +1245,7 @@ export function AssetsPage() {
                       )}
 
                       {/* Video link - find matching recording filename */}
-                      <span className="w-48 flex-shrink-0 font-mono text-gray-600 text-xs truncate">
+                      <span className="w-48 flex-shrink-0 font-mono text-warm-secondary text-xs truncate">
                         {recordingsData?.recordings
                           ?.find(
                             (rec) => rec.chapter === pair.chapter && rec.sequence === pair.sequence
@@ -1255,7 +1255,7 @@ export function AssetsPage() {
 
                       {/* Filename with extension and variant badge */}
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="font-mono text-gray-700 text-xs">
+                        <span className="font-mono text-warm-secondary text-xs">
                           {hasImage ? pair.image!.filename : `${pair.baseFilename}.txt`}
                         </span>
 
@@ -1281,7 +1281,7 @@ export function AssetsPage() {
                           className={`flex-grow min-w-0 px-2 py-1.5 border rounded text-xs ${THUMBNAIL_SIZES[assignedSize].textAreaHeight} overflow-y-auto ${
                             shiftHeld
                               ? 'bg-purple-50 border-purple-300 text-purple-700 cursor-help'
-                              : 'bg-white border-purple-200 text-gray-600'
+                              : 'bg-surface border-purple-200 text-warm-secondary'
                           }`}
                           onMouseEnter={(e) => handlePreviewEnter(textPreviewData, e)}
                           onMouseMove={handleMouseMove}
@@ -1304,7 +1304,7 @@ export function AssetsPage() {
                             handleDeletePrompt(pair.prompt!.filename);
                           }}
                           disabled={deletePromptMutation.isPending}
-                          className="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          className="flex-shrink-0 p-1.5 text-warm-muted hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                           title="Delete prompt"
                         >
                           🗑️
@@ -1319,7 +1319,7 @@ export function AssetsPage() {
                             handleDeleteAssignedImage(pair.image!.filename);
                           }}
                           disabled={deleteAssignedImageMutation.isPending}
-                          className="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          className="flex-shrink-0 p-1.5 text-warm-muted hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                           title="Delete image"
                         >
                           🗑️
@@ -1327,7 +1327,7 @@ export function AssetsPage() {
                       )}
 
                       {/* File size */}
-                      <span className="text-gray-400 flex-shrink-0">
+                      <span className="text-warm-muted flex-shrink-0">
                         {hasImage ? formatFileSize(pair.image!.size) : '-'}
                       </span>
                     </div>
@@ -1402,12 +1402,12 @@ function ImageCard({
   return (
     <div
       className={`border rounded-lg overflow-hidden ${
-        image.isDuplicate ? 'border-amber-300 bg-amber-50' : 'border-gray-200 bg-white'
+        image.isDuplicate ? 'border-amber-300 bg-amber-50' : 'border-warm bg-surface'
       }`}
     >
       {/* Thumbnail */}
       <div
-        className={`aspect-video bg-gray-100 relative ${shiftHeld ? 'cursor-zoom-in' : ''}`}
+        className={`aspect-video bg-surface-muted relative ${shiftHeld ? 'cursor-zoom-in' : ''}`}
         onMouseEnter={(e) => onPreviewEnter(previewData, e)}
         onMouseMove={onPreviewMove}
         onMouseLeave={onPreviewLeave}
@@ -1422,7 +1422,7 @@ function ImageCard({
 
       {/* Info - hide on small size */}
       {!isSmall && (
-        <div className="p-2 text-xs text-gray-500">
+        <div className="p-2 text-xs text-warm-muted">
           {image.isDuplicate ? (
             <div className="text-amber-600 font-medium">Duplicate</div>
           ) : (
@@ -1443,7 +1443,7 @@ function ImageCard({
             className={`w-full px-2 ${isSmall ? 'py-1 text-[10px]' : 'py-1.5 text-xs'} rounded transition-colors ${
               canAssign
                 ? 'bg-blue-500 text-white hover:bg-blue-600'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-surface-muted text-warm-muted cursor-not-allowed'
             }`}
           >
             {isAssigning ? '...' : 'Assign'}

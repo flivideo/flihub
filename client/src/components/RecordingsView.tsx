@@ -211,7 +211,7 @@ function TranscriptionBadge({
         <button
           onClick={() => queueMutation.mutate(filePath)}
           disabled={queueMutation.isPending}
-          className="text-xs text-gray-400 hover:text-blue-600 px-1.5 py-0.5 bg-gray-100 hover:bg-blue-50 rounded font-medium transition-colors disabled:opacity-50"
+          className="text-xs text-warm-muted hover:text-blue-600 px-1.5 py-0.5 bg-surface-muted hover:bg-blue-50 rounded font-medium transition-colors disabled:opacity-50"
           title="Start transcription"
         >
           T
@@ -1022,9 +1022,9 @@ export function RecordingsView() {
 
   if (!data?.recordings || data.recordings.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <p className="text-gray-500">No recordings found</p>
-        <p className="text-sm text-gray-400 mt-1">
+      <div className="text-center py-12 bg-surface rounded-lg border border-warm">
+        <p className="text-warm-muted">No recordings found</p>
+        <p className="text-sm text-warm-muted mt-1">
           Recordings will appear here after you rename incoming files
         </p>
       </div>
@@ -1040,20 +1040,20 @@ export function RecordingsView() {
   return (
     <div>
       {/* Row 1 — Stats */}
-      <div className="flex items-center gap-2 mb-1 text-xs text-gray-500 flex-wrap">
-        <span className="text-gray-700 font-medium">
+      <div className="flex items-center gap-2 mb-1 text-xs text-warm-muted flex-wrap">
+        <span className="text-warm-secondary font-medium">
           {totalFiles} files
         </span>
-        <span className="text-gray-400">
+        <span className="text-warm-muted">
           ({activeFiles} active, {safeFiles} safe, {parkedFiles} parked)
         </span>
         {/* FR-35: Total duration */}
         {totalDuration > 0 && (
-          <span className="text-gray-400">| {formatDuration(totalDuration, 'smart')}</span>
+          <span className="text-warm-muted">| {formatDuration(totalDuration, 'smart')}</span>
         )}
         {/* FR-95: Recording size */}
         {data?.totalRecordingsSize != null && data.totalRecordingsSize > 0 && (
-          <span className="text-gray-400">| {formatFileSize(data.totalRecordingsSize)}</span>
+          <span className="text-warm-muted">| {formatFileSize(data.totalRecordingsSize)}</span>
         )}
         {/* FR-95: Shadow size — secondary, purple */}
         {data?.totalShadowsSize != null && data.totalShadowsSize > 0 && (
@@ -1062,22 +1062,22 @@ export function RecordingsView() {
       </div>
 
       {/* Row 2 — Filters */}
-      <div className="flex items-center gap-3 mb-1 text-xs text-gray-400">
-        <label className="flex items-center gap-1 cursor-pointer hover:text-gray-600">
+      <div className="flex items-center gap-3 mb-1 text-xs text-warm-muted">
+        <label className="flex items-center gap-1 cursor-pointer hover:text-warm-secondary">
           <input
             type="checkbox"
             checked={showSafe}
             onChange={(e) => setShowSafe(e.target.checked)}
-            className="w-3 h-3 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+            className="w-3 h-3 rounded border-warm-strong text-blue-500 focus:ring-blue-500"
           />
           safe
         </label>
-        <label className="flex items-center gap-1 cursor-pointer hover:text-gray-600">
+        <label className="flex items-center gap-1 cursor-pointer hover:text-warm-secondary">
           <input
             type="checkbox"
             checked={showParked}
             onChange={(e) => setShowParked(e.target.checked)}
-            className="w-3 h-3 rounded border-gray-300 text-pink-500 focus:ring-pink-500"
+            className="w-3 h-3 rounded border-warm-strong text-pink-500 focus:ring-pink-500"
           />
           parked
         </label>
@@ -1108,7 +1108,7 @@ export function RecordingsView() {
           🎙️ {pendingCount > 0 ? `Transcribe (${pendingCount} pending)` : 'All Transcribed'}
         </button>
         {/* FR-55: Video-level transcript export */}
-        <span className="text-gray-300">|</span>
+        <span className="text-warm-faint">|</span>
         <button
           onClick={() => setShowVideoTranscript(true)}
           className="text-blue-600 hover:text-blue-700"
@@ -1116,7 +1116,7 @@ export function RecordingsView() {
         >
           📄 Transcript
         </button>
-        <span className="text-gray-300">|</span>
+        <span className="text-warm-faint">|</span>
         <button
           onClick={() => setShowChapterRecording(true)}
           className="text-purple-600 hover:text-purple-700"
@@ -1191,9 +1191,9 @@ export function RecordingsView() {
             >
               {/* Chapter separator */}
               <div className="flex items-center gap-3 mb-3">
-                <div className="h-px bg-gray-300 flex-1" />
+                <div className="h-px bg-warm-strong flex-1" />
                 <span
-                  className={`text-sm font-semibold px-2 ${isAllSafe ? 'text-gray-400' : 'text-gray-700'}`}
+                  className={`text-sm font-semibold px-2 ${isAllSafe ? 'text-warm-muted' : 'text-warm-secondary'}`}
                 >
                   {chapter} {formatChapterTitle(name)}
                   {/* FR-41: File count and total duration */}
@@ -1205,13 +1205,13 @@ export function RecordingsView() {
                   </span>
                 </span>
                 {/* FR-41: Cumulative start time (YouTube format) */}
-                <span className="text-xs text-gray-400 font-mono">
+                <span className="text-xs text-warm-muted font-mono">
                   @ {formatDuration(chapterData.startTime, 'youtube')}
                 </span>
                 {/* B047: Select all in chapter button */}
                 <button
                   onClick={() => selectAllInChapter(chapter)}
-                  className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
+                  className="text-xs text-warm-muted hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors"
                 >
                   {allSelectedInChapter ? '✓ All selected' : `Select ${chapter}`}
                 </button>
@@ -1220,7 +1220,7 @@ export function RecordingsView() {
                   <button
                     onClick={() => handleMoveChapterToSafe(chapter)}
                     disabled={moveToSafe.isPending}
-                    className="text-xs text-gray-500 hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+                    className="text-xs text-warm-muted hover:text-blue-600 px-2 py-0.5 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
                   >
                     → Safe All
                   </button>
@@ -1241,7 +1241,7 @@ export function RecordingsView() {
                   <button
                     onClick={() => handleParkChapter(chapter)}
                     disabled={parkRecording.isPending}
-                    className="text-xs text-gray-500 hover:text-pink-600 px-2 py-0.5 hover:bg-pink-50 rounded transition-colors disabled:opacity-50"
+                    className="text-xs text-warm-muted hover:text-pink-600 px-2 py-0.5 hover:bg-pink-50 rounded transition-colors disabled:opacity-50"
                   >
                     → Park All
                   </button>
@@ -1266,7 +1266,7 @@ export function RecordingsView() {
                 </button>
                 {/* Enhancement B: Combine chapter transcripts button */}
                 <CombineChapterButton chapter={chapter} onViewCombined={setViewingTranscript} />
-                <div className="h-px bg-gray-300 flex-1" />
+                <div className="h-px bg-warm-strong flex-1" />
               </div>
 
               {/* Files in this chapter — now using EditableFileRow */}
@@ -1332,9 +1332,9 @@ export function RecordingsView() {
       <div className="fixed right-0 top-32 bottom-4 z-40 group">
         {/* Hover trigger tab */}
         <div className="absolute right-0 top-0 h-full flex items-start pt-8">
-          <div className="bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover:opacity-0 transition-opacity">
+          <div className="bg-surface-muted border border-r-0 border-warm-strong rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover:opacity-0 transition-opacity">
             <span
-              className="text-xs font-medium text-gray-600"
+              className="text-xs font-medium text-warm-secondary"
               style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
             >
               Chapters ({chapterPanelData.length})
@@ -1380,7 +1380,7 @@ export function RecordingsView() {
 
       {/* FR-35: Total duration footer */}
       {totalDuration > 0 && (
-        <div className="mt-6 pt-4 border-t border-gray-200 text-sm text-gray-500 text-right">
+        <div className="mt-6 pt-4 border-t border-warm text-sm text-warm-muted text-right">
           Total: {formatDuration(totalDuration, 'smart')}
         </div>
       )}

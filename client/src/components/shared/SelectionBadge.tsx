@@ -22,7 +22,7 @@ export function SelectionBadge({ selectedCount, totalCount }: SelectionBadgeProp
     );
   } else {
     return (
-      <div className="px-3 py-1 bg-gray-100 border border-gray-300 rounded text-gray-600 text-xs font-medium">
+      <div className="px-3 py-1 bg-surface-muted border border-warm-strong rounded text-warm-secondary text-xs font-medium">
         All files ({totalCount})
       </div>
     );

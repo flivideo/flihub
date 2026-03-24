@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relay Redesign v3 — FliHub Mochaccino</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; font-size: 14px; line-height: 1.5; }
+  .mono { font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace; }
+
+  /* Mochaccino banner */
+  .mochaccino-banner { background: #f1f5f9; border-bottom: 1px solid #e2e8f0; padding: 6px 24px; font-size: 11px; color: #94a3b8; display: flex; justify-content: space-between; }
+
+  /* Page chrome */
+  .chrome-header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 12px 24px; display: flex; align-items: center; gap: 12px; }
+  .chrome-header h1 { font-size: 18px; font-weight: 700; color: #1e293b; }
+  .chrome-header .breadcrumb { color: #94a3b8; font-size: 14px; }
+  .chrome-header .project-name { color: #3b82f6; font-weight: 600; font-size: 14px; text-decoration: underline; text-underline-offset: 2px; }
+  .chrome-nav { display: flex; gap: 4px; padding: 0 24px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+  .chrome-nav button { padding: 8px 12px; font-size: 13px; color: #64748b; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+  .chrome-nav button.active { color: #3b82f6; border-bottom-color: #3b82f6; font-weight: 600; }
+
+  .app-layout { display: flex; min-height: calc(100vh - 120px); }
+
+  /* Sidebar */
+  .sidebar { width: 160px; border-right: 1px solid #e2e8f0; padding: 16px 0; background: #fff; flex-shrink: 0; }
+  .sidebar .group-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px 4px; }
+  .sidebar button { display: block; width: 100%; text-align: left; padding: 6px 16px; font-size: 13px; color: #475569; background: none; border: none; cursor: pointer; border-left: 3px solid transparent; }
+  .sidebar button:hover { background: #f8fafc; }
+  .sidebar button.active { color: #3b82f6; border-left-color: #3b82f6; background: #eff6ff; font-weight: 500; }
+
+  /* Main content */
+  .content { flex: 1; padding: 24px 32px; max-width: 960px; }
+
+  /* Page header */
+  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .page-header h2 { font-size: 18px; font-weight: 600; color: #1e293b; }
+  .status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 9999px; padding: 4px 12px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #16a34a; }
+
+  /* Three-column lane cards */
+  .lanes { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 8px; }
+  .lane { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .lane-header { padding: 12px 16px 8px; display: flex; justify-content: space-between; align-items: center; }
+  .lane-title { font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px; }
+  .lane-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .lane-dot.blue { background: #3b82f6; }
+  .lane-dot.amber { background: #f59e0b; }
+  .lane-dot.emerald { background: #10b981; }
+  .lane-direction { font-size: 10px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .lane-body { padding: 0 16px; flex: 1; }
+  .lane-stats { display: flex; gap: 16px; margin-bottom: 6px; }
+  .lane-stat { font-size: 20px; font-weight: 700; color: #1e293b; }
+  .lane-stat-label { font-size: 11px; color: #94a3b8; font-weight: 400; }
+  .lane-meta { font-size: 11px; color: #64748b; margin-bottom: 12px; }
+  .new-badge { background: #dbeafe; color: #1d4ed8; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 9999px; margin-left: 4px; }
+  .lane-actions { padding: 0 16px 12px; }
+  .lane-action { width: 100%; padding: 8px 0; font-size: 13px; font-weight: 500; border: none; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+  .lane-action.primary { background: #3b82f6; color: #fff; }
+  .lane-action.primary:hover { background: #2563eb; }
+  .lane-action.secondary { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+  .lane-action.secondary:hover { background: #e2e8f0; }
+  .lane-action.muted { background: #f8fafc; color: #94a3b8; cursor: default; }
+  .lane-empty { color: #94a3b8; font-size: 12px; font-style: italic; margin-bottom: 12px; }
+
+  /* "Show files" toggle at bottom of card */
+  .lane-files-toggle { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 16px; border-top: 1px solid #f1f5f9; font-size: 11px; color: #94a3b8; cursor: pointer; background: none; border-left: none; border-right: none; border-bottom: none; width: 100%; transition: background 0.1s; }
+  .lane-files-toggle:hover { background: #f8fafc; color: #64748b; }
+  .lane-files-toggle .toggle-chevron { font-size: 9px; transition: transform 0.2s; }
+  .lane-files-toggle.open .toggle-chevron { transform: rotate(180deg); }
+
+  /* File drawer — spans full width below the 3-column grid */
+  .file-drawer { display: none; margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; overflow: hidden; }
+  .file-drawer.visible { display: block; }
+  .file-drawer-header { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; background: #fafbfc; border-bottom: 1px solid #f1f5f9; }
+  .file-drawer-title { font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 8px; }
+  .file-drawer-close { background: none; border: none; font-size: 16px; color: #94a3b8; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+  .file-drawer-close:hover { background: #f1f5f9; color: #64748b; }
+
+  /* File list */
+  .file-list { overflow: hidden; }
+  .file-list-header { display: grid; grid-template-columns: 1fr 80px 110px; padding: 6px 16px; background: #f8fafc; font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #f1f5f9; }
+  .file-row { display: grid; grid-template-columns: 1fr 80px 110px; padding: 5px 16px; font-size: 12px; border-bottom: 1px solid #f8fafc; align-items: center; }
+  .file-row:last-child { border-bottom: none; }
+  .file-row:hover { background: #fafbfc; }
+  .file-name { font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace; font-size: 11px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-size { font-size: 11px; color: #64748b; text-align: right; }
+  .file-time { font-size: 10px; color: #94a3b8; text-align: right; }
+  .file-list-footer { padding: 6px 16px; background: #f8fafc; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; }
+  .file-chapter-group { padding: 4px 16px 2px; font-size: 11px; font-weight: 600; color: #64748b; background: #fafbfc; border-bottom: 1px solid #f1f5f9; }
+
+  /* Activity feed */
+  .activity { margin-bottom: 32px; }
+  .activity h3 { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .activity-list { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; overflow: hidden; }
+  .activity-item { padding: 10px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .activity-icon.push { background: #dbeafe; color: #3b82f6; }
+  .activity-icon.pull { background: #fef3c7; color: #d97706; }
+  .activity-icon.sync { background: #f1f5f9; color: #64748b; }
+  .activity-text { flex: 1; color: #334155; }
+  .activity-text strong { font-weight: 600; }
+  .activity-time { font-size: 11px; color: #94a3b8; white-space: nowrap; }
+
+  /* Setup guide */
+  .setup-guide { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; overflow: hidden; }
+  .setup-toggle { width: 100%; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 500; color: #64748b; }
+  .setup-toggle:hover { background: #f8fafc; }
+  .setup-toggle .chevron { transition: transform 0.2s; font-size: 11px; }
+  .setup-toggle.open .chevron { transform: rotate(180deg); }
+  .setup-content { padding: 0 16px 16px; display: none; }
+  .setup-content.visible { display: block; }
+  .setup-step { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+  .setup-step:last-child { border-bottom: none; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; background: #eff6ff; color: #3b82f6; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-text { font-size: 13px; color: #475569; }
+  .step-text code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 12px; font-family: ui-monospace, 'SF Mono', monospace; color: #334155; }
+  .step-text .step-title { font-weight: 600; color: #1e293b; display: block; margin-bottom: 2px; }
+
+  /* Footer */
+  .page-footer { padding: 16px 0; border-top: 1px solid #e2e8f0; margin-top: 24px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #94a3b8; }
+  .page-footer .mono { font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="mochaccino-banner">
+  <span>Mochaccino — relay-redesign v3 — 2026-03-23</span>
+  <span>David's view (machineRole: creator)</span>
+</div>
+
+<div class="chrome-header">
+  <h1>FliHub</h1>
+  <span class="breadcrumb">›</span>
+  <span class="project-name">c32-bmad-v6-epic1-foundation</span>
+  <span class="breadcrumb">▾</span>
+</div>
+<div class="chrome-nav">
+  <button>Incoming</button>
+  <button>Recordings</button>
+  <button>Watch</button>
+  <button>Transcripts</button>
+  <button>Inbox</button>
+  <button>Assets</button>
+  <button>Thumbs</button>
+  <button class="active">Manage</button>
+  <button>Projects</button>
+</div>
+
+<div class="app-layout">
+  <div class="sidebar">
+    <div class="group-label">Record</div>
+    <button>Regen</button>
+    <div class="group-label">Edit</div>
+    <button>Rename</button>
+    <button>Gling / Edit</button>
+    <button>Renumber</button>
+    <button>AWB</button>
+    <div class="group-label">Collaborate</div>
+    <button class="active">Relay</button>
+    <div class="group-label">Actions</div>
+    <button>Git Sync</button>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <h2>Relay — c32-bmad-v6-epic1-foundation</h2>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        Relay connected
+      </div>
+    </div>
+
+    <!-- Three-column lane cards (always visible, compact) -->
+    <div class="lanes">
+      <!-- Recordings -->
+      <div class="lane">
+        <div class="lane-header">
+          <div class="lane-title"><span class="lane-dot blue"></span> Recordings</div>
+          <div class="lane-direction">You → Editor</div>
+        </div>
+        <div class="lane-body">
+          <div class="lane-stats">
+            <div><div class="lane-stat">15</div><div class="lane-stat-label">files</div></div>
+            <div><div class="lane-stat">338</div><div class="lane-stat-label">MB</div></div>
+          </div>
+          <div class="lane-meta">Ready to send <span class="new-badge">NEW</span></div>
+        </div>
+        <div class="lane-actions">
+          <button class="lane-action primary">Send to Editor</button>
+        </div>
+        <button class="lane-files-toggle" onclick="toggleDrawer('recordings', this)">
+          <span>Show 15 files</span>
+          <span class="toggle-chevron">▼</span>
+        </button>
+      </div>
+
+      <!-- First Edit -->
+      <div class="lane">
+        <div class="lane-header">
+          <div class="lane-title"><span class="lane-dot amber"></span> First Edit</div>
+          <div class="lane-direction">Editor → You</div>
+        </div>
+        <div class="lane-body">
+          <div class="lane-stats">
+            <div><div class="lane-stat">1</div><div class="lane-stat-label">file</div></div>
+            <div><div class="lane-stat">45</div><div class="lane-stat-label">MB</div></div>
+          </div>
+          <div class="lane-meta">Received 2 hours ago <span class="new-badge">NEW</span></div>
+        </div>
+        <div class="lane-actions">
+          <button class="lane-action secondary">Pull from Editor</button>
+        </div>
+        <button class="lane-files-toggle" onclick="toggleDrawer('edit1st', this)">
+          <span>Show 1 file</span>
+          <span class="toggle-chevron">▼</span>
+        </button>
+      </div>
+
+      <!-- Final -->
+      <div class="lane">
+        <div class="lane-header">
+          <div class="lane-title"><span class="lane-dot emerald"></span> Final</div>
+          <div class="lane-direction">Editor → You</div>
+        </div>
+        <div class="lane-body">
+          <div class="lane-empty">No files yet</div>
+          <div class="lane-meta">Waiting for editor</div>
+        </div>
+        <div class="lane-actions">
+          <button class="lane-action muted" disabled>Promote to Final</button>
+        </div>
+        <button class="lane-files-toggle" style="color: #cbd5e1; cursor: default;" disabled>
+          <span>No files</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- File drawers (appear below the grid when toggled) -->
+    <div class="file-drawer" id="drawer-recordings">
+      <div class="file-drawer-header">
+        <div class="file-drawer-title"><span class="lane-dot blue" style="display:inline-block;"></span> Recordings — 15 files</div>
+        <button class="file-drawer-close" onclick="closeDrawer('recordings')">✕</button>
+      </div>
+      <div class="file-list">
+        <div class="file-list-header">
+          <span>File</span>
+          <span style="text-align: right;">Size</span>
+          <span style="text-align: right;">Modified</span>
+        </div>
+        <div class="file-chapter-group">01 Intro</div>
+        <div class="file-row"><span class="file-name">01-1-intro.mov</span><span class="file-size">27.8 MB</span><span class="file-time">Mar 22, 2:10 PM</span></div>
+        <div class="file-chapter-group">02 Setup</div>
+        <div class="file-row"><span class="file-name">02-1-setup.mov</span><span class="file-size">16.9 MB</span><span class="file-time">Mar 22, 2:15 PM</span></div>
+        <div class="file-row"><span class="file-name">02-2-setup.mov</span><span class="file-size">10.5 MB</span><span class="file-time">Mar 22, 2:18 PM</span></div>
+        <div class="file-row"><span class="file-name">02-3-setup.mov</span><span class="file-size">22.5 MB</span><span class="file-time">Mar 22, 2:22 PM</span></div>
+        <div class="file-row"><span class="file-name">02-4-setup.mov</span><span class="file-size">53.5 MB</span><span class="file-time">Mar 22, 2:30 PM</span></div>
+        <div class="file-row"><span class="file-name">02-5-setup.mov</span><span class="file-size">14.6 MB</span><span class="file-time">Mar 22, 2:34 PM</span></div>
+        <div class="file-row"><span class="file-name">02-6-setup.mov</span><span class="file-size">5.3 MB</span><span class="file-time">Mar 22, 2:36 PM</span></div>
+        <div class="file-row"><span class="file-name">02-7-setup.mov</span><span class="file-size">29.0 MB</span><span class="file-time">Mar 22, 2:42 PM</span></div>
+        <div class="file-row"><span class="file-name">02-8-setup.mov</span><span class="file-size">53.9 MB</span><span class="file-time">Mar 22, 2:50 PM</span></div>
+        <div class="file-chapter-group">03 Epic1 Story1</div>
+        <div class="file-row"><span class="file-name">03-1-epic1-story1.mov</span><span class="file-size">12.2 MB</span><span class="file-time">Mar 22, 3:05 PM</span></div>
+        <div class="file-row"><span class="file-name">03-2-epic1-story1.mov</span><span class="file-size">41.4 MB</span><span class="file-time">Mar 22, 3:12 PM</span></div>
+        <div class="file-row"><span class="file-name">03-4-epic1-story1.mov</span><span class="file-size">14.2 MB</span><span class="file-time">Mar 22, 3:18 PM</span></div>
+        <div class="file-row"><span class="file-name">03-5-epic1-story1.mov</span><span class="file-size">6.4 MB</span><span class="file-time">Mar 22, 3:22 PM</span></div>
+        <div class="file-row"><span class="file-name">03-6-epic1-story1.mov</span><span class="file-size">19.3 MB</span><span class="file-time">Mar 22, 3:28 PM</span></div>
+        <div class="file-row"><span class="file-name">03-7-epic1-story1.mov</span><span class="file-size">10.6 MB</span><span class="file-time">Mar 22, 3:35 PM</span></div>
+        <div class="file-list-footer">
+          <span>3 chapters · 15 files</span>
+          <span>338.1 MB total</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="file-drawer" id="drawer-edit1st">
+      <div class="file-drawer-header">
+        <div class="file-drawer-title"><span class="lane-dot amber" style="display:inline-block;"></span> First Edit — 1 file</div>
+        <button class="file-drawer-close" onclick="closeDrawer('edit1st')">✕</button>
+      </div>
+      <div class="file-list">
+        <div class="file-list-header">
+          <span>File</span>
+          <span style="text-align: right;">Size</span>
+          <span style="text-align: right;">Modified</span>
+        </div>
+        <div class="file-row"><span class="file-name">c32-bmad-epic1-gling-edit.mp4</span><span class="file-size">45.2 MB</span><span class="file-time">Today, 2:45 PM</span></div>
+        <div class="file-list-footer">
+          <span>1 file</span>
+          <span>45.2 MB total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="activity">
+      <h3>Recent Activity</h3>
+      <div class="activity-list">
+        <div class="activity-item">
+          <div class="activity-icon pull">↓</div>
+          <div class="activity-text"><strong>Jan</strong> sent a first edit — <span class="mono">c32-bmad-epic1-gling-edit.mp4</span> (45 MB)</div>
+          <div class="activity-time">2 hours ago</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon push">↑</div>
+          <div class="activity-text"><strong>You</strong> pushed 15 recordings (338 MB)</div>
+          <div class="activity-time">Yesterday, 3:42 PM</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon sync">⟳</div>
+          <div class="activity-text">Git sync completed — pulled 3 updated files</div>
+          <div class="activity-time">Yesterday, 3:40 PM</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon push">↑</div>
+          <div class="activity-text"><strong>You</strong> pushed 8 recordings (206 MB)</div>
+          <div class="activity-time">Mar 21, 11:15 AM</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Setup Guide -->
+    <div class="setup-guide">
+      <button class="setup-toggle" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('visible')">
+        <span>Setup Help — How to configure Relay for a new collaborator</span>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="setup-content">
+        <div class="setup-step"><div class="step-num">1</div><div class="step-text"><span class="step-title">Install SyncThing</span>Install <a href="https://syncthing.net" style="color:#3b82f6;">SyncThing</a> on both machines. Peer-to-peer sync — no cloud.</div></div>
+        <div class="setup-step"><div class="step-num">2</div><div class="step-text"><span class="step-title">Create the relay folder</span><code>mkdir -p ~/relay/flihub-appydave</code></div></div>
+        <div class="setup-step"><div class="step-num">3</div><div class="step-text"><span class="step-title">Share in SyncThing</span>Add the relay folder and share with the editor's device.</div></div>
+        <div class="setup-step"><div class="step-num">4</div><div class="step-text"><span class="step-title">Set config.json</span><code>"relayDirectory": "~/relay/flihub-appydave"</code><br><code>"relayEnabled": true</code><br><code>"machineRole": "creator"</code> or <code>"editor"</code></div></div>
+        <div class="setup-step"><div class="step-num">5</div><div class="step-text"><span class="step-title">Verify</span>Reload FliHub → Manage → Relay. Green dot = ready.</div></div>
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span class="mono">~/dev/video-projects/v-appydave/c32-bmad-v6-epic1-foundation</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: #16a34a;"></span>
+        Connected
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Track which drawer is open and its toggle button
+let activeDrawer = null;
+let activeToggle = null;
+
+function toggleDrawer(name, toggleBtn) {
+  const drawer = document.getElementById('drawer-' + name);
+
+  // If clicking the same one that's open, close it
+  if (activeDrawer === name) {
+    closeDrawer(name);
+    return;
+  }
+
+  // Close any open drawer first
+  if (activeDrawer) {
+    closeDrawer(activeDrawer);
+  }
+
+  // Open the new one
+  drawer.classList.add('visible');
+  toggleBtn.classList.add('open');
+  toggleBtn.querySelector('span:first-child').textContent = 'Hide files';
+  activeDrawer = name;
+  activeToggle = toggleBtn;
+}
+
+function closeDrawer(name) {
+  const drawer = document.getElementById('drawer-' + name);
+  drawer.classList.remove('visible');
+  if (activeToggle) {
+    activeToggle.classList.remove('open');
+    // Restore label
+    const count = name === 'recordings' ? '15' : '1';
+    const word = count === '1' ? 'file' : 'files';
+    activeToggle.querySelector('span:first-child').textContent = 'Show ' + count + ' ' + word;
+  }
+  activeDrawer = null;
+  activeToggle = null;
+}
+</script>
+</body>
+</html>

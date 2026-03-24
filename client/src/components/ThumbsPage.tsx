@@ -181,7 +181,7 @@ export function ThumbsPage() {
     <div className="space-y-6">
       {/* Size Toggle */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600">Size:</span>
+        <span className="text-sm text-warm-secondary">Size:</span>
         <div className="flex gap-1">
           {(Object.keys(THUMBNAIL_SIZES) as ThumbnailSize[]).map((size) => (
             <button
@@ -190,7 +190,7 @@ export function ThumbsPage() {
               className={`px-2 py-1 text-xs rounded transition-colors ${
                 thumbnailSize === size
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
               }`}
             >
               {size}
@@ -202,25 +202,25 @@ export function ThumbsPage() {
             queryClient.invalidateQueries({ queryKey: QUERY_KEYS.thumbs });
             queryClient.refetchQueries({ queryKey: QUERY_KEYS.thumbs });
           }}
-          className="ml-auto px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+          className="ml-auto px-3 py-1 text-xs bg-surface-muted hover:bg-surface-hover rounded transition-colors"
         >
           Refresh Thumbs
         </button>
       </div>
 
       {/* Current Thumbnails */}
-      <section className="bg-white rounded-lg border border-gray-200 p-4">
+      <section className="bg-surface rounded-lg border border-warm p-4">
         <div className="flex items-center gap-2 mb-3">
-          <h3 className="text-sm font-medium text-gray-700">
+          <h3 className="text-sm font-medium text-warm-secondary">
             Current Thumbnails ({thumbs.length}/3)
           </h3>
           <OpenFolderButton folder="thumbs" />
         </div>
 
         {thumbsLoading ? (
-          <p className="text-sm text-gray-500">Loading thumbnails...</p>
+          <p className="text-sm text-warm-muted">Loading thumbnails...</p>
         ) : thumbs.length === 0 ? (
-          <p className="text-sm text-gray-500">No thumbnails yet. Import from a ZIP file below.</p>
+          <p className="text-sm text-warm-muted">No thumbnails yet. Import from a ZIP file below.</p>
         ) : (
           <div className="space-y-2">
             {thumbs.map((thumb: ThumbInfo, index: number) => (
@@ -234,10 +234,10 @@ export function ThumbsPage() {
                 className={`flex items-center gap-3 p-2 rounded border transition-colors cursor-move ${
                   draggedIndex === index
                     ? 'border-blue-400 bg-blue-50'
-                    : 'border-gray-200 hover:bg-gray-50'
+                    : 'border-warm hover:bg-surface-hover'
                 }`}
               >
-                <span className="text-gray-400 text-sm w-6">☰</span>
+                <span className="text-warm-muted text-sm w-6">☰</span>
                 <img
                   src={`${API_URL}/api/thumbs/image/${encodeURIComponent(thumb.filename)}?t=${encodeURIComponent(thumb.timestamp)}`}
                   alt={thumb.filename}
@@ -253,8 +253,8 @@ export function ThumbsPage() {
                   onMouseLeave={handlePreviewLeave}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{thumb.filename}</p>
-                  <p className="text-xs text-gray-500">{formatFileSize(thumb.size)}</p>
+                  <p className="text-sm font-medium text-warm-primary truncate">{thumb.filename}</p>
+                  <p className="text-xs text-warm-muted">{formatFileSize(thumb.size)}</p>
                 </div>
                 <button
                   onClick={() => handleDelete(thumb.filename)}
@@ -278,28 +278,28 @@ export function ThumbsPage() {
       </section>
 
       {/* ZIP Files Section */}
-      <section className="bg-white rounded-lg border border-gray-200 p-4">
+      <section className="bg-surface rounded-lg border border-warm p-4">
         <div className="flex items-center gap-2 mb-3">
-          <h3 className="text-sm font-medium text-gray-700">
+          <h3 className="text-sm font-medium text-warm-secondary">
             Import from ZIP ({zips.length} available)
           </h3>
           <OpenFolderButton folder="downloads" />
         </div>
 
         {zipsLoading ? (
-          <p className="text-sm text-gray-500">Scanning Downloads folder...</p>
+          <p className="text-sm text-warm-muted">Scanning Downloads folder...</p>
         ) : zips.length === 0 ? (
-          <p className="text-sm text-gray-500">No ZIP files with images found in ~/Downloads</p>
+          <p className="text-sm text-warm-muted">No ZIP files with images found in ~/Downloads</p>
         ) : (
           <div className="space-y-2">
             {zips.map((zip: ZipInfo) => (
               <div
                 key={zip.filename}
-                className="flex items-center justify-between p-2 rounded border border-gray-200 hover:bg-gray-50"
+                className="flex items-center justify-between p-2 rounded border border-warm hover:bg-surface-hover"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{zip.filename}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-medium text-warm-primary truncate">{zip.filename}</p>
+                  <p className="text-xs text-warm-muted">
                     {zip.imageCount} images &middot; {formatFileSize(zip.size)}
                   </p>
                 </div>
@@ -335,11 +335,11 @@ export function ThumbsPage() {
       {/* ZIP Preview Modal */}
       {selectedZip && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[80vh] flex flex-col">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="bg-surface rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[80vh] flex flex-col">
+            <div className="p-4 border-b border-warm flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-gray-900">Select Thumbnails</h3>
-                <p className="text-sm text-gray-500">
+                <h3 className="font-medium text-warm-primary">Select Thumbnails</h3>
+                <p className="text-sm text-warm-muted">
                   {selectedZip} &middot; Select up to 3 images
                 </p>
               </div>
@@ -348,7 +348,7 @@ export function ThumbsPage() {
                   setSelectedZip(null);
                   setSelectedImages([]);
                 }}
-                className="p-2 text-gray-400 hover:text-gray-600"
+                className="p-2 text-warm-muted hover:text-warm-secondary"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -363,9 +363,9 @@ export function ThumbsPage() {
 
             <div className="p-4 overflow-y-auto flex-1">
               {contentsLoading ? (
-                <p className="text-sm text-gray-500">Loading images...</p>
+                <p className="text-sm text-warm-muted">Loading images...</p>
               ) : zipImages.length === 0 ? (
-                <p className="text-sm text-gray-500">No images found in ZIP</p>
+                <p className="text-sm text-warm-muted">No images found in ZIP</p>
               ) : (
                 <div className="grid grid-cols-3 gap-4">
                   {zipImages.map((image: ZipImagePreview) => {
@@ -378,7 +378,7 @@ export function ThumbsPage() {
                         className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-colors ${
                           isSelected
                             ? 'border-blue-500 ring-2 ring-blue-200'
-                            : 'border-gray-200 hover:border-gray-300'
+                            : 'border-warm hover:border-warm-strong'
                         }`}
                       >
                         <img
@@ -393,9 +393,9 @@ export function ThumbsPage() {
                             {selectionIndex + 1}
                           </div>
                         )}
-                        <div className="p-2 bg-white">
-                          <p className="text-xs text-gray-700 truncate">{image.name}</p>
-                          <p className="text-xs text-gray-500">{formatFileSize(image.size)}</p>
+                        <div className="p-2 bg-surface">
+                          <p className="text-xs text-warm-secondary truncate">{image.name}</p>
+                          <p className="text-xs text-warm-muted">{formatFileSize(image.size)}</p>
                         </div>
                       </div>
                     );
@@ -404,15 +404,15 @@ export function ThumbsPage() {
               )}
             </div>
 
-            <div className="p-4 border-t border-gray-200 flex items-center justify-between">
-              <p className="text-sm text-gray-600">{selectedImages.length} of 3 selected</p>
+            <div className="p-4 border-t border-warm flex items-center justify-between">
+              <p className="text-sm text-warm-secondary">{selectedImages.length} of 3 selected</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => {
                     setSelectedZip(null);
                     setSelectedImages([]);
                   }}
-                  className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                  className="px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover rounded transition-colors"
                 >
                   Cancel
                 </button>
@@ -441,14 +441,14 @@ export function ThumbsPage() {
               top: Math.min(previewData.y - 150, window.innerHeight - 350),
             }}
           >
-            <div className="bg-white rounded-lg shadow-2xl border border-gray-300 overflow-hidden">
+            <div className="bg-surface rounded-lg shadow-2xl border border-warm-strong overflow-hidden">
               <img
                 src={previewData.src}
                 alt={previewData.name}
                 className="max-w-[500px] max-h-[300px] object-contain"
               />
-              <div className="px-3 py-2 bg-gray-50 border-t border-gray-200">
-                <p className="text-sm text-gray-700 truncate">{previewData.name}</p>
+              <div className="px-3 py-2 bg-surface-muted border-t border-warm">
+                <p className="text-sm text-warm-secondary truncate">{previewData.name}</p>
               </div>
             </div>
           </div>,

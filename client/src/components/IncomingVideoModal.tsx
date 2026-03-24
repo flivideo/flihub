@@ -76,17 +76,17 @@ export function IncomingVideoModal({ file, onClose }: IncomingVideoModalProps) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col mx-4 overflow-hidden"
+        className="bg-surface rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col mx-4 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
-          <h3 className="font-medium text-gray-800 truncate pr-4" title={file.filename}>
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-surface-muted">
+          <h3 className="font-medium text-warm-primary truncate pr-4" title={file.filename}>
             {file.filename}
           </h3>
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-colors"
+            className="p-1.5 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors"
             title="Close (Escape)"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@ export function IncomingVideoModal({ file, onClose }: IncomingVideoModalProps) {
         </div>
 
         {/* Controls Bar */}
-        <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
+        <div className="flex items-center justify-between px-4 py-3 border-t bg-surface-muted">
           {/* Left: Play/Pause + Info */}
           <div className="flex items-center gap-4">
             <button
@@ -132,14 +132,14 @@ export function IncomingVideoModal({ file, onClose }: IncomingVideoModalProps) {
             >
               {isPlaying ? '⏹' : '▶'}
             </button>
-            <span className="font-mono text-sm text-gray-600">{formatDuration(file.duration)}</span>
-            <span className="text-sm text-gray-400">|</span>
-            <span className="text-sm text-gray-600">{formatFileSize(file.size)}</span>
+            <span className="font-mono text-sm text-warm-secondary">{formatDuration(file.duration)}</span>
+            <span className="text-sm text-warm-muted">|</span>
+            <span className="text-sm text-warm-secondary">{formatFileSize(file.size)}</span>
           </div>
 
           {/* Right: Speed Controls */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 font-medium">Speed:</span>
+            <span className="text-xs text-warm-muted font-medium">Speed:</span>
             <div className="flex gap-1">
               {SPEED_PRESETS.map((speed) => (
                 <button
@@ -148,7 +148,7 @@ export function IncomingVideoModal({ file, onClose }: IncomingVideoModalProps) {
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     playbackSpeed === speed
                       ? 'bg-blue-600 text-white font-medium'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
                   }`}
                 >
                   {speed}x

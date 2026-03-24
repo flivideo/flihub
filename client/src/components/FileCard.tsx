@@ -107,19 +107,19 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
       ? 'bg-green-50 rounded-lg border-2 border-green-400 p-4 shadow-sm'
       : takeRank === 'good'
         ? 'bg-yellow-50 rounded-lg border-2 border-yellow-400 p-4 shadow-sm'
-        : 'bg-white rounded-lg border border-gray-200 p-4 shadow-sm';
+        : 'bg-surface rounded-lg border border-warm p-4 shadow-sm';
 
   return (
     <div className={cardClasses}>
       {/* Original filename and metadata */}
       <div className="mb-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500 truncate" title={file.filename}>
+          <p className="text-sm text-warm-muted truncate" title={file.filename}>
             {file.filename}
           </p>
           <div className="flex items-center gap-2">
             {/* NFR-7: Duration badge */}
-            <span className="text-xs text-gray-600 font-mono">{formatDuration(file.duration)}</span>
+            <span className="text-xs text-warm-secondary font-mono">{formatDuration(file.duration)}</span>
             {/* FR-8: File size badge */}
             <span
               className={`text-xs px-2 py-0.5 rounded font-medium ${
@@ -127,7 +127,7 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
                   ? 'bg-green-200 text-green-800'
                   : takeRank === 'good'
                     ? 'bg-yellow-200 text-yellow-800'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-surface-muted text-warm-secondary'
               }`}
             >
               {formatFileSize(file.size)}
@@ -136,7 +136,7 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
         </div>
         <div className="flex items-center gap-2">
           {/* FR-46: Relative time with full timestamp on hover */}
-          <p className="text-xs text-gray-400" title={new Date(file.timestamp).toLocaleString()}>
+          <p className="text-xs text-warm-muted" title={new Date(file.timestamp).toLocaleString()}>
             {formatRelativeTime(file.timestamp)}
           </p>
           {takeRank === 'best' && (
@@ -150,7 +150,7 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
 
       {/* Preview and actions */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-warm-secondary">
           Will rename to:{' '}
           <span className="font-mono text-blue-600">
             {buildPreviewFilename(chapter, sequence, name, tags, customTag)}
@@ -162,7 +162,7 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
           <button
             onClick={() => setShowPreview(true)}
             disabled={isLoading}
-            className="px-3 py-1.5 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 text-sm text-warm-secondary hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
             title="Preview video"
           >
             ▶

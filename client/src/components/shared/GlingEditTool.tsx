@@ -203,9 +203,9 @@ export function GlingEditTool() {
       <section>
         <SectionHeader title="Gling Preparation" />
         <div className="space-y-3">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-warm-secondary">
             <span className="font-medium">Recordings Folder:</span>
-            <div className="font-mono text-xs text-gray-500 mt-1 break-all">
+            <div className="font-mono text-xs text-warm-muted mt-1 break-all">
               {config?.projectDirectory ? `${config.projectDirectory}/recordings/` : 'No project selected'}
             </div>
           </div>
@@ -223,7 +223,7 @@ export function GlingEditTool() {
               <span>📂</span> Open in Finder
             </button>
           </div>
-          <div className="text-xs text-gray-400 bg-blue-50 border border-blue-200 rounded p-2">
+          <div className="text-xs text-warm-muted bg-blue-50 border border-blue-200 rounded p-2">
             Tip: Drag files from Finder into Gling, then export edited files to edit-1st
           </div>
         </div>
@@ -236,11 +236,11 @@ export function GlingEditTool() {
           <div className="space-y-3">
             {/* Filename */}
             <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <label className="text-xs font-medium text-warm-muted uppercase tracking-wide">
                 Export Filename
               </label>
               <div className="flex items-center gap-2 mt-1">
-                <div className="flex-1 bg-gray-50 border border-gray-200 rounded px-3 py-2 font-mono text-sm text-gray-800">
+                <div className="flex-1 bg-surface-muted border border-warm rounded px-3 py-2 font-mono text-sm text-warm-primary">
                   {editPrepData.glingFilename}
                 </div>
                 <button
@@ -254,7 +254,7 @@ export function GlingEditTool() {
 
             {/* Dictionary */}
             <div>
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">
+              <label className="text-xs font-medium text-warm-muted uppercase tracking-wide mb-2 block">
                 Dictionary
               </label>
 
@@ -262,7 +262,7 @@ export function GlingEditTool() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-warm-secondary">
                       Global: {globalDictionary.split('\n').filter((w) => w.trim()).length} words
                     </span>
                     {savingGlobal && <span className="text-xs text-blue-600">Saving...</span>}
@@ -280,16 +280,16 @@ export function GlingEditTool() {
                   onChange={(e) => setGlobalDictionary(e.target.value)}
                   onBlur={handleSaveGlobal}
                   rows={4}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-white font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded bg-surface font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Add global dictionary words (one per line)..."
                 />
               </div>
 
               {/* Project */}
-              <div className="space-y-2 border-t border-gray-200 pt-3">
+              <div className="space-y-2 border-t border-warm pt-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-warm-secondary">
                       Project: {projectDictionary.split('\n').filter((w) => w.trim()).length} words
                     </span>
                     {config?.activeProject && (
@@ -312,15 +312,15 @@ export function GlingEditTool() {
                   onChange={(e) => setProjectDictionary(e.target.value)}
                   onBlur={handleSaveProject}
                   rows={3}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-white font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded bg-surface font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Add project dictionary words (one per line)..."
                 />
               </div>
 
               {/* Combined */}
-              <div className="space-y-2 border-t border-gray-300 pt-3 mt-3">
+              <div className="space-y-2 border-t border-warm-strong pt-3 mt-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 font-medium">
+                  <span className="text-sm text-warm-secondary font-medium">
                     Combined: {editPrepData.glingDictionary?.length || 0} words
                   </span>
                   <button
@@ -335,7 +335,7 @@ export function GlingEditTool() {
                   value={editPrepData.glingDictionary?.join('\n') || ''}
                   readOnly
                   rows={4}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-50 font-mono resize-none focus:outline-none"
+                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded bg-surface-muted font-mono resize-none focus:outline-none"
                   placeholder="No dictionary words..."
                 />
               </div>
@@ -355,15 +355,15 @@ export function GlingEditTool() {
                 <div key={folder.name}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm">
-                      <span className={exists ? 'text-green-500' : 'text-gray-300'}>
+                      <span className={exists ? 'text-green-500' : 'text-warm-faint'}>
                         {exists ? '✓' : '○'}
                       </span>
                       <span
-                        className={exists ? 'text-gray-700 font-mono' : 'text-gray-400 font-mono'}
+                        className={exists ? 'text-warm-secondary font-mono' : 'text-warm-muted font-mono'}
                       >
                         {folder.name}/
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-warm-muted">
                         {folder.name === 'edit-1st' && '← Gling exports'}
                         {folder.name === 'edit-2nd' && "← Jan's edits"}
                         {folder.name === 'edit-final' && '← Final publish'}
@@ -372,7 +372,7 @@ export function GlingEditTool() {
                     {exists ? (
                       <button
                         onClick={() => handleOpenFolder(folder.name)}
-                        className="px-3 py-1 text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        className="px-3 py-1 text-xs text-warm-secondary hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                       >
                         Open
                       </button>
@@ -411,9 +411,9 @@ export function GlingEditTool() {
 function SectionHeader({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-3 mb-3">
-      <div className="h-px bg-gray-300 w-8" />
-      <span className="text-sm font-semibold text-gray-700">{title}</span>
-      <div className="h-px bg-gray-300 flex-1" />
+      <div className="h-px bg-warm-divider w-8" />
+      <span className="text-sm font-semibold text-warm-secondary">{title}</span>
+      <div className="h-px bg-warm-divider flex-1" />
     </div>
   );
 }

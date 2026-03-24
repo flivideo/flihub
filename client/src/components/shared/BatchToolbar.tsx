@@ -124,7 +124,7 @@ export function BatchToolbar({
               onClick={() => openPopover(activePopover === 'rename' ? null : 'rename')}
               className={`text-xs px-3 py-1 rounded font-medium transition-colors ${
                 activePopover === 'rename'
-                  ? 'bg-white text-blue-800'
+                  ? 'bg-surface text-blue-800'
                   : 'bg-blue-600 hover:bg-blue-500 text-white'
               }`}
             >
@@ -134,7 +134,7 @@ export function BatchToolbar({
               onClick={() => openPopover(activePopover === 'moveChapter' ? null : 'moveChapter')}
               className={`text-xs px-3 py-1 rounded font-medium transition-colors ${
                 activePopover === 'moveChapter'
-                  ? 'bg-white text-blue-800'
+                  ? 'bg-surface text-blue-800'
                   : 'bg-blue-600 hover:bg-blue-500 text-white'
               }`}
             >
@@ -144,7 +144,7 @@ export function BatchToolbar({
               onClick={() => openPopover(activePopover === 'addTag' ? null : 'addTag')}
               className={`text-xs px-3 py-1 rounded font-medium transition-colors ${
                 activePopover === 'addTag'
-                  ? 'bg-white text-blue-800'
+                  ? 'bg-surface text-blue-800'
                   : 'bg-blue-600 hover:bg-blue-500 text-white'
               }`}
             >
@@ -155,7 +155,7 @@ export function BatchToolbar({
                 onClick={() => openPopover(activePopover === 'removeTag' ? null : 'removeTag')}
                 className={`text-xs px-3 py-1 rounded font-medium transition-colors ${
                   activePopover === 'removeTag'
-                    ? 'bg-white text-blue-800'
+                    ? 'bg-surface text-blue-800'
                     : 'bg-blue-600 hover:bg-blue-500 text-white'
                 }`}
               >
@@ -195,12 +195,12 @@ export function BatchToolbar({
               }}
               onKeyDown={handleKeyDown}
               placeholder="e.g. intro-demo"
-              className="px-2 py-1 text-sm font-mono text-gray-900 bg-white border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 w-48"
+              className="px-2 py-1 text-sm font-mono text-warm-primary bg-surface border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 w-48"
               maxLength={50}
             />
             <button
               onClick={handleRenameSubmit}
-              className="text-xs px-3 py-1 rounded font-medium bg-white text-blue-800 hover:bg-blue-50 transition-colors"
+              className="text-xs px-3 py-1 rounded font-medium bg-surface text-blue-800 hover:bg-surface-hover transition-colors"
             >
               Preview Changes
             </button>
@@ -231,12 +231,12 @@ export function BatchToolbar({
               }}
               onKeyDown={handleKeyDown}
               placeholder="e.g. 05"
-              className="px-2 py-1 text-sm font-mono text-gray-900 bg-white border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 w-16"
+              className="px-2 py-1 text-sm font-mono text-warm-primary bg-surface border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 w-16"
               maxLength={2}
             />
             <button
               onClick={handleMoveChapterSubmit}
-              className="text-xs px-3 py-1 rounded font-medium bg-white text-blue-800 hover:bg-blue-50 transition-colors"
+              className="text-xs px-3 py-1 rounded font-medium bg-surface text-blue-800 hover:bg-surface-hover transition-colors"
             >
               Apply
             </button>
@@ -267,12 +267,12 @@ export function BatchToolbar({
               }}
               onKeyDown={handleKeyDown}
               placeholder="e.g. CTA"
-              className="px-2 py-1 text-sm font-mono text-gray-900 bg-white border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 w-24"
+              className="px-2 py-1 text-sm font-mono text-warm-primary bg-surface border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400 w-24"
               maxLength={10}
             />
             <button
               onClick={handleAddTagSubmit}
-              className="text-xs px-3 py-1 rounded font-medium bg-white text-blue-800 hover:bg-blue-50 transition-colors"
+              className="text-xs px-3 py-1 rounded font-medium bg-surface text-blue-800 hover:bg-surface-hover transition-colors"
             >
               Apply
             </button>

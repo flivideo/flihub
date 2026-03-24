@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* B048: Warm Linen Theme — semantic color tokens for camera-friendly UI */
+@theme {
+  --color-page: #e8e0d4;
+  --color-surface: #f5f1eb;
+  --color-surface-hover: #ede7dc;
+  --color-surface-muted: #ede7dc;
+  --color-border-warm: #d4cdc4;
+  --color-border-warm-strong: #b8a99a;
+  --color-text-warm-primary: #2a2018;
+  --color-text-warm-secondary: #4a3e30;
+  --color-text-warm-muted: #7a6e5e;
+  --color-text-warm-faint: #9a8a78;
+  --color-warm-header: #f5f1eb;
+  --color-warm-divider: #d4cdc4;
+}
+
 /* FR-107: Pulsing glow animation for input focus attention (blue - name field) */
 @keyframes glow-pulse {
   0%, 100% {

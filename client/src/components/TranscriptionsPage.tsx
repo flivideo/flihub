@@ -107,35 +107,35 @@ export function TranscriptionsPage() {
       {/* Transcript Files for Active Project */}
       {activeProject && (
         <section>
-          <h3 className="text-sm font-medium text-gray-500 mb-2">
+          <h3 className="text-sm font-medium text-warm-muted mb-2">
             PROJECT TRANSCRIPTS
-            <span className="text-gray-400 ml-1">
+            <span className="text-warm-muted ml-1">
               ({activeProject}) {transcripts.length > 0 && `- ${transcripts.length} files`}
             </span>
           </h3>
           {transcripts.length === 0 ? (
-            <div className="bg-white border rounded-lg p-4 text-center text-gray-500">
+            <div className="bg-surface border rounded-lg p-4 text-center text-warm-muted">
               <p className="text-sm">No transcripts yet</p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-warm-muted mt-1">
                 Transcripts will appear here after you rename recordings
               </p>
             </div>
           ) : (
-            <div className="bg-white border rounded-lg divide-y">
+            <div className="bg-surface border rounded-lg divide-y">
               {transcripts.map((transcript) => (
                 <div
                   key={transcript.filename}
-                  className="p-3 flex items-center justify-between hover:bg-gray-50"
+                  className="p-3 flex items-center justify-between hover:bg-surface-hover"
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <span className="font-mono text-sm text-blue-600">
                       {transcript.chapter}-{transcript.sequence}
                     </span>
-                    <span className="text-sm text-gray-700">{transcript.name}</span>
-                    <span className="text-xs text-gray-400">{formatFileSize(transcript.size)}</span>
+                    <span className="text-sm text-warm-secondary">{transcript.name}</span>
+                    <span className="text-xs text-warm-muted">{formatFileSize(transcript.size)}</span>
                   </div>
                   {transcript.preview && (
-                    <div className="text-xs text-gray-400 italic max-w-md truncate ml-4">
+                    <div className="text-xs text-warm-muted italic max-w-md truncate ml-4">
                       {transcript.preview}
                     </div>
                   )}
@@ -157,23 +157,23 @@ export function TranscriptionsPage() {
       {/* Active transcription */}
       {active && (
         <section>
-          <h3 className="text-sm font-medium text-gray-500 mb-2">ACTIVE</h3>
+          <h3 className="text-sm font-medium text-warm-muted mb-2">ACTIVE</h3>
           <div className="border rounded-lg p-4 bg-blue-50">
             <div className="flex items-center gap-3 mb-2">
               <span className="animate-pulse text-blue-600">&#9679;</span>
               <span className="font-medium">{active.videoFilename}</span>
-              <span className="font-mono text-sm text-gray-500">
+              <span className="font-mono text-sm text-warm-muted">
                 {formatDuration(active.duration)}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-warm-muted">
                 {active.size ? formatFileSize(active.size) : '-'}
               </span>
             </div>
-            <div className="text-xs text-gray-500 mb-3">
+            <div className="text-xs text-warm-muted mb-3">
               Started{' '}
               {active.startedAt ? new Date(active.startedAt).toLocaleTimeString() : 'just now'}
             </div>
-            <div className="bg-white rounded border p-3 max-h-48 overflow-y-auto font-mono text-sm whitespace-pre-wrap">
+            <div className="bg-surface rounded border p-3 max-h-48 overflow-y-auto font-mono text-sm whitespace-pre-wrap">
               {streamingText || active.streamedText || 'Processing...'}
               <span className="animate-pulse ml-0.5 text-blue-600">|</span>
             </div>
@@ -184,18 +184,18 @@ export function TranscriptionsPage() {
       {/* Queue */}
       {queue.length > 0 && (
         <section>
-          <h3 className="text-sm font-medium text-gray-500 mb-2">
-            QUEUE <span className="text-gray-400">({queue.length} pending)</span>
+          <h3 className="text-sm font-medium text-warm-muted mb-2">
+            QUEUE <span className="text-warm-muted">({queue.length} pending)</span>
           </h3>
-          <div className="bg-white border rounded-lg divide-y">
+          <div className="bg-surface border rounded-lg divide-y">
             {queue.map((job, index) => (
               <div key={job.jobId} className="p-3 flex items-center gap-3">
-                <span className="text-gray-400 text-sm w-6">{index + 1}.</span>
+                <span className="text-warm-muted text-sm w-6">{index + 1}.</span>
                 <span className="font-mono text-sm">{job.videoFilename}</span>
-                <span className="font-mono text-sm text-gray-400">
+                <span className="font-mono text-sm text-warm-muted">
                   {formatDuration(job.duration)}
                 </span>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-warm-muted">
                   {job.size ? formatFileSize(job.size) : '-'}
                 </span>
               </div>
@@ -207,17 +207,17 @@ export function TranscriptionsPage() {
       {/* Recent */}
       {recent.length > 0 && (
         <section>
-          <h3 className="text-sm font-medium text-gray-500 mb-2">RECENT</h3>
-          <div className="bg-white border rounded-lg divide-y">
+          <h3 className="text-sm font-medium text-warm-muted mb-2">RECENT</h3>
+          <div className="bg-surface border rounded-lg divide-y">
             {recent.map((job) => (
               <div key={job.jobId} className="p-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <StatusIcon status={job.status} />
                   <span className="font-mono text-sm">{job.videoFilename}</span>
-                  <span className="font-mono text-sm text-gray-400">
+                  <span className="font-mono text-sm text-warm-muted">
                     {formatDuration(job.duration)}
                   </span>
-                  <span className="text-sm text-gray-400">
+                  <span className="text-sm text-warm-muted">
                     {job.size ? formatFileSize(job.size) : '-'}
                   </span>
                 </div>
@@ -257,6 +257,6 @@ function StatusIcon({ status }: { status: string }) {
     case 'error':
       return <span className="text-red-500">&#10005;</span>;
     default:
-      return <span className="text-gray-400">&#9675;</span>;
+      return <span className="text-warm-muted">&#9675;</span>;
   }
 }

@@ -143,7 +143,7 @@ export function RelayTool() {
   // ─── Loading / Not Configured States ───
 
   if (statusLoading) {
-    return <div className="text-sm text-gray-500 p-4">Loading relay status...</div>;
+    return <div className="text-sm text-warm-muted p-4">Loading relay status...</div>;
   }
 
   if (!status?.configured) {
@@ -160,7 +160,7 @@ export function RelayTool() {
   if (!status?.enabled) {
     return (
       <div className="space-y-4 p-4">
-        <div className="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded p-3">
+        <div className="text-sm text-warm-muted bg-surface-muted border border-warm rounded p-3">
           Relay is configured but not enabled.
         </div>
         <SetupGuide />
@@ -172,8 +172,8 @@ export function RelayTool() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">
-          Relay {projectCode && <span className="text-gray-500">— {projectCode}</span>}
+        <h2 className="text-base font-semibold text-warm-primary">
+          Relay {projectCode && <span className="text-warm-muted">— {projectCode}</span>}
         </h2>
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-full px-2.5 py-0.5">
           <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
@@ -227,7 +227,7 @@ export function RelayTool() {
 
       {/* Footer */}
       {status.relayDirectory && (
-        <div className="flex items-center justify-between text-xs text-gray-400 border-t border-gray-100 pt-3">
+        <div className="flex items-center justify-between text-xs text-warm-muted border-t border-warm pt-3">
           <span className="font-mono truncate">{status.relayDirectory}</span>
           <span className="inline-flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
@@ -279,7 +279,7 @@ function LaneCard({
   const showVersionSelector = isFinalLane && isCreator && versions && versions.length > 0;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-warm rounded-lg p-4 space-y-3">
       {/* Lane header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -287,9 +287,9 @@ function LaneCard({
             className="w-2.5 h-2.5 rounded-full shrink-0"
             style={{ backgroundColor: lane.dotColor }}
           />
-          <span className="text-sm font-semibold text-gray-900">{lane.label}</span>
+          <span className="text-sm font-semibold text-warm-primary">{lane.label}</span>
         </div>
-        <span className="text-[10px] font-medium text-gray-400 tracking-wide uppercase">
+        <span className="text-[10px] font-medium text-warm-muted tracking-wide uppercase">
           {direction}
         </span>
       </div>
@@ -298,32 +298,32 @@ function LaneCard({
       <div>
         {hasFiles ? (
           <>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-warm-primary">
               {stats.fileCount}
-              <span className="text-sm font-normal text-gray-500 ml-1">
+              <span className="text-sm font-normal text-warm-muted ml-1">
                 {stats.fileCount === 1 ? 'file' : 'files'}
               </span>
             </div>
-            <div className="text-xs text-gray-500">{formatSize(stats.totalSize)}</div>
+            <div className="text-xs text-warm-muted">{formatSize(stats.totalSize)}</div>
           </>
         ) : (
-          <div className="text-sm text-gray-400 py-2">No files yet</div>
+          <div className="text-sm text-warm-muted py-2">No files yet</div>
         )}
       </div>
 
       {/* Version selector for Final lane (creator only) */}
       {showVersionSelector && (
-        <div className="border border-gray-200 rounded max-h-24 overflow-y-auto divide-y divide-gray-100">
+        <div className="border border-warm rounded max-h-24 overflow-y-auto divide-y divide-warm">
           {versions.map((v) => (
             <button
               key={v.filename}
               onClick={() => onSelectVersion(selectedVersion === v.filename ? null : v.filename)}
-              className={`w-full px-2 py-1.5 text-left text-xs hover:bg-gray-50 flex items-center justify-between ${
+              className={`w-full px-2 py-1.5 text-left text-xs hover:bg-surface-hover flex items-center justify-between ${
                 selectedVersion === v.filename ? 'bg-blue-50 border-l-2 border-blue-500' : ''
               }`}
             >
               <span className="font-mono truncate">{v.filename}</span>
-              <span className="text-gray-400 ml-1 shrink-0">
+              <span className="text-warm-muted ml-1 shrink-0">
                 {(v.size / (1024 * 1024)).toFixed(1)} MB
               </span>
             </button>
@@ -344,7 +344,7 @@ function LaneCard({
       {hasFiles && (
         <button
           onClick={onToggleDrawer}
-          className="w-full text-xs text-gray-500 hover:text-blue-600 transition-colors text-center"
+          className="w-full text-xs text-warm-muted hover:text-blue-600 transition-colors text-center"
         >
           {isDrawerOpen ? 'Hide files' : `Show ${stats.fileCount} files ▼`}
         </button>
@@ -385,15 +385,15 @@ function FileDrawer({ subfolder, label, isCreator, onClose }: FileDrawerProps) {
   const totalSize = files.reduce((sum, f) => sum + f.size, 0);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div className="bg-surface border border-warm rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
-        <span className="text-sm font-semibold text-gray-700">
+      <div className="flex items-center justify-between px-4 py-2 bg-surface-muted border-b border-warm">
+        <span className="text-sm font-semibold text-warm-secondary">
           {label} — {totalFiles} {totalFiles === 1 ? 'file' : 'files'}
         </span>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 text-sm px-1"
+          className="text-warm-muted hover:text-warm-secondary text-sm px-1"
           title="Close"
         >
           ✕
@@ -402,20 +402,20 @@ function FileDrawer({ subfolder, label, isCreator, onClose }: FileDrawerProps) {
 
       {/* Content */}
       {isLoading ? (
-        <div className="px-4 py-3 text-sm text-gray-500">Loading files...</div>
+        <div className="px-4 py-3 text-sm text-warm-muted">Loading files...</div>
       ) : files.length === 0 ? (
-        <div className="px-4 py-3 text-sm text-gray-500">No files found</div>
+        <div className="px-4 py-3 text-sm text-warm-muted">No files found</div>
       ) : (
         <div className="max-h-72 overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="text-left text-xs font-medium text-gray-500 uppercase bg-gray-50 sticky top-0">
+            <thead className="text-left text-xs font-medium text-warm-muted uppercase bg-surface-muted sticky top-0">
               <tr>
                 <th className="px-4 py-1.5">File</th>
                 <th className="px-4 py-1.5 text-right w-20">Size</th>
                 <th className="px-4 py-1.5 text-right w-32">Modified</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-warm">
               {Array.from(grouped.entries()).map(([chapter, chapterFiles]) => (
                 <ChapterGroup key={chapter} chapter={chapter} files={chapterFiles} />
               ))}
@@ -426,7 +426,7 @@ function FileDrawer({ subfolder, label, isCreator, onClose }: FileDrawerProps) {
 
       {/* Footer */}
       {files.length > 0 && (
-        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-t border-gray-200 text-xs text-gray-500">
+        <div className="flex items-center justify-between px-4 py-2 bg-surface-muted border-t border-warm text-xs text-warm-muted">
           <span>{totalChapters} {totalChapters === 1 ? 'chapter' : 'chapters'} · {totalFiles} {totalFiles === 1 ? 'file' : 'files'}</span>
           <span>{formatSize(totalSize)}</span>
         </div>
@@ -441,21 +441,21 @@ function ChapterGroup({ chapter, files }: { chapter: string; files: RelayFileInf
   return (
     <>
       {/* Chapter header row */}
-      <tr className="bg-gray-50">
-        <td colSpan={3} className="px-4 py-1 text-xs font-semibold text-gray-600">
+      <tr className="bg-surface-muted">
+        <td colSpan={3} className="px-4 py-1 text-xs font-semibold text-warm-secondary">
           Chapter {chapter}
         </td>
       </tr>
       {/* File rows */}
       {files.map((file) => (
-        <tr key={file.filename} className="hover:bg-gray-50">
-          <td className="px-4 py-1.5 font-mono text-xs text-gray-700 truncate max-w-[300px]">
+        <tr key={file.filename} className="hover:bg-surface-hover">
+          <td className="px-4 py-1.5 font-mono text-xs text-warm-secondary truncate max-w-[300px]">
             {file.filename}
           </td>
-          <td className="px-4 py-1.5 text-xs text-gray-500 text-right">
+          <td className="px-4 py-1.5 text-xs text-warm-muted text-right">
             {formatSize(file.size)}
           </td>
-          <td className="px-4 py-1.5 text-xs text-gray-500 text-right">
+          <td className="px-4 py-1.5 text-xs text-warm-muted text-right">
             {formatRelativeTime(file.modified)}
           </td>
         </tr>
@@ -481,17 +481,17 @@ function ActivityFeed({ events }: { events?: RelayActivityEvent[] }) {
 
   return (
     <div>
-      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+      <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2">
         Recent Activity
       </h3>
       <div className="space-y-1.5">
         {events.slice(0, 10).map((event) => (
           <div key={event.id} className="flex items-start gap-2 text-sm">
-            <span className="text-gray-400 w-4 text-center shrink-0 font-mono">
+            <span className="text-warm-muted w-4 text-center shrink-0 font-mono">
               {getArrow(event.action)}
             </span>
-            <span className="text-gray-700 flex-1">{event.description}</span>
-            <span className="text-xs text-gray-400 shrink-0">
+            <span className="text-warm-secondary flex-1">{event.description}</span>
+            <span className="text-xs text-warm-muted shrink-0">
               {formatRelativeTime(event.timestamp)}
             </span>
           </div>
@@ -505,28 +505,28 @@ function ActivityFeed({ events }: { events?: RelayActivityEvent[] }) {
 
 function SetupGuide() {
   return (
-    <details className="border border-gray-200 rounded-lg">
-      <summary className="px-4 py-2.5 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-50 select-none">
+    <details className="border border-warm rounded-lg">
+      <summary className="px-4 py-2.5 text-sm font-medium text-warm-secondary cursor-pointer hover:bg-surface-hover select-none">
         Setup Help — How to configure Relay for a new collaborator
       </summary>
-      <div className="px-4 pb-4 pt-1 space-y-4 text-sm text-gray-600">
+      <div className="px-4 pb-4 pt-1 space-y-4 text-sm text-warm-secondary">
         {/* SyncThing install */}
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">1. Install &amp; Start SyncThing</h4>
-          <ol className="list-decimal list-inside space-y-1.5 text-xs text-gray-600">
-            <li>Install on both machines: <code className="font-mono bg-gray-100 px-1 rounded">brew install syncthing</code></li>
-            <li>Start the service: <code className="font-mono bg-gray-100 px-1 rounded">brew services start syncthing</code></li>
-            <li>Open the SyncThing web UI: <code className="font-mono bg-gray-100 px-1 rounded">http://localhost:8384</code></li>
+          <h4 className="font-semibold text-warm-secondary mb-2">1. Install &amp; Start SyncThing</h4>
+          <ol className="list-decimal list-inside space-y-1.5 text-xs text-warm-secondary">
+            <li>Install on both machines: <code className="font-mono bg-surface-muted px-1 rounded">brew install syncthing</code></li>
+            <li>Start the service: <code className="font-mono bg-surface-muted px-1 rounded">brew services start syncthing</code></li>
+            <li>Open the SyncThing web UI: <code className="font-mono bg-surface-muted px-1 rounded">http://localhost:8384</code></li>
             <li>Both machines need SyncThing running — repeat on the editor's machine</li>
           </ol>
         </div>
 
         {/* Folder setup */}
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">2. Create &amp; Share the Relay Folder</h4>
-          <ol className="list-decimal list-inside space-y-1.5 text-xs text-gray-600">
-            <li>Create relay folder: <code className="font-mono bg-gray-100 px-1 rounded">mkdir -p ~/relay/flihub-appydave</code></li>
-            <li>In SyncThing UI → <strong>Add Folder</strong> → set path to <code className="font-mono bg-gray-100 px-1 rounded">~/relay/flihub-appydave</code></li>
+          <h4 className="font-semibold text-warm-secondary mb-2">2. Create &amp; Share the Relay Folder</h4>
+          <ol className="list-decimal list-inside space-y-1.5 text-xs text-warm-secondary">
+            <li>Create relay folder: <code className="font-mono bg-surface-muted px-1 rounded">mkdir -p ~/relay/flihub-appydave</code></li>
+            <li>In SyncThing UI → <strong>Add Folder</strong> → set path to <code className="font-mono bg-surface-muted px-1 rounded">~/relay/flihub-appydave</code></li>
             <li>Add a <strong>Remote Device</strong> — copy the Device ID from the editor's SyncThing UI (<strong>Actions → Show ID</strong>)</li>
             <li>Share the folder with the editor's device</li>
             <li>On the editor's machine: accept the incoming folder share in their SyncThing UI</li>
@@ -535,9 +535,9 @@ function SetupGuide() {
 
         {/* Creator config */}
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">3. Configure FliHub — Recorder (David)</h4>
-          <div className="text-xs text-gray-500 mb-1">Add to <code className="font-mono bg-gray-100 px-1 rounded">server/config.json</code>:</div>
-          <pre className="font-mono text-xs bg-gray-50 border border-gray-200 rounded p-2 overflow-x-auto">
+          <h4 className="font-semibold text-warm-secondary mb-2">3. Configure FliHub — Recorder (David)</h4>
+          <div className="text-xs text-warm-muted mb-1">Add to <code className="font-mono bg-surface-muted px-1 rounded">server/config.json</code>:</div>
+          <pre className="font-mono text-xs bg-surface-muted border border-warm rounded p-2 overflow-x-auto">
 {`"relayDirectory": "/Users/davidcruwys/relay/flihub-appydave",
 "relayEnabled": true,
 "machineRole": "recorder"`}
@@ -546,9 +546,9 @@ function SetupGuide() {
 
         {/* Editor config */}
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">4. Configure FliHub — Editor (Jan)</h4>
-          <div className="text-xs text-gray-500 mb-1">Add to <code className="font-mono bg-gray-100 px-1 rounded">server/config.json</code> on the editor's machine:</div>
-          <pre className="font-mono text-xs bg-gray-50 border border-gray-200 rounded p-2 overflow-x-auto">
+          <h4 className="font-semibold text-warm-secondary mb-2">4. Configure FliHub — Editor (Jan)</h4>
+          <div className="text-xs text-warm-muted mb-1">Add to <code className="font-mono bg-surface-muted px-1 rounded">server/config.json</code> on the editor's machine:</div>
+          <pre className="font-mono text-xs bg-surface-muted border border-warm rounded p-2 overflow-x-auto">
 {`"relayDirectory": "/home/jan/relay/flihub-appydave",
 "relayEnabled": true,
 "machineRole": "editor"`}
@@ -557,11 +557,11 @@ function SetupGuide() {
 
         {/* Verify */}
         <div>
-          <h4 className="font-semibold text-gray-700 mb-2">5. Verify</h4>
-          <ol className="list-decimal list-inside space-y-1.5 text-xs text-gray-600">
+          <h4 className="font-semibold text-warm-secondary mb-2">5. Verify</h4>
+          <ol className="list-decimal list-inside space-y-1.5 text-xs text-warm-secondary">
             <li>Restart FliHub server on both machines</li>
             <li>Check this page shows <span className="text-green-600 font-medium">● Relay connected</span></li>
-            <li>Check SyncThing UI at <code className="font-mono bg-gray-100 px-1 rounded">http://localhost:8384</code> shows the folder as "Up to Date"</li>
+            <li>Check SyncThing UI at <code className="font-mono bg-surface-muted px-1 rounded">http://localhost:8384</code> shows the folder as "Up to Date"</li>
           </ol>
         </div>
       </div>

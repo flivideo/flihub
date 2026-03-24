@@ -30,10 +30,10 @@ describe('ToolsSidebar', () => {
     expect(button.className).toContain('text-blue-600');
   });
 
-  it('non-active tools have default styling (text-gray-600)', () => {
+  it('non-active tools have default styling (text-warm-secondary)', () => {
     renderSidebar({ activeTool: 'regen' });
     const button = screen.getByText('Gling / Edit');
-    expect(button.className).toContain('text-gray-600');
+    expect(button.className).toContain('text-warm-secondary');
   });
 
   describe('onToolClick', () => {

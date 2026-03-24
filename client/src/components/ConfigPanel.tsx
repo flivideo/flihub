@@ -126,7 +126,7 @@ function EnvironmentInfoBox({
         borderColor: 'border-purple-200',
       }
     : platform === 'darwin'
-      ? { icon: '🍎', label: 'macOS', bgColor: 'bg-gray-50', borderColor: 'border-gray-200' }
+      ? { icon: '🍎', label: 'macOS', bgColor: 'bg-surface-muted', borderColor: 'border-warm' }
       : platform === 'win32'
         ? { icon: '🪟', label: 'Windows', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' }
         : { icon: '🐧', label: 'Linux', bgColor: 'bg-green-50', borderColor: 'border-green-200' };
@@ -140,43 +140,43 @@ function EnvironmentInfoBox({
         <span className="text-sm font-medium">
           {envConfig.icon} {envConfig.label}
         </span>
-        <button className="text-xs text-gray-500 hover:text-gray-700">
+        <button className="text-xs text-warm-muted hover:text-warm-secondary">
           {collapsed ? '[Show ▼]' : '[Hide ▲]'}
         </button>
       </div>
       {!collapsed && (
-        <div className="px-3 pb-3 text-xs text-gray-600">
+        <div className="px-3 pb-3 text-xs text-warm-secondary">
           <p className="font-medium mb-1">
             Use {isWSL || platform !== 'win32' ? 'Linux' : 'Windows'} path formats:
           </p>
-          <ul className="space-y-0.5 text-gray-500">
+          <ul className="space-y-0.5 text-warm-muted">
             {isWSL ? (
               <>
                 <li>
-                  • WSL files: <code className="bg-white px-1 rounded">{guidance.nativeFiles}</code>
+                  • WSL files: <code className="bg-surface px-1 rounded">{guidance.nativeFiles}</code>
                 </li>
                 <li>
                   • Windows files:{' '}
-                  <code className="bg-white px-1 rounded">{guidance.windowsFiles}</code>
+                  <code className="bg-surface px-1 rounded">{guidance.windowsFiles}</code>
                 </li>
               </>
             ) : platform === 'darwin' ? (
               <li>
-                • Files: <code className="bg-white px-1 rounded">{guidance.nativeFiles}</code>
+                • Files: <code className="bg-surface px-1 rounded">{guidance.nativeFiles}</code>
               </li>
             ) : platform === 'win32' ? (
               <>
                 <li>
                   • Windows files:{' '}
-                  <code className="bg-white px-1 rounded">{guidance.windowsFiles}</code>
+                  <code className="bg-surface px-1 rounded">{guidance.windowsFiles}</code>
                 </li>
                 <li>
-                  • WSL files: <code className="bg-white px-1 rounded">{guidance.wslFiles}</code>
+                  • WSL files: <code className="bg-surface px-1 rounded">{guidance.wslFiles}</code>
                 </li>
               </>
             ) : (
               <li>
-                • Files: <code className="bg-white px-1 rounded">{guidance.nativeFiles}</code>
+                • Files: <code className="bg-surface px-1 rounded">{guidance.nativeFiles}</code>
               </li>
             )}
           </ul>
@@ -203,8 +203,8 @@ function PathMismatchWarning({
         {message}
       </p>
       {suggestedPath && (
-        <p className="text-gray-500 mt-0.5">
-          Suggested: <code className="bg-gray-100 px-1 rounded">{suggestedPath}</code>
+        <p className="text-warm-muted mt-0.5">
+          Suggested: <code className="bg-surface-muted px-1 rounded">{suggestedPath}</code>
           <button
             onClick={onUseSuggested}
             className="ml-2 text-blue-600 hover:text-blue-700 underline"
@@ -227,7 +227,7 @@ function PathExistsIndicator({
 }) {
   switch (status) {
     case 'checking':
-      return <p className="text-xs text-gray-400 mt-1">Checking path...</p>;
+      return <p className="text-xs text-warm-muted mt-1">Checking path...</p>;
     case 'exists':
       return (
         <p className="text-xs text-green-600 mt-1">
@@ -243,7 +243,7 @@ function PathExistsIndicator({
         </p>
       );
     default:
-      return <p className="text-xs text-gray-400 mt-1">{description}</p>;
+      return <p className="text-xs text-warm-muted mt-1">{description}</p>;
   }
 }
 
@@ -578,7 +578,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         )}
 
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Ecamm Watch Directory</label>
+          <label className="block text-sm text-warm-secondary mb-1">Ecamm Watch Directory</label>
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -589,7 +589,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               }}
               onBlur={() => checkPathExists(watchDirectory, setWatchDirExists)}
               className={`flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                watchError ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                watchError ? 'border-red-300 bg-red-50' : 'border-warm-strong'
               }`}
               placeholder="~/ecamm"
             />
@@ -615,7 +615,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
 
         {/* FR-89 Part 5: Split into Projects Root + Active Project */}
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Projects Root Directory</label>
+          <label className="block text-sm text-warm-secondary mb-1">Projects Root Directory</label>
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -626,7 +626,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               }}
               onBlur={() => checkPathExists(projectsRootDirectory, setRootDirExists)}
               className={`flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                rootError ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                rootError ? 'border-red-300 bg-red-50' : 'border-warm-strong'
               }`}
               placeholder="~/dev/video-projects/v-appydave"
             />
@@ -651,24 +651,24 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         </div>
 
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Active Project</label>
+          <label className="block text-sm text-warm-secondary mb-1">Active Project</label>
           <div className="flex items-center gap-2">
             <input
               type="text"
               value={activeProject}
               readOnly
-              className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded bg-gray-50 text-gray-600 cursor-not-allowed"
+              className="flex-1 px-3 py-2 text-sm border border-warm rounded bg-surface-muted text-warm-secondary cursor-not-allowed"
               placeholder="(none selected)"
             />
             <OpenFolderButton folder="project" />
           </div>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-warm-muted mt-1">
             Select from Projects panel to change active project
           </p>
         </div>
 
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Image Watch Directory</label>
+          <label className="block text-sm text-warm-secondary mb-1">Image Watch Directory</label>
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -679,7 +679,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               }}
               onBlur={() => checkPathExists(imageSourceDirectory, setImageDirExists)}
               className={`flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                imageSourceError ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                imageSourceError ? 'border-red-300 bg-red-50' : 'border-warm-strong'
               }`}
               placeholder="~/Downloads"
             />
@@ -705,22 +705,22 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
 
         {/* FR-102: Gling Dictionary (Global) */}
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Global Dictionary Words</label>
+          <label className="block text-sm text-warm-secondary mb-1">Global Dictionary Words</label>
           <textarea
             value={glingDictionary}
             onChange={(e) => setGlingDictionary(e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+            className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
             placeholder="AppyDave&#10;BMAD&#10;FliVideo"
           />
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-warm-muted mt-1">
             Brand-wide words for Gling transcription (one per line). Applies to all projects.
           </p>
         </div>
 
         {/* FR-116/FR-73: Common Names with Chapter Filters (auto-saves) */}
         <div ref={commonNamesSectionRef} id="common-names">
-          <label className="block text-sm text-gray-600 mb-2">Common Names</label>
+          <label className="block text-sm text-warm-secondary mb-2">Common Names</label>
           {/* FR-73: Common name rows with chapter filters */}
           <div className="space-y-2 mb-3">
             {commonNames.map((cn, idx) => {
@@ -773,14 +773,14 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               return (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 py-1 px-2 bg-gray-50 rounded border border-gray-200"
+                  className="flex items-center gap-2 py-1 px-2 bg-surface-muted rounded border border-warm"
                 >
                   {/* Reorder buttons */}
                   <div className="flex flex-col -my-1">
                     <button
                       onClick={moveUp}
                       disabled={idx === 0}
-                      className={`text-xs leading-none ${idx === 0 ? 'text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                      className={`text-xs leading-none ${idx === 0 ? 'text-warm-faint' : 'text-warm-muted hover:text-warm-secondary'}`}
                       title="Move up"
                     >
                       ▲
@@ -788,7 +788,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                     <button
                       onClick={moveDown}
                       disabled={idx === commonNames.length - 1}
-                      className={`text-xs leading-none ${idx === commonNames.length - 1 ? 'text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
+                      className={`text-xs leading-none ${idx === commonNames.length - 1 ? 'text-warm-faint' : 'text-warm-muted hover:text-warm-secondary'}`}
                       title="Move down"
                     >
                       ▼
@@ -796,13 +796,13 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                   </div>
 
                   {/* Name */}
-                  <span className="font-mono text-sm text-gray-700 w-24">{cn.name}</span>
+                  <span className="font-mono text-sm text-warm-secondary w-24">{cn.name}</span>
 
                   {/* Chapter filter dropdown */}
                   <select
                     value={currentPreset}
                     onChange={(e) => updateFilter(e.target.value)}
-                    className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="text-xs border border-warm-strong rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="all">All chapters</option>
                     <option value="early">Early (1-4)</option>
@@ -824,10 +824,10 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                             customMax
                           )
                         }
-                        className="w-12 px-1 py-0.5 border border-gray-300 rounded text-center"
+                        className="w-12 px-1 py-0.5 border border-warm-strong rounded text-center"
                         min={1}
                       />
-                      <span className="text-gray-400">to</span>
+                      <span className="text-warm-muted">to</span>
                       <input
                         type="number"
                         placeholder="max"
@@ -839,7 +839,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                             e.target.value ? parseInt(e.target.value) : undefined
                           )
                         }
-                        className="w-12 px-1 py-0.5 border border-gray-300 rounded text-center"
+                        className="w-12 px-1 py-0.5 border border-warm-strong rounded text-center"
                         min={1}
                       />
                     </div>
@@ -852,7 +852,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                       setCommonNames(updated);
                       saveCommonNames(updated);
                     }}
-                    className="ml-auto text-gray-400 hover:text-red-500 transition-colors text-sm"
+                    className="ml-auto text-warm-muted hover:text-red-500 transition-colors text-sm"
                     title="Remove"
                   >
                     ×
@@ -882,7 +882,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                 }
               }}
               placeholder="Add new name..."
-              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 px-3 py-1.5 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <button
               onClick={() => {
@@ -898,19 +898,19 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                 }
               }}
               disabled={!newCommonName.trim()}
-              className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-surface-muted disabled:cursor-not-allowed transition-colors"
             >
               Add
             </button>
           </div>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-warm-muted mt-1">
             Filter which chapters each name appears in. Auto-saves on change.
           </p>
         </div>
 
         {/* FR-76: Chapter Recording Defaults */}
         <div className="border-t pt-4 mt-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Chapter Recording Defaults</h3>
+          <h3 className="text-sm font-medium text-warm-secondary mb-3">Chapter Recording Defaults</h3>
 
           {/* Include Title Slides */}
           <div className="mb-3">
@@ -921,7 +921,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                 onChange={(e) => setIncludeTitleSlides(e.target.checked)}
                 className="w-4 h-4 text-purple-500 rounded"
               />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-warm-secondary">
                 Include purple title slides between segments
               </span>
             </label>
@@ -930,7 +930,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
           {/* Slide Duration - only show when slides enabled */}
           {includeTitleSlides && (
             <div className="mb-3 ml-6">
-              <label className="block text-sm text-gray-600 mb-1">Slide Duration</label>
+              <label className="block text-sm text-warm-secondary mb-1">Slide Duration</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -939,16 +939,16 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                   min={0.5}
                   max={5}
                   step={0.5}
-                  className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-20 px-2 py-1 text-sm border border-warm-strong rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <span className="text-sm text-gray-500">seconds</span>
+                <span className="text-sm text-warm-muted">seconds</span>
               </div>
             </div>
           )}
 
           {/* Resolution */}
           <div className="mb-3">
-            <label className="block text-sm text-gray-600 mb-1">Default Resolution</label>
+            <label className="block text-sm text-warm-secondary mb-1">Default Resolution</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -984,22 +984,22 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                 onChange={(e) => setAutoGenerate(e.target.checked)}
                 className="w-4 h-4 text-blue-500 rounded"
               />
-              <span className="text-sm text-gray-700">Auto-generate when creating new chapter</span>
+              <span className="text-sm text-warm-secondary">Auto-generate when creating new chapter</span>
             </label>
           </div>
         </div>
 
         {/* FR-83: Shadow Recordings Section */}
         <div className="border-t pt-4 mt-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Shadow Recordings</h3>
-          <p className="text-xs text-gray-500 mb-3">
+          <h3 className="text-sm font-medium text-warm-secondary mb-3">Shadow Recordings</h3>
+          <p className="text-xs text-warm-muted mb-3">
             Shadow files allow collaborators to see project structure without the actual video
             files.
           </p>
 
           {/* FR-89 Part 6: Shadow Resolution Selection */}
           <div className="mb-4">
-            <label className="block text-sm text-gray-600 mb-2">Default Shadow Resolution</label>
+            <label className="block text-sm text-warm-secondary mb-2">Default Shadow Resolution</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -1035,18 +1035,18 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                 <span className="text-sm">160p</span>
               </label>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Lower = smaller files, less detail</p>
+            <p className="text-xs text-warm-muted mt-1">Lower = smaller files, less detail</p>
           </div>
 
           {/* Watch Directory Status */}
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="mb-4 p-3 bg-surface-muted rounded-lg">
             {shadowStatus?.watchDirectory ? (
               shadowStatus.watchDirectory.exists ? (
                 <div className="flex items-center gap-2">
                   <span className="text-green-500">🟢</span>
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-warm-secondary">
                     Ecamm:{' '}
-                    <code className="text-xs bg-gray-200 px-1 rounded">
+                    <code className="text-xs bg-surface-muted px-1 rounded">
                       {collapsePath(shadowStatus.watchDirectory.path)}
                     </code>
                   </span>
@@ -1054,9 +1054,9 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               ) : shadowStatus.watchDirectory.configured ? (
                 <div className="flex items-center gap-2">
                   <span className="text-yellow-500">🟡</span>
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-warm-secondary">
                     Path not found:{' '}
-                    <code className="text-xs bg-gray-200 px-1 rounded">
+                    <code className="text-xs bg-surface-muted px-1 rounded">
                       {collapsePath(shadowStatus.watchDirectory.path)}
                     </code>
                   </span>
@@ -1064,23 +1064,23 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               ) : (
                 <div className="flex items-center gap-2">
                   <span className="text-red-500">🔴</span>
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-warm-secondary">
                     Not configured - Ecamm files will not be detected
                   </span>
                 </div>
               )
             ) : shadowStatusLoading ? (
-              <span className="text-sm text-gray-400">Loading status...</span>
+              <span className="text-sm text-warm-muted">Loading status...</span>
             ) : (
-              <span className="text-sm text-gray-400">Unable to load status</span>
+              <span className="text-sm text-warm-muted">Unable to load status</span>
             )}
 
             {/* FR-90: All Active Watchers */}
             {watchersData?.watchers && watchersData.watchers.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="mt-3 pt-3 border-t border-warm">
                 <button
                   onClick={() => setShowWatchers(!showWatchers)}
-                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+                  className="flex items-center gap-1 text-xs text-warm-muted hover:text-warm-secondary"
                 >
                   <span
                     className={`transform transition-transform ${showWatchers ? 'rotate-90' : ''}`}
@@ -1095,8 +1095,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                       <div key={idx} className="flex items-start gap-2">
                         <span className="text-green-500 mt-0.5">●</span>
                         <div>
-                          <span className="font-medium text-gray-600">{watcher.name}</span>
-                          <div className="text-gray-400">
+                          <span className="font-medium text-warm-secondary">{watcher.name}</span>
+                          <div className="text-warm-muted">
                             {Array.isArray(watcher.pattern)
                               ? watcher.pattern.map((p, i) => <div key={i}>{collapsePath(p)}</div>)
                               : collapsePath(watcher.pattern)}
@@ -1112,7 +1112,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
 
           {/* Current Project Status */}
           {shadowStatus?.currentProject && (
-            <div className="mb-4 text-sm text-gray-600">
+            <div className="mb-4 text-sm text-warm-secondary">
               Current project:{' '}
               <span className="font-medium">{shadowStatus.currentProject.recordings}</span>{' '}
               recordings, <span className="font-medium">{shadowStatus.currentProject.shadows}</span>{' '}
@@ -1131,14 +1131,14 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             <button
               onClick={handleGenerateShadows}
               disabled={generateShadows.isPending || generateAllShadows.isPending}
-              className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-surface-muted disabled:cursor-not-allowed transition-colors"
             >
               {generateShadows.isPending ? 'Generating...' : 'Generate Shadows'}
             </button>
             <button
               onClick={handleGenerateAllShadows}
               disabled={generateShadows.isPending || generateAllShadows.isPending}
-              className="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 disabled:bg-surface-muted disabled:cursor-not-allowed transition-colors"
             >
               {generateAllShadows.isPending ? 'Generating...' : 'Generate All Projects'}
             </button>
@@ -1155,7 +1155,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             className={`px-4 py-2 text-sm rounded transition-colors ${
               hasChanges && !hasErrors
                 ? 'bg-blue-500 text-white hover:bg-blue-600'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-surface-muted text-warm-muted cursor-not-allowed'
             }`}
           >
             {updateConfig.isPending ? 'Saving...' : 'Save'}

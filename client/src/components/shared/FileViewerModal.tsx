@@ -62,7 +62,7 @@ export function FileViewerModal({
       tabIndex={0}
     >
       <div
-        className="bg-white rounded-lg w-full max-w-2xl max-h-[80vh] flex flex-col mx-4"
+        className="bg-surface rounded-lg w-full max-w-2xl max-h-[80vh] flex flex-col mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -75,7 +75,7 @@ export function FileViewerModal({
             <button
               onClick={handleCopy}
               disabled={!content}
-              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors disabled:opacity-50"
+              className="p-1.5 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors disabled:opacity-50"
               title="Copy to clipboard"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,7 +92,7 @@ export function FileViewerModal({
             {onOpenExternal && (
               <button
                 onClick={onOpenExternal}
-                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                className="p-1.5 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors"
                 title="Open in browser"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,7 +112,7 @@ export function FileViewerModal({
             {/* Close button */}
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+              className="p-1.5 text-warm-muted hover:text-warm-secondary hover:bg-surface-hover rounded transition-colors"
               title="Close"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@ export function FileViewerModal({
         {/* Content */}
         <div className="p-4 overflow-y-auto flex-1">
           {isLoading ? (
-            <div className="text-gray-500 text-center py-8">Loading...</div>
+            <div className="text-warm-muted text-center py-8">Loading...</div>
           ) : error ? (
             <div className="text-red-500 text-center py-8">
               {error instanceof Error ? error.message : 'Failed to load file'}

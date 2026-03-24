@@ -410,7 +410,7 @@ function App() {
     : files.length;
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-page">
       <Toaster position="top-right" richColors />
 
       {/* FR-16: Discard remaining files modal */}
@@ -426,15 +426,15 @@ function App() {
       <DeveloperDrawer isOpen={isDevDrawerOpen} onClose={() => setIsDevDrawerOpen(false)} />
 
       {/* FR-37: Two-row header with breadcrumb and navigation */}
-      <header className="bg-white shadow">
+      <header className="bg-warm-header shadow-sm">
         <div className="max-w-4xl mx-auto px-4">
           {/* Top row: Title › Project name ▾ ... ⚙ */}
           <div className="py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-xl font-semibold text-gray-900 flex-shrink-0">FliHub</h1>
+              <h1 className="text-xl font-semibold text-warm-primary flex-shrink-0">FliHub</h1>
               {config?.activeProject && (
                 <>
-                  <span className="text-gray-400 flex-shrink-0">›</span>
+                  <span className="text-warm-muted flex-shrink-0">›</span>
                   {/* FR-43: Project switcher dropdown */}
                   <div className="relative flex items-center gap-1" ref={projectDropdownRef}>
                     <button
@@ -445,7 +445,7 @@ function App() {
                       {/* FR-93: Use currentProjectCode for cross-platform support */}
                       <span className="truncate">{currentProjectCode}</span>
                       {pinnedProjects.length > 0 && (
-                        <span className="text-gray-400 flex-shrink-0">▾</span>
+                        <span className="text-warm-muted flex-shrink-0">▾</span>
                       )}
                     </button>
                     {/* FR-69: Project Actions dropdown */}
@@ -482,7 +482,7 @@ function App() {
 
                     {/* FR-43: Dropdown menu */}
                     {showProjectDropdown && (
-                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[280px] max-w-[400px]">
+                      <div className="absolute top-full left-0 mt-1 bg-surface border border-warm rounded-lg shadow-lg z-50 min-w-[280px] max-w-[400px]">
                         {pinnedProjects.length > 0 ? (
                           <>
                             <div className="py-1">
@@ -490,11 +490,11 @@ function App() {
                                 <button
                                   key={project.code}
                                   onClick={() => handleSwitchProject(project.path)}
-                                  className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-50 transition-colors ${
+                                  className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-surface-hover transition-colors ${
                                     project.code === currentProjectCode ? 'bg-blue-50' : ''
                                   }`}
                                 >
-                                  <span className="text-gray-400 flex-shrink-0">⭐</span>
+                                  <span className="text-warm-muted flex-shrink-0">⭐</span>
                                   <span className="truncate flex-grow">{project.code}</span>
                                   {project.code === currentProjectCode && (
                                     <span className="text-blue-600 flex-shrink-0">✓</span>
@@ -502,13 +502,13 @@ function App() {
                                 </button>
                               ))}
                             </div>
-                            <div className="border-t border-gray-100">
+                            <div className="border-t border-warm">
                               <button
                                 onClick={() => {
                                   setShowProjectDropdown(false);
                                   changeTab('projects');
                                 }}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                className="w-full px-4 py-2 text-left text-sm text-warm-secondary hover:bg-surface-hover transition-colors"
                               >
                                 All projects...
                               </button>
@@ -520,7 +520,7 @@ function App() {
                               setShowProjectDropdown(false);
                               changeTab('projects');
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                            className="w-full px-4 py-2 text-left text-sm text-warm-secondary hover:bg-surface-hover transition-colors"
                           >
                             All projects...
                           </button>
@@ -537,7 +537,7 @@ function App() {
                 changeTab('export');
                 setManageTool('sync');
               }} />
-              <div className="w-px h-5 bg-gray-200" />
+              <div className="w-px h-5 bg-warm-divider" />
             </div>
             {/* FR-69: Settings dropdown */}
             <HeaderDropdown
@@ -566,7 +566,7 @@ function App() {
               items={[
                 {
                   label: 'Configuration',
-                  icon: <span className="text-gray-600">⚙️</span>,
+                  icon: <span className="text-warm-secondary">⚙️</span>,
                   onClick: () => changeTab('config'),
                 },
                 {
@@ -586,13 +586,13 @@ function App() {
                 },
                 {
                   label: 'GitHub',
-                  icon: <span className="text-gray-700">🔗</span>,
+                  icon: <span className="text-warm-secondary">🔗</span>,
                   onClick: () => window.open('https://github.com/flivideo/flihub', '_blank'),
                   dividerBefore: true,
                 },
                 {
                   label: 'Video Projects',
-                  icon: <span className="text-gray-700">🎬</span>,
+                  icon: <span className="text-warm-secondary">🎬</span>,
                   onClick: () =>
                     window.open('https://github.com/appydave-video-projects/v-appydave', '_blank'),
                 },
@@ -601,13 +601,13 @@ function App() {
           </div>
 
           {/* Bottom row: Navigation (FR-69: Config and Mockups moved to Settings dropdown) */}
-          <nav className="flex gap-4 pb-3 border-t border-gray-100 pt-2">
+          <nav className="flex gap-4 pb-3 border-t border-warm pt-2">
             <button
               onClick={() => changeTab('incoming')}
               className={`text-sm transition-colors ${
                 activeTab === 'incoming'
                   ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-warm-muted hover:text-warm-secondary'
               }`}
             >
               Incoming
@@ -622,7 +622,7 @@ function App() {
               className={`text-sm transition-colors ${
                 activeTab === 'recordings'
                   ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-warm-muted hover:text-warm-secondary'
               }`}
             >
               Recordings
@@ -632,7 +632,7 @@ function App() {
               className={`text-sm transition-colors ${
                 activeTab === 'watch'
                   ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-warm-muted hover:text-warm-secondary'
               }`}
             >
               Watch
@@ -642,7 +642,7 @@ function App() {
               className={`text-sm transition-colors ${
                 activeTab === 'transcriptions'
                   ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-warm-muted hover:text-warm-secondary'
               }`}
             >
               Transcripts
@@ -652,7 +652,7 @@ function App() {
               className={`text-sm transition-colors ${
                 activeTab === 'inbox'
                   ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-warm-muted hover:text-warm-secondary'
               }`}
             >
               Inbox
@@ -662,7 +662,7 @@ function App() {
               className={`text-sm transition-colors ${
                 activeTab === 'assets'
                   ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-warm-muted hover:text-warm-secondary'
               }`}
             >
               Assets
@@ -672,7 +672,7 @@ function App() {
               className={`text-sm transition-colors ${
                 activeTab === 'thumbs'
                   ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-warm-muted hover:text-warm-secondary'
               }`}
             >
               Thumbs
@@ -682,7 +682,7 @@ function App() {
               className={`text-sm transition-colors ${
                 activeTab === 'export'
                   ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-warm-muted hover:text-warm-secondary'
               }`}
               title="Bulk operations, export to Gling, file regeneration, edit folder management"
             >
@@ -693,7 +693,7 @@ function App() {
               className={`text-sm transition-colors ${
                 activeTab === 'projects'
                   ? 'text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-warm-muted hover:text-warm-secondary'
               }`}
             >
               Projects
@@ -721,7 +721,7 @@ function App() {
             <section>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-medium text-gray-700">Incoming Files</h2>
+                  <h2 className="text-lg font-medium text-warm-secondary">Incoming Files</h2>
                   <OpenFolderButton folder="ecamm" />
                 </div>
                 {files.length > 0 && (
@@ -735,9 +735,9 @@ function App() {
               </div>
 
               {files.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-                  <p className="text-gray-500">No pending files</p>
-                  <p className="text-sm text-gray-400 mt-1">Watching for new .mov files...</p>
+                <div className="text-center py-12 bg-surface rounded-lg border border-warm">
+                  <p className="text-warm-muted">No pending files</p>
+                  <p className="text-sm text-warm-muted mt-1">Watching for new .mov files...</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -766,17 +766,17 @@ function App() {
             {/* FR-50: Recent Renames Section */}
             {recentRenames?.renames && recentRenames.renames.length > 0 && (
               <section className="mt-6">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Recent Renames</h3>
-                <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+                <h3 className="text-sm font-medium text-warm-muted mb-2">Recent Renames</h3>
+                <div className="bg-surface rounded-lg border border-warm divide-y divide-warm">
                   {recentRenames.renames.map((rename) => (
                     <div
                       key={rename.id}
                       className="flex items-center justify-between px-3 py-2 text-sm"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-mono text-gray-700 truncate">{rename.newName}</span>
-                        <span className="text-gray-400">←</span>
-                        <span className="font-mono text-gray-400 truncate text-xs">
+                        <span className="font-mono text-warm-secondary truncate">{rename.newName}</span>
+                        <span className="text-warm-muted">←</span>
+                        <span className="font-mono text-warm-muted truncate text-xs">
                           {rename.originalName}
                         </span>
                       </div>
@@ -790,7 +790,7 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Renames expire after 10 minutes</p>
+                <p className="text-xs text-warm-muted mt-1">Renames expire after 10 minutes</p>
               </section>
             )}
           </>
@@ -800,7 +800,7 @@ function App() {
         {activeTab === 'recordings' && (
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-lg font-medium text-gray-700">Project Recordings</h2>
+              <h2 className="text-lg font-medium text-warm-secondary">Project Recordings</h2>
               <OpenFolderButton folder="recordings" label="Recordings" />
               <OpenFolderButton folder="safe" label="Safe" />
             </div>
@@ -832,7 +832,7 @@ function App() {
         {/* Assets Tab */}
         {activeTab === 'assets' && (
           <section>
-            <h2 className="text-lg font-medium text-gray-700 mb-4">Image Assets</h2>
+            <h2 className="text-lg font-medium text-warm-secondary mb-4">Image Assets</h2>
             <AssetsPage />
           </section>
         )}
@@ -840,7 +840,7 @@ function App() {
         {/* Thumbs Tab */}
         {activeTab === 'thumbs' && (
           <section>
-            <h2 className="text-lg font-medium text-gray-700 mb-4">YouTube Thumbnails</h2>
+            <h2 className="text-lg font-medium text-warm-secondary mb-4">YouTube Thumbnails</h2>
             <ThumbsPage />
           </section>
         )}
@@ -862,7 +862,7 @@ function App() {
         {/* Config Tab */}
         {activeTab === 'config' && (
           <section>
-            <h2 className="text-lg font-medium text-gray-700 mb-4">Configuration</h2>
+            <h2 className="text-lg font-medium text-warm-secondary mb-4">Configuration</h2>
             <ConfigPanel
               focusSection={configFocusSection}
               onFocusSectionHandled={() => setConfigFocusSection(null)}
@@ -880,15 +880,15 @@ function App() {
         {/* API Explorer Tab - FR-119 */}
         {activeTab === 'api-explorer' && (
           <section>
-            <h2 className="text-lg font-medium text-gray-700 mb-4">API Explorer</h2>
+            <h2 className="text-lg font-medium text-warm-secondary mb-4">API Explorer</h2>
             <ApiExplorer currentProject={currentProjectCode} />
           </section>
         )}
 
         {/* Footer */}
-        <footer className="mt-8 pt-4 border-t border-gray-200">
+        <footer className="mt-8 pt-4 border-t border-warm">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-warm-muted">
               Project:{' '}
               {config?.projectDirectory ? collapsePath(config.projectDirectory) : 'Loading...'}
             </p>

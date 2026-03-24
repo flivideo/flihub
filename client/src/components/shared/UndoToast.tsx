@@ -51,7 +51,7 @@ export function UndoToast({
         >
           Undo
         </button>
-        <span className="text-gray-400 text-xs tabular-nums">{timeLeft}s</span>
+        <span className="text-warm-muted text-xs tabular-nums">{timeLeft}s</span>
       </div>
     </div>
   );

@@ -167,9 +167,9 @@ export function NamingControls({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6 shadow-sm">
+    <div className="bg-surface rounded-lg border border-warm p-4 mb-6 shadow-sm">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-medium text-gray-900">Naming Template</h3>
+        <h3 className="font-medium text-warm-primary">Naming Template</h3>
         <button
           onClick={onNewChapter}
           className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
@@ -180,7 +180,7 @@ export function NamingControls({
 
       <div className="grid grid-cols-12 gap-3 mb-3">
         <div className="col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Chapter</label>
+          <label className="block text-xs text-warm-secondary mb-1">Chapter</label>
           <input
             ref={chapterInputRef}
             type="text"
@@ -188,14 +188,14 @@ export function NamingControls({
             onChange={(e) => updateNaming('chapter', e.target.value.slice(0, 2))}
             placeholder="01"
             maxLength={2}
-            className={`w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-2 py-1.5 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               showChapterGlowGreen ? 'animate-glow-pulse-green' : ''
             } ${showChapterGlowRed ? 'animate-glow-pulse-red' : ''}`}
           />
         </div>
 
         <div className="col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Seq</label>
+          <label className="block text-xs text-warm-secondary mb-1">Seq</label>
           <input
             ref={sequenceInputRef}
             type="text"
@@ -203,21 +203,21 @@ export function NamingControls({
             onChange={(e) => updateNaming('sequence', e.target.value.slice(0, 3))}
             placeholder="1"
             maxLength={3}
-            className={`w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-2 py-1.5 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               showChapterGlowGreen ? 'animate-glow-pulse-green' : ''
             } ${showChapterGlowRed ? 'animate-glow-pulse-red' : ''}`}
           />
         </div>
 
         <div className="col-span-5">
-          <label className="block text-xs text-gray-600 mb-1">Name</label>
+          <label className="block text-xs text-warm-secondary mb-1">Name</label>
           <input
             ref={nameInputRef}
             type="text"
             value={name}
             onChange={(e) => updateNaming('name', e.target.value)}
             placeholder="intro"
-            className={`w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-2 py-1.5 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               showNameGlow ? 'animate-glow-pulse' : ''
             }`}
           />
@@ -231,8 +231,8 @@ export function NamingControls({
                   onClick={() => applyCommonName(cn)}
                   className={`px-2 py-0.5 text-xs rounded border transition-colors ${
                     name === cn.name
-                      ? 'border-gray-500 bg-gray-500 text-white'
-                      : 'border-gray-300 text-gray-600 hover:border-gray-400 hover:bg-gray-50'
+                      ? 'border-warm-strong bg-warm-secondary text-white'
+                      : 'border-warm-strong text-warm-secondary hover:border-warm-strong hover:bg-surface-hover'
                   }`}
                   title={cn.autoSequence ? 'Resets sequence to 1' : undefined}
                 >
@@ -243,7 +243,7 @@ export function NamingControls({
               {onAddCommonName && (
                 <button
                   onClick={onAddCommonName}
-                  className="px-1.5 py-0.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  className="px-1.5 py-0.5 text-xs text-warm-muted hover:text-warm-secondary transition-colors"
                   title="Add common name"
                 >
                   ⚙+
@@ -254,7 +254,7 @@ export function NamingControls({
         </div>
 
         <div className="col-span-3">
-          <label className="block text-xs text-gray-600 mb-1">Tags</label>
+          <label className="block text-xs text-warm-secondary mb-1">Tags</label>
           <div className="flex flex-wrap gap-1">
             {/* Global tags (always visible) */}
             {globalTags.map((tag) => (
@@ -264,7 +264,7 @@ export function NamingControls({
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   tags.includes(tag)
                     ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
                 }`}
               >
                 {tag}
@@ -292,13 +292,13 @@ export function NamingControls({
                 value={customTag}
                 onChange={(e) => updateNaming('customTag', sanitizeCustomTag(e.target.value))}
                 placeholder="TAG"
-                className="w-24 px-1.5 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                className="w-24 px-1.5 py-0.5 text-xs border border-warm-strong rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent placeholder-warm-muted"
                 title="Custom tag(s) - use dash to separate multiple (e.g., TAG1-TAG2)"
               />
               {customTag && (
                 <button
                   onClick={() => updateNaming('customTag', '')}
-                  className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="p-0.5 text-warm-muted hover:text-warm-secondary transition-colors"
                   title="Clear custom tag"
                 >
                   ×
@@ -313,8 +313,8 @@ export function NamingControls({
       <div className="flex justify-end items-center gap-3">
         {previousFilename && (
           <>
-            <span className="font-mono text-base text-gray-400">{previousFilename}</span>
-            <span className="text-gray-300">→</span>
+            <span className="font-mono text-base text-warm-muted">{previousFilename}</span>
+            <span className="text-warm-faint">→</span>
           </>
         )}
         <span className="font-mono text-lg text-blue-600">

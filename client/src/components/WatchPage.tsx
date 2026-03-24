@@ -640,9 +640,9 @@ export function WatchPage() {
 
   if (!data?.recordings || data.recordings.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <p className="text-gray-500">No recordings found</p>
-        <p className="text-sm text-gray-400 mt-1">
+      <div className="text-center py-12 bg-surface rounded-lg border border-warm">
+        <p className="text-warm-muted">No recordings found</p>
+        <p className="text-sm text-warm-muted mt-1">
           Recordings will appear here after you rename incoming files
         </p>
       </div>
@@ -693,10 +693,10 @@ export function WatchPage() {
               }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-500">
+            <div className="w-full h-full flex items-center justify-center text-warm-muted">
               <div className="text-center p-8">
                 <svg
-                  className="w-20 h-20 mx-auto mb-4 text-gray-600"
+                  className="w-20 h-20 mx-auto mb-4 text-warm-secondary"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -715,7 +715,7 @@ export function WatchPage() {
                   />
                 </svg>
                 <p className="text-lg">Select a recording to play</p>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-warm-secondary mt-1">
                   Hover over chapters panel on the right →
                 </p>
               </div>
@@ -735,8 +735,8 @@ export function WatchPage() {
                   disabled={!hasPrevious}
                   className={`px-2 py-1 text-lg transition-colors ${
                     hasPrevious
-                      ? 'text-gray-700 hover:text-gray-900'
-                      : 'text-gray-300 cursor-not-allowed'
+                      ? 'text-warm-secondary hover:text-warm-primary'
+                      : 'text-warm-faint cursor-not-allowed'
                   }`}
                   title="Previous recording"
                 >
@@ -762,8 +762,8 @@ export function WatchPage() {
                   disabled={!hasNext}
                   className={`px-2 py-1 text-lg transition-colors ${
                     hasNext
-                      ? 'text-gray-700 hover:text-gray-900'
-                      : 'text-gray-300 cursor-not-allowed'
+                      ? 'text-warm-secondary hover:text-warm-primary'
+                      : 'text-warm-faint cursor-not-allowed'
                   }`}
                   title="Next recording"
                 >
@@ -780,7 +780,7 @@ export function WatchPage() {
                       className={`px-3 py-1 text-xs rounded font-medium transition-colors ml-2 ${
                         isParked
                           ? 'bg-pink-600 text-white hover:bg-pink-700'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
                       }`}
                       title={isParked ? 'Click to unpark' : 'Click to park (exclude from edit)'}
                     >
@@ -790,9 +790,9 @@ export function WatchPage() {
                 })()}
 
                 {/* Filename + counter */}
-                <h3 className="font-medium text-gray-800 ml-1">{currentVideo.title}</h3>
+                <h3 className="font-medium text-warm-primary ml-1">{currentVideo.title}</h3>
                 {sortedRecordings.length > 0 && (
-                  <span className="text-sm text-gray-400">
+                  <span className="text-sm text-warm-muted">
                     ({currentIndex + 1}/{sortedRecordings.length})
                   </span>
                 )}
@@ -818,7 +818,7 @@ export function WatchPage() {
                 >
                   {isPlaying ? '⏹' : '▶'}
                 </button>
-                <h3 className="font-medium text-gray-800">{currentVideo.title}</h3>
+                <h3 className="font-medium text-warm-primary">{currentVideo.title}</h3>
                 {currentVideo.isChapter && (
                   <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
                     Chapter Recording
@@ -831,7 +831,7 @@ export function WatchPage() {
                 )}
               </>
             ) : (
-              <span className="text-gray-400 text-sm">No video selected</span>
+              <span className="text-warm-muted text-sm">No video selected</span>
             )}
           </div>
 
@@ -839,7 +839,7 @@ export function WatchPage() {
           <div className="flex items-center gap-6">
             {/* FR-71: Speed Control */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 font-medium">Speed:</span>
+              <span className="text-xs text-warm-muted font-medium">Speed:</span>
               <div className="flex gap-1">
                 {SPEED_PRESETS.map((speed) => (
                   <button
@@ -848,7 +848,7 @@ export function WatchPage() {
                     className={`px-2 py-1 text-xs rounded transition-colors ${
                       playbackSpeed === speed
                         ? 'bg-blue-600 text-white font-medium'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
                     }`}
                   >
                     {speed}x
@@ -859,7 +859,7 @@ export function WatchPage() {
 
             {/* FR-71: Size Toggle */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 font-medium">Size:</span>
+              <span className="text-xs text-warm-muted font-medium">Size:</span>
               <div className="flex gap-1">
                 {(Object.keys(SIZE_LABELS) as VideoSize[]).map((size) => (
                   <button
@@ -868,7 +868,7 @@ export function WatchPage() {
                     className={`px-2 py-1 text-xs rounded transition-colors ${
                       videoSize === size
                         ? 'bg-blue-600 text-white font-medium'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
                     }`}
                   >
                     {SIZE_LABELS[size]}
@@ -883,7 +883,7 @@ export function WatchPage() {
               className={`px-3 py-1 text-xs rounded transition-colors ${
                 autoplay
                   ? 'bg-green-600 text-white font-medium'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
               }`}
               title={autoplay ? 'Autoplay ON - videos start playing when clicked' : 'Autoplay OFF'}
             >
@@ -896,7 +896,7 @@ export function WatchPage() {
               className={`px-3 py-1 text-xs rounded transition-colors ${
                 autonext
                   ? 'bg-green-600 text-white font-medium'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
               }`}
               title={
                 autonext ? 'Auto-next ON - plays next segment when video ends' : 'Auto-next OFF'
@@ -911,7 +911,7 @@ export function WatchPage() {
               className={`px-3 py-1 text-xs rounded transition-colors ${
                 showSafe
                   ? 'bg-yellow-500 text-white font-medium'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
               }`}
               title={showSafe ? 'Showing safe recordings' : 'Safe recordings hidden'}
             >
@@ -924,7 +924,7 @@ export function WatchPage() {
               className={`px-3 py-1 text-xs rounded transition-colors ${
                 showParked
                   ? 'bg-pink-500 text-white font-medium'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
               }`}
               title={showParked ? 'Showing parked recordings' : 'Parked recordings hidden'}
             >
@@ -975,7 +975,7 @@ export function WatchPage() {
                           setAnnotationText(currentRecording?.annotation || '');
                           setEditingAnnotation(false);
                         }}
-                        className="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                        className="px-3 py-1 text-xs text-warm-secondary hover:text-warm-primary hover:bg-surface-muted rounded transition-colors"
                       >
                         Cancel
                       </button>
@@ -988,7 +988,7 @@ export function WatchPage() {
                     </div>
                   </div>
                 ) : annotationText ? (
-                  <p className="text-sm text-gray-700 italic">&quot;{annotationText}&quot;</p>
+                  <p className="text-sm text-warm-secondary italic">&quot;{annotationText}&quot;</p>
                 ) : (
                   <button
                     onClick={() => setEditingAnnotation(true)}
@@ -1031,9 +1031,9 @@ export function WatchPage() {
       >
         {/* Hover trigger tab */}
         <div className="absolute right-0 top-0 h-full flex items-start pt-8 pointer-events-auto">
-          <div className="bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover:opacity-0 transition-opacity">
+          <div className="bg-surface-muted border border-r-0 border-warm-strong rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover:opacity-0 transition-opacity">
             <span
-              className="text-xs font-medium text-gray-600"
+              className="text-xs font-medium text-warm-secondary"
               style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
             >
               Chapters ({chapters.length})
@@ -1051,13 +1051,13 @@ export function WatchPage() {
               : 'translate-x-8 opacity-0 pointer-events-none'
           }`}
         >
-          <div className="bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-lg h-full flex flex-col">
+          <div className="bg-surface rounded-l-lg border border-r-0 border-warm shadow-lg h-full flex flex-col">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-              <h3 className="text-sm font-semibold text-gray-700">
+            <div className="px-4 py-3 border-b border-warm flex-shrink-0">
+              <h3 className="text-sm font-semibold text-warm-secondary">
                 {hoveredChapter ? (
                   <>
-                    <span className="text-gray-400">{hoveredChapter.chapterKey}</span>{' '}
+                    <span className="text-warm-muted">{hoveredChapter.chapterKey}</span>{' '}
                     {formatChapterTitle(hoveredChapter.title) || 'Segments'}
                   </>
                 ) : (
@@ -1065,7 +1065,7 @@ export function WatchPage() {
                 )}
               </h3>
               {hoveredChapter && (
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-warm-muted mt-0.5">
                   {hoveredChapter.files.length} segment
                   {hoveredChapter.files.length !== 1 ? 's' : ''}
                 </p>
@@ -1116,7 +1116,7 @@ export function WatchPage() {
                 } else if (isShadow) {
                   rowClasses = 'hover:bg-purple-50 text-purple-600 border-l-2 border-transparent';
                 } else {
-                  rowClasses = 'hover:bg-gray-50 text-gray-600 border-l-2 border-transparent';
+                  rowClasses = 'hover:bg-surface-hover text-warm-secondary border-l-2 border-transparent';
                 }
 
                 return (
@@ -1133,7 +1133,7 @@ export function WatchPage() {
                     }
                   >
                     <span
-                      className={`text-xs ${isPlaying ? 'text-blue-500' : isSafe ? 'text-yellow-500' : isShadow ? 'text-purple-400' : 'text-gray-400'}`}
+                      className={`text-xs ${isPlaying ? 'text-blue-500' : isSafe ? 'text-yellow-500' : isShadow ? 'text-purple-400' : 'text-warm-muted'}`}
                     >
                       {statusIcon}
                     </span>
@@ -1157,7 +1157,7 @@ export function WatchPage() {
                       </span>
                     )}
                     {file.duration && (
-                      <span className="font-mono text-xs text-gray-400">
+                      <span className="font-mono text-xs text-warm-muted">
                         {formatDuration(file.duration, 'smart')}
                       </span>
                     )}
@@ -1171,14 +1171,14 @@ export function WatchPage() {
         {/* Chapter Panel - slides out from right edge */}
         {/* FR-111: absolute right-0 positions at right edge of wider parent container */}
         <div className="absolute right-0 top-0 h-full w-72 translate-x-full group-hover:translate-x-0 transition-transform duration-200 ease-out pointer-events-auto">
-          <div className="bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-lg h-full flex flex-col">
+          <div className="bg-surface rounded-l-lg border border-r-0 border-warm shadow-lg h-full flex flex-col">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+            <div className="px-4 py-3 border-b border-warm flex-shrink-0">
+              <h3 className="text-sm font-semibold text-warm-secondary uppercase tracking-wide">
                 Chapters ({chapters.length})
               </h3>
               {totalDuration > 0 && (
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xs text-warm-muted mt-0.5">
                   Total: {formatDuration(totalDuration, 'smart')}
                 </p>
               )}
@@ -1203,24 +1203,24 @@ export function WatchPage() {
                         ? 'bg-purple-50 text-purple-700 border-l-2 border-purple-500'
                         : isHovered
                           ? 'bg-blue-50 border-l-2 border-blue-400'
-                          : 'hover:bg-gray-50 border-l-2 border-transparent'
+                          : 'hover:bg-surface-hover border-l-2 border-transparent'
                     }`}
                   >
                     <span
                       className={`font-mono text-xs w-5 ${
-                        isChapterPlaying ? 'text-purple-500' : 'text-gray-400'
+                        isChapterPlaying ? 'text-purple-500' : 'text-warm-muted'
                       }`}
                     >
                       {chapter.chapterKey}
                     </span>
                     <span
                       className={`flex-1 text-sm truncate ${
-                        isChapterPlaying ? 'font-medium text-purple-700' : 'text-gray-700'
+                        isChapterPlaying ? 'font-medium text-purple-700' : 'text-warm-secondary'
                       }`}
                     >
                       {title || `Chapter ${chapter.chapterKey}`}
                     </span>
-                    <span className="font-mono text-xs text-gray-400">
+                    <span className="font-mono text-xs text-warm-muted">
                       {formatDuration(chapter.startTime, 'youtube')}
                     </span>
                     {isChapterPlaying && <span className="text-purple-500">▶</span>}
@@ -1230,9 +1230,9 @@ export function WatchPage() {
             </div>
 
             {/* Footer */}
-            <div className="px-4 py-3 border-t border-gray-100 flex-shrink-0 text-center">
-              <p className="text-xs text-gray-500">Click = play chapter</p>
-              <p className="text-xs text-gray-400">Hover = show segments</p>
+            <div className="px-4 py-3 border-t border-warm flex-shrink-0 text-center">
+              <p className="text-xs text-warm-muted">Click = play chapter</p>
+              <p className="text-xs text-warm-muted">Hover = show segments</p>
             </div>
           </div>
         </div>

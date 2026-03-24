@@ -32,9 +32,9 @@ export function TranscriptionProgressBar({ transcriptionData }: TranscriptionPro
   if (totalFiles === 0) {
     return (
       <section className="mb-6">
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Transcription Progress</h3>
-          <p className="text-sm text-gray-500">
+        <div className="border rounded-lg p-4 bg-surface-muted">
+          <h3 className="text-sm font-medium text-warm-secondary mb-2">Transcription Progress</h3>
+          <p className="text-sm text-warm-muted">
             No recordings yet. Add recordings to start transcribing.
           </p>
         </div>
@@ -44,18 +44,18 @@ export function TranscriptionProgressBar({ transcriptionData }: TranscriptionPro
 
   return (
     <section className="mb-6">
-      <div className="border rounded-lg p-4 bg-white">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Transcription Progress</h3>
+      <div className="border rounded-lg p-4 bg-surface">
+        <h3 className="text-sm font-medium text-warm-secondary mb-3">Transcription Progress</h3>
 
         {/* Progress bar */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-warm rounded-full overflow-hidden">
             <div
               className="h-full bg-green-500 rounded-full transition-all duration-300"
               style={{ width: `${transcriptPercent}%` }}
             />
           </div>
-          <span className="text-sm text-gray-600 whitespace-nowrap font-medium">
+          <span className="text-sm text-warm-secondary whitespace-nowrap font-medium">
             {transcriptCount}/{totalFiles} files ({Math.round(transcriptPercent)}%)
           </span>
         </div>
@@ -69,7 +69,7 @@ export function TranscriptionProgressBar({ transcriptionData }: TranscriptionPro
           </span>
 
           {/* Divider */}
-          <span className="text-gray-300">│</span>
+          <span className="text-warm-faint">│</span>
 
           {/* Active - only show if there's an active job */}
           {activeCount > 0 && (
@@ -78,18 +78,18 @@ export function TranscriptionProgressBar({ transcriptionData }: TranscriptionPro
                 <span className="mr-1">⏳</span>
                 {activeCount} active
               </span>
-              <span className="text-gray-300">│</span>
+              <span className="text-warm-faint">│</span>
             </>
           )}
 
           {/* Queued - only show if queue is not empty */}
           {queuedCount > 0 && (
             <>
-              <span className="text-gray-600">
+              <span className="text-warm-secondary">
                 <span className="mr-1">📋</span>
                 {queuedCount} queued
               </span>
-              <span className="text-gray-300">│</span>
+              <span className="text-warm-faint">│</span>
             </>
           )}
 

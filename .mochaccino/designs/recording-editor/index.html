@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recording Editor — Inline Rename & Renumber</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; color: #111827; font-size: 14px; }
+
+  .mochaccino-banner { background: #f9fafb; border-bottom: 1px solid #e5e7eb; padding: 6px 24px; font-size: 11px; color: #9ca3af; }
+
+  /* App chrome */
+  .app-header { background: white; border-bottom: 1px solid #e5e7eb; padding: 12px 24px; display: flex; align-items: center; gap: 8px; }
+  .app-header h1 { font-size: 18px; font-weight: 700; }
+  .app-header .project { color: #2563eb; font-size: 14px; font-weight: 500; }
+  .app-header .spacer { flex: 1; }
+  .sync-indicators { display: flex; align-items: center; gap: 8px; }
+  .sync-ind { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 8px; border-radius: 4px; }
+  .sync-ind .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .sync-ind.dirty { background: #fef2f2; color: #dc2626; }
+  .sync-ind.dirty .dot { background: #dc2626; }
+  .sync-ind.clean { color: #6b7280; }
+  .sync-ind.clean .dot { background: #16a34a; }
+  .sync-count { font-size: 10px; font-weight: 600; background: #dc2626; color: white; border-radius: 8px; padding: 0 5px; line-height: 16px; }
+
+  .nav { display: flex; gap: 4px; padding: 0 24px; background: white; border-bottom: 1px solid #e5e7eb; }
+  .nav button { padding: 8px 12px; font-size: 13px; color: #6b7280; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+  .nav button.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 500; }
+
+  /* Main content area */
+  .main { max-width: 1100px; margin: 0 auto; padding: 20px 24px; }
+
+  /* Stats bar */
+  .stats-bar { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6b7280; margin-bottom: 12px; flex-wrap: wrap; }
+  .stats-bar .count { color: #374151; font-weight: 500; }
+
+  /* ═══ EDIT MODE TOOLBAR ═══ */
+  .edit-toolbar {
+    display: none;
+    background: #1e40af;
+    color: white;
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .edit-toolbar.visible { display: flex; }
+  .edit-toolbar .sel-count { font-weight: 600; font-size: 13px; white-space: nowrap; }
+  .edit-toolbar .sep { width: 1px; height: 24px; background: rgba(255,255,255,0.25); flex-shrink: 0; }
+  .edit-toolbar button {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .edit-toolbar button:hover { background: rgba(255,255,255,0.25); }
+  .edit-toolbar button.primary { background: white; color: #1e40af; font-weight: 600; }
+  .edit-toolbar button.primary:hover { background: #eff6ff; }
+  .edit-toolbar button.danger { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); }
+  .edit-toolbar button.danger:hover { background: rgba(239,68,68,0.35); }
+  .edit-toolbar .spacer { flex: 1; }
+
+  /* ═══ CHAPTER GROUP ═══ */
+  .chapter-group { margin-bottom: 24px; }
+
+  .chapter-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 0 4px;
+  }
+  .chapter-header .line { height: 1px; background: #d1d5db; flex: 1; }
+
+  .ch-number {
+    font-size: 13px; font-weight: 700; color: #374151;
+    background: #f3f4f6; border: 1px solid #e5e7eb;
+    border-radius: 4px; padding: 2px 8px;
+    cursor: pointer; transition: all 0.15s;
+    min-width: 32px; text-align: center;
+  }
+  .ch-number:hover { background: #e5e7eb; border-color: #d1d5db; }
+  .ch-number.editing {
+    background: white; border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+    outline: none;
+  }
+
+  .ch-title { font-size: 13px; font-weight: 600; color: #374151; }
+  .ch-meta { font-size: 11px; color: #9ca3af; }
+
+  .ch-select-all {
+    font-size: 11px; color: #6b7280; cursor: pointer;
+    padding: 2px 6px; border-radius: 4px; border: 1px solid transparent;
+    background: none; transition: all 0.15s;
+  }
+  .ch-select-all:hover { background: #f3f4f6; color: #2563eb; border-color: #e5e7eb; }
+
+  /* ═══ SPLIT INDICATOR ═══ */
+  .split-marker {
+    display: flex; align-items: center; gap: 8px; padding: 4px 0; margin: 2px 0;
+  }
+  .split-marker .split-line { height: 2px; flex: 1; background: repeating-linear-gradient(90deg, #f59e0b 0, #f59e0b 6px, transparent 6px, transparent 12px); }
+  .split-marker .split-label {
+    font-size: 11px; font-weight: 600; color: #92400e;
+    background: #fef3c7; border: 1px solid #fcd34d;
+    border-radius: 4px; padding: 2px 8px; white-space: nowrap;
+  }
+  .split-marker button {
+    font-size: 11px; color: #92400e; background: none; border: none;
+    cursor: pointer; padding: 2px 4px;
+  }
+  .split-marker button:hover { color: #dc2626; }
+
+  /* ═══ FILE ROW ═══ */
+  .file-row {
+    display: flex; align-items: center; gap: 0;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+    transition: all 0.1s;
+    background: white;
+  }
+  .file-row:hover { background: #f9fafb; border-color: #e5e7eb; }
+  .file-row.selected { background: #eff6ff; border-color: #bfdbfe; }
+  .file-row.changed { background: #f0fdf4; border-color: #bbf7d0; }
+  .file-row.error-name { background: #fef2f2; border-color: #fecaca; }
+
+  .file-row .cb {
+    width: 16px; height: 16px; border-radius: 3px;
+    border: 1.5px solid #d1d5db; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-right: 8px; transition: all 0.1s;
+  }
+  .file-row .cb:hover { border-color: #3b82f6; }
+  .file-row .cb.checked { background: #2563eb; border-color: #2563eb; }
+  .file-row .cb.checked::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+
+  .file-row .play-btn {
+    color: #3b82f6; background: none; border: none; cursor: pointer;
+    font-size: 11px; padding: 2px 6px; margin-right: 4px;
+  }
+
+  /* Filename segments — the key innovation */
+  .fname { display: flex; align-items: center; gap: 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; flex: 1; }
+
+  .fname .seg {
+    padding: 2px 0;
+    cursor: default;
+    color: #374151;
+  }
+  .fname .seg-ch {
+    color: #6b7280;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 2px;
+    border-radius: 3px;
+    transition: all 0.1s;
+  }
+  .fname .seg-ch:hover { background: #dbeafe; color: #2563eb; }
+
+  .fname .seg-seq { color: #6b7280; }
+  .fname .seg-dash { color: #d1d5db; }
+
+  .fname .seg-name {
+    color: #111827;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: all 0.1s;
+  }
+  .fname .seg-name:hover { background: #dbeafe; color: #2563eb; }
+
+  .fname .seg-tag {
+    display: inline-flex; align-items: center; gap: 2px;
+    font-size: 10px; font-weight: 600;
+    color: #7c3aed; background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 3px; padding: 1px 5px; margin-left: 4px;
+    cursor: pointer; transition: all 0.1s;
+  }
+  .fname .seg-tag:hover { background: #ede9fe; border-color: #c4b5fd; }
+  .fname .seg-tag .tag-x { font-size: 9px; color: #a78bfa; margin-left: 2px; }
+  .fname .seg-tag .tag-x:hover { color: #dc2626; }
+
+  .fname .seg-ext { color: #9ca3af; }
+
+  /* Inline edit input */
+  .fname .inline-edit {
+    font-family: inherit; font-size: 13px;
+    border: 1px solid #3b82f6;
+    border-radius: 3px;
+    padding: 2px 4px;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+    width: auto;
+    min-width: 60px;
+    background: white;
+  }
+  .fname .inline-edit.ch-edit { width: 32px; text-align: center; }
+  .fname .inline-edit.name-edit { min-width: 120px; }
+
+  .file-row .file-size { font-size: 12px; color: #9ca3af; white-space: nowrap; margin-left: auto; padding-left: 16px; }
+
+  /* Change indicator */
+  .file-row .change-arrow {
+    font-size: 11px; color: #16a34a; margin: 0 8px; font-weight: 700;
+  }
+  .file-row .old-name {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px; color: #9ca3af;
+    text-decoration: line-through;
+    margin-right: 6px;
+  }
+
+  /* Context menu on right-click / hover actions */
+  .file-row .row-actions {
+    display: none; align-items: center; gap: 2px; margin-left: 8px;
+  }
+  .file-row:hover .row-actions { display: flex; }
+  .row-actions button {
+    font-size: 11px; color: #6b7280; background: none; border: none;
+    cursor: pointer; padding: 2px 6px; border-radius: 3px;
+  }
+  .row-actions button:hover { background: #f3f4f6; color: #111827; }
+
+  /* ═══ PREVIEW PANEL ═══ */
+  .preview-panel {
+    display: none;
+    background: white;
+    border: 2px solid #2563eb;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  }
+  .preview-panel.visible { display: block; }
+  .preview-header {
+    background: #eff6ff;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid #bfdbfe;
+  }
+  .preview-header h3 { font-size: 14px; font-weight: 600; color: #1e40af; }
+  .preview-header .spacer { flex: 1; }
+  .preview-header .badge {
+    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+  }
+  .preview-header .badge.green { background: #dcfce7; color: #166534; }
+  .preview-header .badge.amber { background: #fef3c7; color: #92400e; }
+
+  .preview-body { padding: 0; max-height: 400px; overflow-y: auto; }
+
+  .preview-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px; font-size: 12px;
+    border-bottom: 1px solid #f3f4f6;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .preview-row:last-child { border-bottom: none; }
+  .preview-row .pr-old { color: #9ca3af; text-decoration: line-through; flex: 1; }
+  .preview-row .pr-arrow { color: #16a34a; font-weight: 700; flex-shrink: 0; }
+  .preview-row .pr-new { color: #166534; font-weight: 500; flex: 1; }
+  .preview-row .pr-note { font-size: 10px; color: #6b7280; font-family: -apple-system, sans-serif; }
+  .preview-row .pr-icon { flex-shrink: 0; font-size: 14px; }
+  .preview-row.pr-section {
+    background: #f9fafb; font-family: -apple-system, sans-serif;
+    font-weight: 600; color: #374151; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 6px 16px;
+  }
+
+  .preview-footer {
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .preview-footer .note {
+    font-size: 11px; color: #6b7280; display: flex; align-items: center; gap: 4px;
+  }
+  .preview-footer .note .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .preview-footer .note .dot.green { background: #16a34a; }
+  .preview-footer .note .dot.amber { background: #f59e0b; }
+  .preview-footer .spacer { flex: 1; }
+  .preview-footer button {
+    padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.15s;
+  }
+  .preview-footer .btn-cancel { background: #f3f4f6; color: #374151; }
+  .preview-footer .btn-cancel:hover { background: #e5e7eb; }
+  .preview-footer .btn-apply { background: #2563eb; color: white; }
+  .preview-footer .btn-apply:hover { background: #1d4ed8; }
+
+  /* ═══ TOAST / UNDO BAR ═══ */
+  .undo-bar {
+    display: none;
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1f2937; color: white; border-radius: 10px;
+    padding: 10px 20px; font-size: 13px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    align-items: center; gap: 12px; z-index: 100;
+  }
+  .undo-bar.visible { display: flex; }
+  .undo-bar button {
+    background: rgba(255,255,255,0.2); border: none; color: white;
+    padding: 4px 12px; border-radius: 5px; font-size: 12px; font-weight: 600;
+    cursor: pointer;
+  }
+  .undo-bar button:hover { background: rgba(255,255,255,0.3); }
+  .undo-bar .timer { font-size: 11px; color: #9ca3af; }
+
+  /* ═══ INLINE POPOVER (for batch name/chapter edit) ═══ */
+  .popover {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 12px;
+    z-index: 60;
+    min-width: 280px;
+  }
+  .popover.visible { display: block; }
+  .popover h4 { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+  .popover label { font-size: 11px; color: #6b7280; display: block; margin-bottom: 4px; }
+  .popover input[type="text"], .popover select {
+    width: 100%; padding: 6px 8px; font-size: 13px;
+    border: 1px solid #d1d5db; border-radius: 5px; outline: none;
+    font-family: 'SF Mono', monospace;
+  }
+  .popover input:focus, .popover select:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+  .popover .pop-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .popover .pop-actions button {
+    flex: 1; padding: 6px; border-radius: 5px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid transparent;
+  }
+  .popover .pop-cancel { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+  .popover .pop-apply { background: #2563eb; color: white; }
+
+  /* Responsive annotations */
+  .annotation {
+    position: absolute; background: #fef3c7; border: 1px solid #fcd34d;
+    border-radius: 6px; padding: 8px 12px; font-size: 11px; color: #92400e;
+    max-width: 220px; line-height: 1.4; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    z-index: 10;
+  }
+  .annotation::before {
+    content: ''; position: absolute; width: 8px; height: 8px;
+    background: #fef3c7; border-left: 1px solid #fcd34d; border-top: 1px solid #fcd34d;
+    transform: rotate(-45deg); top: -5px; left: 20px;
+  }
+  .annotation strong { font-weight: 600; }
+
+  /* Scene headings */
+  .scene { margin-top: 32px; margin-bottom: 16px; padding-top: 16px; border-top: 2px solid #e5e7eb; }
+  .scene-title { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+  .scene-desc { font-size: 12px; color: #6b7280; max-width: 700px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="mochaccino-banner">Mochaccino — recording-editor — 2026-03-23 — Inline rename & renumber on the Recordings page</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- APP CHROME -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="app-header">
+  <h1>FliHub</h1>
+  <span style="color:#9ca3af; margin: 0 4px;">›</span>
+  <span class="project">c32-bmad-v6-epic1-foundation</span>
+  <span style="color:#9ca3af; font-size:13px; margin-left:4px;">▾</span>
+  <span style="color:#9ca3af; font-size:13px; margin-left:8px;">...</span>
+  <span class="spacer"></span>
+  <div class="sync-indicators">
+    <div class="sync-ind dirty">
+      <div class="dot"></div>
+      <span style="font-weight:500;">⌘ Code</span>
+      <span class="sync-count">4</span>
+    </div>
+    <div class="sync-ind clean">
+      <div class="dot"></div>
+      <span style="font-weight:500;">🎬 Project</span>
+    </div>
+  </div>
+  <span style="font-size:16px; color:#9ca3af; cursor:pointer;">⚙</span>
+</div>
+<div class="nav">
+  <button>Incoming</button>
+  <button class="active">Recordings</button>
+  <button>Watch</button>
+  <button>Transcripts</button>
+  <button>Inbox</button>
+  <button>Assets</button>
+  <button>Thumbs</button>
+  <button>Manage</button>
+  <button>Projects</button>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCENE 1: Normal view — no selection -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="scene">
+  <div class="scene-title">Scene 1 — Browse mode (click any filename part to edit)</div>
+  <div class="scene-desc">
+    The Recordings page now supports inline editing. Click a <strong>chapter number</strong>, <strong>name</strong>, or <strong>tag</strong> directly on any file to edit it in place. Hover reveals per-row actions. No need to navigate to Manage.
+  </div>
+</div>
+
+<div class="stats-bar">
+  <span class="count">35 files</span>
+  <span>(30 active, 3 safe, 2 parked)</span>
+  <span>| 1h 42m</span>
+  <span>| 2.1 GB</span>
+</div>
+
+<!-- Chapter 01 -->
+<div class="chapter-group">
+  <div class="chapter-header">
+    <div class="line"></div>
+    <span class="ch-number" title="Click to edit chapter number">01</span>
+    <span class="ch-title">Intro</span>
+    <span class="ch-meta">(1 file · 27.8 MB)</span>
+    <span class="ch-meta">@ 0:00</span>
+    <div class="line"></div>
+  </div>
+
+  <div class="file-row">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch" title="Click to change chapter">01</span><span class="seg-dash">-</span><span class="seg-seq">1</span><span class="seg-dash">-</span><span class="seg-name" title="Click to rename">intro</span><span class="seg-ext">.mov</span>
+    </div>
+    <div class="row-actions">
+      <button title="Split chapter here">✂</button>
+      <button title="Park">P</button>
+      <button title="Safe">S</button>
+    </div>
+    <span class="file-size">27.8 MB</span>
+  </div>
+</div>
+
+<!-- Chapter 02 — the "wrong label" scenario -->
+<div class="chapter-group" style="position:relative;">
+  <div class="chapter-header">
+    <div class="line"></div>
+    <span class="ch-number">02</span>
+    <span class="ch-title">Setup</span>
+    <span class="ch-meta">(8 files · 206.3 MB)</span>
+    <span class="ch-meta">@ 3:12</span>
+    <button class="ch-select-all">Select 02</button>
+    <div class="line"></div>
+  </div>
+
+  <div class="annotation" style="top: 36px; right: 60px;">
+    <strong>Scenario 1:</strong> All these say "setup" but should be "epic1-story1". Select all → type the new name → done.
+  </div>
+
+  <div class="file-row">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">02</span><span class="seg-dash">-</span><span class="seg-seq">1</span><span class="seg-dash">-</span><span class="seg-name">setup</span><span class="seg-ext">.mov</span>
+    </div>
+    <div class="row-actions">
+      <button>✂</button><button>P</button><button>S</button>
+    </div>
+    <span class="file-size">16.9 MB</span>
+  </div>
+  <div class="file-row">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">02</span><span class="seg-dash">-</span><span class="seg-seq">2</span><span class="seg-dash">-</span><span class="seg-name">setup</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">10.5 MB</span>
+  </div>
+  <div class="file-row">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">02</span><span class="seg-dash">-</span><span class="seg-seq">3</span><span class="seg-dash">-</span><span class="seg-name">setup</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">22.5 MB</span>
+  </div>
+  <div style="text-align: center; font-size: 11px; color: #9ca3af; padding: 2px 0;">... +5 more files</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCENE 2: Multi-select with toolbar -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="scene">
+  <div class="scene-title">Scene 2 — Batch edit (select files → toolbar appears)</div>
+  <div class="scene-desc">
+    Select files with checkboxes (or "Select 02" for whole chapter). A sticky toolbar slides in with batch actions:
+    <strong>Change Name</strong>, <strong>Change Chapter</strong>, <strong>Add/Remove Tags</strong>, <strong>Split Here</strong>.
+    Everything stays on the Recordings page.
+  </div>
+</div>
+
+<!-- Toolbar appears when files selected -->
+<div class="edit-toolbar visible">
+  <span class="sel-count">8 files selected</span>
+  <span style="font-size:11px; opacity:0.7;">Chapter 02</span>
+  <div class="sep"></div>
+  <button class="primary" onclick="document.getElementById('name-pop').classList.toggle('visible')">Rename</button>
+  <button>Move to Ch...</button>
+  <button>+ Tag</button>
+  <button>- Tag</button>
+  <div class="sep"></div>
+  <button title="Insert chapter split between selected files">✂ Split Here</button>
+  <div class="spacer"></div>
+  <button class="danger">Deselect All</button>
+</div>
+
+<div style="position: relative;">
+  <!-- Inline popover for rename -->
+  <div class="popover visible" id="name-pop" style="top: 4px; left: 120px;">
+    <h4>Rename 8 files</h4>
+    <label>New name</label>
+    <input type="text" value="epic1-story1" placeholder="kebab-case-name">
+    <div style="margin-top: 6px; font-size: 11px; color: #6b7280;">
+      Preview: 02-1-<strong>epic1-story1</strong>.mov, 02-2-<strong>epic1-story1</strong>.mov, ...
+    </div>
+    <div class="pop-actions">
+      <button class="pop-cancel">Cancel</button>
+      <button class="pop-apply">Preview Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="chapter-group" style="margin-top: 60px;">
+  <div class="chapter-header">
+    <div class="line"></div>
+    <span class="ch-number">02</span>
+    <span class="ch-title">Setup</span>
+    <span class="ch-meta">(8 files · 206.3 MB)</span>
+    <button class="ch-select-all" style="color: #2563eb; font-weight: 500;">✓ All selected</button>
+    <div class="line"></div>
+  </div>
+
+  <div class="file-row selected">
+    <div class="cb checked"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">02</span><span class="seg-dash">-</span><span class="seg-seq">1</span><span class="seg-dash">-</span><span class="seg-name" style="background:#dbeafe; border-radius: 3px;">setup</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">16.9 MB</span>
+  </div>
+  <div class="file-row selected">
+    <div class="cb checked"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">02</span><span class="seg-dash">-</span><span class="seg-seq">2</span><span class="seg-dash">-</span><span class="seg-name" style="background:#dbeafe; border-radius: 3px;">setup</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">10.5 MB</span>
+  </div>
+  <div class="file-row selected">
+    <div class="cb checked"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">02</span><span class="seg-dash">-</span><span class="seg-seq">3</span><span class="seg-dash">-</span><span class="seg-name" style="background:#dbeafe; border-radius: 3px;">setup</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">22.5 MB</span>
+  </div>
+  <div style="text-align: center; font-size: 11px; color: #9ca3af; padding: 2px 0;">... +5 more (all selected)</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCENE 3: Chapter split scenario -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="scene">
+  <div class="scene-title">Scene 3 — Chapter split (ch04 → ch04 + ch05)</div>
+  <div class="scene-desc">
+    Select file 04-11 and click <strong>"✂ Split Here"</strong>. A dashed amber line appears showing where the chapter will break.
+    Files 11-16 will become Chapter 05 with sequences renumbered 1-6. The split is staged — nothing happens until you confirm.
+  </div>
+</div>
+
+<div class="chapter-group">
+  <div class="chapter-header">
+    <div class="line"></div>
+    <span class="ch-number">04</span>
+    <span class="ch-title">Epic1 Story2</span>
+    <span class="ch-meta">(16 files · 570.0 MB)</span>
+    <div class="line"></div>
+  </div>
+
+  <!-- Files 1-10 stay in ch04 -->
+  <div class="file-row">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">04</span><span class="seg-dash">-</span><span class="seg-seq">1</span><span class="seg-dash">-</span><span class="seg-name">epic1-story2</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">14.0 MB</span>
+  </div>
+  <div style="text-align: center; font-size: 11px; color: #9ca3af; padding: 2px 0;">... sequences 2-9 ...</div>
+  <div class="file-row">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">04</span><span class="seg-dash">-</span><span class="seg-seq">10</span><span class="seg-dash">-</span><span class="seg-name">epic1-story2</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">10.9 MB</span>
+  </div>
+
+  <!-- ═══ SPLIT MARKER ═══ -->
+  <div class="split-marker">
+    <div class="split-line"></div>
+    <span class="split-label">✂ Split → New Chapter 05 starts here (6 files, renumbered 1-6)</span>
+    <button title="Remove split">✕</button>
+    <div class="split-line"></div>
+  </div>
+
+  <!-- Files 11-16 will become ch05 — shown with pending change styling -->
+  <div class="file-row changed">
+    <div class="cb checked"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="old-name">04-11-epic1-story3.mov</span>
+      <span class="change-arrow">→</span>
+      <span class="seg-ch" style="color:#16a34a; font-weight:700;">05</span><span class="seg-dash">-</span><span class="seg-seq" style="color:#16a34a;">1</span><span class="seg-dash">-</span><span class="seg-name">epic1-story3</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">77.5 MB</span>
+  </div>
+  <div class="file-row changed">
+    <div class="cb checked"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="old-name">04-12-epic1-story3.mov</span>
+      <span class="change-arrow">→</span>
+      <span class="seg-ch" style="color:#16a34a; font-weight:700;">05</span><span class="seg-dash">-</span><span class="seg-seq" style="color:#16a34a;">2</span><span class="seg-dash">-</span><span class="seg-name">epic1-story3</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">37.4 MB</span>
+  </div>
+  <div class="file-row changed">
+    <div class="cb checked"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="old-name">04-13-epic1-story3.mov</span>
+      <span class="change-arrow">→</span>
+      <span class="seg-ch" style="color:#16a34a; font-weight:700;">05</span><span class="seg-dash">-</span><span class="seg-seq" style="color:#16a34a;">3</span><span class="seg-dash">-</span><span class="seg-name">epic1-story3</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">8.1 MB</span>
+  </div>
+  <div class="file-row changed">
+    <div class="cb checked"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="old-name">04-14-epic1-story3.mov</span>
+      <span class="change-arrow">→</span>
+      <span class="seg-ch" style="color:#16a34a; font-weight:700;">05</span><span class="seg-dash">-</span><span class="seg-seq" style="color:#16a34a;">4</span><span class="seg-dash">-</span><span class="seg-name">epic1-story3</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">59.1 MB</span>
+  </div>
+
+  <!-- Files 15-16: wrong label AND wrong chapter — both fixed -->
+  <div class="file-row changed error-name" style="background: linear-gradient(90deg, #f0fdf4 70%, #fef2f2 100%); border-color: #bbf7d0;">
+    <div class="cb checked"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="old-name">04-15-epic1-story2.mov</span>
+      <span class="change-arrow">→</span>
+      <span class="seg-ch" style="color:#16a34a; font-weight:700;">05</span><span class="seg-dash">-</span><span class="seg-seq" style="color:#16a34a;">5</span><span class="seg-dash">-</span><span class="seg-name" style="color:#16a34a; font-weight:600;">epic1-story3</span><span class="seg-ext">.mov</span>
+    </div>
+    <div class="row-actions" style="display:flex;">
+      <span style="font-size:10px; color:#f59e0b; font-weight:600;">name + chapter fixed</span>
+    </div>
+    <span class="file-size">22.7 MB</span>
+  </div>
+  <div class="file-row changed error-name" style="background: linear-gradient(90deg, #f0fdf4 70%, #fef2f2 100%); border-color: #bbf7d0;">
+    <div class="cb checked"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="old-name">04-16-epic1-story2.mov</span>
+      <span class="change-arrow">→</span>
+      <span class="seg-ch" style="color:#16a34a; font-weight:700;">05</span><span class="seg-dash">-</span><span class="seg-seq" style="color:#16a34a;">6</span><span class="seg-dash">-</span><span class="seg-name" style="color:#16a34a; font-weight:600;">epic1-story3</span><span class="seg-ext">.mov</span>
+    </div>
+    <div class="row-actions" style="display:flex;">
+      <span style="font-size:10px; color:#f59e0b; font-weight:600;">name + chapter fixed</span>
+    </div>
+    <span class="file-size">40.2 MB</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCENE 4: Full preview before applying -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="scene">
+  <div class="scene-title">Scene 4 — Confirm panel (every change, all files, before anything happens)</div>
+  <div class="scene-desc">
+    Clicking <strong>"Preview Changes"</strong> shows this panel. Every rename is listed with old → new.
+    Associated files (shadows, transcripts) shown grouped below each recording.
+    Green dot = file move only (instant). Amber dot = transcript re-queue needed. You see exactly what will happen.
+  </div>
+</div>
+
+<div class="preview-panel visible">
+  <div class="preview-header">
+    <h3>Review 8 changes</h3>
+    <span class="badge green">6 instant renames</span>
+    <span class="badge amber">2 need re-transcription</span>
+    <div class="spacer"></div>
+    <span style="font-size: 11px; color: #6b7280;">Split ch04 → ch04 + ch05</span>
+  </div>
+
+  <div class="preview-body">
+    <div class="preview-row pr-section">Chapter 04 → Chapter 05 (split + renumber)</div>
+
+    <div class="preview-row">
+      <span class="pr-icon" title="Instant rename — no re-transcription">🟢</span>
+      <span class="pr-old">04-11-epic1-story3.mov</span>
+      <span class="pr-arrow">→</span>
+      <span class="pr-new">05-1-epic1-story3.mov</span>
+      <span class="pr-note">+ shadow + 5 transcripts</span>
+    </div>
+    <div class="preview-row">
+      <span class="pr-icon">🟢</span>
+      <span class="pr-old">04-12-epic1-story3.mov</span>
+      <span class="pr-arrow">→</span>
+      <span class="pr-new">05-2-epic1-story3.mov</span>
+      <span class="pr-note">+ shadow + 5 transcripts</span>
+    </div>
+    <div class="preview-row">
+      <span class="pr-icon">🟢</span>
+      <span class="pr-old">04-13-epic1-story3.mov</span>
+      <span class="pr-arrow">→</span>
+      <span class="pr-new">05-3-epic1-story3.mov</span>
+      <span class="pr-note">+ shadow + 5 transcripts</span>
+    </div>
+    <div class="preview-row">
+      <span class="pr-icon">🟢</span>
+      <span class="pr-old">04-14-epic1-story3.mov</span>
+      <span class="pr-arrow">→</span>
+      <span class="pr-new">05-4-epic1-story3.mov</span>
+      <span class="pr-note">+ shadow + 5 transcripts</span>
+    </div>
+
+    <div class="preview-row pr-section" style="color: #92400e;">Name correction (story2 → story3)</div>
+
+    <div class="preview-row">
+      <span class="pr-icon" title="Name changed — shadow renamed, transcript content unchanged so just renamed">🟢</span>
+      <span class="pr-old">04-15-epic1-story2.mov</span>
+      <span class="pr-arrow">→</span>
+      <span class="pr-new">05-5-epic1-story3.mov</span>
+      <span class="pr-note">+ shadow + 5 transcripts</span>
+    </div>
+    <div class="preview-row">
+      <span class="pr-icon">🟢</span>
+      <span class="pr-old">04-16-epic1-story2.mov</span>
+      <span class="pr-arrow">→</span>
+      <span class="pr-new">05-6-epic1-story3.mov</span>
+      <span class="pr-note">+ shadow + 5 transcripts</span>
+    </div>
+  </div>
+
+  <div class="preview-footer">
+    <div class="note"><span class="dot green"></span> Instant: rename .mov + shadow + transcripts (no re-processing)</div>
+    <div class="note"><span class="dot amber"></span> Re-transcribe: audio source changed (rare)</div>
+    <div class="spacer"></div>
+    <button class="btn-cancel">Cancel</button>
+    <button class="btn-apply">Apply 8 Changes</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCENE 5: Undo bar after applying -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="scene">
+  <div class="scene-title">Scene 5 — Undo (safety net after applying)</div>
+  <div class="scene-desc">
+    After changes apply, a floating undo bar appears for 30 seconds. One click reverts everything.
+    This is the trust mechanism — you can always go back.
+  </div>
+</div>
+
+<div class="undo-bar visible" style="position: relative; transform: none; margin: 16px auto; max-width: 500px;">
+  <span>✓ Renamed 8 files (split ch04 → ch04 + ch05)</span>
+  <div class="spacer" style="flex:1;"></div>
+  <button>Undo</button>
+  <span class="timer">27s</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCENE 6: Single file inline edit -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="scene">
+  <div class="scene-title">Scene 6 — Quick single-file edit (click any part of the filename)</div>
+  <div class="scene-desc">
+    For quick fixes, just click directly on the part you want to change. The segment becomes an inline input.
+    Press Enter to confirm, Escape to cancel. No modal, no toolbar, no navigation.
+  </div>
+</div>
+
+<div class="chapter-group">
+  <div class="chapter-header">
+    <div class="line"></div>
+    <span class="ch-number">03</span>
+    <span class="ch-title">Epic1 Story1</span>
+    <span class="ch-meta">(11 files · 329.0 MB)</span>
+    <div class="line"></div>
+  </div>
+
+  <div class="file-row">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">03</span><span class="seg-dash">-</span><span class="seg-seq">1</span><span class="seg-dash">-</span><span class="seg-name">epic1-story1</span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">19.3 MB</span>
+  </div>
+
+  <!-- This file has its name being edited inline -->
+  <div class="file-row" style="border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15);">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">03</span><span class="seg-dash">-</span><span class="seg-seq">2</span><span class="seg-dash">-</span><input class="inline-edit name-edit" value="epic1-story1" autofocus><span class="seg-ext">.mov</span>
+    </div>
+    <div style="font-size: 11px; color: #6b7280; margin-left: 8px;">Enter ✓ &nbsp; Esc ✕</div>
+    <span class="file-size">10.6 MB</span>
+  </div>
+
+  <!-- This file has its chapter being edited inline -->
+  <div class="file-row" style="border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15);">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <input class="inline-edit ch-edit" value="03" style="width:32px;"><span class="seg-dash">-</span><span class="seg-seq">3</span><span class="seg-dash">-</span><span class="seg-name">epic1-story1</span><span class="seg-ext">.mov</span>
+    </div>
+    <div style="font-size: 11px; color: #6b7280; margin-left: 8px;">Enter ✓ &nbsp; Esc ✕</div>
+    <span class="file-size">42.9 MB</span>
+  </div>
+
+  <div class="file-row">
+    <div class="cb"></div>
+    <button class="play-btn">▶</button>
+    <div class="fname">
+      <span class="seg-ch">03</span><span class="seg-dash">-</span><span class="seg-seq">4</span><span class="seg-dash">-</span><span class="seg-name">epic1-story1</span><span class="seg-tag">CTA <span class="tag-x">✕</span></span><span class="seg-ext">.mov</span>
+    </div>
+    <span class="file-size">65.6 MB</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- Design Notes -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="scene" style="margin-top: 48px;">
+  <div class="scene-title">Design Notes</div>
+</div>
+
+<div style="background: white; border-radius: 10px; padding: 20px; border: 1px solid #e5e7eb; margin-bottom: 40px; font-size: 13px; line-height: 1.7;">
+  <p style="font-weight: 600; margin-bottom: 12px;">Key design decisions:</p>
+  <ul style="padding-left: 20px; color: #374151;">
+    <li><strong>Edit where you see the problem.</strong> The Recordings page IS the editor. No more "go to Manage > Rename".</li>
+    <li><strong>Filename segments are clickable.</strong> Chapter number, name, and tags are interactive — click to edit in place.</li>
+    <li><strong>Batch toolbar is contextual.</strong> Only appears when files are selected. Sticky so it follows your scroll.</li>
+    <li><strong>Chapter split is visual.</strong> Dashed amber line shows exactly where the break will happen. Removable with one click.</li>
+    <li><strong>Full preview, every file.</strong> Not 5-of-N — every single change listed with its associated files (shadow, transcripts).</li>
+    <li><strong>Smart transcript handling.</strong> Green dot = just rename the files (instant). Amber dot = audio changed, must re-transcribe.
+        Renaming chapter/name/tags should NEVER trigger re-transcription — it's a filename change, not an audio change.</li>
+    <li><strong>30-second undo.</strong> Every batch operation is reversible. This is the trust mechanism.</li>
+    <li><strong>Pending changes shown inline.</strong> Old name → new name visible on each row before you commit. No surprises.</li>
+    <li><strong>Manage panel still exists</strong> for Regen, Gling/Edit, AWB, Relay, Sync — just not for rename/renumber anymore.</li>
+  </ul>
+
+  <p style="font-weight: 600; margin-top: 16px; margin-bottom: 8px;">What this replaces:</p>
+  <ul style="padding-left: 20px; color: #6b7280;">
+    <li>RenamePanel (Manage sidebar) → inline rename on Recordings page</li>
+    <li>ChapterListPanel (Manage sidebar) → click chapter numbers directly</li>
+    <li>RenameLabelModal → inline name editing</li>
+    <li>"(Use Manage panel to rename)" hint → gone, you just do it here</li>
+  </ul>
+
+  <p style="font-weight: 600; margin-top: 16px; margin-bottom: 8px;">Server changes needed:</p>
+  <ul style="padding-left: 20px; color: #6b7280;">
+    <li><strong>POST /api/manage/split-chapter</strong> — new endpoint: takes chapter + split-at-sequence, moves files ≥ sequence to next chapter, renumbers</li>
+    <li><strong>Rename without re-transcribe</strong> — modify renameRecording() to rename transcript/shadow files in-place instead of delete+regenerate when only the filename (not audio) changed</li>
+    <li><strong>POST /api/manage/bulk-rename</strong> — add undo support: return enough info to reverse the operation</li>
+    <li><strong>Batch preview endpoint</strong> — dry-run mode that returns what would change without doing it (or compute client-side)</li>
+  </ul>
+</div>
+
+</div><!-- /main -->
+</body>
+</html>

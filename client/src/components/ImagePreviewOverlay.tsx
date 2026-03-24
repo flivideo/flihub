@@ -70,11 +70,11 @@ export function ImagePreviewOverlay({ image, content, position }: ImagePreviewOv
         width: `${PREVIEW_WIDTH}px`,
       }}
     >
-      <div className="bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
+      <div className="bg-surface rounded-lg shadow-2xl border border-warm overflow-hidden">
         {previewContent.type === 'image' ? (
           <>
             {/* Large image */}
-            <div className="aspect-video bg-gray-100">
+            <div className="aspect-video bg-surface-muted">
               <img
                 src={previewContent.url}
                 alt={previewContent.filename}
@@ -83,11 +83,11 @@ export function ImagePreviewOverlay({ image, content, position }: ImagePreviewOv
             </div>
 
             {/* Info panel */}
-            <div className="p-3 bg-gray-50 border-t border-gray-200">
-              <div className="font-mono text-sm text-gray-800 truncate">
+            <div className="p-3 bg-surface-muted border-t border-warm">
+              <div className="font-mono text-sm text-warm-primary truncate">
                 {previewContent.filename}
               </div>
-              <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+              <div className="flex items-center gap-4 mt-1 text-xs text-warm-muted">
                 <span>{formatFileSize(previewContent.size)}</span>
                 <span>{new Date(previewContent.timestamp).toLocaleString()}</span>
               </div>
@@ -97,7 +97,7 @@ export function ImagePreviewOverlay({ image, content, position }: ImagePreviewOv
           <>
             {/* Text content - ~20 visible lines, scrollable if longer */}
             <div className="p-4 min-h-48 max-h-[500px] overflow-y-auto">
-              <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans leading-relaxed">
+              <pre className="text-sm text-warm-primary whitespace-pre-wrap font-sans leading-relaxed">
                 {previewContent.content}
               </pre>
             </div>

@@ -136,7 +136,7 @@ export function EditableFileRow({
   if (isShadow) {
     rowClasses = 'bg-purple-50 border-purple-200';
   } else if (recording.isSafe) {
-    rowClasses = 'bg-gray-50 border-gray-200';
+    rowClasses = 'bg-surface-muted border-warm';
   } else if (recording.isParked) {
     rowClasses = 'bg-pink-50 border-pink-200';
   } else if (isSelected) {
@@ -158,7 +158,7 @@ export function EditableFileRow({
             type="checkbox"
             checked={isSelected}
             onChange={() => onToggleSelect(recording.filename)}
-            className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            className="w-3.5 h-3.5 rounded border-warm-strong text-blue-600 focus:ring-blue-500 cursor-pointer"
           />
         )}
         {isShadow && <span className="w-3.5" />}
@@ -204,14 +204,14 @@ export function EditableFileRow({
                 }`}
                 maxLength={2}
               />
-              <span className="text-xs text-gray-400 whitespace-nowrap">
+              <span className="text-xs text-warm-muted whitespace-nowrap">
                 Enter &#x2713; Esc &#x2717;
               </span>
             </span>
           ) : (
             <span
               onClick={() => startEditing('chapter')}
-              className={`text-gray-500 ${
+              className={`text-warm-muted ${
                 !isDisabled
                   ? 'cursor-pointer hover:bg-blue-100 hover:text-blue-700 px-0.5 rounded'
                   : ''
@@ -222,12 +222,12 @@ export function EditableFileRow({
             </span>
           )}
 
-          <span className="text-gray-300">-</span>
+          <span className="text-warm-faint">-</span>
 
           {/* Sequence segment (not editable) */}
-          <span className="text-gray-400">{recording.sequence}</span>
+          <span className="text-warm-muted">{recording.sequence}</span>
 
-          <span className="text-gray-300">-</span>
+          <span className="text-warm-faint">-</span>
 
           {/* Name segment */}
           {editingField === 'name' ? (
@@ -249,14 +249,14 @@ export function EditableFileRow({
                 }`}
                 maxLength={50}
               />
-              <span className="text-xs text-gray-400 whitespace-nowrap">
+              <span className="text-xs text-warm-muted whitespace-nowrap">
                 Enter &#x2713; Esc &#x2717;
               </span>
             </span>
           ) : (
             <span
               onClick={() => startEditing('name')}
-              className={`text-gray-700 ${
+              className={`text-warm-secondary ${
                 !isDisabled
                   ? 'cursor-pointer hover:bg-blue-100 hover:text-blue-700 px-0.5 rounded'
                   : ''
@@ -294,7 +294,7 @@ export function EditableFileRow({
           )}
 
           {/* Extension */}
-          <span className="text-gray-400 ml-0">{ext}</span>
+          <span className="text-warm-muted ml-0">{ext}</span>
         </div>
 
         {/* Pending change indicator */}
@@ -310,7 +310,7 @@ export function EditableFileRow({
         )}
       </div>
 
-      <div className="flex items-center gap-4 text-sm text-gray-400">
+      <div className="flex items-center gap-4 text-sm text-warm-muted">
         {/* Row actions on hover */}
         {!isDisabled && !recording.isSafe && !recording.isParked && (
           <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
@@ -346,7 +346,7 @@ export function EditableFileRow({
         {/* Action buttons */}
         {isShadow ? (
           <span
-            className="text-xs text-gray-300 px-2 py-0.5"
+            className="text-xs text-warm-faint px-2 py-0.5"
             title="Actions unavailable for shadow files"
           >
             -
@@ -369,13 +369,13 @@ export function EditableFileRow({
           <div className="flex gap-1">
             <button
               onClick={() => onSafe(recording.filename)}
-              className="text-xs text-gray-500 hover:text-green-600 px-2 py-0.5 hover:bg-green-100 rounded transition-colors"
+              className="text-xs text-warm-muted hover:text-green-600 px-2 py-0.5 hover:bg-green-100 rounded transition-colors"
             >
               &#8594; Safe
             </button>
             <button
               onClick={() => onPark(recording.filename)}
-              className="text-xs text-gray-500 hover:text-pink-600 px-2 py-0.5 hover:bg-pink-100 rounded transition-colors"
+              className="text-xs text-warm-muted hover:text-pink-600 px-2 py-0.5 hover:bg-pink-100 rounded transition-colors"
             >
               &#8594; Park
             </button>

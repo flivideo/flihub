@@ -44,13 +44,13 @@ export function TranscriptModal({ filename, onClose }: TranscriptModalProps) {
   // FR-94: Format toggle buttons
   const formatToggle =
     data?.formats && data.formats.txt && data.formats.srt ? (
-      <div className="flex gap-1 bg-gray-100 rounded p-0.5">
+      <div className="flex gap-1 bg-surface-muted rounded p-0.5">
         <button
           onClick={() => setSelectedFormat('txt')}
           className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
             data.activeFormat === 'txt'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-surface text-warm-primary shadow-sm'
+              : 'text-warm-muted hover:text-warm-secondary'
           }`}
         >
           TXT
@@ -59,8 +59,8 @@ export function TranscriptModal({ filename, onClose }: TranscriptModalProps) {
           onClick={() => setSelectedFormat('srt')}
           className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
             data.activeFormat === 'srt'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-surface text-warm-primary shadow-sm'
+              : 'text-warm-muted hover:text-warm-secondary'
           }`}
         >
           SRT

@@ -5,5 +5,5 @@ interface PageContainerProps {
 }
 
 export function PageContainer({ children }: PageContainerProps) {
-  return <div className="bg-white rounded-lg border border-gray-200 p-6">{children}</div>;
+  return <div className="bg-surface rounded-lg border border-warm p-6">{children}</div>;
 }
