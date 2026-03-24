@@ -1,14 +1,16 @@
-// B040: Relay workflow lanes — three-column card layout with file drawers and activity feed
+// Relay Kanban Board — horizontal four-lane workflow with divergence status
 import { useState, useMemo } from 'react';
 import {
   useRelayStatus,
   useRelayBrowse,
   useRelayFiles,
   useRelayActivity,
+  useRelayDivergence,
   useRelayPush,
   useRelayCollect,
   useRelayVersions,
   useRelayPromote,
+  useEnsureEditFolders,
 } from '../../hooks/useRelayApi';
 import { useEnvironment } from '../../hooks/useConfigApi';
 import { useConfig } from '../../hooks/useApi';
@@ -16,22 +18,24 @@ import type {
   RelaySubfolder,
   RelayFileInfo,
   RelayActivityEvent,
-  RelaySubfolderInfo,
+  RelayDivergenceInfo,
 } from '../../../../shared/types';
 
 // ─── Lane Configuration ───
 
+type LaneKey = RelaySubfolder | 'final';
+
 interface LaneConfig {
-  key: RelaySubfolder;
+  key: LaneKey;
+  subfolder?: RelaySubfolder; // undefined for 'final' (no relay subfolder)
   label: string;
-  dotColor: string;
-  dotBg: string;
 }
 
 const LANES: LaneConfig[] = [
-  { key: 'recordings', label: 'Recordings', dotColor: '#3b82f6', dotBg: 'bg-blue-500' },
-  { key: 'edit-1st', label: 'First Edit', dotColor: '#f59e0b', dotBg: 'bg-amber-500' },
-  { key: 'edit-2nd', label: 'Final', dotColor: '#10b981', dotBg: 'bg-emerald-500' },
+  { key: 'recordings', subfolder: 'recordings', label: 'Recordings' },
+  { key: 'edit-1st', subfolder: 'edit-1st', label: '1st Edit' },
+  { key: 'edit-2nd', subfolder: 'edit-2nd', label: '2nd Edit' },
+  { key: 'final', label: 'Final' },
 ];
 
 // ─── Helpers ───
@@ -61,12 +65,42 @@ function formatRelativeTime(isoDate: string): string {
     ', ' + date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
-function getDirectionLabel(lane: RelaySubfolder, isCreator: boolean): string {
-  if (lane === 'recordings') {
-    return isCreator ? 'YOU → EDITOR' : 'CREATOR → YOU';
+type SyncDirection = 'synced' | 'outgoing' | 'incoming' | 'both';
+
+function getDirectionBorderClass(direction: SyncDirection): string {
+  switch (direction) {
+    case 'synced': return 'border-green-500';
+    case 'outgoing': return 'border-blue-500';
+    case 'incoming': return 'border-amber-500';
+    case 'both': return 'border-red-500';
   }
-  // edit-1st and edit-2nd flow editor → creator
-  return isCreator ? 'EDITOR → YOU' : 'YOU → CREATOR';
+}
+
+function getDirectionDotClass(direction: SyncDirection): string {
+  switch (direction) {
+    case 'synced': return 'bg-green-500';
+    case 'outgoing': return 'bg-blue-500';
+    case 'incoming': return 'bg-amber-500';
+    case 'both': return 'bg-red-500';
+  }
+}
+
+function getDirectionStatusText(direction: SyncDirection, localOnly: number, relayOnly: number): string {
+  switch (direction) {
+    case 'synced': return '\u2713 Synced';
+    case 'outgoing': return `\u2191 ${localOnly} to push`;
+    case 'incoming': return `\u2193 ${relayOnly} incoming`;
+    case 'both': return `\u2195 ${localOnly} out / ${relayOnly} in`;
+  }
+}
+
+function getDirectionStatusColorClass(direction: SyncDirection): string {
+  switch (direction) {
+    case 'synced': return 'text-green-600';
+    case 'outgoing': return 'text-blue-600';
+    case 'incoming': return 'text-amber-500';
+    case 'both': return 'text-red-500';
+  }
 }
 
 function getActionLabel(lane: RelaySubfolder, isCreator: boolean): string {
@@ -77,7 +111,7 @@ function getActionLabel(lane: RelaySubfolder, isCreator: boolean): string {
     return isCreator ? 'Pull from Editor' : 'Send to Creator';
   }
   // edit-2nd
-  return isCreator ? 'Promote to Final' : 'Send to Creator';
+  return isCreator ? 'Pull from Editor' : 'Send to Creator';
 }
 
 function isPushAction(lane: RelaySubfolder, isCreator: boolean): boolean {
@@ -96,11 +130,13 @@ export function RelayTool() {
 
   const { data: status, isLoading: statusLoading } = useRelayStatus();
   const { data: browseData } = useRelayBrowse();
+  const { data: divergenceData } = useRelayDivergence();
   const { data: activityData } = useRelayActivity();
   const versions = useRelayVersions();
   const push = useRelayPush();
   const collect = useRelayCollect();
   const promote = useRelayPromote();
+  const ensureFolders = useEnsureEditFolders();
 
   const [openDrawer, setOpenDrawer] = useState<RelaySubfolder | null>(null);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
@@ -108,29 +144,19 @@ export function RelayTool() {
   const isConfigured = status?.configured && status?.enabled;
   const projectCode = config?.activeProject || '';
 
-  // Find current project in browse data
-  const currentProject = useMemo(() => {
-    if (!browseData?.projects || !projectCode) return null;
-    return browseData.projects.find(p => p.projectCode === projectCode) || null;
-  }, [browseData?.projects, projectCode]);
-
-  // Get subfolder stats for a lane
-  const getStats = (lane: RelaySubfolder): RelaySubfolderInfo => {
-    if (!currentProject) return { fileCount: 0, totalSize: 0 };
-    return currentProject.subfolders[lane];
-  };
+  // Build a map of divergence info by subfolder
+  const divergenceMap = useMemo(() => {
+    const map = new Map<RelaySubfolder, RelayDivergenceInfo>();
+    if (divergenceData?.subfolders) {
+      for (const info of divergenceData.subfolders) {
+        map.set(info.subfolder, info);
+      }
+    }
+    return map;
+  }, [divergenceData?.subfolders]);
 
   // Handle lane action button click
   const handleAction = (lane: RelaySubfolder) => {
-    if (lane === 'edit-2nd' && isCreator) {
-      // Promote: use selected version or first available
-      const version = selectedVersion || versions.data?.versions?.[0]?.filename;
-      if (version) {
-        promote.mutate(version);
-      }
-      return;
-    }
-
     if (isPushAction(lane, isCreator)) {
       push.mutate(lane);
     } else {
@@ -138,7 +164,14 @@ export function RelayTool() {
     }
   };
 
-  const isActionPending = push.isPending || collect.isPending || promote.isPending;
+  const handlePromote = () => {
+    const version = selectedVersion || versions.data?.versions?.[0]?.filename;
+    if (version) {
+      promote.mutate(version);
+    }
+  };
+
+  const isActionPending = push.isPending || collect.isPending || promote.isPending || ensureFolders.isPending;
 
   // ─── Loading / Not Configured States ───
 
@@ -181,39 +214,50 @@ export function RelayTool() {
         </span>
       </div>
 
-      {/* Three Lane Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        {LANES.map((lane) => {
-          const stats = getStats(lane.key);
-          const direction = getDirectionLabel(lane.key, isCreator);
-          const actionLabel = getActionLabel(lane.key, isCreator);
+      {/* Kanban Board — four lane cards with arrows between */}
+      <div className="flex items-start gap-2">
+        {LANES.map((lane, index) => (
+          <div key={lane.key} className="flex items-start gap-2 flex-1 min-w-0">
+            {/* Arrow between lanes */}
+            {index > 0 && (
+              <div className="flex items-center pt-10 shrink-0">
+                <span className="text-warm-muted text-lg">&rarr;</span>
+              </div>
+            )}
 
-          return (
-            <LaneCard
-              key={lane.key}
-              lane={lane}
-              stats={stats}
-              direction={direction}
-              actionLabel={actionLabel}
-              onAction={() => handleAction(lane.key)}
-              isPending={isActionPending}
-              isPush={isPushAction(lane.key, isCreator)}
-              isDrawerOpen={openDrawer === lane.key}
-              onToggleDrawer={() => setOpenDrawer(openDrawer === lane.key ? null : lane.key)}
-              isCreator={isCreator}
-              versions={lane.key === 'edit-2nd' ? versions.data?.versions : undefined}
-              selectedVersion={selectedVersion}
-              onSelectVersion={setSelectedVersion}
-            />
-          );
-        })}
+            {lane.subfolder ? (
+              <KanbanLane
+                lane={lane}
+                divergence={divergenceMap.get(lane.subfolder)}
+                actionLabel={getActionLabel(lane.subfolder, isCreator)}
+                onAction={() => handleAction(lane.subfolder!)}
+                isPending={isActionPending}
+                isPush={isPushAction(lane.subfolder, isCreator)}
+                isDrawerOpen={openDrawer === lane.subfolder}
+                onToggleDrawer={() =>
+                  setOpenDrawer(openDrawer === lane.subfolder ? null : lane.subfolder!)
+                }
+                onEnsureFolders={() => ensureFolders.mutate()}
+              />
+            ) : (
+              <FinalLane
+                versions={versions.data?.versions}
+                selectedVersion={selectedVersion}
+                onSelectVersion={setSelectedVersion}
+                onPromote={handlePromote}
+                isPending={isActionPending}
+                isCreator={isCreator}
+              />
+            )}
+          </div>
+        ))}
       </div>
 
       {/* File Drawer — full width below the cards */}
       {openDrawer && isConfigured && (
         <FileDrawer
           subfolder={openDrawer}
-          label={LANES.find(l => l.key === openDrawer)?.label || openDrawer}
+          label={LANES.find(l => l.subfolder === openDrawer)?.label || openDrawer}
           isCreator={isCreator}
           onClose={() => setOpenDrawer(null)}
         />
@@ -239,80 +283,157 @@ export function RelayTool() {
   );
 }
 
-// ─── Lane Card ───
+// ─── Kanban Lane ───
 
-interface LaneCardProps {
+interface KanbanLaneProps {
   lane: LaneConfig;
-  stats: RelaySubfolderInfo;
-  direction: string;
+  divergence?: RelayDivergenceInfo;
   actionLabel: string;
   onAction: () => void;
   isPending: boolean;
   isPush: boolean;
   isDrawerOpen: boolean;
   onToggleDrawer: () => void;
-  isCreator: boolean;
-  versions?: { filename: string; size: number; modified: string }[];
-  selectedVersion: string | null;
-  onSelectVersion: (v: string | null) => void;
+  onEnsureFolders: () => void;
 }
 
-function LaneCard({
+function KanbanLane({
   lane,
-  stats,
-  direction,
+  divergence,
   actionLabel,
   onAction,
   isPending,
   isPush,
   isDrawerOpen,
   onToggleDrawer,
-  isCreator,
+  onEnsureFolders,
+}: KanbanLaneProps) {
+  const folderExists = divergence?.folderExists ?? true;
+  const direction: SyncDirection = divergence?.direction ?? 'synced';
+  const localCount = divergence?.local.fileCount ?? 0;
+  const localSize = divergence?.local.totalSize ?? 0;
+  const localOnlyCount = divergence?.localOnly.length ?? 0;
+  const relayOnlyCount = divergence?.relayOnly.length ?? 0;
+
+  const borderClass = folderExists ? getDirectionBorderClass(direction) : 'border-gray-400';
+  const dotClass = folderExists ? getDirectionDotClass(direction) : 'bg-gray-400';
+  const statusText = folderExists
+    ? getDirectionStatusText(direction, localOnlyCount, relayOnlyCount)
+    : 'No folder';
+  const statusColorClass = folderExists
+    ? getDirectionStatusColorClass(direction)
+    : 'text-gray-500';
+
+  return (
+    <div className={`bg-surface border-2 ${borderClass} rounded-lg p-3 space-y-2.5 flex-1 min-w-0`}>
+      {/* Lane header */}
+      <div className="flex items-center gap-2">
+        <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotClass}`} />
+        <span className="text-sm font-semibold text-warm-primary truncate">{lane.label}</span>
+      </div>
+
+      {/* Stats */}
+      {folderExists ? (
+        <div>
+          <div className="text-2xl font-bold text-warm-primary">
+            {localCount}
+            <span className="text-sm font-normal text-warm-muted ml-1">
+              {localCount === 1 ? 'file' : 'files'}
+            </span>
+          </div>
+          <div className="text-xs text-warm-muted">{formatSize(localSize)}</div>
+        </div>
+      ) : (
+        <div className="py-1">
+          <div className="flex items-center gap-1 text-sm text-gray-500">
+            <span>&#9888;</span>
+            <span>Folder missing</span>
+          </div>
+        </div>
+      )}
+
+      {/* Sync status */}
+      <div className={`text-xs font-medium ${statusColorClass}`}>
+        {statusText}
+      </div>
+
+      {/* Action button or create folders button */}
+      {folderExists ? (
+        <button
+          onClick={onAction}
+          disabled={isPending || (direction === 'synced' && !isPush)}
+          className="w-full px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? 'Working...' : actionLabel}
+        </button>
+      ) : (
+        <button
+          onClick={onEnsureFolders}
+          disabled={isPending}
+          className="w-full px-3 py-1.5 text-sm font-medium bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPending ? 'Creating...' : 'Create Folders'}
+        </button>
+      )}
+
+      {/* Show files toggle */}
+      {folderExists && localCount > 0 && (
+        <button
+          onClick={onToggleDrawer}
+          className="w-full text-xs text-warm-muted hover:text-blue-600 transition-colors text-center"
+        >
+          {isDrawerOpen ? 'Hide files' : `Show ${localCount} files \u25BC`}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Final Lane (versions / promote) ───
+
+interface FinalLaneProps {
+  versions?: { filename: string; size: number; modified: string }[];
+  selectedVersion: string | null;
+  onSelectVersion: (v: string | null) => void;
+  onPromote: () => void;
+  isPending: boolean;
+  isCreator: boolean;
+}
+
+function FinalLane({
   versions,
   selectedVersion,
   onSelectVersion,
-}: LaneCardProps) {
-  const hasFiles = stats.fileCount > 0;
-  const isFinalLane = lane.key === 'edit-2nd';
-
-  // For the final lane with promote action, show version selector
-  const showVersionSelector = isFinalLane && isCreator && versions && versions.length > 0;
+  onPromote,
+  isPending,
+  isCreator,
+}: FinalLaneProps) {
+  const versionCount = versions?.length ?? 0;
+  const totalSize = versions?.reduce((sum, v) => sum + v.size, 0) ?? 0;
 
   return (
-    <div className="bg-surface border border-warm rounded-lg p-4 space-y-3">
+    <div className="bg-surface border-2 border-green-500 rounded-lg p-3 space-y-2.5 flex-1 min-w-0">
       {/* Lane header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span
-            className="w-2.5 h-2.5 rounded-full shrink-0"
-            style={{ backgroundColor: lane.dotColor }}
-          />
-          <span className="text-sm font-semibold text-warm-primary">{lane.label}</span>
-        </div>
-        <span className="text-[10px] font-medium text-warm-muted tracking-wide uppercase">
-          {direction}
-        </span>
+      <div className="flex items-center gap-2">
+        <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-green-500" />
+        <span className="text-sm font-semibold text-warm-primary truncate">Final</span>
       </div>
 
       {/* Stats */}
       <div>
-        {hasFiles ? (
-          <>
-            <div className="text-2xl font-bold text-warm-primary">
-              {stats.fileCount}
-              <span className="text-sm font-normal text-warm-muted ml-1">
-                {stats.fileCount === 1 ? 'file' : 'files'}
-              </span>
-            </div>
-            <div className="text-xs text-warm-muted">{formatSize(stats.totalSize)}</div>
-          </>
-        ) : (
-          <div className="text-sm text-warm-muted py-2">No files yet</div>
+        <div className="text-2xl font-bold text-warm-primary">
+          {versionCount}
+          <span className="text-sm font-normal text-warm-muted ml-1">
+            {versionCount === 1 ? 'version' : 'versions'}
+          </span>
+        </div>
+        {versionCount > 0 && (
+          <div className="text-xs text-warm-muted">{formatSize(totalSize)}</div>
         )}
       </div>
 
-      {/* Version selector for Final lane (creator only) */}
-      {showVersionSelector && (
+      {/* Version selector */}
+      {isCreator && versions && versions.length > 0 && (
         <div className="border border-warm rounded max-h-24 overflow-y-auto divide-y divide-warm">
           {versions.map((v) => (
             <button
@@ -331,23 +452,19 @@ function LaneCard({
         </div>
       )}
 
-      {/* Action button */}
-      <button
-        onClick={onAction}
-        disabled={isPending || (!hasFiles && !isPush && !(isFinalLane && isCreator))}
-        className="w-full px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isPending ? 'Working...' : actionLabel}
-      </button>
-
-      {/* Show files toggle */}
-      {hasFiles && (
+      {/* Promote button (creator only) */}
+      {isCreator && (
         <button
-          onClick={onToggleDrawer}
-          className="w-full text-xs text-warm-muted hover:text-blue-600 transition-colors text-center"
+          onClick={onPromote}
+          disabled={isPending || versionCount === 0}
+          className="w-full px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isDrawerOpen ? 'Hide files' : `Show ${stats.fileCount} files ▼`}
+          {isPending ? 'Working...' : 'Promote to Final'}
         </button>
+      )}
+
+      {!isCreator && versionCount === 0 && (
+        <div className="text-sm text-warm-muted py-1">No final versions yet</div>
       )}
     </div>
   );
@@ -396,7 +513,7 @@ function FileDrawer({ subfolder, label, isCreator, onClose }: FileDrawerProps) {
           className="text-warm-muted hover:text-warm-secondary text-sm px-1"
           title="Close"
         >
-          ✕
+          &#10005;
         </button>
       </div>
 
@@ -471,27 +588,27 @@ function ActivityFeed({ events }: { events?: RelayActivityEvent[] }) {
 
   const getArrow = (action: RelayActivityEvent['action']): string => {
     switch (action) {
-      case 'push': return '↑';      // ↑
-      case 'collect': return '↓';    // ↓
-      case 'promote': return '↻';    // ↻
-      case 'file-detected': return '↓'; // ↓
-      default: return '•';
+      case 'push': return '\u2191';
+      case 'collect': return '\u2193';
+      case 'promote': return '\u21BB';
+      case 'file-detected': return '\u2193';
+      default: return '\u2022';
     }
   };
 
   return (
-    <div>
+    <div className="bg-surface-muted border border-warm rounded-lg px-4 py-3">
       <h3 className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-2">
         Recent Activity
       </h3>
-      <div className="space-y-1.5">
-        {events.slice(0, 10).map((event) => (
-          <div key={event.id} className="flex items-start gap-2 text-sm">
-            <span className="text-warm-muted w-4 text-center shrink-0 font-mono">
+      <div className="space-y-1">
+        {events.slice(0, 8).map((event) => (
+          <div key={event.id} className="flex items-start gap-2 text-xs">
+            <span className="text-warm-muted w-3 text-center shrink-0 font-mono">
               {getArrow(event.action)}
             </span>
-            <span className="text-warm-secondary flex-1">{event.description}</span>
-            <span className="text-xs text-warm-muted shrink-0">
+            <span className="text-warm-secondary flex-1 truncate">{event.description}</span>
+            <span className="text-warm-muted shrink-0">
               {formatRelativeTime(event.timestamp)}
             </span>
           </div>
@@ -517,7 +634,7 @@ function SetupGuide() {
             <li>Install on both machines: <code className="font-mono bg-surface-muted px-1 rounded">brew install syncthing</code></li>
             <li>Start the service: <code className="font-mono bg-surface-muted px-1 rounded">brew services start syncthing</code></li>
             <li>Open the SyncThing web UI: <code className="font-mono bg-surface-muted px-1 rounded">http://localhost:8384</code></li>
-            <li>Both machines need SyncThing running — repeat on the editor's machine</li>
+            <li>Both machines need SyncThing running — repeat on the editor&#39;s machine</li>
           </ol>
         </div>
 
@@ -526,10 +643,10 @@ function SetupGuide() {
           <h4 className="font-semibold text-warm-secondary mb-2">2. Create &amp; Share the Relay Folder</h4>
           <ol className="list-decimal list-inside space-y-1.5 text-xs text-warm-secondary">
             <li>Create relay folder: <code className="font-mono bg-surface-muted px-1 rounded">mkdir -p ~/relay/flihub-appydave</code></li>
-            <li>In SyncThing UI → <strong>Add Folder</strong> → set path to <code className="font-mono bg-surface-muted px-1 rounded">~/relay/flihub-appydave</code></li>
-            <li>Add a <strong>Remote Device</strong> — copy the Device ID from the editor's SyncThing UI (<strong>Actions → Show ID</strong>)</li>
-            <li>Share the folder with the editor's device</li>
-            <li>On the editor's machine: accept the incoming folder share in their SyncThing UI</li>
+            <li>In SyncThing UI &rarr; <strong>Add Folder</strong> &rarr; set path to <code className="font-mono bg-surface-muted px-1 rounded">~/relay/flihub-appydave</code></li>
+            <li>Add a <strong>Remote Device</strong> — copy the Device ID from the editor&#39;s SyncThing UI (<strong>Actions &rarr; Show ID</strong>)</li>
+            <li>Share the folder with the editor&#39;s device</li>
+            <li>On the editor&#39;s machine: accept the incoming folder share in their SyncThing UI</li>
           </ol>
         </div>
 
@@ -547,7 +664,7 @@ function SetupGuide() {
         {/* Editor config */}
         <div>
           <h4 className="font-semibold text-warm-secondary mb-2">4. Configure FliHub — Editor (Jan)</h4>
-          <div className="text-xs text-warm-muted mb-1">Add to <code className="font-mono bg-surface-muted px-1 rounded">server/config.json</code> on the editor's machine:</div>
+          <div className="text-xs text-warm-muted mb-1">Add to <code className="font-mono bg-surface-muted px-1 rounded">server/config.json</code> on the editor&#39;s machine:</div>
           <pre className="font-mono text-xs bg-surface-muted border border-warm rounded p-2 overflow-x-auto">
 {`"relayDirectory": "/home/jan/relay/flihub-appydave",
 "relayEnabled": true,
@@ -561,7 +678,7 @@ function SetupGuide() {
           <ol className="list-decimal list-inside space-y-1.5 text-xs text-warm-secondary">
             <li>Restart FliHub server on both machines</li>
             <li>Check this page shows <span className="text-green-600 font-medium">● Relay connected</span></li>
-            <li>Check SyncThing UI at <code className="font-mono bg-surface-muted px-1 rounded">http://localhost:8384</code> shows the folder as "Up to Date"</li>
+            <li>Check SyncThing UI at <code className="font-mono bg-surface-muted px-1 rounded">http://localhost:8384</code> shows the folder as &quot;Up to Date&quot;</li>
           </ol>
         </div>
       </div>

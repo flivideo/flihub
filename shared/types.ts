@@ -1071,6 +1071,24 @@ export interface RelayActivityResponse {
   error?: string;
 }
 
+// Relay divergence — per-subfolder local vs relay comparison
+export interface RelayDivergenceInfo {
+  subfolder: RelaySubfolder;
+  local: { fileCount: number; totalSize: number; files: string[] };
+  relay: { fileCount: number; totalSize: number; files: string[] };
+  localOnly: string[];
+  relayOnly: string[];
+  direction: 'synced' | 'outgoing' | 'incoming' | 'both';
+  folderExists: boolean;
+}
+
+export interface RelayDivergenceResponse {
+  success: boolean;
+  projectCode?: string;
+  subfolders?: RelayDivergenceInfo[];
+  error?: string;
+}
+
 // B047: Recording Editor — split chapter types
 export interface SplitChapterRequest {
   chapter: string;          // source chapter, e.g. "04"
