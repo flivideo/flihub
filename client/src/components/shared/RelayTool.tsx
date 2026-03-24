@@ -104,20 +104,24 @@ function getDirectionStatusColorClass(direction: SyncDirection): string {
   }
 }
 
-function getActionLabel(lane: RelaySubfolder, isCreator: boolean): string {
-  if (lane === 'recordings') {
-    return isCreator ? 'Send to Editor' : 'Pull into Project';
+// Direction-aware labels: use actual divergence direction, not assumed role flow
+function getActionLabel(direction: SyncDirection, isCreator: boolean): string {
+  if (direction === 'outgoing') {
+    return isCreator ? 'Send to Editor' : 'Send to Creator';
   }
-  if (lane === 'edit-1st') {
-    return isCreator ? 'Pull from Editor' : 'Send to Creator';
+  if (direction === 'incoming') {
+    return isCreator ? 'Pull from Editor' : 'Pull into Project';
   }
-  // edit-2nd
-  return isCreator ? 'Pull from Editor' : 'Send to Creator';
+  if (direction === 'both') {
+    return 'Sync Needed';
+  }
+  // synced — show default based on role expectation
+  return isCreator ? 'Push to Relay' : 'Push to Relay';
 }
 
-function isPushAction(lane: RelaySubfolder, isCreator: boolean): boolean {
+// Default push direction hint for when synced (role-based suggestion)
+function defaultIsPush(lane: RelaySubfolder, isCreator: boolean): boolean {
   if (lane === 'recordings') return isCreator;
-  // edit-1st, edit-2nd: editor pushes, creator collects
   return !isCreator;
 }
 
@@ -157,12 +161,19 @@ export function RelayTool() {
     return map;
   }, [divergenceData?.subfolders]);
 
-  // Handle lane action button click
-  const handleAction = (lane: RelaySubfolder) => {
-    if (isPushAction(lane, isCreator)) {
+  // Handle lane action button click — direction-aware
+  const handleAction = (lane: RelaySubfolder, direction: SyncDirection) => {
+    if (direction === 'outgoing') {
       push.mutate(lane);
-    } else {
+    } else if (direction === 'incoming') {
       collect.mutate(lane);
+    } else {
+      // synced or both — fall back to role-based default
+      if (defaultIsPush(lane, isCreator)) {
+        push.mutate(lane);
+      } else {
+        collect.mutate(lane);
+      }
     }
   };
 
@@ -228,13 +239,12 @@ export function RelayTool() {
             )}
 
             {lane.subfolder ? (
-              <KanbanLane
+              <KanbanLaneWrapper
                 lane={lane}
                 divergence={divergenceMap.get(lane.subfolder)}
-                actionLabel={getActionLabel(lane.subfolder, isCreator)}
-                onAction={() => handleAction(lane.subfolder!)}
+                isCreator={isCreator}
+                onAction={handleAction}
                 isPending={isActionPending}
-                isPush={isPushAction(lane.subfolder, isCreator)}
                 isDrawerOpen={openDrawer === lane.subfolder}
                 onToggleDrawer={() =>
                   setOpenDrawer(openDrawer === lane.subfolder ? null : lane.subfolder!)
@@ -261,6 +271,7 @@ export function RelayTool() {
           subfolder={openDrawer}
           label={LANES.find(l => l.subfolder === openDrawer)?.label || openDrawer}
           isCreator={isCreator}
+          direction={divergenceMap.get(openDrawer)?.direction ?? 'synced'}
           onClose={() => setOpenDrawer(null)}
         />
       )}
@@ -293,6 +304,38 @@ export function RelayTool() {
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Kanban Lane Wrapper — derives direction-aware props ───
+
+function KanbanLaneWrapper({
+  lane, divergence, isCreator, onAction, isPending, isDrawerOpen, onToggleDrawer, onEnsureFolders,
+}: {
+  lane: LaneConfig;
+  divergence?: RelayDivergenceInfo;
+  isCreator: boolean;
+  onAction: (lane: RelaySubfolder, direction: SyncDirection) => void;
+  isPending: boolean;
+  isDrawerOpen: boolean;
+  onToggleDrawer: () => void;
+  onEnsureFolders: () => void;
+}) {
+  const direction: SyncDirection = divergence?.direction ?? 'synced';
+  const isPush = direction === 'outgoing' || (direction === 'synced' && defaultIsPush(lane.subfolder!, isCreator));
+
+  return (
+    <KanbanLane
+      lane={lane}
+      divergence={divergence}
+      actionLabel={getActionLabel(direction, isCreator)}
+      onAction={() => onAction(lane.subfolder!, direction)}
+      isPending={isPending}
+      isPush={isPush}
+      isDrawerOpen={isDrawerOpen}
+      onToggleDrawer={onToggleDrawer}
+      onEnsureFolders={onEnsureFolders}
+    />
   );
 }
 
@@ -532,12 +575,15 @@ interface FileDrawerProps {
   subfolder: RelaySubfolder;
   label: string;
   isCreator: boolean;
+  direction: SyncDirection;
   onClose: () => void;
 }
 
-function FileDrawer({ subfolder, label, isCreator, onClose }: FileDrawerProps) {
-  // For push lanes, read from project; for collect lanes, read from relay
-  const source = isPushAction(subfolder, isCreator) ? 'project' : 'relay';
+function FileDrawer({ subfolder, label, isCreator, direction, onClose }: FileDrawerProps) {
+  // Show files from the side that has content based on actual divergence direction
+  const source = direction === 'outgoing' ? 'project'
+    : direction === 'incoming' ? 'relay'
+    : defaultIsPush(subfolder, isCreator) ? 'project' : 'relay';
   const { data, isLoading } = useRelayFiles(subfolder, source);
 
   const files = data?.files || [];
