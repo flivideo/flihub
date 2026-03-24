@@ -16,7 +16,7 @@ import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket';
 import { useDelayedHover } from '../hooks/useDelayedHover';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { useOpenFolder } from '../hooks/useOpenFolder';
-import { useRelayBrowse } from '../hooks/useRelayApi';
+import { useEnhancedRelayBrowse } from '../hooks/useRelayApi';
 import { LoadingSpinner, ErrorMessage, PageContainer } from './shared';
 import { ProjectStatsPopup } from './ProjectStatsPopup';
 import { formatFileSize } from '../utils/formatting';
@@ -26,6 +26,9 @@ import type {
   ProjectStage,
   ProjectStageOverride,
   RelayProjectInfo,
+  RelayProjectSyncInfo,
+  RelaySyncStatus,
+  RelaySubfolder,
 } from '../../../shared/types';
 
 // FR-80: Tab type for navigation callback
@@ -262,24 +265,121 @@ function ChaptersIndicator({
   );
 }
 
-// B040: Relay indicator dots for project list — shows relay file presence per subfolder
+// B050: Kanban mini-badge config for relay sync status
+const SYNC_BADGE_CONFIG: Record<RelaySyncStatus, { bg: string; text: string; icon: (count: number) => string } | null> = {
+  synced: { bg: 'bg-green-100', text: 'text-green-700', icon: () => '\u2713' },
+  ahead: { bg: 'bg-blue-100', text: 'text-blue-700', icon: (n) => `\u2191${n}` },
+  behind: { bg: 'bg-amber-100', text: 'text-amber-700', icon: (n) => `\u2193${n}` },
+  diverged: { bg: 'bg-amber-100', text: 'text-amber-700', icon: () => '\u2195' },
+  'local-only': { bg: 'bg-green-100', text: 'text-green-700', icon: () => '\u2713' },
+  'relay-only': { bg: 'bg-red-100', text: 'text-red-600', icon: () => '!' },
+};
+
+const SUBFOLDER_LABELS: Record<RelaySubfolder, string> = {
+  recordings: 'REC',
+  'edit-1st': '1st',
+  'edit-2nd': '2nd',
+};
+
+// Build tooltip description for a subfolder
+function subfolderTooltipLine(
+  label: string,
+  localCount: number,
+  relayCount: number,
+  status: RelaySyncStatus
+): string {
+  if (localCount === 0 && relayCount === 0) return `${label}: \u2014 (no files)`;
+  const localPart = `${localCount} local`;
+  const relayPart = `${relayCount} relay`;
+  let statusText: string;
+  switch (status) {
+    case 'synced': statusText = 'synced'; break;
+    case 'ahead': statusText = `${localCount - relayCount} outgoing`; break;
+    case 'behind': statusText = `${relayCount - localCount} incoming`; break;
+    case 'diverged': statusText = 'diverged'; break;
+    case 'local-only': statusText = 'local only'; break;
+    case 'relay-only': statusText = 'relay only'; break;
+    default: statusText = String(status);
+  }
+  return `${label}: ${localPart}, ${relayPart} \u2014 ${statusText}`;
+}
+
+// B050: Relay kanban mini-badges — shows sync status per subfolder
 function RelayIndicator({ relayProject }: { relayProject?: RelayProjectInfo }) {
   const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
 
   if (!relayProject) return null;
 
-  const rec = relayProject.subfolders.recordings;
-  const edit1 = relayProject.subfolders['edit-1st'];
-  const edit2 = relayProject.subfolders['edit-2nd'];
+  // Check if we have enhanced sync info (RelayProjectSyncInfo)
+  const hasSyncInfo = 'syncStatus' in relayProject && 'localSubfolders' in relayProject;
 
-  const hasAny = rec.fileCount > 0 || edit1.fileCount > 0 || edit2.fileCount > 0;
-  if (!hasAny) return null;
+  // Fallback: old dot behavior when no detailed info
+  if (!hasSyncInfo) {
+    const rec = relayProject.subfolders.recordings;
+    const edit1 = relayProject.subfolders['edit-1st'];
+    const edit2 = relayProject.subfolders['edit-2nd'];
 
-  // Build tooltip parts
-  const parts: string[] = [];
-  if (rec.fileCount > 0) parts.push(`${rec.fileCount} recording${rec.fileCount !== 1 ? 's' : ''}`);
-  if (edit1.fileCount > 0) parts.push(`${edit1.fileCount} first edit`);
-  if (edit2.fileCount > 0) parts.push(`${edit2.fileCount} final`);
+    const hasAny = rec.fileCount > 0 || edit1.fileCount > 0 || edit2.fileCount > 0;
+    if (!hasAny) return null;
+
+    const parts: string[] = [];
+    if (rec.fileCount > 0) parts.push(`${rec.fileCount} recording${rec.fileCount !== 1 ? 's' : ''}`);
+    if (edit1.fileCount > 0) parts.push(`${edit1.fileCount} first edit`);
+    if (edit2.fileCount > 0) parts.push(`${edit2.fileCount} final`);
+
+    return (
+      <span
+        className="inline-flex items-center gap-0.5 cursor-help relative"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {rec.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+        {edit1.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+        {edit2.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-emerald-500" />}
+        {isHovered && (
+          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+            <div className="font-medium">Relay</div>
+            {parts.map((p) => (
+              <div key={p} className="text-gray-300">{p}</div>
+            ))}
+          </div>
+        )}
+      </span>
+    );
+  }
+
+  // Enhanced: kanban mini-badges with sync status
+  const syncProject = relayProject as RelayProjectSyncInfo;
+  const subfolders: RelaySubfolder[] = ['recordings', 'edit-1st', 'edit-2nd'];
+
+  // Build badges — only show subfolders that have files on either side
+  const badges: { label: string; status: RelaySyncStatus; localCount: number; relayCount: number }[] = [];
+  for (const sf of subfolders) {
+    const relayInfo = syncProject.subfolders[sf];
+    const localInfo = syncProject.localSubfolders[sf];
+    const status = syncProject.syncStatus[sf];
+    const hasFiles = relayInfo.fileCount > 0 || localInfo.fileCount > 0;
+    if (hasFiles) {
+      badges.push({
+        label: SUBFOLDER_LABELS[sf],
+        status,
+        localCount: localInfo.fileCount,
+        relayCount: relayInfo.fileCount,
+      });
+    }
+  }
+
+  if (badges.length === 0) return null;
+
+  // Tooltip lines
+  const tooltipLines = subfolders.map((sf) => {
+    const relayInfo = syncProject.subfolders[sf];
+    const localInfo = syncProject.localSubfolders[sf];
+    const status = syncProject.syncStatus[sf];
+    const label = sf === 'recordings' ? 'Recordings' : sf === 'edit-1st' ? '1st Edit' : '2nd Edit';
+    return subfolderTooltipLine(label, localInfo.fileCount, relayInfo.fileCount, status);
+  });
 
   return (
     <span
@@ -287,15 +387,25 @@ function RelayIndicator({ relayProject }: { relayProject?: RelayProjectInfo }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {rec.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-blue-500" />}
-      {edit1.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500" />}
-      {edit2.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-emerald-500" />}
+      {badges.map((badge) => {
+        const config = SYNC_BADGE_CONFIG[badge.status];
+        if (!config) return null;
+        const diff = Math.abs(badge.localCount - badge.relayCount);
+        return (
+          <span
+            key={badge.label}
+            className={`text-xs px-1.5 py-0.5 rounded font-medium ${config.bg} ${config.text}`}
+          >
+            {badge.label} {config.icon(diff)}
+          </span>
+        );
+      })}
       {isHovered && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1.5 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-          <div className="font-medium">Relay</div>
-          {parts.map((p) => (
-            <div key={p} className="text-gray-300">{p}</div>
+          <div className="font-medium mb-1">Relay Sync Status</div>
+          {tooltipLines.map((line) => (
+            <div key={line} className="text-gray-300">{line}</div>
           ))}
         </div>
       )}
@@ -503,9 +613,10 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   const updatePriority = useUpdateProjectPriority();
   const updateStage = useUpdateProjectStage();
   const { mutate: openFolder } = useOpenFolder();
-  const { data: relayBrowseData } = useRelayBrowse();
+  const { data: relayBrowseData } = useEnhancedRelayBrowse();
 
   // Build a lookup map for relay projects by project code
+  // Uses RelayProjectInfo as base type — may be RelayProjectSyncInfo when detailed=true
   const relayByCode = useMemo(() => {
     const map = new Map<string, RelayProjectInfo>();
     if (relayBrowseData?.projects) {

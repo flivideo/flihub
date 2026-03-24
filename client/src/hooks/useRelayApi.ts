@@ -6,6 +6,7 @@ import { QUERY_KEYS } from '../constants/queryKeys';
 import type {
   RelaySubfolder,
   RelayBrowseResponse,
+  RelayEnhancedBrowseResponse,
   RelayStatusResponse,
   RelayPreviewResponse,
   RelayPushResponse,
@@ -25,6 +26,21 @@ export function useRelayBrowse() {
         throw new Error(`Relay API error: ${res.status} ${res.statusText}`);
       }
       const data: RelayBrowseResponse = await res.json();
+      return data;
+    },
+    refetchInterval: 30000,
+  });
+}
+
+export function useEnhancedRelayBrowse() {
+  return useQuery({
+    queryKey: QUERY_KEYS.relayEnhancedBrowse,
+    queryFn: async (): Promise<RelayEnhancedBrowseResponse> => {
+      const res = await fetch(`${API_URL}/api/relay/browse?detailed=true`);
+      if (!res.ok) {
+        throw new Error(`Relay API error: ${res.status} ${res.statusText}`);
+      }
+      const data: RelayEnhancedBrowseResponse = await res.json();
       return data;
     },
     refetchInterval: 30000,

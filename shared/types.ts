@@ -104,6 +104,33 @@ export interface RelayFilesResponse {
   error?: string;
 }
 
+// B050: Relay sync status types for kanban mini-badges
+export type RelaySyncStatus = 'synced' | 'ahead' | 'behind' | 'diverged' | 'local-only' | 'relay-only';
+
+export interface RelayLocalSubfolderInfo {
+  fileCount: number;
+  totalSize: number;
+}
+
+export interface RelayProjectSyncInfo extends RelayProjectInfo {
+  localSubfolders: {
+    recordings: RelayLocalSubfolderInfo;
+    'edit-1st': RelayLocalSubfolderInfo;
+    'edit-2nd': RelayLocalSubfolderInfo;
+  };
+  syncStatus: {
+    recordings: RelaySyncStatus;
+    'edit-1st': RelaySyncStatus;
+    'edit-2nd': RelaySyncStatus;
+  };
+}
+
+export interface RelayEnhancedBrowseResponse {
+  success: boolean;
+  projects: RelayProjectSyncInfo[];
+  relayDirectory: string;
+}
+
 export interface FileInfo {
   path: string;
   filename: string;
