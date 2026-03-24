@@ -106,6 +106,8 @@ function createApp() {
 describe('POST /api/manage/undo-rename', () => {
   beforeEach(() => {
     mockRenameRecording.mockReset();
+    mockPathExists.mockReset();
+    mockPathExists.mockResolvedValue(true as never);
   });
 
   it('returns error when there is nothing to undo', async () => {
@@ -300,6 +302,112 @@ describe('POST /api/manage/undo-rename', () => {
 
     expect(res.body.undoAvailable).toBe(true);
   });
+
+  // -------------------------------------------------------------------------
+  // B053: Stale filename handling
+  // -------------------------------------------------------------------------
+
+  describe('stale filename handling', () => {
+    it('skips files that no longer exist at expected path and reports them', async () => {
+      const { app } = createApp();
+
+      // Bulk rename 2 files
+      mockRenameRecording.mockResolvedValue({ success: true });
+      await request(app).post('/api/manage/bulk-rename').send({
+        files: ['01-1-intro.mov', '01-2-setup.mov'],
+        label: 'renamed',
+        sequenceMode: 'preserve',
+      });
+
+      // Simulate: one file was modified (inline rename) since the batch
+      mockRenameRecording.mockReset();
+      mockRenameRecording.mockResolvedValue({ success: true });
+      mockPathExists.mockImplementation((filePath: string) => {
+        if (filePath.includes('01-1-renamed.mov')) return Promise.resolve(false) as never;
+        return Promise.resolve(true) as never;
+      });
+
+      const res = await request(app).post('/api/manage/undo-rename').send();
+
+      const body: UndoRenameResponse = res.body;
+      expect(body.success).toBe(false);
+      expect(body.filesReverted).toBe(1);
+      expect(body.error).toContain('Skipped');
+      expect(body.error).toContain('file was modified since batch operation');
+    });
+
+    it('still reverts other files in the batch that are valid', async () => {
+      const { app } = createApp();
+
+      // Bulk rename 3 files
+      mockRenameRecording.mockResolvedValue({ success: true });
+      await request(app).post('/api/manage/bulk-rename').send({
+        files: ['01-1-a.mov', '01-2-b.mov', '01-3-c.mov'],
+        label: 'new',
+        sequenceMode: 'preserve',
+      });
+
+      // Simulate: middle file was modified
+      mockRenameRecording.mockReset();
+      mockRenameRecording.mockResolvedValue({ success: true });
+      mockPathExists.mockImplementation((filePath: string) => {
+        if (filePath.includes('01-2-new.mov')) return Promise.resolve(false) as never;
+        return Promise.resolve(true) as never;
+      });
+
+      const res = await request(app).post('/api/manage/undo-rename').send();
+
+      // 2 files should have been reverted, 1 skipped
+      expect(res.body.filesReverted).toBe(2);
+      expect(mockRenameRecording).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns success: false when some files were skipped', async () => {
+      const { app } = createApp();
+
+      mockRenameRecording.mockResolvedValue({ success: true });
+      await request(app).post('/api/manage/bulk-rename').send({
+        files: ['01-1-intro.mov', '01-2-setup.mov'],
+        label: 'renamed',
+        sequenceMode: 'preserve',
+      });
+
+      // Simulate: one file was modified
+      mockRenameRecording.mockReset();
+      mockRenameRecording.mockResolvedValue({ success: true });
+      mockPathExists.mockImplementation((filePath: string) => {
+        if (filePath.includes('01-2-renamed.mov')) return Promise.resolve(false) as never;
+        return Promise.resolve(true) as never;
+      });
+
+      const res = await request(app).post('/api/manage/undo-rename').send();
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toContain('Skipped');
+    });
+
+    it('returns success: true when all files were valid and reverted', async () => {
+      const { app } = createApp();
+
+      mockRenameRecording.mockResolvedValue({ success: true });
+      await request(app).post('/api/manage/bulk-rename').send({
+        files: ['01-1-intro.mov', '01-2-setup.mov'],
+        label: 'renamed',
+        sequenceMode: 'preserve',
+      });
+
+      // All files still exist at expected paths
+      mockRenameRecording.mockReset();
+      mockRenameRecording.mockResolvedValue({ success: true });
+      mockPathExists.mockResolvedValue(true as never);
+
+      const res = await request(app).post('/api/manage/undo-rename').send();
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.filesReverted).toBe(2);
+      expect(res.body.error).toBeUndefined();
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -308,6 +416,7 @@ describe('POST /api/manage/undo-rename', () => {
 
 import fs from 'fs-extra';
 const mockReaddir = vi.mocked(fs.readdir);
+const mockPathExists = vi.mocked(fs.pathExists);
 
 describe('POST /api/manage/split-chapter', () => {
   beforeEach(() => {
@@ -577,5 +686,146 @@ describe('POST /api/manage/split-chapter', () => {
     const body: SplitChapterResponse = res.body;
     expect(body.success).toBe(false);
     expect(body.error).toContain('positive integer');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: POST /api/manage/split-chapter — tag preservation (B050)
+// ---------------------------------------------------------------------------
+
+describe('POST /api/manage/split-chapter — tag preservation', () => {
+  beforeEach(() => {
+    mockRenameRecording.mockReset();
+    mockReaddir.mockReset();
+  });
+
+  it('preserves tags on cascaded files (e.g. CTA tag survives ch04→ch05)', async () => {
+    const { app } = createApp();
+
+    mockReaddir.mockResolvedValue([
+      '04-1-intro.mov',
+      '04-2-demo.mov',
+      '05-1-existing-CTA.mov',
+    ] as unknown as never);
+    mockRenameRecording.mockResolvedValue({ success: true });
+
+    const res = await request(app).post('/api/manage/split-chapter').send({
+      chapter: '04',
+      splitAtSequence: 2,
+    });
+
+    const body: SplitChapterResponse = res.body;
+    expect(body.success).toBe(true);
+
+    // Cascade: 05-1-existing-CTA.mov → 06-1-existing-CTA.mov (tag preserved)
+    const calls = mockRenameRecording.mock.calls;
+    expect(calls[0][0]).toBe('05-1-existing-CTA.mov');
+    expect(calls[0][1]).toBe('06-1-existing-CTA.mov');
+  });
+
+  it('preserves tags on moved files (split files keep their tags)', async () => {
+    const { app } = createApp();
+
+    mockReaddir.mockResolvedValue([
+      '04-1-intro.mov',
+      '04-3-demo-CTA.mov',
+    ] as unknown as never);
+    mockRenameRecording.mockResolvedValue({ success: true });
+
+    const res = await request(app).post('/api/manage/split-chapter').send({
+      chapter: '04',
+      splitAtSequence: 3,
+    });
+
+    const body: SplitChapterResponse = res.body;
+    expect(body.success).toBe(true);
+
+    // Move: 04-3-demo-CTA.mov → 05-1-demo-CTA.mov (tag preserved)
+    const calls = mockRenameRecording.mock.calls;
+    expect(calls[0][0]).toBe('04-3-demo-CTA.mov');
+    expect(calls[0][1]).toBe('05-1-demo-CTA.mov');
+  });
+
+  it('preserves multiple tags on files with more than one tag', async () => {
+    const { app } = createApp();
+
+    mockReaddir.mockResolvedValue([
+      '04-1-intro.mov',
+      '04-5-demo-setup-SKOOL-V2.mov',
+    ] as unknown as never);
+    mockRenameRecording.mockResolvedValue({ success: true });
+
+    const res = await request(app).post('/api/manage/split-chapter').send({
+      chapter: '04',
+      splitAtSequence: 5,
+    });
+
+    const body: SplitChapterResponse = res.body;
+    expect(body.success).toBe(true);
+
+    // Move: 04-5-demo-setup-SKOOL-V2.mov → 05-1-demo-setup-SKOOL-V2.mov (both tags preserved)
+    const calls = mockRenameRecording.mock.calls;
+    expect(calls[0][0]).toBe('04-5-demo-setup-SKOOL-V2.mov');
+    expect(calls[0][1]).toBe('05-1-demo-setup-SKOOL-V2.mov');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: POST /api/manage/split-chapter — undo mapping (B051)
+// ---------------------------------------------------------------------------
+
+describe('POST /api/manage/split-chapter — undo mapping', () => {
+  beforeEach(() => {
+    mockRenameRecording.mockReset();
+    mockReaddir.mockReset();
+  });
+
+  it('stores lastBatchMapping so undo-rename works after split', async () => {
+    const { app } = createApp();
+
+    mockReaddir.mockResolvedValue([
+      '04-1-intro.mov',
+      '04-3-demo.mov',
+    ] as unknown as never);
+    mockRenameRecording.mockResolvedValue({ success: true });
+
+    // Perform split
+    await request(app).post('/api/manage/split-chapter').send({
+      chapter: '04',
+      splitAtSequence: 3,
+    });
+
+    // Undo should find the stored mapping
+    const undoRes = await request(app).post('/api/manage/undo-rename').send();
+    const undoBody: UndoRenameResponse = undoRes.body;
+    expect(undoBody.success).toBe(true);
+    expect(undoBody.filesReverted).toBe(1);
+  });
+
+  it('undo after split reverts all cascade and move renames', async () => {
+    const { app } = createApp();
+
+    mockReaddir.mockResolvedValue([
+      '04-1-intro.mov',
+      '04-2-demo.mov',
+      '05-1-existing.mov',
+    ] as unknown as never);
+    mockRenameRecording.mockResolvedValue({ success: true });
+
+    // Perform split (cascade 05→06, then move 04-2→05-1)
+    await request(app).post('/api/manage/split-chapter').send({
+      chapter: '04',
+      splitAtSequence: 2,
+    });
+
+    // Reset to track undo calls separately
+    mockRenameRecording.mockClear();
+    mockRenameRecording.mockResolvedValue({ success: true });
+
+    // Undo should revert both the cascade and the move
+    const undoRes = await request(app).post('/api/manage/undo-rename').send();
+    const undoBody: UndoRenameResponse = undoRes.body;
+    expect(undoBody.success).toBe(true);
+    expect(undoBody.filesReverted).toBe(2);
   });
 });

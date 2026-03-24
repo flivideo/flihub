@@ -1308,11 +1308,21 @@ export function createManageRoutes(
     const queue = getQueue ? getQueue() : [];
     const errors: string[] = [];
     let revertedCount = 0;
+    let skippedCount = 0;
 
     // Reverse in reverse order to avoid conflicts
     const reversedMapping = [...lastBatchMapping].reverse();
 
     for (const { oldFilename, newFilename } of reversedMapping) {
+      // Validate file still has expected name before attempting undo
+      const filePath = path.join(paths.recordings, newFilename);
+      const exists = await fs.pathExists(filePath);
+      if (!exists) {
+        skippedCount++;
+        errors.push(`Skipped ${newFilename}: file was modified since batch operation`);
+        continue;
+      }
+
       // Undo: rename newFilename back to oldFilename
       const result = await renameRecording(
         newFilename,    // current name (was the "new" name)
@@ -1403,7 +1413,7 @@ export function createManageRoutes(
       // Parse all filenames and group by chapter
       const chapterMap = new Map<
         number,
-        Array<{ filename: string; chapter: string; sequence: number; name: string }>
+        Array<{ filename: string; chapter: string; sequence: number; name: string; tags: string[] }>
       >();
 
       for (const filename of recordings) {
@@ -1413,11 +1423,16 @@ export function createManageRoutes(
         if (!chapterMap.has(chNum)) {
           chapterMap.set(chNum, []);
         }
+        // Extract tags from the raw filename (parseRecordingFilename strips them)
+        const base = filename.replace(/\.(mov|mp4)$/i, '');
+        const nameParts = base.split('-').slice(2).join('-');
+        const { tags } = extractTagsFromName(nameParts);
         chapterMap.get(chNum)!.push({
           filename,
           chapter: parsed.chapter,
           sequence: parseInt(parsed.sequence, 10),
           name: parsed.name,
+          tags,
         });
       }
 
@@ -1478,7 +1493,7 @@ export function createManageRoutes(
 
         for (const file of files) {
           const newFilename =
-            buildRecordingFilename(newChapterStr, String(file.sequence), file.name);
+            buildRecordingFilename(newChapterStr, String(file.sequence), file.name, file.tags);
 
           console.log(`[B047]   Cascade: ${file.filename} → ${newFilename}`);
 
@@ -1507,7 +1522,7 @@ export function createManageRoutes(
         const file = moveFiles[i];
         const newSeq = String(i + 1);
         const newFilename =
-          buildRecordingFilename(targetChapterStr, newSeq, file.name);
+          buildRecordingFilename(targetChapterStr, newSeq, file.name, file.tags);
 
         console.log(`[B047]   Move: ${file.filename} → ${newFilename}`);
 
@@ -1524,6 +1539,9 @@ export function createManageRoutes(
           filesMoved++;
         }
       }
+
+      // Store undo mapping so POST /api/manage/undo-rename can use it
+      lastBatchMapping = undoMapping;
 
       // Emit Socket.io event
       io.emit('recordings:changed');

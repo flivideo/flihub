@@ -28,7 +28,7 @@ import { SplitMarker } from './shared/SplitMarker';
 import { UndoToast } from './shared/UndoToast';
 import { useBulkRename, useSplitChapter, useBatchUndoRename } from '../hooks/useEditingApi';
 import type { RecordingFile, TranscriptionStatusResponse } from '../../../shared/types';
-import { extractTagsFromName, buildRecordingFilename, formatChapter } from '../../../shared/naming';
+import { extractTagsFromName, buildRecordingFilename, formatChapter, parseRecordingFilename } from '../../../shared/naming';
 import {
   formatFileSize,
   formatDuration,
@@ -1005,12 +1005,15 @@ export function RecordingsView() {
       const firstChange = pendingChanges.values().next().value;
       if (!firstChange) return;
 
-      // Parse the new filename to extract the common transformation
-      const newFilenameMatch = firstChange.newFilename.match(/^(\d{2})-\d+-(.+?)(?:-([A-Z0-9]+(?:-[A-Z0-9]+)*))?\.(\w+)$/);
-      const newChapter = newFilenameMatch ? newFilenameMatch[1] : firstFile.chapter;
-      const newLabel = newFilenameMatch ? newFilenameMatch[2] : firstFile.name;
-      const newTagsStr = newFilenameMatch ? (newFilenameMatch[3] || '') : '';
-      const newTags = newTagsStr ? newTagsStr.split('-') : [];
+      // Parse the new filename using shared naming utilities (not regex)
+      const parsed = parseRecordingFilename(firstChange.newFilename);
+      const base = firstChange.newFilename.replace(/\.(mov|mp4)$/i, '');
+      const nameAndTags = base.split('-').slice(2).join('-');
+      const { name: cleanName, tags: parsedTags } = extractTagsFromName(nameAndTags);
+
+      const newChapter = parsed ? parsed.chapter : firstFile.chapter;
+      const newLabel = parsed ? cleanName : firstFile.name;
+      const newTags = parsedTags;
 
       bulkRenameMutation.mutate(
         {

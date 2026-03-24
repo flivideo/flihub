@@ -2,11 +2,27 @@
 
 **Last updated**: 2026-03-24
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
-**Total open**: 7 | Pending: 7 | In Progress: 0 | Deferred: 6 | Rejected: 4
+**Total open**: 13 | Pending: 13 | In Progress: 0 | Deferred: 6 | Rejected: 4
 
 ---
 
 ## Pending
+
+## B047 Critical Fixes (from 3-lens audit 2026-03-24)
+
+- [x] B050 — Split-chapter drops tags from filenames during cascade — silent data loss | Completed: b047-stabilisation
+- [x] B051 — Split-chapter does not store undo mapping — undo after split silently fails | Completed: b047-stabilisation
+- [x] B052 — handleApplyChanges uses hand-rolled regex instead of parseRecordingFilename() | Completed: b047-stabilisation
+- [x] B053 — Undo race condition — stale filenames if inline rename happens between batch and undo | Completed: b047-stabilisation
+
+## B047 Major Improvements (from 3-lens audit 2026-03-24)
+
+- [ ] B054 — Extract useRecordingEditor hook from RecordingsView (1,399 → ~700 lines) | Priority: medium | Audit: architecture M1
+- [ ] B055 — Consolidate groupByChapter — 3 implementations across RecordingsView, ManagePanel, WatchPage | Priority: medium | Audit: architecture M2
+- [ ] B056 — Remove formatting function props from EditableFileRow (import directly) | Priority: low | Audit: architecture M3
+- [ ] B057 — Fix onBlur/onClick race in EditableFileRow inline editing | Priority: medium | Audit: code-quality M5
+- [ ] B058 — Client component tests — EditableFileRow, BatchToolbar, PreviewPanel | Priority: medium | Audit: test-quality C3-C5
+- [ ] B059 — Bulk-rename endpoint dedicated tests (zero coverage) | Priority: medium | Audit: test-quality M4
 
 ## Must Fix Before Major Feature (from 3-lens audit 2026-03-19)
 
