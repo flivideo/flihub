@@ -79,6 +79,9 @@ export function loadConfig(configPath: string): Config {
         if (saved.projectPriorities) toSave.projectPriorities = saved.projectPriorities;
         if (saved.projectStages) toSave.projectStages = saved.projectStages;
         if (saved.shadowResolution) toSave.shadowResolution = saved.shadowResolution;
+        if (saved.relayDirectory) toSave.relayDirectory = saved.relayDirectory;
+        if (saved.relayEnabled !== undefined) toSave.relayEnabled = saved.relayEnabled;
+        if (saved.machineRole) toSave.machineRole = saved.machineRole;
         fs.writeJsonSync(configPath, toSave, { spaces: 2 });
         console.log('Config migration saved');
       }

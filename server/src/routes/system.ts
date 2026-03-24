@@ -37,43 +37,16 @@
  * - POST /api/system/restart-watchers - Reinitialize file watchers
  */
 import { Router, Request, Response } from 'express';
-import { exec, execFile, execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs-extra';
 import os from 'os';
 
 const execAsync = promisify(exec);
-const execFileAsync = promisify(execFile);
 import { expandPath } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
-import type { Config, EnvironmentResponse } from '../../../shared/types.js';
-
-/**
- * Valid folder keys that can be opened.
- * This whitelist prevents arbitrary path execution.
- */
-type FolderKey =
-  | 'ecamm'
-  | 'downloads'
-  | 'recordings'
-  | 'safe'
-  | 'trash'
-  | 'images'
-  | 'thumbs'
-  | 'transcripts'
-  | 'project'
-  | 'final'
-  | 's3Staging'
-  | 's3Prep'
-  | 's3Post'
-  | 'inbox'
-  | 'shadows'
-  | 'chapters'
-  | 'edit-1st'
-  | 'edit-2nd'
-  | 'edit-final'
-  | 'relay';
+import type { Config, EnvironmentResponse, FolderKey } from '../../../shared/types.js';
 
 /**
  * FR-89 Part 3: Cross-platform file explorer opener

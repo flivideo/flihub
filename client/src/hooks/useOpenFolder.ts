@@ -2,25 +2,9 @@
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { API_URL } from '../config';
+import type { FolderKey } from '../../../shared/types';
 
-export type FolderKey =
-  | 'ecamm'
-  | 'downloads'
-  | 'recordings'
-  | 'safe'
-  | 'trash'
-  | 'images'
-  | 'thumbs'
-  | 'transcripts'
-  | 'project'
-  | 'final'
-  | 's3Staging'
-  | 's3Prep'
-  | 's3Post'
-  | 'inbox'
-  | 'shadows'
-  | 'chapters'
-  | 'relay';
+export type { FolderKey };
 
 export interface OpenFolderOptions {
   folder: FolderKey;

@@ -977,6 +977,29 @@ export interface EditManifest {
   'edit-final': EditFolderManifest;
 }
 
+// Canonical folder key type — used by both client and server for open-folder
+export type FolderKey =
+  | 'ecamm'
+  | 'downloads'
+  | 'recordings'
+  | 'safe'
+  | 'trash'
+  | 'images'
+  | 'thumbs'
+  | 'transcripts'
+  | 'project'
+  | 'final'
+  | 's3Staging'
+  | 's3Prep'
+  | 's3Post'
+  | 'inbox'
+  | 'shadows'
+  | 'chapters'
+  | 'relay'
+  | 'edit-1st'
+  | 'edit-2nd'
+  | 'edit-final';
+
 // Edit folder key type
 export type EditFolderKey = 'edit-1st' | 'edit-2nd' | 'edit-final';
 

@@ -217,39 +217,8 @@ function PathMismatchWarning({
   );
 }
 
-// Collapsible section wrapper for config groups
-function CollapsibleSection({
-  title,
-  defaultOpen = true,
-  badge,
-  children,
-}: {
-  title: string;
-  defaultOpen?: boolean;
-  badge?: string;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className="border border-warm rounded-lg overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-2.5 bg-warm-header text-sm font-medium text-warm-secondary hover:bg-surface-hover transition-colors"
-      >
-        <span className="flex items-center gap-2">
-          {title}
-          {badge && (
-            <span className="text-xs bg-surface-muted text-warm-muted px-1.5 py-0.5 rounded-full">
-              {badge}
-            </span>
-          )}
-        </span>
-        <span className="text-warm-muted text-xs">{open ? '▲' : '▼'}</span>
-      </button>
-      {open && <div className="px-4 py-3 space-y-3">{children}</div>}
-    </div>
-  );
-}
+// Config tab type
+type ConfigTab = 'directories' | 'names' | 'collaboration' | 'advanced';
 
 // FR-89 Part 2: Path existence indicator component
 function PathExistsIndicator({
@@ -311,6 +280,9 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   // FR-96: Environment detection
   const { data: envData } = useEnvironment();
   const [envCollapsed, setEnvCollapsed] = useState(false);
+
+  // Tab navigation
+  const [activeTab, setActiveTab] = useState<ConfigTab>('names');
 
   const [watchDirectory, setWatchDirectory] = useState('');
   // FR-89 Part 5: Split into root + active project
@@ -630,11 +602,43 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     ? detectPathMismatch(relayDirectory, envData.pathFormat)
     : { mismatch: false, message: '', suggestedPath: null };
 
+  const tabs: { key: ConfigTab; label: string; badge?: string }[] = [
+    { key: 'directories', label: 'Directories' },
+    { key: 'names', label: 'Recording Names', badge: `${commonNames.length}` },
+    { key: 'collaboration', label: 'Collaboration' },
+    { key: 'advanced', label: 'Advanced' },
+  ];
+
   return (
     <PageContainer>
+      {/* Tab bar */}
+      <div className="flex border-b border-warm mb-4">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              activeTab === tab.key
+                ? 'border-warm-secondary text-warm-secondary'
+                : 'border-transparent text-warm-muted hover:text-warm-secondary hover:border-warm'
+            }`}
+          >
+            <span className="flex items-center gap-1.5">
+              {tab.label}
+              {tab.badge && (
+                <span className="text-xs bg-surface-muted text-warm-muted px-1.5 py-0.5 rounded-full">
+                  {tab.badge}
+                </span>
+              )}
+            </span>
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-4">
-        {/* Directories Section */}
-        <CollapsibleSection title="Directories" defaultOpen={false}>
+        {/* Directories Tab */}
+        {activeTab === 'directories' && (<>
+
           {/* FR-96: Environment info box */}
           {envData && (
             <EnvironmentInfoBox
@@ -768,10 +772,11 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
           )}
         </div>
 
-        </CollapsibleSection>
+        </>)}
 
-        {/* B038/B039: Relay Collaboration Settings */}
-        <CollapsibleSection title="Relay Collaboration" defaultOpen={false}>
+        {/* Collaboration Tab */}
+        {activeTab === 'collaboration' && (<>
+
 
           <div className="mb-3">
             <label className="block text-sm text-warm-secondary mb-1">Relay Directory</label>
@@ -836,10 +841,11 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
               </select>
             </label>
           </div>
-        </CollapsibleSection>
+        </>)}
 
-        {/* Recording Names & Dictionary */}
-        <CollapsibleSection title="Recording Names" badge={`${commonNames.length} names`} defaultOpen={true}>
+        {/* Recording Names Tab */}
+        {activeTab === 'names' && (<>
+
           <div>
             <label className="block text-sm text-warm-secondary mb-1">Global Dictionary Words</label>
           <textarea
@@ -908,7 +914,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
 
               return (
                 <div
-                  key={idx}
+                  key={cn.name}
                   className="flex items-center gap-2 py-0.5 px-2 bg-surface-muted rounded border border-warm"
                 >
                   {/* Reorder buttons */}
@@ -1044,10 +1050,11 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
           </p>
         </div>
 
-        </CollapsibleSection>
+        </>)}
 
-        {/* Chapter & Shadow Settings */}
-        <CollapsibleSection title="Chapter & Shadow Settings" defaultOpen={false}>
+        {/* Advanced Tab */}
+        {activeTab === 'advanced' && (<>
+
           <h3 className="text-sm font-medium text-warm-secondary mb-3">Chapter Recording Defaults</h3>
 
           {/* Include Title Slides */}
@@ -1281,7 +1288,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             </button>
           </div>
         </div>
-        </CollapsibleSection>
+        </>)}
       </div>
 
       {/* Sticky save bar — only visible when there are unsaved changes */}
