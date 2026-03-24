@@ -361,7 +361,11 @@ export function SyncTool() {
                       </div>
                       {files.map((f) => (
                         <div key={f.path} className="flex items-center justify-between px-3 py-1.5 text-xs font-mono border-b border-warm last:border-b-0">
-                          <span className="text-warm-secondary truncate mr-2">{f.path}</span>
+                          <span
+                        className="text-warm-secondary truncate mr-2 cursor-pointer hover:text-blue-600 transition-colors"
+                        title={f.path}
+                        onClick={() => { navigator.clipboard.writeText(f.path); }}
+                      >{f.path}</span>
                           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0 ${
                             f.status === 'new' ? 'text-green-700 bg-green-50' :
                             f.status === 'deleted' ? 'text-red-700 bg-red-50' :
@@ -511,7 +515,11 @@ function ChannelCard({
                   </div>
                   {files.map((f) => (
                     <div key={f.path} className="flex items-center justify-between px-3 py-1.5 text-xs font-mono border-b border-warm last:border-b-0">
-                      <span className="text-warm-secondary truncate mr-2">{f.path}</span>
+                      <span
+                        className="text-warm-secondary truncate mr-2 cursor-pointer hover:text-blue-600 transition-colors"
+                        title={f.path}
+                        onClick={() => { navigator.clipboard.writeText(f.path); }}
+                      >{f.path}</span>
                       <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0 ${
                         f.status === 'new' ? 'text-green-700 bg-green-50' :
                         f.status === 'deleted' ? 'text-red-700 bg-red-50' :

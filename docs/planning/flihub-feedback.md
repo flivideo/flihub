@@ -16,6 +16,13 @@ Relay Kanban Fixes campaign (B061) resolved 6 UX blockers from visual QA on Jan'
 
 ## Open Items
 
+### F013 — Changed file list is a dead end — can't see full name, copy, or open folder
+**Type**: ux
+**Priority**: high
+**Where**: Sync tool — Video Project changed files list
+**What I saw**: A deleted transcript shows as `17-cowork-second-brain-productivity-plugin/...` with a red D badge. The filename is truncated and there is no way to: (1) see the full filename (no hover tooltip), (2) copy the filename or path to clipboard, (3) open the containing folder in Finder. I'm stuck — I can see something changed but can't investigate what it is.
+**What I expected**: At minimum a hover tooltip showing the full path. Ideally: click to copy full path, and a folder-open icon to jump to the directory in Finder. The changed file list should be actionable, not just informational.
+
 ### F011 — Projects page shows no relay badges for most projects
 **Type**: ux
 **Priority**: low
