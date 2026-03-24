@@ -1,9 +1,9 @@
 /**
- * B044: Persistent sync status indicators in the App header.
+ * B044+B050: Persistent sync status indicators in the App header.
  *
  * Two pills — "Project" (video project git) and "Code" (app code git) —
- * that show the sync state with colour-coded dots and optional count badges.
- * Clicking either pill navigates to the Sync tool in ManagePanel.
+ * that show the sync state with colour-coded dots, count badges, and
+ * descriptive summary text. Clicking either pill navigates to the Sync tool.
  */
 
 import { useSyncStatus } from '../../hooks/useSyncApi';
@@ -42,18 +42,56 @@ function getBadgeContent(status: SyncChannelStatus): string | null {
   }
 }
 
+function getSummaryText(status: SyncChannelStatus): string | null {
+  switch (status.state) {
+    case 'dirty':    return status.dirtyCount === 1 ? 'file changed' : 'files changed';
+    case 'behind':   return status.behindCount === 1 ? 'commit behind' : 'commits behind';
+    case 'ahead':    return status.aheadCount === 1 ? 'ahead' : 'ahead';
+    case 'diverged': return 'diverged';
+    case 'conflict': return 'conflicts';
+    default:         return null;
+  }
+}
+
+/** Group dirty files by type and build a short summary */
+function buildFileSummary(dirtyFiles: string[]): string {
+  const groups: Record<string, number> = {};
+  for (const line of dirtyFiles) {
+    const path = line.substring(3).split(' -> ').pop() || line.substring(3);
+    const ext = (path.split('.').pop() || '').toLowerCase();
+    let group: string;
+    if (['mov', 'mp4'].includes(ext)) group = 'recordings';
+    else if (['txt', 'srt'].includes(ext)) group = 'transcripts';
+    else if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext)) group = 'images';
+    else if (['tsx', 'jsx'].includes(ext)) group = 'components';
+    else if (['ts', 'js'].includes(ext)) group = 'source';
+    else if (ext === 'css') group = 'styles';
+    else group = 'other';
+    groups[group] = (groups[group] || 0) + 1;
+  }
+  return Object.entries(groups)
+    .map(([type, count]) => `${count} ${type}`)
+    .join(', ');
+}
+
 function getTooltip(label: string, status: SyncChannelStatus | undefined): string {
   if (!status) return `${label}: not configured`;
+  let base: string;
   switch (status.state) {
-    case 'clean':    return `${label}: up to date`;
-    case 'dirty':    return `${label}: ${status.dirtyCount} uncommitted file${status.dirtyCount !== 1 ? 's' : ''}`;
-    case 'behind':   return `${label}: ${status.behindCount} commit${status.behindCount !== 1 ? 's' : ''} behind`;
-    case 'ahead':    return `${label}: ${status.aheadCount} commit${status.aheadCount !== 1 ? 's' : ''} ahead`;
-    case 'diverged': return `${label}: diverged — ${status.dirtyCount} local change${status.dirtyCount !== 1 ? 's' : ''}`;
-    case 'conflict': return `${label}: merge conflicts`;
-    case 'unknown':  return `${label}: checking...`;
-    default:         return label;
+    case 'clean':    base = `${label}: up to date`; break;
+    case 'dirty':    base = `${label}: ${status.dirtyCount} uncommitted file${status.dirtyCount !== 1 ? 's' : ''}`; break;
+    case 'behind':   base = `${label}: ${status.behindCount} commit${status.behindCount !== 1 ? 's' : ''} behind`; break;
+    case 'ahead':    base = `${label}: ${status.aheadCount} commit${status.aheadCount !== 1 ? 's' : ''} ahead`; break;
+    case 'diverged': base = `${label}: diverged — ${status.dirtyCount} local change${status.dirtyCount !== 1 ? 's' : ''}`; break;
+    case 'conflict': base = `${label}: merge conflicts`; break;
+    case 'unknown':  base = `${label}: checking...`; break;
+    default:         base = label;
   }
+  // Add file type breakdown if dirty
+  if (status.dirtyFiles && status.dirtyFiles.length > 0) {
+    base += `\n${buildFileSummary(status.dirtyFiles)}`;
+  }
+  return base;
 }
 
 interface PillProps {
@@ -67,6 +105,7 @@ function Pill({ icon, label, status, onClick }: PillProps) {
   const state = status?.state ?? 'unknown';
   const style = stateStyles[state];
   const badge = status ? getBadgeContent(status) : null;
+  const summary = status ? getSummaryText(status) : null;
   const tooltip = getTooltip(label, status);
 
   return (
@@ -81,6 +120,9 @@ function Pill({ icon, label, status, onClick }: PillProps) {
         <span className={`text-[10px] font-semibold text-white rounded-full px-1 leading-4 ${style.badgeBg}`}>
           {badge}
         </span>
+      )}
+      {summary && (
+        <span className="text-[10px] opacity-70">{summary}</span>
       )}
     </button>
   );

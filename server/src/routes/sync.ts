@@ -146,19 +146,26 @@ export function createSyncRoutes(getConfig: () => Config) {
   });
 
   /**
-   * POST /api/sync/push — commit and push video project changes
+   * POST /api/sync/push — commit and push changes for a channel
    *
+   * Accepts { channel: 'app-code' | 'video-project' } (defaults to 'video-project').
    * Stages all changes, builds a descriptive commit message, commits and pushes.
-   * Only operates on the video-project channel.
    */
-  router.post('/push', async (_req, res) => {
+  router.post('/push', async (req, res) => {
     try {
-      const config = getConfig();
-      if (!config.projectsRootDirectory) {
-        res.json({ success: false, error: 'No projects root directory configured' } as SyncPushResponse);
-        return;
+      const { channel = 'video-project' } = (req.body ?? {}) as { channel?: string };
+
+      let repoDir: string;
+      if (channel === 'app-code') {
+        repoDir = process.cwd();
+      } else {
+        const config = getConfig();
+        if (!config.projectsRootDirectory) {
+          res.json({ success: false, error: 'No projects root directory configured' } as SyncPushResponse);
+          return;
+        }
+        repoDir = expandPath(config.projectsRootDirectory);
       }
-      const repoDir = expandPath(config.projectsRootDirectory);
 
       // Stage all changes
       await execFileAsync('git', ['add', '-A'], { cwd: repoDir, timeout: 30000 });

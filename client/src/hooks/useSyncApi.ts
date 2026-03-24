@@ -29,10 +29,11 @@ export function useSyncStatus() {
 export function useSyncPush() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (): Promise<SyncPushResponse> => {
+    mutationFn: async (channel: 'app-code' | 'video-project' = 'video-project'): Promise<SyncPushResponse> => {
       const res = await fetch(`${API_URL}/api/sync/push`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel }),
       });
       if (!res.ok) {
         throw new Error(`Sync API error: ${res.status} ${res.statusText}`);

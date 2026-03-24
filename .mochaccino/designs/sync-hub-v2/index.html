@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mochaccino — sync-hub-v2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --page: #e8e0d4;
+    --surface-muted: #eee8de;
+    --surface-hover: #ede5d8;
+    --surface: #f5f1eb;
+    --warm-header: #f0ebe3;
+    --border-warm: #d4cdc4;
+    --border-warm-strong: #b8a99a;
+    --text-primary: #2a2018;
+    --text-secondary: #4a3e30;
+    --text-muted: #7a6e5e;
+    --text-faint: #9a8a78;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+
+  /* Mochaccino banner */
+  .mochaccino-banner {
+    background: var(--surface-muted);
+    border-bottom: 1px solid var(--border-warm);
+    padding: 4px 16px;
+    font-size: 11px;
+    color: var(--text-faint);
+    text-align: center;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px 32px;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--warm-header);
+    border: 1px solid var(--border-warm);
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .header-project {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .role-badge {
+    font-size: 11px;
+    color: var(--text-faint);
+    background: var(--surface);
+    border: 1px solid var(--border-warm);
+    padding: 3px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+
+  /* ─── Header Pills (redesigned) ─── */
+  .header-pills {
+    display: flex;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-warm);
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .pill:hover {
+    background: var(--surface-hover);
+  }
+
+  .pill .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .pill .dot.red { background: #dc2626; }
+  .pill .dot.green { background: #16a34a; }
+  .pill .dot.orange { background: #ea580c; }
+
+  .pill .label {
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .pill .count {
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    background: #dc2626;
+    border-radius: 10px;
+    padding: 0 5px;
+    line-height: 16px;
+  }
+
+  .pill .summary {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: 2px;
+  }
+
+  .pill-tooltip {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 6px;
+    background: #1a1510;
+    color: #f0ebe3;
+    font-size: 11px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    line-height: 1.5;
+  }
+
+  .pill:hover .pill-tooltip {
+    display: block;
+  }
+
+  /* ─── Notification Banner ─── */
+  .banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  .banner.amber {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    color: #92400e;
+  }
+
+  .banner .btn-banner {
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .banner .btn-banner.amber {
+    background: #d97706;
+    color: white;
+  }
+
+  .banner .btn-banner.amber:hover {
+    background: #b45309;
+  }
+
+  /* ─── Channel Cards ─── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .channel-card {
+    background: var(--surface);
+    border: 1px solid var(--border-warm);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-warm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title-area {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .card-path {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: 'SF Mono', 'Menlo', monospace;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid;
+  }
+
+  .status-pill.dirty {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+  }
+
+  .status-pill.clean {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+  }
+
+  .status-pill .sdot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+
+  .status-pill.dirty .sdot { background: #dc2626; }
+  .status-pill.clean .sdot { background: #16a34a; }
+
+  /* ─── Info Grid ─── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .info-box {
+    background: var(--surface-muted);
+    border: 1px solid var(--border-warm);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+
+  .info-box .info-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .info-box .info-value {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    color: var(--text-primary);
+    margin-top: 2px;
+  }
+
+  .info-box .info-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* ─── File List (NEW) ─── */
+  .file-section {
+    padding: 0 16px 12px;
+  }
+
+  .file-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px 0;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .file-toggle:hover {
+    color: var(--text-secondary);
+  }
+
+  .file-toggle .arrow {
+    font-size: 10px;
+    transition: transform 0.15s;
+  }
+
+  .file-toggle .arrow.open {
+    transform: rotate(90deg);
+  }
+
+  .file-list {
+    border: 1px solid var(--border-warm);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 4px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .file-group-header {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 12px 4px;
+    background: var(--surface-muted);
+    border-bottom: 1px solid var(--border-warm);
+    position: sticky;
+    top: 0;
+  }
+
+  .file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    border-bottom: 1px solid var(--border-warm);
+    color: var(--text-secondary);
+  }
+
+  .file-item:last-child {
+    border-bottom: none;
+  }
+
+  .file-item .file-status {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  .file-status.new {
+    color: #15803d;
+    background: #f0fdf4;
+  }
+
+  .file-status.modified {
+    color: #b45309;
+    background: #fef3c7;
+  }
+
+  .file-status.deleted {
+    color: #b91c1c;
+    background: #fef2f2;
+  }
+
+  /* ─── Actions ─── */
+  .card-actions {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-warm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn {
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn.primary {
+    background: #2563eb;
+    color: white;
+  }
+
+  .btn.primary:hover {
+    background: #1d4ed8;
+  }
+
+  .btn.secondary {
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-warm);
+  }
+
+  .btn.secondary:hover {
+    background: var(--surface-hover);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .sync-note {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-left: 8px;
+  }
+
+  /* ─── Push Confirmation Modal ─── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(42, 32, 24, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-warm);
+    border-radius: 12px;
+    width: 480px;
+    box-shadow: 0 8px 32px rgba(42, 32, 24, 0.2);
+  }
+
+  .modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-warm);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .modal-body {
+    padding: 16px 20px;
+  }
+
+  .modal-body p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+  }
+
+  .modal-commit-preview {
+    background: var(--surface-muted);
+    border: 1px solid var(--border-warm);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .modal-file-summary {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-warm);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .btn.danger {
+    background: #dc2626;
+    color: white;
+  }
+
+  .btn.danger:hover {
+    background: #b91c1c;
+  }
+
+  /* ─── Section divider ─── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="mochaccino-banner">Mochaccino — sync-hub-v2 — 2026-03-24</div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-title">
+        Sync
+        <span class="header-project">— c32-bmad-v6-epic1-foundation</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="role-badge">Creator</span>
+    </div>
+  </div>
+
+  <!-- Redesigned Header Pills — more descriptive -->
+  <div class="header-pills">
+    <div class="pill" style="background: #fef2f2;">
+      <span class="dot red"></span>
+      <span class="label">⌘ Code</span>
+      <span class="count">11</span>
+      <span class="summary">files changed</span>
+      <div class="pill-tooltip">
+        <strong>App Code — flihub</strong><br>
+        11 uncommitted files<br>
+        5 components · 3 styles · 2 types · 1 config
+      </div>
+    </div>
+    <div class="pill" style="background: #fef2f2;">
+      <span class="dot red"></span>
+      <span class="label">🎬 Project</span>
+      <span class="count">24</span>
+      <span class="summary">new files</span>
+      <div class="pill-tooltip">
+        <strong>c32-bmad-v6-epic1-foundation</strong><br>
+        24 new files since last push<br>
+        12 recordings · 8 transcripts · 4 assets
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Banner -->
+  <div class="banner amber">
+    <div>
+      <strong>24 new files</strong> in video project since last push.
+      12 recordings · 8 transcripts · 4 assets.
+    </div>
+    <button class="btn-banner amber">Push Project</button>
+  </div>
+
+  <!-- Channel Cards -->
+  <div class="cards-grid">
+
+    <!-- App Code Card -->
+    <div class="channel-card">
+      <div class="card-header">
+        <div class="card-title-area">
+          <div class="card-title">
+            <span>💻</span> App Code
+          </div>
+          <div class="card-path">~/dev/ad/flivideo/flihub</div>
+        </div>
+        <span class="status-pill dirty">
+          <span class="sdot"></span>
+          11 files changed
+        </span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="info-label">Local</div>
+          <div class="info-value">6ea452c</div>
+          <div class="info-sub">Just now</div>
+        </div>
+        <div class="info-box">
+          <div class="info-label">Remote</div>
+          <div class="info-value">6ea452c</div>
+          <div class="info-sub">Same</div>
+        </div>
+        <div class="info-box">
+          <div class="info-label">Last Sync</div>
+          <div class="info-value">Just now</div>
+          <div class="info-sub"></div>
+        </div>
+      </div>
+
+      <!-- File list — grouped by type -->
+      <div class="file-section">
+        <button class="file-toggle" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.querySelector('.arrow').classList.toggle('open')">
+          <span class="arrow open">▶</span>
+          Show 11 changed files
+        </button>
+        <div class="file-list">
+          <div class="file-group-header">Components (5)</div>
+          <div class="file-item">
+            <span>client/src/components/RecordingsView.tsx</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-item">
+            <span>client/src/components/shared/EditableFileRow.tsx</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-item">
+            <span>client/src/components/shared/SyncTool.tsx</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-item">
+            <span>client/src/components/shared/SyncIndicator.tsx</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-item">
+            <span>client/src/components/ManagePanel.tsx</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-group-header">Styles (2)</div>
+          <div class="file-item">
+            <span>client/src/index.css</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-item">
+            <span>client/src/utils/formatting.ts</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-group-header">Server (3)</div>
+          <div class="file-item">
+            <span>server/src/routes/sync.ts</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-item">
+            <span>server/src/routes/index.ts</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-item">
+            <span>server/src/middleware/errorHandler.ts</span>
+            <span class="file-status modified">M</span>
+          </div>
+          <div class="file-group-header">Config (1)</div>
+          <div class="file-item">
+            <span>.mochaccino/config.md</span>
+            <span class="file-status modified">M</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn primary">Push Code</button>
+        <button class="btn secondary" disabled>Pull Code</button>
+        <span class="sync-note">Commits + pushes to origin</span>
+      </div>
+    </div>
+
+    <!-- Video Project Card -->
+    <div class="channel-card">
+      <div class="card-header">
+        <div class="card-title-area">
+          <div class="card-title">
+            <span>🎬</span> Video Project
+          </div>
+          <div class="card-path">~/.../projects/c32-bmad-v6-epic1-foundation</div>
+        </div>
+        <span class="status-pill dirty">
+          <span class="sdot"></span>
+          24 new files
+        </span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="info-label">Local</div>
+          <div class="info-value">fcd0d3b</div>
+          <div class="info-sub">Just now</div>
+        </div>
+        <div class="info-box">
+          <div class="info-label">Remote</div>
+          <div class="info-value">fcd0d3b</div>
+          <div class="info-sub">Same</div>
+        </div>
+        <div class="info-box">
+          <div class="info-label">Last Sync</div>
+          <div class="info-value">Just now</div>
+          <div class="info-sub"></div>
+        </div>
+      </div>
+
+      <!-- File list — grouped by type -->
+      <div class="file-section">
+        <button class="file-toggle" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.querySelector('.arrow').classList.toggle('open')">
+          <span class="arrow open">▶</span>
+          Show 24 new files
+        </button>
+        <div class="file-list">
+          <div class="file-group-header">Recordings (12)</div>
+          <div class="file-item">
+            <span>recordings/01-1-intro.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/01-2-hook.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/02-1-bmad-overview.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/02-2-bmad-demo.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/02-3-bmad-results.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/03-1-setup.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/03-2-walkthrough.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/03-3-tips.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/04-1-cta.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/04-2-outro.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/-safe/01-1-intro-take1.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recordings/-safe/02-1-bmad-overview-take1.mov</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-group-header">Transcripts (8)</div>
+          <div class="file-item">
+            <span>recording-transcripts/01-1-intro.txt</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recording-transcripts/01-1-intro.srt</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recording-transcripts/01-2-hook.txt</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recording-transcripts/01-2-hook.srt</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recording-transcripts/02-1-bmad-overview.txt</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recording-transcripts/02-1-bmad-overview.srt</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recording-transcripts/02-2-bmad-demo.txt</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>recording-transcripts/02-2-bmad-demo.srt</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-group-header">Assets (4)</div>
+          <div class="file-item">
+            <span>assets/images/01-1-1a-hero.png</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>assets/images/02-1-1a-diagram.png</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>assets/images/03-1-1a-screenshot.png</span>
+            <span class="file-status new">A</span>
+          </div>
+          <div class="file-item">
+            <span>assets/thumbs/thumb-v1.png</span>
+            <span class="file-status new">A</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn primary">Push Project</button>
+        <button class="btn secondary" disabled>Pull Project</button>
+        <span class="sync-note">Auto-generates commit message</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── Push Code Confirmation Modal (shown as example) ─── -->
+  <div style="margin-top: 32px;">
+    <div class="section-label">Push Code — Confirmation Dialog (appears on click)</div>
+  </div>
+
+  <div style="position: relative; height: 380px; background: rgba(42,32,24,0.08); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+    <div class="modal" style="position: relative;">
+      <div class="modal-header">
+        <span>💻</span> Push App Code
+      </div>
+      <div class="modal-body">
+        <p>This will commit and push <strong>11 files</strong> to <code>origin/main</code>.</p>
+        <div class="modal-file-summary">Commit message (auto-generated):</div>
+        <div class="modal-commit-preview">
+          Push: 11 files (5 components, 2 styles, 3 server, 1 config)
+        </div>
+        <div class="modal-file-summary" style="margin-top: 8px;">Changed files:</div>
+        <div class="modal-commit-preview" style="font-size: 11px; max-height: 120px; overflow-y: auto;">
+          M  client/src/components/RecordingsView.tsx<br>
+          M  client/src/components/shared/EditableFileRow.tsx<br>
+          M  client/src/components/shared/SyncTool.tsx<br>
+          M  client/src/components/shared/SyncIndicator.tsx<br>
+          M  client/src/components/ManagePanel.tsx<br>
+          M  client/src/index.css<br>
+          M  client/src/utils/formatting.ts<br>
+          M  server/src/routes/sync.ts<br>
+          M  server/src/routes/index.ts<br>
+          M  server/src/middleware/errorHandler.ts<br>
+          M  .mochaccino/config.md
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary">Cancel</button>
+        <button class="btn danger">Push to Remote</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
