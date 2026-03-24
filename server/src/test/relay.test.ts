@@ -49,6 +49,7 @@ const mockExistsSync = vi.fn().mockReturnValue(true);
 const mockReaddir = vi.fn();
 const mockStat = vi.fn();
 const mockCopy = vi.fn().mockResolvedValue(undefined);
+const mockMkdir = vi.fn().mockResolvedValue(undefined);
 vi.mock('fs-extra', () => ({
   default: {
     ensureDir: (...args: unknown[]) => mockEnsureDir(...args),
@@ -60,6 +61,7 @@ vi.mock('fs-extra', () => ({
     readFile: vi.fn(),
     access: vi.fn(),
     copy: (...args: unknown[]) => mockCopy(...args),
+    mkdir: (...args: unknown[]) => mockMkdir(...args),
   },
 }));
 
@@ -1295,5 +1297,120 @@ describe('GET /api/relay/files', () => {
     ]);
     // Verify chapter fallback to "00" for non-matching filenames
     expect(res.body.files[0].chapter).toBe('00');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Auto-create edit folders on collect + ensure-edit-folders endpoint
+// ---------------------------------------------------------------------------
+
+describe('auto-create edit folders on collect', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearActivityLog();
+    mockExecFile.mockReturnValue({ stdout: 'received files', stderr: '' });
+  });
+
+  it('POST /collect with subfolder=recordings auto-creates edit-1st and edit-2nd when missing', async () => {
+    mockPathExists.mockResolvedValue(false);
+    const app = buildRelayApp();
+    const res = await request(app)
+      .post('/api/relay/collect')
+      .send({ subfolder: 'recordings' });
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).toContain('edit-1st');
+    expect(res.body.foldersCreated).toContain('edit-2nd');
+
+    // Verify mkdir was called for both edit folders
+    const mkdirPaths = mockMkdir.mock.calls.map((c: unknown[]) => c[0] as string);
+    expect(mkdirPaths.some((p: string) => p.includes('edit-1st'))).toBe(true);
+    expect(mkdirPaths.some((p: string) => p.includes('edit-2nd'))).toBe(true);
+  });
+
+  it('POST /collect with subfolder=recordings skips existing edit folders', async () => {
+    mockPathExists.mockResolvedValue(true);
+    const app = buildRelayApp();
+    const res = await request(app)
+      .post('/api/relay/collect')
+      .send({ subfolder: 'recordings' });
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).toEqual([]);
+    expect(mockMkdir).not.toHaveBeenCalled();
+  });
+
+  it('POST /collect with subfolder=edit-1st does NOT auto-create edit folders', async () => {
+    const app = buildRelayApp();
+    const res = await request(app)
+      .post('/api/relay/collect')
+      .send({ subfolder: 'edit-1st' });
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).toBeUndefined();
+    expect(mockMkdir).not.toHaveBeenCalled();
+  });
+
+  it('POST /collect with subfolder=recordings logs activity for each created folder', async () => {
+    mockPathExists.mockResolvedValue(false);
+    const app = buildRelayApp();
+    await request(app)
+      .post('/api/relay/collect')
+      .send({ subfolder: 'recordings' });
+
+    // Check activity log: should have collect + 2 auto-create events
+    const actRes = await request(app).get('/api/relay/activity');
+    const events = actRes.body.events;
+    const autoCreateEvents = events.filter((e: { description: string }) => e.description.includes('Auto-created'));
+    expect(autoCreateEvents).toHaveLength(2);
+    expect(autoCreateEvents[0].description).toContain('edit-2nd');
+    expect(autoCreateEvents[1].description).toContain('edit-1st');
+  });
+});
+
+describe('POST /api/relay/ensure-edit-folders', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearActivityLog();
+  });
+
+  it('creates edit-1st and edit-2nd when both missing', async () => {
+    mockPathExists.mockResolvedValue(false);
+    const app = buildRelayApp();
+    const res = await request(app).post('/api/relay/ensure-edit-folders');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).toContain('edit-1st');
+    expect(res.body.foldersCreated).toContain('edit-2nd');
+    expect(mockMkdir).toHaveBeenCalledTimes(2);
+  });
+
+  it('skips folders that already exist', async () => {
+    mockPathExists.mockResolvedValue(true);
+    const app = buildRelayApp();
+    const res = await request(app).post('/api/relay/ensure-edit-folders');
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.foldersCreated).toEqual([]);
+    expect(mockMkdir).not.toHaveBeenCalled();
+  });
+
+  it('returns error when relay not configured', async () => {
+    const app = buildRelayApp({ relayEnabled: false });
+    const res = await request(app).post('/api/relay/ensure-edit-folders');
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toMatch(/not enabled/i);
+  });
+
+  it('logs activity for each created folder', async () => {
+    mockPathExists.mockResolvedValue(false);
+    const app = buildRelayApp();
+    await request(app).post('/api/relay/ensure-edit-folders');
+
+    const actRes = await request(app).get('/api/relay/activity');
+    const events = actRes.body.events;
+    const createEvents = events.filter((e: { description: string }) => e.description.includes('Created'));
+    expect(createEvents).toHaveLength(2);
   });
 });
