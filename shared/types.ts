@@ -104,6 +104,24 @@ export interface RelayFilesResponse {
   error?: string;
 }
 
+// B047: Divergence detection — compare local vs relay per subfolder
+export interface RelayDivergenceInfo {
+  subfolder: RelaySubfolder;
+  local: { fileCount: number; totalSize: number; files: string[] };
+  relay: { fileCount: number; totalSize: number; files: string[] };
+  localOnly: string[];    // files in local but not in relay (outgoing)
+  relayOnly: string[];    // files in relay but not in local (incoming)
+  direction: 'synced' | 'outgoing' | 'incoming' | 'both'; // overall sync direction
+  folderExists: boolean;  // whether the local folder exists
+}
+
+export interface RelayDivergenceResponse {
+  success: boolean;
+  projectCode?: string;
+  subfolders?: RelayDivergenceInfo[];
+  error?: string;
+}
+
 export interface FileInfo {
   path: string;
   filename: string;

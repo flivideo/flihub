@@ -4,7 +4,7 @@ import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs-extra';
-import type { Config, RelaySubfolder, RelayProjectInfo, RelayActivityEvent, RelayFileInfo } from '../../../shared/types.js';
+import type { Config, RelaySubfolder, RelayProjectInfo, RelayActivityEvent, RelayFileInfo, RelayDivergenceInfo } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 
 const execFileAsync = promisify(execFile);
@@ -55,6 +55,24 @@ export function logRelayActivity(event: Omit<RelayActivityEvent, 'id'>) {
 // Exported for testing — allows clearing the activity log between tests
 export function clearActivityLog() {
   activityLog.length = 0;
+}
+
+// B047: Shared helper — list non-hidden files with sizes from a directory
+export async function listFiles(dirPath: string): Promise<{ filename: string; size: number }[]> {
+  try {
+    const entries = await fs.readdir(dirPath);
+    const files: { filename: string; size: number }[] = [];
+    for (const entry of entries) {
+      if (entry.startsWith('.')) continue;
+      try {
+        const stat = await fs.stat(path.join(dirPath, entry));
+        if (stat.isFile()) files.push({ filename: entry, size: stat.size });
+      } catch { /* skip */ }
+    }
+    return files;
+  } catch {
+    return []; // Directory doesn't exist
+  }
 }
 
 export function createRelayRoutes(getConfig: () => Config) {
@@ -157,34 +175,88 @@ export function createRelayRoutes(getConfig: () => Config) {
       const baseDir = source === 'relay' ? paths.relayProjectDir : paths.projectDir;
       const targetDir = path.join(baseDir, subfolder);
 
-      try {
-        const entries = await fs.readdir(targetDir);
-        const files: RelayFileInfo[] = [];
+      // B047: Use listFiles helper for base listing, then enrich with chapter/modified
+      const baseFiles = await listFiles(targetDir);
+      const files: RelayFileInfo[] = [];
 
-        for (const entry of entries) {
-          if (entry.startsWith('.')) continue;
-          const fullPath = path.join(targetDir, entry);
+      for (const bf of baseFiles) {
+        const fullPath = path.join(targetDir, bf.filename);
+        let modified = new Date().toISOString();
+        try {
           const stat = await fs.stat(fullPath);
-          if (!stat.isFile()) continue;
+          modified = stat.mtime.toISOString();
+        } catch { /* use default */ }
 
-          // Extract chapter from naming convention: "01-1-intro.mov" → "01"
-          const chapterMatch = entry.match(/^(\d{2})-/);
-          const chapter = chapterMatch ? chapterMatch[1] : '00';
+        // Extract chapter from naming convention: "01-1-intro.mov" → "01"
+        const chapterMatch = bf.filename.match(/^(\d{2})-/);
+        const chapter = chapterMatch ? chapterMatch[1] : '00';
 
-          files.push({
-            filename: entry,
-            size: stat.size,
-            modified: stat.mtime.toISOString(),
-            chapter,
-          });
-        }
-
-        // Sort by chapter, then filename
-        files.sort((a, b) => a.chapter.localeCompare(b.chapter) || a.filename.localeCompare(b.filename));
-        res.json({ success: true, files, subfolder });
-      } catch {
-        res.json({ success: true, files: [], subfolder }); // Dir doesn't exist yet
+        files.push({
+          filename: bf.filename,
+          size: bf.size,
+          modified,
+          chapter,
+        });
       }
+
+      // Sort by chapter, then filename
+      files.sort((a, b) => a.chapter.localeCompare(b.chapter) || a.filename.localeCompare(b.filename));
+      res.json({ success: true, files, subfolder });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  // B047: GET /api/relay/divergence — compare local vs relay for active project
+  router.get('/divergence', async (req, res) => {
+    try {
+      const config = getConfig();
+      const paths = getRelayPaths(config);
+      if ('error' in paths) return res.json({ success: false, error: paths.error });
+
+      const subfolders: RelayDivergenceInfo[] = [];
+
+      for (const subfolder of RELAY_SUBFOLDERS) {
+        const localDir = path.join(paths.projectDir, subfolder);
+        const relayDir = path.join(paths.relayProjectDir, subfolder);
+
+        const localFiles = await listFiles(localDir);
+        const relayFiles = await listFiles(relayDir);
+
+        const localNames = new Set(localFiles.map(f => f.filename));
+        const relayNames = new Set(relayFiles.map(f => f.filename));
+
+        const localOnly = [...localNames].filter(n => !relayNames.has(n));
+        const relayOnly = [...relayNames].filter(n => !localNames.has(n));
+
+        let direction: RelayDivergenceInfo['direction'] = 'synced';
+        if (localOnly.length > 0 && relayOnly.length > 0) direction = 'both';
+        else if (localOnly.length > 0) direction = 'outgoing';
+        else if (relayOnly.length > 0) direction = 'incoming';
+
+        let folderExists = false;
+        try { folderExists = (await fs.stat(localDir)).isDirectory(); } catch { /* noop */ }
+
+        subfolders.push({
+          subfolder,
+          local: {
+            fileCount: localFiles.length,
+            totalSize: localFiles.reduce((s, f) => s + f.size, 0),
+            files: localFiles.map(f => f.filename),
+          },
+          relay: {
+            fileCount: relayFiles.length,
+            totalSize: relayFiles.reduce((s, f) => s + f.size, 0),
+            files: relayFiles.map(f => f.filename),
+          },
+          localOnly,
+          relayOnly,
+          direction,
+          folderExists,
+        });
+      }
+
+      res.json({ success: true, projectCode: paths.projectCode, subfolders });
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) });
     }
