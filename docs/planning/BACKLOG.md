@@ -3,7 +3,7 @@
 **Last updated**: 2026-03-24
 **Project Heal**: Initial BACKLOG.md created from full history consolidation
 **Total open**: 13 | Pending: 13 | In Progress: 0 | Deferred: 6 | Rejected: 4
-**Last reconciled**: relay-kanban campaign (2026-03-24)
+**Last reconciled**: relay-kanban-fixes campaign (2026-03-24)
 
 ---
 
@@ -63,6 +63,7 @@
 - [x] B048 — Warm Linen Theme — replace bright white UI with warm linen palette (v2-linen from AngelEye Mochaccino) to reduce camera reflection during recording | Priority: high | Campaign: warm-linen-theme | Completed: warm-linen-theme
 - [x] B049 — Recordings Page Polish — fix blue/brown color clash, hide checkboxes behind selection mode, harmonize TranscriptionBadge with warm palette, remove debug logs (B037), remove dead asyncHandler (B034) | Priority: high | Completed: recordings-page-polish
 - [x] B060 — Relay Kanban — divergence detection, auto-folder creation, Kanban UI for relay workflow, project-level sync badges | Priority: high | Campaign: relay-kanban | Completed: relay-kanban
+- [x] B061 — Relay Kanban Fixes — collect-without-folder, badge colors (amber not red), header RelayIndicator pill, open-folder buttons on Sync/Relay tools. Feedback F006-F010+F012 resolved. 3/3 complete. +12 tests (900 total). | Priority: high | Campaign: relay-kanban-fixes | Completed: relay-kanban-fixes
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
@@ -96,6 +97,7 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B061 | Relay Kanban Fixes (relay-kanban-fixes) — collect-without-folder (ensureDir before rsync + ensure-folders endpoint), badge colors (amber/↓ not red/!), header RelayIndicator pill, open-folder buttons on Sync/Relay tools. F006-F010+F012 resolved. 3/3 complete. +12 tests. 900 tests pass. | 2026-03-24 |
 | B060 | Relay Kanban (relay-kanban) — divergence detection endpoint, auto-create edit folders on collect, enhanced browse with sync status, 4-lane Kanban RelayTool rewrite, project-level Kanban mini-badges. 5/5 complete. +37 tests. 888 tests pass. | 2026-03-24 |
 | B049 | Recordings Page Polish — fixed blue/brown color clash (default rows warm, TranscriptionBadge harmonized), checkboxes hidden behind selection mode, removed 15 debug console.logs (B037), removed dead asyncHandler code (B034). Reshaped B033/B035/B036. 1,028 tests pass. | 2026-03-24 |
 | B048 | Warm Linen Theme (warm-linen-theme) — replaced bright white UI with warm linen palette across 40+ components. 12 semantic @theme tokens, 500+ class replacements, 3 waves. Zero bright white surfaces remain. 1,042 tests pass. | 2026-03-24 |

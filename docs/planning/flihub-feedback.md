@@ -10,44 +10,11 @@ The Manage page was redesigned in B041 (manage-page-redesign). "Manage & Export"
 
 Relay Kanban campaign (B060) added divergence detection, auto-folder creation, and a 4-lane Kanban UI to the relay workflow. Project-level sync badges show at-a-glance sync status per subfolder.
 
+Relay Kanban Fixes campaign (B061) resolved 6 UX blockers from visual QA on Jan's editor machine: collect-without-folder, badge colors, header indicator. Open-folder buttons added to Sync and Relay tools.
+
 ---
 
 ## Open Items
-
-### F006 — Collect blocked when local folder doesn't exist
-**Type**: bug
-**Priority**: high
-**Where**: Relay tool — KanbanLane component
-**What I saw**: On Jan's machine (editor), the Recordings lane shows "Folder missing" with a "Create Folders" button. There is no way to collect recordings from relay because the collect button ("Pull into Project") only renders when `folderExists` is true.
-**What I expected**: Collect should work even when the local folder doesn't exist — create it on the fly, then pull files from relay into it. The editor shouldn't be stuck at a dead end.
-
-### F007 — "Create Folders" button creates wrong folders for the lane it's on
-**Type**: bug
-**Priority**: high
-**Where**: Relay tool — Recordings lane
-**What I saw**: Clicking "Create Folders" on the Recordings lane calls `ensureEditFolders()` which creates `edit-1st/` and `edit-2nd/` — not `recordings/`. After clicking, Recordings still shows "Folder missing" but 2nd Edit turns green. Activity log confirms: "Created edit-2nd/ folder".
-**What I expected**: Either the button should create the folder for the lane it's on (recordings), or it should be clear that it's creating all missing project folders. Currently it's misleading.
-
-### F008 — No proactive notification when relay files arrive
-**Type**: ux
-**Priority**: high
-**Where**: Header / global UI
-**What I saw**: Jan has no way to know recordings have arrived in relay unless he navigates to the Relay tool or Projects page and inspects badges. The Sync Hub has header-level indicators ("Project 1 file changed") but relay has nothing equivalent.
-**What I expected**: A header indicator, toast, or sidebar badge showing "Relay: 20 recordings incoming" — something visible from any page.
-
-### F009 — Red "REC !" badge is alarming for normal workflow state
-**Type**: ux
-**Priority**: medium
-**Where**: Projects page — relay sync badges
-**What I saw**: `relay-only` status shows as red background with "!" icon. On an editor's machine, this is the normal starting state — recordings exist in relay, haven't been collected yet. Red implies something is broken.
-**What I expected**: Amber or blue with a directional arrow (e.g. "REC ↓20") to indicate "available to collect" rather than "error". Reserve red for actual problems (conflicts, missing config).
-
-### F010 — Recordings lane doesn't show what's available in relay
-**Type**: ux
-**Priority**: medium
-**Where**: Relay tool — Recordings lane (when local folder missing)
-**What I saw**: When `folderExists` is false, the lane only shows "Folder missing / No folder". No indication of what's waiting in relay (e.g. "20 recordings available").
-**What I expected**: Even when the local folder doesn't exist, the lane should show relay file counts so the user knows there's something to collect.
 
 ### F011 — Projects page shows no relay badges for most projects
 **Type**: ux
@@ -55,13 +22,6 @@ Relay Kanban campaign (B060) added divergence detection, auto-folder creation, a
 **Where**: Projects page
 **What I saw**: Only c17 shows relay badges. All other projects show dashes with no relay information. On Jan's machine (first screenshot), no badges appeared at all because his relay was empty.
 **What I expected**: This may be correct behaviour (only projects with relay data get badges), but it's worth considering whether projects with no relay presence should show a subtle "not in relay" indicator vs showing nothing.
-
-### F012 — 2nd Edit lane shows "Send to Creator" when empty and synced
-**Type**: ux
-**Priority**: low
-**Where**: Relay tool — 2nd Edit lane
-**What I saw**: The 2nd Edit lane shows 0 files, "Synced", but still has an active "Send to Creator" button. Nothing to send.
-**What I expected**: Button should be disabled or hidden when there are 0 files and status is synced. Same applies to other lanes in equivalent state.
 
 ---
 
@@ -74,3 +34,9 @@ Relay Kanban campaign (B060) added divergence detection, auto-folder creation, a
 | F003 | Manage page needs full design review | Full redesign: drawers removed, each tool owns center content, sidebar is pure navigation, file list only for tools that need it. | manage-page-redesign (B041) |
 | F004 | App auto-update for collaborators (Jan/Roamy) | B044 Sync Hub. App Code channel shows behind-count in header pill + pull button with restart instructions. Editors see "Pull & Restart" banner when behind. | sync-hub (B044) |
 | F005 | Move AWB from top nav into Manage sidebar | AWB removed from top nav (ViewTab, VALID_TABS, tab button). Added as Manage tool (ActiveTool, ToolsSidebar Edit group, PoemWuiPage center content). | tech-debt-round1 (B045) |
+| F006 | Collect blocked when local folder doesn't exist | Server `POST /collect` now calls `fs.ensureDir` before rsync. KanbanLane shows collect button even when folder missing + relay has files. | relay-kanban-fixes (B061) |
+| F007 | "Create Folders" button creates wrong folders | `POST /ensure-edit-folders` expanded to `POST /ensure-folders` — creates all 3 subfolders (recordings + edit-1st + edit-2nd). Old endpoint kept as backward-compat alias. | relay-kanban-fixes (B061) |
+| F008 | No proactive notification when relay files arrive | RelayIndicator pill added to header next to SyncIndicator. Shows aggregate relay sync status (green/amber/blue/red) with per-subfolder tooltip. Click navigates to Relay tool. | relay-kanban-fixes (B061) |
+| F009 | Red "REC !" badge is alarming for normal workflow state | `relay-only` badge changed from red/! to amber/↓ with count. Tooltip shows "N to collect". | relay-kanban-fixes (B061) |
+| F010 | Recordings lane doesn't show what's available in relay | KanbanLane now shows relay file count and size even when local folder is missing. | relay-kanban-fixes (B061) |
+| F012 | 2nd Edit lane shows "Send to Creator" when empty and synced | Push button now disabled when `localCount === 0`. Applies to all lanes. | relay-kanban-fixes (B061) |
