@@ -30,6 +30,28 @@ export interface RelayProjectInfo {
   };
 }
 
+// enhanced-browse: Local subfolder file counts for sync status comparison
+export interface RelayLocalSubfolderInfo {
+  fileCount: number;
+}
+
+// enhanced-browse: Sync status per subfolder — derived from comparing relay vs local file counts
+export type RelaySyncStatus = 'synced' | 'ahead' | 'behind' | 'diverged' | 'local-only' | 'relay-only';
+
+// enhanced-browse: Extended project info with local file counts and sync status (returned when ?detailed=true)
+export interface RelayProjectSyncInfo extends RelayProjectInfo {
+  localSubfolders: {
+    recordings: RelayLocalSubfolderInfo;
+    'edit-1st': RelayLocalSubfolderInfo;
+    'edit-2nd': RelayLocalSubfolderInfo;
+  };
+  syncStatus: {
+    recordings: RelaySyncStatus;
+    'edit-1st': RelaySyncStatus;
+    'edit-2nd': RelaySyncStatus;
+  };
+}
+
 export interface RelayBrowseResult {
   projects: RelayProjectInfo[];
   relayDirectory: string;

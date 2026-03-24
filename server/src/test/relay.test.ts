@@ -69,7 +69,7 @@ vi.mock('../utils/pathUtils.js', () => ({
 }));
 
 // Imports must come AFTER vi.mock() declarations
-import { createRelayRoutes, parseRsyncDiff, getRelayPaths, rsyncExcludeArgs, RELAY_SUBFOLDERS, logRelayActivity, clearActivityLog } from '../routes/relay.js';
+import { createRelayRoutes, parseRsyncDiff, getRelayPaths, rsyncExcludeArgs, RELAY_SUBFOLDERS, logRelayActivity, clearActivityLog, deriveSyncStatus } from '../routes/relay.js';
 import { createSystemRoutes } from '../routes/system.js';
 import type { Config } from '../../../shared/types.js';
 
@@ -1295,5 +1295,214 @@ describe('GET /api/relay/files', () => {
     ]);
     // Verify chapter fallback to "00" for non-matching filenames
     expect(res.body.files[0].chapter).toBe('00');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// deriveSyncStatus — unit tests (enhanced-browse)
+// ---------------------------------------------------------------------------
+
+describe('deriveSyncStatus', () => {
+  it('returns synced when relay and local counts match', () => {
+    expect(deriveSyncStatus(3, 3, true)).toBe('synced');
+  });
+
+  it('returns synced when both are zero and local exists', () => {
+    expect(deriveSyncStatus(0, 0, true)).toBe('synced');
+  });
+
+  it('returns synced when both are zero and local does not exist', () => {
+    expect(deriveSyncStatus(0, 0, false)).toBe('synced');
+  });
+
+  it('returns behind when relay has more files than local', () => {
+    expect(deriveSyncStatus(5, 2, true)).toBe('behind');
+  });
+
+  it('returns ahead when local has more files than relay', () => {
+    expect(deriveSyncStatus(2, 5, true)).toBe('ahead');
+  });
+
+  it('returns relay-only when local does not exist but relay has files', () => {
+    expect(deriveSyncStatus(3, 0, false)).toBe('relay-only');
+  });
+
+  it('returns local-only when local has files but relay has zero', () => {
+    expect(deriveSyncStatus(0, 4, true)).toBe('local-only');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/relay/browse?detailed=true — enhanced browse tests
+// ---------------------------------------------------------------------------
+
+describe('GET /api/relay/browse?detailed=true', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns backward-compatible response when detailed is not set', async () => {
+    mockReaddir.mockImplementation(async (_dir: string, opts?: { withFileTypes?: boolean }) => {
+      if (opts?.withFileTypes) {
+        return [{ name: 'b17-test', isDirectory: () => true }];
+      }
+      return [];
+    });
+    mockStat.mockResolvedValue({ isFile: () => true, size: 0 });
+
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/browse');
+    expect(res.body.success).toBe(true);
+    expect(res.body.projects).toHaveLength(1);
+    const project = res.body.projects[0];
+    // Should NOT have localSubfolders or syncStatus
+    expect(project.localSubfolders).toBeUndefined();
+    expect(project.syncStatus).toBeUndefined();
+    expect(project.projectCode).toBe('b17-test');
+  });
+
+  it('returns backward-compatible response when detailed=false', async () => {
+    mockReaddir.mockImplementation(async (_dir: string, opts?: { withFileTypes?: boolean }) => {
+      if (opts?.withFileTypes) {
+        return [{ name: 'b17-test', isDirectory: () => true }];
+      }
+      return [];
+    });
+    mockStat.mockResolvedValue({ isFile: () => true, size: 0 });
+
+    const app = buildRelayApp();
+    const res = await request(app).get('/api/relay/browse?detailed=false');
+    expect(res.body.success).toBe(true);
+    const project = res.body.projects[0];
+    expect(project.localSubfolders).toBeUndefined();
+    expect(project.syncStatus).toBeUndefined();
+  });
+
+  it('returns localSubfolders and syncStatus when detailed=true', async () => {
+    // Relay dir readdir: one project with files in recordings
+    mockReaddir.mockImplementation(async (dir: string, opts?: { withFileTypes?: boolean }) => {
+      if (opts?.withFileTypes) {
+        return [{ name: 'b17-test', isDirectory: () => true }];
+      }
+      // Relay recordings: 2 files
+      if (dir.includes('relay') && dir.includes('recordings')) return ['01-1-intro.mov', '01-2-outro.mov'];
+      // Relay edit-1st: 0 files
+      if (dir.includes('relay') && dir.includes('edit-1st')) return [];
+      // Relay edit-2nd: 1 file
+      if (dir.includes('relay') && dir.includes('edit-2nd')) return ['b17-final-v1.mp4'];
+      // Local recordings: 3 files (ahead)
+      if (dir.includes('v-appydave') && dir.includes('recordings')) return ['01-1-intro.mov', '01-2-outro.mov', '02-1-setup.mov'];
+      // Local edit-1st: 1 file
+      if (dir.includes('v-appydave') && dir.includes('edit-1st')) return ['edit.mp4'];
+      // Local edit-2nd: 1 file
+      if (dir.includes('v-appydave') && dir.includes('edit-2nd')) return ['b17-final-v1.mp4'];
+      return [];
+    });
+    mockStat.mockResolvedValue({ isFile: () => true, size: 1024 });
+
+    const app = buildRelayApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
+    const res = await request(app).get('/api/relay/browse?detailed=true');
+    expect(res.body.success).toBe(true);
+    expect(res.body.projects).toHaveLength(1);
+
+    const project = res.body.projects[0];
+    expect(project.projectCode).toBe('b17-test');
+
+    // localSubfolders should be present
+    expect(project.localSubfolders).toBeDefined();
+    expect(project.localSubfolders.recordings.fileCount).toBe(3);
+    expect(project.localSubfolders['edit-1st'].fileCount).toBe(1);
+    expect(project.localSubfolders['edit-2nd'].fileCount).toBe(1);
+
+    // syncStatus should reflect the comparison
+    expect(project.syncStatus).toBeDefined();
+    expect(project.syncStatus.recordings).toBe('ahead');  // local 3 > relay 2
+    expect(project.syncStatus['edit-1st']).toBe('local-only');  // relay 0, local 1
+    expect(project.syncStatus['edit-2nd']).toBe('synced');  // both 1
+  });
+
+  it('returns synced status when relay and local have same file counts', async () => {
+    mockReaddir.mockImplementation(async (dir: string, opts?: { withFileTypes?: boolean }) => {
+      if (opts?.withFileTypes) {
+        return [{ name: 'b17-test', isDirectory: () => true }];
+      }
+      // Both relay and local have the same files
+      if (dir.includes('recordings')) return ['01-1-intro.mov'];
+      return [];
+    });
+    mockStat.mockResolvedValue({ isFile: () => true, size: 500 });
+
+    const app = buildRelayApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
+    const res = await request(app).get('/api/relay/browse?detailed=true');
+
+    const project = res.body.projects[0];
+    expect(project.syncStatus.recordings).toBe('synced');
+  });
+
+  it('falls back to basic response when projectsRootDirectory is not set', async () => {
+    mockReaddir.mockImplementation(async (_dir: string, opts?: { withFileTypes?: boolean }) => {
+      if (opts?.withFileTypes) {
+        return [{ name: 'b17-test', isDirectory: () => true }];
+      }
+      return ['01-1-intro.mov'];
+    });
+    mockStat.mockResolvedValue({ isFile: () => true, size: 1024 });
+
+    // No projectsRootDirectory configured
+    const app = buildRelayApp({ projectsRootDirectory: undefined });
+    const res = await request(app).get('/api/relay/browse?detailed=true');
+    expect(res.body.success).toBe(true);
+    const project = res.body.projects[0];
+    // Without projectsRootDirectory, detailed mode can't scan local — falls back to basic
+    expect(project.localSubfolders).toBeUndefined();
+    expect(project.syncStatus).toBeUndefined();
+  });
+
+  it('handles local directory not existing (relay-only status)', async () => {
+    mockReaddir.mockImplementation(async (dir: string, opts?: { withFileTypes?: boolean }) => {
+      if (opts?.withFileTypes) {
+        return [{ name: 'b17-test', isDirectory: () => true }];
+      }
+      // Relay has files
+      if (dir.includes('relay') && dir.includes('recordings')) return ['01-1-intro.mov'];
+      if (dir.includes('relay')) return [];
+      // Local dirs don't exist
+      throw new Error('ENOENT');
+    });
+    mockStat.mockResolvedValue({ isFile: () => true, size: 1024 });
+
+    const app = buildRelayApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
+    const res = await request(app).get('/api/relay/browse?detailed=true');
+
+    const project = res.body.projects[0];
+    expect(project.syncStatus.recordings).toBe('relay-only');
+    expect(project.localSubfolders.recordings.fileCount).toBe(0);
+  });
+
+  it('scans multiple projects in parallel with detailed=true', async () => {
+    mockReaddir.mockImplementation(async (dir: string, opts?: { withFileTypes?: boolean }) => {
+      if (opts?.withFileTypes) {
+        return [
+          { name: 'b17-test', isDirectory: () => true },
+          { name: 'c32-bmad', isDirectory: () => true },
+        ];
+      }
+      if (dir.includes('b17-test') && dir.includes('recordings')) return ['01-1-intro.mov'];
+      if (dir.includes('c32-bmad') && dir.includes('recordings')) return ['01-1-intro.mov', '02-1-setup.mov'];
+      return [];
+    });
+    mockStat.mockResolvedValue({ isFile: () => true, size: 500 });
+
+    const app = buildRelayApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
+    const res = await request(app).get('/api/relay/browse?detailed=true');
+    expect(res.body.success).toBe(true);
+    expect(res.body.projects).toHaveLength(2);
+
+    const b17 = res.body.projects.find((p: { projectCode: string }) => p.projectCode === 'b17-test');
+    const c32 = res.body.projects.find((p: { projectCode: string }) => p.projectCode === 'c32-bmad');
+    expect(b17.localSubfolders).toBeDefined();
+    expect(c32.localSubfolders).toBeDefined();
+    expect(b17.syncStatus).toBeDefined();
+    expect(c32.syncStatus).toBeDefined();
   });
 });
