@@ -43,18 +43,22 @@ export function createVideoRoutes(getConfig: () => Config): Router {
     const folder = queryString(req.params.folder);
     const filename = queryString(req.params.filename);
 
-    // Security: Validate no path traversal and valid folder
-    if (folder.includes('..') || filename.includes('..')) {
+    // Security: Validate no path traversal in any parameter
+    if (projectCode.includes('..') || projectCode.includes('/') || projectCode.includes('\\') ||
+        folder.includes('..') || filename.includes('..')) {
       res.status(400).json({ success: false, error: 'Invalid file path' });
       return;
     }
 
-    // FR-83: Allow recordings, chapters, and shadow folders
+    // FR-83: Allow recordings, chapters, shadow, and edit folders
     const allowedFolders = [
       'recordings',
       '-chapters',
       'recording-shadows',
       'recording-shadows-safe',
+      'edit-1st',
+      'edit-2nd',
+      'final',
     ];
     if (!allowedFolders.includes(folder)) {
       res.status(400).json({ success: false, error: 'Invalid folder' });
@@ -62,15 +66,28 @@ export function createVideoRoutes(getConfig: () => Config): Router {
     }
 
     try {
-      // Build full path to video file
+      const config = getConfig();
+      const source = queryString(req.query.source as string || '');
+
+      // Resolve base directory: relay or project
+      let baseDir: string;
+      if (source === 'relay') {
+        if (!config.relayDirectory) {
+          res.status(400).json({ success: false, error: 'relayDirectory not configured' });
+          return;
+        }
+        baseDir = expandPath(config.relayDirectory);
+      } else {
+        if (!config.projectsRootDirectory) {
+          res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+          return;
+        }
+        baseDir = expandPath(config.projectsRootDirectory);
+      }
+
+      // Map folder aliases to actual paths
       // Note: -chapters is inside recordings/ folder
       // FR-83: recording-shadows-safe maps to recording-shadows/-safe
-      const config = getConfig();
-      if (!config.projectsRootDirectory) {
-        res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
-        return;
-      }
-      const projectsDir = expandPath(config.projectsRootDirectory);
       let actualFolder: string;
       if (folder === '-chapters') {
         actualFolder = 'recordings/-chapters';
@@ -79,7 +96,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       } else {
         actualFolder = folder;
       }
-      const videoPath = path.join(projectsDir, projectCode, actualFolder, filename);
+      const videoPath = path.join(baseDir, projectCode, actualFolder, filename);
 
       // Verify file exists
       if (!(await fs.pathExists(videoPath))) {

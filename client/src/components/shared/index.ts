@@ -25,3 +25,5 @@ export { EditableFileRow } from './EditableFileRow';
 export type { EditableFileRowProps } from './EditableFileRow';
 export { BatchToolbar } from './BatchToolbar';
 export type { BatchToolbarProps } from './BatchToolbar';
+export { VideoPlayerModal } from './VideoPlayerModal';
+export type { VideoPlayerModalProps } from './VideoPlayerModal';

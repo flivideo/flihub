@@ -1,17 +1,33 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import type { RelaySubfolder, RelayFileInfo } from '../../../../../shared/types';
 import { useRelayFiles } from '../../../hooks/useRelayApi';
+import { API_URL } from '../../../config';
+import { VideoPlayerModal } from '../VideoPlayerModal';
 import type { SyncDirection } from './types';
 import { formatSize, formatRelativeTime, defaultIsPush } from './types';
 
+// Video file extensions that can be played
+const VIDEO_EXTENSIONS = ['.mov', '.mp4', '.webm', '.mkv', '.avi'];
+
+function isVideoFile(filename: string): boolean {
+  const ext = filename.toLowerCase().slice(filename.lastIndexOf('.'));
+  return VIDEO_EXTENSIONS.includes(ext);
+}
+
 // ─── Chapter Group ───
 
-function ChapterGroup({ chapter, files }: { chapter: string; files: RelayFileInfo[] }) {
+interface ChapterGroupProps {
+  chapter: string;
+  files: RelayFileInfo[];
+  onPlay: (file: RelayFileInfo) => void;
+}
+
+function ChapterGroup({ chapter, files, onPlay }: ChapterGroupProps) {
   return (
     <>
       {/* Chapter header row */}
       <tr className="bg-surface-muted">
-        <td colSpan={3} className="px-4 py-1 text-xs font-semibold text-warm-secondary">
+        <td colSpan={4} className="px-4 py-1 text-xs font-semibold text-warm-secondary">
           Chapter {chapter}
         </td>
       </tr>
@@ -27,6 +43,19 @@ function ChapterGroup({ chapter, files }: { chapter: string; files: RelayFileInf
           <td className="px-4 py-1.5 text-xs text-warm-muted text-right">
             {formatRelativeTime(file.modified)}
           </td>
+          <td className="px-2 py-1.5 text-center w-10">
+            {isVideoFile(file.filename) && (
+              <button
+                onClick={() => onPlay(file)}
+                className="text-blue-500 hover:text-blue-600 transition-colors"
+                title={`Play ${file.filename}`}
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                </svg>
+              </button>
+            )}
+          </td>
         </tr>
       ))}
     </>
@@ -40,10 +69,13 @@ export interface FileDrawerProps {
   label: string;
   isCreator: boolean;
   direction: SyncDirection;
+  projectCode: string;
   onClose: () => void;
 }
 
-export function FileDrawer({ subfolder, label, isCreator, direction, onClose }: FileDrawerProps) {
+export function FileDrawer({ subfolder, label, isCreator, direction, projectCode, onClose }: FileDrawerProps) {
+  const [previewFile, setPreviewFile] = useState<RelayFileInfo | null>(null);
+
   // Show files from the side that has content based on actual divergence direction
   const source = direction === 'outgoing' ? 'project'
     : direction === 'incoming' ? 'relay'
@@ -66,6 +98,12 @@ export function FileDrawer({ subfolder, label, isCreator, direction, onClose }: 
   const totalChapters = grouped.size;
   const totalFiles = files.length;
   const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+
+  // Build video URL from project code and subfolder, respecting source
+  const getVideoUrl = (filename: string) => {
+    const base = `${API_URL}/api/video/${projectCode}/${subfolder}/${encodeURIComponent(filename)}`;
+    return source === 'relay' ? `${base}?source=relay` : base;
+  };
 
   return (
     <div className="bg-surface border border-warm rounded-lg overflow-hidden">
@@ -96,11 +134,17 @@ export function FileDrawer({ subfolder, label, isCreator, direction, onClose }: 
                 <th className="px-4 py-1.5">File</th>
                 <th className="px-4 py-1.5 text-right w-20">Size</th>
                 <th className="px-4 py-1.5 text-right w-32">Modified</th>
+                <th className="px-2 py-1.5 w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-warm">
               {Array.from(grouped.entries()).map(([chapter, chapterFiles]) => (
-                <ChapterGroup key={chapter} chapter={chapter} files={chapterFiles} />
+                <ChapterGroup
+                  key={chapter}
+                  chapter={chapter}
+                  files={chapterFiles}
+                  onPlay={setPreviewFile}
+                />
               ))}
             </tbody>
           </table>
@@ -113,6 +157,16 @@ export function FileDrawer({ subfolder, label, isCreator, direction, onClose }: 
           <span>{totalChapters} {totalChapters === 1 ? 'chapter' : 'chapters'} · {totalFiles} {totalFiles === 1 ? 'file' : 'files'}</span>
           <span>{formatSize(totalSize)}</span>
         </div>
+      )}
+
+      {/* Video Preview Modal */}
+      {previewFile && (
+        <VideoPlayerModal
+          title={previewFile.filename}
+          videoUrl={getVideoUrl(previewFile.filename)}
+          onClose={() => setPreviewFile(null)}
+          size={previewFile.size}
+        />
       )}
     </div>
   );

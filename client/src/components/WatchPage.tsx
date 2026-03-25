@@ -44,15 +44,11 @@ import { TranscriptSyncPanel } from './TranscriptSyncPanel';
 import { toast } from 'sonner';
 import { API_URL } from '../config';
 import type { RecordingFile } from '../../../shared/types';
-
-// FR-71: Speed presets
-const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3, 4];
-const DEFAULT_SPEED = 2;
+import { SPEED_PRESETS, DEFAULT_SPEED, SPEED_STORAGE_KEY } from '../hooks/useVideoPlayback';
 
 // FR-71: Size options
 // FR-91: Simplified to just N and L
 type VideoSize = 'normal' | 'large';
-// FR-91: Removed XL option
 const SIZE_LABELS: Record<VideoSize, string> = {
   normal: 'N',
   large: 'L',
@@ -60,7 +56,7 @@ const SIZE_LABELS: Record<VideoSize, string> = {
 
 // FR-71: localStorage keys
 const STORAGE_KEYS = {
-  speed: 'flihub:watch:playbackSpeed',
+  speed: SPEED_STORAGE_KEY,
   size: 'flihub:watch:videoSize',
   autoplay: 'flihub:watch:autoplay',
   autonext: 'flihub:watch:autonext',
@@ -413,6 +409,27 @@ export function WatchPage() {
       videoRef.current.play();
     }
   }, [isPlaying]);
+
+  // Keyboard: Space to pause/resume
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        if (videoRef.current) {
+          if (videoRef.current.paused) {
+            videoRef.current.play();
+          } else {
+            videoRef.current.pause();
+          }
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // FR-75: Seek video to a specific time (for transcript click-to-seek)
   const handleSeek = useCallback((time: number) => {

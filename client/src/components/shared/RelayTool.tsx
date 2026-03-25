@@ -205,6 +205,7 @@ export function RelayTool() {
           label={LANES.find(l => l.subfolder === openDrawer)?.label || openDrawer}
           isCreator={isCreator}
           direction={divergenceMap.get(openDrawer)?.direction ?? 'synced'}
+          projectCode={projectCode}
           onClose={() => setOpenDrawer(null)}
         />
       )}
