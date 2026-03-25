@@ -18,13 +18,15 @@ import fs from 'fs-extra';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import type { Config } from '../../../shared/types.js';
 
-// MIME types for video files
-const VIDEO_MIME_TYPES: Record<string, string> = {
+// MIME types for video and subtitle files
+const MEDIA_MIME_TYPES: Record<string, string> = {
   '.mov': 'video/quicktime',
   '.mp4': 'video/mp4',
   '.webm': 'video/webm',
   '.mkv': 'video/x-matroska',
   '.avi': 'video/x-msvideo',
+  '.srt': 'text/plain; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
 };
 
 export function createVideoRoutes(getConfig: () => Config): Router {
@@ -110,7 +112,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
 
       // Determine MIME type
       const ext = path.extname(videoPath).toLowerCase();
-      const contentType = VIDEO_MIME_TYPES[ext] || 'video/mp4';
+      const contentType = MEDIA_MIME_TYPES[ext] || 'video/mp4';
 
       // Handle Range requests for seeking
       const range = req.headers.range;
@@ -191,7 +193,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       const fileSize = stat.size;
 
       // Determine MIME type
-      const contentType = VIDEO_MIME_TYPES[ext] || 'video/mp4';
+      const contentType = MEDIA_MIME_TYPES[ext] || 'video/mp4';
 
       // Handle Range requests for seeking
       const range = req.headers.range;
@@ -271,7 +273,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       const fileSize = stat.size;
 
       // Determine MIME type
-      const contentType = VIDEO_MIME_TYPES[ext] || 'video/mp4';
+      const contentType = MEDIA_MIME_TYPES[ext] || 'video/mp4';
 
       // Handle Range requests for seeking
       const range = req.headers.range;

@@ -19,6 +19,8 @@ interface Props {
   projectCode: string;
   segmentName: string | null; // e.g., "01-1-intro" (null if chapter video)
   chapterName?: string | null; // FR-77: e.g., "01-intro" for chapter videos
+  /** Direct URL to an SRT file — bypasses segment/chapter API lookup */
+  srtUrl?: string | null;
   currentTime: number; // Video current time in seconds
   onSeek: (time: number) => void; // Callback to seek video
   isCollapsed: boolean;
@@ -29,6 +31,7 @@ export function TranscriptSyncPanel({
   projectCode,
   segmentName,
   chapterName,
+  srtUrl,
   currentTime,
   onSeek,
   isCollapsed,
@@ -63,11 +66,11 @@ export function TranscriptSyncPanel({
     [timedWords, currentTime]
   );
 
-  // Fetch SRT when segment or chapter changes
-  // FR-77: Support both segment SRTs and chapter SRTs
+  // Fetch SRT when segment, chapter, or direct URL changes
+  // FR-77: Support segment SRTs, chapter SRTs, and direct SRT URLs
   useEffect(() => {
-    // Need either segmentName OR chapterName
-    if ((!segmentName && !chapterName) || !projectCode) {
+    // Need srtUrl OR (segmentName/chapterName + projectCode)
+    if (!srtUrl && ((!segmentName && !chapterName) || !projectCode)) {
       setSrtContent('');
       setError(null);
       return;
@@ -78,30 +81,49 @@ export function TranscriptSyncPanel({
       setError(null);
 
       try {
-        // FR-77: Use different endpoint for chapter vs segment
-        const url = chapterName
-          ? `${API_URL}/api/query/projects/${projectCode}/transcripts/chapters/${chapterName}/srt`
-          : `${API_URL}/api/query/projects/${projectCode}/transcripts/${segmentName}/srt`;
-
-        const response = await fetch(url);
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.srt?.content) {
-            setSrtContent(data.srt.content);
-          } else {
+        if (srtUrl) {
+          // Direct SRT URL — fetch raw text content
+          const response = await fetch(srtUrl);
+          if (response.ok) {
+            const text = await response.text();
+            if (text.trim()) {
+              setSrtContent(text);
+            } else {
+              setSrtContent('');
+              setError('SRT file is empty');
+            }
+          } else if (response.status === 404) {
             setSrtContent('');
-            setError('No SRT content');
+            setError('SRT file not found');
+          } else {
+            setError('Failed to load SRT');
           }
-        } else if (response.status === 404) {
-          setSrtContent('');
-          setError(
-            chapterName
-              ? 'Chapter SRT not found - regenerate chapter recording to create SRT'
-              : 'SRT file not found - transcribe this segment to enable sync'
-          );
         } else {
-          setError('Failed to load SRT');
+          // Standard segment/chapter API lookup
+          const url = chapterName
+            ? `${API_URL}/api/query/projects/${projectCode}/transcripts/chapters/${chapterName}/srt`
+            : `${API_URL}/api/query/projects/${projectCode}/transcripts/${segmentName}/srt`;
+
+          const response = await fetch(url);
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.srt?.content) {
+              setSrtContent(data.srt.content);
+            } else {
+              setSrtContent('');
+              setError('No SRT content');
+            }
+          } else if (response.status === 404) {
+            setSrtContent('');
+            setError(
+              chapterName
+                ? 'Chapter SRT not found - regenerate chapter recording to create SRT'
+                : 'SRT file not found - transcribe this segment to enable sync'
+            );
+          } else {
+            setError('Failed to load SRT');
+          }
         }
       } catch (err) {
         console.error('Error fetching SRT:', err);
@@ -112,7 +134,7 @@ export function TranscriptSyncPanel({
     };
 
     fetchSrt();
-  }, [projectCode, segmentName, chapterName]);
+  }, [projectCode, segmentName, chapterName, srtUrl]);
 
   // Auto-scroll to keep highlighted text visible
   useEffect(() => {

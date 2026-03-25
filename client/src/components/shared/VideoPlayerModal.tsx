@@ -1,10 +1,14 @@
 /**
  * Shared video player modal — used by IncomingVideoModal, RecordingVideoModal, and Relay previews.
  * Owns the modal shell (backdrop, header, video element, controls bar).
+ * Optionally shows synchronized transcript highlighting when transcript props are provided.
  */
 
+import { useState, useCallback } from 'react';
 import { useVideoPlayback, SPEED_PRESETS } from '../../hooks/useVideoPlayback';
 import { formatDuration, formatFileSize } from '../../utils/formatting';
+import { TranscriptSyncPanel } from '../TranscriptSyncPanel';
+import { parseRecordingFilename } from '../../../../shared/naming';
 
 export interface VideoPlayerModalProps {
   title: string;
@@ -12,9 +16,17 @@ export interface VideoPlayerModalProps {
   onClose: () => void;
   duration?: number | null;
   size?: number | null;
+  /** Optional: project code for transcript lookup */
+  projectCode?: string;
+  /** Optional: recording filename to derive segment name for transcript */
+  recordingName?: string | null;
+  /** Optional: show transcript sync panel (default false) */
+  showTranscript?: boolean;
+  /** Optional: direct URL to an SRT file — bypasses segment API lookup */
+  srtUrl?: string | null;
 }
 
-export function VideoPlayerModal({ title, videoUrl, onClose, duration, size }: VideoPlayerModalProps) {
+export function VideoPlayerModal({ title, videoUrl, onClose, duration, size, projectCode, recordingName, showTranscript = false, srtUrl }: VideoPlayerModalProps) {
   const {
     videoRef,
     isPlaying,
@@ -23,6 +35,25 @@ export function VideoPlayerModal({ title, videoUrl, onClose, duration, size }: V
     handleSpeedChange,
     videoEventHandlers,
   } = useVideoPlayback({ onEscape: onClose });
+
+  const [currentTime, setCurrentTime] = useState(0);
+  const [transcriptCollapsed, setTranscriptCollapsed] = useState(false);
+
+  // Derive segmentName from recordingName
+  const segmentName = (() => {
+    if (!recordingName) return null;
+    const parsed = parseRecordingFilename(recordingName);
+    if (!parsed) return null;
+    return `${parsed.chapter}-${parsed.sequence}-${parsed.name}`;
+  })();
+
+  const handleSeek = useCallback((time: number) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+    }
+  }, [videoRef]);
+
+  const showTranscriptPanel = showTranscript && (!!srtUrl || (!!projectCode && !!segmentName));
 
   return (
     <div
@@ -63,6 +94,7 @@ export function VideoPlayerModal({ title, videoUrl, onClose, duration, size }: V
             autoPlay
             className="w-full h-full object-contain"
             {...videoEventHandlers}
+            onTimeUpdate={showTranscriptPanel ? (e) => setCurrentTime((e.target as HTMLVideoElement).currentTime) : undefined}
           />
         </div>
 
@@ -110,6 +142,19 @@ export function VideoPlayerModal({ title, videoUrl, onClose, duration, size }: V
             </div>
           </div>
         </div>
+
+        {/* Transcript Sync Panel */}
+        {showTranscriptPanel && (
+          <TranscriptSyncPanel
+            projectCode={projectCode || ''}
+            segmentName={segmentName}
+            srtUrl={srtUrl}
+            currentTime={currentTime}
+            onSeek={handleSeek}
+            isCollapsed={transcriptCollapsed}
+            onToggleCollapse={() => setTranscriptCollapsed((prev) => !prev)}
+          />
+        )}
       </div>
     </div>
   );

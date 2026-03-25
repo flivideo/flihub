@@ -160,14 +160,24 @@ export function FileDrawer({ subfolder, label, isCreator, direction, projectCode
       )}
 
       {/* Video Preview Modal */}
-      {previewFile && (
-        <VideoPlayerModal
-          title={previewFile.filename}
-          videoUrl={getVideoUrl(previewFile.filename)}
-          onClose={() => setPreviewFile(null)}
-          size={previewFile.size}
-        />
-      )}
+      {previewFile && (() => {
+        // Check for companion .srt file in the file list
+        const baseName = previewFile.filename.replace(/\.[^.]+$/, '');
+        const srtFile = files.find(f => f.filename === `${baseName}.srt`);
+        const srtUrl = srtFile ? getVideoUrl(srtFile.filename) : null;
+        return (
+          <VideoPlayerModal
+            title={previewFile.filename}
+            videoUrl={getVideoUrl(previewFile.filename)}
+            onClose={() => setPreviewFile(null)}
+            size={previewFile.size}
+            projectCode={projectCode}
+            recordingName={previewFile.filename}
+            showTranscript={true}
+            srtUrl={srtUrl}
+          />
+        );
+      })()}
     </div>
   );
 }

@@ -34,6 +34,7 @@ import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
 import { OpenFolderButton, SyncIndicator, RelayIndicator } from './components/shared';
 import { HeaderDropdown } from './components/HeaderDropdown';
+import { RecentlyNamedStrip } from './components/RecentlyNamedStrip';
 import { useOpenFolder } from './hooks/useOpenFolder';
 import ApiExplorer from './components/ApiExplorer';
 import DeveloperDrawer from './components/DeveloperDrawer';
@@ -725,35 +726,14 @@ function App() {
               )}
             </section>
 
-            {/* FR-50: Recent Renames Section */}
-            {recentRenames?.renames && recentRenames.renames.length > 0 && (
-              <section className="mt-6">
-                <h3 className="text-sm font-medium text-warm-muted mb-2">Recent Renames</h3>
-                <div className="bg-surface rounded-lg border border-warm divide-y divide-warm">
-                  {recentRenames.renames.map((rename) => (
-                    <div
-                      key={rename.id}
-                      className="flex items-center justify-between px-3 py-2 text-sm"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-mono text-warm-secondary truncate">{rename.newName}</span>
-                        <span className="text-warm-muted">←</span>
-                        <span className="font-mono text-warm-muted truncate text-xs">
-                          {rename.originalName}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleUndoRename(rename.id)}
-                        disabled={undoRenameMutation.isPending}
-                        className="ml-2 px-2 py-1 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
-                      >
-                        Undo
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-warm-muted mt-1">Renames expire after 10 minutes</p>
-              </section>
+            {/* Recently Named — playable card strip with undo */}
+            {recentRenames?.renames && (
+              <RecentlyNamedStrip
+                renames={recentRenames.renames}
+                projectCode={config?.activeProject || ''}
+                onUndo={handleUndoRename}
+                undoPending={undoRenameMutation.isPending}
+              />
             )}
           </>
         )}
