@@ -21,7 +21,6 @@ export function ChapterHelpPanel() {
 
         {/* Scenario 1: Insert a new chapter */}
         <HelpSection
-          id="insert"
           title="Insert a New Chapter"
           expanded={expanded === 'insert'}
           onToggle={() => toggle('insert')}
@@ -63,7 +62,6 @@ export function ChapterHelpPanel() {
 
         {/* Scenario 2: Move files between chapters */}
         <HelpSection
-          id="move"
           title="Move Files to Another Chapter"
           expanded={expanded === 'move'}
           onToggle={() => toggle('move')}
@@ -81,7 +79,6 @@ export function ChapterHelpPanel() {
 
         {/* Scenario 3: Swap chapters */}
         <HelpSection
-          id="swap"
           title="Swap Two Chapters"
           expanded={expanded === 'swap'}
           onToggle={() => toggle('swap')}
@@ -99,7 +96,6 @@ export function ChapterHelpPanel() {
 
         {/* Scenario 4: Rename a chapter number */}
         <HelpSection
-          id="rename"
           title="Rename a Chapter Number"
           expanded={expanded === 'rename'}
           onToggle={() => toggle('rename')}
@@ -114,7 +110,6 @@ export function ChapterHelpPanel() {
 
         {/* Scenario 5: Inline editing */}
         <HelpSection
-          id="inline"
           title="Edit Individual Files"
           expanded={expanded === 'inline'}
           onToggle={() => toggle('inline')}
@@ -169,7 +164,6 @@ export function ChapterHelpPanel() {
 }
 
 interface HelpSectionProps {
-  id: string;
   title: string;
   expanded: boolean;
   onToggle: () => void;

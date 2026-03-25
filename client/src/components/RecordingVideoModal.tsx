@@ -7,6 +7,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { API_URL } from '../config';
+import { formatFileSize } from '../utils/formatting';
 
 // Speed presets (shared with WatchPage and IncomingVideoModal)
 const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3];
@@ -83,14 +84,8 @@ export function RecordingVideoModal({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Format file size helper
-  const formatFileSize = (bytes?: number) => {
-    if (bytes == null) return '--';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-  };
+  // Format file size helper — wraps canonical with null handling
+  const formatSize = (bytes?: number) => bytes == null ? '--' : formatFileSize(bytes);
 
   return (
     <div
@@ -156,7 +151,7 @@ export function RecordingVideoModal({
             </button>
             <span className="font-mono text-sm text-warm-secondary">{formatDuration(duration)}</span>
             <span className="text-sm text-warm-muted">|</span>
-            <span className="text-sm text-warm-secondary">{formatFileSize(size)}</span>
+            <span className="text-sm text-warm-secondary">{formatSize(size)}</span>
           </div>
 
           {/* Right: Speed Controls */}

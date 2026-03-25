@@ -130,6 +130,9 @@ export interface RelayFilesResponse {
   error?: string;
 }
 
+// Canonical sync direction type — used by relay divergence and UI components
+export type SyncDirection = 'synced' | 'outgoing' | 'incoming' | 'both';
+
 // B047: Divergence detection — compare local vs relay per subfolder
 export interface RelayDivergenceInfo {
   subfolder: RelaySubfolder;
@@ -137,7 +140,7 @@ export interface RelayDivergenceInfo {
   relay: { fileCount: number; totalSize: number; files: string[] };
   localOnly: string[];    // files in local but not in relay (outgoing)
   relayOnly: string[];    // files in relay but not in local (incoming)
-  direction: 'synced' | 'outgoing' | 'incoming' | 'both'; // overall sync direction
+  direction: SyncDirection; // overall sync direction
   folderExists: boolean;  // whether the local folder exists
 }
 

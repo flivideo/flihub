@@ -139,7 +139,11 @@ function TranscriptionBadge({
       );
       return res.json();
     },
-    refetchInterval: 10000, // Poll every 10 seconds for status updates
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      // Only poll when transcription is in progress; stop when complete or absent
+      return (status === 'queued' || status === 'transcribing') ? 10000 : false;
+    },
   });
 
   // Enhancement A: Mutation to manually queue transcription

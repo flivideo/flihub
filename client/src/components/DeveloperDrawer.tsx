@@ -23,6 +23,7 @@ import {
   useDeveloperConfig,
   useDeveloperTelemetry,
 } from '../hooks/useApi';
+import { formatFileSize } from '../utils/formatting';
 import { QUERY_KEYS } from '../constants/queryKeys';
 
 interface DeveloperDrawerProps {
@@ -180,14 +181,8 @@ export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProp
     toast.success('File refreshed');
   };
 
-  // Format file size
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-  };
+  // Format file size — use canonical utility
+  const formatSize = formatFileSize;
 
   return (
     <div

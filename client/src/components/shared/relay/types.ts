@@ -2,7 +2,15 @@
 import type {
   RelaySubfolder,
   RelayDivergenceInfo,
+  SyncDirection,
 } from '../../../../../shared/types';
+import { formatFileSize } from '../../../utils/formatting';
+
+// Re-export SyncDirection from shared canonical source
+export type { SyncDirection } from '../../../../../shared/types';
+
+// Re-export formatFileSize as formatSize for relay consumers
+export const formatSize = formatFileSize;
 
 // ─── Lane Configuration ───
 
@@ -21,18 +29,7 @@ export const LANES: LaneConfig[] = [
   { key: 'final', label: 'Final' },
 ];
 
-// ─── Sync Direction ───
-
-export type SyncDirection = 'synced' | 'outgoing' | 'incoming' | 'both';
-
 // ─── Helpers ───
-
-export function formatSize(bytes: number): string {
-  if (bytes === 0) return '0 MB';
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-}
 
 export function formatRelativeTime(isoDate: string): string {
   const date = new Date(isoDate);
@@ -100,7 +97,7 @@ export function getActionLabel(direction: SyncDirection, isCreator: boolean): st
     return 'Sync Needed';
   }
   // synced — show default based on role expectation
-  return isCreator ? 'Push to Relay' : 'Push to Relay';
+  return 'Push to Relay';
 }
 
 // Default push direction hint for when synced (role-based suggestion)

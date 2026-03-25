@@ -56,7 +56,7 @@ export function FinalLane({
             >
               <span className="font-mono truncate">{v.filename}</span>
               <span className="text-warm-muted ml-1 shrink-0">
-                {(v.size / (1024 * 1024)).toFixed(1)} MB
+                {formatSize(v.size)}
               </span>
             </button>
           ))}
