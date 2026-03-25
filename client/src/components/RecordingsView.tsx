@@ -19,6 +19,7 @@ import { VideoTranscriptModal } from './VideoTranscriptModal';
 // FR-131: RenameLabelModal removed - bulk rename moved to Manage panel
 import { ChapterPanel } from './ChapterPanel';
 import { ChapterHelpPanel } from './ChapterHelpPanel';
+import { DamHelpPanel } from './DamHelpPanel';
 import { ChapterRecordingModal } from './ChapterRecordingModal';
 import { RecordingVideoModal } from './RecordingVideoModal';
 import { EditableFileRow } from './shared/EditableFileRow';
@@ -1473,6 +1474,25 @@ export function RecordingsView() {
         {/* Slide-out panel */}
         <div className="h-full w-80 translate-x-full group-hover/help:translate-x-0 transition-transform duration-200 ease-out">
           <ChapterHelpPanel />
+        </div>
+      </div>
+
+      {/* DAM & Archiving slide-out - positioned below Help panel */}
+      <div className="fixed right-0 bottom-4 z-40 group/dam" style={{ top: 'calc(20rem + 8rem)' }}>
+        {/* Hover trigger tab */}
+        <div className="absolute right-0 top-0 h-full flex items-start pt-8">
+          <div className="bg-surface-muted border border-r-0 border-warm-strong rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover/dam:opacity-0 transition-opacity">
+            <span
+              className="text-xs font-medium text-warm-secondary"
+              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+            >
+              DAM
+            </span>
+          </div>
+        </div>
+        {/* Slide-out panel */}
+        <div className="h-full w-80 translate-x-full group-hover/dam:translate-x-0 transition-transform duration-200 ease-out">
+          <DamHelpPanel />
         </div>
       </div>
 

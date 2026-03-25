@@ -238,6 +238,11 @@ export async function renameCoreFiles(
   const oldPath = path.join(paths.recordings, oldFilename);
   const newPath = path.join(paths.recordings, newFilename);
 
+  // Guard: prevent silent overwrite of existing files (POSIX fs.rename overwrites without error)
+  if (await fs.pathExists(newPath)) {
+    throw new Error(`Target file already exists: ${newFilename}`);
+  }
+
   // Rename the recording file
   await fs.rename(oldPath, newPath);
 

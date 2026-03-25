@@ -87,14 +87,17 @@ export function ChapterHelpPanel() {
           onToggle={() => toggle('swap')}
         >
           <p className="text-warm-muted text-xs">
-            Available in <strong>Manage tab</strong>. Swaps all files between two chapters using chapter 99 as a temporary staging area.
+            Swaps all files between two chapters using chapter 99 as a temporary staging area.
+          </p>
+          <p className="text-[11px] text-amber-600 mt-1">
+            API only — no UI button yet. Use the inline chapter editor on individual files as a workaround.
           </p>
           <p className="text-[11px] text-warm-faint mt-1 italic">
             Example: Swap Ch 02 ↔ Ch 03 to reorder your content.
           </p>
         </HelpSection>
 
-        {/* Scenario 4: Rename a chapter */}
+        {/* Scenario 4: Rename a chapter number */}
         <HelpSection
           id="rename"
           title="Rename a Chapter Number"
@@ -102,10 +105,10 @@ export function ChapterHelpPanel() {
           onToggle={() => toggle('rename')}
         >
           <p className="text-warm-muted text-xs">
-            Available in <strong>Manage tab</strong>. Changes the chapter number on all files in a chapter (e.g. Ch 03 → Ch 05).
+            Changes the chapter number on all files in a chapter (e.g. Ch 03 → Ch 05). Use <strong>inline editing</strong> — click the chapter number on any file to change it, then apply to all files in the chapter.
           </p>
           <p className="text-[11px] text-warm-faint mt-1 italic">
-            Does not cascade — if Ch 05 already has files, the rename will merge them.
+            Does not cascade — will block if the target chapter already has files.
           </p>
         </HelpSection>
 
@@ -133,11 +136,11 @@ export function ChapterHelpPanel() {
           <div className="text-xs text-warm-muted space-y-1">
             <div className="flex items-start gap-2">
               <span className="font-mono text-warm-faint w-24 flex-shrink-0">Recordings</span>
-              <span>Split, Move, Inline Edit, Tags</span>
+              <span>Split, Move, Inline Edit, Tags, Batch Rename</span>
             </div>
             <div className="flex items-start gap-2">
               <span className="font-mono text-warm-faint w-24 flex-shrink-0">Manage</span>
-              <span>Rename Chapter, Swap Chapters</span>
+              <span>Regen Shadows/Transcripts, Relay Sync</span>
             </div>
           </div>
         </div>
@@ -151,7 +154,12 @@ export function ChapterHelpPanel() {
             Safety
           </h4>
           <p className="text-[11px] text-warm-muted">
-            All operations use <strong>rename</strong> (move), never delete. An <strong>undo</strong> toast appears for 30 seconds after batch operations. For extra safety, use <strong>→ Safe</strong> on critical recordings first.
+            All operations use <strong>rename</strong> (move), never delete. Collisions are blocked — if a target file already exists, the operation will stop with an error. An <strong>undo</strong> toast appears for 30 seconds after batch operations.
+          </p>
+          <p className="text-[11px] text-warm-muted mt-1.5">
+            <strong>Before big operations:</strong> Run{' '}
+            <code className="bg-surface-hover px-1 rounded font-mono">dam archive appydave &lt;project&gt;</code>{' '}
+            in terminal to back up to the T7 drive first. See the <strong>DAM</strong> tab below for details.
           </p>
         </div>
 
