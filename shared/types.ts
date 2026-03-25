@@ -50,6 +50,8 @@ export interface RelayProjectSyncInfo extends RelayProjectInfo {
     'edit-1st': RelaySyncStatus;
     'edit-2nd': RelaySyncStatus;
   };
+  // FR-147: Whether the project directory exists locally in projectsRootDirectory
+  projectExists: boolean;
 }
 
 export interface RelayBrowseResult {
@@ -90,6 +92,8 @@ export interface RelayCollectResponse {
   output?: string;
   subfolder?: string;
   error?: string;
+  // FR-147: returned when collect is blocked because project doesn't exist locally
+  missingProject?: string;
 }
 
 export interface RelayVersionsResponse {

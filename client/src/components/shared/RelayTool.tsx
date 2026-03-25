@@ -11,7 +11,9 @@ import {
   useRelayVersions,
   useRelayPromote,
   useEnsureFolders,
+  useEnhancedRelayBrowse,
 } from '../../hooks/useRelayApi';
+import { useSyncPull } from '../../hooks/useSyncApi';
 import { useEnvironment } from '../../hooks/useConfigApi';
 import { useConfig } from '../../hooks/useApi';
 import { useOpenFolder } from '../../hooks/useOpenFolder';
@@ -20,6 +22,7 @@ import type {
   RelayFileInfo,
   RelayActivityEvent,
   RelayDivergenceInfo,
+  RelayProjectSyncInfo,
 } from '../../../../shared/types';
 
 // ─── Lane Configuration ───
@@ -135,6 +138,7 @@ export function RelayTool() {
 
   const { data: status, isLoading: statusLoading } = useRelayStatus();
   const { data: browseData } = useRelayBrowse();
+  const { data: enhancedBrowse } = useEnhancedRelayBrowse();
   const { data: divergenceData } = useRelayDivergence();
   const { data: activityData } = useRelayActivity();
   const versions = useRelayVersions();
@@ -147,8 +151,24 @@ export function RelayTool() {
   const [openDrawer, setOpenDrawer] = useState<RelaySubfolder | null>(null);
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
 
+  const syncPull = useSyncPull();
   const isConfigured = status?.configured && status?.enabled;
   const projectCode = config?.activeProject || '';
+
+  // FR-147: Identify relay projects blocked because they don't exist locally
+  const blockedProjects = useMemo(() => {
+    const blocked: RelayProjectSyncInfo[] = [];
+    if (enhancedBrowse?.projects) {
+      for (const p of enhancedBrowse.projects) {
+        const sp = p as RelayProjectSyncInfo;
+        if ('projectExists' in sp && sp.projectExists === false) {
+          const totalRelayFiles = Object.values(sp.subfolders).reduce((s, v) => s + v.fileCount, 0);
+          if (totalRelayFiles > 0) blocked.push(sp);
+        }
+      }
+    }
+    return blocked;
+  }, [enhancedBrowse?.projects]);
 
   // Build a map of divergence info by subfolder
   const divergenceMap = useMemo(() => {
@@ -226,6 +246,15 @@ export function RelayTool() {
           Relay connected
         </span>
       </div>
+
+      {/* FR-147: Blocked Projects — relay items waiting for video-project sync */}
+      {blockedProjects.length > 0 && (
+        <BlockedProjectsBanner
+          projects={blockedProjects}
+          onSyncVideoProject={() => syncPull.mutate('video-project')}
+          isSyncing={syncPull.isPending}
+        />
+      )}
 
       {/* Kanban Board — four lane cards with arrows between */}
       <div className="flex items-start gap-2">
@@ -715,6 +744,63 @@ function ActivityFeed({ events }: { events?: RelayActivityEvent[] }) {
             </span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── FR-147: Blocked Projects Banner ───
+
+function BlockedProjectsBanner({
+  projects,
+  onSyncVideoProject,
+  isSyncing,
+}: {
+  projects: RelayProjectSyncInfo[];
+  onSyncVideoProject: () => void;
+  isSyncing: boolean;
+}) {
+  const totalFiles = projects.reduce(
+    (sum, p) => sum + Object.values(p.subfolders).reduce((s, v) => s + v.fileCount, 0),
+    0
+  );
+
+  return (
+    <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-amber-800 flex items-center gap-1.5">
+            <span>&#9888;</span>
+            Waiting for project sync
+          </h3>
+          <p className="text-xs text-amber-700 mt-1">
+            {projects.length} {projects.length === 1 ? 'project has' : 'projects have'} {totalFiles} {totalFiles === 1 ? 'file' : 'files'} in
+            relay, but {projects.length === 1 ? "doesn't" : "don't"} exist locally yet. Sync Video Project to unblock.
+          </p>
+        </div>
+        <button
+          onClick={onSyncVideoProject}
+          disabled={isSyncing}
+          className="shrink-0 px-3 py-1.5 text-sm font-medium bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSyncing ? 'Syncing...' : 'Sync Video Project'}
+        </button>
+      </div>
+
+      {/* Project list */}
+      <div className="flex flex-wrap gap-2">
+        {projects.map((p) => {
+          const fileCount = Object.values(p.subfolders).reduce((s, v) => s + v.fileCount, 0);
+          return (
+            <span
+              key={p.projectCode}
+              className="inline-flex items-center gap-1.5 text-xs font-mono bg-amber-100 text-amber-800 rounded px-2 py-1"
+            >
+              {p.projectCode}
+              <span className="text-amber-600">{fileCount} {fileCount === 1 ? 'file' : 'files'}</span>
+            </span>
+          );
+        })}
       </div>
     </div>
   );

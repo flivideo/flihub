@@ -164,6 +164,10 @@ export function createRelayRoutes(getConfig: () => Config) {
         // enhanced-browse: When detailed=true, scan local project dirs in parallel for sync status
         if (detailed && projectsRootDir) {
           const localDir = path.join(projectsRootDir, entry.name);
+          // FR-147: Check if project directory itself exists locally
+          let projectExists = false;
+          try { projectExists = (await fs.stat(localDir)).isDirectory(); } catch { /* noop */ }
+
           const localResults = await Promise.all(
             subfolderNames.map(sub => countFiles(path.join(localDir, sub)))
           );
@@ -182,6 +186,7 @@ export function createRelayRoutes(getConfig: () => Config) {
             subfolders: subfolders as RelayProjectInfo['subfolders'],
             localSubfolders: localSubfolders as RelayProjectSyncInfo['localSubfolders'],
             syncStatus: syncStatus as RelayProjectSyncInfo['syncStatus'],
+            projectExists,
           });
         } else {
           projects.push({
@@ -391,6 +396,19 @@ export function createRelayRoutes(getConfig: () => Config) {
       }
 
       const { projectDir, relayProjectDir } = paths;
+
+      // FR-147: Block collect if the project directory doesn't exist locally.
+      // Subfolder creation within an existing project is fine, but we must not
+      // auto-create the project-level directory outside git control.
+      const projectDirExists = await fs.pathExists(projectDir);
+      if (!projectDirExists) {
+        return res.json({
+          success: false,
+          error: 'Project not found locally. Sync Video Project first.',
+          missingProject: paths.projectCode,
+        });
+      }
+
       const sourceDir = path.join(relayProjectDir, subfolder) + '/';
       const destDir = path.join(projectDir, subfolder) + '/';
 

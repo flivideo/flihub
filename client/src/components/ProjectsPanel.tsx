@@ -351,6 +351,32 @@ function RelayIndicator({ relayProject }: { relayProject?: RelayProjectInfo }) {
 
   // Enhanced: kanban mini-badges with sync status
   const syncProject = relayProject as RelayProjectSyncInfo;
+
+  // FR-147: If project doesn't exist locally, show a blocked indicator
+  if ('projectExists' in syncProject && syncProject.projectExists === false) {
+    const totalFiles = Object.values(syncProject.subfolders).reduce((s, v) => s + v.fileCount, 0);
+    if (totalFiles === 0) return null;
+    return (
+      <span
+        className="inline-flex items-center gap-0.5 cursor-help relative"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700">
+          &#9888; {totalFiles}
+        </span>
+        {isHovered && (
+          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1.5 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+            <div className="font-medium mb-1 text-amber-300">Project not synced locally</div>
+            <div className="text-gray-300">{totalFiles} files waiting in relay</div>
+            <div className="text-gray-400">Sync Video Project to unblock</div>
+          </div>
+        )}
+      </span>
+    );
+  }
+
   const subfolders: RelaySubfolder[] = ['recordings', 'edit-1st', 'edit-2nd'];
 
   // Build badges — only show subfolders that have files on either side

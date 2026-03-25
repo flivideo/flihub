@@ -136,7 +136,11 @@ export function useRelayCollect() {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayDivergence });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayActivity });
       } else {
-        toast.error(data.error || 'Collect failed');
+        // FR-147: Show specific message when blocked by missing project
+        const msg = data.missingProject
+          ? `Project "${data.missingProject}" not found locally — sync Video Project first`
+          : (data.error || 'Collect failed');
+        toast.error(msg);
       }
     },
     onError: () => toast.error('Collect failed'),

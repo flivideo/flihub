@@ -1571,7 +1571,12 @@ describe('auto-create edit folders on collect', () => {
   });
 
   it('POST /collect with subfolder=recordings auto-creates edit-1st and edit-2nd when missing', async () => {
-    mockPathExists.mockResolvedValue(false);
+    // FR-147: pathExists must return true for the project dir (so collect isn't blocked)
+    // but false for the edit subdirs (so they get auto-created)
+    mockPathExists.mockImplementation(async (p: string) => {
+      if (typeof p === 'string' && (p.includes('edit-1st') || p.includes('edit-2nd'))) return false;
+      return true; // project dir exists
+    });
     const app = buildRelayApp();
     const res = await request(app)
       .post('/api/relay/collect')
@@ -1611,7 +1616,11 @@ describe('auto-create edit folders on collect', () => {
   });
 
   it('POST /collect with subfolder=recordings logs activity for each created folder', async () => {
-    mockPathExists.mockResolvedValue(false);
+    // FR-147: pathExists must return true for project dir, false for edit subdirs
+    mockPathExists.mockImplementation(async (p: string) => {
+      if (typeof p === 'string' && (p.includes('edit-1st') || p.includes('edit-2nd'))) return false;
+      return true;
+    });
     const app = buildRelayApp();
     await request(app)
       .post('/api/relay/collect')
@@ -1974,5 +1983,90 @@ describe('GET /api/relay/browse?detailed=true', () => {
     expect(c32.localSubfolders).toBeDefined();
     expect(b17.syncStatus).toBeDefined();
     expect(c32.syncStatus).toBeDefined();
+  });
+
+  // FR-147: projectExists field
+  it('returns projectExists=true when local project directory exists', async () => {
+    mockReaddir.mockImplementation(async (dir: string, opts?: { withFileTypes?: boolean }) => {
+      if (opts?.withFileTypes) {
+        return [{ name: 'b17-test', isDirectory: () => true }];
+      }
+      if (dir.includes('relay') && dir.includes('recordings')) return ['01-1-intro.mov'];
+      return [];
+    });
+    mockStat.mockImplementation(async (p: string) => {
+      // Project dir exists and is a directory
+      if (typeof p === 'string' && p.includes('v-appydave/b17-test') && !p.includes('/recordings') && !p.includes('/edit-')) {
+        return { isDirectory: () => true, isFile: () => false, size: 0 };
+      }
+      return { isFile: () => true, isDirectory: () => false, size: 1024 };
+    });
+
+    const app = buildRelayApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
+    const res = await request(app).get('/api/relay/browse?detailed=true');
+
+    const project = res.body.projects[0];
+    expect(project.projectExists).toBe(true);
+  });
+
+  it('returns projectExists=false when local project directory does not exist', async () => {
+    mockReaddir.mockImplementation(async (dir: string, opts?: { withFileTypes?: boolean }) => {
+      if (opts?.withFileTypes) {
+        return [{ name: 'c30-new-project', isDirectory: () => true }];
+      }
+      if (dir.includes('relay') && dir.includes('recordings')) return ['01-1-intro.mov'];
+      return [];
+    });
+    // stat throws for non-existent project dir (simulating ENOENT)
+    mockStat.mockImplementation(async (p: string) => {
+      if (typeof p === 'string' && p.includes('v-appydave/c30-new-project') && !p.includes('/recordings') && !p.includes('/edit-')) {
+        throw new Error('ENOENT');
+      }
+      return { isFile: () => true, isDirectory: () => false, size: 1024 };
+    });
+
+    const app = buildRelayApp({ projectsRootDirectory: '~/dev/video-projects/v-appydave' });
+    const res = await request(app).get('/api/relay/browse?detailed=true');
+
+    const project = res.body.projects[0];
+    expect(project.projectExists).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FR-147: Collect blocks when project directory does not exist locally
+// ---------------------------------------------------------------------------
+
+describe('FR-147: collect blocks for missing projects', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearActivityLog();
+  });
+
+  it('POST /collect returns error when project directory does not exist', async () => {
+    mockPathExists.mockResolvedValue(false);
+    const app = buildRelayApp();
+    const res = await request(app)
+      .post('/api/relay/collect')
+      .send({ subfolder: 'recordings' });
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toContain('Project not found locally');
+    expect(res.body.missingProject).toBe('b17-test');
+    // rsync should NOT have been called
+    expect(mockExecFile).not.toHaveBeenCalled();
+    // ensureDir should NOT have been called
+    expect(mockEnsureDir).not.toHaveBeenCalled();
+  });
+
+  it('POST /collect succeeds when project directory exists', async () => {
+    mockPathExists.mockResolvedValue(true);
+    mockExecFile.mockReturnValue({ stdout: 'received files', stderr: '' });
+    const app = buildRelayApp();
+    const res = await request(app)
+      .post('/api/relay/collect')
+      .send({ subfolder: 'edit-1st' });
+
+    expect(res.body.success).toBe(true);
   });
 });

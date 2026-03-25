@@ -18,7 +18,7 @@ Requirements index for FliHub.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
-| FR-147 | [Relay Project Awareness — Two-Pool Split](prd/fr-147-relay-project-awareness.md)               | 2026-03-25 | Proposed                                                        |
+| FR-147 | [Relay Project Awareness — Two-Pool Split](prd/fr-147-relay-project-awareness.md)               | 2026-03-25 | ✓ Implemented                                                   |
 | FR-145 | [Escape Key Closes Video Preview Modal](prd/fr-145-escape-closes-video-modal.md)                | 2026-03-16 | ✓ Implemented                                                   |
 | FR-144 | [Send Transcript to POEM WUI Workflow Intake](prd/fr-144-workflow-intake.md)                    | 2026-02-25 | ✓ Implemented                                                   |
 | FR-143 | [SRT Clipboard Copy Button](prd/fr-143-srt-clipboard.md)                                        | 2026-02-24 | ✓ Implemented                                                   |

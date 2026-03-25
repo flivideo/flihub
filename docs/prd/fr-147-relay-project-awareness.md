@@ -1,6 +1,6 @@
 # FR-147: Relay Project Awareness — Two-Pool Split
 
-**Status:** Proposed
+**Status:** Implemented
 **Added:** 2026-03-25
 **Priority:** HIGH — prevents silent data loss and editor confusion
 **Campaign:** Relay reliability

@@ -68,7 +68,7 @@ export function useSyncPull() {
       const data: SyncPullResponse = await res.json();
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, channel) => {
       if (data.success) {
         toast.success('Sync pull complete');
         if (data.restartInstructions) {
@@ -78,6 +78,13 @@ export function useSyncPull() {
           toast.warning(`${data.conflicts.length} conflict(s) detected`);
         }
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.syncStatus });
+        // FR-147: After video-project pull, re-evaluate relay pools —
+        // previously blocked projects may now exist locally
+        if (channel === 'video-project') {
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayEnhancedBrowse });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayDivergence });
+        }
       } else {
         toast.error(data.error || 'Pull failed');
       }

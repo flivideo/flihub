@@ -16,6 +16,20 @@ Track what was implemented, fixed, or changed and when.
 
 ## Per-Item History
 
+### FR-147: Relay Project Awareness — Two-Pool Split
+
+| Date       | Change                                      | Commit |
+| ---------- | ------------------------------------------- | ------ |
+| 2026-03-25 | Implemented two-pool relay split            | -      |
+
+**What was implemented:**
+- Server: Enhanced browse returns `projectExists: boolean` per relay project when `detailed=true`
+- Server: Collect endpoint rejects requests for non-existent projects instead of silently auto-creating dirs
+- Client: Blocked projects banner in RelayTool with file counts and one-click "Sync Video Project" button
+- Client: ProjectsPanel relay indicator shows amber warning badge for projects not synced locally
+- Client: After video-project pull, relay queries auto-invalidate so blocked items move to Ready pool
+- Works bidirectionally (Creator receiving and Editor receiving)
+
 ### UX Improvements Batch (I-2, R-1, R-2, R-4, R-5, P-3, C-1, C-2, C-3, C-4)
 
 | Date       | Change                                      | Commit |
