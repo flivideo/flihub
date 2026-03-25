@@ -18,6 +18,7 @@ import { TranscriptModal } from './TranscriptModal';
 import { VideoTranscriptModal } from './VideoTranscriptModal';
 // FR-131: RenameLabelModal removed - bulk rename moved to Manage panel
 import { ChapterPanel } from './ChapterPanel';
+import { ChapterHelpPanel } from './ChapterHelpPanel';
 import { ChapterRecordingModal } from './ChapterRecordingModal';
 import { RecordingVideoModal } from './RecordingVideoModal';
 import { EditableFileRow } from './shared/EditableFileRow';
@@ -1453,6 +1454,25 @@ export function RecordingsView() {
             currentChapter={currentChapter}
             onChapterClick={handleChapterClick}
           />
+        </div>
+      </div>
+
+      {/* Chapter Help slide-out - positioned below Chapters panel */}
+      <div className="fixed right-0 top-80 bottom-4 z-40 group/help">
+        {/* Hover trigger tab */}
+        <div className="absolute right-0 top-0 h-full flex items-start pt-8">
+          <div className="bg-surface-muted border border-r-0 border-warm-strong rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover/help:opacity-0 transition-opacity">
+            <span
+              className="text-xs font-medium text-warm-secondary"
+              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+            >
+              Help
+            </span>
+          </div>
+        </div>
+        {/* Slide-out panel */}
+        <div className="h-full w-80 translate-x-full group-hover/help:translate-x-0 transition-transform duration-200 ease-out">
+          <ChapterHelpPanel />
         </div>
       </div>
 
