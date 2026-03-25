@@ -6,5 +6,6 @@ export default defineConfig({
     server: {
         port: 5100,
         strictPort: true,
+        host: true, // Bind to 0.0.0.0 — accessible via Tailscale from other machines
     },
 });

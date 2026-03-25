@@ -7,7 +7,9 @@ import {
   type HttpMethod,
 } from '../../../shared/apiRegistry';
 
-const API_BASE_URL = 'http://localhost:5101';
+import { API_URL } from '../config';
+
+const API_BASE_URL = API_URL;
 
 interface ParamValues {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

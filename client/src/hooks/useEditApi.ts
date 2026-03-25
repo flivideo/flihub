@@ -8,7 +8,9 @@ import type {
   RestoreEditFolderResponse,
 } from '../../../shared/types';
 
-const API_BASE = 'http://localhost:5101/api';
+import { API_URL } from '../config';
+
+const API_BASE = `${API_URL}/api`;
 
 interface PrepData {
   success: boolean;

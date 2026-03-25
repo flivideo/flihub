@@ -7,6 +7,22 @@ import { expandPath } from '../utils/pathUtils.js';
 
 const execFileAsync = promisify(execFile);
 
+// Per-repo lock to prevent concurrent git operations (fetch vs pull race condition)
+const repoLocks = new Map<string, Promise<void>>();
+
+async function withRepoLock<T>(repoDir: string, fn: () => Promise<T>): Promise<T> {
+  const existing = repoLocks.get(repoDir);
+  let release: () => void;
+  const lock = new Promise<void>((resolve) => { release = resolve; });
+  // Wait for any existing operation to finish before starting ours
+  const run = (existing ?? Promise.resolve()).then(fn).finally(() => {
+    if (repoLocks.get(repoDir) === lock) repoLocks.delete(repoDir);
+    release!();
+  });
+  repoLocks.set(repoDir, lock);
+  return run;
+}
+
 async function getChannelStatus(channel: string, repoDir: string): Promise<SyncChannelStatus> {
   const now = new Date().toISOString();
 
@@ -126,13 +142,13 @@ export function createSyncRoutes(getConfig: () => Config) {
 
       // App code repo = where the server is running from
       const appCodeDir = process.cwd();
-      const appCode = await getChannelStatus('app-code', appCodeDir);
+      const appCode = await withRepoLock(appCodeDir, () => getChannelStatus('app-code', appCodeDir));
 
       // Video project repo (optional — only if projectsRootDirectory is configured)
       let videoProject: SyncChannelStatus | undefined;
       if (config.projectsRootDirectory) {
         const videoDir = expandPath(config.projectsRootDirectory);
-        videoProject = await getChannelStatus('video-project', videoDir);
+        videoProject = await withRepoLock(videoDir, () => getChannelStatus('video-project', videoDir));
       }
 
       res.json({
@@ -167,42 +183,45 @@ export function createSyncRoutes(getConfig: () => Config) {
         repoDir = expandPath(config.projectsRootDirectory);
       }
 
-      // Stage all changes
-      await execFileAsync('git', ['add', '-A'], { cwd: repoDir, timeout: 30000 });
+      const pushResult = await withRepoLock(repoDir, async (): Promise<SyncPushResponse> => {
+        // Stage all changes
+        await execFileAsync('git', ['add', '-A'], { cwd: repoDir, timeout: 30000 });
 
-      // Get list of staged files
-      const { stdout: diffOutput } = await execFileAsync(
-        'git', ['diff', '--cached', '--name-only'],
-        { cwd: repoDir, timeout: 10000 }
-      );
-      const files = diffOutput.trim().split('\n').filter(Boolean);
+        // Get list of staged files
+        const { stdout: diffOutput } = await execFileAsync(
+          'git', ['diff', '--cached', '--name-only'],
+          { cwd: repoDir, timeout: 10000 }
+        );
+        const files = diffOutput.trim().split('\n').filter(Boolean);
 
-      if (files.length === 0) {
-        res.json({ success: false, error: 'Nothing to commit' } as SyncPushResponse);
-        return;
-      }
+        if (files.length === 0) {
+          return { success: false, error: 'Nothing to commit' };
+        }
 
-      // Build commit message, commit, push
-      const commitMessage = buildCommitMessage(files);
-      await execFileAsync('git', ['commit', '-m', commitMessage], { cwd: repoDir, timeout: 30000 });
+        // Build commit message, commit, push
+        const commitMessage = buildCommitMessage(files);
+        await execFileAsync('git', ['commit', '-m', commitMessage], { cwd: repoDir, timeout: 30000 });
 
-      const { stdout: hashOutput } = await execFileAsync(
-        'git', ['rev-parse', '--short', 'HEAD'],
-        { cwd: repoDir, timeout: 5000 }
-      );
+        const { stdout: hashOutput } = await execFileAsync(
+          'git', ['rev-parse', '--short', 'HEAD'],
+          { cwd: repoDir, timeout: 5000 }
+        );
 
-      const { stdout: pushOutput, stderr: pushStderr } = await execFileAsync(
-        'git', ['push'],
-        { cwd: repoDir, timeout: 120000 }
-      );
+        const { stdout: pushOutput, stderr: pushStderr } = await execFileAsync(
+          'git', ['push'],
+          { cwd: repoDir, timeout: 120000 }
+        );
 
-      res.json({
-        success: true,
-        commitHash: hashOutput.trim(),
-        commitMessage,
-        filesCommitted: files.length,
-        output: pushOutput || pushStderr,
-      } as SyncPushResponse);
+        return {
+          success: true,
+          commitHash: hashOutput.trim(),
+          commitMessage,
+          filesCommitted: files.length,
+          output: pushOutput || pushStderr,
+        };
+      });
+
+      res.json(pushResult as SyncPushResponse);
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) } as SyncPushResponse);
     }
@@ -235,19 +254,22 @@ export function createSyncRoutes(getConfig: () => Config) {
         repoDir = expandPath(config.projectsRootDirectory);
       }
 
-      const { stdout, stderr } = await execFileAsync(
-        'git', ['pull', '--rebase'],
-        { cwd: repoDir, timeout: 120000 }
-      );
+      const result = await withRepoLock(repoDir, async (): Promise<SyncPullResponse> => {
+        const { stdout, stderr } = await execFileAsync(
+          'git', ['pull', '--rebase'],
+          { cwd: repoDir, timeout: 120000 }
+        );
 
-      const result: SyncPullResponse = {
-        success: true,
-        output: stdout || stderr,
-      };
+        const r: SyncPullResponse = {
+          success: true,
+          output: stdout || stderr,
+        };
 
-      if (channel === 'app-code') {
-        result.restartInstructions = 'App code updated. Restart the FliHub server to apply changes: npm run dev';
-      }
+        if (channel === 'app-code') {
+          r.restartInstructions = 'App code updated. Restart the FliHub server to apply changes: npm run dev';
+        }
+        return r;
+      });
 
       res.json(result);
     } catch (error) {
@@ -322,30 +344,34 @@ export function createSyncRoutes(getConfig: () => Config) {
         repoDir = expandPath(config.projectsRootDirectory);
       }
 
-      // Apply resolution
-      const checkoutFlag = resolution === 'keep-mine' ? '--ours' : '--theirs';
-      await execFileAsync('git', ['checkout', checkoutFlag, '--', file], { cwd: repoDir, timeout: 10000 });
-      await execFileAsync('git', ['add', file], { cwd: repoDir, timeout: 10000 });
+      const resolveResult = await withRepoLock(repoDir, async (): Promise<SyncResolveResponse> => {
+        // Apply resolution
+        const checkoutFlag = resolution === 'keep-mine' ? '--ours' : '--theirs';
+        await execFileAsync('git', ['checkout', checkoutFlag, '--', file], { cwd: repoDir, timeout: 10000 });
+        await execFileAsync('git', ['add', file], { cwd: repoDir, timeout: 10000 });
 
-      // Check remaining conflicts
-      const remaining = await parseConflictFiles(repoDir);
-      const remainingCount = remaining.length;
+        // Check remaining conflicts
+        const remaining = await parseConflictFiles(repoDir);
+        const remainingCount = remaining.length;
 
-      // If no conflicts remain, continue the rebase
-      if (remainingCount === 0) {
-        try {
-          await execFileAsync('git', ['rebase', '--continue'], {
-            cwd: repoDir,
-            timeout: 30000,
-            env: { ...process.env, GIT_EDITOR: 'true' },
-          });
-        } catch {
-          // rebase --continue may fail if there are more commits to rebase
-          // — that's okay, the next pull/status will show the state
+        // If no conflicts remain, continue the rebase
+        if (remainingCount === 0) {
+          try {
+            await execFileAsync('git', ['rebase', '--continue'], {
+              cwd: repoDir,
+              timeout: 30000,
+              env: { ...process.env, GIT_EDITOR: 'true' },
+            });
+          } catch {
+            // rebase --continue may fail if there are more commits to rebase
+            // — that's okay, the next pull/status will show the state
+          }
         }
-      }
 
-      res.json({ success: true, remainingConflicts: remainingCount } as SyncResolveResponse);
+        return { success: true, remainingConflicts: remainingCount };
+      });
+
+      res.json(resolveResult as SyncResolveResponse);
     } catch (error) {
       res.status(500).json({ success: false, error: String(error) } as SyncResolveResponse);
     }

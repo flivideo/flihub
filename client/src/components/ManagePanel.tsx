@@ -12,6 +12,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
+import { API_URL } from '../config';
 import { useRecordings, useConfig } from '../hooks/useApi';
 import { useRecordingsSocket, getSocket } from '../hooks/useSocket';
 import { formatFileSize, formatChapterTitle } from '../utils/formatting';
@@ -344,7 +345,7 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
             requestBody.chapterSettings = confirmedSettings;
           }
 
-          const response = await fetch(`http://localhost:5101${endpoint}`, {
+          const response = await fetch(`${API_URL}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody),

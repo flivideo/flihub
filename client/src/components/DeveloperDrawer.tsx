@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import Editor from '@monaco-editor/react';
+import { API_URL } from '../config';
 import {
   useDeveloperProjectState,
   useDeveloperConfig,
@@ -134,7 +135,7 @@ export default function DeveloperDrawer({ isOpen, onClose }: DeveloperDrawerProp
     if (!activeData) return;
 
     try {
-      const response = await fetch('http://localhost:5101/api/system/open-file-by-path', {
+      const response = await fetch(`${API_URL}/api/system/open-file-by-path`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filePath: activeData.filePath }),

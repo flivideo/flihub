@@ -10,6 +10,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { API_URL } from '../../config';
 import { getSocket } from '../../hooks/useSocket';
 import { SelectionBadge } from './SelectionBadge';
 
@@ -224,7 +225,7 @@ export function RegenToolbar({
 
     try {
       const endpoint = `/api/manage/regen-${type}`;
-      const response = await fetch(`http://localhost:5101${endpoint}`, {
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ files: targetFiles }),
