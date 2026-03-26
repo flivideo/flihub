@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project List — Table + Hover Card</title>
+<style>
+  :root {
+    --page-bg: #e8e0d4;
+    --surface: #f5f1eb;
+    --surface-muted: #eee8de;
+    --border: #d4cdc4;
+    --border-strong: #b8a99a;
+    --text-primary: #2a2018;
+    --text-secondary: #4a3e30;
+    --text-muted: #7a6e5e;
+
+    --blue-light: #dbeafe;
+    --blue-mid: #3b82f6;
+    --blue-dark: #1e40af;
+
+    --stage-plan: #a78bfa;
+    --stage-rec: #f87171;
+    --stage-1st: #fb923c;
+    --stage-2nd: #fbbf24;
+    --stage-rev: #34d399;
+    --stage-ready: #60a5fa;
+    --stage-pub: #818cf8;
+    --stage-arch: #9ca3af;
+
+    --row-h: 32px;
+    --card-w: 320px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    min-width: 1280px;
+  }
+
+  /* Banner */
+  .banner {
+    background: var(--text-primary);
+    color: var(--surface);
+    text-align: center;
+    padding: 6px 0;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    padding: 12px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-box {
+    flex: 0 0 260px;
+    height: 32px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: 13px;
+    background: #fff;
+    color: var(--text-primary);
+    outline: none;
+  }
+  .search-box:focus { border-color: var(--blue-mid); }
+
+  .pill-group { display: flex; gap: 4px; flex-wrap: wrap; }
+
+  .pill {
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 13px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+  }
+  .pill:hover { background: var(--border); }
+  .pill.active {
+    background: var(--text-primary);
+    color: var(--surface);
+    border-color: var(--text-primary);
+  }
+
+  .separator {
+    width: 1px;
+    height: 24px;
+    background: var(--border-strong);
+    margin: 0 4px;
+  }
+
+  .preset {
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 13px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .preset:hover { color: var(--text-primary); background: var(--surface-muted); }
+  .preset.active { color: var(--blue-dark); font-weight: 600; }
+
+  .result-count {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Table */
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--surface-muted);
+    border-bottom: 2px solid var(--border-strong);
+    padding: 0 8px;
+    height: 30px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  /* column widths */
+  .col-star { width: 32px; text-align: center; }
+  .col-code { width: 140px; }
+  .col-stage { width: 72px; }
+  .col-files { width: 56px; text-align: right; }
+  .col-trans { width: 76px; text-align: right; }
+  .col-final { width: 64px; text-align: center; }
+  .col-relay { width: 64px; text-align: center; }
+  .col-mod { width: 110px; text-align: right; }
+  .col-info { width: 32px; text-align: center; }
+
+  tbody tr {
+    height: var(--row-h);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .1s;
+  }
+  tbody tr:hover { background: var(--surface-muted); }
+
+  tbody tr.selected {
+    background: var(--blue-light);
+    border-left: 3px solid var(--blue-mid);
+  }
+  tbody tr.selected td:first-child { padding-left: 5px; }
+
+  tbody td {
+    padding: 0 8px;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+  }
+
+  /* Stage badge */
+  .stage-badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 18px;
+  }
+
+  /* Stage row tinting */
+  tr[data-stage="Plan"] { background: rgba(167,139,250,0.06); }
+  tr[data-stage="REC"]  { background: rgba(248,113,113,0.06); }
+  tr[data-stage="1st"]  { background: rgba(251,146,60,0.06); }
+  tr[data-stage="2nd"]  { background: rgba(251,191,36,0.06); }
+  tr[data-stage="Rev"]  { background: rgba(52,211,153,0.06); }
+  tr[data-stage="Ready"]{ background: rgba(96,165,250,0.06); }
+  tr[data-stage="Pub"]  { background: rgba(129,140,248,0.06); }
+  tr[data-stage="Arch"] { background: rgba(156,163,175,0.06); }
+  tr.selected[data-stage] { background: var(--blue-light); }
+
+  .star-cell { color: var(--text-muted); font-size: 14px; text-align: center; }
+  .star-cell.starred { color: #eab308; }
+
+  .final-yes { color: #16a34a; font-weight: 600; }
+  .final-no  { color: var(--text-muted); }
+  .relay-icon { font-size: 14px; }
+
+  .info-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text-muted);
+    padding: 0;
+    line-height: 1;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+  }
+  .info-btn:hover { background: var(--border); color: var(--text-primary); }
+  .info-btn.pinned { background: var(--blue-mid); color: #fff; }
+
+  /* Hover card */
+  .hover-card {
+    position: fixed;
+    width: var(--card-w);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.06);
+    padding: 14px 16px;
+    z-index: 100;
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity .15s, transform .15s;
+    display: none;
+  }
+  .hover-card.visible {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .hover-card .arrow {
+    position: absolute;
+    left: -6px;
+    top: 18px;
+    width: 12px;
+    height: 12px;
+    background: var(--surface);
+    border-left: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+    transform: rotate(45deg);
+  }
+
+  .hc-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .hc-code {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .hc-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+    margin-bottom: 10px;
+  }
+  .hc-stat {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+  .hc-stat-label { color: var(--text-muted); }
+  .hc-stat-value { font-weight: 600; color: var(--text-secondary); }
+
+  .hc-progress {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .hc-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .hc-dot.filled { background: var(--blue-mid); border-color: var(--blue-mid); }
+  .hc-line { width: 24px; height: 2px; background: var(--border-strong); flex-shrink: 0; }
+  .hc-line.filled { background: var(--blue-mid); }
+  .hc-dot-label { margin-left: 2px; margin-right: 4px; font-size: 10px; }
+
+  .hc-progress-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+  .hc-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    padding: 0 1px;
+  }
+
+  .hc-health {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 6px 8px;
+    background: var(--surface-muted);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .hc-action-btn {
+    width: 100%;
+    height: 28px;
+    border: 1px solid var(--blue-mid);
+    background: transparent;
+    color: var(--blue-mid);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .hc-action-btn:hover { background: var(--blue-mid); color: #fff; }
+  .hc-action-btn.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="banner">Mochaccino — project-list-b-table-hover — 2026-03-25</div>
+
+<div class="toolbar">
+  <input type="text" class="search-box" id="searchBox" placeholder="Search projects...">
+  <div class="pill-group" id="stagePills">
+    <button class="pill" data-stage="Plan">Plan</button>
+    <button class="pill" data-stage="REC">REC</button>
+    <button class="pill" data-stage="1st">1st</button>
+    <button class="pill" data-stage="2nd">2nd</button>
+    <button class="pill" data-stage="Rev">Rev</button>
+    <button class="pill" data-stage="Ready">Ready</button>
+    <button class="pill" data-stage="Pub">Pub</button>
+    <button class="pill" data-stage="Arch">Arch</button>
+  </div>
+  <div class="separator"></div>
+  <div class="pill-group" id="presets">
+    <button class="preset active" data-preset="all">All</button>
+    <button class="preset" data-preset="attention">Needs Attention</button>
+    <button class="preset" data-preset="dead">Dead</button>
+    <button class="preset" data-preset="ready-edit">Ready to Edit</button>
+  </div>
+  <span class="result-count" id="resultCount">72 projects</span>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="col-star">&#9733;</th>
+        <th class="col-code">Code</th>
+        <th class="col-stage">Stage</th>
+        <th class="col-files">Files</th>
+        <th class="col-trans">Trans%</th>
+        <th class="col-final">Final</th>
+        <th class="col-relay">Relay</th>
+        <th class="col-mod">Modified</th>
+        <th class="col-info"></th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<div class="hover-card" id="hoverCard">
+  <div class="arrow" id="cardArrow"></div>
+  <div class="hc-header">
+    <span class="hc-code" id="hcCode"></span>
+    <span class="stage-badge" id="hcStage"></span>
+  </div>
+  <div class="hc-stats" id="hcStats"></div>
+  <div class="hc-progress">
+    <div class="hc-progress-row" id="hcProgress"></div>
+  </div>
+  <div class="hc-progress-labels">
+    <span>Recordings</span><span>Transcripts</span><span>Final</span>
+  </div>
+  <div class="hc-health" id="hcHealth"></div>
+  <button class="hc-action-btn" id="hcAction">Switch to Project</button>
+</div>
+
+<script>
+// --- Data generation ---
+const STAGES = ['Plan','REC','1st','2nd','Rev','Ready','Pub','Arch'];
+const STAGE_COLORS = {Plan:'#a78bfa',REC:'#f87171','1st':'#fb923c','2nd':'#fbbf24',Rev:'#34d399',Ready:'#60a5fa',Pub:'#818cf8',Arch:'#9ca3af'};
+
+const TOPICS = [
+  'intro-to-agents','bmad-method','prompt-engineering','context-windows',
+  'rag-basics','tool-calling','multi-agent','streaming-apis','fine-tuning',
+  'embeddings-101','vector-search','claude-sdk','openai-compat','langchain',
+  'autogen-setup','crewai-deep','agent-memory','planning-loop','reflection',
+  'self-eval','chain-of-thought','tree-of-thought','react-pattern',
+  'function-calling','structured-output','json-mode','vision-api',
+  'audio-whisper','tts-workflow','video-gen','image-gen','controlnet',
+  'lora-training','dataset-prep','eval-harness','benchmark-suite',
+  'safety-filters','moderation-api','rate-limiting','token-counting',
+  'cost-optimization','batch-api','caching-layer','prompt-cache',
+  'system-prompts','few-shot','zero-shot','retrieval-aug','hybrid-search',
+  'reranking','chunk-strategy','overlap-tuning','metadata-filter',
+  'namespace-design','index-management','pinecone-setup','weaviate-intro',
+  'qdrant-perf','chroma-local','supabase-pgvec','redis-vector',
+  'mongo-atlas','elastic-dense','cohere-embed','voyage-embed',
+  'jina-embed','instructor-lib','pydantic-ai','dspy-compile',
+  'marvin-extract','guardrails-ai','nemo-guard','llama-guard',
+  'anthropic-claude','gemini-pro','mistral-large','grok-api'
+];
+
+const PREFIXES = ['B','C','D','E','F','G','H','K','L','M','N','P','R','S','T','V','W','X'];
+
+function genProjects(n) {
+  const projects = [];
+  const used = new Set();
+  for (let i = 0; i < n; i++) {
+    let code;
+    do {
+      const p = PREFIXES[Math.floor(Math.random()*PREFIXES.length)];
+      const num = String(Math.floor(Math.random()*200)+1).padStart(3,'0');
+      code = p + num;
+    } while (used.has(code));
+    used.add(code);
+
+    const stage = STAGES[Math.floor(Math.random()*STAGES.length)];
+    const topic = TOPICS[i % TOPICS.length];
+    const starred = Math.random() < 0.15;
+    const files = stage === 'Plan' ? 0 : Math.floor(Math.random()*12)+1;
+    const chapters = Math.max(0, Math.floor(files * (0.4 + Math.random()*0.6)));
+    const transPct = stage === 'Plan' ? 0 : (files === 0 ? 0 : Math.min(100, Math.floor(Math.random()*110)));
+    const hasFinal = ['Ready','Pub'].includes(stage) ? Math.random()>0.2 : Math.random()>0.75;
+    const hasRelay = Math.random() > 0.5;
+    const daysAgo = Math.floor(Math.random()*90);
+    const mod = new Date(Date.now() - daysAgo*86400000);
+
+    let health;
+    if (stage === 'Plan') health = 'Planning phase — no recordings yet';
+    else if (stage === 'Arch') health = 'Archived — no action needed';
+    else if (files > 0 && transPct === 0) health = `Stalled — ${files} file${files>1?'s':''}, no transcripts`;
+    else if (hasFinal) health = 'Ready for edit';
+    else if (transPct >= 80) health = 'Transcripts nearly done — needs final render';
+    else if (transPct > 0) health = `In progress — ${transPct}% transcribed`;
+    else health = 'Needs attention — check recordings';
+
+    projects.push({ code, topic, stage, starred, files, chapters, transPct, hasFinal, hasRelay, mod, daysAgo, health });
+  }
+  projects.sort((a,b) => a.code.localeCompare(b.code));
+  return projects;
+}
+
+const allProjects = genProjects(72);
+const SELECTED_IDX = 5; // pre-select 6th project
+let selectedCode = allProjects[SELECTED_IDX].code;
+let filteredProjects = [...allProjects];
+
+// --- Filter state ---
+let activeStages = new Set();
+let activePreset = 'all';
+let searchTerm = '';
+
+// --- DOM refs ---
+const tableBody = document.getElementById('tableBody');
+const searchBox = document.getElementById('searchBox');
+const resultCount = document.getElementById('resultCount');
+const hoverCard = document.getElementById('hoverCard');
+const hcCode = document.getElementById('hcCode');
+const hcStage = document.getElementById('hcStage');
+const hcStats = document.getElementById('hcStats');
+const hcProgress = document.getElementById('hcProgress');
+const hcHealth = document.getElementById('hcHealth');
+const hcAction = document.getElementById('hcAction');
+const cardArrow = document.getElementById('cardArrow');
+
+// --- Hover state ---
+let hoverTimeout = null;
+let pinnedCode = null;
+let currentHoverCode = null;
+
+function stageColor(s) { return STAGE_COLORS[s] || '#999'; }
+
+function formatDate(d) {
+  const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${m[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function applyFilters() {
+  searchTerm = searchBox.value.trim().toLowerCase();
+  filteredProjects = allProjects.filter(p => {
+    // search
+    if (searchTerm && !p.code.toLowerCase().includes(searchTerm) && !p.topic.toLowerCase().includes(searchTerm)) return false;
+    // stage pills
+    if (activeStages.size > 0 && !activeStages.has(p.stage)) return false;
+    // presets
+    if (activePreset === 'attention') return p.files > 0 && p.transPct < 30 && !p.hasFinal && p.stage !== 'Plan' && p.stage !== 'Arch';
+    if (activePreset === 'dead') return p.daysAgo > 60 && p.stage !== 'Pub' && p.stage !== 'Arch';
+    if (activePreset === 'ready-edit') return p.hasFinal || p.stage === 'Ready';
+    return true;
+  });
+  renderTable();
+}
+
+function renderTable() {
+  tableBody.innerHTML = '';
+  filteredProjects.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.dataset.stage = p.stage;
+    tr.dataset.code = p.code;
+    if (p.code === selectedCode) tr.classList.add('selected');
+
+    tr.innerHTML = `
+      <td class="star-cell ${p.starred?'starred':''}">&#9733;</td>
+      <td class="col-code" style="font-weight:600;font-size:13px">${p.code}<span style="margin-left:6px;font-weight:400;color:var(--text-muted);font-size:12px">${p.topic}</span></td>
+      <td><span class="stage-badge" style="background:${stageColor(p.stage)}">${p.stage}</span></td>
+      <td style="text-align:right">${p.files}</td>
+      <td style="text-align:right">${p.transPct}%</td>
+      <td style="text-align:center" class="${p.hasFinal?'final-yes':'final-no'}">${p.hasFinal?'Yes':'—'}</td>
+      <td style="text-align:center"><span class="relay-icon">${p.hasRelay?'&#128279;':''}</span></td>
+      <td style="text-align:right;color:var(--text-muted);font-size:12px">${formatDate(p.mod)}</td>
+      <td style="text-align:center"><button class="info-btn ${pinnedCode===p.code?'pinned':''}" data-code="${p.code}" title="Pin detail card">&#9432;</button></td>
+    `;
+
+    // Click row = select
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('.info-btn')) return;
+      selectedCode = p.code;
+      document.querySelectorAll('tbody tr.selected').forEach(r => r.classList.remove('selected'));
+      tr.classList.add('selected');
+      // Update card button visibility
+      if (hoverCard.classList.contains('visible')) {
+        hcAction.classList.toggle('hidden', pinnedCode === selectedCode || currentHoverCode === selectedCode);
+      }
+    });
+
+    // Hover = show card after 300ms
+    tr.addEventListener('mouseenter', (e) => {
+      if (pinnedCode && pinnedCode !== p.code) return; // pinned to another row
+      clearTimeout(hoverTimeout);
+      hoverTimeout = setTimeout(() => {
+        currentHoverCode = p.code;
+        showCard(p, tr);
+      }, 300);
+    });
+
+    tr.addEventListener('mouseleave', () => {
+      clearTimeout(hoverTimeout);
+      if (pinnedCode) return;
+      setTimeout(() => {
+        if (!hoverCard.matches(':hover') && !pinnedCode) hideCard();
+      }, 100);
+    });
+
+    tableBody.appendChild(tr);
+  });
+
+  resultCount.textContent = `${filteredProjects.length} project${filteredProjects.length!==1?'s':''}`;
+}
+
+function showCard(p, tr) {
+  hcCode.textContent = p.code + ' — ' + p.topic;
+  hcStage.textContent = p.stage;
+  hcStage.style.background = stageColor(p.stage);
+
+  hcStats.innerHTML = `
+    <div class="hc-stat"><span class="hc-stat-label">Files</span><span class="hc-stat-value">${p.files}</span></div>
+    <div class="hc-stat"><span class="hc-stat-label">Chapters</span><span class="hc-stat-value">${p.chapters}</span></div>
+    <div class="hc-stat"><span class="hc-stat-label">Transcript%</span><span class="hc-stat-value">${p.transPct}%</span></div>
+    <div class="hc-stat"><span class="hc-stat-label">Final</span><span class="hc-stat-value">${p.hasFinal?'Yes':'No'}</span></div>
+  `;
+
+  const recFilled = p.files > 0;
+  const transFilled = p.transPct >= 50;
+  const finalFilled = p.hasFinal;
+  hcProgress.innerHTML = `
+    <span class="hc-dot ${recFilled?'filled':''}">&#10003;</span>
+    <span class="hc-line ${recFilled&&transFilled?'filled':''}"></span>
+    <span class="hc-dot ${transFilled?'filled':''}">&#10003;</span>
+    <span class="hc-line ${transFilled&&finalFilled?'filled':''}"></span>
+    <span class="hc-dot ${finalFilled?'filled':''}">&#10003;</span>
+  `;
+
+  hcHealth.textContent = p.health;
+  hcAction.classList.toggle('hidden', p.code === selectedCode);
+
+  hcAction.onclick = () => {
+    selectedCode = p.code;
+    document.querySelectorAll('tbody tr.selected').forEach(r => r.classList.remove('selected'));
+    const row = document.querySelector(`tr[data-code="${p.code}"]`);
+    if (row) row.classList.add('selected');
+    hcAction.classList.add('hidden');
+  };
+
+  // Position card
+  const rect = tr.getBoundingClientRect();
+  let top = rect.top - 20;
+  let left = rect.right + 12;
+
+  // Avoid right overflow
+  if (left + 320 > window.innerWidth) {
+    left = rect.left - 320 - 12;
+    cardArrow.style.left = 'auto';
+    cardArrow.style.right = '-6px';
+    cardArrow.style.transform = 'rotate(-135deg)';
+  } else {
+    cardArrow.style.left = '-6px';
+    cardArrow.style.right = 'auto';
+    cardArrow.style.transform = 'rotate(45deg)';
+  }
+
+  // Avoid bottom overflow
+  if (top + 260 > window.innerHeight) top = window.innerHeight - 270;
+  if (top < 10) top = 10;
+
+  hoverCard.style.top = top + 'px';
+  hoverCard.style.left = left + 'px';
+  hoverCard.classList.add('visible');
+}
+
+function hideCard() {
+  hoverCard.classList.remove('visible');
+  currentHoverCode = null;
+}
+
+// Card hover keep-alive
+hoverCard.addEventListener('mouseleave', () => {
+  if (!pinnedCode) hideCard();
+});
+
+// --- Info button pin/unpin ---
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.info-btn');
+  if (!btn) return;
+  e.stopPropagation();
+  const code = btn.dataset.code;
+
+  if (pinnedCode === code) {
+    // Unpin
+    pinnedCode = null;
+    btn.classList.remove('pinned');
+    hideCard();
+  } else {
+    // Unpin previous
+    document.querySelectorAll('.info-btn.pinned').forEach(b => b.classList.remove('pinned'));
+    pinnedCode = code;
+    btn.classList.add('pinned');
+    const p = allProjects.find(x => x.code === code);
+    const tr = btn.closest('tr');
+    if (p && tr) {
+      currentHoverCode = code;
+      showCard(p, tr);
+    }
+  }
+});
+
+// --- Stage pills ---
+document.querySelectorAll('#stagePills .pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    const stage = pill.dataset.stage;
+    if (activeStages.has(stage)) {
+      activeStages.delete(stage);
+      pill.classList.remove('active');
+    } else {
+      activeStages.add(stage);
+      pill.classList.add('active');
+    }
+    applyFilters();
+  });
+});
+
+// --- Presets ---
+document.querySelectorAll('#presets .preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#presets .preset').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activePreset = btn.dataset.preset;
+    applyFilters();
+  });
+});
+
+// --- Search ---
+searchBox.addEventListener('input', () => applyFilters());
+
+// --- Initial render ---
+applyFilters();
+
+// --- Show card for pre-selected row on load ---
+setTimeout(() => {
+  const selP = allProjects[SELECTED_IDX];
+  const selRow = document.querySelector(`tr[data-code="${selP.code}"]`);
+  if (selRow) {
+    currentHoverCode = selP.code;
+    showCard(selP, selRow);
+  }
+}, 500);
+</script>
+</body>
+</html>

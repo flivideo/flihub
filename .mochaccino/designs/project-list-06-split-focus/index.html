@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mochaccino — project-list-06-split-focus</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #e8e0d4;
+    color: #2a2018;
+    min-height: 100vh;
+  }
+
+  /* Banner */
+  .banner {
+    background: #2a2018;
+    color: #f5f1eb;
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+  .banner span { opacity: 0.6; }
+
+  /* Layout */
+  .shell {
+    display: flex;
+    height: calc(100vh - 34px);
+    min-width: 1280px;
+  }
+
+  /* ─── Left Panel ─── */
+  .left {
+    width: 40%;
+    min-width: 460px;
+    border-right: 1px solid #d4cdc4;
+    display: flex;
+    flex-direction: column;
+    background: #f5f1eb;
+  }
+  .left-header {
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid #d4cdc4;
+    flex-shrink: 0;
+  }
+  .left-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #2a2018;
+  }
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .search-bar input {
+    flex: 1;
+    padding: 7px 12px;
+    border: 1px solid #d4cdc4;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #fff;
+    color: #2a2018;
+    outline: none;
+  }
+  .search-bar input:focus { border-color: #b8a99a; box-shadow: 0 0 0 2px rgba(184,169,154,0.25); }
+  .search-bar input::placeholder { color: #7a6e5e; }
+  .filter-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #d4cdc4;
+    background: #eee8de;
+    color: #4a3e30;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .pill:hover { background: #d4cdc4; }
+  .pill.active { background: #2a2018; color: #f5f1eb; border-color: #2a2018; }
+
+  /* Project list */
+  .project-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+  }
+  .project-list::-webkit-scrollbar { width: 6px; }
+  .project-list::-webkit-scrollbar-thumb { background: #d4cdc4; border-radius: 3px; }
+  .project-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 18px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee8de;
+    transition: background 0.1s;
+    gap: 10px;
+  }
+  .project-row:hover { background: #eee8de; }
+  .project-row.selected { background: #e8e0d4; border-left: 3px solid #2a2018; padding-left: 15px; }
+  .project-row.pinned { background: #e6ddd0; }
+  .row-code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2a2018;
+    min-width: 58px;
+  }
+  .row-name {
+    flex: 1;
+    font-size: 13px;
+    color: #4a3e30;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row-stage {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .stage-recording { background: #d4e8d0; color: #2a5a1e; }
+  .stage-editing { background: #d0dce8; color: #1e3a5a; }
+  .stage-review { background: #e8dcd0; color: #5a3a1e; }
+  .stage-published { background: #d0e8e4; color: #1e5a4a; }
+  .stage-planned { background: #e8e0d4; color: #7a6e5e; }
+  .stage-archived { background: #e0dcd8; color: #7a6e5e; }
+  .health-dots {
+    display: flex;
+    gap: 3px;
+    min-width: 40px;
+    justify-content: flex-end;
+  }
+  .health-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .dot-green { background: #5a9a4a; }
+  .dot-yellow { background: #c4a832; }
+  .dot-red { background: #b84a3a; }
+  .dot-gray { background: #b8a99a; }
+  .pin-btn {
+    font-size: 12px;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    background: none;
+    border: none;
+    padding: 2px;
+  }
+  .project-row:hover .pin-btn { opacity: 0.5; }
+  .pin-btn:hover { opacity: 1 !important; }
+  .pin-btn.is-pinned { opacity: 1; }
+  .left-footer {
+    padding: 8px 18px;
+    border-top: 1px solid #d4cdc4;
+    font-size: 11px;
+    color: #7a6e5e;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ─── Right Panel ─── */
+  .right {
+    width: 60%;
+    overflow-y: auto;
+    padding: 24px 28px;
+    background: #e8e0d4;
+  }
+  .right::-webkit-scrollbar { width: 6px; }
+  .right::-webkit-scrollbar-thumb { background: #d4cdc4; border-radius: 3px; }
+
+  /* Detail card */
+  .detail-card {
+    background: #f5f1eb;
+    border-radius: 10px;
+    border: 1px solid #d4cdc4;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .detail-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #eee8de;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .detail-title-area {}
+  .detail-code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    color: #7a6e5e;
+    margin-bottom: 4px;
+  }
+  .detail-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2a2018;
+    margin-bottom: 6px;
+  }
+  .detail-desc {
+    font-size: 13px;
+    color: #4a3e30;
+    line-height: 1.4;
+  }
+  .detail-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .action-btn {
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #d4cdc4;
+    background: #eee8de;
+    color: #2a2018;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .action-btn:hover { background: #d4cdc4; }
+  .action-btn.primary { background: #2a2018; color: #f5f1eb; border-color: #2a2018; }
+  .action-btn.primary:hover { background: #3a3028; }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: #eee8de;
+    border-bottom: 1px solid #eee8de;
+  }
+  .stat-cell {
+    background: #f5f1eb;
+    padding: 14px 18px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2a2018;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #7a6e5e;
+    margin-top: 2px;
+  }
+
+  /* Sections inside detail */
+  .detail-section {
+    padding: 16px 24px;
+    border-bottom: 1px solid #eee8de;
+  }
+  .detail-section:last-child { border-bottom: none; }
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #7a6e5e;
+    margin-bottom: 10px;
+  }
+
+  /* Progress bar */
+  .progress-track {
+    height: 8px;
+    background: #eee8de;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #7a6e5e;
+  }
+
+  /* Relay status */
+  .relay-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .relay-item {
+    background: #eee8de;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .relay-item-label { color: #7a6e5e; margin-bottom: 3px; }
+  .relay-item-value { font-weight: 600; color: #2a2018; }
+  .relay-synced { color: #5a9a4a; }
+  .relay-pending { color: #c4a832; }
+  .relay-diverged { color: #b84a3a; }
+
+  /* Transcript breakdown */
+  .transcript-bar {
+    display: flex;
+    height: 20px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .transcript-seg { transition: width 0.3s; }
+  .seg-done { background: #5a9a4a; }
+  .seg-processing { background: #c4a832; }
+  .seg-pending { background: #d4cdc4; }
+  .transcript-legend {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    color: #7a6e5e;
+  }
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  /* File listing */
+  .file-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .file-item {
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: #4a3e30;
+    padding: 4px 8px;
+    background: #eee8de;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-item .ext { color: #7a6e5e; }
+
+  /* Compare mode */
+  .compare-strip {
+    display: flex;
+    gap: 16px;
+  }
+  .compare-strip .detail-card {
+    flex: 1;
+    min-width: 0;
+  }
+  .compare-strip .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Empty state */
+  .empty-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #7a6e5e;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<div class="banner">Mochaccino — project-list-06-split-focus — 2026-03-25 <span>&nbsp;|&nbsp; 6 of 10</span></div>
+
+<div class="shell">
+  <div class="left">
+    <div class="left-header">
+      <h2>Projects</h2>
+      <div class="search-bar">
+        <input type="text" id="search" placeholder="Search projects…" autocomplete="off" />
+      </div>
+      <div class="filter-pills" id="filters">
+        <div class="pill active" data-stage="all">All</div>
+        <div class="pill" data-stage="recording">Recording</div>
+        <div class="pill" data-stage="editing">Editing</div>
+        <div class="pill" data-stage="review">Review</div>
+        <div class="pill" data-stage="published">Published</div>
+        <div class="pill" data-stage="planned">Planned</div>
+        <div class="pill" data-stage="archived">Archived</div>
+      </div>
+    </div>
+    <div class="project-list" id="projectList"></div>
+    <div class="left-footer">
+      <span id="countLabel">72 projects</span>
+      <span id="pinLabel"></span>
+    </div>
+  </div>
+  <div class="right" id="rightPanel">
+    <div class="empty-right" id="emptyState">Select a project to view details</div>
+    <div id="detailArea" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+// ── Data ──
+const stages = ['recording','editing','review','published','planned','archived'];
+const stageWeights = [12,18,10,22,6,4]; // distribution out of 72
+const names = [
+  'Getting Started with OBS','Advanced Color Grading','Podcast Setup Guide','AI Thumbnail Workflow',
+  'Screen Recording Masterclass','Lighting for Home Studio','Audio Cleanup in DaVinci','Intro Animation Tutorial',
+  'YouTube Shorts Strategy','Live Streaming Setup','Microphone Comparison','Camera Settings Explained',
+  'Video SEO Deep Dive','Batch Rendering Pipeline','Multi-Cam Editing Basics','Green Screen on a Budget',
+  'Channel Branding Overhaul','Subscriber Milestone Recap','Behind the Scenes Vlog','Q&A Community Roundup',
+  'Notion for Video Planning','BMAD Method Introduction','Agent Workflow Demo','Storyline App Walkthrough',
+  'FliHub Feature Tour','Content Calendar System','Thumbnail A/B Testing','Analytics Dashboard Review',
+  'Collaboration with Editors','Remote Editing Workflow','S3 Sync Deep Dive','Transcript Automation',
+  'Chapter Markers Guide','Music Licensing Explained','Sound Design Basics','Voice-Over Techniques',
+  'Drone Footage Tips','Time-Lapse Tutorial','Slow Motion Breakdown','Cinematic B-Roll Guide',
+  'Interview Lighting Setup','Two-Person Podcast Format','Solo Recording Tips','Desk Setup Tour 2026',
+  'Monthly Recap January','Monthly Recap February','Monthly Recap March','Yearly Review 2025',
+  'Gear Upgrade Haul','Budget Editing Rig','Mac Mini M4 Review','DaVinci Resolve Tips',
+  'Premiere Pro vs Resolve','Final Cut Workflow','Mobile Editing Test','iPad Pro for Creators',
+  'AI Voice Clone Ethics','Faceless Channel Build','Automation with Make','Zapier for Creators',
+  'Newsletter to Video Pipeline','Blog to Video Repurpose','Webinar Recording Setup','Course Module Recording',
+  'Skool Community Launch','Patreon vs Skool Compare','Community Engagement Tips','Monetization Strategy',
+  'Sponsorship Outreach Guide','Brand Deal Negotiation','Media Kit Walkthrough','Creator Economy Outlook'
+];
+
+function rand(min,max){return Math.floor(Math.random()*((max-min)+1))+min;}
+function pick(arr){return arr[rand(0,arr.length-1)];}
+
+const projects = [];
+let stageIdx = 0;
+let stageCount = 0;
+let currentStageLimit = stageWeights[0];
+
+for(let i=0;i<72;i++){
+  if(stageCount >= currentStageLimit && stageIdx < stages.length-1){
+    stageIdx++;
+    stageCount = 0;
+    currentStageLimit = stageWeights[stageIdx];
+  }
+  const stage = stages[stageIdx];
+  stageCount++;
+  const code = 'B' + String(i+1).padStart(3,'0');
+  const recCount = stage==='planned'?0:rand(3,28);
+  const imgCount = stage==='planned'?0:rand(2,18);
+  const transcriptDone = stage==='planned'?0: stage==='published'?100: rand(20,95);
+  const transcriptProc = stage==='planned'?0: Math.min(100-transcriptDone, rand(0,15));
+  const health = [];
+  if(recCount>10) health.push('green'); else if(recCount>4) health.push('yellow'); else health.push('red');
+  if(transcriptDone>70) health.push('green'); else if(transcriptDone>30) health.push('yellow'); else health.push('red');
+  if(imgCount>8) health.push('green'); else health.push('yellow');
+
+  const relayStatus = pick(['synced','synced','synced','pending','pending','diverged']);
+  const files = [];
+  for(let f=1;f<=Math.min(recCount,8);f++){
+    const ch = String(rand(1,12)).padStart(2,'0');
+    const seq = rand(1,5);
+    const tag = rand(0,3)===0?'-CTA':'';
+    files.push(`${ch}-${seq}-${pick(['intro','setup','demo','outro','walkthrough','recap','transition','hook'])}${tag}.mov`);
+  }
+
+  projects.push({
+    id: i,
+    code,
+    name: names[i],
+    stage,
+    recCount,
+    imgCount,
+    transcriptDone,
+    transcriptProc,
+    health,
+    relayStatus,
+    relayShadows: relayStatus==='synced'?recCount:rand(0,recCount-1),
+    relayLastSync: `${rand(1,48)}h ago`,
+    files,
+    desc: `Video project covering ${names[i].toLowerCase()}. Targeting ${rand(8,25)} min runtime with ${rand(3,12)} chapters.`,
+    duration: `${rand(6,32)}:${String(rand(0,59)).padStart(2,'0')}`,
+    chapters: rand(3,14),
+    tags: rand(0,1)?[pick(['CTA','SKOOL','SPONSOR','BMAD'])]:[]
+  });
+}
+
+// ── State ──
+let selectedId = null;
+let pinnedIds = new Set();
+let activeStage = 'all';
+let searchTerm = '';
+
+// ── Render left list ──
+function renderList(){
+  const list = document.getElementById('projectList');
+  const filtered = projects.filter(p => {
+    if(activeStage!=='all' && p.stage!==activeStage) return false;
+    if(searchTerm && !p.name.toLowerCase().includes(searchTerm) && !p.code.toLowerCase().includes(searchTerm)) return false;
+    return true;
+  });
+  list.innerHTML = filtered.map(p => {
+    const sel = p.id===selectedId?'selected':'';
+    const pin = pinnedIds.has(p.id)?'pinned':'';
+    const dots = p.health.map(h=>`<div class="health-dot dot-${h}"></div>`).join('');
+    const pinIcon = pinnedIds.has(p.id)?'📌':'📎';
+    const pinCls = pinnedIds.has(p.id)?'is-pinned':'';
+    return `<div class="project-row ${sel} ${pin}" data-id="${p.id}">
+      <span class="row-code">${p.code}</span>
+      <span class="row-name">${p.name}</span>
+      <span class="row-stage stage-${p.stage}">${p.stage}</span>
+      <span class="health-dots">${dots}</span>
+      <button class="pin-btn ${pinCls}" data-pin="${p.id}" title="Pin to compare">${pinIcon}</button>
+    </div>`;
+  }).join('');
+  document.getElementById('countLabel').textContent = `${filtered.length} of ${projects.length} projects`;
+  updatePinLabel();
+}
+
+function updatePinLabel(){
+  const el = document.getElementById('pinLabel');
+  if(pinnedIds.size>0) el.textContent = `${pinnedIds.size} pinned`;
+  else el.textContent = '';
+}
+
+// ── Render detail ──
+function renderDetail(){
+  const area = document.getElementById('detailArea');
+  const empty = document.getElementById('emptyState');
+
+  const ids = [];
+  if(pinnedIds.size >= 2){
+    pinnedIds.forEach(id=>ids.push(id));
+  } else if(selectedId !== null){
+    ids.push(selectedId);
+  }
+
+  if(ids.length === 0){
+    area.style.display='none';
+    empty.style.display='flex';
+    return;
+  }
+  area.style.display='block';
+  empty.style.display='none';
+
+  if(ids.length > 1){
+    area.innerHTML = '<div class="compare-strip">' + ids.map(id=>buildCard(projects[id], true)).join('') + '</div>';
+  } else {
+    area.innerHTML = buildCard(projects[ids[0]], false);
+  }
+}
+
+function buildCard(p, compact){
+  const progressPct = Math.round((p.transcriptDone + p.transcriptProc + (p.stage==='published'?0:0)) );
+  const pendingPct = 100 - p.transcriptDone - p.transcriptProc;
+  const progressColor = p.transcriptDone > 70 ? '#5a9a4a' : p.transcriptDone > 40 ? '#c4a832' : '#b84a3a';
+
+  const filesHtml = p.files.map(f => {
+    const ext = f.split('.').pop();
+    return `<div class="file-item">${f.replace('.'+ext,'')}.<span class="ext">${ext}</span></div>`;
+  }).join('');
+
+  const relayColor = p.relayStatus==='synced'?'relay-synced':p.relayStatus==='pending'?'relay-pending':'relay-diverged';
+
+  const tagsHtml = p.tags.length ? p.tags.map(t=>`<span class="row-stage stage-recording" style="font-size:10px">${t}</span>`).join(' ') : '<span style="color:#7a6e5e;font-size:12px">None</span>';
+
+  return `<div class="detail-card">
+    <div class="detail-header">
+      <div class="detail-title-area">
+        <div class="detail-code">${p.code} &middot; ${p.stage.toUpperCase()}</div>
+        <div class="detail-name">${p.name}</div>
+        <div class="detail-desc">${p.desc}</div>
+      </div>
+      ${!compact ? `<div class="detail-actions">
+        <button class="action-btn" onclick="alert('Open folder: '+${JSON.stringify(p.code)})">Open Folder</button>
+        <button class="action-btn" onclick="alert('Copy transcript path')">Copy Transcript</button>
+        <button class="action-btn primary" onclick="alert('Switching to '+${JSON.stringify(p.code)})">Switch to Project</button>
+      </div>` : ''}
+    </div>
+    <div class="stats-grid">
+      <div class="stat-cell"><div class="stat-value">${p.recCount}</div><div class="stat-label">Recordings</div></div>
+      <div class="stat-cell"><div class="stat-value">${p.imgCount}</div><div class="stat-label">Images</div></div>
+      <div class="stat-cell"><div class="stat-value">${p.duration}</div><div class="stat-label">Duration</div></div>
+      <div class="stat-cell"><div class="stat-value">${p.chapters}</div><div class="stat-label">Chapters</div></div>
+    </div>
+
+    <div class="detail-section">
+      <div class="section-title">Transcript Progress</div>
+      <div class="transcript-bar">
+        <div class="transcript-seg seg-done" style="width:${p.transcriptDone}%"></div>
+        <div class="transcript-seg seg-processing" style="width:${p.transcriptProc}%"></div>
+        <div class="transcript-seg seg-pending" style="width:${pendingPct}%"></div>
+      </div>
+      <div class="transcript-legend">
+        <span><span class="legend-dot seg-done"></span> Done ${p.transcriptDone}%</span>
+        <span><span class="legend-dot seg-processing"></span> Processing ${p.transcriptProc}%</span>
+        <span><span class="legend-dot seg-pending"></span> Pending ${pendingPct}%</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="section-title">Overall Progress</div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${progressPct}%;background:${progressColor}"></div>
+      </div>
+      <div class="progress-labels">
+        <span>${progressPct}% complete</span>
+        <span>Tags: ${p.tags.length ? p.tags.join(', ') : 'none'}</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="section-title">Relay Status</div>
+      <div class="relay-grid">
+        <div class="relay-item">
+          <div class="relay-item-label">Sync State</div>
+          <div class="relay-item-value ${relayColor}">${p.relayStatus.charAt(0).toUpperCase()+p.relayStatus.slice(1)}</div>
+        </div>
+        <div class="relay-item">
+          <div class="relay-item-label">Last Sync</div>
+          <div class="relay-item-value">${p.relayLastSync}</div>
+        </div>
+        <div class="relay-item">
+          <div class="relay-item-label">Shadows Synced</div>
+          <div class="relay-item-value">${p.relayShadows} / ${p.recCount}</div>
+        </div>
+        <div class="relay-item">
+          <div class="relay-item-label">Editor Machines</div>
+          <div class="relay-item-value">Jan, Mary</div>
+        </div>
+      </div>
+    </div>
+
+    ${!compact ? `<div class="detail-section">
+      <div class="section-title">Recording Files (${p.files.length} of ${p.recCount})</div>
+      <div class="file-list">${filesHtml}</div>
+    </div>` : ''}
+  </div>`;
+}
+
+// ── Events ──
+document.getElementById('projectList').addEventListener('click', e => {
+  const pinBtn = e.target.closest('.pin-btn');
+  if(pinBtn){
+    const id = parseInt(pinBtn.dataset.pin);
+    if(pinnedIds.has(id)){
+      pinnedIds.delete(id);
+    } else if(pinnedIds.size < 3){
+      pinnedIds.add(id);
+    }
+    renderList();
+    renderDetail();
+    return;
+  }
+  const row = e.target.closest('.project-row');
+  if(row){
+    selectedId = parseInt(row.dataset.id);
+    if(pinnedIds.size < 2){
+      renderList();
+      renderDetail();
+    } else {
+      renderList();
+      renderDetail();
+    }
+  }
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  searchTerm = e.target.value.toLowerCase();
+  renderList();
+});
+
+document.getElementById('filters').addEventListener('click', e => {
+  const pill = e.target.closest('.pill');
+  if(!pill) return;
+  activeStage = pill.dataset.stage;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  pill.classList.add('active');
+  renderList();
+});
+
+// ── Init ──
+selectedId = 0;
+renderList();
+renderDetail();
+</script>
+</body>
+</html>

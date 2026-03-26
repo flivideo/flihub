@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mochaccino — project-list-10-hybrid-table-drawer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --page-bg: #e8e0d4;
+    --surface: #f5f1eb;
+    --surface-muted: #eee8de;
+    --border: #d4cdc4;
+    --border-strong: #b8a99a;
+    --text-primary: #2a2018;
+    --text-secondary: #4a3e30;
+    --text-muted: #7a6e5e;
+    --accent: #8b6914;
+    --accent-light: #f0e6d0;
+    --danger: #a04030;
+    --success: #4a7a3a;
+    --warning: #9a7020;
+    --drawer-width: 40%;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    min-width: 1280px;
+    line-height: 1.5;
+  }
+
+  /* Banner */
+  .banner {
+    background: var(--text-primary);
+    color: var(--surface);
+    text-align: center;
+    padding: 6px 16px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  /* Page layout */
+  .page { padding: 24px 32px; }
+  .page-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .page-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 0 0 280px;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    font-size: 14px;
+    color: var(--text-primary);
+    outline: none;
+    position: relative;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  .search-wrap { position: relative; flex: 0 0 280px; }
+  .search-wrap::before {
+    content: "\u{1F50D}";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .search-wrap .search-box { width: 100%; }
+
+  /* Filter pills */
+  .pill-group { display: flex; gap: 4px; }
+  .pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .pill:hover { border-color: var(--border-strong); background: var(--surface-muted); }
+  .pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .separator {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+
+  .preset-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-muted);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+  .preset-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .count-badge {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* Table */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: margin-right 0.3s ease;
+  }
+  .table-wrap.drawer-open { margin-right: calc(var(--drawer-width) + 16px); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--surface-muted);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: var(--text-secondary); }
+  thead th.sorted::after { content: " \u25B2"; font-size: 9px; }
+  thead th.sorted.desc::after { content: " \u25BC"; font-size: 9px; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  tbody tr:hover { background: var(--accent-light); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr.selected { background: #e8ddc4; }
+  tbody tr.selected:hover { background: #e0d4b8; }
+
+  td {
+    padding: 8px 12px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .star-cell { width: 36px; text-align: center; font-size: 16px; cursor: pointer; }
+  .star-cell .star { opacity: 0.2; }
+  .star-cell .star.filled { opacity: 1; color: var(--accent); }
+
+  .code-cell { font-weight: 600; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
+
+  .stage-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .stage-recording { background: #d4e8d0; color: #2a5a20; }
+  .stage-editing { background: #d0dce8; color: #1a3a5a; }
+  .stage-review { background: #e8dcd0; color: #5a3a1a; }
+  .stage-published { background: #d8d8d8; color: #3a3a3a; }
+  .stage-dead { background: #e8d0d0; color: #6a2020; }
+  .stage-idea { background: #e0d8e8; color: #3a2060; }
+  .stage-transcribing { background: #e8e4d0; color: #5a5020; }
+
+  .pct-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 80px;
+  }
+  .pct-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 40px;
+  }
+  .pct-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--success);
+    transition: width 0.3s;
+  }
+  .pct-bar-label { font-size: 11px; color: var(--text-muted); min-width: 28px; text-align: right; }
+
+  .check-icon { font-size: 14px; }
+  .check-yes { color: var(--success); }
+  .check-no { color: var(--border); }
+
+  .relay-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .relay-synced { background: #d4e8d0; color: #2a5a20; }
+  .relay-behind { background: #e8dcd0; color: #7a5020; }
+  .relay-none { color: var(--border-strong); font-size: 11px; }
+
+  .modified-cell { font-size: 12px; color: var(--text-muted); }
+
+  /* Drawer */
+  .drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+  }
+
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: var(--drawer-width);
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border-strong);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .drawer.open { transform: translateX(0); }
+
+  .drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-muted);
+    flex-shrink: 0;
+  }
+  .drawer-header h2 { font-size: 18px; font-weight: 700; }
+  .drawer-close {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .drawer-close:hover { background: var(--page-bg); color: var(--text-primary); }
+
+  .drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+
+  .drawer-section {
+    margin-bottom: 20px;
+  }
+  .drawer-section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-card {
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .stat-card .label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+  .stat-card .value { font-size: 18px; font-weight: 700; }
+
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist .icon { font-size: 16px; flex-shrink: 0; }
+  .checklist .done { color: var(--success); }
+  .checklist .missing { color: var(--danger); }
+
+  .health-box {
+    background: #fdf6e8;
+    border: 1px solid #e8d8b0;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .health-box strong { color: var(--text-primary); }
+
+  .drawer-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-muted);
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .btn-primary {
+    flex: 1;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: #7a5c10; }
+  .btn-secondary {
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { background: var(--page-bg); }
+
+  /* Comparison mode */
+  .comparison-header {
+    display: none;
+    padding: 12px 20px;
+    background: var(--accent-light);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .comparison-header.visible { display: flex; align-items: center; gap: 8px; }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .comparison-table th {
+    text-align: left;
+    padding: 6px 0;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .comparison-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    white-space: normal;
+  }
+
+  /* Scrollbar */
+  .drawer-body::-webkit-scrollbar { width: 6px; }
+  .drawer-body::-webkit-scrollbar-track { background: transparent; }
+  .drawer-body::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  .table-scroll {
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+  }
+  .table-scroll::-webkit-scrollbar { width: 6px; }
+  .table-scroll::-webkit-scrollbar-track { background: transparent; }
+  .table-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  .hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="banner">Mochaccino &mdash; project-list-10-hybrid-table-drawer &mdash; 2026-03-25</div>
+
+<div class="page">
+  <h1 class="page-title">Video Projects</h1>
+  <p class="page-subtitle">72 projects &middot; Click a row for details &middot; Shift+Click to compare multiple</p>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <input type="text" class="search-box" placeholder="Search projects..." id="searchInput">
+    </div>
+
+    <div class="pill-group" id="stagePills">
+      <button class="pill active" data-stage="all">All</button>
+      <button class="pill" data-stage="recording">Recording</button>
+      <button class="pill" data-stage="transcribing">Transcribing</button>
+      <button class="pill" data-stage="editing">Editing</button>
+      <button class="pill" data-stage="review">Review</button>
+      <button class="pill" data-stage="published">Published</button>
+      <button class="pill" data-stage="idea">Idea</button>
+      <button class="pill" data-stage="dead">Dead</button>
+    </div>
+
+    <div class="separator"></div>
+
+    <button class="preset-btn" data-preset="needs-work" id="presetNeedsWork">Needs Work</button>
+    <button class="preset-btn" data-preset="dead" id="presetDead">Dead</button>
+    <button class="preset-btn" data-preset="ready" id="presetReady">Ready</button>
+
+    <span class="count-badge" id="countBadge">Showing 72 of 72</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap" id="tableWrap">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="star-cell">&starf;</th>
+            <th data-sort="code" class="sorted">Code</th>
+            <th>Name</th>
+            <th data-sort="stage">Stage</th>
+            <th data-sort="files">Files</th>
+            <th data-sort="transcript">Transcript %</th>
+            <th data-sort="final">Final</th>
+            <th data-sort="relay">Relay</th>
+            <th data-sort="modified">Modified</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="hint" id="shiftHint" style="display:none;">Shift+Click to add to comparison &middot; <a href="#" id="clearSelection" style="color:var(--accent)">Clear selection</a></p>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <h2 id="drawerTitle">Project Detail</h2>
+    <button class="drawer-close" id="drawerClose">&times;</button>
+  </div>
+  <div class="comparison-header" id="comparisonHeader">
+    <strong>Comparing</strong> <span id="comparisonCount">2</span> projects
+  </div>
+  <div class="drawer-body" id="drawerBody">
+  </div>
+  <div class="drawer-footer">
+    <button class="btn-primary" id="switchBtn">Switch to Project</button>
+    <button class="btn-secondary" id="openFinder">Open in Finder</button>
+  </div>
+</div>
+
+<script>
+// Project data generator
+const stages = ['recording','transcribing','editing','review','published','idea','dead'];
+const names = [
+  'BMAD Method Deep Dive','Agent Workflow Intro','FliVideo Demo','Storyline Walkthrough',
+  'Skool Launch Strategy','KPI Dashboard Tutorial','Klueless DSL Basics','Prompt Engineering 101',
+  'Theodore Architecture','YouTube Automation','React 19 Features','Tailwind v4 Migration',
+  'Express Socket Setup','Vite Build Optimization','TypeScript Patterns','Monorepo Workflows',
+  'AI Content Creation','GPT Agent Design','Claude Code Review','Multi-Agent Systems',
+  'Video Editing Basics','Color Grading Tips','Audio Mastering','Thumbnail Design',
+  'SEO for YouTube','Community Building','Brand Strategy','Content Calendar',
+  'Live Streaming Setup','Ecamm Advanced','OBS Studio Config','Podcast Recording',
+  'Client Onboarding','SupportSignal Demo','NDIS Workflow','Convex Database',
+  'Next.js App Router','Svelte 5 Preview','Astro Islands','Ruby Gems Guide',
+  'Shell Scripting','Ansible Playbooks','Supabase Auth','S3 Sync Setup',
+  'DaVinci Resolve Tips','Final Cut Workflow','Motion Graphics','After Effects Basics',
+  'Faceless YouTube','AI Voice Cloning','Avatar Creation','Storytelling Framework',
+  'Beauty Brand Launch','Joy\'s First Video','Makeup Tutorial','Skincare Routine',
+  'AITLDR Graphics','Animation Pipeline','AI Art Workflow','Midjourney Prompts',
+  'Stable Diffusion','ComfyUI Nodes','LoRA Training','Video Upscaling',
+  'Podcast Editing','Interview Setup','B-Roll Collection','Drone Footage',
+  'Time Lapse Setup','Lighting Guide','Green Screen','Sound Design',
+  'Music Licensing','Stock Footage','Collaboration Tools','Remote Editing'
+];
+
+const codes = [];
+const prefixes = ['B','V','T','C','A','P','S','K','D','R','L','M','F','E','G','H','J','N','Q','W','X','Y','Z','U'];
+for (let i = 0; i < 72; i++) {
+  const pre = prefixes[i % prefixes.length];
+  const num = String(Math.floor(i / prefixes.length) * 10 + Math.floor(Math.random()*90)+10).padStart(3,'0');
+  codes.push(pre + num);
+}
+
+function seededRand(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+const projects = [];
+for (let i = 0; i < 72; i++) {
+  const rng = seededRand(i * 137 + 42);
+  const stage = stages[Math.floor(rng() * stages.length)];
+  const starred = rng() > 0.75;
+  const files = stage === 'idea' ? 0 : Math.floor(rng() * 12) + 1;
+  const transcript = stage === 'idea' ? 0 : stage === 'dead' ? Math.floor(rng() * 40) : Math.floor(rng() * 101);
+  const hasFinal = stage === 'published' || (stage === 'review' && rng() > 0.3);
+  const relay = rng() > 0.6 ? (rng() > 0.5 ? 'synced' : 'behind') : 'none';
+  const daysAgo = Math.floor(rng() * 90);
+  const modified = new Date(2026, 2, 25 - daysAgo);
+  const hasRecordings = files > 0;
+  const hasTranscripts = transcript > 30;
+  const hasChapters = stage !== 'idea' && stage !== 'dead' && rng() > 0.4;
+  const hasRelay = relay !== 'none';
+
+  projects.push({
+    id: i,
+    code: codes[i],
+    name: names[i],
+    stage,
+    starred,
+    files,
+    transcript,
+    hasFinal,
+    relay,
+    modified,
+    modifiedStr: formatDate(modified),
+    daysAgo,
+    hasRecordings,
+    hasTranscripts,
+    hasChapters,
+    hasRelay,
+    path: `/Volumes/Projects/${names[i].toLowerCase().replace(/[^a-z0-9]+/g,'-')}`,
+    imageCount: Math.floor(rng() * 8),
+    thumbCount: Math.floor(rng() > 0.5 ? rng() * 4 : 0),
+    duration: files > 0 ? Math.floor(rng() * 45 + 2) + ':' + String(Math.floor(rng()*60)).padStart(2,'0') : '0:00',
+  });
+}
+
+function formatDate(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate();
+}
+
+// State
+let activeStage = 'all';
+let activePreset = null;
+let searchTerm = '';
+let selectedIds = new Set();
+let sortCol = 'code';
+let sortDesc = false;
+
+// Render
+function getFilteredProjects() {
+  let list = projects.slice();
+
+  if (searchTerm) {
+    const q = searchTerm.toLowerCase();
+    list = list.filter(p => p.code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q));
+  }
+
+  if (activeStage !== 'all') {
+    list = list.filter(p => p.stage === activeStage);
+  }
+
+  if (activePreset === 'needs-work') {
+    list = list.filter(p => !p.hasFinal && p.stage !== 'dead' && p.stage !== 'idea' && p.stage !== 'published');
+  } else if (activePreset === 'dead') {
+    list = list.filter(p => p.stage === 'dead');
+  } else if (activePreset === 'ready') {
+    list = list.filter(p => p.hasFinal || p.stage === 'review');
+  }
+
+  // Sort
+  list.sort((a,b) => {
+    let va, vb;
+    switch(sortCol) {
+      case 'code': va = a.code; vb = b.code; break;
+      case 'stage': va = a.stage; vb = b.stage; break;
+      case 'files': va = a.files; vb = b.files; break;
+      case 'transcript': va = a.transcript; vb = b.transcript; break;
+      case 'final': va = a.hasFinal?1:0; vb = b.hasFinal?1:0; break;
+      case 'relay': va = a.relay; vb = b.relay; break;
+      case 'modified': va = a.modified.getTime(); vb = b.modified.getTime(); break;
+      default: va = a.code; vb = b.code;
+    }
+    if (va < vb) return sortDesc ? 1 : -1;
+    if (va > vb) return sortDesc ? -1 : 1;
+    return 0;
+  });
+
+  return list;
+}
+
+function renderTable() {
+  const filtered = getFilteredProjects();
+  const tbody = document.getElementById('tableBody');
+  const rows = filtered.map(p => {
+    const sel = selectedIds.has(p.id) ? ' selected' : '';
+    const starClass = p.starred ? 'star filled' : 'star';
+    const stageClass = 'stage-' + p.stage;
+    const pctColor = p.transcript >= 80 ? 'var(--success)' : p.transcript >= 40 ? 'var(--warning)' : 'var(--danger)';
+    const finalIcon = p.hasFinal ? '<span class="check-icon check-yes">&#10003;</span>' : '<span class="check-icon check-no">&mdash;</span>';
+    let relayHtml;
+    if (p.relay === 'synced') relayHtml = '<span class="relay-badge relay-synced">Synced</span>';
+    else if (p.relay === 'behind') relayHtml = '<span class="relay-badge relay-behind">Behind</span>';
+    else relayHtml = '<span class="relay-none">&mdash;</span>';
+
+    return `<tr class="${sel}" data-id="${p.id}">
+      <td class="star-cell"><span class="${starClass}" data-star="${p.id}">&starf;</span></td>
+      <td class="code-cell">${p.code}</td>
+      <td>${p.name}</td>
+      <td><span class="stage-badge ${stageClass}">${p.stage}</span></td>
+      <td>${p.files}</td>
+      <td><div class="pct-bar"><div class="pct-bar-track"><div class="pct-bar-fill" style="width:${p.transcript}%;background:${pctColor}"></div></div><span class="pct-bar-label">${p.transcript}%</span></div></td>
+      <td>${finalIcon}</td>
+      <td>${relayHtml}</td>
+      <td class="modified-cell">${p.modifiedStr}</td>
+    </tr>`;
+  }).join('');
+
+  tbody.innerHTML = rows;
+  document.getElementById('countBadge').textContent = `Showing ${filtered.length} of 72`;
+  document.getElementById('shiftHint').style.display = selectedIds.size > 0 ? '' : 'none';
+}
+
+function generateHealth(p) {
+  const issues = [];
+  if (p.files === 0) issues.push('has no recordings yet');
+  else if (!p.hasTranscripts) issues.push(`has ${p.files} recording${p.files>1?'s':''} but no transcripts`);
+  if (p.transcript > 0 && p.transcript < 50) issues.push('transcript coverage is low');
+  if (!p.hasChapters && p.files > 2) issues.push('has multiple recordings but no chapters defined');
+  if (p.relay === 'behind') issues.push('relay sync is behind');
+  if (p.stage === 'recording' && p.daysAgo > 30) issues.push('has been in recording stage for over a month');
+  if (p.stage === 'dead') return `<strong>Dead project.</strong> This project was abandoned. It has ${p.files} recording${p.files!==1?'s':''} that could be repurposed or archived.`;
+  if (p.stage === 'published') return `<strong>Published.</strong> This project is complete with ${p.files} recordings and a final video. ${p.relay==='synced'?'Relay is synced with editors.':''}`;
+  if (issues.length === 0) return `<strong>Looking good.</strong> This project appears healthy with no obvious gaps.`;
+  return `<strong>Needs attention.</strong> This project ${issues.join(', ')}. Consider ${p.transcript < 30 ? 'transcribing or marking as dead' : 'progressing to the next stage'}.`;
+}
+
+function renderDrawerSingle(p) {
+  return `
+    <div class="drawer-section">
+      <h3>Overview</h3>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="label">Recordings</div><div class="value">${p.files}</div></div>
+        <div class="stat-card"><div class="label">Transcript</div><div class="value">${p.transcript}%</div></div>
+        <div class="stat-card"><div class="label">Images</div><div class="value">${p.imageCount}</div></div>
+        <div class="stat-card"><div class="label">Thumbnails</div><div class="value">${p.thumbCount}</div></div>
+        <div class="stat-card"><div class="label">Duration</div><div class="value">${p.duration}</div></div>
+        <div class="stat-card"><div class="label">Days Ago</div><div class="value">${p.daysAgo}d</div></div>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <h3>Progress Checklist</h3>
+      <ul class="checklist">
+        <li><span class="icon ${p.hasRecordings?'done':'missing'}">${p.hasRecordings?'&#10003;':'&#10007;'}</span> Has recordings</li>
+        <li><span class="icon ${p.hasTranscripts?'done':'missing'}">${p.hasTranscripts?'&#10003;':'&#10007;'}</span> Has transcripts</li>
+        <li><span class="icon ${p.hasChapters?'done':'missing'}">${p.hasChapters?'&#10003;':'&#10007;'}</span> Has chapters</li>
+        <li><span class="icon ${p.hasFinal?'done':'missing'}">${p.hasFinal?'&#10003;':'&#10007;'}</span> Has final video</li>
+        <li><span class="icon ${p.hasRelay?'done':'missing'}">${p.hasRelay?'&#10003;':'&#10007;'}</span> Has relay</li>
+      </ul>
+    </div>
+    <div class="drawer-section">
+      <h3>Health Assessment</h3>
+      <div class="health-box">${generateHealth(p)}</div>
+    </div>
+    <div class="drawer-section">
+      <h3>Path</h3>
+      <div style="font-size:12px;color:var(--text-muted);font-family:monospace;word-break:break-all;">${p.path}</div>
+    </div>
+  `;
+}
+
+function renderDrawerComparison(ids) {
+  const ps = ids.map(id => projects[id]);
+  const fields = [
+    {label:'Stage', fn: p => `<span class="stage-badge stage-${p.stage}">${p.stage}</span>`},
+    {label:'Files', fn: p => p.files},
+    {label:'Transcript', fn: p => p.transcript+'%'},
+    {label:'Final', fn: p => p.hasFinal?'<span class="check-icon check-yes">&#10003;</span>':'<span class="check-icon check-no">&#10007;</span>'},
+    {label:'Relay', fn: p => p.relay},
+    {label:'Duration', fn: p => p.duration},
+    {label:'Images', fn: p => p.imageCount},
+    {label:'Modified', fn: p => p.modifiedStr},
+  ];
+
+  let html = '<div class="drawer-section"><h3>Comparison</h3><table class="comparison-table"><thead><tr><th></th>';
+  ps.forEach(p => { html += `<th>${p.code}</th>`; });
+  html += '</tr></thead><tbody>';
+  fields.forEach(f => {
+    html += `<tr><td style="font-weight:600;color:var(--text-muted);font-size:11px;text-transform:uppercase">${f.label}</td>`;
+    ps.forEach(p => { html += `<td>${f.fn(p)}</td>`; });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  // Health for each
+  ps.forEach(p => {
+    html += `<div class="drawer-section"><h3>${p.code} Health</h3><div class="health-box">${generateHealth(p)}</div></div>`;
+  });
+
+  return html;
+}
+
+function openDrawer(ids) {
+  const drawer = document.getElementById('drawer');
+  const body = document.getElementById('drawerBody');
+  const title = document.getElementById('drawerTitle');
+  const compHeader = document.getElementById('comparisonHeader');
+  const switchBtn = document.getElementById('switchBtn');
+
+  if (ids.length === 1) {
+    const p = projects[ids[0]];
+    title.textContent = p.code + ' — ' + p.name;
+    body.innerHTML = renderDrawerSingle(p);
+    compHeader.classList.remove('visible');
+    switchBtn.textContent = 'Switch to Project';
+  } else {
+    title.textContent = 'Compare Projects';
+    body.innerHTML = renderDrawerComparison(ids);
+    compHeader.classList.add('visible');
+    document.getElementById('comparisonCount').textContent = ids.length;
+    switchBtn.textContent = 'Switch to ' + projects[ids[0]].code;
+  }
+
+  drawer.classList.add('open');
+  document.getElementById('tableWrap').classList.add('drawer-open');
+  document.getElementById('drawerOverlay').style.display = 'block';
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('tableWrap').classList.remove('drawer-open');
+  document.getElementById('drawerOverlay').style.display = 'none';
+}
+
+// Event handlers
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value;
+  renderTable();
+});
+
+document.getElementById('stagePills').addEventListener('click', e => {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  activeStage = pill.dataset.stage;
+  activePreset = null;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  renderTable();
+});
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const preset = btn.dataset.preset;
+    if (activePreset === preset) {
+      activePreset = null;
+      btn.classList.remove('active');
+    } else {
+      activePreset = preset;
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    // Reset stage to all when using presets
+    activeStage = 'all';
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    document.querySelector('.pill[data-stage="all"]').classList.add('active');
+    renderTable();
+  });
+});
+
+document.getElementById('tableBody').addEventListener('click', e => {
+  // Star toggle
+  const star = e.target.closest('[data-star]');
+  if (star) {
+    const id = parseInt(star.dataset.star);
+    projects[id].starred = !projects[id].starred;
+    renderTable();
+    if (selectedIds.has(id)) openDrawer(Array.from(selectedIds));
+    return;
+  }
+
+  const row = e.target.closest('tr');
+  if (!row) return;
+  const id = parseInt(row.dataset.id);
+
+  if (e.shiftKey && selectedIds.size > 0) {
+    if (selectedIds.has(id)) {
+      selectedIds.delete(id);
+    } else {
+      selectedIds.add(id);
+    }
+    if (selectedIds.size === 0) {
+      closeDrawer();
+    } else {
+      openDrawer(Array.from(selectedIds));
+    }
+  } else {
+    selectedIds.clear();
+    selectedIds.add(id);
+    openDrawer([id]);
+  }
+  renderTable();
+});
+
+document.getElementById('drawerClose').addEventListener('click', () => {
+  closeDrawer();
+  selectedIds.clear();
+  renderTable();
+});
+
+document.getElementById('drawerOverlay').addEventListener('click', () => {
+  closeDrawer();
+  selectedIds.clear();
+  renderTable();
+});
+
+document.getElementById('clearSelection').addEventListener('click', e => {
+  e.preventDefault();
+  selectedIds.clear();
+  closeDrawer();
+  renderTable();
+});
+
+// Column sorting
+document.querySelectorAll('thead th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (sortCol === col) {
+      sortDesc = !sortDesc;
+    } else {
+      sortCol = col;
+      sortDesc = false;
+    }
+    document.querySelectorAll('thead th').forEach(h => { h.classList.remove('sorted','desc'); });
+    th.classList.add('sorted');
+    if (sortDesc) th.classList.add('desc');
+    renderTable();
+  });
+});
+
+// Keyboard: Escape closes drawer
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeDrawer();
+    selectedIds.clear();
+    renderTable();
+  }
+});
+
+// Init
+renderTable();
+</script>
+</body>
+</html>

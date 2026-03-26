@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mochaccino — project-list-c-table-kanban</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --page-bg: #e8e0d4;
+    --surface: #f5f1eb;
+    --surface-muted: #eee8de;
+    --border: #d4cdc4;
+    --border-strong: #b8a99a;
+    --text-primary: #2a2018;
+    --text-secondary: #4a3e30;
+    --text-muted: #7a6e5e;
+    --text-faint: #9a8a78;
+    --accent: #8b6914;
+    --accent-light: #f0e6d0;
+    --danger: #a04030;
+    --success: #4a7a3a;
+    --warning: #9a7020;
+    --drawer-width: 35%;
+
+    --stage-plan: #8b5cf6;
+    --stage-plan-bg: #ede9fe;
+    --stage-rec: #ca8a04;
+    --stage-rec-bg: #fef9c3;
+    --stage-1st: #3b82f6;
+    --stage-1st-bg: #dbeafe;
+    --stage-2nd: #1d4ed8;
+    --stage-2nd-bg: #c7d2fe;
+    --stage-rev: #ea580c;
+    --stage-rev-bg: #fed7aa;
+    --stage-ready: #16a34a;
+    --stage-ready-bg: #dcfce7;
+    --stage-pub: #166534;
+    --stage-pub-bg: #bbf7d0;
+    --stage-arch: #78716c;
+    --stage-arch-bg: #e7e5e4;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    min-width: 1280px;
+    line-height: 1.5;
+  }
+
+  /* Banner */
+  .banner {
+    background: var(--text-primary);
+    color: var(--surface);
+    text-align: center;
+    padding: 6px 16px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  /* Page layout */
+  .page { padding: 24px 32px; }
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .page-title { font-size: 24px; font-weight: 700; }
+  .page-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* View toggle */
+  .view-toggle {
+    display: flex;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .view-btn {
+    padding: 7px 14px;
+    background: var(--surface);
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+  }
+  .view-btn:first-child { border-right: 1px solid var(--border-strong); }
+  .view-btn:hover { background: var(--surface-muted); }
+  .view-btn.active { background: var(--accent); color: #fff; }
+  .view-btn svg { width: 16px; height: 16px; }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .search-wrap { position: relative; flex: 0 0 260px; }
+  .search-wrap::before {
+    content: "\1F50D";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .search-box {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    font-size: 14px;
+    color: var(--text-primary);
+    outline: none;
+  }
+  .search-box:focus { border-color: var(--accent); }
+
+  /* Filter pills */
+  .pill-group { display: flex; gap: 4px; }
+  .pill {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .pill:hover { border-color: var(--border-strong); background: var(--surface-muted); }
+  .pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .separator { width: 1px; height: 28px; background: var(--border); margin: 0 4px; }
+
+  .preset-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-muted);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+  .preset-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .count-badge {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* ==================== LIST VIEW ==================== */
+  .list-view { transition: margin-right 0.3s ease; }
+  .list-view.drawer-open { margin-right: calc(var(--drawer-width) + 16px); }
+
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .table-scroll {
+    max-height: calc(100vh - 240px);
+    overflow-y: auto;
+  }
+  .table-scroll::-webkit-scrollbar { width: 6px; }
+  .table-scroll::-webkit-scrollbar-track { background: transparent; }
+  .table-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  thead th {
+    background: var(--surface-muted);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: var(--text-secondary); }
+  thead th.sorted::after { content: " \25B2"; font-size: 9px; }
+  thead th.sorted.desc::after { content: " \25BC"; font-size: 9px; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  tbody tr:hover { background: var(--accent-light); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr.selected { background: #e8ddc4; }
+  tbody tr.selected:hover { background: #e0d4b8; }
+  tbody tr.dead-row { opacity: 0.55; }
+
+  td { padding: 8px 12px; vertical-align: middle; white-space: nowrap; }
+
+  .star-cell { width: 36px; text-align: center; font-size: 16px; cursor: pointer; }
+  .star-cell .star { opacity: 0.2; }
+  .star-cell .star.filled { opacity: 1; color: var(--accent); }
+
+  .code-cell { font-weight: 600; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
+
+  .stage-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .stage-plan { background: var(--stage-plan-bg); color: var(--stage-plan); }
+  .stage-rec { background: var(--stage-rec-bg); color: var(--stage-rec); }
+  .stage-1st { background: var(--stage-1st-bg); color: var(--stage-1st); }
+  .stage-2nd { background: var(--stage-2nd-bg); color: var(--stage-2nd); }
+  .stage-rev { background: var(--stage-rev-bg); color: var(--stage-rev); }
+  .stage-ready { background: var(--stage-ready-bg); color: var(--stage-ready); }
+  .stage-pub { background: var(--stage-pub-bg); color: var(--stage-pub); }
+  .stage-arch { background: var(--stage-arch-bg); color: var(--stage-arch); }
+
+  .pct-bar { display: inline-flex; align-items: center; gap: 6px; min-width: 80px; }
+  .pct-bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 40px; }
+  .pct-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .pct-bar-label { font-size: 11px; color: var(--text-muted); min-width: 28px; text-align: right; }
+
+  .check-icon { font-size: 14px; }
+  .check-yes { color: var(--success); }
+  .check-no { color: var(--border); }
+
+  .relay-badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .relay-synced { background: #d4e8d0; color: #2a5a20; }
+  .relay-behind { background: #e8dcd0; color: #7a5020; }
+  .relay-none { color: var(--border-strong); font-size: 11px; }
+
+  .modified-cell { font-size: 12px; color: var(--text-muted); }
+
+  /* ==================== BOARD VIEW ==================== */
+  .board-view { display: none; transition: margin-right 0.3s ease; }
+  .board-view.drawer-open { margin-right: calc(var(--drawer-width) + 16px); }
+
+  .board {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    align-items: flex-start;
+    min-height: calc(100vh - 240px);
+    padding-bottom: 16px;
+  }
+  .board::-webkit-scrollbar { height: 8px; }
+  .board::-webkit-scrollbar-track { background: transparent; }
+  .board::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+  .column {
+    flex: 0 0 170px;
+    min-width: 170px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 260px);
+  }
+
+  .col-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    border-radius: 8px 8px 0 0;
+    z-index: 1;
+  }
+  .col-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .col-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-secondary); }
+  .col-count {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0 6px;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .col-cards {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .col-cards::-webkit-scrollbar { width: 4px; }
+  .col-cards::-webkit-scrollbar-track { background: transparent; }
+  .col-cards::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+  .card {
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 12px;
+  }
+  .card:hover { border-color: var(--border-strong); background: var(--accent-light); }
+  .card.selected { border-color: var(--accent); background: #e8ddc4; box-shadow: 0 0 0 1px var(--accent); }
+  .card.dead { opacity: 0.45; }
+
+  .card-code { font-weight: 700; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; color: var(--text-primary); }
+  .card-name { font-size: 11px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-meta { display: flex; align-items: center; gap: 8px; margin-top: 5px; font-size: 10px; color: var(--text-muted); }
+  .card-files { display: flex; align-items: center; gap: 2px; }
+
+  .card-pct-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; min-width: 30px; }
+  .card-pct-fill { height: 100%; border-radius: 2px; }
+  .card-pct-label { font-size: 9px; color: var(--text-muted); min-width: 22px; text-align: right; }
+
+  .col-empty {
+    padding: 16px 10px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+
+  /* ==================== DRAWER ==================== */
+  .drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+  }
+
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: var(--drawer-width);
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border-strong);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+    z-index: 100;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .drawer.open { transform: translateX(0); }
+
+  .drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-muted);
+    flex-shrink: 0;
+  }
+  .drawer-header h2 { font-size: 18px; font-weight: 700; }
+  .drawer-close {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .drawer-close:hover { background: var(--page-bg); color: var(--text-primary); }
+
+  .drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .drawer-body::-webkit-scrollbar { width: 6px; }
+  .drawer-body::-webkit-scrollbar-track { background: transparent; }
+  .drawer-body::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+  .drawer-section { margin-bottom: 20px; }
+  .drawer-section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-card {
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .stat-card .label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+  .stat-card .value { font-size: 18px; font-weight: 700; }
+
+  .checklist { list-style: none; }
+  .checklist li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist .icon { font-size: 16px; flex-shrink: 0; }
+  .checklist .done { color: var(--success); }
+  .checklist .missing { color: var(--danger); }
+
+  .health-box {
+    background: #fdf6e8;
+    border: 1px solid #e8d8b0;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .health-box strong { color: var(--text-primary); }
+
+  .drawer-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-muted);
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .btn-primary {
+    flex: 1;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: #7a5c10; }
+  .btn-secondary {
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { background: var(--page-bg); }
+</style>
+</head>
+<body>
+
+<div class="banner">Mochaccino &mdash; project-list-c-table-kanban &mdash; 2026-03-25</div>
+
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">Video Projects</h1>
+    <div class="view-toggle">
+      <button class="view-btn active" id="viewList" title="List view">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="3" x2="14" y2="3"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><line x1="2" y1="10" x2="14" y2="10"/><line x1="2" y1="13" x2="14" y2="13"/></svg>
+        List
+      </button>
+      <button class="view-btn" id="viewBoard" title="Board view">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="4" height="12" rx="1"/><rect x="6" y="2" width="4" height="8" rx="1"/><rect x="11" y="2" width="4" height="10" rx="1"/></svg>
+        Board
+      </button>
+    </div>
+  </div>
+  <p class="page-subtitle">72 projects &middot; Click to select &middot; Filters persist across views</p>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <input type="text" class="search-box" placeholder="Search projects..." id="searchInput">
+    </div>
+
+    <div class="pill-group" id="stagePills">
+      <button class="pill active" data-stage="all">All</button>
+      <button class="pill" data-stage="plan">Plan</button>
+      <button class="pill" data-stage="rec">REC</button>
+      <button class="pill" data-stage="1st">1st</button>
+      <button class="pill" data-stage="2nd">2nd</button>
+      <button class="pill" data-stage="rev">Rev</button>
+      <button class="pill" data-stage="ready">Ready</button>
+      <button class="pill" data-stage="pub">Pub</button>
+      <button class="pill" data-stage="arch">Arch</button>
+    </div>
+
+    <div class="separator"></div>
+
+    <button class="preset-btn" data-preset="needs-attention">Needs Attention</button>
+    <button class="preset-btn" data-preset="dead">Dead</button>
+    <button class="preset-btn" data-preset="ready-edit">Ready to Edit</button>
+
+    <span class="count-badge" id="countBadge">Showing 72 of 72</span>
+  </div>
+
+  <!-- List View -->
+  <div class="list-view" id="listView">
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="star-cell">&starf;</th>
+              <th data-sort="code" class="sorted">Code</th>
+              <th data-sort="name">Name</th>
+              <th data-sort="stage">Stage</th>
+              <th data-sort="files">Files</th>
+              <th data-sort="transcript">Transcript %</th>
+              <th data-sort="final">Final</th>
+              <th data-sort="relay">Relay</th>
+              <th data-sort="modified">Modified</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Board View -->
+  <div class="board-view" id="boardView">
+    <div class="board" id="board"></div>
+  </div>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <h2 id="drawerTitle">Project Detail</h2>
+    <button class="drawer-close" id="drawerClose">&times;</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-footer">
+    <button class="btn-primary" id="switchBtn">Switch to Project</button>
+    <button class="btn-secondary" id="openFinder">Open in Finder</button>
+  </div>
+</div>
+
+<script>
+// === Stage definitions ===
+const STAGES = [
+  { key: 'plan', label: 'Plan', color: '#8b5cf6' },
+  { key: 'rec',  label: 'REC',  color: '#ca8a04' },
+  { key: '1st',  label: '1st',  color: '#3b82f6' },
+  { key: '2nd',  label: '2nd',  color: '#1d4ed8' },
+  { key: 'rev',  label: 'Rev',  color: '#ea580c' },
+  { key: 'ready',label: 'Ready',color: '#16a34a' },
+  { key: 'pub',  label: 'Pub',  color: '#166534' },
+  { key: 'arch', label: 'Arch', color: '#78716c' },
+];
+
+const stageKeys = STAGES.map(s => s.key);
+const stageMap = {};
+STAGES.forEach(s => { stageMap[s.key] = s; });
+
+// === Data generation ===
+const names = [
+  'BMAD Method Deep Dive','Agent Workflow Intro','FliVideo Demo','Storyline Walkthrough',
+  'Skool Launch Strategy','KPI Dashboard Tutorial','Klueless DSL Basics','Prompt Engineering 101',
+  'Theodore Architecture','YouTube Automation','React 19 Features','Tailwind v4 Migration',
+  'Express Socket Setup','Vite Build Optimization','TypeScript Patterns','Monorepo Workflows',
+  'AI Content Creation','GPT Agent Design','Claude Code Review','Multi-Agent Systems',
+  'Video Editing Basics','Color Grading Tips','Audio Mastering','Thumbnail Design',
+  'SEO for YouTube','Community Building','Brand Strategy','Content Calendar',
+  'Live Streaming Setup','Ecamm Advanced','OBS Studio Config','Podcast Recording',
+  'Client Onboarding','SupportSignal Demo','NDIS Workflow','Convex Database',
+  'Next.js App Router','Svelte 5 Preview','Astro Islands','Ruby Gems Guide',
+  'Shell Scripting','Ansible Playbooks','Supabase Auth','S3 Sync Setup',
+  'DaVinci Resolve Tips','Final Cut Workflow','Motion Graphics','After Effects Basics',
+  'Faceless YouTube','AI Voice Cloning','Avatar Creation','Storytelling Framework',
+  'Beauty Brand Launch','Joy\'s First Video','Makeup Tutorial','Skincare Routine',
+  'AITLDR Graphics','Animation Pipeline','AI Art Workflow','Midjourney Prompts',
+  'Stable Diffusion','ComfyUI Nodes','LoRA Training','Video Upscaling',
+  'Podcast Editing','Interview Setup','B-Roll Collection','Drone Footage',
+  'Time Lapse Setup','Lighting Guide','Green Screen','Sound Design'
+];
+
+const prefixes = ['B','V','T','C','A','P','S','K','D','R','L','M','F','E','G','H','J','N','Q','W','X','Y','Z','U'];
+const codes = [];
+for (let i = 0; i < 72; i++) {
+  const pre = prefixes[i % prefixes.length];
+  const num = String(Math.floor(i / prefixes.length) * 10 + Math.floor(Math.random()*90)+10).padStart(3,'0');
+  codes.push(pre + num);
+}
+
+function seededRand(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+// Realistic stage distribution: Plan 8, REC 12, 1st 10, 2nd 8, Rev 8, Ready 6, Pub 12, Arch 8
+const stageDistribution = [];
+[8,12,10,8,8,6,12,8].forEach((count, si) => {
+  for (let j = 0; j < count; j++) stageDistribution.push(stageKeys[si]);
+});
+
+const projects = [];
+for (let i = 0; i < 72; i++) {
+  const rng = seededRand(i * 137 + 42);
+  const stage = stageDistribution[i];
+  const starred = rng() > 0.75;
+  const isDead = stage === 'arch' && rng() > 0.6;
+  const files = stage === 'plan' ? 0 : Math.floor(rng() * 12) + 1;
+  const transcript = stage === 'plan' ? 0 : isDead ? Math.floor(rng() * 40) : Math.floor(rng() * 101);
+  const hasFinal = stage === 'pub' || (stage === 'ready' && rng() > 0.3) || (stage === 'rev' && rng() > 0.7);
+  const relay = rng() > 0.55 ? (rng() > 0.5 ? 'synced' : 'behind') : 'none';
+  const daysAgo = Math.floor(rng() * 90);
+  const modified = new Date(2026, 2, 25 - daysAgo);
+  const hasRecordings = files > 0;
+  const hasTranscripts = transcript > 30;
+  const hasChapters = stage !== 'plan' && !isDead && rng() > 0.4;
+  const hasRelay = relay !== 'none';
+
+  projects.push({
+    id: i,
+    code: codes[i],
+    name: names[i],
+    stage,
+    starred,
+    isDead,
+    files,
+    transcript,
+    hasFinal,
+    relay,
+    modified,
+    modifiedStr: formatDate(modified),
+    daysAgo,
+    hasRecordings,
+    hasTranscripts,
+    hasChapters,
+    hasRelay,
+    path: '/Volumes/Projects/' + names[i].toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+    imageCount: Math.floor(rng() * 8),
+    thumbCount: Math.floor(rng() > 0.5 ? rng() * 4 : 0),
+    duration: files > 0 ? Math.floor(rng() * 45 + 2) + ':' + String(Math.floor(rng()*60)).padStart(2,'0') : '0:00',
+  });
+}
+
+function formatDate(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate();
+}
+
+// === State ===
+let currentView = 'list'; // 'list' or 'board'
+let activeStage = 'all';
+let activePreset = null;
+let searchTerm = '';
+let selectedId = null;
+let sortCol = 'code';
+let sortDesc = false;
+
+// === Filtering ===
+function getFilteredProjects() {
+  let list = projects.slice();
+
+  if (searchTerm) {
+    const q = searchTerm.toLowerCase();
+    list = list.filter(p => p.code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q));
+  }
+
+  if (activeStage !== 'all') {
+    list = list.filter(p => p.stage === activeStage);
+  }
+
+  if (activePreset === 'needs-attention') {
+    list = list.filter(p => {
+      if (p.isDead || p.stage === 'pub' || p.stage === 'arch') return false;
+      return p.transcript < 50 || p.relay === 'behind' || (p.files === 0 && p.stage !== 'plan') || p.daysAgo > 30;
+    });
+  } else if (activePreset === 'dead') {
+    list = list.filter(p => p.isDead);
+  } else if (activePreset === 'ready-edit') {
+    list = list.filter(p => p.stage === '1st' || p.stage === '2nd' || (p.stage === 'ready'));
+  }
+
+  // Sort
+  list.sort((a,b) => {
+    let va, vb;
+    switch(sortCol) {
+      case 'code': va = a.code; vb = b.code; break;
+      case 'name': va = a.name.toLowerCase(); vb = b.name.toLowerCase(); break;
+      case 'stage': va = stageKeys.indexOf(a.stage); vb = stageKeys.indexOf(b.stage); break;
+      case 'files': va = a.files; vb = b.files; break;
+      case 'transcript': va = a.transcript; vb = b.transcript; break;
+      case 'final': va = a.hasFinal?1:0; vb = b.hasFinal?1:0; break;
+      case 'relay': va = a.relay; vb = b.relay; break;
+      case 'modified': va = a.modified.getTime(); vb = b.modified.getTime(); break;
+      default: va = a.code; vb = b.code;
+    }
+    if (va < vb) return sortDesc ? 1 : -1;
+    if (va > vb) return sortDesc ? -1 : 1;
+    return 0;
+  });
+
+  return list;
+}
+
+// === Render: List View ===
+function pctColor(v) {
+  return v >= 80 ? 'var(--success)' : v >= 40 ? 'var(--warning)' : 'var(--danger)';
+}
+
+function renderTable() {
+  const filtered = getFilteredProjects();
+  const tbody = document.getElementById('tableBody');
+
+  const rows = filtered.map(p => {
+    const sel = p.id === selectedId ? ' selected' : '';
+    const deadCls = p.isDead ? ' dead-row' : '';
+    const starClass = p.starred ? 'star filled' : 'star';
+    const stageClass = 'stage-' + p.stage;
+    const finalIcon = p.hasFinal ? '<span class="check-icon check-yes">&#10003;</span>' : '<span class="check-icon check-no">&mdash;</span>';
+    let relayHtml;
+    if (p.relay === 'synced') relayHtml = '<span class="relay-badge relay-synced">Synced</span>';
+    else if (p.relay === 'behind') relayHtml = '<span class="relay-badge relay-behind">Behind</span>';
+    else relayHtml = '<span class="relay-none">&mdash;</span>';
+
+    return '<tr class="' + sel + deadCls + '" data-id="' + p.id + '">' +
+      '<td class="star-cell"><span class="' + starClass + '" data-star="' + p.id + '">&starf;</span></td>' +
+      '<td class="code-cell">' + p.code + '</td>' +
+      '<td>' + p.name + '</td>' +
+      '<td><span class="stage-badge ' + stageClass + '">' + (stageMap[p.stage]?.label || p.stage) + '</span></td>' +
+      '<td>' + p.files + '</td>' +
+      '<td><div class="pct-bar"><div class="pct-bar-track"><div class="pct-bar-fill" style="width:' + p.transcript + '%;background:' + pctColor(p.transcript) + '"></div></div><span class="pct-bar-label">' + p.transcript + '%</span></div></td>' +
+      '<td>' + finalIcon + '</td>' +
+      '<td>' + relayHtml + '</td>' +
+      '<td class="modified-cell">' + p.modifiedStr + '</td>' +
+    '</tr>';
+  }).join('');
+
+  tbody.innerHTML = rows;
+  document.getElementById('countBadge').textContent = 'Showing ' + filtered.length + ' of 72';
+}
+
+// === Render: Board View ===
+function renderBoard() {
+  const filtered = getFilteredProjects();
+  const board = document.getElementById('board');
+
+  // Group by stage
+  const groups = {};
+  STAGES.forEach(s => { groups[s.key] = []; });
+  filtered.forEach(p => {
+    if (groups[p.stage]) groups[p.stage].push(p);
+  });
+
+  let html = '';
+  STAGES.forEach(s => {
+    const cards = groups[s.key];
+    html += '<div class="column">';
+    html += '<div class="col-header">';
+    html += '<div class="col-dot" style="background:' + s.color + '"></div>';
+    html += '<span class="col-label">' + s.label + '</span>';
+    html += '<span class="col-count">' + cards.length + '</span>';
+    html += '</div>';
+    html += '<div class="col-cards">';
+
+    if (cards.length === 0) {
+      html += '<div class="col-empty">No projects</div>';
+    } else {
+      cards.forEach(p => {
+        const sel = p.id === selectedId ? ' selected' : '';
+        const deadCls = p.isDead ? ' dead' : '';
+        html += '<div class="card' + sel + deadCls + '" data-id="' + p.id + '">';
+        html += '<div class="card-code">' + p.code + '</div>';
+        html += '<div class="card-name">' + p.name + '</div>';
+        html += '<div class="card-meta">';
+        html += '<span class="card-files">' + p.files + ' files</span>';
+        html += '<div class="card-pct-track"><div class="card-pct-fill" style="width:' + p.transcript + '%;background:' + pctColor(p.transcript) + '"></div></div>';
+        html += '<span class="card-pct-label">' + p.transcript + '%</span>';
+        html += '</div>';
+        html += '</div>';
+      });
+    }
+
+    html += '</div></div>';
+  });
+
+  board.innerHTML = html;
+}
+
+// === Drawer ===
+function generateHealth(p) {
+  const issues = [];
+  if (p.files === 0) issues.push('has no recordings yet');
+  else if (!p.hasTranscripts) issues.push('has ' + p.files + ' recording' + (p.files>1?'s':'') + ' but no transcripts');
+  if (p.transcript > 0 && p.transcript < 50) issues.push('transcript coverage is low');
+  if (!p.hasChapters && p.files > 2) issues.push('has multiple recordings but no chapters defined');
+  if (p.relay === 'behind') issues.push('relay sync is behind');
+  if (p.stage === 'rec' && p.daysAgo > 30) issues.push('has been in recording stage for over a month');
+  if (p.isDead) return '<strong>Dead project.</strong> This project was abandoned. It has ' + p.files + ' recording' + (p.files!==1?'s':'') + ' that could be repurposed or archived.';
+  if (p.stage === 'pub') return '<strong>Published.</strong> This project is complete with ' + p.files + ' recordings and a final video. ' + (p.relay==='synced'?'Relay is synced with editors.':'');
+  if (issues.length === 0) return '<strong>Looking good.</strong> This project appears healthy with no obvious gaps.';
+  return '<strong>Needs attention.</strong> This project ' + issues.join(', ') + '. Consider ' + (p.transcript < 30 ? 'transcribing or marking as dead' : 'progressing to the next stage') + '.';
+}
+
+function renderDrawer(p) {
+  return '' +
+    '<div class="drawer-section">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">' +
+        '<span class="stage-badge stage-' + p.stage + '">' + (stageMap[p.stage]?.label || p.stage) + '</span>' +
+        (p.isDead ? '<span style="font-size:11px;color:var(--danger);font-weight:600;">DEAD</span>' : '') +
+        (p.starred ? '<span style="color:var(--accent);font-size:16px;">&starf;</span>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="drawer-section">' +
+      '<h3>Stats</h3>' +
+      '<div class="stat-grid">' +
+        '<div class="stat-card"><div class="label">Recordings</div><div class="value">' + p.files + '</div></div>' +
+        '<div class="stat-card"><div class="label">Transcript</div><div class="value">' + p.transcript + '%</div></div>' +
+        '<div class="stat-card"><div class="label">Images</div><div class="value">' + p.imageCount + '</div></div>' +
+        '<div class="stat-card"><div class="label">Thumbnails</div><div class="value">' + p.thumbCount + '</div></div>' +
+        '<div class="stat-card"><div class="label">Duration</div><div class="value">' + p.duration + '</div></div>' +
+        '<div class="stat-card"><div class="label">Modified</div><div class="value">' + p.daysAgo + 'd</div></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="drawer-section">' +
+      '<h3>Progress Checklist</h3>' +
+      '<ul class="checklist">' +
+        '<li><span class="icon ' + (p.hasRecordings?'done':'missing') + '">' + (p.hasRecordings?'&#10003;':'&#10007;') + '</span> Has recordings</li>' +
+        '<li><span class="icon ' + (p.hasTranscripts?'done':'missing') + '">' + (p.hasTranscripts?'&#10003;':'&#10007;') + '</span> Has transcripts</li>' +
+        '<li><span class="icon ' + (p.hasChapters?'done':'missing') + '">' + (p.hasChapters?'&#10003;':'&#10007;') + '</span> Has chapters</li>' +
+        '<li><span class="icon ' + (p.hasFinal?'done':'missing') + '">' + (p.hasFinal?'&#10003;':'&#10007;') + '</span> Has final video</li>' +
+        '<li><span class="icon ' + (p.hasRelay?'done':'missing') + '">' + (p.hasRelay?'&#10003;':'&#10007;') + '</span> Has relay</li>' +
+      '</ul>' +
+    '</div>' +
+    '<div class="drawer-section">' +
+      '<h3>Health Assessment</h3>' +
+      '<div class="health-box">' + generateHealth(p) + '</div>' +
+    '</div>' +
+    '<div class="drawer-section">' +
+      '<h3>Path</h3>' +
+      '<div style="font-size:12px;color:var(--text-muted);font-family:monospace;word-break:break-all;">' + p.path + '</div>' +
+    '</div>';
+}
+
+function openDrawer(id) {
+  selectedId = id;
+  const p = projects[id];
+  const drawer = document.getElementById('drawer');
+  document.getElementById('drawerTitle').textContent = p.code + ' \u2014 ' + p.name;
+  document.getElementById('drawerBody').innerHTML = renderDrawer(p);
+  drawer.classList.add('open');
+  document.getElementById('drawerOverlay').style.display = 'block';
+
+  const activeView = currentView === 'list' ? document.getElementById('listView') : document.getElementById('boardView');
+  activeView.classList.add('drawer-open');
+
+  renderCurrentView();
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').style.display = 'none';
+  document.getElementById('listView').classList.remove('drawer-open');
+  document.getElementById('boardView').classList.remove('drawer-open');
+  selectedId = null;
+  renderCurrentView();
+}
+
+// === View switching ===
+function renderCurrentView() {
+  if (currentView === 'list') {
+    renderTable();
+  } else {
+    renderBoard();
+  }
+}
+
+function switchView(view) {
+  currentView = view;
+  const listView = document.getElementById('listView');
+  const boardView = document.getElementById('boardView');
+  const listBtn = document.getElementById('viewList');
+  const boardBtn = document.getElementById('viewBoard');
+
+  if (view === 'list') {
+    listView.style.display = '';
+    boardView.style.display = 'none';
+    listBtn.classList.add('active');
+    boardBtn.classList.remove('active');
+  } else {
+    listView.style.display = 'none';
+    boardView.style.display = '';
+    listBtn.classList.remove('active');
+    boardBtn.classList.add('active');
+  }
+
+  // Transfer drawer-open class
+  if (selectedId !== null) {
+    listView.classList.remove('drawer-open');
+    boardView.classList.remove('drawer-open');
+    const activeView = view === 'list' ? listView : boardView;
+    activeView.classList.add('drawer-open');
+  }
+
+  renderCurrentView();
+}
+
+// === Event handlers ===
+
+// View toggle
+document.getElementById('viewList').addEventListener('click', () => switchView('list'));
+document.getElementById('viewBoard').addEventListener('click', () => switchView('board'));
+
+// Search
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value;
+  renderCurrentView();
+});
+
+// Stage pills
+document.getElementById('stagePills').addEventListener('click', e => {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  activeStage = pill.dataset.stage;
+  activePreset = null;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  renderCurrentView();
+});
+
+// Presets
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const preset = btn.dataset.preset;
+    if (activePreset === preset) {
+      activePreset = null;
+      btn.classList.remove('active');
+    } else {
+      activePreset = preset;
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    activeStage = 'all';
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    document.querySelector('.pill[data-stage="all"]').classList.add('active');
+    renderCurrentView();
+  });
+});
+
+// Table row clicks
+document.getElementById('tableBody').addEventListener('click', e => {
+  // Star toggle
+  const star = e.target.closest('[data-star]');
+  if (star) {
+    const id = parseInt(star.dataset.star);
+    projects[id].starred = !projects[id].starred;
+    renderCurrentView();
+    if (selectedId === id) openDrawer(id);
+    return;
+  }
+  const row = e.target.closest('tr');
+  if (!row) return;
+  const id = parseInt(row.dataset.id);
+  openDrawer(id);
+});
+
+// Board card clicks
+document.getElementById('board').addEventListener('click', e => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  const id = parseInt(card.dataset.id);
+  openDrawer(id);
+});
+
+// Drawer close
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+
+// Column sorting
+document.querySelectorAll('thead th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (sortCol === col) {
+      sortDesc = !sortDesc;
+    } else {
+      sortCol = col;
+      sortDesc = false;
+    }
+    document.querySelectorAll('thead th').forEach(h => { h.classList.remove('sorted','desc'); });
+    th.classList.add('sorted');
+    if (sortDesc) th.classList.add('desc');
+    renderTable();
+  });
+});
+
+// Keyboard: Escape closes drawer
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDrawer();
+});
+
+// === Init ===
+renderTable();
+renderBoard();
+</script>
+</body>
+</html>

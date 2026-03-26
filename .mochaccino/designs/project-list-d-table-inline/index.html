@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mochaccino — project-list-d-table-inline</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --page-bg: #e8e0d4;
+    --surface: #f5f1eb;
+    --surface-muted: #eee8de;
+    --border: #d4cdc4;
+    --border-strong: #b8a99a;
+    --text-primary: #2a2018;
+    --text-secondary: #4a3e30;
+    --text-muted: #7a6e5e;
+    --accent: #8b6914;
+    --accent-light: #f0e6d0;
+    --danger: #a04030;
+    --success: #4a7a3a;
+    --warning: #9a7020;
+    --expand-bg: #e8eef6;
+    --expand-border: #c8d4e2;
+    --selected-border: #4a80c0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--page-bg);
+    color: var(--text-primary);
+    min-width: 1280px;
+    line-height: 1.5;
+  }
+
+  /* Banner */
+  .banner {
+    background: var(--text-primary);
+    color: var(--surface);
+    text-align: center;
+    padding: 6px 16px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  /* Page layout */
+  .page { padding: 24px 32px; }
+  .page-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .page-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 0 0 280px;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    font-size: 14px;
+    color: var(--text-primary);
+    outline: none;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  .search-wrap { position: relative; flex: 0 0 280px; }
+  .search-wrap::before {
+    content: "\1F50D";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    pointer-events: none;
+  }
+  .search-wrap .search-box { width: 100%; }
+
+  /* Filter pills */
+  .pill-group { display: flex; gap: 4px; }
+  .pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .pill:hover { border-color: var(--border-strong); background: var(--surface-muted); }
+  .pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .separator {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+
+  .preset-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-muted);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+  .preset-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .count-badge {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* Table */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .table-scroll {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--surface-muted);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: var(--text-secondary); }
+  thead th.sorted::after { content: " \25B2"; font-size: 9px; }
+  thead th.sorted.desc::after { content: " \25BC"; font-size: 9px; }
+
+  tbody tr.project-row {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+    height: 32px;
+  }
+  tbody tr.project-row:hover { background: var(--accent-light); }
+  tbody tr.project-row.selected {
+    background: #e8ddc4;
+    border-left: 3px solid var(--selected-border);
+  }
+  tbody tr.project-row.selected:hover { background: #e0d4b8; }
+
+  td {
+    padding: 6px 12px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .star-cell { width: 36px; text-align: center; font-size: 16px; cursor: pointer; }
+  .star-cell .star { opacity: 0.2; }
+  .star-cell .star.filled { opacity: 1; color: var(--accent); }
+
+  .code-cell { font-weight: 600; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
+
+  .stage-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .stage-plan { background: #e0d8e8; color: #3a2060; }
+  .stage-rec { background: #d4e8d0; color: #2a5a20; }
+  .stage-1st { background: #d0dce8; color: #1a3a5a; }
+  .stage-2nd { background: #c8d8e8; color: #1a3060; }
+  .stage-rev { background: #e8dcd0; color: #5a3a1a; }
+  .stage-ready { background: #d0e8d4; color: #1a5a2a; }
+  .stage-pub { background: #d8d8d8; color: #3a3a3a; }
+  .stage-arch { background: #e8d0d0; color: #6a2020; }
+
+  .pct-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 80px;
+  }
+  .pct-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 40px;
+  }
+  .pct-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--success);
+    transition: width 0.3s;
+  }
+  .pct-bar-label { font-size: 11px; color: var(--text-muted); min-width: 28px; text-align: right; }
+
+  .check-icon { font-size: 14px; }
+  .check-yes { color: var(--success); }
+  .check-no { color: var(--border); }
+
+  .relay-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .relay-synced { background: #d4e8d0; color: #2a5a20; }
+  .relay-behind { background: #e8dcd0; color: #7a5020; }
+  .relay-none { color: var(--border-strong); font-size: 11px; }
+
+  .modified-cell { font-size: 12px; color: var(--text-muted); }
+
+  /* Inline expansion row */
+  tr.expand-row td {
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .expand-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.25s ease;
+    opacity: 0;
+  }
+  .expand-container.open {
+    max-height: 200px;
+    opacity: 1;
+  }
+
+  .expand-panel {
+    background: var(--expand-bg);
+    border-top: 2px solid var(--expand-border);
+    border-bottom: 2px solid var(--expand-border);
+    padding: 14px 20px;
+    display: flex;
+    gap: 32px;
+  }
+
+  .expand-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .expand-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Stats grid inside expansion */
+  .inline-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .inline-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 6px 12px;
+    min-width: 80px;
+    text-align: center;
+  }
+  .inline-stat .s-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-muted);
+    margin-bottom: 1px;
+  }
+  .inline-stat .s-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  /* Progress dots */
+  .progress-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .progress-dots .dot-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-right: 4px;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+  }
+  .dot.done { background: var(--success); border-color: var(--success); }
+  .dot.partial { background: var(--warning); border-color: var(--warning); }
+  .dot.missing { background: var(--surface); border-color: var(--border-strong); }
+
+  /* Health text */
+  .health-box-inline {
+    background: #fdf6e8;
+    border: 1px solid #e8d8b0;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .health-box-inline strong { color: var(--text-primary); }
+
+  /* Quick action buttons in expansion */
+  .quick-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+  }
+  .qa-btn {
+    padding: 5px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .qa-btn:hover { background: var(--accent-light); border-color: var(--accent); }
+  .qa-btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .qa-btn.primary:hover { background: #7a5c10; }
+</style>
+</head>
+<body>
+
+<div class="banner">Mochaccino &mdash; project-list-d-table-inline &mdash; 2026-03-25</div>
+
+<div class="page">
+  <h1 class="page-title">Projects</h1>
+  <p class="page-subtitle">72 projects &middot; Click a row to expand inline detail</p>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <input type="text" class="search-box" placeholder="Search projects..." id="searchInput">
+    </div>
+
+    <div class="pill-group" id="stagePills">
+      <button class="pill active" data-stage="all">All</button>
+      <button class="pill" data-stage="plan">Plan</button>
+      <button class="pill" data-stage="rec">REC</button>
+      <button class="pill" data-stage="1st">1st</button>
+      <button class="pill" data-stage="2nd">2nd</button>
+      <button class="pill" data-stage="rev">Rev</button>
+      <button class="pill" data-stage="ready">Ready</button>
+      <button class="pill" data-stage="pub">Pub</button>
+      <button class="pill" data-stage="arch">Arch</button>
+    </div>
+
+    <div class="separator"></div>
+
+    <button class="preset-btn" data-preset="needs-work">Needs Work</button>
+    <button class="preset-btn" data-preset="starred">Starred</button>
+    <button class="preset-btn" data-preset="stale">Stale</button>
+
+    <span class="count-badge" id="countBadge">Showing 72 of 72</span>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="star-cell">&starf;</th>
+            <th data-sort="code" class="sorted">Code</th>
+            <th>Name</th>
+            <th data-sort="stage">Stage</th>
+            <th data-sort="files">Files</th>
+            <th data-sort="transcript">Transcript %</th>
+            <th data-sort="final">Final</th>
+            <th data-sort="relay">Relay</th>
+            <th data-sort="modified">Modified</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// Project data generator
+const stageList = ['plan','rec','1st','2nd','rev','ready','pub','arch'];
+const stageLabels = {plan:'Plan',rec:'REC','1st':'1st Edit','2nd':'2nd Edit',rev:'Review',ready:'Ready',pub:'Published',arch:'Archived'};
+const names = [
+  'BMAD Method Deep Dive','Agent Workflow Intro','FliVideo Demo','Storyline Walkthrough',
+  'Skool Launch Strategy','KPI Dashboard Tutorial','Klueless DSL Basics','Prompt Engineering 101',
+  'Theodore Architecture','YouTube Automation','React 19 Features','Tailwind v4 Migration',
+  'Express Socket Setup','Vite Build Optimization','TypeScript Patterns','Monorepo Workflows',
+  'AI Content Creation','GPT Agent Design','Claude Code Review','Multi-Agent Systems',
+  'Video Editing Basics','Color Grading Tips','Audio Mastering','Thumbnail Design',
+  'SEO for YouTube','Community Building','Brand Strategy','Content Calendar',
+  'Live Streaming Setup','Ecamm Advanced','OBS Studio Config','Podcast Recording',
+  'Client Onboarding','SupportSignal Demo','NDIS Workflow','Convex Database',
+  'Next.js App Router','Svelte 5 Preview','Astro Islands','Ruby Gems Guide',
+  'Shell Scripting','Ansible Playbooks','Supabase Auth','S3 Sync Setup',
+  'DaVinci Resolve Tips','Final Cut Workflow','Motion Graphics','After Effects Basics',
+  'Faceless YouTube','AI Voice Cloning','Avatar Creation','Storytelling Framework',
+  'Beauty Brand Launch','Joy\'s First Video','Makeup Tutorial','Skincare Routine',
+  'AITLDR Graphics','Animation Pipeline','AI Art Workflow','Midjourney Prompts',
+  'Stable Diffusion','ComfyUI Nodes','LoRA Training','Video Upscaling',
+  'Podcast Editing','Interview Setup','B-Roll Collection','Drone Footage',
+  'Time Lapse Setup','Lighting Guide','Green Screen','Sound Design'
+];
+
+const codes = [];
+const prefixes = ['B','V','T','C','A','P','S','K','D','R','L','M','F','E','G','H','J','N','Q','W','X','Y','Z','U'];
+for (let i = 0; i < 72; i++) {
+  const pre = prefixes[i % prefixes.length];
+  const num = String(Math.floor(i / prefixes.length) * 10 + Math.floor(seededRandVal(i)*90)+10).padStart(3,'0');
+  codes.push(pre + num);
+}
+
+function seededRandVal(seed) {
+  let s = (seed * 16807 + 1) % 2147483647;
+  return (s - 1) / 2147483646;
+}
+
+function seededRand(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+const projects = [];
+for (let i = 0; i < 72; i++) {
+  const rng = seededRand(i * 137 + 42);
+  const stage = stageList[Math.floor(rng() * stageList.length)];
+  const starred = rng() > 0.75;
+  const files = stage === 'plan' ? 0 : Math.floor(rng() * 12) + 1;
+  const transcript = stage === 'plan' ? 0 : stage === 'arch' ? Math.floor(rng() * 40) : Math.floor(rng() * 101);
+  const hasFinal = stage === 'pub' || (stage === 'ready' && rng() > 0.2) || (stage === 'rev' && rng() > 0.6);
+  const relay = rng() > 0.6 ? (rng() > 0.5 ? 'synced' : 'behind') : 'none';
+  const daysAgo = Math.floor(rng() * 90);
+  const modified = new Date(2026, 2, 25 - daysAgo);
+  const hasRecordings = files > 0;
+  const hasTranscripts = transcript > 30;
+  const hasChapters = stage !== 'plan' && stage !== 'arch' && rng() > 0.4;
+  const hasShadows = relay !== 'none' && rng() > 0.3;
+  const imageCount = Math.floor(rng() * 8);
+
+  projects.push({
+    id: i,
+    code: codes[i],
+    name: names[i],
+    stage,
+    starred,
+    files,
+    transcript,
+    hasFinal,
+    relay,
+    modified,
+    modifiedStr: formatDate(modified),
+    daysAgo,
+    hasRecordings,
+    hasTranscripts,
+    hasChapters,
+    hasShadows,
+    imageCount,
+    thumbCount: Math.floor(rng() > 0.5 ? rng() * 4 : 0),
+    duration: files > 0 ? Math.floor(rng() * 45 + 2) + ':' + String(Math.floor(rng()*60)).padStart(2,'0') : '0:00',
+    path: '/Volumes/Projects/' + names[i].toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+  });
+}
+
+function formatDate(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate();
+}
+
+// State
+let activeStage = 'all';
+let activePreset = null;
+let searchTerm = '';
+let expandedId = 3; // Pre-expand row index 3 to show the effect
+let selectedId = 3;
+let sortCol = 'code';
+let sortDesc = false;
+
+// Filter
+function getFilteredProjects() {
+  let list = projects.slice();
+
+  if (searchTerm) {
+    const q = searchTerm.toLowerCase();
+    list = list.filter(p => p.code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q));
+  }
+
+  if (activeStage !== 'all') {
+    list = list.filter(p => p.stage === activeStage);
+  }
+
+  if (activePreset === 'needs-work') {
+    list = list.filter(p => !p.hasFinal && p.stage !== 'arch' && p.stage !== 'plan' && p.stage !== 'pub');
+  } else if (activePreset === 'starred') {
+    list = list.filter(p => p.starred);
+  } else if (activePreset === 'stale') {
+    list = list.filter(p => p.daysAgo > 30 && p.stage !== 'pub' && p.stage !== 'arch');
+  }
+
+  list.sort((a,b) => {
+    let va, vb;
+    switch(sortCol) {
+      case 'code': va = a.code; vb = b.code; break;
+      case 'stage': va = stageList.indexOf(a.stage); vb = stageList.indexOf(b.stage); break;
+      case 'files': va = a.files; vb = b.files; break;
+      case 'transcript': va = a.transcript; vb = b.transcript; break;
+      case 'final': va = a.hasFinal?1:0; vb = b.hasFinal?1:0; break;
+      case 'relay': va = a.relay; vb = b.relay; break;
+      case 'modified': va = a.modified.getTime(); vb = b.modified.getTime(); break;
+      default: va = a.code; vb = b.code;
+    }
+    if (va < vb) return sortDesc ? 1 : -1;
+    if (va > vb) return sortDesc ? -1 : 1;
+    return 0;
+  });
+
+  return list;
+}
+
+function generateHealth(p) {
+  const issues = [];
+  if (p.files === 0) issues.push('has no recordings yet');
+  else if (!p.hasTranscripts) issues.push(p.files + ' recording' + (p.files>1?'s':'') + ' but no transcripts');
+  if (p.transcript > 0 && p.transcript < 50) issues.push('transcript coverage is low');
+  if (!p.hasChapters && p.files > 2) issues.push('multiple recordings but no chapters');
+  if (p.relay === 'behind') issues.push('relay sync is behind');
+  if (p.stage === 'rec' && p.daysAgo > 30) issues.push('stuck in REC for over a month');
+  if (p.stage === 'arch') return '<strong>Archived.</strong> ' + p.files + ' recording' + (p.files!==1?'s':'') + ' could be repurposed or removed.';
+  if (p.stage === 'pub') return '<strong>Published.</strong> Complete with ' + p.files + ' recordings and a final video.' + (p.relay==='synced'?' Relay is synced.':'');
+  if (issues.length === 0) return '<strong>Looking good.</strong> No obvious gaps detected.';
+  return '<strong>Needs attention.</strong> ' + issues.join('; ') + '.';
+}
+
+function dotClass(val) {
+  return val === true ? 'dot done' : val === 'partial' ? 'dot partial' : 'dot missing';
+}
+
+function buildExpandPanel(p) {
+  const transcriptDot = p.transcript >= 80 ? true : p.transcript > 0 ? 'partial' : false;
+  return '<div class="expand-panel">' +
+    '<div class="expand-left">' +
+      '<div class="inline-stats">' +
+        '<div class="inline-stat"><div class="s-label">Recordings</div><div class="s-value">' + p.files + '</div></div>' +
+        '<div class="inline-stat"><div class="s-label">Chapters</div><div class="s-value">' + (p.hasChapters ? 'Yes' : '---') + '</div></div>' +
+        '<div class="inline-stat"><div class="s-label">Transcript</div><div class="s-value">' + p.transcript + '%</div></div>' +
+        '<div class="inline-stat"><div class="s-label">Images</div><div class="s-value">' + p.imageCount + '</div></div>' +
+        '<div class="inline-stat"><div class="s-label">Shadows</div><div class="s-value">' + (p.hasShadows ? 'Yes' : '---') + '</div></div>' +
+      '</div>' +
+      '<div class="progress-dots">' +
+        '<span class="dot-label">Progress:</span>' +
+        '<span class="' + dotClass(p.hasRecordings) + '" title="Recordings"></span>' +
+        '<span class="' + dotClass(transcriptDot) + '" title="Transcripts"></span>' +
+        '<span class="' + dotClass(p.hasChapters) + '" title="Chapters"></span>' +
+        '<span class="' + dotClass(p.hasFinal) + '" title="Final video"></span>' +
+        '<span class="' + dotClass(p.relay !== 'none') + '" title="Relay"></span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="expand-right">' +
+      '<div class="health-box-inline">' + generateHealth(p) + '</div>' +
+      '<div class="quick-actions">' +
+        '<button class="qa-btn primary" onclick="event.stopPropagation()">Open Folder</button>' +
+        '<button class="qa-btn" onclick="event.stopPropagation()">Copy Transcript</button>' +
+        '<button class="qa-btn" onclick="event.stopPropagation()">Switch To</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderTable() {
+  const filtered = getFilteredProjects();
+  const tbody = document.getElementById('tableBody');
+  let html = '';
+
+  filtered.forEach(p => {
+    const sel = p.id === selectedId ? ' selected' : '';
+    const starClass = p.starred ? 'star filled' : 'star';
+    const stageClass = 'stage-' + p.stage;
+    const pctColor = p.transcript >= 80 ? 'var(--success)' : p.transcript >= 40 ? 'var(--warning)' : 'var(--danger)';
+    const finalIcon = p.hasFinal ? '<span class="check-icon check-yes">&#10003;</span>' : '<span class="check-icon check-no">&mdash;</span>';
+    let relayHtml;
+    if (p.relay === 'synced') relayHtml = '<span class="relay-badge relay-synced">Synced</span>';
+    else if (p.relay === 'behind') relayHtml = '<span class="relay-badge relay-behind">Behind</span>';
+    else relayHtml = '<span class="relay-none">&mdash;</span>';
+
+    html += '<tr class="project-row' + sel + '" data-id="' + p.id + '">' +
+      '<td class="star-cell"><span class="' + starClass + '" data-star="' + p.id + '">&starf;</span></td>' +
+      '<td class="code-cell">' + p.code + '</td>' +
+      '<td>' + p.name + '</td>' +
+      '<td><span class="stage-badge ' + stageClass + '">' + p.stage + '</span></td>' +
+      '<td>' + p.files + '</td>' +
+      '<td><div class="pct-bar"><div class="pct-bar-track"><div class="pct-bar-fill" style="width:' + p.transcript + '%;background:' + pctColor + '"></div></div><span class="pct-bar-label">' + p.transcript + '%</span></div></td>' +
+      '<td>' + finalIcon + '</td>' +
+      '<td>' + relayHtml + '</td>' +
+      '<td class="modified-cell">' + p.modifiedStr + '</td>' +
+    '</tr>';
+
+    // Expansion row always present, toggled via class
+    const isExpanded = p.id === expandedId;
+    html += '<tr class="expand-row" data-expand-id="' + p.id + '">' +
+      '<td colspan="9"><div class="expand-container' + (isExpanded ? ' open' : '') + '">' +
+      buildExpandPanel(p) +
+      '</div></td></tr>';
+  });
+
+  tbody.innerHTML = html;
+  document.getElementById('countBadge').textContent = 'Showing ' + filtered.length + ' of 72';
+
+  // After render, trigger open animation for pre-expanded row
+  if (expandedId !== null) {
+    requestAnimationFrame(() => {
+      const container = document.querySelector('tr[data-expand-id="' + expandedId + '"] .expand-container');
+      if (container && !container.classList.contains('open')) {
+        container.classList.add('open');
+      }
+    });
+  }
+}
+
+function toggleExpand(id) {
+  if (expandedId === id) {
+    // Collapse current
+    const container = document.querySelector('tr[data-expand-id="' + id + '"] .expand-container');
+    if (container) container.classList.remove('open');
+    expandedId = null;
+  } else {
+    // Collapse previous
+    if (expandedId !== null) {
+      const prevContainer = document.querySelector('tr[data-expand-id="' + expandedId + '"] .expand-container');
+      if (prevContainer) prevContainer.classList.remove('open');
+    }
+    // Expand new
+    expandedId = id;
+    selectedId = id;
+    const container = document.querySelector('tr[data-expand-id="' + id + '"] .expand-container');
+    if (container) {
+      requestAnimationFrame(() => container.classList.add('open'));
+    }
+    // Update selected styling
+    document.querySelectorAll('.project-row').forEach(r => r.classList.remove('selected'));
+    const row = document.querySelector('.project-row[data-id="' + id + '"]');
+    if (row) row.classList.add('selected');
+  }
+}
+
+// Events
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value;
+  expandedId = null;
+  renderTable();
+});
+
+document.getElementById('stagePills').addEventListener('click', e => {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  activeStage = pill.dataset.stage;
+  activePreset = null;
+  expandedId = null;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  renderTable();
+});
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const preset = btn.dataset.preset;
+    if (activePreset === preset) {
+      activePreset = null;
+      btn.classList.remove('active');
+    } else {
+      activePreset = preset;
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    activeStage = 'all';
+    expandedId = null;
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    document.querySelector('.pill[data-stage="all"]').classList.add('active');
+    renderTable();
+  });
+});
+
+document.getElementById('tableBody').addEventListener('click', e => {
+  // Star toggle
+  const star = e.target.closest('[data-star]');
+  if (star) {
+    const id = parseInt(star.dataset.star);
+    projects[id].starred = !projects[id].starred;
+    star.classList.toggle('filled');
+    star.style.opacity = projects[id].starred ? '1' : '';
+    e.stopPropagation();
+    return;
+  }
+
+  // Don't toggle on expand panel clicks (buttons handled by stopPropagation)
+  const expandPanel = e.target.closest('.expand-panel');
+  if (expandPanel) return;
+
+  const row = e.target.closest('.project-row');
+  if (!row) return;
+  const id = parseInt(row.dataset.id);
+
+  selectedId = id;
+  toggleExpand(id);
+});
+
+// Column sorting
+document.querySelectorAll('thead th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (sortCol === col) {
+      sortDesc = !sortDesc;
+    } else {
+      sortCol = col;
+      sortDesc = false;
+    }
+    document.querySelectorAll('thead th').forEach(h => { h.classList.remove('sorted','desc'); });
+    th.classList.add('sorted');
+    if (sortDesc) th.classList.add('desc');
+    expandedId = null;
+    renderTable();
+  });
+});
+
+// Keyboard: Escape collapses, arrow keys navigate
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && expandedId !== null) {
+    const container = document.querySelector('tr[data-expand-id="' + expandedId + '"] .expand-container');
+    if (container) container.classList.remove('open');
+    expandedId = null;
+  }
+});
+
+// Init
+renderTable();
+</script>
+</body>
+</html>
