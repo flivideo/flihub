@@ -229,92 +229,29 @@ function TranscriptionBadge({
 }
 
 // Enhancement B: Chapter status response type
-interface ChapterStatusResponse {
-  chapter: string;
-  combinedExists: boolean;
-  combinedPath: string | null;
-  transcriptCount: number;
+// Helper: combine chapter transcripts on the server (ensures combined file is fresh)
+async function combineChapterTranscripts(chapter: string): Promise<string> {
+  const res = await fetch(`${API_URL}/api/transcriptions/combine-chapter`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chapter }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to combine transcripts');
+  }
+  const data = await res.json();
+  return data.filename as string;
 }
 
-// Enhancement B: Combine chapter transcripts button
-function CombineChapterButton({
-  chapter,
-  onViewCombined,
-}: {
-  chapter: string;
-  onViewCombined: (filename: string) => void;
-}) {
-  const queryClient = useQueryClient();
-
-  // Fetch chapter status
-  const { data: status } = useQuery<ChapterStatusResponse>({
-    queryKey: QUERY_KEYS.chapterStatus(chapter),
-    queryFn: async () => {
-      const res = await fetch(
-        `${API_URL}/api/transcriptions/chapter-status/${encodeURIComponent(chapter)}`
-      );
-      return res.json();
-    },
-    refetchInterval: 30000, // Check every 30 seconds
-  });
-
-  // Mutation to combine transcripts
-  const combineMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(`${API_URL}/api/transcriptions/combine-chapter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chapter }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to combine transcripts');
-      }
-      return res.json();
-    },
-    onSuccess: (data) => {
-      toast.success(`Combined ${data.fileCount} transcripts`);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapterStatus(chapter) });
-    },
-    onError: (err: Error) => {
-      toast.error(err.message);
-    },
-  });
-
-  // Don't show if no transcripts available
-  if (!status || status.transcriptCount === 0) {
-    return null;
-  }
-
-  const combinedFilename = `${chapter}-chapter.txt`;
-
-  return (
-    <span className="flex items-center gap-1">
-      {status.combinedExists && (
-        <button
-          onClick={() => onViewCombined(combinedFilename)}
-          className="text-xs text-blue-600 hover:text-blue-700 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 rounded transition-colors"
-          title="View combined transcript"
-        >
-          View
-        </button>
-      )}
-      <button
-        onClick={() => combineMutation.mutate()}
-        disabled={combineMutation.isPending}
-        className={`text-xs px-2 py-0.5 rounded transition-colors disabled:opacity-50 ${
-          status.combinedExists
-            ? 'text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100'
-            : 'text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100'
-        }`}
-        title={
-          status.combinedExists ? 'Regenerate combined transcript' : 'Combine chapter transcripts'
-        }
-      >
-        {combineMutation.isPending ? '...' : status.combinedExists ? 'Combine ✓' : 'Combine'}
-      </button>
-    </span>
+// Helper: fetch transcript content by filename
+async function fetchTranscriptContent(filename: string): Promise<string> {
+  const res = await fetch(
+    `${API_URL}/api/transcriptions/transcript/${encodeURIComponent(filename)}`
   );
+  if (!res.ok) throw new Error('Failed to load transcript');
+  const data = await res.json();
+  return data.content as string;
 }
 
 // B049: Chapter header — card style with overflow menu
@@ -366,6 +303,7 @@ function ChapterHeader({
   onViewCombined: (filename: string) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [copyPending, setCopyPending] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const openMenu = () => {
@@ -462,10 +400,43 @@ function ChapterHeader({
               <span className="w-4 text-center text-xs">🎙</span>
               Transcribe all
             </button>
-            <div className="border-t border-warm my-1" />
-            <div className="px-4 py-1">
-              <CombineChapterButton chapter={chapter} onViewCombined={onViewCombined} />
-            </div>
+              <div className="border-t border-warm my-1" />
+                <button
+                  onClick={async () => {
+                    setCopyPending(true);
+                    try {
+                      const filename = await combineChapterTranscripts(chapter);
+                      const content = await fetchTranscriptContent(filename);
+                      await navigator.clipboard.writeText(content);
+                      toast.success(`Chapter ${chapter} transcript copied`);
+                    } catch {
+                      toast.error('Failed to copy transcript');
+                    } finally {
+                      setCopyPending(false);
+                      setMenuOpen(false);
+                    }
+                  }}
+                  disabled={copyPending}
+                  className="w-full text-left px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover flex items-center gap-2 disabled:opacity-50"
+                >
+                  <span className="w-4 text-center text-xs">📋</span>
+                  {copyPending ? 'Copying...' : 'Copy transcript'}
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const filename = await combineChapterTranscripts(chapter);
+                      onViewCombined(filename);
+                    } catch {
+                      toast.error('Failed to load transcript');
+                    }
+                    setMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover flex items-center gap-2"
+                >
+                  <span className="w-4 text-center text-xs">📄</span>
+                  View transcript
+                </button>
           </div>
         )}
       </div>
