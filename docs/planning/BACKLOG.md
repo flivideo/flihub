@@ -65,6 +65,8 @@
 - [x] B060 — Relay Kanban — divergence detection, auto-folder creation, Kanban UI for relay workflow, project-level sync badges | Priority: high | Campaign: relay-kanban | Completed: relay-kanban
 - [x] B061 — Relay Kanban Fixes — collect-without-folder, badge colors (amber not red), header RelayIndicator pill, open-folder buttons on Sync/Relay tools. Feedback F006-F010+F012 resolved. 3/3 complete. +12 tests (900 total). | Priority: high | Campaign: relay-kanban-fixes | Completed: relay-kanban-fixes
 
+- [x] B062 — Project List Redesign — filterable table + detail drawer (FR-148) | Priority: high | Campaign: project-list-redesign | PRD: `docs/prd/fr-148-project-list-redesign.md` | Completed: project-list-redesign
+
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
 - [ ] B011 — Standardize Server Error Handling (NFR-67) | Priority: low | PRD: `docs/prd/nfr-67-standardize-error-handling.md`

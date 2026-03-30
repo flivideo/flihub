@@ -337,6 +337,9 @@ export interface ProjectStats {
 
   // FR-83: Shadow recordings
   shadowCount: number; // Shadow files in recording-shadows/
+
+  // FR-148: Has files in final/ directory
+  hasFinal: boolean;
 }
 
 // FR-14: Recording file info for asset view

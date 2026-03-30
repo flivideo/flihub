@@ -1,7 +1,6 @@
+// FR-148: Project list redesign
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { API_URL } from '../config';
 import {
   useProjects,
   useUpdateProjectPriority,
@@ -10,16 +9,16 @@ import {
   useUpdateConfig,
   useRefetchSuggestedNaming,
   useCreateProject,
-  useFinalMedia,
 } from '../hooks/useApi';
 import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket';
 import { useDelayedHover } from '../hooks/useDelayedHover';
-import { QUERY_KEYS } from '../constants/queryKeys';
-import { useOpenFolder } from '../hooks/useOpenFolder';
 import { useEnhancedRelayBrowse } from '../hooks/useRelayApi';
 import { LoadingSpinner, ErrorMessage, PageContainer } from './shared';
-import { ProjectStatsPopup } from './ProjectStatsPopup';
-import { formatFileSize } from '../utils/formatting';
+import { ProjectListToolbar, STAGE_DISPLAY, STAGE_ORDER } from './ProjectListToolbar';
+import { ProjectDrawer } from './ProjectDrawer';
+import { copyProjectTranscript } from '../utils/clipboard';
+import { filterProjects, extractProjectName } from '../utils/projectFilters';
+import { formatShortDate } from '../utils/formatting';
 import type {
   ProjectStats,
   ProjectPriority,
@@ -31,238 +30,23 @@ import type {
   RelaySubfolder,
 } from '../../../shared/types';
 
-// FR-80: Tab type for navigation callback
-type ViewTab =
-  | 'incoming'
-  | 'recordings'
-  | 'watch'
-  | 'transcriptions'
-  | 'inbox'
-  | 'assets'
-  | 'thumbs'
-  | 'projects'
-  | 'config'
-  | 'mockups';
-
 interface ProjectsPanelProps {
-  onNavigateToTab?: (tab: ViewTab) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onNavigateToTab?: (tab: any) => void;
 }
 
 // Valid project code pattern: letter + 2 digits + optional suffix (e.g., b71, b72-awesome)
 const PROJECT_CODE_PATTERN = /^[a-zA-Z]\d{2}(-|$)/;
 
 // Priority display config (NFR-87: visual rebrand to "starred" - code still uses "pinned")
-const PRIORITY_DISPLAY: Record<ProjectPriority, { icon: string; title: string }> = {
-  pinned: { icon: '⭐', title: 'Starred (click to unstar)' },
-  normal: { icon: '', title: 'Click to star' },
+const PRIORITY_DISPLAY: Record<ProjectPriority, { icon: string; iconClass: string; title: string }> = {
+  pinned: { icon: '★', iconClass: 'text-amber-400', title: 'Starred (click to unstar)' },
+  normal: { icon: '☆', iconClass: 'text-warm-faint', title: 'Click to star' },
 };
 
 // Simple toggle: normal ↔ pinned
 function getNextPriority(current: ProjectPriority): ProjectPriority {
   return current === 'pinned' ? 'normal' : 'pinned';
-}
-
-// FR-80: Stage display config with colors for 8-stage workflow
-// FR-82: Added descriptions for tooltips
-const STAGE_DISPLAY: Record<
-  ProjectStage,
-  { label: string; bg: string; text: string; description: string }
-> = {
-  planning: {
-    label: 'Plan',
-    bg: 'bg-purple-100',
-    text: 'text-purple-700',
-    description: 'Preparing content outline and script',
-  },
-  recording: {
-    label: 'REC',
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-700',
-    description: 'Actively recording video segments',
-  },
-  'first-edit': {
-    label: '1st',
-    bg: 'bg-blue-100',
-    text: 'text-blue-700',
-    description: 'Initial rough cut and assembly',
-  },
-  'second-edit': {
-    label: '2nd',
-    bg: 'bg-blue-200',
-    text: 'text-blue-800',
-    description: 'Refining edit and adding polish',
-  },
-  review: {
-    label: 'Rev',
-    bg: 'bg-orange-100',
-    text: 'text-orange-700',
-    description: 'Final review before publishing',
-  },
-  'ready-to-publish': {
-    label: 'Ready',
-    bg: 'bg-green-100',
-    text: 'text-green-700',
-    description: 'Approved and ready to upload',
-  },
-  published: {
-    label: 'Pub',
-    bg: 'bg-green-200',
-    text: 'text-green-800',
-    description: 'Live on YouTube',
-  },
-  archived: {
-    label: 'Arch',
-    bg: 'bg-surface-muted',
-    text: 'text-warm-secondary',
-    description: 'Completed and archived',
-  },
-};
-
-// FR-33: Final media cell component - fetches and displays final video status
-// FR-117: Added hover delay to prevent flicker
-function FinalMediaCell({ code }: { code: string }) {
-  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
-  const { data, isLoading } = useFinalMedia(code);
-
-  if (isLoading) {
-    return <span className="text-warm-faint">...</span>;
-  }
-
-  const hasVideo = !!data?.video;
-  const hasSrt = !!data?.srt;
-
-  if (!hasVideo && !hasSrt) {
-    return <span className="text-warm-faint">-</span>;
-  }
-
-  // Show status: ✅ both, 🎬 video only, 📝 srt only
-  const icon = hasVideo && hasSrt ? '✅' : hasVideo ? '🎬' : '📝';
-
-  return (
-    <span
-      className="cursor-help relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {icon}
-      {isHovered && (
-        <div className="absolute z-50 bottom-full right-0 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
-          {/* FR-117: Tooltip arrow */}
-          <div className="absolute top-full right-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-          <div className="flex items-center gap-2">
-            <span className={hasVideo ? 'text-green-400' : 'text-gray-500'}>Video:</span>
-            <span>{hasVideo ? formatFileSize(data.video!.size) : 'missing'}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={hasSrt ? 'text-green-400' : 'text-gray-500'}>SRT:</span>
-            <span>{hasSrt ? 'ready' : 'missing'}</span>
-          </div>
-          {data.video?.location && (
-            <div className="text-gray-400 text-[10px] mt-1 border-t border-gray-700 pt-1">
-              {data.video.location}
-            </div>
-          )}
-        </div>
-      )}
-    </span>
-  );
-}
-
-// FR-82: Indicator cell with rich tooltip - Inbox (navigates to tab)
-// FR-117: Added hover delay to prevent flicker
-function InboxIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
-  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
-
-  if (!project.hasInbox) return null;
-
-  return (
-    <button
-      onClick={onClick}
-      className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      📥
-      {isHovered && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
-          {/* FR-117: Tooltip arrow */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-          <div className="font-medium">Inbox</div>
-          <div className="text-gray-300">
-            {project.inboxCount} {project.inboxCount === 1 ? 'item' : 'items'}
-          </div>
-          <div className="text-gray-500 text-[10px] mt-1">Click to view in app</div>
-        </div>
-      )}
-    </button>
-  );
-}
-
-// FR-82: Indicator cell with rich tooltip - Assets (navigates to tab)
-// FR-117: Added hover delay to prevent flicker
-function AssetsIndicator({ project, onClick }: { project: ProjectStats; onClick: () => void }) {
-  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
-
-  if (!project.hasAssets) return null;
-
-  return (
-    <button
-      onClick={onClick}
-      className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      🖼
-      {isHovered && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
-          {/* FR-117: Tooltip arrow */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-          <div className="font-medium">Assets</div>
-          <div className="text-gray-300">
-            {project.imageCount} {project.imageCount === 1 ? 'image' : 'images'}
-          </div>
-          <div className="text-gray-500 text-[10px] mt-1">Click to view in app</div>
-        </div>
-      )}
-    </button>
-  );
-}
-
-// FR-82: Indicator cell with rich tooltip - Chapter Videos (in -chapters folder)
-// FR-117: Added hover delay to prevent flicker
-function ChaptersIndicator({
-  project,
-  onOpenFolder,
-}: {
-  project: ProjectStats;
-  onOpenFolder: () => void;
-}) {
-  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
-
-  if (!project.hasChapters) return null;
-
-  return (
-    <button
-      onClick={onOpenFolder}
-      className="text-sm hover:scale-110 transition-transform cursor-pointer relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      🎬
-      {isHovered && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
-          {/* FR-117: Tooltip arrow */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-          <div className="font-medium">Chapter Videos</div>
-          <div className="text-gray-300">
-            {project.chapterVideoCount} {project.chapterVideoCount === 1 ? 'video' : 'videos'} in
-            -chapters/
-          </div>
-          <div className="text-gray-500 text-[10px] mt-1">Click to open folder</div>
-        </div>
-      )}
-    </button>
-  );
 }
 
 // B050: Kanban mini-badge config for relay sync status
@@ -440,17 +224,6 @@ function RelayIndicator({ relayProject }: { relayProject?: RelayProjectInfo }) {
 }
 
 // FR-110: Stage cell with dropdown selector
-const STAGE_ORDER: (keyof typeof STAGE_DISPLAY)[] = [
-  'planning',
-  'recording',
-  'first-edit',
-  'second-edit',
-  'review',
-  'ready-to-publish',
-  'published',
-  'archived',
-];
-
 function StageCell({
   project,
   onStageChange,
@@ -527,6 +300,7 @@ function StageCell({
 }
 
 // FR-114: Copy transcript button - fetches combined transcript and copies to clipboard
+// FR-148: Uses shared copyProjectTranscript utility
 function TranscriptCopyButton({ project }: { project: ProjectStats }) {
   const [isCopying, setIsCopying] = useState(false);
   const isDisabled = project.transcriptPercent === 0 || project.totalFiles === 0;
@@ -537,22 +311,7 @@ function TranscriptCopyButton({ project }: { project: ProjectStats }) {
 
     setIsCopying(true);
     try {
-      const response = await fetch(`${API_URL}/api/query/projects/${project.code}/transcript/text`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch transcript');
-      }
-      const text = await response.text();
-
-      if (!text.trim()) {
-        toast.error('No transcript content available');
-        return;
-      }
-
-      await navigator.clipboard.writeText(text);
-      toast.success(`Transcript copied (${text.length.toLocaleString()} chars)`);
-    } catch (error) {
-      toast.error('Failed to copy transcript');
-      console.error('Copy transcript error:', error);
+      await copyProjectTranscript(project.code);
     } finally {
       setIsCopying(false);
     }
@@ -562,12 +321,12 @@ function TranscriptCopyButton({ project }: { project: ProjectStats }) {
     <button
       onClick={handleCopy}
       disabled={isDisabled || isCopying}
-      className={`text-sm transition-transform ${
-        isDisabled ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110 cursor-pointer'
+      className={`text-xs transition-colors ${
+        isDisabled ? 'opacity-0 cursor-default' : 'text-warm-muted hover:text-warm-primary cursor-pointer'
       }`}
       title={isDisabled ? 'No transcripts available' : 'Copy transcript to clipboard'}
     >
-      {isCopying ? '...' : '📋'}
+      {isCopying ? '…' : '⎘'}
     </button>
   );
 }
@@ -605,12 +364,25 @@ function TranscriptPercentCell({ project }: { project: ProjectStats }) {
     displayText = '0%';
   }
 
+  // FR-148: Inline progress bar color
+  const barColor =
+    transcriptPercent === 100 ? 'bg-green-400' :
+    transcriptPercent >= 50 ? 'bg-yellow-400' :
+    transcriptPercent > 0 ? 'bg-red-400' : 'bg-warm-muted';
+
   return (
     <span
-      className={`${colorClass} cursor-help relative`}
+      className={`${colorClass} cursor-help relative inline-flex items-center gap-1.5`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
+      {/* FR-148: Inline progress bar */}
+      <span className="inline-block w-10 h-1.5 rounded-full bg-surface-muted overflow-hidden">
+        <span
+          className={`block h-full rounded-full ${barColor}`}
+          style={{ width: `${transcriptPercent}%` }}
+        />
+      </span>
       {displayText}
       {isHovered && (
         <div className="absolute z-50 bottom-full right-0 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
@@ -625,12 +397,27 @@ function TranscriptPercentCell({ project }: { project: ProjectStats }) {
   );
 }
 
-export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
+// FR-148: Stage row tint — very faint background based on stage
+const STAGE_ROW_TINT: Record<ProjectStage, string> = {
+  planning: 'bg-purple-50/40',
+  recording: 'bg-yellow-50/40',
+  'first-edit': 'bg-blue-50/40',
+  'second-edit': 'bg-blue-50/30',
+  review: 'bg-orange-50/40',
+  'ready-to-publish': 'bg-green-50/40',
+  published: 'bg-green-50/30',
+  archived: '',
+};
+
+export function ProjectsPanel(_props: ProjectsPanelProps) {
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectCode, setNewProjectCode] = useState('');
-  const [statsPopupProject, setStatsPopupProject] = useState<ProjectStats | null>(null);
+  // FR-148: Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeStages, setActiveStages] = useState<Set<string>>(new Set());
+  const [activePreset, setActivePreset] = useState('all');
+  const [drawerCode, setDrawerCode] = useState<string | null>(null);
 
-  const queryClient = useQueryClient();
   const { data, isLoading, error } = useProjects();
   const { data: config } = useConfig();
   const updateConfig = useUpdateConfig();
@@ -638,7 +425,6 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
   const createProject = useCreateProject();
   const updatePriority = useUpdateProjectPriority();
   const updateStage = useUpdateProjectStage();
-  const { mutate: openFolder } = useOpenFolder();
   const { data: relayBrowseData } = useEnhancedRelayBrowse();
 
   // Build a lookup map for relay projects by project code
@@ -692,12 +478,6 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
     }
   };
 
-  // FR-32: Handle info button click
-  const handleInfoClick = (e: React.MouseEvent, project: ProjectStats) => {
-    e.stopPropagation(); // Don't trigger row click
-    setStatsPopupProject(statsPopupProject?.code === project.code ? null : project);
-  };
-
   // FR-110: Handle stage change from dropdown
   const handleStageChange = async (code: string, stage: string) => {
     try {
@@ -748,6 +528,35 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
     return { projects: valid, issueProjects: issues };
   }, [data?.projects]);
 
+  // FR-148: Derive drawer project from current query data (stays fresh on socket updates)
+  const drawerProject = useMemo(() => {
+    if (!drawerCode) return null;
+    return projects.find(p => p.code === drawerCode) ?? null;
+  }, [drawerCode, projects]);
+
+  // FR-148: Filter logic (pure function extracted to utils/projectFilters.ts)
+  const filteredProjects = useMemo(
+    () => filterProjects(projects, { searchQuery, activeStages, activePreset }),
+    [projects, searchQuery, activeStages, activePreset]
+  );
+
+  // FR-148: Stage toggle handler — resets preset to 'all' when toggling stages
+  const handleStageToggle = (stage: string) => {
+    setActiveStages(prev => {
+      const next = new Set(prev);
+      if (next.has(stage)) next.delete(stage);
+      else next.add(stage);
+      return next;
+    });
+    setActivePreset('all');
+  };
+
+  // FR-148: Preset change handler — clears stage filters when a preset is selected
+  const handlePresetChange = (preset: string) => {
+    setActivePreset(preset);
+    if (preset !== 'all') setActiveStages(new Set());
+  };
+
   if (isLoading) {
     return <LoadingSpinner message="Loading projects..." />;
   }
@@ -758,224 +567,136 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
 
   return (
     <PageContainer>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-medium text-warm-primary">
-          AppyDave Projects
-          <span className="ml-2 text-sm font-normal text-warm-muted">
-            ({projects.length} projects)
-          </span>
-        </h3>
-        <button
-          onClick={() => {
-            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
-          }}
-          className="px-2 py-1 text-sm text-warm-muted hover:text-blue-600 hover:bg-blue-50 rounded cursor-pointer transition-colors"
-          title="Refresh project list"
-        >
-          ↻ Refresh
-        </button>
-      </div>
+      {/* FR-148: Project list toolbar with search, stage filters, and presets */}
+      <ProjectListToolbar
+        totalCount={projects.length}
+        filteredCount={filteredProjects.length}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        activeStages={activeStages}
+        onStageToggle={handleStageToggle}
+        activePreset={activePreset}
+        onPresetChange={handlePresetChange}
+      />
 
-      {data?.error && <p className="text-sm text-yellow-600 mb-3">{data.error}</p>}
+      {data?.error && <p className="text-sm text-yellow-600 mb-3 mt-3">{data.error}</p>}
 
-      {projects.length === 0 ? (
-        <p className="text-warm-muted text-sm">No projects found</p>
+      {filteredProjects.length === 0 ? (
+        <p className="text-warm-muted text-sm mt-4">
+          {projects.length === 0 ? 'No projects found' : 'No projects match current filters'}
+        </p>
       ) : (
-        <div>
+        <div className="mt-2">
           <table className="w-full text-sm">
-            <thead className="text-left text-warm-muted border-b">
+            {/* FR-148: Sticky header */}
+            <thead className="text-left text-warm-muted border-b border-warm sticky top-0 z-10 bg-surface">
               <tr>
-                <th className="pb-2 font-medium w-8" title="Priority"></th>
-                <th className="pb-2 font-medium">Project</th>
-                <th className="pb-2 font-medium text-center w-14" title="Stage">
-                  Stage
-                </th>
-                {/* FR-80: Content indicators */}
-                <th className="pb-2 font-medium text-center w-20" title="Content">
-                  📥 🖼 🎬
-                </th>
-                <th className="pb-2 font-medium text-right w-10" title="Chapters">
-                  Ch
-                </th>
-                <th className="pb-2 font-medium text-right w-12" title="Total Files">
-                  Files
-                </th>
-                <th className="pb-2 font-medium text-right w-12" title="Shadow Files">
-                  👻
-                </th>
-                <th className="pb-2 font-medium text-right w-10" title="Transcript %">
-                  📄
-                </th>
-                <th className="pb-2 font-medium text-center w-8" title="Final Video">
-                  ✅
-                </th>
-                <th className="pb-2 font-medium text-center w-12" title="Relay">
-                  Relay
-                </th>
-                <th className="pb-2 font-medium w-8"></th>
+                <th className="pb-2 pt-2 font-medium w-8" title="Star"></th>
+                <th className="pb-2 pt-2 font-medium w-20">Code</th>
+                <th className="pb-2 pt-2 font-medium">Name</th>
+                <th className="pb-2 pt-2 font-medium text-center w-14">Stage</th>
+                <th className="pb-2 pt-2 font-medium text-right w-12">Files</th>
+                <th className="pb-2 pt-2 font-medium text-right w-20">Trans%</th>
+                <th className="pb-2 pt-2 font-medium text-center w-10">Final</th>
+                <th className="pb-2 pt-2 font-medium text-center w-16">Relay</th>
+                <th className="pb-2 pt-2 font-medium text-right w-20">Modified</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-warm">
-              {projects.map((project) => {
+              {/* FR-148: Iterate over filteredProjects */}
+              {filteredProjects.map((project) => {
                 const isSelected = isProjectSelected(project.path);
                 // Handle legacy 'active' priority by treating as 'normal'
                 const effectivePriority: ProjectPriority =
                   project.priority === 'pinned' ? 'pinned' : 'normal';
                 const priorityConfig = PRIORITY_DISPLAY[effectivePriority];
+                const stageTint = STAGE_ROW_TINT[project.stage] || '';
 
                 return (
                   <tr
                     key={project.code}
-                    className={`transition-colors ${isSelected ? 'bg-blue-50' : ''}`}
+                    onClick={() => setDrawerCode(project.code)}
+                    className={`transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'border-l-3 border-blue-500 bg-blue-50'
+                        : `${stageTint} hover:bg-surface-hover`
+                    }`}
                   >
-                    {/* Priority */}
-                    <td className="py-2">
+                    {/* Star */}
+                    <td className="py-1.5 w-8">
                       <button
                         onClick={(e) => handlePriorityClick(e, project)}
-                        className="w-6 h-6 flex items-center justify-center hover:bg-surface-hover rounded transition-colors"
+                        className={`w-6 h-6 flex items-center justify-center hover:bg-surface-hover rounded transition-colors ${priorityConfig.iconClass}`}
                         title={priorityConfig.title}
                       >
-                        {priorityConfig.icon || <span className="text-warm-faint">○</span>}
+                        {priorityConfig.icon}
                       </button>
                     </td>
 
-                    {/* FR-44: Project Code - only this is clickable to switch projects */}
-                    <td className="py-2">
+                    {/* FR-148: Code — clickable to switch project */}
+                    <td className="py-1.5 w-20 max-w-[100px]">
                       <button
-                        onClick={() => handleSelectProject(project.path, project.code)}
-                        className={`font-mono text-left hover:underline transition-colors ${
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectProject(project.path, project.code);
+                        }}
+                        className={`text-left font-semibold truncate block w-full transition-colors ${
                           isSelected
-                            ? 'text-blue-700 font-semibold'
-                            : 'text-blue-600 hover:text-blue-800'
+                            ? 'text-warm-primary'
+                            : 'text-warm-secondary hover:text-warm-primary'
                         }`}
                       >
-                        {isSelected && '▸ '}
                         {project.code}
                       </button>
                     </td>
 
-                    {/* FR-110: Stage with dropdown selector */}
-                    <td className="py-2 text-center">
+                    {/* FR-148: Name — project code stripped of prefix */}
+                    <td className="py-1.5 text-warm-secondary whitespace-nowrap truncate max-w-[250px]">
+                      {extractProjectName(project.code)}
+                    </td>
+
+                    {/* FR-148: Stage with dropdown selector */}
+                    <td className="py-1.5 text-center w-14">
                       <StageCell
                         project={project}
                         onStageChange={(stage) => handleStageChange(project.code, stage)}
                       />
                     </td>
 
-                    {/* FR-82: Content indicators - blank when empty, rich tooltips when present */}
-                    <td className="py-2 text-center">
-                      <div className="flex justify-center gap-1">
-                        <InboxIndicator
-                          project={project}
-                          onClick={() => {
-                            handleSelectProject(project.path, project.code);
-                            onNavigateToTab?.('inbox');
-                          }}
-                        />
-                        <AssetsIndicator
-                          project={project}
-                          onClick={() => {
-                            handleSelectProject(project.path, project.code);
-                            onNavigateToTab?.('assets');
-                          }}
-                        />
-                        <ChaptersIndicator
-                          project={project}
-                          onOpenFolder={() =>
-                            openFolder({ folder: 'chapters', projectCode: project.code })
-                          }
-                        />
-                      </div>
-                    </td>
-
-                    {/* Ch - unique chapter groups, clickable to open -chapters folder if videos exist */}
-                    <td className="py-2 text-right">
-                      {project.chapterCount > 0 ? (
-                        project.chapterVideoCount > 0 ? (
-                          <button
-                            onClick={() =>
-                              openFolder({ folder: 'chapters', projectCode: project.code })
-                            }
-                            className="text-warm-secondary hover:text-blue-600 hover:underline cursor-pointer"
-                            title="Open -chapters folder"
-                          >
-                            {project.chapterCount}
-                          </button>
-                        ) : (
-                          <span className="text-warm-secondary">{project.chapterCount}</span>
-                        )
-                      ) : (
-                        <span className="text-warm-muted">-</span>
-                      )}
-                    </td>
-
-                    {/* Total Files - clickable to open recordings folder */}
-                    <td className="py-2 text-right">
+                    {/* FR-148: Files count */}
+                    <td className="py-1.5 text-right w-12">
                       {project.totalFiles > 0 ? (
-                        <button
-                          onClick={() =>
-                            openFolder({ folder: 'recordings', projectCode: project.code })
-                          }
-                          className="text-warm-secondary hover:text-blue-600 hover:underline cursor-pointer"
-                          title="Open recordings folder"
-                        >
-                          {project.totalFiles}
-                        </button>
+                        <span className="text-warm-secondary">{project.totalFiles}</span>
                       ) : (
                         <span className="text-warm-muted">-</span>
                       )}
                     </td>
 
-                    {/* FR-83: Shadow Files - clickable to open shadows folder */}
-                    <td className="py-2 text-right">
-                      {project.shadowCount > 0 ? (
-                        <button
-                          onClick={() =>
-                            openFolder({ folder: 'shadows', projectCode: project.code })
-                          }
-                          className="text-warm-secondary hover:text-blue-600 hover:underline cursor-pointer"
-                          title="Open recording-shadows folder"
-                        >
-                          {project.shadowCount}
-                        </button>
-                      ) : (
-                        <span className="text-warm-muted">-</span>
-                      )}
-                    </td>
-
-                    {/* FR-48: Transcript % with sync status, FR-114: Copy button */}
-                    <td className="py-2 text-right">
+                    {/* FR-148: Transcript % with copy button */}
+                    <td className="py-1.5 text-right w-20">
                       <div className="flex items-center justify-end gap-1">
                         <TranscriptCopyButton project={project} />
                         <TranscriptPercentCell project={project} />
                       </div>
                     </td>
 
-                    {/* FR-33: Final Video */}
-                    <td className="py-2 text-center">
-                      <FinalMediaCell code={project.code} />
+                    {/* FR-148: Final — uses hasFinal from ProjectStats (no per-row API call) */}
+                    <td className="py-1.5 text-center w-10">
+                      {project.hasFinal ? (
+                        <span className="text-green-600 font-medium">✓</span>
+                      ) : (
+                        <span className="text-warm-muted">&mdash;</span>
+                      )}
                     </td>
 
-                    {/* B040: Relay indicators */}
-                    <td className="py-2 text-center">
+                    {/* FR-148: Relay indicators */}
+                    <td className="py-1.5 text-center w-16">
                       <RelayIndicator relayProject={relayByCode.get(project.code)} />
                     </td>
 
-                    {/* Info Button */}
-                    <td className="py-2 relative">
-                      <button
-                        onClick={(e) => handleInfoClick(e, project)}
-                        className="w-6 h-6 flex items-center justify-center text-warm-muted hover:text-blue-600 hover:bg-surface-hover rounded transition-colors"
-                        title="View project stats"
-                      >
-                        ⓘ
-                      </button>
-                      {statsPopupProject?.code === project.code && (
-                        <ProjectStatsPopup
-                          project={project}
-                          onClose={() => setStatsPopupProject(null)}
-                        />
-                      )}
+                    {/* FR-148: Modified — short date */}
+                    <td className="py-1.5 text-right w-20 text-warm-muted text-xs">
+                      {formatShortDate(project.lastModified)}
                     </td>
                   </tr>
                 );
@@ -984,6 +705,9 @@ export function ProjectsPanel({ onNavigateToTab }: ProjectsPanelProps) {
           </table>
         </div>
       )}
+
+      {/* FR-148: Project detail drawer */}
+      <ProjectDrawer project={drawerProject} onClose={() => setDrawerCode(null)} />
 
       {/* FR-12: New Project Form - at bottom of table */}
       {showNewProject ? (

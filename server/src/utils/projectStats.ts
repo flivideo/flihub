@@ -6,6 +6,7 @@
  */
 
 import path from 'path';
+import fs from 'fs-extra';
 import {
   countMovFiles,
   countUniqueChapters,
@@ -80,6 +81,9 @@ export interface ProjectStatsRaw {
   // FR-83: Shadow recordings
   shadowCount: number;
 
+  // FR-148: Has files in final/ directory
+  hasFinal: boolean;
+
   // Final media (optional, only if requested)
   finalMedia?: {
     video?: { filename: string; size: number };
@@ -135,6 +139,20 @@ export async function getProjectStatsRaw(
   const shadowDir = path.join(projectPath, 'recording-shadows');
   const shadowCounts = await getShadowCounts(recordingsDir, shadowDir);
 
+  // FR-148: Check if final/ directory has video files
+  const finalDir = path.join(projectPath, 'final');
+  let hasFinal = false;
+  try {
+    const finalFiles = await fs.readdir(finalDir);
+    hasFinal = finalFiles.some((f) => {
+      const ext = path.extname(f).toLowerCase();
+      return ext === '.mp4' || ext === '.mov';
+    });
+  } catch {
+    // Directory doesn't exist or isn't readable
+    hasFinal = false;
+  }
+
   // FR-80: Determine stage (check for manual override first)
   // Use projectStageOverrides (new) or fall back to legacy projectStages
   const manualStage =
@@ -178,6 +196,8 @@ export async function getProjectStatsRaw(
     inboxCount: indicators.inboxCount,
     chapterVideoCount: indicators.chapterVideoCount,
     shadowCount: shadowCounts.shadows,
+    // FR-148: Has files in final/ directory
+    hasFinal,
   };
 
   // Optionally include final media

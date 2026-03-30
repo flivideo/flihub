@@ -65,6 +65,8 @@ export function createProjectRoutes(
       chapterVideoCount: raw.chapterVideoCount,
       // FR-83: Shadow recordings
       shadowCount: raw.shadowCount,
+      // FR-148: Has files in final/ directory
+      hasFinal: raw.hasFinal,
     };
   }
 

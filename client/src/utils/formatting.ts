@@ -195,3 +195,28 @@ export function formatTime(timestamp: string): string {
   const date = new Date(timestamp);
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
+
+/** FR-148: Milliseconds per day — shared constant for date calculations */
+export const MS_PER_DAY = 86400000;
+
+/**
+ * FR-148: Calculate days since a date string. Returns Infinity for null/invalid, clamps to 0 minimum.
+ * @param dateStr ISO date string or null
+ * @param now Optional timestamp for testing (defaults to Date.now())
+ */
+export function daysAgo(dateStr: string | null, now: number = Date.now()): number {
+  if (!dateStr) return Infinity;
+  const ms = new Date(dateStr).getTime();
+  if (Number.isNaN(ms)) return Infinity;
+  return Math.max(0, Math.floor((now - ms) / MS_PER_DAY));
+}
+
+/**
+ * FR-148: Format date as short month + day (e.g., "Mar 25")
+ */
+export function formatShortDate(dateStr: string | null): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' });
+}
