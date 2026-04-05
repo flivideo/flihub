@@ -14,6 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ---
 
+**System context**: See [CONTEXT.md](CONTEXT.md) for purpose, domain concepts, design rationale, and scope boundaries.
+
 ## Project Overview
 
 FliHub is a TypeScript application for managing video recording workflows. It watches for new recordings from Ecamm Live, provides a web UI for naming/organizing files, and manages project assets.

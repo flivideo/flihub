@@ -13,7 +13,7 @@ import {
 import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket';
 import { useDelayedHover } from '../hooks/useDelayedHover';
 import { useEnhancedRelayBrowse } from '../hooks/useRelayApi';
-import { LoadingSpinner, ErrorMessage, PageContainer } from './shared';
+import { LoadingSpinner, ErrorMessage } from './shared';
 import { ProjectListToolbar, STAGE_DISPLAY, STAGE_ORDER } from './ProjectListToolbar';
 import { ProjectDrawer } from './ProjectDrawer';
 import { copyProjectTranscript } from '../utils/clipboard';
@@ -565,219 +565,232 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
     return <ErrorMessage message="Error loading projects" />;
   }
 
+  const isDrawerOpen = drawerProject !== null;
+
   return (
-    <PageContainer>
-      {/* FR-148: Project list toolbar with search, stage filters, and presets */}
-      <ProjectListToolbar
-        totalCount={projects.length}
-        filteredCount={filteredProjects.length}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        activeStages={activeStages}
-        onStageToggle={handleStageToggle}
-        activePreset={activePreset}
-        onPresetChange={handlePresetChange}
-      />
+    <div className="flex flex-1 relative overflow-hidden">
+      {/* Table panel — shrinks when drawer opens */}
+      <div
+        className="flex-1 flex flex-col min-w-0 overflow-hidden transition-[margin] duration-300 ease-in-out"
+        style={{ marginRight: isDrawerOpen ? '40%' : '0' }}
+      >
+        {/* FR-148: Project list toolbar with search, stage filters, and presets */}
+        <ProjectListToolbar
+          totalCount={projects.length}
+          filteredCount={filteredProjects.length}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          activeStages={activeStages}
+          onStageToggle={handleStageToggle}
+          activePreset={activePreset}
+          onPresetChange={handlePresetChange}
+        />
 
-      {data?.error && <p className="text-sm text-yellow-600 mb-3 mt-3">{data.error}</p>}
+        {data?.error && <p className="text-sm text-yellow-600 px-4 py-2">{data.error}</p>}
 
-      {filteredProjects.length === 0 ? (
-        <p className="text-warm-muted text-sm mt-4">
-          {projects.length === 0 ? 'No projects found' : 'No projects match current filters'}
-        </p>
-      ) : (
-        <div className="mt-2">
-          <table className="w-full text-sm">
-            {/* FR-148: Sticky header */}
-            <thead className="text-left text-warm-muted border-b border-warm sticky top-0 z-10 bg-surface">
-              <tr>
-                <th className="pb-2 pt-2 font-medium w-8" title="Star"></th>
-                <th className="pb-2 pt-2 font-medium w-20">Code</th>
-                <th className="pb-2 pt-2 font-medium">Name</th>
-                <th className="pb-2 pt-2 font-medium text-center w-14">Stage</th>
-                <th className="pb-2 pt-2 font-medium text-right w-12">Files</th>
-                <th className="pb-2 pt-2 font-medium text-right w-20">Trans%</th>
-                <th className="pb-2 pt-2 font-medium text-center w-10">Final</th>
-                <th className="pb-2 pt-2 font-medium text-center w-16">Relay</th>
-                <th className="pb-2 pt-2 font-medium text-right w-20">Modified</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-warm">
-              {/* FR-148: Iterate over filteredProjects */}
-              {filteredProjects.map((project) => {
-                const isSelected = isProjectSelected(project.path);
-                // Handle legacy 'active' priority by treating as 'normal'
-                const effectivePriority: ProjectPriority =
-                  project.priority === 'pinned' ? 'pinned' : 'normal';
-                const priorityConfig = PRIORITY_DISPLAY[effectivePriority];
-                const stageTint = STAGE_ROW_TINT[project.stage] || '';
+        {filteredProjects.length === 0 ? (
+          <p className="text-warm-muted text-sm px-4 py-8">
+            {projects.length === 0 ? 'No projects found' : 'No projects match current filters'}
+          </p>
+        ) : (
+          <div className="flex-1 overflow-y-auto">
+            <table className="w-full" style={{ fontSize: '12px' }}>
+              {/* FR-148: Sticky header */}
+              <thead>
+                <tr className="sticky top-0 z-10 bg-surface-muted border-b border-warm-strong text-left">
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted w-8"></th>
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted" style={{ width: '64px' }}>Code</th>
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted">Name</th>
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted" style={{ width: '56px' }}>Stage</th>
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '48px' }}>Files</th>
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '80px' }}>Trans%</th>
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '48px' }}>Final</th>
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '48px' }}>Relay</th>
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '80px' }}>Modified</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* FR-148: Iterate over filteredProjects */}
+                {filteredProjects.map((project) => {
+                  const isSelected = isProjectSelected(project.path);
+                  const isDrawerTarget = drawerCode === project.code;
+                  // Handle legacy 'active' priority by treating as 'normal'
+                  const effectivePriority: ProjectPriority =
+                    project.priority === 'pinned' ? 'pinned' : 'normal';
+                  const priorityConfig = PRIORITY_DISPLAY[effectivePriority];
+                  const stageTint = STAGE_ROW_TINT[project.stage] || '';
 
-                return (
-                  <tr
-                    key={project.code}
-                    onClick={() => setDrawerCode(project.code)}
-                    className={`transition-colors cursor-pointer ${
-                      isSelected
-                        ? 'border-l-3 border-blue-500 bg-blue-50'
-                        : `${stageTint} hover:bg-surface-hover`
-                    }`}
-                  >
-                    {/* Star */}
-                    <td className="py-1.5 w-8">
+                  return (
+                    <tr
+                      key={project.code}
+                      onClick={() => setDrawerCode(project.code)}
+                      className={`border-b border-warm cursor-pointer transition-colors ${
+                        isDrawerTarget
+                          ? 'border-l-3 border-l-blue-500 bg-blue-50/60'
+                          : isSelected
+                            ? 'bg-blue-50/30'
+                            : `${stageTint} hover:bg-surface-muted`
+                      }`}
+                      style={{ height: '32px' }}
+                    >
+                      {/* Star */}
+                      <td className="px-2 w-8 text-center">
+                        <button
+                          onClick={(e) => handlePriorityClick(e, project)}
+                          className={`text-sm leading-none hover:opacity-80 transition-opacity ${priorityConfig.iconClass}`}
+                          title={priorityConfig.title}
+                        >
+                          {priorityConfig.icon}
+                        </button>
+                      </td>
+
+                      {/* FR-148: Code — clickable to switch project */}
+                      <td className="px-2" style={{ width: '64px' }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectProject(project.path, project.code);
+                          }}
+                          className={`text-left font-semibold truncate block w-full transition-colors ${
+                            isSelected
+                              ? 'text-warm-primary'
+                              : 'text-warm-secondary hover:text-warm-primary'
+                          }`}
+                        >
+                          {project.code}
+                        </button>
+                      </td>
+
+                      {/* FR-148: Name — project code stripped of prefix */}
+                      <td className="px-2 text-warm-secondary whitespace-nowrap overflow-hidden text-ellipsis">
+                        {extractProjectName(project.code)}
+                      </td>
+
+                      {/* FR-148: Stage with dropdown selector */}
+                      <td className="px-2 text-center" style={{ width: '56px' }}>
+                        <StageCell
+                          project={project}
+                          onStageChange={(stage) => handleStageChange(project.code, stage)}
+                        />
+                      </td>
+
+                      {/* FR-148: Files count */}
+                      <td className="px-2 text-right" style={{ width: '48px' }}>
+                        {project.totalFiles > 0 ? (
+                          <span className="text-warm-secondary">{project.totalFiles}</span>
+                        ) : (
+                          <span className="text-warm-faint">-</span>
+                        )}
+                      </td>
+
+                      {/* FR-148: Transcript % with copy button */}
+                      <td className="px-2 text-right" style={{ width: '80px' }}>
+                        <div className="flex items-center justify-end gap-1">
+                          <TranscriptCopyButton project={project} />
+                          <TranscriptPercentCell project={project} />
+                        </div>
+                      </td>
+
+                      {/* FR-148: Final */}
+                      <td className="px-2 text-center" style={{ width: '48px' }}>
+                        {project.hasFinal ? (
+                          <span className="text-green-600">✓</span>
+                        ) : (
+                          <span className="text-warm-faint">&mdash;</span>
+                        )}
+                      </td>
+
+                      {/* FR-148: Relay indicators */}
+                      <td className="px-2 text-center" style={{ width: '48px' }}>
+                        <RelayIndicator relayProject={relayByCode.get(project.code)} />
+                      </td>
+
+                      {/* FR-148: Modified — short date */}
+                      <td className="px-2 text-right text-warm-muted" style={{ width: '80px', fontSize: '11px' }}>
+                        {formatShortDate(project.lastModified)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* FR-12: New Project Form - at bottom of table */}
+            <div className="px-4 py-3">
+              {showNewProject ? (
+                <div className="p-3 bg-surface-muted rounded-lg border border-warm">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newProjectCode}
+                      onChange={(e) => setNewProjectCode(e.target.value.toLowerCase())}
+                      placeholder="b73-project-name"
+                      className="flex-1 px-3 py-1.5 text-sm font-mono border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleCreateProject}
+                      disabled={createProject.isPending}
+                      className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+                    >
+                      {createProject.isPending ? 'Creating...' : 'Create'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowNewProject(false);
+                        setNewProjectCode('');
+                      }}
+                      className="px-3 py-1.5 text-sm text-warm-secondary hover:bg-surface-hover rounded transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <p className="text-xs text-warm-muted mt-2">Use kebab-case (e.g., b73-my-new-video)</p>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowNewProject(true)}
+                  className="text-sm text-green-600 hover:text-green-700"
+                >
+                  + Add new project...
+                </button>
+              )}
+            </div>
+
+            {/* Bug fix: Show projects with invalid naming in Issues section */}
+            {issueProjects.length > 0 && (
+              <div className="px-4 py-3 border-t-2 border-warm-strong">
+                <h4 className="font-medium text-warm-secondary mb-3">
+                  Issues
+                  <span className="ml-2 text-sm font-normal text-warm-muted">
+                    ({issueProjects.length} projects with invalid naming)
+                  </span>
+                </h4>
+                <div className="space-y-1 text-sm">
+                  {issueProjects.map((project) => (
+                    <div key={project.code} className="flex items-center gap-2 px-2 py-1.5 rounded">
+                      <span className="text-yellow-600">⚠️</span>
                       <button
-                        onClick={(e) => handlePriorityClick(e, project)}
-                        className={`w-6 h-6 flex items-center justify-center hover:bg-surface-hover rounded transition-colors ${priorityConfig.iconClass}`}
-                        title={priorityConfig.title}
-                      >
-                        {priorityConfig.icon}
-                      </button>
-                    </td>
-
-                    {/* FR-148: Code — clickable to switch project */}
-                    <td className="py-1.5 w-20 max-w-[100px]">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectProject(project.path, project.code);
-                        }}
-                        className={`text-left font-semibold truncate block w-full transition-colors ${
-                          isSelected
-                            ? 'text-warm-primary'
-                            : 'text-warm-secondary hover:text-warm-primary'
-                        }`}
+                        onClick={() => handleSelectProject(project.path, project.code)}
+                        className="font-mono text-warm-secondary hover:text-blue-600 hover:underline transition-colors"
                       >
                         {project.code}
                       </button>
-                    </td>
-
-                    {/* FR-148: Name — project code stripped of prefix */}
-                    <td className="py-1.5 text-warm-secondary whitespace-nowrap truncate max-w-[250px]">
-                      {extractProjectName(project.code)}
-                    </td>
-
-                    {/* FR-148: Stage with dropdown selector */}
-                    <td className="py-1.5 text-center w-14">
-                      <StageCell
-                        project={project}
-                        onStageChange={(stage) => handleStageChange(project.code, stage)}
-                      />
-                    </td>
-
-                    {/* FR-148: Files count */}
-                    <td className="py-1.5 text-right w-12">
-                      {project.totalFiles > 0 ? (
-                        <span className="text-warm-secondary">{project.totalFiles}</span>
-                      ) : (
-                        <span className="text-warm-muted">-</span>
-                      )}
-                    </td>
-
-                    {/* FR-148: Transcript % with copy button */}
-                    <td className="py-1.5 text-right w-20">
-                      <div className="flex items-center justify-end gap-1">
-                        <TranscriptCopyButton project={project} />
-                        <TranscriptPercentCell project={project} />
-                      </div>
-                    </td>
-
-                    {/* FR-148: Final — uses hasFinal from ProjectStats (no per-row API call) */}
-                    <td className="py-1.5 text-center w-10">
-                      {project.hasFinal ? (
-                        <span className="text-green-600 font-medium">✓</span>
-                      ) : (
-                        <span className="text-warm-muted">&mdash;</span>
-                      )}
-                    </td>
-
-                    {/* FR-148: Relay indicators */}
-                    <td className="py-1.5 text-center w-16">
-                      <RelayIndicator relayProject={relayByCode.get(project.code)} />
-                    </td>
-
-                    {/* FR-148: Modified — short date */}
-                    <td className="py-1.5 text-right w-20 text-warm-muted text-xs">
-                      {formatShortDate(project.lastModified)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* FR-148: Project detail drawer */}
-      <ProjectDrawer project={drawerProject} onClose={() => setDrawerCode(null)} />
-
-      {/* FR-12: New Project Form - at bottom of table */}
-      {showNewProject ? (
-        <div className="mt-4 p-3 bg-surface-muted rounded-lg border border-warm">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={newProjectCode}
-              onChange={(e) => setNewProjectCode(e.target.value.toLowerCase())}
-              placeholder="b73-project-name"
-              className="flex-1 px-3 py-1.5 text-sm font-mono border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
-              autoFocus
-            />
-            <button
-              onClick={handleCreateProject}
-              disabled={createProject.isPending}
-              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
-            >
-              {createProject.isPending ? 'Creating...' : 'Create'}
-            </button>
-            <button
-              onClick={() => {
-                setShowNewProject(false);
-                setNewProjectCode('');
-              }}
-              className="px-3 py-1.5 text-sm text-warm-secondary hover:bg-surface-hover rounded transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-          <p className="text-xs text-warm-muted mt-2">Use kebab-case (e.g., b73-my-new-video)</p>
-        </div>
-      ) : (
-        <button
-          onClick={() => setShowNewProject(true)}
-          className="mt-3 text-sm text-green-600 hover:text-green-700"
-        >
-          + Add new project...
-        </button>
-      )}
-
-      {/* Bug fix: Show projects with invalid naming in Issues section */}
-      {issueProjects.length > 0 && (
-        <div className="mt-6 pt-4 border-t-2 border-warm-strong">
-          <h4 className="font-medium text-warm-secondary mb-3">
-            Issues
-            <span className="ml-2 text-sm font-normal text-warm-muted">
-              ({issueProjects.length} projects with invalid naming)
-            </span>
-          </h4>
-          <div className="space-y-1 text-sm">
-            {issueProjects.map((project) => (
-              <div key={project.code} className="flex items-center gap-2 px-2 py-1.5 rounded">
-                <span className="text-yellow-600">⚠️</span>
-                {/* FR-44: Only project code is clickable */}
-                <button
-                  onClick={() => handleSelectProject(project.path, project.code)}
-                  className="font-mono text-warm-secondary hover:text-blue-600 hover:underline transition-colors"
-                >
-                  {project.code}
-                </button>
-                <span className="text-xs text-warm-muted">
-                  (expected: letter + 2 digits, e.g., b73-name)
-                </span>
+                      <span className="text-xs text-warm-muted">
+                        (expected: letter + 2 digits, e.g., b73-name)
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      )}
-    </PageContainer>
+        )}
+      </div>
+
+      {/* FR-148: Project detail drawer — absolute positioned, pushes table via margin */}
+      <ProjectDrawer project={drawerProject} onClose={() => setDrawerCode(null)} />
+    </div>
   );
 }

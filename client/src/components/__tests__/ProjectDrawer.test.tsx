@@ -83,10 +83,10 @@ describe('ProjectDrawer', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onClose when backdrop clicked', () => {
+  it('calls onClose when Escape key pressed', () => {
     const onClose = vi.fn();
     render(<ProjectDrawer project={makeProject()} onClose={onClose} />);
-    fireEvent.click(screen.getByTestId('drawer-backdrop'));
+    fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

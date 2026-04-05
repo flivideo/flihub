@@ -369,7 +369,7 @@ function App() {
     : files.length;
 
   return (
-    <div className="min-h-screen bg-page">
+    <div className="min-h-screen bg-page flex flex-col">
       <Toaster position="top-right" richColors />
 
       {/* FR-16: Discard remaining files modal */}
@@ -665,7 +665,7 @@ function App() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className={activeTab === 'projects' ? 'flex-1 flex flex-col overflow-hidden' : 'max-w-4xl mx-auto px-4 py-6'}>
         {/* Incoming Tab */}
         {activeTab === 'incoming' && (
           <>
@@ -827,8 +827,8 @@ function App() {
           </section>
         )}
 
-        {/* Footer */}
-        <footer className="mt-8 pt-4 border-t border-warm">
+        {/* Footer — hidden on projects tab (full-screen layout) */}
+        <footer className={`mt-8 pt-4 border-t border-warm ${activeTab === 'projects' ? 'hidden' : ''}`}>
           <div className="flex items-center justify-between">
             <p className="text-sm text-warm-muted">
               Project:{' '}
