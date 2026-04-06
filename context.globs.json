@@ -1,0 +1,24 @@
+{
+  "pattern": "rvets",
+  "globs": {
+    "docs": ["docs/**/*.md"],
+    "types": ["shared/**/*.ts"],
+    "config": ["server/config.template.json", "*.config.*", "eslint.config.js"],
+    "routes": ["server/src/routes/**/*.ts"],
+    "components": ["client/src/components/**/*.tsx"],
+    "tests": ["**/*.test.*", "**/*.spec.*"],
+    "styles": ["**/*.css"],
+    "context": ["CLAUDE.md", "CONTEXT.md"],
+    "planning": ["docs/prd/**/*.md", "docs/planning/**/*.md"]
+  },
+  "aliases": {
+    "backend": ["routes", "types"],
+    "frontend": ["components", "styles"],
+    "api": ["routes", "types"]
+  },
+  "composites": {
+    "understand": ["context", "docs", "types", "config"],
+    "codebase": ["routes", "components"],
+    "full": ["*"]
+  }
+}
