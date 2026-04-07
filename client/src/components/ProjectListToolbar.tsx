@@ -18,6 +18,10 @@ export interface ProjectListToolbarProps {
   onStageToggle: (stage: string) => void;
   activePreset: string;
   onPresetChange: (preset: string) => void;
+  // B062: Disk toggle
+  diskColumnsEnabled?: boolean;
+  onDiskToggle?: () => void;
+  diskScanPending?: boolean;
 }
 
 export function ProjectListToolbar({
@@ -29,6 +33,9 @@ export function ProjectListToolbar({
   onStageToggle,
   activePreset,
   onPresetChange,
+  diskColumnsEnabled = false,
+  onDiskToggle,
+  diskScanPending = false,
 }: ProjectListToolbarProps) {
   return (
     <div className="flex flex-col gap-2 px-4 py-3 bg-surface border-b border-warm">
@@ -85,6 +92,25 @@ export function ProjectListToolbar({
               </button>
             );
           })}
+
+          {/* B062: Disk toggle — separator + toggle button after presets */}
+          {onDiskToggle && (
+            <>
+              <span className="w-px h-4 bg-border-warm mx-1 self-center" />
+              <button
+                type="button"
+                onClick={onDiskToggle}
+                title="Show disk usage columns"
+                className={`rounded-md px-2.5 py-0.5 text-[11px] font-medium transition-colors select-none ${
+                  diskColumnsEnabled
+                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                    : 'border border-warm text-warm-secondary hover:bg-surface-muted hover:border-warm-strong'
+                }`}
+              >
+                {diskScanPending ? '⟳ Disk' : 'Disk'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 

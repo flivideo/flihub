@@ -204,7 +204,56 @@ export interface Config {
   relayDirectory?: string; // ~/Relay/FliHub-appydave — machine-specific, gitignored
   relayEnabled?: boolean; // Feature gate — false/undefined until configured
   machineRole?: MachineRole; // B039: Machine role — recorder shows archive/promote/cleanup, editor hides them
+  diskThresholds?: DiskThresholds;  // B062: Pain thresholds for disk observability columns
+  archivePath?: string;             // B062: External archive drive path (e.g. /Volumes/T7/youtube-PUBLISHED/appydave)
 }
+
+// B062: Disk space observability — per-project size breakdown
+export interface DiskSizeData {
+  rec: number;        // bytes — recordings/ folder
+  trash: number;      // bytes — -trash/ folder
+  shadows: number;    // bytes — recording-shadows/ folder
+  other: number;      // bytes — everything else in project dir
+  rRec: number;       // bytes — relay/{project}/recordings/
+  r1st: number;       // bytes — relay/{project}/edit-1st/
+  r2nd: number;       // bytes — relay/{project}/edit-2nd/
+  total: number;      // bytes — sum of all above
+  calculatedAt: string; // ISO timestamp
+  // Future archive fields (not populated in this pass):
+  archivedAt?: string;
+  archivePath?: string;
+  // B062 Wave 2: Pre-computed detail (populated during scan-all)
+  detail?: {
+    other: Record<string, number>;                         // subfolder name → bytes (e.g. { "final": 38000000, "assets": 1000000 })
+    recTopFiles: Array<{ name: string; size: number }>;    // top 5 recordings by size
+    trashFiles: Array<{ name: string; size: number }>;     // all trash files (used in confirm modal)
+  }
+}
+
+// B062: Per-column threshold config
+export interface DiskThresholdConfig {
+  faint: string | null;  // e.g. "300MB", "2GB", "0" — null = no threshold
+  amber: string | null;
+  red: string | null;
+}
+
+// B062: Full threshold config stored in config.json
+export interface DiskThresholds {
+  stagePenaltyMultiplier: number;  // 0.5 = halve thresholds for published/archived
+  columns: {
+    trash:   DiskThresholdConfig;
+    rec:     DiskThresholdConfig;
+    shadows: DiskThresholdConfig;
+    other:   DiskThresholdConfig;
+    rRec:    DiskThresholdConfig;
+    r1st:    DiskThresholdConfig;
+    r2nd:    DiskThresholdConfig;
+    total:   DiskThresholdConfig;
+  };
+}
+
+// B062: Threshold severity level for colour coding
+export type DiskThresholdLevel = 'faint' | 'amber' | 'red' | null;
 
 export interface RenameRequest {
   originalPath: string;

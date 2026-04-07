@@ -13,12 +13,14 @@ import {
 import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket';
 import { useDelayedHover } from '../hooks/useDelayedHover';
 import { useEnhancedRelayBrowse } from '../hooks/useRelayApi';
+import { useDiskScanAll } from '../hooks/useProjectDiskApi';
 import { LoadingSpinner, ErrorMessage } from './shared';
 import { ProjectListToolbar, STAGE_DISPLAY, STAGE_ORDER } from './ProjectListToolbar';
 import { ProjectDrawer } from './ProjectDrawer';
 import { copyProjectTranscript } from '../utils/clipboard';
 import { filterProjects, extractProjectName } from '../utils/projectFilters';
 import { formatShortDate } from '../utils/formatting';
+import { formatBytes, getThresholdLevelClient } from '../utils/formatBytes';
 import type {
   ProjectStats,
   ProjectPriority,
@@ -28,6 +30,8 @@ import type {
   RelayProjectSyncInfo,
   RelaySyncStatus,
   RelaySubfolder,
+  DiskSizeData,
+  DiskThresholds,
 } from '../../../shared/types';
 
 interface ProjectsPanelProps {
@@ -397,6 +401,29 @@ function TranscriptPercentCell({ project }: { project: ProjectStats }) {
   );
 }
 
+// B062: Client-side default thresholds (mirrors server configManager.ts — keep in sync)
+const DEFAULT_DISK_THRESHOLDS: DiskThresholds = {
+  stagePenaltyMultiplier: 0.5,
+  columns: {
+    trash:   { faint: '0',      amber: '300MB',  red: '1GB'   },
+    rec:     { faint: '2GB',    amber: '5GB',    red: '10GB'  },
+    shadows: { faint: '100MB',  amber: '300MB',  red: '500MB' },
+    other:   { faint: '500MB',  amber: '1GB',    red: null    },
+    rRec:    { faint: '1GB',    amber: '3GB',    red: '6GB'   },
+    r1st:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
+    r2nd:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
+    total:   { faint: '3GB',    amber: '8GB',    red: '15GB'  },
+  }
+};
+
+// B062: Map DiskThresholdLevel to a className
+function diskLevelClass(level: 'faint' | 'amber' | 'red' | null): string {
+  if (level === 'red')   return 'text-red-600 font-medium';
+  if (level === 'amber') return 'text-amber-600';
+  if (level === 'faint') return 'text-amber-400';
+  return 'text-warm-secondary';
+}
+
 // FR-148: Stage row tint — very faint background based on stage
 const STAGE_ROW_TINT: Record<ProjectStage, string> = {
   planning: 'bg-purple-50/40',
@@ -417,6 +444,10 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
   const [activeStages, setActiveStages] = useState<Set<string>>(new Set());
   const [activePreset, setActivePreset] = useState('all');
   const [drawerCode, setDrawerCode] = useState<string | null>(null);
+  // B062: Disk columns toggle + data
+  const [diskColumnsEnabled, setDiskColumnsEnabled] = useState(false);
+  const [diskData, setDiskData] = useState<Record<string, DiskSizeData>>({});
+  const { mutate: scanAll, isPending: scanPending } = useDiskScanAll();
 
   const { data, isLoading, error } = useProjects();
   const { data: config } = useConfig();
@@ -584,6 +615,21 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
           onStageToggle={handleStageToggle}
           activePreset={activePreset}
           onPresetChange={handlePresetChange}
+          diskColumnsEnabled={diskColumnsEnabled}
+          diskScanPending={scanPending}
+          onDiskToggle={() => {
+            const next = !diskColumnsEnabled;
+            setDiskColumnsEnabled(next);
+            if (next) {
+              scanAll(undefined, {
+                onSuccess: (data) => {
+                  if (data.success && data.results) setDiskData(data.results);
+                }
+              });
+            } else {
+              setDiskData({});
+            }
+          }}
         />
 
         {data?.error && <p className="text-sm text-yellow-600 px-4 py-2">{data.error}</p>}
@@ -607,6 +653,19 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '48px' }}>Final</th>
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '48px' }}>Relay</th>
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '80px' }}>Modified</th>
+                  {/* B062: Disk columns — only when disk toggle is on */}
+                  {diskColumnsEnabled && (
+                    <>
+                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right border-l border-warm-strong">REC</th>
+                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">TRASH</th>
+                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">SHADOWS</th>
+                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">OTHER</th>
+                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">R-REC</th>
+                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">R-1ST</th>
+                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">R-2ND</th>
+                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">TOTAL</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -709,6 +768,41 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
                       <td className="px-2 text-right text-warm-muted" style={{ width: '80px', fontSize: '11px' }}>
                         {formatShortDate(project.lastModified)}
                       </td>
+
+                      {/* B062: Disk usage cells — only when disk toggle is on */}
+                      {diskColumnsEnabled && (() => {
+                        const pd = diskData[project.code];
+                        const thresholds = config?.diskThresholds ?? DEFAULT_DISK_THRESHOLDS;
+                        const stage = project.stage;
+                        const cellClass = scanPending || !pd
+                          ? 'text-warm-muted opacity-50'
+                          : '';
+
+                        const diskCell = (bytes: number | undefined, col: string, extraClass = '') => {
+                          if (scanPending || !pd || bytes === undefined) {
+                            return <td key={col} className={`px-2 text-right text-warm-muted opacity-50 ${extraClass}`} style={{ fontSize: '11px' }}>—</td>;
+                          }
+                          const level = getThresholdLevelClient(bytes, col, stage, thresholds);
+                          return (
+                            <td key={col} className={`px-2 text-right ${diskLevelClass(level)} ${extraClass}`} style={{ fontSize: '11px' }}>
+                              {formatBytes(bytes)}
+                            </td>
+                          );
+                        };
+
+                        return (
+                          <>
+                            {diskCell(pd?.rec,     'rec', 'border-l border-warm-strong')}
+                            {diskCell(pd?.trash,   'trash')}
+                            {diskCell(pd?.shadows, 'shadows')}
+                            {diskCell(pd?.other,   'other')}
+                            {diskCell(pd?.rRec,    'rRec')}
+                            {diskCell(pd?.r1st,    'r1st')}
+                            {diskCell(pd?.r2nd,    'r2nd')}
+                            {diskCell(pd?.total,   'total')}
+                          </>
+                        );
+                      })()}
                     </tr>
                   );
                 })}

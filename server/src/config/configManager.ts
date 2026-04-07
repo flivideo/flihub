@@ -1,7 +1,22 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { migrateTargetToProject } from '../../../shared/paths.js';
-import type { Config } from '../../../shared/types.js';
+import type { Config, DiskThresholds } from '../../../shared/types.js';
+
+// B062: Default pain thresholds for disk space observability
+export const DEFAULT_DISK_THRESHOLDS: DiskThresholds = {
+  stagePenaltyMultiplier: 0.5,
+  columns: {
+    trash:   { faint: '0',      amber: '300MB',  red: '1GB'   },
+    rec:     { faint: '2GB',    amber: '5GB',    red: '10GB'  },
+    shadows: { faint: '100MB',  amber: '300MB',  red: '500MB' },
+    other:   { faint: '500MB',  amber: '1GB',    red: null    },
+    rRec:    { faint: '1GB',    amber: '3GB',    red: '6GB'   },
+    r1st:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
+    r2nd:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
+    total:   { faint: '3GB',    amber: '8GB',    red: '15GB'  },
+  }
+};
 
 // Default configuration values
 // NFR-6: Includes migration from targetDirectory to projectDirectory
@@ -84,6 +99,11 @@ export function loadConfig(configPath: string): Config {
         if (saved.machineRole) toSave.machineRole = saved.machineRole;
         fs.writeJsonSync(configPath, toSave, { spaces: 2 });
         console.log('Config migration saved');
+      }
+
+      // B062: Apply disk threshold defaults if not set in saved config
+      if (!saved.diskThresholds) {
+        saved.diskThresholds = DEFAULT_DISK_THRESHOLDS;
       }
 
       return { ...defaults, ...saved };
