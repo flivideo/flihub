@@ -1,7 +1,7 @@
 # AGENTS.md — FliHub Baseline
 
 **Project**: FliHub — video recording workflow management tool
-**Last updated**: 2026-03-19 (Updated after nfr-146-test-coverage, nfr-code-quality-1, nfr-architecture-refactor campaigns)
+**Last updated**: 2026-04-07 (Updated after disk-observability B063)
 **Purpose**: Operational knowledge for Ralphy agents. Self-contained — an agent receives this file + a work unit prompt and nothing else.
 
 ---
@@ -413,6 +413,17 @@ After replacing classes in a file:
 1. `npm run build -w client` must pass
 2. Visually verify the component renders with warm tones (no stray white panels or jarring gray borders)
 3. Check hover and focus states still work with the warm palette
+
+### disk-observability (2026-04-07) — B063 Disk Space Observability
+
+- **Pure Node for file system scanning** — use `fs.readdir({ withFileTypes: true, recursive: true })` + `fs.stat`, never shell `du`. Avoids path injection risk for user-supplied paths. Node 20 Dirent uses `parentPath`; older versions use `path`. Fallback: `dirent.parentPath ?? dirent.path ?? dirPath`.
+- **safeDelete is the pattern for all destructive ops** — `server/src/utils/safeDelete.ts` is the canonical utility. 6-step chain: rootDir non-empty → rootDir exists → targetPath non-empty → targetPath exists → within root (`isPathWithinProject`) → basename matches `allowedSuffix`. Never repeat this logic inline. Pass a `SafeDeleteRule` with `allowedSuffix` to customise per deletion type.
+- **In-memory Map cache at route module level** — `const diskSizeCache = new Map<string, T>()` declared above the route factory works correctly. Cache persists for server lifetime, cleared per-key on mutation. This pattern is appropriate for expensive on-demand scans behind a feature toggle.
+- **QueryClientProvider wrapper required in component tests** — any component that calls a React Query hook (useQuery, useMutation) needs `<QueryClientProvider client={new QueryClient()}>` in its test render. Missing it gives "No QueryClient set" error. Use a `renderWithQuery()` helper in the test file.
+- **Pre-compute detail during scan for toggle-gated features** — don't lazy load detail (subfolder breakdown, top files) when the feature is behind a toggle. Users are in "disk mode" — compute everything upfront during scan-all. Simpler code, instant hover/detail display.
+- **Parallel agents on shared component files** — two agents editing the same component simultaneously (e.g. ProjectDrawer.tsx in Wave 2b) can work if file changes from one agent are visible to the next via the linter/filesystem. But it's fragile. Prefer splitting work so parallel agents touch different files. If unavoidable, ensure the second agent reads the file fresh before editing.
+- **B### ID assignment** — always check the last used ID in BACKLOG.md done table before assigning a new one. The pending list and done table can both contain B### entries; the highest number across both sections is the next available.
+- **formatBytes duplication** — canonical: `client/src/utils/formatBytes.ts`. ProjectDrawer.tsx has a local copy with a TODO comment. Consolidate in a future cleanup pass.
 
 ---
 
