@@ -64,4 +64,6 @@ export const QUERY_KEYS = {
   relayDivergence: ['relay-divergence'] as const,
   // B044: Sync Hub
   syncStatus: ['sync-status'] as const,
+  // B062: Disk space observability
+  projectDisk: (code: string) => ['project-disk', code] as const,
 } as const;

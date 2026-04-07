@@ -3,10 +3,12 @@
 // FR-34: Chapter timestamp extraction
 // FR-34 Enhancement: LLM-based chapter verification
 // FR-59: Inbox management
+// B062: Disk space observability
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
 import { expandPath, queryString } from '../utils/pathUtils.js';
+import { safeDelete } from '../utils/safeDelete.js';
 import { resolveProjectCode } from '../utils/projectResolver.js';
 import { detectFinalMedia } from '../utils/finalMedia.js';
 import { extractChapters } from '../utils/chapterExtraction.js';
@@ -14,6 +16,7 @@ import { verifyChapterWithLLM } from '../utils/llmVerification.js';
 import { getProjectStatsRaw } from '../utils/projectStats.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { readDirSafe } from '../utils/filesystem.js';
+import { calculateProjectDiskSize } from '../utils/diskUtils.js';
 import type {
   Config,
   ProjectStats,
@@ -21,7 +24,11 @@ import type {
   ChapterOverride,
   SetChapterOverrideRequest,
   TranscriptSyncResponse,
+  DiskSizeData,
 } from '../../../shared/types.js';
+
+// B062: In-memory disk size cache — lost on server restart by design
+const diskSizeCache = new Map<string, DiskSizeData>();
 
 export function createProjectRoutes(
   getConfig: () => Config,
@@ -485,6 +492,124 @@ export function createProjectRoutes(
     } catch (error) {
       console.error(`Error removing override for ${code}:`, error);
       res.status(500).json({ success: false, error: 'Failed to remove override' });
+    }
+  });
+
+  // B062: POST /api/projects/disk/scan-all — Scan all projects and populate the disk size cache
+  router.post('/disk/scan-all', async (_req: Request, res: Response) => {
+    const config = getConfig();
+
+    if (!config.projectsRootDirectory) {
+      res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+      return;
+    }
+
+    const projectsRoot = expandPath(config.projectsRootDirectory);
+
+    try {
+      if (!(await fs.pathExists(projectsRoot))) {
+        res.status(400).json({ success: false, error: 'projectsRootDirectory does not exist' });
+        return;
+      }
+
+      const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
+      const codes = entries
+        .filter(
+          (e) =>
+            e.isDirectory() &&
+            !e.name.startsWith('.') &&
+            !e.name.startsWith('-') &&
+            e.name !== 'archived'
+        )
+        .map((e) => e.name);
+
+      const relayRoot =
+        config.relayEnabled && config.relayDirectory
+          ? expandPath(config.relayDirectory)
+          : null;
+
+      await Promise.all(
+        codes.map(async (code) => {
+          const projectDir = path.join(projectsRoot, code);
+          const relayProjectDir = relayRoot ? path.join(relayRoot, code) : null;
+          try {
+            const result = await calculateProjectDiskSize(projectDir, relayProjectDir);
+            diskSizeCache.set(code, result);
+          } catch (err) {
+            console.error(`[B062] scan-all: failed to calculate disk size for ${code}:`, err);
+          }
+        })
+      );
+
+      res.json({ success: true, results: Object.fromEntries(diskSizeCache) });
+    } catch (error) {
+      console.error('[B062] scan-all error:', error);
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  // B062: GET /api/projects/:code/disk — Get disk size for a single project (cache-first)
+  router.get('/:code/disk', async (req: Request, res: Response) => {
+    const code = queryString(req.params.code);
+
+    const cached = diskSizeCache.get(code);
+    if (cached) {
+      res.json({ success: true, data: cached, fromCache: true });
+      return;
+    }
+
+    const config = getConfig();
+
+    if (!config.projectsRootDirectory) {
+      res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+      return;
+    }
+
+    const projectsRoot = expandPath(config.projectsRootDirectory);
+    const projectDir = path.join(projectsRoot, code);
+    const relayRoot =
+      config.relayEnabled && config.relayDirectory
+        ? expandPath(config.relayDirectory)
+        : null;
+    const relayProjectDir = relayRoot ? path.join(relayRoot, code) : null;
+
+    try {
+      const result = await calculateProjectDiskSize(projectDir, relayProjectDir);
+      diskSizeCache.set(code, result);
+      res.json({ success: true, data: result, fromCache: false });
+    } catch (error) {
+      console.error(`[B062] disk size error for ${code}:`, error);
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  // B062 Wave 2: Delete trash folder contents for a project
+  router.delete('/:code/trash', async (req: Request, res: Response) => {
+    try {
+      const config = getConfig();
+      const code = queryString(req.params.code);
+
+      if (!config.projectsRootDirectory) {
+        res.json({ success: false, error: 'projectsRootDirectory not configured' });
+        return;
+      }
+
+      const projectsRoot = expandPath(config.projectsRootDirectory);
+      const projectDir = path.join(projectsRoot, code);
+      const trashDir = path.join(projectDir, '-trash');
+
+      const result = await safeDelete(trashDir, {
+        rootDir: projectsRoot,
+        allowedSuffix: '-trash',
+        description: 'project trash folder',
+      });
+
+      // Invalidate disk cache for this project so next drawer open recalculates
+      diskSizeCache.delete(code);
+
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, deleted: [], error: String(error) });
     }
   });
 
