@@ -71,6 +71,11 @@ export function ProjectListToolbar({
           })}
         </div>
 
+        {/* Count — immediately after stage pills */}
+        <span className="text-[11px] text-warm-faint self-center whitespace-nowrap">
+          {filteredCount} of {totalCount}
+        </span>
+
         {/* Smart presets — pushed right */}
         <div className="flex items-center gap-1 ml-auto">
           {PRESETS.map((preset) => {
@@ -110,10 +115,6 @@ export function ProjectListToolbar({
             </>
           )}
 
-          {/* Count inline, after all controls */}
-          <span className="text-[11px] text-warm-faint ml-2 self-center whitespace-nowrap">
-            {filteredCount} of {totalCount}
-          </span>
         </div>
     </div>
   );
