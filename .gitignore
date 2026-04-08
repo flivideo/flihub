@@ -41,3 +41,4 @@ server/config.json
 
 # Git worktrees
 .worktrees/
+.playwright-mcp/

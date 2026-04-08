@@ -613,17 +613,12 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
             if (holdModal.target === 'local') {
               deleteLocal.mutate(
                 { code: project.code },
-                {
-                  onSuccess: () => setHoldModal((s) => ({ ...s, open: false })),
-                  // onError: modal stays open, isLoading becomes false, user can retry
-                }
+                { onSuccess: () => setHoldModal((s) => ({ ...s, open: false })) }
               );
             } else {
               deleteHolding.mutate(
                 { code: project.code },
-                {
-                  onSuccess: () => setHoldModal((s) => ({ ...s, open: false })),
-                }
+                { onSuccess: () => setHoldModal((s) => ({ ...s, open: false })) }
               );
             }
           }}
@@ -646,6 +641,13 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
           }
           verification={holdStatus.data.verification}
           isLoading={deleteLocal.isPending || deleteHolding.isPending}
+          errorMessage={
+            deleteLocal.error
+              ? (deleteLocal.error instanceof Error ? deleteLocal.error.message : 'Delete failed')
+              : deleteHolding.error
+              ? (deleteHolding.error instanceof Error ? deleteHolding.error.message : 'Delete failed')
+              : null
+          }
         />
       )}
 

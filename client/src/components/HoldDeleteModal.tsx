@@ -17,6 +17,7 @@ interface HoldDeleteModalProps {
   targetPath: string;                 // full path being deleted (shown for transparency)
   verification: HoldVerification | null; // must be non-null and match:true to enable confirm
   isLoading?: boolean;
+  errorMessage?: string | null;
 }
 
 // B064: HoldDeleteModal — two variants controlled by the `target` prop
@@ -31,6 +32,7 @@ export function HoldDeleteModal({
   targetPath,
   verification,
   isLoading = false,
+  errorMessage,
 }: HoldDeleteModalProps) {
   // B064: Typed confirmation code — must match projectCode exactly
   const [typedCode, setTypedCode] = useState('');
@@ -159,6 +161,13 @@ export function HoldDeleteModal({
             />
           </div>
         </div>
+
+        {/* B065: Error message from failed delete attempt */}
+        {errorMessage && (
+          <div className="mx-4 mb-3 px-3 py-2 rounded text-sm text-red-700 bg-red-50 border border-red-200">
+            {errorMessage}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex justify-end gap-2 p-4 border-t border-warm-strong bg-surface-muted rounded-b-lg">

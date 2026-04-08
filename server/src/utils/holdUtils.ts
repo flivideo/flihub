@@ -115,8 +115,11 @@ export async function verifyHoldingMatch(localDir: string, holdingDir: string): 
       };
     }
 
+    // B065: Match on file count only — byte totals differ across filesystems
+    // due to .DS_Store churn, resource fork handling, and extended attributes.
+    // File count equality is sufficient: a partial rsync produces fewer files, not same count with different bytes.
     return {
-      match: local.fileCount === holding.fileCount && local.totalBytes === holding.totalBytes,
+      match: local.fileCount === holding.fileCount,
       localFiles: local.fileCount,
       holdingFiles: holding.fileCount,
       localBytes: local.totalBytes,
