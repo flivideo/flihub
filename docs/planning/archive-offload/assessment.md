@@ -92,9 +92,28 @@ B064 adds full SSD hold/restore workflow to FliHub:
 
 ---
 
-## Deferred Backlog Items (B065 candidates)
+## Post-Campaign Polish (B065 — same session, after B064 shipped)
 
-- B065a — HoldBadge bulk status endpoint (N→1 API calls for project list)
-- B065b — Fix 4 pre-existing test failures from B062 (ProjectDrawer "Thumbnails", ProjectListToolbar search)
-- B065c — heldAt persistence across server restarts (sidecar file or config)
-- B065d — rsync --checksum option (configurable, off by default)
+Immediately after B064 merged, a follow-on polish pass fixed bugs surfaced by first real use and added UX improvements:
+
+### Bugs fixed
+- **Response unwrap bug** — `useHoldStatus` was returning the `{ success, data }` wrapper as the query result; `holdStatus.data.ssdMounted` was always `undefined` → "SSD not available" even with T7 connected. Fix: added `.then(res => res.data)` unwrap.
+- **Code validation regex** — `/[/\\.]/.test(code)` rejected project codes with dots (e.g. `b75-...-claude-4.5`), causing 400 → undefined query data → wrong UI state. Fix: `/[/\\]/.test(code) || code.includes('..')`.
+- **Global SSD status endpoint** — added `GET /api/projects/ssd-status` (no project code required) for the header indicator.
+
+### UX changes
+- **Terminology**: "SSD Hold" → "SSD Offload", "Hold on SSD" → "Offload to SSD", "Dry Run" → "Preview" (shows bytes + destination path)
+- **SSD indicator in app header** — `SsdIndicator` component, green dot when T7 mounted, faint when not; click navigates to Projects tab
+- **Project count inline** — moved "76 of 76" count into the filter bar row (no separate row)
+- **Disk column totals** — aligned `tfoot` + `thead` second row inside the table, each total directly under its column (REC, TRASH, SHADOWS, OTHER, R-REC, R-1ST, R-2ND, TOTAL); totals update as filters change
+
+### Not yet tested by David
+The end-to-end hold/delete flow (Offload to SSD → verify → Delete Local, and the restore path) has not been exercised against real data. The API is correct (confirmed by curl), the UI states are wired, but David has not run a real offload operation yet. This will be tested in a future session when David is ready to actually move projects to the T7.
+
+## Deferred Backlog Items (B066 candidates)
+
+- B066a — HoldBadge bulk status endpoint (N→1 API calls for project list)
+- B066b — Fix 4 pre-existing test failures from B062 (ProjectDrawer "Thumbnails", ProjectListToolbar search)
+- B066c — heldAt persistence across server restarts (sidecar file or config)
+- B066d — rsync --checksum option (configurable, off by default)
+- B066e — End-to-end real offload test (David to run when T7 workflow is ready)

@@ -618,6 +618,25 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
     [projects, searchQuery, activeStages, activePreset]
   );
 
+  // B065: Disk column totals — sum over filtered projects that have loaded disk data
+  const diskTotals = useMemo(() => {
+    let rec = 0, trash = 0, shadows = 0, other = 0, rRec = 0, r1st = 0, r2nd = 0, total = 0, count = 0;
+    for (const p of filteredProjects) {
+      const pd = diskData[p.code];
+      if (!pd) continue;
+      count++;
+      rec     += pd.rec     ?? 0;
+      trash   += pd.trash   ?? 0;
+      shadows += pd.shadows ?? 0;
+      other   += pd.other   ?? 0;
+      rRec    += pd.rRec    ?? 0;
+      r1st    += pd.r1st    ?? 0;
+      r2nd    += pd.r2nd    ?? 0;
+      total   += pd.total   ?? 0;
+    }
+    return { rec, trash, shadows, other, rRec, r1st, r2nd, total, count };
+  }, [filteredProjects, diskData]);
+
   // FR-148: Stage toggle handler — resets preset to 'all' when toggling stages
   const handleStageToggle = (stage: string) => {
     setActiveStages(prev => {
@@ -714,6 +733,28 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
                     </>
                   )}
                 </tr>
+                {/* B065: Totals row in thead — sticky, aligned with disk columns */}
+                {diskColumnsEnabled && diskTotals.count > 0 && (
+                  <tr className="sticky top-[33px] z-10 bg-amber-50 border-b border-warm-strong text-[10px] font-bold text-warm-muted">
+                    <td className="py-1 px-2" />
+                    <td className="py-1 px-2" />
+                    <td className="py-1 px-2 text-warm-secondary">TOTAL ({diskTotals.count})</td>
+                    <td className="py-1 px-2" />
+                    <td className="py-1 px-2" />
+                    <td className="py-1 px-2" />
+                    <td className="py-1 px-2" />
+                    <td className="py-1 px-2" />
+                    <td className="py-1 px-2" />
+                    <td className="py-1 px-2 text-right border-l border-warm-strong">{formatBytes(diskTotals.rec)}</td>
+                    <td className="py-1 px-2 text-right">{diskTotals.trash > 0 ? formatBytes(diskTotals.trash) : '—'}</td>
+                    <td className="py-1 px-2 text-right">{diskTotals.shadows > 0 ? formatBytes(diskTotals.shadows) : '—'}</td>
+                    <td className="py-1 px-2 text-right">{diskTotals.other > 0 ? formatBytes(diskTotals.other) : '—'}</td>
+                    <td className="py-1 px-2 text-right">{diskTotals.rRec > 0 ? formatBytes(diskTotals.rRec) : '—'}</td>
+                    <td className="py-1 px-2 text-right">{diskTotals.r1st > 0 ? formatBytes(diskTotals.r1st) : '—'}</td>
+                    <td className="py-1 px-2 text-right">{diskTotals.r2nd > 0 ? formatBytes(diskTotals.r2nd) : '—'}</td>
+                    <td className="py-1 px-2 text-right text-warm-secondary">{formatBytes(diskTotals.total)}</td>
+                  </tr>
+                )}
               </thead>
               <tbody>
                 {/* FR-148: Iterate over filteredProjects */}
@@ -857,6 +898,32 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
                   );
                 })}
               </tbody>
+              {/* B065: Totals row — aligned with disk columns */}
+              {diskColumnsEnabled && diskTotals.count > 0 && (
+                <tfoot>
+                  <tr className="border-t-2 border-warm-strong bg-surface-muted text-[10px] font-bold text-warm-muted">
+                    {/* 9 non-disk columns: star, code, name, stage, files, trans%, final, relay, modified */}
+                    <td className="py-1.5 px-2" />
+                    <td className="py-1.5 px-2" />
+                    <td className="py-1.5 px-2 text-warm-secondary">TOTAL ({diskTotals.count})</td>
+                    <td className="py-1.5 px-2" />
+                    <td className="py-1.5 px-2" />
+                    <td className="py-1.5 px-2" />
+                    <td className="py-1.5 px-2" />
+                    <td className="py-1.5 px-2" />
+                    <td className="py-1.5 px-2" />
+                    {/* 8 disk columns */}
+                    <td className="py-1.5 px-2 text-right border-l border-warm-strong">{formatBytes(diskTotals.rec)}</td>
+                    <td className="py-1.5 px-2 text-right">{diskTotals.trash > 0 ? formatBytes(diskTotals.trash) : '—'}</td>
+                    <td className="py-1.5 px-2 text-right">{diskTotals.shadows > 0 ? formatBytes(diskTotals.shadows) : '—'}</td>
+                    <td className="py-1.5 px-2 text-right">{diskTotals.other > 0 ? formatBytes(diskTotals.other) : '—'}</td>
+                    <td className="py-1.5 px-2 text-right">{diskTotals.rRec > 0 ? formatBytes(diskTotals.rRec) : '—'}</td>
+                    <td className="py-1.5 px-2 text-right">{diskTotals.r1st > 0 ? formatBytes(diskTotals.r1st) : '—'}</td>
+                    <td className="py-1.5 px-2 text-right">{diskTotals.r2nd > 0 ? formatBytes(diskTotals.r2nd) : '—'}</td>
+                    <td className="py-1.5 px-2 text-right text-warm-secondary">{formatBytes(diskTotals.total)}</td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
 
             {/* FR-12: New Project Form - at bottom of table */}

@@ -1,7 +1,6 @@
 // FR-148: Project list toolbar — matches Mochaccino mockup
 export { STAGE_DISPLAY, STAGE_ORDER } from '../constants/stages';
 import { STAGE_DISPLAY, STAGE_ORDER } from '../constants/stages';
-
 const PRESETS = [
   { key: 'all', label: 'All' },
   { key: 'needs-attention', label: 'Needs Attention' },

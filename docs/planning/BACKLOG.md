@@ -1,9 +1,8 @@
 # Project Backlog — FliHub
 
-**Last updated**: 2026-03-24
-**Project Heal**: Initial BACKLOG.md created from full history consolidation
+**Last updated**: 2026-04-08
 **Total open**: 13 | Pending: 13 | In Progress: 0 | Deferred: 6 | Rejected: 4
-**Last reconciled**: relay-kanban-fixes campaign (2026-03-24)
+**Last reconciled**: archive-offload + B065 polish (2026-04-08)
 
 ---
 
@@ -99,6 +98,7 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B065 | B064+B062 Polish — response unwrap fix (SSD UI was always showing "not connected"), regex fix for codes with dots, global ssd-status endpoint, SsdIndicator in app header, "SSD Offload" terminology rename, Preview dry-run output, disk column totals in table thead+tfoot (column-aligned). End-to-end delete not yet tested by David. | 2026-04-08 |
 | B064 | Archive Offload (archive-offload) — SSD hold/restore with T7, relay-block guard, 5-gate safety chain, HoldDeleteModal, drawer section, ProjectsPanel badge. 8/8 complete. +1006 server tests. | 2026-04-08 |
 | B063 | Disk Space Observability (disk-observability) — toggle-on columns (REC/TRASH/SHADOWS/OTHER/R-REC/R-1ST/R-2ND/TOTAL), configurable thresholds, stage multiplier, detail drawer with subfolder breakdown, trash delete with safeDelete validation chain. 11/11 complete. 928 server tests pass. | 2026-04-07 |
 | B061 | Relay Kanban Fixes (relay-kanban-fixes) — collect-without-folder (ensureDir before rsync + ensure-folders endpoint), badge colors (amber/↓ not red/!), header RelayIndicator pill, open-folder buttons on Sync/Relay tools. F006-F010+F012 resolved. 3/3 complete. +12 tests. 900 tests pass. | 2026-03-24 |

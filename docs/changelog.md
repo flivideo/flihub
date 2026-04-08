@@ -14,6 +14,28 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## B065 — Archive Offload + Disk Observability Polish (2026-04-08)
+
+Post-B064 polish pass. No new campaign — fixes and UX improvements from first real use.
+
+**Bug fixes:**
+- `useHoldStatus` was returning the raw `{ success, data }` wrapper — `ssdMounted` was always `undefined`, causing "SSD not connected" even with T7 plugged in. Fixed with `.then(res => res.data)` unwrap.
+- Code validation regex rejected project codes containing dots (e.g. `b75-...-4.5`) with 400. Fixed to only reject path separators and `..`.
+
+**New:**
+- `SsdIndicator` component in app header — green dot when T7 mounted, faint when not. Clicks navigate to Projects tab.
+- Global `GET /api/projects/ssd-status` endpoint (no project code required).
+
+**UX changes:**
+- "SSD Hold" → "SSD Offload", "Hold on SSD" → "Offload to SSD" throughout drawer + modal
+- "Dry Run" → "Preview" — now shows bytes to be copied and destination path
+- Project count (76 of 76) moved inline into filter bar — no separate row
+- Disk column totals: moved from misaligned toolbar row to `thead` second row + `tfoot` row, both column-aligned
+
+**Not yet tested:** End-to-end offload/delete flow (David returning to this in a future session).
+
+---
+
 ## Per-Item History
 
 ### FR-147: Relay Project Awareness — Two-Pool Split
