@@ -432,7 +432,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
         {/* B064: SSD Hold section */}
         <div className="border-l-2 border-warm-strong pl-3">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-[10px] font-bold uppercase tracking-wide text-warm-faint">SSD Hold</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-wide text-warm-faint">SSD Offload</h4>
           </div>
 
           {/* B064: State 1 — Loading */}
@@ -442,7 +442,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
 
           {/* B064: State 2 — ssd-not-configured */}
           {holdStatus.data && holdStatus.data.location === 'unknown' && (
-            <p className="text-xs text-warm-muted">SSD hold not configured</p>
+            <p className="text-xs text-warm-muted">SSD offload not configured</p>
           )}
 
           {/* B064: State 3 — relay-blocked */}
@@ -458,7 +458,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
             !holdStatus.data.relayBlocked &&
             holdStatus.data.location !== 'unknown' &&
             !holdStatus.data.ssdMounted && (
-            <p className="text-xs text-warm-muted">SSD not available</p>
+            <p className="text-xs text-warm-muted">SSD not connected</p>
           )}
 
           {/* B064: State 5 — local-only */}
@@ -481,7 +481,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
                   disabled={holdProject.isPending}
                   className="flex-1 py-1.5 px-3 text-xs font-medium rounded-md border border-warm bg-surface-muted hover:bg-warm text-warm-secondary transition-colors disabled:opacity-50"
                 >
-                  {holdProject.isPending ? 'Holding...' : 'Hold on SSD'}
+                  {holdProject.isPending ? 'Offloading...' : 'Offload to SSD'}
                 </button>
                 <button
                   onClick={() => {
@@ -489,7 +489,12 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
                       { code: project.code, dryRun: true },
                       {
                         onSuccess: (result) => {
-                          setDryRunMessage(result.message ?? 'Dry run complete');
+                          const r = result as unknown as { localBytes?: number; holdingPath?: string };
+                          if (r.localBytes != null) {
+                            setDryRunMessage(`Would copy ${formatBytesUtil(r.localBytes)} to ${r.holdingPath ?? 'SSD'}`);
+                          } else {
+                            setDryRunMessage('Preview complete — no size info returned');
+                          }
                         },
                       }
                     );
@@ -497,7 +502,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
                   disabled={holdProject.isPending}
                   className="flex-1 py-1.5 px-3 text-xs font-medium rounded-md border border-warm bg-surface-muted hover:bg-warm text-warm-secondary transition-colors disabled:opacity-50"
                 >
-                  Dry Run
+                  Preview
                 </button>
               </div>
             </div>
@@ -531,7 +536,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
                 <div className="flex flex-col gap-2">
                   <p className="text-xs text-amber-700 font-medium">⚠ Offload incomplete — space not freed yet</p>
                   <p className="text-[11px] text-warm-secondary">
-                    HOLDING: {ver.holdingFiles} files, {formatBytesUtil(ver.holdingBytes)} ✓ matches local
+                    SSD copy: {ver.holdingFiles} files, {formatBytesUtil(ver.holdingBytes)} ✓ matches local
                   </p>
                   <div className="flex flex-col gap-1.5">
                     <button
@@ -544,7 +549,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
                       onClick={() => setHoldModal({ open: true, target: 'holding' })}
                       className="w-full py-1.5 px-3 text-xs font-medium rounded-md border border-warm bg-surface-muted hover:bg-warm text-warm-secondary transition-colors"
                     >
-                      Cancel hold — Remove SSD copy
+                      Cancel — Remove SSD copy
                     </button>
                   </div>
                 </div>
@@ -556,7 +561,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
               <div className="flex flex-col gap-2">
                 <p className="text-xs text-red-700 font-medium">✗ Files don't match — cannot delete local</p>
                 <p className="text-[11px] text-warm-muted">
-                  Local: {ver.localFiles} files &nbsp;|&nbsp; HOLDING: {ver.holdingFiles} files
+                  Local: {ver.localFiles} files &nbsp;|&nbsp; SSD: {ver.holdingFiles} files
                 </p>
                 <button
                   onClick={() => holdProject.mutate({ code: project.code, dryRun: false })}
@@ -565,7 +570,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
                 >
                   Re-run rsync
                 </button>
-                <p className="text-[11px] text-warm-muted">To cancel: restore from HOLDING first, or re-run rsync to fix the mismatch.</p>
+                <p className="text-[11px] text-warm-muted">To cancel: restore from SSD first, or re-run offload to fix the mismatch.</p>
               </div>
             );
           })()}
@@ -577,7 +582,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
             holdStatus.data.ssdMounted &&
             holdStatus.data.location === 'holding-only' && (
             <div className="flex flex-col gap-2">
-              <p className="text-[12px] text-warm-secondary">Location: HOLDING SSD (local deleted)</p>
+              <p className="text-[12px] text-warm-secondary">Location: SSD only (local deleted)</p>
               {holdStatus.data.heldAt && (
                 <p className="text-[11px] text-warm-muted">Held: {formatDate(holdStatus.data.heldAt)}</p>
               )}

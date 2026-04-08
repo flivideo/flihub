@@ -68,20 +68,20 @@ export function HoldDeleteModal({
 
   // B064: Variant-specific copy
   const isLocal = target === 'local';
-  const title = isLocal ? 'Delete Local Copy' : 'Remove from HOLDING SSD';
-  const folderLabel = isLocal ? 'Folder' : 'HOLDING folder';
-  const pathLabel = isLocal ? 'HOLDING path' : 'Path';
+  const title = isLocal ? 'Delete Local Copy' : 'Remove from SSD';
+  const folderLabel = isLocal ? 'Folder' : 'SSD folder';
+  const pathLabel = isLocal ? 'SSD path' : 'Path';
   const sizeLabel = isLocal ? 'Freeing' : 'Freeing from SSD';
   const confirmButtonLabel = isLocal
     ? `Delete Local — Free ${freedLabel}`
-    : 'Remove from HOLDING';
+    : 'Remove from SSD';
 
   // B064: Verification status block — green when ok, red when not
   const verificationBlock = verificationOk ? (
     <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">
       <span>
         {isLocal
-          ? `HOLDING verified \u2713 \u2014 ${verification!.holdingFiles} files, ${holdingSizeLabel}`
+          ? `SSD copy verified \u2713 \u2014 ${verification!.holdingFiles} files, ${holdingSizeLabel}`
           : `Local copy verified \u2713 \u2014 ${verification!.localFiles} files, ${localSizeLabel}`}
       </span>
     </div>
