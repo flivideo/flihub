@@ -26,6 +26,7 @@ import { createStateRoutes } from './routes/state.js';
 import { createDeveloperRoutes } from './routes/developer.js';
 import { createRelayRoutes } from './routes/relay.js';
 import { createSyncRoutes } from './routes/sync.js';
+import { createHoldRoutes } from './routes/hold.js'; // B064: archive-offload hold routes
 import { migrateSafeFolder, needsMigration } from './utils/safeMigration.js';
 import { loadConfig, saveConfig } from './config/configManager.js';
 import { WatcherManager } from './WatcherManager.js';
@@ -310,6 +311,10 @@ app.use('/api/relay', relayRoutes);
 // B044: Setup sync hub routes
 const syncRoutes = createSyncRoutes(() => currentConfig);
 app.use('/api/sync', syncRoutes);
+
+// B064: Setup hold/offload routes — archive projects to/from T7 SSD
+const holdRoutes = createHoldRoutes(() => currentConfig);
+app.use('/api/projects', holdRoutes);
 
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);

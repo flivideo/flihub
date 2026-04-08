@@ -97,6 +97,7 @@ export function loadConfig(configPath: string): Config {
         if (saved.relayDirectory) toSave.relayDirectory = saved.relayDirectory;
         if (saved.relayEnabled !== undefined) toSave.relayEnabled = saved.relayEnabled;
         if (saved.machineRole) toSave.machineRole = saved.machineRole;
+        if (saved.holdingPath) toSave.holdingPath = saved.holdingPath; // B064
         fs.writeJsonSync(configPath, toSave, { spaces: 2 });
         console.log('Config migration saved');
       }
@@ -157,6 +158,8 @@ export function saveConfig(configPath: string, config: Config): void {
     if (config.relayEnabled !== undefined) toSave.relayEnabled = config.relayEnabled;
     // B039: machine role
     if (config.machineRole !== undefined) toSave.machineRole = config.machineRole;
+    // B064: archive-offload — holding SSD path (optional, machine-specific)
+    if (config.holdingPath !== undefined) toSave.holdingPath = config.holdingPath;
     fs.writeJsonSync(configPath, toSave, { spaces: 2 });
     console.log('Config saved to:', configPath);
   } catch (error) {

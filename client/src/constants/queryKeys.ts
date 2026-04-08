@@ -66,4 +66,6 @@ export const QUERY_KEYS = {
   syncStatus: ['sync-status'] as const,
   // B062: Disk space observability
   projectDisk: (code: string) => ['project-disk', code] as const,
+  // B064: Archive-offload hold status
+  holdStatus: (code: string) => ['hold-status', code] as const,
 } as const;

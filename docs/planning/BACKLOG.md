@@ -99,6 +99,7 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B064 | Archive Offload (archive-offload) — SSD hold/restore with T7, relay-block guard, 5-gate safety chain, HoldDeleteModal, drawer section, ProjectsPanel badge. 8/8 complete. +1006 server tests. | 2026-04-08 |
 | B063 | Disk Space Observability (disk-observability) — toggle-on columns (REC/TRASH/SHADOWS/OTHER/R-REC/R-1ST/R-2ND/TOTAL), configurable thresholds, stage multiplier, detail drawer with subfolder breakdown, trash delete with safeDelete validation chain. 11/11 complete. 928 server tests pass. | 2026-04-07 |
 | B061 | Relay Kanban Fixes (relay-kanban-fixes) — collect-without-folder (ensureDir before rsync + ensure-folders endpoint), badge colors (amber/↓ not red/!), header RelayIndicator pill, open-folder buttons on Sync/Relay tools. F006-F010+F012 resolved. 3/3 complete. +12 tests. 900 tests pass. | 2026-03-24 |
 | B060 | Relay Kanban (relay-kanban) — divergence detection endpoint, auto-create edit folders on collect, enhanced browse with sync status, 4-lane Kanban RelayTool rewrite, project-level Kanban mini-badges. 5/5 complete. +37 tests. 888 tests pass. | 2026-03-24 |

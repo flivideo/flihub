@@ -14,6 +14,7 @@ import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket';
 import { useDelayedHover } from '../hooks/useDelayedHover';
 import { useEnhancedRelayBrowse } from '../hooks/useRelayApi';
 import { useDiskScanAll } from '../hooks/useProjectDiskApi';
+import { useHoldStatus } from '../hooks/useHoldApi'; // B064
 import { LoadingSpinner, ErrorMessage } from './shared';
 import { ProjectListToolbar, STAGE_DISPLAY, STAGE_ORDER } from './ProjectListToolbar';
 import { ProjectDrawer } from './ProjectDrawer';
@@ -32,6 +33,7 @@ import type {
   RelaySubfolder,
   DiskSizeData,
   DiskThresholds,
+  HoldLocation, // B064
 } from '../../../shared/types';
 
 interface ProjectsPanelProps {
@@ -90,6 +92,51 @@ function subfolderTooltipLine(
     default: statusText = String(status);
   }
   return `${label}: ${localPart}, ${relayPart} \u2014 ${statusText}`;
+}
+
+// B064: Hold badge config — maps HoldLocation to display properties
+const HOLD_BADGE_CONFIG: Partial<Record<HoldLocation, { text: string; bg: string; textColor: string; tooltip: string }>> = {
+  both: {
+    text: 'T7 ⚠',
+    bg: 'bg-amber-100',
+    textColor: 'text-amber-700',
+    tooltip: 'Offload incomplete — space not freed',
+  },
+  'holding-only': {
+    text: 'T7',
+    bg: 'bg-warm-secondary/20',
+    textColor: 'text-warm-secondary',
+    tooltip: 'On HOLDING SSD — local deleted',
+  },
+};
+
+// B064: Per-row hold badge — calls useHoldStatus(code) to derive badge from HoldLocation
+function HoldBadge({ code }: { code: string }) {
+  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
+  const { data: holdStatus } = useHoldStatus(code);
+
+  if (!holdStatus) return null;
+
+  const badgeConfig = HOLD_BADGE_CONFIG[holdStatus.location];
+  if (!badgeConfig) return null; // 'local-only' and 'unknown' — no badge
+
+  return (
+    <span
+      className="inline-flex items-center cursor-help relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${badgeConfig.bg} ${badgeConfig.textColor}`}>
+        {badgeConfig.text}
+      </span>
+      {isHovered && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
+          {badgeConfig.tooltip}
+        </div>
+      )}
+    </span>
+  );
 }
 
 // B050: Relay kanban mini-badges — shows sync status per subfolder
@@ -651,7 +698,7 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '48px' }}>Files</th>
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '80px' }}>Trans%</th>
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '48px' }}>Final</th>
-                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '48px' }}>Relay</th>
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '64px' }}>Relay</th> {/* B064: widened to fit hold badge */}
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '80px' }}>Modified</th>
                   {/* B062: Disk columns — only when disk toggle is on */}
                   {diskColumnsEnabled && (
@@ -759,9 +806,12 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
                         )}
                       </td>
 
-                      {/* FR-148: Relay indicators */}
-                      <td className="px-2 text-center" style={{ width: '48px' }}>
-                        <RelayIndicator relayProject={relayByCode.get(project.code)} />
+                      {/* FR-148: Relay indicators + B064: Hold badge */}
+                      <td className="px-2 text-center" style={{ width: '64px' }}>
+                        <span className="inline-flex items-center gap-0.5">
+                          <RelayIndicator relayProject={relayByCode.get(project.code)} />
+                          <HoldBadge code={project.code} /> {/* B064 */}
+                        </span>
                       </td>
 
                       {/* FR-148: Modified — short date */}

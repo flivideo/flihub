@@ -205,7 +205,7 @@ export interface Config {
   relayEnabled?: boolean; // Feature gate — false/undefined until configured
   machineRole?: MachineRole; // B039: Machine role — recorder shows archive/promote/cleanup, editor hides them
   diskThresholds?: DiskThresholds;  // B062: Pain thresholds for disk observability columns
-  archivePath?: string;             // B062: External archive drive path (e.g. /Volumes/T7/youtube-PUBLISHED/appydave)
+  holdingPath?: string;             // B064: External holding drive path (e.g. /Volumes/T7/youtube-HOLDING/appydave)
 }
 
 // B062: Disk space observability — per-project size breakdown
@@ -219,9 +219,9 @@ export interface DiskSizeData {
   r2nd: number;       // bytes — relay/{project}/edit-2nd/
   total: number;      // bytes — sum of all above
   calculatedAt: string; // ISO timestamp
-  // Future archive fields (not populated in this pass):
-  archivedAt?: string;
-  archivePath?: string;
+  // B064: Hold/offload tracking fields
+  heldAt?: string;               // B064: ISO timestamp when last offloaded to HOLDING SSD
+  holdingPath?: string;          // B064: Full flat path in youtube-HOLDING
   // B062 Wave 2: Pre-computed detail (populated during scan-all)
   detail?: {
     other: Record<string, number>;                         // subfolder name → bytes (e.g. { "final": 38000000, "assets": 1000000 })
@@ -254,6 +254,38 @@ export interface DiskThresholds {
 
 // B062: Threshold severity level for colour coding
 export type DiskThresholdLevel = 'faint' | 'amber' | 'red' | null;
+
+// B064: Location states — 'both' is always transitional, never a final resting state
+export type HoldLocation = 'local-only' | 'holding-only' | 'both' | 'unknown';
+
+// B064: File comparison result — run before any delete operation
+export interface HoldVerification {
+  localFiles: number;
+  holdingFiles: number;
+  localBytes: number;
+  holdingBytes: number;
+  match: boolean;  // true only if both counts AND sizes match exactly
+}
+
+// B064: Full hold status for a project
+export interface HoldStatus {
+  location: HoldLocation;
+  holdingPath?: string;          // Full path in youtube-HOLDING if copy exists
+  heldAt?: string;               // ISO timestamp of last rsync to HOLDING
+  relayBlocked: boolean;         // true if relay has files — hard block on offload
+  relayBytes: number;            // rRec + r1st + r2nd bytes (0 if no relay)
+  ssdMounted: boolean;           // Is /Volumes/T7 (or holdingPath parent) accessible?
+  verification?: HoldVerification; // Only populated when location === 'both'
+}
+
+// B064: Result of any hold operation (rsync, delete, verify)
+export interface HoldOperationResult {
+  success: boolean;
+  message: string;
+  holdingPath?: string;
+  verification?: HoldVerification;
+  error?: string;
+}
 
 export interface RenameRequest {
   originalPath: string;

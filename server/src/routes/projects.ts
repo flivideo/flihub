@@ -30,6 +30,23 @@ import type {
 // B062: In-memory disk size cache — lost on server restart by design
 const diskSizeCache = new Map<string, DiskSizeData>();
 
+// B064: Exported mutator so hold routes can update hold metadata without importing the full cache
+export function updateDiskCacheHoldData(
+  code: string,
+  heldAt: string,
+  holdingPath: string
+): void {
+  const existing = diskSizeCache.get(code);
+  if (existing) {
+    diskSizeCache.set(code, { ...existing, heldAt, holdingPath });
+  }
+}
+
+// B064: Exported mutator so hold routes can invalidate a cache entry after delete
+export function invalidateDiskCacheEntry(code: string): void {
+  diskSizeCache.delete(code);
+}
+
 export function createProjectRoutes(
   getConfig: () => Config,
   saveConfig: (config: Config) => void

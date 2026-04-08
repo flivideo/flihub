@@ -6,6 +6,17 @@ import { copyProjectTranscript } from '../utils/clipboard';
 import { daysAgo, formatDate } from '../utils/formatting';
 import { useProjectDisk, useDeleteTrash } from '../hooks/useProjectDiskApi';
 import type { ProjectStats } from '../../../shared/types';
+// B064: Hold/restore hooks and modal
+import {
+  useHoldStatus,
+  useHoldProject,
+  useVerifyHolding,
+  useDeleteLocal,
+  useRestoreFromHolding,
+  useDeleteHolding,
+} from '../hooks/useHoldApi';
+import { HoldDeleteModal } from './HoldDeleteModal';
+import { formatBytes as formatBytesUtil } from '../utils/formatBytes';
 
 // B062: Local formatBytes — TODO: consolidate with client/src/utils/formatBytes.ts later
 function formatBytes(bytes: number): string {
@@ -78,6 +89,34 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
   // B062 Wave 2: Trash delete confirmation modal
   const [showTrashConfirm, setShowTrashConfirm] = useState(false);
   const { mutate: deleteTrash, isPending: deletingTrash } = useDeleteTrash(project?.code ?? null);
+
+  // B064: Hold modal state — tracks which target is being deleted
+  const [holdModal, setHoldModal] = useState<{ open: boolean; target: 'local' | 'holding' }>({
+    open: false,
+    target: 'local',
+  });
+
+  // B064: Hold hooks
+  const holdStatus = useHoldStatus(project?.code ?? null);
+  const holdProject = useHoldProject();
+  const verifyHolding = useVerifyHolding();
+  const deleteLocal = useDeleteLocal();
+  const restoreFromHolding = useRestoreFromHolding();
+  const deleteHolding = useDeleteHolding();
+
+  // B064: Inline dry-run result message
+  const [dryRunMessage, setDryRunMessage] = useState<string | null>(null);
+
+  // B064: Auto-trigger verify when location is 'both' and no verification exists yet
+  useEffect(() => {
+    if (
+      holdStatus.data?.location === 'both' &&
+      !holdStatus.data.verification &&
+      !verifyHolding.isPending
+    ) {
+      verifyHolding.mutate({ code: project?.code ?? '' });
+    }
+  }, [holdStatus.data?.location, holdStatus.data?.verification]);
 
   // Close on Escape key
   const handleKeyDown = useCallback(
@@ -390,12 +429,220 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
           )}
         </div>
 
+        {/* B064: SSD Hold section */}
+        <div className="border-l-2 border-warm-strong pl-3">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-[10px] font-bold uppercase tracking-wide text-warm-faint">SSD Hold</h4>
+          </div>
+
+          {/* B064: State 1 — Loading */}
+          {holdStatus.isFetching && !holdStatus.data && (
+            <p className="text-xs text-warm-muted animate-pulse">Loading...</p>
+          )}
+
+          {/* B064: State 2 — ssd-not-configured */}
+          {holdStatus.data && holdStatus.data.location === 'unknown' && (
+            <p className="text-xs text-warm-muted">SSD hold not configured</p>
+          )}
+
+          {/* B064: State 3 — relay-blocked */}
+          {holdStatus.data && holdStatus.data.relayBlocked && holdStatus.data.location !== 'unknown' && (
+            <div className="flex flex-col gap-1">
+              <p className="text-xs text-amber-700 font-medium">⚠ Relay active — clear relay before offloading</p>
+              <p className="text-[11px] text-amber-600">{formatBytesUtil(holdStatus.data.relayBytes)} in relay subfolders</p>
+            </div>
+          )}
+
+          {/* B064: State 4 — ssd-not-mounted */}
+          {holdStatus.data &&
+            !holdStatus.data.relayBlocked &&
+            holdStatus.data.location !== 'unknown' &&
+            !holdStatus.data.ssdMounted && (
+            <p className="text-xs text-warm-muted">SSD not available</p>
+          )}
+
+          {/* B064: State 5 — local-only */}
+          {holdStatus.data &&
+            !holdStatus.data.relayBlocked &&
+            holdStatus.data.location !== 'unknown' &&
+            holdStatus.data.ssdMounted &&
+            holdStatus.data.location === 'local-only' && (
+            <div className="flex flex-col gap-2">
+              <p className="text-[12px] text-warm-secondary">Location: Local only</p>
+              {dryRunMessage && (
+                <p className="text-[11px] text-warm-muted bg-surface-muted border border-warm rounded px-2 py-1">{dryRunMessage}</p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setDryRunMessage(null);
+                    holdProject.mutate({ code: project.code, dryRun: false });
+                  }}
+                  disabled={holdProject.isPending}
+                  className="flex-1 py-1.5 px-3 text-xs font-medium rounded-md border border-warm bg-surface-muted hover:bg-warm text-warm-secondary transition-colors disabled:opacity-50"
+                >
+                  {holdProject.isPending ? 'Holding...' : 'Hold on SSD'}
+                </button>
+                <button
+                  onClick={() => {
+                    holdProject.mutate(
+                      { code: project.code, dryRun: true },
+                      {
+                        onSuccess: (result) => {
+                          setDryRunMessage(result.message ?? 'Dry run complete');
+                        },
+                      }
+                    );
+                  }}
+                  disabled={holdProject.isPending}
+                  className="flex-1 py-1.5 px-3 text-xs font-medium rounded-md border border-warm bg-surface-muted hover:bg-warm text-warm-secondary transition-colors disabled:opacity-50"
+                >
+                  Dry Run
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* B064: States 6 + 7 + 8 — both (offload incomplete) */}
+          {holdStatus.data &&
+            !holdStatus.data.relayBlocked &&
+            holdStatus.data.location !== 'unknown' &&
+            holdStatus.data.ssdMounted &&
+            holdStatus.data.location === 'both' && (() => {
+            const hs = holdStatus.data!;
+            const ver = hs.verification;
+
+            // B064: State 6 — verifying (no verification result yet); mutate triggered by useEffect above
+            if (!ver) {
+              return (
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-amber-700 font-medium">⚠ Offload incomplete — space not freed yet</p>
+                  <p className="text-xs text-warm-muted flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 border-2 border-warm-muted border-t-transparent rounded-full animate-spin" />
+                    Verifying files...
+                  </p>
+                </div>
+              );
+            }
+
+            // B064: State 7 — both, verified match
+            if (ver.match) {
+              return (
+                <div className="flex flex-col gap-2">
+                  <p className="text-xs text-amber-700 font-medium">⚠ Offload incomplete — space not freed yet</p>
+                  <p className="text-[11px] text-warm-secondary">
+                    HOLDING: {ver.holdingFiles} files, {formatBytesUtil(ver.holdingBytes)} ✓ matches local
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      onClick={() => setHoldModal({ open: true, target: 'local' })}
+                      className="w-full py-1.5 px-3 text-xs font-medium rounded-md border border-red-300 bg-red-50 hover:bg-red-100 text-red-700 transition-colors"
+                    >
+                      Free {formatBytesUtil(ver.localBytes)} — Delete Local
+                    </button>
+                    <button
+                      onClick={() => setHoldModal({ open: true, target: 'holding' })}
+                      className="w-full py-1.5 px-3 text-xs font-medium rounded-md border border-warm bg-surface-muted hover:bg-warm text-warm-secondary transition-colors"
+                    >
+                      Cancel hold — Remove SSD copy
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
+            // B064: State 8 — both, verified mismatch
+            return (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-red-700 font-medium">✗ Files don't match — cannot delete local</p>
+                <p className="text-[11px] text-warm-muted">
+                  Local: {ver.localFiles} files &nbsp;|&nbsp; HOLDING: {ver.holdingFiles} files
+                </p>
+                <button
+                  onClick={() => holdProject.mutate({ code: project.code, dryRun: false })}
+                  disabled={holdProject.isPending}
+                  className="w-full py-1.5 px-3 text-xs font-medium rounded-md border border-warm bg-surface-muted hover:bg-warm text-warm-secondary transition-colors disabled:opacity-50"
+                >
+                  Re-run rsync
+                </button>
+                <p className="text-[11px] text-warm-muted">To cancel: restore from HOLDING first, or re-run rsync to fix the mismatch.</p>
+              </div>
+            );
+          })()}
+
+          {/* B064: State 9 — holding-only */}
+          {holdStatus.data &&
+            !holdStatus.data.relayBlocked &&
+            holdStatus.data.location !== 'unknown' &&
+            holdStatus.data.ssdMounted &&
+            holdStatus.data.location === 'holding-only' && (
+            <div className="flex flex-col gap-2">
+              <p className="text-[12px] text-warm-secondary">Location: HOLDING SSD (local deleted)</p>
+              {holdStatus.data.heldAt && (
+                <p className="text-[11px] text-warm-muted">Held: {formatDate(holdStatus.data.heldAt)}</p>
+              )}
+              <button
+                onClick={() => restoreFromHolding.mutate({ code: project.code })}
+                disabled={restoreFromHolding.isPending}
+                className="w-full py-1.5 px-3 text-xs font-medium rounded-md border border-warm bg-surface-muted hover:bg-warm text-warm-secondary transition-colors disabled:opacity-50"
+              >
+                {restoreFromHolding.isPending ? 'Restoring...' : 'Restore from SSD'}
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Metadata */}
         <div className="flex justify-between text-[11px] text-warm-faint">
           <span>Last modified: {formatDate(project.lastModified)}</span>
           <span>{daysAgoLabel(project.lastModified)}</span>
         </div>
       </div>
+
+      {/* B064: HoldDeleteModal — wired for delete-local and delete-holding */}
+      {holdStatus.data && holdStatus.data.verification && (
+        <HoldDeleteModal
+          isOpen={holdModal.open}
+          onClose={() => setHoldModal((s) => ({ ...s, open: false }))}
+          onConfirm={() => {
+            if (holdModal.target === 'local') {
+              deleteLocal.mutate(
+                { code: project.code },
+                {
+                  onSuccess: () => setHoldModal((s) => ({ ...s, open: false })),
+                  // onError: modal stays open, isLoading becomes false, user can retry
+                }
+              );
+            } else {
+              deleteHolding.mutate(
+                { code: project.code },
+                {
+                  onSuccess: () => setHoldModal((s) => ({ ...s, open: false })),
+                }
+              );
+            }
+          }}
+          target={holdModal.target}
+          projectCode={project.code}
+          folderName={
+            holdModal.target === 'local'
+              ? project.code
+              : (holdStatus.data.holdingPath?.split('/').pop() ?? project.code)
+          }
+          bytesFreed={
+            holdModal.target === 'local'
+              ? holdStatus.data.verification.localBytes
+              : holdStatus.data.verification.holdingBytes
+          }
+          targetPath={
+            holdModal.target === 'local'
+              ? (project.path ?? project.code)
+              : (holdStatus.data.holdingPath ?? '')
+          }
+          verification={holdStatus.data.verification}
+          isLoading={deleteLocal.isPending || deleteHolding.isPending}
+        />
+      )}
 
       {/* B062 Wave 2: Trash delete confirmation modal */}
       {showTrashConfirm && diskData && project && (
