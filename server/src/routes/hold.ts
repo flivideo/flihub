@@ -30,6 +30,19 @@ function resolveRelayDir(config: Config, code: string): string | null {
 export function createHoldRoutes(getConfig: () => Config): Router {
   const router = Router();
 
+  // B064: GET /api/projects/ssd-status
+  // Global SSD mount check — no project code needed. Used by header indicator.
+  router.get('/ssd-status', async (_req: Request, res: Response) => {
+    const config = getConfig();
+    if (!config.holdingPath) {
+      res.json({ success: true, ssdMounted: false, configured: false });
+      return;
+    }
+    const holdingRoot = expandPath(config.holdingPath);
+    const ssdMounted = await checkSsdMounted(holdingRoot);
+    res.json({ success: true, ssdMounted, configured: true });
+  });
+
   // B064: GET /api/projects/:code/hold/status
   // Returns current hold status: location, SSD mount, relay bytes
   router.get('/:code/hold/status', async (req: Request, res: Response) => {

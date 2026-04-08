@@ -38,9 +38,7 @@ export function ProjectListToolbar({
   diskScanPending = false,
 }: ProjectListToolbarProps) {
   return (
-    <div className="flex flex-col gap-2 px-4 py-3 bg-surface border-b border-warm">
-      {/* Row 1: Search + stage pills + preset buttons */}
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 px-4 py-3 bg-surface border-b border-warm">
         {/* Search input */}
         <input
           type="text"
@@ -111,13 +109,12 @@ export function ProjectListToolbar({
               </button>
             </>
           )}
-        </div>
-      </div>
 
-      {/* Row 2: Result count */}
-      <div className="text-[11px] text-warm-faint">
-        {filteredCount} of {totalCount} projects
-      </div>
+          {/* Count inline, after all controls */}
+          <span className="text-[11px] text-warm-faint ml-2 self-center whitespace-nowrap">
+            {filteredCount} of {totalCount}
+          </span>
+        </div>
     </div>
   );
 }

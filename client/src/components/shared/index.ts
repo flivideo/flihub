@@ -21,6 +21,7 @@ export { UndoToast } from './UndoToast';
 export type { UndoToastProps } from './UndoToast';
 export { SyncIndicator } from './SyncIndicator';
 export { RelayIndicator } from './RelayIndicator';
+export { SsdIndicator } from './SsdIndicator';
 export { EditableFileRow } from './EditableFileRow';
 export type { EditableFileRowProps } from './EditableFileRow';
 export { BatchToolbar } from './BatchToolbar';

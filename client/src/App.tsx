@@ -32,7 +32,7 @@ import { ManagePanel } from './components/ManagePanel';
 // B045: PoemWuiPage moved into ManagePanel as AWB tool
 import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
-import { OpenFolderButton, SyncIndicator, RelayIndicator } from './components/shared';
+import { OpenFolderButton, SyncIndicator, RelayIndicator, SsdIndicator } from './components/shared';
 import { HeaderDropdown } from './components/HeaderDropdown';
 import { RecentlyNamedStrip } from './components/RecentlyNamedStrip';
 import { useOpenFolder } from './hooks/useOpenFolder';
@@ -500,6 +500,7 @@ function App() {
                 changeTab('export');
                 setManageTool('relay');
               }} />
+              <SsdIndicator onNavigateToProjects={() => changeTab('projects')} />
               <div className="w-px h-5 bg-warm-divider" />
             </div>
             {/* FR-69: Settings dropdown */}

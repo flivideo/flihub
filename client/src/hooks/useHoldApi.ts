@@ -4,12 +4,24 @@ import type { HoldStatus, HoldOperationResult } from '../../../shared/types';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { fetchApi } from './useApi';
 
+// B064: Global SSD mount check — used by header indicator, no project code needed
+export function useSsdStatus() {
+  return useQuery({
+    queryKey: ['ssd-status'],
+    queryFn: () =>
+      fetchApi<{ success: boolean; ssdMounted: boolean; configured: boolean }>('/api/projects/ssd-status'),
+    staleTime: 30_000,
+    refetchInterval: 60_000, // Refresh every minute — drive might be plugged/unplugged
+  });
+}
+
 // B064: Hold status — includes verification when location === 'both'
 export function useHoldStatus(code: string | null) {
   return useQuery({
     queryKey: QUERY_KEYS.holdStatus(code ?? ''),
     queryFn: () =>
-      fetchApi<HoldStatus>(`/api/projects/${code}/hold/status`),
+      fetchApi<{ success: boolean; data: HoldStatus }>(`/api/projects/${code}/hold/status`)
+        .then(res => res.data),
     enabled: !!code,
     staleTime: 30_000,
   });
