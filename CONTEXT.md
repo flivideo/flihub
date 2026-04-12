@@ -1,5 +1,5 @@
 ---
-generated: 2026-04-05
+generated: 2026-04-08
 generator: system-context
 status: snapshot
 sources:
@@ -18,6 +18,7 @@ sources:
   - server/src/routes/relay.ts
   - server/src/routes/sync.ts
   - server/src/routes/manage.ts
+  - server/src/routes/transcriptions.ts
   - client/src/App.tsx
   - client/src/components/ProjectDrawer.tsx
   - client/src/components/ProjectsPanel.tsx
@@ -25,6 +26,11 @@ sources:
   - client/src/constants/stages.ts
   - client/src/utils/projectFilters.ts
   - docs/backlog.md
+  - docs/handover-2026-04-08.md
+  - docs/prd/fr-149-stage-system-changes.md
+  - docs/prd/fr-150-groq-transcription.md
+  - docs/prd/fr-151-transcribe-all-slideout.md
+  - docs/prd/fr-152-safe-project-delete.md
   - context.globs.json
 regenerate: "Run /system-context in the repo root"
 ---
@@ -38,7 +44,7 @@ Manages the full lifecycle of video recordings for a solo content creator — fr
 
 - **Recording** — A `.mov` file named with the strict convention `{chapter}-{sequence}-{name}-{tags}.mov`. The filename *is* the metadata: chapter (2 digits), sequence (auto-incrementing integer), name (kebab-case), and optional uppercase tags (e.g. `CTA`, `SKOOL`). Renaming the file *is* categorization — there is no separate metadata store. Recordings also carry derived state: `safe` (protected from rename/delete), `parked` (set aside for later), and annotation text, all persisted in a sidecar `.flihub-state.json` file per project.
 
-- **Project** — A folder on disk with a fixed internal structure (`recordings/`, `recording-shadows/`, `recording-transcripts/`, `assets/images/`, `assets/thumbs/`, `inbox/raw/`, `inbox/dataset/`, `final/`, `s3-staging/`). Projects move through a lifecycle stage — `planning → recording → first-edit → second-edit → review → ready-to-publish → published → archived`. Stage is inferred from filesystem heuristics unless explicitly overridden in `server/config.json`. Each project exposes `ProjectStats` including counts, transcript coverage, a `hasFinal` flag, and health signals used by the drawer and smart presets.
+- **Project** — A folder on disk with a fixed internal structure (`recordings/`, `recording-shadows/`, `recording-transcripts/`, `assets/images/`, `assets/thumbs/`, `inbox/raw/`, `inbox/dataset/`, `final/`, `s3-staging/`). Projects move through a lifecycle stage — `planning → recording → first-edit → second-edit → ready-to-publish → published → archived`. The `review` stage exists as a valid type for backward compatibility but is excluded from the default pipeline (FR-149). Two additional end-state stages exist outside the main pipeline: `shelved` (project abandoned, never published — maps to `youtube-FAILS` folder on T7 SSD) and `remix` (project being repurposed into new long-form content — status-only). Stage is inferred from filesystem heuristics unless explicitly overridden in `server/config.json`. Each project exposes `ProjectStats` including counts, transcript coverage, a `hasFinal` flag, and health signals used by the drawer and smart presets.
 
 - **Relay** — A shared directory on a local network path used to move files between the creator machine and remote editor machines. Each project in relay has three subfolders: `recordings` (source footage), `edit-1st` (first edit output), `edit-2nd` (second edit output). Sync status per subfolder is computed by comparing relay file counts against local file counts: `synced`, `ahead`, `behind`, `diverged`, `local-only`, or `relay-only`. The relay is *bidirectional* — creator pushes recordings, editors push back edit files. An in-memory activity log (ring buffer of 50 events) tracks push/collect/promote actions for the activity feed. Divergence detection compares local vs relay per-subfolder with `localOnly`/`relayOnly` file lists and a `SyncDirection` (synced/outgoing/incoming/both).
 
@@ -56,7 +62,7 @@ Manages the full lifecycle of video recordings for a solo content creator — fr
 3. The file appears as a card in the **Incoming** tab. The `RecentlyNamedStrip` shows recent activity across the top.
 4. Creator selects chapter and name from `NamingControls` — the UI suggests next chapter/sequence based on existing recordings. Common names (e.g. `intro`, `demo`) are pre-filtered by chapter range from config.
 5. Creator clicks Rename. The server moves the file to `recordings/` under the active project, applying the `{chapter}-{sequence}-{name}-{tags}.mov` convention.
-6. Auto-transcription is queued: the server spawns a Whisper transcription job and deposits `.txt` and `.srt` files in `recording-transcripts/`.
+6. Auto-transcription is queued: the server spawns MLX Whisper via `~/.pyenv/shims/mlx_whisper` (the pyenv shim — version-agnostic) and deposits `.txt`, `.srt`, and `.json` files in `recording-transcripts/`.
 7. A low-resolution shadow file is generated in `recording-shadows/` for editors to preview before downloading the full `.mov`.
 
 ### Editor collaboration via relay
@@ -71,13 +77,13 @@ Manages the full lifecycle of video recordings for a solo content creator — fr
 1. Creator navigates to **Projects** tab to see all projects under `projectsRootDirectory`.
 2. A toolbar at the top provides a text search (filters by code or extracted name), stage filter pills (one per stage — toggle any combination), and smart preset buttons: **Needs Attention** (has recordings but no transcripts), **Dead** (≤2 files, 30+ days inactive), **Ready to Edit** (all transcripts done, still in recording stage). The result count ("X of Y projects") updates live.
 3. Projects are displayed in a filterable table sorted by stage and priority. Pinned (starred) projects float to the top.
-4. Creator clicks a project row to open the **Project Drawer** — a 40%-width slide-out panel from the right edge. The drawer shows: a stats grid (recordings, chapters, transcript %, images, thumbs, shadows), a progress checklist (has recordings / has transcripts / has chapters / has final video), a health assessment sentence computed from `getHealthAssessment()`, and two quick action buttons (Open in Finder, Copy Transcript).
-5. Stage overrides are persisted in `server/config.json` under `projectStageOverrides` (keyed by project code). The drawer allows manual override when the filesystem heuristic is wrong.
+4. Creator clicks a project row to open the **Project Drawer** — a 40%-width slide-out panel from the right edge. The drawer shows: a stats grid (recordings, chapters, transcript %, images, thumbs, shadows), a progress checklist (has recordings / has transcripts / has chapters / has final video), a health assessment sentence computed from `getHealthAssessment()`, and quick action buttons (Open in Finder, Copy Transcript, and Transcribe All when transcripts < 100%).
+5. Stage overrides are persisted in `server/config.json` under `projectStageOverrides` (keyed by project code). The drawer allows manual override when the filesystem heuristic is wrong. Abandoned projects can be set to `shelved`; projects being repurposed go to `remix`.
 6. The active project (used by Recordings, Transcriptions, Assets, etc.) is set by clicking "Set as active" in the drawer.
 
 ### Transcription and transcript handoff
-1. After a recording is renamed, transcription is queued automatically (or triggered manually via the Transcriptions tab).
-2. Whisper produces `.txt` and `.srt` files in `recording-transcripts/`.
+1. After a recording is renamed, transcription is queued automatically (or triggered manually via the Transcriptions tab or via "Transcribe All" in the project slide-out — FR-151).
+2. MLX Whisper (running on Apple Silicon M4 Neural Engine, ~0.3–0.5× real-time) produces `.txt`, `.srt`, and `.json` files in `recording-transcripts/`.
 3. Creator opens the recording row in Recordings tab — one click copies the transcript to clipboard or sends it to the POEM WUI workflow intake URL (configured in `poemWuiUrl`).
 4. SRT files can be copied independently (FR-143) for subtitle use.
 5. The **Copy Transcript** button in the Projects drawer calls `/api/query/projects/{code}/transcript/text` and copies the combined project transcript to clipboard with character-count feedback.
@@ -92,13 +98,17 @@ Manages the full lifecycle of video recordings for a solo content creator — fr
 
 - **Machine Role as primary UI branch**: Rather than one UI that hides/shows features via permissions, FliHub treats machine role as a first-class architectural concept that determines the visible surface. A `recorder` instance and an `editor` instance are effectively different apps sharing the same codebase. *Why*: The creator and editor workflows are distinct enough that combining them in one view creates confusion and clutter.
 
-- **Feature references (FR-xxx/NFR-xxx) in code comments**: Every non-trivial implementation references a requirement number in `docs/prd/`. This creates a bidirectional link between code and spec. *Why*: With 148+ features across 18 months, it's impossible to reconstruct "why does this exist?" from code alone. The FR number is the canonical answer.
+- **Feature references (FR-xxx/NFR-xxx) in code comments**: Every non-trivial implementation references a requirement number in `docs/prd/`. This creates a bidirectional link between code and spec. *Why*: With 152+ features across 18 months, it's impossible to reconstruct "why does this exist?" from code alone. The FR number is the canonical answer.
 
 - **Relay via rsync over shared filesystem**: File sync between machines uses rsync to a shared directory (e.g. `~/relay/flihub-appydave`). *Alternative*: S3, SFTP, or a custom sync daemon. *Why rejected*: The relay directory already exists as a local mount on the creator machine. rsync provides native diff, preview, and atomic copy with no additional infrastructure.
 
 - **Sync Hub uses per-repo locks**: The B044 Sync Hub wraps every git operation in a per-repo lock to prevent concurrent fetch/pull/push race conditions. *Alternative*: Queue operations or let git handle its own locking. *Why*: Git's native lockfile produces unhelpful errors when two operations collide. An async lock in the Node process is lighter and provides cleaner error messages.
 
 - **Pure filter functions extracted from components**: `client/src/utils/projectFilters.ts` contains `filterProjects()` as a standalone pure function separate from `ProjectsPanel`. *Alternative*: Inline logic inside the component. *Why*: The filter logic (needs-attention, dead, ready-to-edit presets) involves date calculations and multi-field comparisons that are easy to mis-test in a component context. Extraction allows the timestamp to be injected (`now` parameter), making preset filters unit-testable without mocking `Date.now()`.
+
+- **Stage pipeline compaction (FR-149)**: `review` was removed from the default stage pipeline (`DEFAULT_PROJECT_STAGES` and `STAGE_ORDER`) because it was rarely used — most videos move directly from second-edit to ready-to-publish. The type union retains `review` for backward compatibility (projects still set to `review` display correctly). `shelved` and `remix` were added after `archived` to handle end-of-life states (abandoned vs. repurposed) that didn't fit the linear pipeline. *Alternative*: Keep `review` and add shelved/remix inline. *Why rejected*: Adding more stages to an already 9-stage pipeline increases cognitive load; grouping the non-standard end-states at the bottom of the dropdown (visually separated) reduces noise.
+
+- **MLX Whisper retained over Groq (FR-150 deferred)**: When transcription broke in April 2026 (binary path issue), the fix was updating the hardcoded path to use the pyenv shim (`~/.pyenv/shims/mlx_whisper`). Groq was evaluated as an alternative (no local binary, OpenAI-compatible API), but MLX Whisper on Apple Silicon M4 Neural Engine is genuinely fast (~0.3–0.5× real-time) and free. *Why deferred*: The path fix resolved the immediate problem; Groq migration would require ffmpeg audio extraction, API key management, and rewriting the transcription worker with no speed or quality gain for the current setup.
 
 ## Non-obvious Constraints
 
@@ -107,6 +117,8 @@ Manages the full lifecycle of video recordings for a solo content creator — fr
 - **Tag parsing ignores pure numbers** — A tag like `CTA` or `V2` is valid (must contain at least one uppercase letter). A pure number like `2` or `555` appended to a filename is NOT parsed as a tag — it becomes part of the name. This is intentional per NFR-65 and is a frequent source of confusion when working with files that end in version numbers.
 
 - **Stage inference is heuristic, not authoritative** — Project stage is guessed from the filesystem structure (does `final/` have files? does `recordings/` have recordings?). The heuristic is wrong for projects in transition. Manual overrides via `projectStageOverrides` in config are the escape valve, but they accumulate silently over time and are never auto-cleared.
+
+- **`review` is a valid stage type but absent from the default pipeline** — `review` still exists in the `ProjectStage` union and `STAGE_LABELS` for backward compatibility. Projects previously set to `review` will display correctly. However, it no longer appears in the stage dropdown or filter pills. If a project is stuck showing `review` and the dropdown won't offer it, you must set the override directly in `config.json` or clear the override to let auto-detection run.
 
 - **Rename is blocked while transcription is active** — If a transcription job is running or queued for a recording, renaming that file will fail. The `getActiveJob()` and `getQueue()` checks in `routes/index.ts` enforce this. The UI shows a warning, but there's no notification when the block lifts — the creator must retry manually.
 
@@ -119,6 +131,8 @@ Manages the full lifecycle of video recordings for a solo content creator — fr
 - **Relay collect is blocked if project doesn't exist locally** — FR-147 enforces that an editor must create the project folder manually or via the Folders tool before collecting from relay. This prevents accidental creation of malformed project structures.
 
 - **Sync Hub fetch can silently fail** — The `getChannelStatus()` function tries `git fetch --quiet` with a 15-second timeout but swallows the error and continues with local state. This means the sync status can be stale if the network is down — the UI shows the last known state, not a "network error" warning.
+
+- **MLX Whisper path must point to the pyenv shim** — The binary path is configured as `~/.pyenv/shims/mlx_whisper`. Do NOT hardcode a version-specific path (e.g. `~/.pyenv/versions/3.14.3/bin/mlx_whisper`) — this breaks whenever the active Python version changes. The shim is version-agnostic and auto-resolves to whatever pyenv has active.
 
 ## Expert Mental Model
 
@@ -134,17 +148,22 @@ Manages the full lifecycle of video recordings for a solo content creator — fr
 
 - **The Manage panel is the power-user surface** — Manage consolidates tools that were previously scattered (Export, S3, Relay, Rename, Folders, AWB/POEM). An expert navigates via the tool sidebar rather than tabbing. The manage panel includes batch undo for bulk rename/chapter operations via a single `lastBatchMapping` stored in memory on the server.
 
-- **The Projects drawer is a read-only diagnostic, not an edit surface** — The drawer's health assessment, checklist, and stats are computed from `ProjectStats` (a server snapshot). Quick actions (Open in Finder, Copy Transcript) go directly to server APIs. But stage changes and active project selection route through separate `useUpdateProjectStage` and config mutations.
+- **A visual UI tour exists at `.screenshots/flihub-main/tour.yml`** — 17 annotated screenshots covering every tab and panel. Read this when doing UI work rather than navigating the app manually. Screenshots are at `.screenshots/flihub-main/*.png`. A full build spec and design system reference is at `docs/prd/flihub-baku-spec.md`.
+
+- **The Projects drawer is a read-only diagnostic, not an edit surface** — The drawer's health assessment, checklist, and stats are computed from `ProjectStats` (a server snapshot). Quick actions (Open in Finder, Copy Transcript, Transcribe All) go directly to server APIs. But stage changes and active project selection route through separate `useUpdateProjectStage` and config mutations.
+
+- **T7 SSD has three distinct holding areas** — `youtube-HOLDING` is the general offload/hold destination for projects temporarily off disk. `youtube-PUBLISHED` is for archived published videos. `youtube-FAILS` is specifically for shelved (abandoned) projects. These are separate folders and the stage/offload routing must match: `shelved` → `youtube-FAILS`, `archived` (post-publish) → `youtube-PUBLISHED`, `hold` → `youtube-HOLDING`.
 
 ## Scope Limits
 
 - Does NOT edit video — video editing happens in external tools (DaVinci Resolve, Gling). FliHub manages the filesystem around the edit, not the edit itself.
-- Does NOT perform transcription — Whisper is an external process. FliHub queues transcription jobs and reads the output files. If Whisper is not installed or misconfigured, transcription silently fails to queue.
+- Does NOT perform transcription — Whisper is an external process spawned via the pyenv shim. FliHub queues transcription jobs and reads the output files. If mlx_whisper is not installed or the shim path is wrong, transcription fails with `spawn ENOENT`.
 - Does NOT host or stream video — all files are local disk paths. The server serves video files for in-browser preview only; there is no CDN or media server.
 - Does NOT publish to YouTube or other platforms — FliHub's export tools prepare files in `s3-staging/` and sync to S3, but the final YouTube upload is manual. The "ready-to-publish" stage is the end of FliHub's involvement.
 - Does NOT auto-create relay project folders — if a project does not exist locally on an editor machine, `collect` is blocked (FR-147). The editor must create the project folder manually or via the Folders tool before collecting.
 - Does NOT support Windows in practice — cross-platform path support (FR-89) exists for Windows path display but is only partially implemented. Jan and Mary run macOS; FliHub is a macOS-first tool.
 - Does NOT resolve relay merge conflicts — the Sync Hub handles git merge conflicts for code, but relay (rsync-based) has no merge capability. `diverged` status requires manual intervention.
+- Does NOT permanently delete project directories via any current UI (FR-152 pending) — safe project deletion with confirmation modal is specced but not yet implemented. Currently, deletion must be done manually via Finder or Terminal.
 
 ## Failure Modes
 
@@ -165,3 +184,5 @@ Manages the full lifecycle of video recordings for a solo content creator — fr
 - **Copy Transcript silent empty result**: The `copyProjectTranscript()` utility fetches `/api/query/projects/{code}/transcript/text`. If no transcript files exist, the endpoint returns an empty body — the function shows a toast error "No transcript content available" but does not throw. Recognition: Copy Transcript button triggers an error toast even though recordings exist. Fix: check that transcription has actually run (Transcriptions tab shows `.txt` files in `recording-transcripts/`).
 
 - **Batch undo is single-shot and in-memory**: The manage panel stores `lastBatchMapping` for undo of bulk rename/chapter operations, but only the most recent operation. A second bulk operation overwrites the undo buffer. Server restart clears it entirely. Recognition: undo button does nothing or reverts the wrong operation. Fix: there is no fix — this is by design for simplicity. Use git to recover from catastrophic renames.
+
+- **Transcription spawn ENOENT — MLX binary not found**: If the mlx_whisper binary cannot be found at `~/.pyenv/shims/mlx_whisper`, transcription fails silently with a `spawn ENOENT` error shown in the UI as "Failed to start Whisper: spawn...". Recognition: all queued transcription jobs immediately error out. Fix: verify `mlx_whisper` is installed in the active pyenv Python environment (`which mlx_whisper` or `mlx_whisper --version`). The shim at `~/.pyenv/shims/mlx_whisper` should resolve to the installed binary. If not, reinstall: `pip install mlx-whisper`.

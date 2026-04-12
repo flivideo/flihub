@@ -1,0 +1,6 @@
+tours:
+  - name: flihub-main
+    dir: flihub-main/
+    title: "FliHub — Main UI Tour"
+    captured: "2026-04-08"
+    screenshots: 16

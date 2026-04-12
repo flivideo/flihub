@@ -4,9 +4,11 @@
 // FR-34 Enhancement: LLM-based chapter verification
 // FR-59: Inbox management
 // B062: Disk space observability
+// FR-152: Safe project deletion
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
+import type { Server as SocketServer } from 'socket.io';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { safeDelete } from '../utils/safeDelete.js';
 import { resolveProjectCode } from '../utils/projectResolver.js';
@@ -49,7 +51,8 @@ export function invalidateDiskCacheEntry(code: string): void {
 
 export function createProjectRoutes(
   getConfig: () => Config,
-  saveConfig: (config: Config) => void
+  saveConfig: (config: Config) => void,
+  io?: SocketServer
 ): Router {
   const router = Router();
 
@@ -186,6 +189,7 @@ export function createProjectRoutes(
     const { stage } = req.body;
 
     // FR-80: Valid stages from the new workflow model + 'auto' for reset
+    // FR-149: Added shelved and remix; review kept for backward compat
     const validStages = [
       'planning',
       'recording',
@@ -195,6 +199,8 @@ export function createProjectRoutes(
       'ready-to-publish',
       'published',
       'archived',
+      'shelved',
+      'remix',
       'auto',
     ];
 
@@ -627,6 +633,92 @@ export function createProjectRoutes(
       res.json(result);
     } catch (error) {
       res.status(500).json({ success: false, deleted: [], error: String(error) });
+    }
+  });
+
+  // FR-152: DELETE /api/projects/:code — Permanently delete a project's local directory
+  // Guard 1: confirmationCode must match project code exactly
+  // Guard 2: relay directory must be empty or non-existent
+  router.delete('/:code', async (req: Request, res: Response) => {
+    const code = queryString(req.params.code);
+    const { confirmationCode } = req.body as { confirmationCode?: string };
+
+    // FR-152: Guard 0 — validate code format
+    if (!code || /[/\\]/.test(code) || code.includes('..')) {
+      res.status(400).json({ success: false, error: 'Invalid project code' });
+      return;
+    }
+
+    // FR-152: Guard 1 — confirmation code must match exactly
+    if (confirmationCode !== code) {
+      res.status(400).json({ success: false, error: 'Confirmation code does not match project code' });
+      return;
+    }
+
+    const config = getConfig();
+
+    if (!config.projectsRootDirectory) {
+      res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+      return;
+    }
+
+    const projectsRoot = expandPath(config.projectsRootDirectory);
+    const projectDir = path.join(projectsRoot, code);
+
+    // FR-152: Guard — cannot delete the currently active project (watchers point to it)
+    if (config.projectDirectory) {
+      const activeProjectDir = expandPath(config.projectDirectory);
+      if (path.resolve(projectDir) === path.resolve(activeProjectDir)) {
+        res.status(400).json({
+          success: false,
+          error: 'Cannot delete the currently active project — switch to a different project first',
+        });
+        return;
+      }
+    }
+
+    // FR-152: Guard — project directory must exist
+    if (!(await fs.pathExists(projectDir))) {
+      res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      return;
+    }
+
+    // FR-152: Guard 2 — relay directory must be empty or non-existent
+    if (config.relayEnabled && config.relayDirectory) {
+      const relayProjectDir = path.join(expandPath(config.relayDirectory), code);
+      const relayExists = await fs.pathExists(relayProjectDir);
+      if (relayExists) {
+        // Check relay subfolders for files
+        const relaySubdirs = ['recordings', 'edit-1st', 'edit-2nd'];
+        let relayFileCount = 0;
+        for (const sub of relaySubdirs) {
+          const subDir = path.join(relayProjectDir, sub);
+          if (await fs.pathExists(subDir)) {
+            const entries = await fs.readdir(subDir);
+            relayFileCount += entries.length;
+          }
+        }
+        if (relayFileCount > 0) {
+          res.status(400).json({
+            success: false,
+            error: `Relay directory has ${relayFileCount} file(s) — clear relay before deleting project`,
+          });
+          return;
+        }
+      }
+    }
+
+    try {
+      await fs.remove(projectDir);
+      // FR-152: Invalidate disk cache entry after deletion
+      diskSizeCache.delete(code);
+      // FR-152: Notify clients that the project list has changed
+      io?.emit('projects:changed');
+      console.log(`[FR-152] Permanently deleted project: ${projectDir}`);
+      res.json({ success: true, deleted: projectDir });
+    } catch (error) {
+      console.error(`[FR-152] Failed to delete project ${code}:`, error);
+      res.status(500).json({ success: false, error: 'Failed to delete project directory' });
     }
   });
 

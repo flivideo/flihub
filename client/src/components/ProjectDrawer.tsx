@@ -6,6 +6,8 @@ import { copyProjectTranscript } from '../utils/clipboard';
 import { daysAgo, formatDate } from '../utils/formatting';
 import { useProjectDisk, useDeleteTrash } from '../hooks/useProjectDiskApi';
 import type { ProjectStats } from '../../../shared/types';
+// FR-151: Transcribe All hook
+import { useTranscribeAll } from '../hooks/useTranscriptionsApi';
 // B064: Hold/restore hooks and modal
 import {
   useHoldStatus,
@@ -17,6 +19,9 @@ import {
 } from '../hooks/useHoldApi';
 import { HoldDeleteModal } from './HoldDeleteModal';
 import { formatBytes as formatBytesUtil } from '../utils/formatBytes';
+// FR-152: Safe project deletion
+import { useDeleteProject } from '../hooks/useProjectsApi';
+import { ProjectDeleteModal } from './ProjectDeleteModal';
 
 // B062: Local formatBytes — TODO: consolidate with client/src/utils/formatBytes.ts later
 function formatBytes(bytes: number): string {
@@ -107,6 +112,14 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
   // B064: Inline dry-run result message
   const [dryRunMessage, setDryRunMessage] = useState<string | null>(null);
 
+  // FR-151: Transcribe All — mutation + inline feedback state
+  const transcribeAll = useTranscribeAll();
+  const [transcribeQueued, setTranscribeQueued] = useState<string | null>(null);
+
+  // FR-152: Safe project deletion state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const deleteProject = useDeleteProject();
+
   // B064: Auto-trigger verify when location is 'both' and no verification exists yet
   useEffect(() => {
     if (
@@ -118,12 +131,12 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
     }
   }, [holdStatus.data?.location, holdStatus.data?.verification]);
 
-  // Close on Escape key
+  // Close on Escape key — but not when the delete modal is open (modal handles its own Escape)
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !showDeleteModal) onClose();
     },
-    [onClose]
+    [onClose, showDeleteModal]
   );
 
   useEffect(() => {
@@ -261,6 +274,35 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
               Copy Transcript
             </button>
           </div>
+          {/* FR-151: Transcribe All — only show when there are recordings and transcripts are incomplete */}
+          {project.totalFiles > 0 && project.transcriptPercent < 100 && (
+            <div className="mt-2 flex flex-col gap-1">
+              <button
+                onClick={() => {
+                  setTranscribeQueued(null);
+                  transcribeAll.mutate(
+                    { scope: 'project' },
+                    {
+                      onSuccess: (result) => {
+                        setTranscribeQueued(
+                          result.queuedCount > 0
+                            ? `Queued ${result.queuedCount} file${result.queuedCount === 1 ? '' : 's'}`
+                            : 'All files already queued or transcribed'
+                        );
+                      },
+                    }
+                  );
+                }}
+                disabled={transcribeAll.isPending}
+                className="w-full py-1.5 px-3 text-xs font-medium rounded-md border border-warm bg-surface-muted hover:bg-warm text-warm-secondary transition-colors disabled:opacity-50"
+              >
+                {transcribeAll.isPending ? 'Queuing...' : 'Transcribe All'}
+              </button>
+              {transcribeQueued && (
+                <p className="text-[11px] text-warm-muted text-center">{transcribeQueued}</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* B062: Disk Usage section — left border separates it visually without font changes */}
@@ -597,6 +639,17 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
           )}
         </div>
 
+        {/* FR-152: Danger Zone — visually separated with red-tinted border */}
+        <div className="border border-red-200 rounded-lg p-3 bg-red-50/50">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-red-400 mb-2">Danger Zone</div>
+          <button
+            onClick={() => { deleteProject.reset(); setShowDeleteModal(true); }}
+            className="w-full py-1.5 px-3 text-xs font-medium rounded-md border border-red-200 bg-surface hover:bg-red-50 text-red-600 transition-colors text-center"
+          >
+            Delete Project
+          </button>
+        </div>
+
         {/* Metadata */}
         <div className="flex justify-between text-[11px] text-warm-faint">
           <span>Last modified: {formatDate(project.lastModified)}</span>
@@ -646,6 +699,33 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
               ? (deleteLocal.error instanceof Error ? deleteLocal.error.message : 'Delete failed')
               : deleteHolding.error
               ? (deleteHolding.error instanceof Error ? deleteHolding.error.message : 'Delete failed')
+              : null
+          }
+        />
+      )}
+
+      {/* FR-152: ProjectDeleteModal — permanently delete local project directory */}
+      {showDeleteModal && (
+        <ProjectDeleteModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={(confirmationCode) => {
+            deleteProject.mutate(
+              { code: project.code, confirmationCode },
+              {
+                onSuccess: () => {
+                  setShowDeleteModal(false);
+                  onClose();
+                },
+              }
+            );
+          }}
+          project={project}
+          diskBytes={diskData?.total}
+          isLoading={deleteProject.isPending}
+          errorMessage={
+            deleteProject.error
+              ? (deleteProject.error instanceof Error ? deleteProject.error.message : 'Delete failed')
               : null
           }
         />

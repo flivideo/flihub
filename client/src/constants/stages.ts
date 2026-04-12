@@ -53,15 +53,31 @@ export const STAGE_DISPLAY: Record<
     text: 'text-warm-secondary',
     description: 'Completed and archived',
   },
+  // FR-149: Shelved — abandoned projects that were never published
+  shelved: {
+    label: 'Shelved',
+    bg: 'bg-red-100',
+    text: 'text-red-700',
+    description: 'Abandoned — never published',
+  },
+  // FR-149: Remix — projects being repackaged into new content
+  remix: {
+    label: 'Remix',
+    bg: 'bg-rose-100',
+    text: 'text-rose-700',
+    description: 'Being repackaged into new content',
+  },
 };
 
+// FR-149: 'review' removed from pill row (kept in STAGE_DISPLAY for backward compat); 'shelved' and 'remix' added after 'archived'
 export const STAGE_ORDER: ProjectStage[] = [
   'planning',
   'recording',
   'first-edit',
   'second-edit',
-  'review',
   'ready-to-publish',
   'published',
   'archived',
+  'shelved', // FR-149: Abandoned — never published
+  'remix',   // FR-149: Being repackaged into new content
 ];

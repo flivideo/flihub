@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
-import { findAllSrts, loadBrandConfig, buildFliHubChapters, firstWords } from '../utils/poemWuiUtils.js';
+import { findAllSrts, loadBrandConfig, buildFliHubChapters, firstWords, BUNDLED_BRAND_CONFIG } from '../utils/poemWuiUtils.js';
 
 export { firstWords };
 
@@ -185,6 +185,39 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       res.json({ ok: true });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error) });
+    }
+  });
+
+  // GET /api/poem-wui/brand-config — return raw brand-config.json for editing
+  router.get('/brand-config', async (req, res) => {
+    try {
+      const config = getConfig();
+      const candidates = config.brandConfigPath
+        ? [config.brandConfigPath, BUNDLED_BRAND_CONFIG]
+        : [BUNDLED_BRAND_CONFIG];
+      for (const p of candidates) {
+        try {
+          const raw = await fs.readFile(p, 'utf-8');
+          return res.json({ success: true, data: JSON.parse(raw), path: p });
+        } catch (err) {
+          if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+        }
+      }
+      res.json({ success: false, error: 'Brand config file not found' });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  // POST /api/poem-wui/brand-config — write updated brand-config.json
+  router.post('/brand-config', async (req, res) => {
+    try {
+      const config = getConfig();
+      const targetPath = config.brandConfigPath || BUNDLED_BRAND_CONFIG;
+      await fs.writeFile(targetPath, JSON.stringify(req.body, null, 2), 'utf-8');
+      res.json({ success: true, path: targetPath });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
     }
   });
 

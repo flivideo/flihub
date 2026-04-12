@@ -22,10 +22,6 @@ let activeJob: TranscriptionJob | null = null;
 let recentJobs: TranscriptionJob[] = []; // Keep last 5
 let activeProcess: ChildProcess | null = null;
 
-// Config (could move to server config.json in future)
-const WHISPER_BINARY = '~/.pyenv/versions/3.14.3/bin/mlx_whisper';
-const WHISPER_MODEL = 'mlx-community/whisper-large-v3-turbo';
-const WHISPER_LANGUAGE = 'en';
 
 function generateJobId(): string {
   return `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -124,7 +120,11 @@ export function createTranscriptionRoutes(
     const transcriptsDir = getTranscriptsDirFromVideoPath(activeJob.videoPath);
     fs.ensureDirSync(transcriptsDir);
 
-    const whisperBinary = expandPath(WHISPER_BINARY);
+    // B036: Read Whisper settings from config; fall back to defaults if not set
+    const config = getConfig();
+    const whisperBinary = expandPath(config.whisperBinary || '~/.pyenv/shims/mlx_whisper');
+    const whisperModel = config.whisperModel || 'mlx-community/whisper-large-v3-turbo';
+    const whisperLanguage = config.whisperLanguage || 'en';
     const videoPath = activeJob.videoPath;
 
     console.log(`Starting transcription: ${activeJob.videoFilename}`);
@@ -148,9 +148,9 @@ export function createTranscriptionRoutes(
     activeProcess = spawn(whisperBinary, [
       videoPath,
       '--model',
-      WHISPER_MODEL,
+      whisperModel,
       '--language',
-      WHISPER_LANGUAGE,
+      whisperLanguage,
       '--output-format',
       'all',
       '--output-dir',
@@ -236,7 +236,7 @@ export function createTranscriptionRoutes(
               transcriptionDurationSec,
               ratio,
               fileSizeBytes: videoFileSizeBytes,
-              model: WHISPER_MODEL,
+              model: whisperModel,
               success: true,
             });
           })

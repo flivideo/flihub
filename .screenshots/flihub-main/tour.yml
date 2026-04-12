@@ -1,0 +1,88 @@
+base_url: http://localhost:5100
+output_dir: .screenshots/flihub-main
+
+routes:
+  - url: /
+    name: incoming
+    title: "Incoming — Naming Template"
+    description: "The default landing tab. Shows a Naming Template form with Chapter (01), Seq (1), Name, and Tags fields — the live filename preview updates as you type (e.g. '01-1-intro.mov'). Below is the Incoming Files panel which watches for new .mov files dropped by Ecamm Live; currently empty with 'No pending files' state. The active project is still loading (footer shows 'Project: Loading...'). The header shows FliHub branding with Code, Project, and Relay status indicators."
+
+  - url: /#recordings
+    name: recordings
+    title: "Recordings — Project Recordings List"
+    description: "The core workspace. Shows all 53 recordings for project 'b66-context-engineered-html-art' grouped by 14 chapters (01 Intro through 14 Outro). Each chapter row shows the chapter number, label, file count, and total duration. Individual recording rows show filename, size, date modified, and Safe/Park action buttons. Header indicators show active relay sync status and file-changed count. Total duration 30:51 shown at the bottom. Sorting/filter controls visible at the top."
+
+  - url: /#watch
+    name: watch
+    title: "Watch — Video Player with Transcript Sync"
+    description: "Full-screen video player showing recording '14-1-outro.mov' (file 25 of 25). The player displays a screen recording with terminal content and a webcam overlay. Below the player are speed controls (1x, 1.5x, 2x selected, 3x, 4x), size toggle (N/L), Autoplay, Auto Next, Safe, and a Parked status badge. The Transcript Sync panel below shows the transcript with real-time word highlighting synced to playback position. A Chapters slide-out panel is visible on the right edge listing all 8+ chapters."
+
+  - url: /#transcriptions
+    name: transcripts
+    title: "Transcripts — Project Transcriptions List"
+    description: "Shows all 25 transcripts for the active project with a preview of the first ~50 characters of each. Transcripts are listed by recording filename (chapter-sequence-name format) with their content snippets. The header shows '10 files' count and '32 Prompts'. Each row allows viewing, copying, or managing the transcript. The page gives a quick overview of which recordings have been transcribed and what they contain."
+
+  - url: /#inbox
+    name: inbox
+    title: "Inbox — Project Inbox Folders"
+    description: "The Inbox tab for the active project showing an empty state: 'No inbox folders found'. This project has no inbox subfolders (raw/, dataset/, or presentation/) created yet. The header shows the full project status bar with Code '22 files changed', Relay '25 to push', and T7 SSD indicator. The warm cream background and minimal layout indicate there is nothing to action here for this project."
+
+  - url: /#assets
+    name: assets
+    title: "Assets — Image Asset Assignment"
+    description: "Three-section layout for managing visual assets. Top: Assignment Controls form with Chapter (14), Sequence (1), Variant (None), Image # (auto-calculated), Label field, and Image Prompt textarea — plus 'Grab Transcript' and 'Save Prompt' buttons. A scrollable list of existing asset names is shown on the right with '14-1-outro' highlighted as the current selection. Middle: Incoming Images panel showing one image from ~/Downloads (a promotional banner, 1.3 MB) with Assign and Del buttons. Bottom: Assigned Assets section showing '0 images, 0 prompts' empty state for this project."
+
+  - url: /#thumbs
+    name: thumbs
+    title: "Thumbs — YouTube Thumbnails"
+    description: "The YouTube Thumbnails tab showing a fully empty state. Size toggle (S/M/L/XL) with M selected and a Refresh Thumbs button at top. Two sections: 'Current Thumbnails (0/3)' with message 'No thumbnails yet. Import from a ZIP file below.' and 'Import from ZIP (0 available)' with message 'No ZIP files with images found in ~/Downloads'. Both panels are awaiting content — no thumbnails have been imported for this project yet."
+
+  - url: /#export
+    name: manage-regen
+    title: "Manage — Regen Tool (Recordings)"
+    description: "The Manage tab with the Regen tool active (default). Left sidebar shows three sections: RECORD (Regen), EDIT (Gling/Edit, AWB), COLLABORATE (Relay, Sync). Main panel shows the full recordings list with bulk action buttons: 'Regen Shadows', 'Regen Transcripts', and 'Regen All'. Below are the 14 chapters with all recordings listed (checkboxes for selection), file sizes, and 'Select All' per chapter. '6 of 25 selected (2 active, 3 parked)' shown at top with a 'Show Parked' toggle. Total duration 30:51."
+
+  - url: /#export (Gling/Edit tool)
+    name: manage-gling-edit
+    title: "Manage — Gling/Edit Prep"
+    description: "The Gling / Edit Prep tool showing preparation info for the video editor. Recordings folder path is displayed with 'Copy Folder Path' and 'Open in Finder' buttons, plus a tip about dragging files into Gling. The Gling Info section shows the export filename ('b66-context-engineered-html-art') with a Copy button. Dictionary section shows Global (22 words: AppyDave, AppyStack, FliVideo, FliDeck, etc.) and Project-specific (0 words, editable textarea) dictionaries, with a Combined (22 words) Copy All button. Edit Folders section lists edit-1st, edit-2nd, edit-final — all missing, each with a Create button and a 'Create All Folders' batch button."
+
+  - url: /#export (AWB tool)
+    name: manage-awb
+    title: "Manage — AWB (Agent Workflow Builder)"
+    description: "The AWB tool showing the project's assembled transcript payload ready to send to the Agent Workflow Builder. A 'Send to AWB ▶' button appears at top right. Below is the STORY PATH (project directory path) and then a large scrollable text block containing all transcript content from the project's recordings concatenated together — this is the full context payload that gets sent to the AWB workflow system for AI processing."
+
+  - url: /#projects
+    name: projects
+    title: "Projects — Full Project List"
+    description: "A dense information-rich table showing all projects in the projects root directory. Each row displays: project code/name, stage pill (colour-coded: recording, first-edit, ready-to-publish, etc.), recording file count, transcript %, relay sync badges (↑ ahead counts in blue), disk usage columns (rec, trash, shadows, other, total), and T7 SSD hold badges. Projects are sortable and filterable. The table demonstrates the 'surface complex state visually' principle — disk health, sync status, and project stage are all scannable at a glance without clicking into any project."
+
+  - url: /#projects (drawer open)
+    name: projects-drawer
+    title: "Projects — Project Slide-out Drawer"
+    description: "The Projects tab with a project drawer open — a ~40% width panel slides in from the right showing detailed stats for the selected project. The drawer contains: file breakdown (recordings, transcripts, images, thumbnails, shadows, chapters), disk usage per subfolder, stage override dropdown, priority star toggle, folder action buttons (Open in Finder, Copy Path), relay sync status per subfolder with file counts, and hold/T7 SSD status with verification details. The main project list remains visible and interactive on the left."
+
+  - url: /# (gear menu open)
+    name: settings-menu
+    title: "Settings — Gear Dropdown Menu"
+    description: "The Incoming tab with the settings gear icon dropdown open, revealing 6 navigation items: Configuration, Mockups, API Explorer, Developer Tools, GitHub, and Video Projects. Simultaneously, the Chapters slide-out panel is visible on the right edge listing all 15 chapters (01 intro through 14 outro with 'Next: 15'). The Naming Template shows Chapter 14, Seq 2, Name 'outro' pre-filled with common name suggestions visible."
+
+  - url: /#config (Recording Names tab)
+    name: config-recording-names
+    title: "Configuration — Recording Names"
+    description: "The Configuration page with the Recording Names tab active (badge showing 10 entries). The gear settings dropdown is still open in the background. Main content shows two sections: 'Global Dictionary Words' (a text area containing brand terms: AppyDave, AppyStack, FliVideo, FliDeck, etc. — used for Gling transcription across all projects) and 'Common Names' (10 pre-defined recording names: intro, overview, setup, livestream, planning, requirements, development, summary, demo, outro — each with a chapter filter dropdown set to Early 1-4, Custom range, or All chapters). An 'Add new name...' input with Add button at the bottom."
+
+  - url: /#config (Directories tab)
+    name: config-directories
+    title: "Configuration — Directories"
+    description: "The Configuration page with the Directories tab active showing four key path settings. A macOS platform indicator confirms 'Use Linux path formats: Files: /Users/username/...'. The four directory fields are: Ecamm Watch Directory (~/ecamm — where Ecamm Live drops recordings), Projects Root Directory (~/dev/video-projects/v-appydave — parent folder of all projects), Active Project (b66-context-engineered-html-art — read-only, change via Projects panel), and Image Watch Directory (~/Downloads — scanned for incoming images). Each editable field has a folder browse button and a green validation tick with a descriptive hint."
+
+  - url: /#api-explorer
+    name: api-explorer
+    title: "API Explorer — 34 Endpoints"
+    description: "Two-panel API browser showing all 34 server endpoints. Left panel lists endpoints grouped by category: Query API (10: config, projects, projects/:code, recordings, transcripts, chapters, images, export, inbox, inbox subfolder), Configuration (2: GET/POST), Projects (6: stats, create, priority, stage, final, inbox/write), Recordings (6 shown, more below). Each endpoint shows its HTTP method colour-coded (GET green, POST orange, PUT amber). Right panel shows 'Select an endpoint to begin / Choose from 34 available endpoints' — clicking any endpoint loads its parameter form, response schema, and Copy CURL button."
+
+  - url: /#mockups
+    name: mockups
+    title: "Design Mockups Hub"
+    description: "The Design Mockups hub page showing a catalogue of all standalone HTML mockups built with Mochaccino. Three sections: FEATURE MOCKUPS (3 dark cards: Recording Editor, Sync Hub, Relay Redesign — all dated March 2026), PROJECT LIST — REFINED (4 blue cards exploring table+drawer combinations: A Table+Drawer, B Table+Hover Card, C Table+Kanban Toggle, D Table+Inline Expand — all dated 2026-03-25), and PROJECT LIST — ROUND 1 (4 cards: 01 Filterable Table, 02 Kanban Pipeline, 06 Split Focus, 10 Hybrid Table+Drawer — initial explorations). A collapsed 'Legacy Design Explorations' section is at the bottom. An 'Open Gallery' button links to the full Mochaccino gallery."

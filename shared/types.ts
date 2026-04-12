@@ -206,6 +206,9 @@ export interface Config {
   machineRole?: MachineRole; // B039: Machine role — recorder shows archive/promote/cleanup, editor hides them
   diskThresholds?: DiskThresholds;  // B062: Pain thresholds for disk observability columns
   holdingPath?: string;             // B064: External holding drive path (e.g. /Volumes/T7/youtube-HOLDING/appydave)
+  whisperBinary?: string;   // B036: Path to mlx_whisper binary (default: ~/.pyenv/shims/mlx_whisper)
+  whisperModel?: string;    // B036: Whisper model (default: mlx-community/whisper-large-v3-turbo)
+  whisperLanguage?: string; // B036: Transcription language (default: en)
 }
 
 // B062: Disk space observability — per-project size breakdown
@@ -333,21 +336,25 @@ export type ProjectStage =
   | 'review'
   | 'ready-to-publish'
   | 'published'
-  | 'archived';
+  | 'archived'
+  | 'shelved' // FR-149: Abandoned — never published
+  | 'remix'; // FR-149: Being repackaged into new content
 
 // FR-80: Stage override includes 'auto' for auto-detection
 export type ProjectStageOverride = ProjectStage | 'auto';
 
 // FR-80: Default stages if not configured
+// FR-149: 'review' removed from default list (kept in union for backward compat); 'shelved' and 'remix' added
 export const DEFAULT_PROJECT_STAGES: ProjectStage[] = [
   'planning',
   'recording',
   'first-edit',
   'second-edit',
-  'review',
   'ready-to-publish',
   'published',
   'archived',
+  'shelved', // FR-149: Abandoned — never published
+  'remix',   // FR-149: Being repackaged into new content
 ];
 
 // FR-80: Stage display labels for UI
@@ -360,6 +367,8 @@ export const STAGE_LABELS: Record<ProjectStage, string> = {
   'ready-to-publish': 'Ready',
   published: 'Published',
   archived: 'Archived',
+  shelved: 'Shelved', // FR-149: Abandoned — never published
+  remix: 'Remix',     // FR-149: Being repackaged into new content
 };
 
 // FR-48: Transcript sync status for validation & diagnostics

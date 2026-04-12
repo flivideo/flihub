@@ -18,6 +18,11 @@ Requirements index for FliHub.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-153 | [Storage Workflow Redesign — Hold, Archive, Restore](prd/fr-153-storage-workflow-redesign.md) | 2026-04-09 | Pending                                                         |
+| FR-152 | [Safe Project Delete](prd/fr-152-safe-project-delete.md)                                        | 2026-04-08 | ✓ Implemented                                                   |
+| FR-151 | [Transcribe All Button in Project Slide-out](prd/fr-151-transcribe-all-slideout.md)             | 2026-04-08 | ✓ Implemented                                                   |
+| FR-150 | [Groq Transcription Engine](prd/fr-150-groq-transcription.md)                                   | 2026-04-08 | Deferred (MLX path fix applied instead)                         |
+| FR-149 | [Stage System Changes — Shelved, Remix, Drop Rev](prd/fr-149-stage-system-changes.md)           | 2026-04-08 | ✓ Implemented                                                   |
 | FR-147 | [Relay Project Awareness — Two-Pool Split](prd/fr-147-relay-project-awareness.md)               | 2026-03-25 | ✓ Implemented                                                   |
 | FR-145 | [Escape Key Closes Video Preview Modal](prd/fr-145-escape-closes-video-modal.md)                | 2026-03-16 | ✓ Implemented                                                   |
 | FR-144 | [Send Transcript to POEM WUI Workflow Intake](prd/fr-144-workflow-intake.md)                    | 2026-02-25 | ✓ Implemented                                                   |

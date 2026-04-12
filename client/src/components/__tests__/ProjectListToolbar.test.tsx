@@ -23,19 +23,20 @@ describe('ProjectListToolbar', () => {
   it('renders search input', () => {
     render(<ProjectListToolbar {...defaultProps} />);
     expect(
-      screen.getByPlaceholderText('Search projects...')
+      screen.getByPlaceholderText('Filter by code or name...')
     ).toBeInTheDocument();
   });
 
-  it('renders all 8 stage pills', () => {
+  // FR-149: 'review' removed from pill row; 'shelved' and 'remix' added — now 9 stages
+  it('renders all stage pills', () => {
     render(<ProjectListToolbar {...defaultProps} />);
     for (const stage of STAGE_ORDER) {
       expect(
         screen.getByText(STAGE_DISPLAY[stage].label)
       ).toBeInTheDocument();
     }
-    // Confirm exactly 8
-    expect(STAGE_ORDER).toHaveLength(8);
+    // FR-149: was 8 (with review), now 9 (shelved + remix added, review removed)
+    expect(STAGE_ORDER).toHaveLength(9);
   });
 
   it('renders 4 preset buttons', () => {
@@ -48,7 +49,7 @@ describe('ProjectListToolbar', () => {
 
   it('shows correct result count', () => {
     render(<ProjectListToolbar {...defaultProps} />);
-    expect(screen.getByText('10 of 42 projects')).toBeInTheDocument();
+    expect(screen.getByText('10 of 42')).toBeInTheDocument();
   });
 
   it('calls onSearchChange when typing', async () => {
@@ -56,7 +57,7 @@ describe('ProjectListToolbar', () => {
     render(
       <ProjectListToolbar {...defaultProps} onSearchChange={onSearchChange} />
     );
-    const input = screen.getByPlaceholderText('Search projects...');
+    const input = screen.getByPlaceholderText('Filter by code or name...');
     await userEvent.type(input, 'hello');
     expect(onSearchChange).toHaveBeenCalledTimes(5);
     // Controlled component: each keystroke fires with the single character typed

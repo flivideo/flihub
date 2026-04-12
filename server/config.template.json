@@ -20,5 +20,8 @@
     }
   ],
   "imageSourceDirectory": "~/Downloads",
-  "shadowResolution": 240
+  "shadowResolution": 240,
+  "whisperBinary": "~/.pyenv/shims/mlx_whisper",
+  "whisperModel": "mlx-community/whisper-large-v3-turbo",
+  "whisperLanguage": "en"
 }

@@ -481,6 +481,8 @@ const STAGE_ROW_TINT: Record<ProjectStage, string> = {
   'ready-to-publish': 'bg-green-50/40',
   published: 'bg-green-50/30',
   archived: '',
+  shelved: 'bg-red-50/40',   // FR-149: Abandoned — never published
+  remix: 'bg-rose-50/40',    // FR-149: Being repackaged into new content
 };
 
 export function ProjectsPanel(_props: ProjectsPanelProps) {

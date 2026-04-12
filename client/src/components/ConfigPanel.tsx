@@ -14,6 +14,8 @@ import {
   useWatchers,
   useEnvironment,
 } from '../hooks/useApi';
+import { useBrandConfig, useUpdateBrandConfig } from '../hooks/useConfigApi';
+import type { BrandConfigAffiliate } from '../hooks/useConfigApi';
 import { collapsePath } from '../utils/formatting';
 import { OpenFolderButton, LoadingSpinner, PageContainer } from './shared';
 import { API_URL } from '../config';
@@ -218,7 +220,7 @@ function PathMismatchWarning({
 }
 
 // Config tab type
-type ConfigTab = 'directories' | 'names' | 'collaboration' | 'advanced';
+type ConfigTab = 'directories' | 'names' | 'collaboration' | 'advanced' | 'brand';
 
 // FR-89 Part 2: Path existence indicator component
 function PathExistsIndicator({
@@ -280,6 +282,28 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   // FR-96: Environment detection
   const { data: envData } = useEnvironment();
   const [envCollapsed, setEnvCollapsed] = useState(false);
+
+  // Brand config
+  const { data: brandConfigResult } = useBrandConfig();
+  const updateBrandConfig = useUpdateBrandConfig();
+  const [brandName, setBrandName] = useState('');
+  const [brandRealName, setBrandRealName] = useState('');
+  const [brandProfession, setBrandProfession] = useState('');
+  const [brandTagline, setBrandTagline] = useState('');
+  const [primaryCtaLabel, setPrimaryCtaLabel] = useState('');
+  const [primaryCtaUrl, setPrimaryCtaUrl] = useState('');
+  const [foldCtaLabel, setFoldCtaLabel] = useState('');
+  const [foldCtaUrl, setFoldCtaUrl] = useState('');
+  const [socialWebsite, setSocialWebsite] = useState('');
+  const [socialTwitter, setSocialTwitter] = useState('');
+  const [socialYoutubeMain, setSocialYoutubeMain] = useState('');
+  const [socialYoutubeAITLDR, setSocialYoutubeAITLDR] = useState('');
+  const [socialSkool, setSocialSkool] = useState('');
+  const [legalDisclosure, setLegalDisclosure] = useState('');
+  const [endNote, setEndNote] = useState('');
+  const [affiliates, setAffiliates] = useState<BrandConfigAffiliate[]>([]);
+  const [newAffiliateName, setNewAffiliateName] = useState('');
+  const [newAffiliateUrl, setNewAffiliateUrl] = useState('');
 
   // Tab navigation
   const [activeTab, setActiveTab] = useState<ConfigTab>('names');
@@ -379,6 +403,29 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       if (relayPath) checkPathExists(relayPath, setRelayDirExists);
     }
   }, [config, checkPathExists]);
+
+  // Brand config: initialize state from loaded data
+  useEffect(() => {
+    if (brandConfigResult?.data) {
+      const bc = brandConfigResult.data;
+      setBrandName(bc.brand?.name || '');
+      setBrandRealName(bc.brand?.realName || '');
+      setBrandProfession(bc.brand?.profession || '');
+      setBrandTagline(bc.brand?.tagline || '');
+      setPrimaryCtaLabel(bc.ctas?.primaryCta?.label || '');
+      setPrimaryCtaUrl(bc.ctas?.primaryCta?.url || '');
+      setFoldCtaLabel(bc.ctas?.foldCta?.label || '');
+      setFoldCtaUrl(bc.ctas?.foldCta?.url || '');
+      setSocialWebsite(bc.socialLinks?.website || '');
+      setSocialTwitter(bc.socialLinks?.twitter || '');
+      setSocialYoutubeMain(bc.socialLinks?.youtubeMain || '');
+      setSocialYoutubeAITLDR(bc.socialLinks?.youtubeAITLDR || '');
+      setSocialSkool(bc.socialLinks?.skool || '');
+      setLegalDisclosure(bc.descriptionTemplate?.legalDisclosure || '');
+      setEndNote(bc.descriptionTemplate?.endNote || '');
+      setAffiliates(bc.affiliates || []);
+    }
+  }, [brandConfigResult]);
 
   // FR-76: Initialize chapter recording config
   useEffect(() => {
@@ -607,6 +654,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     { key: 'names', label: 'Recording Names', badge: `${commonNames.length}` },
     { key: 'collaboration', label: 'Collaboration' },
     { key: 'advanced', label: 'Advanced' },
+    { key: 'brand', label: 'Brand' },
   ];
 
   return (
@@ -1288,6 +1336,163 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             </button>
           </div>
         </div>
+        </>)}
+
+        {/* Brand Tab */}
+        {activeTab === 'brand' && (<>
+
+          {/* Brand Identity */}
+          <h3 className="text-sm font-medium text-warm-secondary mb-3">Brand Identity</h3>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label className="block text-xs text-warm-muted mb-1">Brand Name</label>
+              <input type="text" value={brandName} onChange={(e) => setBrandName(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-xs text-warm-muted mb-1">Real Name</label>
+              <input type="text" value={brandRealName} onChange={(e) => setBrandRealName(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs text-warm-muted mb-1">Profession</label>
+              <input type="text" value={brandProfession} onChange={(e) => setBrandProfession(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs text-warm-muted mb-1">Tagline</label>
+              <input type="text" value={brandTagline} onChange={(e) => setBrandTagline(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+
+          {/* CTAs */}
+          <div className="border-t border-warm pt-3 mb-4">
+            <h3 className="text-sm font-medium text-warm-secondary mb-3">Calls to Action</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-warm-muted mb-1">Primary CTA Label</label>
+                <input type="text" value={primaryCtaLabel} onChange={(e) => setPrimaryCtaLabel(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Access Benefits" />
+              </div>
+              <div>
+                <label className="block text-xs text-warm-muted mb-1">Primary CTA URL</label>
+                <input type="text" value={primaryCtaUrl} onChange={(e) => setPrimaryCtaUrl(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://..." />
+              </div>
+              <div>
+                <label className="block text-xs text-warm-muted mb-1">Fold CTA Label</label>
+                <input type="text" value={foldCtaLabel} onChange={(e) => setFoldCtaLabel(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Join Skool Community" />
+              </div>
+              <div>
+                <label className="block text-xs text-warm-muted mb-1">Fold CTA URL</label>
+                <input type="text" value={foldCtaUrl} onChange={(e) => setFoldCtaUrl(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://..." />
+              </div>
+            </div>
+          </div>
+
+          {/* Social Links */}
+          <div className="border-t border-warm pt-3 mb-4">
+            <h3 className="text-sm font-medium text-warm-secondary mb-3">Social Links</h3>
+            <div className="space-y-2">
+              {(
+                [
+                  { label: 'Website', value: socialWebsite, set: setSocialWebsite, placeholder: 'https://appydave.com' },
+                  { label: 'Twitter / X', value: socialTwitter, set: setSocialTwitter, placeholder: 'https://twitter.com/...' },
+                  { label: 'YouTube (Main)', value: socialYoutubeMain, set: setSocialYoutubeMain, placeholder: 'https://youtube.com/@...' },
+                  { label: 'YouTube (AITLDR)', value: socialYoutubeAITLDR, set: setSocialYoutubeAITLDR, placeholder: 'https://youtube.com/@...' },
+                  { label: 'Skool', value: socialSkool, set: setSocialSkool, placeholder: 'https://skool.com/...' },
+                ] as { label: string; value: string; set: (v: string) => void; placeholder: string }[]
+              ).map(({ label, value, set, placeholder }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <span className="text-xs text-warm-muted w-32 shrink-0">{label}</span>
+                  <input type="text" value={value} onChange={(e) => set(e.target.value)}
+                    placeholder={placeholder}
+                    className="flex-1 px-3 py-1.5 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Legal */}
+          <div className="border-t border-warm pt-3 mb-4">
+            <h3 className="text-sm font-medium text-warm-secondary mb-3">Legal &amp; Descriptions</h3>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs text-warm-muted mb-1">Legal Disclosure</label>
+                <input type="text" value={legalDisclosure} onChange={(e) => setLegalDisclosure(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-warm-muted mb-1">End Note</label>
+                <input type="text" value={endNote} onChange={(e) => setEndNote(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Affiliates */}
+          <div className="border-t border-warm pt-3 mb-4">
+            <h3 className="text-sm font-medium text-warm-secondary mb-3">Affiliates</h3>
+            <div className="space-y-2 mb-3">
+              {affiliates.map((aff, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input type="checkbox" checked={aff.active}
+                    onChange={(e) => setAffiliates(affiliates.map((a, j) => j === i ? { ...a, active: e.target.checked } : a))}
+                    className="w-4 h-4 text-blue-500 rounded shrink-0" />
+                  <input type="text" value={aff.name}
+                    onChange={(e) => setAffiliates(affiliates.map((a, j) => j === i ? { ...a, name: e.target.value } : a))}
+                    className="w-36 px-2 py-1 text-sm border border-warm-strong rounded focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <input type="text" value={aff.url}
+                    onChange={(e) => setAffiliates(affiliates.map((a, j) => j === i ? { ...a, url: e.target.value } : a))}
+                    className="flex-1 px-2 py-1 text-sm border border-warm-strong rounded focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <button onClick={() => setAffiliates(affiliates.filter((_, j) => j !== i))}
+                    className="text-warm-muted hover:text-red-500 transition-colors text-sm px-1">✕</button>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="text" value={newAffiliateName} onChange={(e) => setNewAffiliateName(e.target.value)}
+                placeholder="Name" className="w-36 px-2 py-1 text-sm border border-warm-strong rounded focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input type="text" value={newAffiliateUrl} onChange={(e) => setNewAffiliateUrl(e.target.value)}
+                placeholder="https://..." className="flex-1 px-2 py-1 text-sm border border-warm-strong rounded focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <button
+                onClick={() => {
+                  if (!newAffiliateName.trim() || !newAffiliateUrl.trim()) return;
+                  setAffiliates([...affiliates, { name: newAffiliateName.trim(), url: newAffiliateUrl.trim(), active: true }]);
+                  setNewAffiliateName('');
+                  setNewAffiliateUrl('');
+                }}
+                disabled={!newAffiliateName.trim() || !newAffiliateUrl.trim()}
+                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-surface-muted disabled:cursor-not-allowed transition-colors"
+              >Add</button>
+            </div>
+          </div>
+
+          {/* Save */}
+          <div className="border-t border-warm pt-3 flex justify-end">
+            <button
+              onClick={async () => {
+                const payload = {
+                  ...(brandConfigResult?.data || {}),
+                  brand: { name: brandName, realName: brandRealName, profession: brandProfession, tagline: brandTagline },
+                  socialLinks: { website: socialWebsite, twitter: socialTwitter, youtubeMain: socialYoutubeMain, youtubeAITLDR: socialYoutubeAITLDR, skool: socialSkool },
+                  ctas: { primaryCta: { label: primaryCtaLabel, url: primaryCtaUrl }, foldCta: { label: foldCtaLabel, url: foldCtaUrl } },
+                  affiliates,
+                  descriptionTemplate: { legalDisclosure, endNote },
+                };
+                await updateBrandConfig.mutateAsync(payload);
+                toast.success('Brand config saved');
+              }}
+              disabled={updateBrandConfig.isPending}
+              className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-surface-muted disabled:cursor-not-allowed transition-colors"
+            >
+              {updateBrandConfig.isPending ? 'Saving...' : 'Save Brand Config'}
+            </button>
+          </div>
+
         </>)}
       </div>
 

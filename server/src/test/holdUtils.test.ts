@@ -287,7 +287,9 @@ describe('verifyHoldingMatch', () => {
     expect(result.holdingFiles).toBeGreaterThan(result.localFiles);
   });
 
-  it('B064: returns match:false when total bytes differ', async () => {
+  it('B065: returns match:true when file counts match even if bytes differ', async () => {
+    // B065: match is file-count-only. Byte totals drift across filesystems due to
+    // .DS_Store churn, resource forks, and extended attributes — not a reliable signal.
     const { projectDir } = await createProjectFixture(tmpRoot);
     const holdingRoot = path.join(tmpRoot, 'holding');
     const holdingDir = await mirrorToHolding(projectDir, holdingRoot);
@@ -297,9 +299,9 @@ describe('verifyHoldingMatch', () => {
 
     const result = await verifyHoldingMatch(projectDir, holdingDir);
 
-    expect(result.match).toBe(false);
+    expect(result.match).toBe(true); // B065: file counts equal → match
     expect(result.localFiles).toBe(result.holdingFiles); // same count
-    expect(result.localBytes).not.toBe(result.holdingBytes); // different bytes
+    expect(result.localBytes).not.toBe(result.holdingBytes); // bytes differ but ignored
   });
 
   it('B064: returns match:false (not throws) when holdingDir does not exist', async () => {

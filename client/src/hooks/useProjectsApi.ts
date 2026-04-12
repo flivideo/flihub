@@ -232,6 +232,22 @@ export function useInboxFileContent(
   });
 }
 
+// FR-152: Permanently delete a project's local directory
+export function useDeleteProject() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ code, confirmationCode }: { code: string; confirmationCode: string }) =>
+      fetchApi<{ success: boolean; deleted: string }>(`/api/projects/${code}`, {
+        method: 'DELETE',
+        body: JSON.stringify({ confirmationCode }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
+    },
+  });
+}
+
 // FR-118: Get project state (includes project dictionary)
 export function useProjectState(projectCode: string | undefined) {
   return useQuery({

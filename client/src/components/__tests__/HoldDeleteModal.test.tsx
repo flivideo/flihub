@@ -47,7 +47,7 @@ describe('HoldDeleteModal — target=local', () => {
     expect(screen.getByText('Delete Local Copy')).toBeInTheDocument();
     expect(screen.getByText('Folder:')).toBeInTheDocument();
     expect(screen.getByText('Freeing:')).toBeInTheDocument();
-    expect(screen.getByText('HOLDING path:')).toBeInTheDocument();
+    expect(screen.getByText('SSD path:')).toBeInTheDocument();
     // Confirm button label
     expect(screen.getByRole('button', { name: /Delete Local/i })).toBeInTheDocument();
   });
@@ -56,20 +56,20 @@ describe('HoldDeleteModal — target=local', () => {
 describe('HoldDeleteModal — target=holding', () => {
   it('renders correct title and labels for holding variant', () => {
     renderModal({ target: 'holding' });
-    expect(screen.getByText('Remove from HOLDING SSD')).toBeInTheDocument();
-    expect(screen.getByText('HOLDING folder:')).toBeInTheDocument();
+    expect(screen.getAllByText('Remove from SSD').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('SSD folder:')).toBeInTheDocument();
     expect(screen.getByText('Freeing from SSD:')).toBeInTheDocument();
     expect(screen.getByText('Path:')).toBeInTheDocument();
     // Confirm button label
-    expect(screen.getByRole('button', { name: /Remove from HOLDING/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Remove from SSD/i })).toBeInTheDocument();
   });
 });
 
 describe('HoldDeleteModal — confirm button guard conditions', () => {
   // B064: Helper to get the confirm button (the red destructive one)
   function getConfirmButton() {
-    // The confirm button contains "Delete Local" or "Remove from HOLDING"
-    return screen.getByRole('button', { name: /Delete Local|Remove from HOLDING/i });
+    // The confirm button contains "Delete Local" or "Remove from SSD"
+    return screen.getByRole('button', { name: /Delete Local|Remove from SSD/i });
   }
 
   it('confirm button is disabled when verification is null', () => {
