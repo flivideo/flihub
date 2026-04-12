@@ -67,6 +67,38 @@ export function useSendToPoem() {
   });
 }
 
+export interface YloResult {
+  ok: boolean;
+  error?: string;
+  result?: {
+    success: boolean;
+    project_id?: string;
+    project_name?: string;
+    stage?: number;
+    message?: string;
+  };
+}
+
+export function useSendToYlo() {
+  return useMutation<YloResult, Error, void>({
+    mutationFn: async () => {
+      const res = await fetch(`${API_URL}/api/poem-wui/send-ylo`, { method: 'POST' });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.ok) {
+        const msg = data.result?.message || 'Sent to YouTube Launch Optimizer';
+        toast.success(msg);
+      } else {
+        toast.error(data.error || 'Send to YLO failed');
+      }
+    },
+    onError: () => {
+      toast.error('YouTube Launch Optimizer not reachable');
+    },
+  });
+}
+
 export function useResumeInAwb() {
   return useMutation<SendResult, Error, void>({
     mutationFn: async () => {

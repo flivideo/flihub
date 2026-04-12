@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { findAllSrts, loadBrandConfig, buildFliHubChapters, firstWords, BUNDLED_BRAND_CONFIG } from '../utils/poemWuiUtils.js';
+import { env } from '../config/env.js';
 
 export { firstWords };
 
@@ -144,6 +145,69 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
         successBody.brandConfigError = brandConfig.error;
       }
       res.json(successBody);
+    } catch (error) {
+      res.status(500).json({ ok: false, error: String(error) });
+    }
+  });
+
+  // POST /api/poem-wui/send-ylo — send transcript to YouTube Launch Optimizer (Supabase inbox)
+  router.post('/send-ylo', async (req, res) => {
+    try {
+      const config = getConfig();
+      if (!config.projectDirectory) {
+        return res.json({ ok: false, error: 'No project selected' });
+      }
+
+      const bearerToken = env.YLO_BEARER_TOKEN;
+      const inboxUrl = env.YLO_INBOX_URL || 'https://bcvqgfcupsagpzloulee.supabase.co/functions/v1/inbox';
+
+      if (!bearerToken) {
+        return res.json({ ok: false, error: 'YLO_BEARER_TOKEN is not set in server .env' });
+      }
+
+      const projectDir = expandPath(config.projectDirectory);
+      const projectFolder = path.basename(projectDir);
+
+      const [srtInfo, fliHubChapters] = await Promise.all([
+        findAllSrts(projectDir),
+        buildFliHubChapters(projectDir),
+      ]);
+
+      if (!srtInfo) {
+        return res.json({ ok: false, error: 'No SRT file found to use as transcript' });
+      }
+
+      const payload = {
+        store: {
+          projectFolder,
+          transcript: srtInfo.transcript,
+          srtContent: srtInfo.rawContent,
+          fliHubChapters,
+        },
+      };
+
+      console.log(`[YLO] Sending to ${inboxUrl}`);
+
+      let yloRes: Response;
+      try {
+        yloRes = await fetch(inboxUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${bearerToken}`,
+          },
+          body: JSON.stringify(payload),
+        });
+      } catch {
+        return res.json({ ok: false, error: 'YouTube Launch Optimizer not reachable — check YLO_INBOX_URL' });
+      }
+
+      const yloBody = await yloRes.json().catch(() => ({})) as Record<string, unknown>;
+      if (yloBody.success === false) {
+        return res.json({ ok: false, error: String(yloBody.error || 'YLO returned an error') });
+      }
+
+      res.json({ ok: true, result: yloBody });
     } catch (error) {
       res.status(500).json({ ok: false, error: String(error) });
     }

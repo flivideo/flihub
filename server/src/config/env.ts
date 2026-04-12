@@ -7,10 +7,9 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(5101),
   CLIENT_URL: z.string().url().default('http://localhost:5173'),
 
-  // Add FliHub-specific environment variables here
-  // Example:
-  // WATCH_DIRECTORY: z.string().optional(),
-  // PROJECT_DIRECTORY: z.string().optional(),
+  // YouTube Launch Optimizer (YLO) — Supabase inbox endpoint
+  YLO_BEARER_TOKEN: z.string().optional(),
+  YLO_INBOX_URL: z.string().url().optional(),
 });
 
 // Parse and validate environment variables

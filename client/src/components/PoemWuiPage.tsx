@@ -1,10 +1,11 @@
 // FR-144: POEM WUI Workflow Intake Page
 import { useMemo, useState } from 'react';
-import { usePoemWuiStatus, useSendToPoem, useResumeInAwb } from '../hooks/usePoemWuiApi';
+import { usePoemWuiStatus, useSendToPoem, useResumeInAwb, useSendToYlo } from '../hooks/usePoemWuiApi';
 
 export function PoemWuiPage() {
   const { data, isLoading, refetch } = usePoemWuiStatus();
   const send = useSendToPoem();
+  const sendYlo = useSendToYlo();
   const resume = useResumeInAwb();
 
   const payloadJson = useMemo(() => {
@@ -120,6 +121,21 @@ export function PoemWuiPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-2 flex-shrink-0">
+                <button
+                  onClick={() => sendYlo.mutateAsync()}
+                  disabled={!data.transcriptFound || sendYlo.isPending}
+                  title={!data.transcriptFound ? 'No SRT file found' : 'Send to YouTube Launch Optimizer'}
+                  className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {sendYlo.isPending ? (
+                    <>
+                      <span className="animate-spin inline-block">⟳</span>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    'Send to YLO →'
+                  )}
+                </button>
                 <button
                   onClick={handleSend}
                   disabled={!data.transcriptFound || send.isPending}
