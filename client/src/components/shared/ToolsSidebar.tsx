@@ -85,10 +85,16 @@ export function ToolsSidebar({
         </div>
         <div className="flex flex-col gap-1">
           <ToolButton
-            label="SSD Offload"
+            label="SSD Status"
             active={activeTool === 'storage'}
             onClick={() => onToolClick('storage')}
-            tooltip="Offload to T7 SSD / restore from T7"
+            tooltip="Per-project SSD status — opens Archive for actions"
+          />
+          <ToolButton
+            label="Archive"
+            active={activeTool === 'archive'}
+            onClick={() => onToolClick('archive')}
+            tooltip="Unified archive / offload / restore for all projects"
           />
         </div>
       </div>

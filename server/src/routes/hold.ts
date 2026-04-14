@@ -14,7 +14,12 @@ import {
   getDirStats,
 } from '../utils/holdUtils.js';
 import { updateDiskCacheHoldData, invalidateDiskCacheEntry } from './projects.js';
-import type { Config } from '../../../shared/types.js';
+import {
+  buildArchiveRow,
+  deriveArchiveState,
+  listArchiveCandidates,
+} from '../utils/archiveInventory.js';
+import type { ArchiveInventoryResponse, ArchiveRow, Config } from '../../../shared/types.js';
 
 // B064: Resolve local project directory from config + project code
 function resolveProjectDir(config: Config, code: string): string {
@@ -413,6 +418,243 @@ export function createHoldRoutes(getConfig: () => Config): Router {
       console.error(`[B064] delete holding error for ${code}:`, error);
       res.status(500).json({ success: false, error: String(error) });
     }
+  });
+
+  /**
+   * WU1: GET /archive-inventory
+   *
+   * Unified inventory for the Archive tool — one row per project with local
+   * size, T7 held size, hold flag, derived state, and last-touched timestamp.
+   *
+   * Moved here from manage.ts during WU1 delivery-review patches because the
+   * aggregation reuses the hold utilities (getHoldStatus, getDirStats) that
+   * live alongside this route. Per-project logic is extracted into
+   * utils/archiveInventory.ts for unit-testability.
+   *
+   * Mounted at /api/projects/archive-inventory via the hold router prefix.
+   */
+  router.get('/archive-inventory', async (_req: Request, res: Response) => {
+    const config = getConfig();
+
+    if (!config.projectsRootDirectory) {
+      res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+      return;
+    }
+
+    const projectsRoot = expandPath(config.projectsRootDirectory);
+    const holdingRoot = config.holdingPath ? expandPath(config.holdingPath) : null;
+    const relayRoot =
+      config.relayEnabled && config.relayDirectory ? expandPath(config.relayDirectory) : null;
+
+    try {
+      const codes = await listArchiveCandidates(projectsRoot, holdingRoot);
+      const rows: ArchiveRow[] = await Promise.all(
+        codes.map((code) =>
+          buildArchiveRow(code, { projectsRoot, holdingRoot, relayRoot }),
+        ),
+      );
+      const response: ArchiveInventoryResponse = { rows };
+      res.json(response);
+    } catch (error) {
+      console.error('[WU1] archive-inventory error:', error);
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
+  // ---------------------------------------------------------------------------
+  // WU3: Batch endpoints — sequential execution, per-project results array.
+  //
+  // Design:
+  //   - Validate input shape at the router level (400 for empty / non-array).
+  //   - For each project, re-compute current archive state from disk using
+  //     deriveArchiveState so we reject stale client requests that would have
+  //     the wrong invariant (e.g. a "local" project that is already held).
+  //   - Failures DO NOT abort the batch — this is a feature: partial results
+  //     are how the UI surfaces "3 ok, 1 failed".
+  //   - Do NOT parallelise — rsync is I/O bound, sequential + progress is the
+  //     correct UX (see docs/planning/archive-tool/AGENTS.md anti-patterns).
+  // ---------------------------------------------------------------------------
+
+  type BatchResult = { projectCode: string; ok: boolean; error?: string };
+
+  function validateBatchBody(body: unknown): { projects: string[] } | { error: string } {
+    const parsed = body as { projects?: unknown };
+    if (!Array.isArray(parsed?.projects)) {
+      return { error: 'projects must be an array of strings' };
+    }
+    if (parsed.projects.length === 0) {
+      return { error: 'projects array must not be empty' };
+    }
+    if (!parsed.projects.every((p) => typeof p === 'string' && p.length > 0)) {
+      return { error: 'projects must be an array of non-empty strings' };
+    }
+    return { projects: parsed.projects as string[] };
+  }
+
+  // WU3: Re-derive each project's current state from disk so we don't trust
+  // stale client assumptions. Returns same shape as deriveArchiveState input.
+  async function computeCurrentState(
+    code: string,
+    config: Config,
+  ): Promise<{ state: ReturnType<typeof deriveArchiveState>; localBytes: number; heldBytes: number }> {
+    const projectsRoot = expandPath(config.projectsRootDirectory!);
+    const holdingRoot = config.holdingPath ? expandPath(config.holdingPath) : null;
+    const relayRoot =
+      config.relayEnabled && config.relayDirectory ? expandPath(config.relayDirectory) : null;
+    const row = await buildArchiveRow(code, { projectsRoot, holdingRoot, relayRoot });
+    return { state: row.state, localBytes: row.localBytes, heldBytes: row.heldBytes };
+  }
+
+  // WU3: POST /batch-offload — body { projects: string[] }
+  // Only projects in `local` state are accepted; others recorded as failures.
+  router.post('/batch-offload', async (req: Request, res: Response) => {
+    const parsed = validateBatchBody(req.body);
+    if ('error' in parsed) {
+      res.status(400).json({ success: false, error: parsed.error });
+      return;
+    }
+
+    const config = getConfig();
+    if (!config.holdingPath) {
+      res.status(400).json({ success: false, error: 'holdingPath not configured' });
+      return;
+    }
+    if (!config.projectsRootDirectory) {
+      res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+      return;
+    }
+
+    const holdingRoot = expandPath(config.holdingPath);
+    const results: BatchResult[] = [];
+
+    for (const code of parsed.projects) {
+      if (!code || /[/\\]/.test(code) || code.includes('..')) {
+        results.push({ projectCode: code, ok: false, error: 'Invalid project code' });
+        continue;
+      }
+      try {
+        // WU3: Allowlist gate — only offload projects currently in `local` state.
+        const current = await computeCurrentState(code, config);
+        if (current.state !== 'local') {
+          results.push({
+            projectCode: code,
+            ok: false,
+            error: `invalid state: ${current.state}`,
+          });
+          continue;
+        }
+
+        const projectDir = resolveProjectDir(config, code);
+        const relayDir = resolveRelayDir(config, code);
+        const status = await getHoldStatus(code, projectDir, relayDir, holdingRoot);
+        if (status.relayBlocked) {
+          results.push({
+            projectCode: code,
+            ok: false,
+            error: `relay not empty (${status.relayBytes} bytes)`,
+          });
+          continue;
+        }
+        if (!status.ssdMounted) {
+          results.push({ projectCode: code, ok: false, error: 'holding SSD not mounted' });
+          continue;
+        }
+
+        const holdResult = await holdProject(projectDir, holdingRoot);
+        if (!holdResult.success) {
+          results.push({
+            projectCode: code,
+            ok: false,
+            error: holdResult.error ?? holdResult.message ?? 'hold failed',
+          });
+          continue;
+        }
+
+        const computedHoldingPath = path.join(holdingRoot, path.basename(projectDir));
+        const verification = await verifyHoldingMatch(projectDir, computedHoldingPath);
+        if (verification.match) {
+          updateDiskCacheHoldData(code, new Date().toISOString(), holdResult.holdingPath ?? '');
+        }
+        results.push({ projectCode: code, ok: true });
+      } catch (error) {
+        results.push({ projectCode: code, ok: false, error: String(error) });
+      }
+    }
+
+    res.json({ results });
+  });
+
+  // WU3: POST /batch-delete-local — body { projects: string[] }
+  // Only projects in `held-local` state are accepted; others recorded as failures.
+  router.post('/batch-delete-local', async (req: Request, res: Response) => {
+    const parsed = validateBatchBody(req.body);
+    if ('error' in parsed) {
+      res.status(400).json({ success: false, error: parsed.error });
+      return;
+    }
+
+    const config = getConfig();
+    if (!config.holdingPath) {
+      res.status(400).json({ success: false, error: 'holdingPath not configured' });
+      return;
+    }
+    if (!config.projectsRootDirectory) {
+      res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+      return;
+    }
+
+    const holdingRoot = expandPath(config.holdingPath);
+    const projectsRoot = expandPath(config.projectsRootDirectory);
+    const results: BatchResult[] = [];
+
+    for (const code of parsed.projects) {
+      if (!code || /[/\\]/.test(code) || code.includes('..')) {
+        results.push({ projectCode: code, ok: false, error: 'Invalid project code' });
+        continue;
+      }
+      try {
+        // WU3: Allowlist gate — only delete-local when both copies exist.
+        const current = await computeCurrentState(code, config);
+        if (current.state !== 'held-local') {
+          results.push({
+            projectCode: code,
+            ok: false,
+            error: `invalid state: ${current.state}`,
+          });
+          continue;
+        }
+
+        const projectDir = resolveProjectDir(config, code);
+        const holdingDir = path.join(holdingRoot, path.basename(projectDir));
+
+        // Verify HOLDING matches local before deleting — same gate as DELETE /:code/local
+        const verification = await verifyHoldingMatch(projectDir, holdingDir);
+        if (!verification.match) {
+          results.push({
+            projectCode: code,
+            ok: false,
+            error: 'HOLDING copy does not match local',
+          });
+          continue;
+        }
+
+        const del = await deleteLocalProject(projectDir, projectsRoot, true);
+        if (!del.success) {
+          results.push({
+            projectCode: code,
+            ok: false,
+            error: del.error ?? del.message ?? 'delete failed',
+          });
+          continue;
+        }
+        invalidateDiskCacheEntry(code);
+        results.push({ projectCode: code, ok: true });
+      } catch (error) {
+        results.push({ projectCode: code, ok: false, error: String(error) });
+      }
+    }
+
+    res.json({ results });
   });
 
   return router;

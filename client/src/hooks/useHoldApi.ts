@@ -1,6 +1,6 @@
 // B064: Archive-offload hold/restore hooks
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { HoldStatus, HoldOperationResult } from '../../../shared/types';
+import type { HoldStatus, HoldOperationResult, ArchiveInventoryResponse } from '../../../shared/types';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { fetchApi } from './useApi';
 
@@ -39,6 +39,7 @@ export function useHoldProject() {
     onSuccess: (_data, { code }) => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.holdStatus(code) });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectDisk(code) });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.archiveInventory });
     },
   });
 }
@@ -53,6 +54,7 @@ export function useVerifyHolding() {
       }),
     onSuccess: (_data, { code }) => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.holdStatus(code) });
+      // Verify only reads state — no disk mutation — so archiveInventory stays fresh.
     },
   });
 }
@@ -69,6 +71,7 @@ export function useDeleteLocal() {
     onSuccess: (_data, { code }) => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.holdStatus(code) });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectDisk(code) });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.archiveInventory });
     },
   });
 }
@@ -84,6 +87,60 @@ export function useRestoreFromHolding() {
     onSuccess: (_data, { code }) => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.holdStatus(code) });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectDisk(code) });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.archiveInventory });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// WU1: Archive inventory — single unified query powering the Archive tool.
+// Replaces N per-project hold/disk queries with one aggregated response.
+// Endpoint lives alongside the other hold routes at /api/projects/archive-inventory.
+// ---------------------------------------------------------------------------
+export function useArchiveInventory() {
+  return useQuery({
+    queryKey: QUERY_KEYS.archiveInventory,
+    queryFn: () => fetchApi<ArchiveInventoryResponse>('/api/projects/archive-inventory'),
+    staleTime: 30_000,
+  });
+}
+
+// WU3: Batch offload — sequential server-side execution; returns per-project results.
+export interface BatchArchiveResult {
+  projectCode: string;
+  ok: boolean;
+  error?: string;
+}
+
+export interface BatchArchiveResponse {
+  results: BatchArchiveResult[];
+}
+
+export function useBatchOffload() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ projects }: { projects: string[] }) =>
+      fetchApi<BatchArchiveResponse>('/api/projects/batch-offload', {
+        method: 'POST',
+        body: JSON.stringify({ projects }),
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.archiveInventory });
+    },
+  });
+}
+
+// WU3: Batch delete-local — sequential; requires all projects in held-local state.
+export function useBatchDeleteLocal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ projects }: { projects: string[] }) =>
+      fetchApi<BatchArchiveResponse>('/api/projects/batch-delete-local', {
+        method: 'POST',
+        body: JSON.stringify({ projects }),
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.archiveInventory });
     },
   });
 }
@@ -99,6 +156,7 @@ export function useDeleteHolding() {
       }),
     onSuccess: (_data, { code }) => {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.holdStatus(code) });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.archiveInventory });
     },
   });
 }

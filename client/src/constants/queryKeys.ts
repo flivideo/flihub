@@ -68,4 +68,6 @@ export const QUERY_KEYS = {
   projectDisk: (code: string) => ['project-disk', code] as const,
   // B064: Archive-offload hold status
   holdStatus: (code: string) => ['hold-status', code] as const,
+  // WU1: Archive tool unified inventory
+  archiveInventory: ['archive-inventory'] as const,
 } as const;

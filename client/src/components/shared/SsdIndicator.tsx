@@ -1,8 +1,8 @@
 // B064: Header SSD status pill — shows T7 mount state alongside Relay/Sync indicators
-// Offload UX: Now navigates to Manage→Storage instead of Projects tab
+// WU4: Now deep-links to the Archive tool with the "On T7" filter active.
 import { useSsdStatus } from '../../hooks/useHoldApi';
 
-export function SsdIndicator({ onNavigateToStorage }: { onNavigateToStorage: () => void }) {
+export function SsdIndicator({ onNavigateToArchive }: { onNavigateToArchive: () => void }) {
   const { data, isLoading } = useSsdStatus();
 
   // Don't render if holdingPath not configured
@@ -12,8 +12,8 @@ export function SsdIndicator({ onNavigateToStorage }: { onNavigateToStorage: () 
 
   return (
     <button
-      onClick={onNavigateToStorage}
-      title={mounted ? 'T7 SSD mounted — open Storage tool' : 'T7 SSD not connected — open Storage tool'}
+      onClick={onNavigateToArchive}
+      title={mounted ? 'T7 SSD mounted — open Archive (On T7 filter)' : 'T7 SSD not connected — open Archive (On T7 filter)'}
       className={`flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded cursor-pointer transition-colors hover:bg-surface-hover ${mounted ? '' : 'opacity-50'}`}
     >
       <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0 ${mounted ? 'bg-green-600' : 'bg-warm-muted'}`} />

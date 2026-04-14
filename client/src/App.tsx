@@ -126,6 +126,22 @@ function App() {
   const [isDevDrawerOpen, setIsDevDrawerOpen] = useState(false);
   // B044: Manage tool navigation (for SyncIndicator click-through)
   const [manageTool, setManageTool] = useState<string | null>(null);
+  // WU4: Deep-link params for the Archive tool. Reset each navigation so
+  // ManagePanel's effect re-fires with fresh values.
+  const [manageArchiveFilter, setManageArchiveFilter] = useState<
+    'all' | 'local' | 'held' | 'reclaimable' | undefined
+  >(undefined);
+  const [manageArchiveSearch, setManageArchiveSearch] = useState<string | undefined>(undefined);
+  // Helper: set tool + archive params together so callers can deep-link in one go.
+  const navigateToManage = (
+    tool: string,
+    opts?: { archiveFilter?: 'all' | 'local' | 'held' | 'reclaimable'; archiveSearch?: string }
+  ) => {
+    setManageArchiveFilter(opts?.archiveFilter);
+    setManageArchiveSearch(opts?.archiveSearch);
+    setManageTool(tool);
+    changeTab('export');
+  };
 
   const { files, connected, isReconnecting, removeFile } = useSocket();
   const { data: config } = useConfig();
@@ -500,9 +516,9 @@ function App() {
                 changeTab('export');
                 setManageTool('relay');
               }} />
-              <SsdIndicator onNavigateToStorage={() => {
-                changeTab('export');
-                setManageTool('storage');
+              <SsdIndicator onNavigateToArchive={() => {
+                // WU4: T7 pill now deep-links to Archive pre-filtered to On T7.
+                navigateToManage('archive', { archiveFilter: 'held' });
               }} />
               <div className="w-px h-5 bg-warm-divider" />
             </div>
@@ -794,14 +810,29 @@ function App() {
         {/* FR-131: Manage Tab (formerly Export) */}
         {activeTab === 'export' && (
           <section>
-            <ManagePanel initialTool={manageTool} onToolActivated={() => setManageTool(null)} />
+            <ManagePanel
+              initialTool={manageTool}
+              initialArchiveFilter={manageArchiveFilter}
+              initialArchiveSearch={manageArchiveSearch}
+              onToolActivated={() => {
+                setManageTool(null);
+                setManageArchiveFilter(undefined);
+                setManageArchiveSearch(undefined);
+              }}
+            />
           </section>
         )}
 
         {/* Projects Tab */}
         {activeTab === 'projects' && (
           <section>
-            <ProjectsPanel onNavigateToTab={changeTab} />
+            <ProjectsPanel
+              onNavigateToTab={changeTab}
+              onNavigateToArchive={(projectCode) => {
+                // WU4: table T7 badge deep-links to Archive pre-filtered.
+                navigateToManage('archive', { archiveSearch: projectCode });
+              }}
+            />
           </section>
         )}
 

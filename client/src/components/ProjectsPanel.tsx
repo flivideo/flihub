@@ -39,6 +39,8 @@ import type {
 interface ProjectsPanelProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onNavigateToTab?: (tab: any) => void;
+  // WU4: Deep-link from the T7 badge in the project row into the Archive tool.
+  onNavigateToArchive?: (projectCode: string) => void;
 }
 
 // Valid project code pattern: letter + 2 digits + optional suffix (e.g., b71, b72-awesome)
@@ -111,7 +113,15 @@ const HOLD_BADGE_CONFIG: Partial<Record<HoldLocation, { text: string; bg: string
 };
 
 // B064: Per-row hold badge — calls useHoldStatus(code) to derive badge from HoldLocation
-function HoldBadge({ code }: { code: string }) {
+// WU4: Badge is now a button that deep-links into the Archive tool pre-filtered
+// to this project code. Stops propagation so the row-click (drawer) doesn't fire.
+function HoldBadge({
+  code,
+  onNavigateToArchive,
+}: {
+  code: string;
+  onNavigateToArchive?: (projectCode: string) => void;
+}) {
   const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
   const { data: holdStatus } = useHoldStatus(code);
 
@@ -120,19 +130,32 @@ function HoldBadge({ code }: { code: string }) {
   const badgeConfig = HOLD_BADGE_CONFIG[holdStatus.location];
   if (!badgeConfig) return null; // 'local-only' and 'unknown' — no badge
 
+  const clickable = !!onNavigateToArchive;
+  const tooltip = clickable ? `${badgeConfig.tooltip} — click to open in Archive` : badgeConfig.tooltip;
+
   return (
     <span
-      className="inline-flex items-center cursor-help relative"
+      className="inline-flex items-center relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${badgeConfig.bg} ${badgeConfig.textColor}`}>
+      <button
+        type="button"
+        data-testid={`hold-badge-${code}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onNavigateToArchive?.(code);
+        }}
+        disabled={!clickable}
+        title={tooltip}
+        className={`text-xs px-1.5 py-0.5 rounded font-medium transition-opacity ${badgeConfig.bg} ${badgeConfig.textColor} ${clickable ? 'cursor-pointer hover:opacity-80' : 'cursor-help'}`}
+      >
         {badgeConfig.text}
-      </span>
+      </button>
       {isHovered && (
         <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-          {badgeConfig.tooltip}
+          {tooltip}
         </div>
       )}
     </span>
@@ -485,7 +508,8 @@ const STAGE_ROW_TINT: Record<ProjectStage, string> = {
   remix: 'bg-rose-50/40',    // FR-149: Being repackaged into new content
 };
 
-export function ProjectsPanel(_props: ProjectsPanelProps) {
+export function ProjectsPanel(props: ProjectsPanelProps) {
+  const { onNavigateToArchive } = props;
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectCode, setNewProjectCode] = useState('');
   // FR-148: Filter state
@@ -853,7 +877,7 @@ export function ProjectsPanel(_props: ProjectsPanelProps) {
                       <td className="px-2 text-center" style={{ width: '64px' }}>
                         <span className="inline-flex items-center gap-0.5">
                           <RelayIndicator relayProject={relayByCode.get(project.code)} />
-                          <HoldBadge code={project.code} /> {/* B064 */}
+                          <HoldBadge code={project.code} onNavigateToArchive={onNavigateToArchive} /> {/* B064 + WU4 */}
                         </span>
                       </td>
 

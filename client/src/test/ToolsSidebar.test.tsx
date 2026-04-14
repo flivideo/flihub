@@ -22,7 +22,8 @@ describe('ToolsSidebar', () => {
     expect(screen.getByText('Relay')).toBeInTheDocument();
     expect(screen.getByText('AWB')).toBeInTheDocument();
     expect(screen.getByText('Sync')).toBeInTheDocument();
-    expect(screen.getByText('SSD Offload')).toBeInTheDocument();
+    expect(screen.getByText('SSD Status')).toBeInTheDocument();
+    expect(screen.getByText('Archive')).toBeInTheDocument();
   });
 
   it('active tool button has active styling (text-blue-600)', () => {
@@ -44,7 +45,8 @@ describe('ToolsSidebar', () => {
       { label: 'Relay', tool: 'relay' },
       { label: 'AWB', tool: 'awb' },
       { label: 'Sync', tool: 'sync' },
-      { label: 'SSD Offload', tool: 'storage' },
+      { label: 'SSD Status', tool: 'storage' },
+      { label: 'Archive', tool: 'archive' },
     ];
 
     tools.forEach(({ label, tool }) => {

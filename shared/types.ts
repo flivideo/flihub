@@ -288,6 +288,32 @@ export interface HoldStatus {
   verification?: HoldVerification; // Only populated when location === 'both'
 }
 
+// WU1: Archive inventory — unified row per project for the Archive tool
+// State derivation:
+//   - localBytes > 0 && !held → 'local'
+//   - localBytes > 0 && held  → 'held-local'
+//   - localBytes === 0 && held → 'held-only'
+export type ArchiveState = 'local' | 'held-local' | 'held-only';
+
+export interface ArchiveRow {
+  projectCode: string;
+  projectPath: string;
+  localBytes: number;
+  heldBytes: number;
+  held: boolean;
+  state: ArchiveState;
+  lastTouched: string | null;
+  // WU1 Patch 4: set to true when per-project aggregation threw; `error` holds
+  // the message. Wave B destructive actions will gate on !row.degraded so a
+  // partial read of a project's state never leads to accidental deletion.
+  degraded?: boolean;
+  error?: string;
+}
+
+export interface ArchiveInventoryResponse {
+  rows: ArchiveRow[];
+}
+
 // B064: Result of any hold operation (rsync, delete, verify)
 export interface HoldOperationResult {
   success: boolean;

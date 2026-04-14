@@ -5,7 +5,7 @@
 **Target**: Archive becomes *the* surface for T7 lifecycle — drawer section demoted to read-only summary; T7 header pill + table badge deep-link into filtered Archive view.
 
 ## Summary
-- Total: 5 | Complete: 0 | In Progress: 0 | Pending: 5 | Failed: 0
+- Total: 5 | Complete: 5 | In Progress: 0 | Pending: 0 | Failed: 0
 
 ## Design Principles (from UX audit)
 
@@ -29,14 +29,33 @@ Footer aggregate: `T7: {held total} used · Local reclaimable: {sum of both-copi
 
 ## Wave A — Prerequisites (run first, in sequence)
 
-- [ ] **WU1** — Archive data layer (hook + route) — consolidates per-project hold/disk state into one query
+- [x] **WU1** — Archive data layer (hook + route) — consolidates per-project hold/disk state into one query ✅ 2026-04-14
 
 ## Wave B — Main Wave (run in parallel after WU1)
 
-- [ ] **WU2** — ArchiveTool component with filterable table + inline single-project actions
-- [ ] **WU3** — Batch selection + batch offload/delete operations
-- [ ] **WU4** — Deep-link entry points (T7 pill, table badge → Archive with filter)
-- [ ] **WU5** — Restore confirm modal + drawer section demotion
+- [x] **WU2** — ArchiveTool component with filterable table + inline single-project actions ✅ 2026-04-14
+- [x] **WU3** — Batch selection + batch offload/delete operations ✅ 2026-04-14
+- [x] **WU4** — Deep-link entry points (T7 pill, table badge → Archive with filter) ✅ 2026-04-14
+- [x] **WU5** — Restore confirm popover + StorageTool demotion ✅ 2026-04-14
+
+## WU4 + WU5 — Delivered 2026-04-14
+
+**WU4 — Deep-link entry points**
+- `SsdIndicator` renamed prop `onNavigateToStorage` → `onNavigateToArchive`; T7 pill now deep-links to Archive with `initialFilter='held'`.
+- `ProjectsPanel.HoldBadge` is now a `<button>` with `data-testid="hold-badge-{code}"`; `stopPropagation` keeps it from opening the row drawer; passes `projectCode` as `initialSearch` via new `onNavigateToArchive` prop threaded through `ProjectsPanel`.
+- `App.tsx`: new `navigateToManage(tool, opts)` helper; `manageArchiveFilter` + `manageArchiveSearch` state passed through to `ManagePanel`.
+- `ManagePanel`: new `initialArchiveFilter` + `initialArchiveSearch` props; `archiveMountKey` nonce bumps ArchiveTool remount so repeat navigations re-apply `initial*` props cleanly.
+- `ArchiveTool`: search input added above filter tabs; wires `initialSearch` prop; case-insensitive substring match on `projectCode`.
+
+**WU5 — Restore confirm + StorageTool demotion**
+- `ArchiveTool.handleRestore` no longer fires the mutation; opens inline `restore-confirm-popover` mini-dialog with `formatBytes(heldBytes)` copy, `Confirm` / `Cancel` buttons. Mutation only fires from `confirmRestore`.
+- `StorageTool` rewritten top-to-bottom: 510-line 9-state offload/restore/delete action UI → ~95-line read-only summary with `Manage in Archive →` link. Removed: `useHoldProject`, `useVerifyHolding`, `useDeleteLocal`, `useRestoreFromHolding`, `useDeleteHolding`, `useProjectDisk`, `useDeleteSubfolder`, HoldDeleteModal, FolderBreakdown sub-component, 3-state main content, dry-run message, restore confirm.
+- `ToolsSidebar` label changed from "SSD Offload" to "SSD Status" to match new read-only posture.
+- Tests: `ArchiveTool.test.tsx` +4 (search pre-fill, case-insensitive filter, restore opens popover, cancel closes); `ToolsSidebar.test.tsx` updated label.
+
+**Note on ProjectDrawer.tsx**: Task brief specified "drawer SSD Offload section — delete 9-state UI". Current `ProjectDrawer.tsx` has NO SSD Offload section (removed in commit 7409704 "close archive-offload campaign"); the 9-state UI lives in `StorageTool.tsx`. Treated StorageTool as the demotion target. Drawer was already at the desired read-only posture for SSD state (it only shows Disk Usage).
+
+**Tests: 245 client (+4 new), 1110 server, 80 shared — no regressions**
 
 ## Pending
 
@@ -135,10 +154,47 @@ Footer aggregate: `T7: {held total} used · Local reclaimable: {sum of both-copi
 (coordinator moves items here with [~])
 
 ## Complete
-(coordinator moves items here with [x], adds outcome notes)
+
+### WU1 — Archive data layer ✅ 2026-04-14
+
+- `GET /api/manage/archive-inventory` added in `server/src/routes/manage.ts` (+122 lines)
+- `useArchiveInventory()` hook in `client/src/hooks/useApi.ts` (+14 lines)
+- `ArchiveRow` / `ArchiveState` / `ArchiveInventoryResponse` added to `shared/types.ts` (+19 lines)
+- 4 new route tests in `server/src/test/manage.test.ts` (+161 lines) covering all three `state` derivations, empty case, unconfigured case, hidden-dir filtering
+- Tests: 1082 passed / 2 skipped (baseline 1074 → +8 from new tests)
+- Builds: server + client pass
+
+**Deviations from plan (approved inline)**:
+1. Endpoint unions `projectsRootDirectory` + `holdingPath` to capture `held-only` rows (projects with no local folder left)
+2. `localBytes = total − rRec − r1st − r2nd` (strip relay subfolders that `calculateProjectDiskSize` rolls into `total`)
+3. `lastTouched` reads `HoldStatus.heldAt` which is currently null until disk-cache update populates it — wired through, returns null when absent
 
 ## Failed / Needs Retry
 (coordinator moves items here with [!], adds failure reason)
+
+## Patches Applied — After Wave A Delivery Review (2026-04-14)
+
+Delivery review verdict: **FAIL** → CONDITIONAL after patches. All 8 blockers applied in one pass. Tests: 1082 → 1094 server (+12 net), 1393 total passing, no regressions.
+
+| # | Finding | Source | Action | Status |
+|---|---|---|---|---|
+| 1 | `lastTouched` always null — heldAt never populated | BH-001/EC-001/UT-004 | fs.stat(holdingPath).mtime fallback in buildArchiveRow | [x] done |
+| 2 | Phantom rows from unvalidated holdingRoot entries | BH-002 | `isValidProjectDirName` regex shared across both roots | [x] done |
+| 3 | State derivation diverges from spec | AA-002 | `held = heldBytes > 0`; `deriveArchiveState` is pure bytes-only | [x] done |
+| 4 | Silent `.catch(() => null)` → data-loss path | BH-004/EC-004/CQ-003 | `degraded` + `error` fields on ArchiveRow; console.warn | [x] done |
+| 5 | localBytes subtraction unsafe + untested | BH/EC/AA/CQ/AR/UT (all 6) | `Math.max(0, ...)` clamp + WHY comment + relay test | [x] done |
+| 6 | Wrong route file (manage.ts vs hold.ts) | AR-001/AR-002 | Moved to `hold.ts` at `/api/projects/archive-inventory`; extracted `utils/archiveInventory.ts` | [x] done |
+| 7 | QUERY_KEYS violated + hook in barrel | AR-004/AR-005 | `QUERY_KEYS.archiveInventory` + hook moved to `useHoldApi.ts` (barrel re-export preserves import path) | [x] done |
+| 8 | Test hardening (symmetric fixtures, no relay test, etc.) | UT-001/UT-002/UT-003 | Asymmetric fixtures, relay subtraction test, partial-failure isolation, non-null lastTouched | [x] done |
+
+**Deferred to follow-ups**: EC-002 archived filter edge, EC-005 concurrency cap, EC-006 mutation invalidation, AR-006 response envelope, UT-005/006 minor test hygiene, BH-003 projectPath nullable (wait for Wave B consumer).
+
+**Key contract changes Wave B must know**:
+- Endpoint URL is `/api/projects/archive-inventory` (not `/api/manage/...`)
+- `ArchiveRow.degraded` — Wave B destructive actions MUST gate on `!row.degraded`
+- `ArchiveRow.error` — surface in UI when present
+- `deriveArchiveState(localBytes, heldBytes)` is exported from `server/src/utils/archiveInventory.ts` — WU3 batch endpoints should use it for allowlist validation
+- Hook import path unchanged (`useArchiveInventory` still re-exported from `useApi`)
 
 ## Notes & Decisions
 

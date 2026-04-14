@@ -23,6 +23,8 @@ export { SyncIndicator } from './SyncIndicator';
 export { RelayIndicator } from './RelayIndicator';
 export { SsdIndicator } from './SsdIndicator';
 export { StorageTool } from './StorageTool';
+export { ArchiveTool } from './ArchiveTool';
+export type { ArchiveToolProps } from './ArchiveTool';
 export { EditableFileRow } from './EditableFileRow';
 export type { EditableFileRowProps } from './EditableFileRow';
 export { BatchToolbar } from './BatchToolbar';

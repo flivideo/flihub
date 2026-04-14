@@ -32,3 +32,5 @@ export * from './useEditingApi.js';
 export * from './useProjectDiskApi.js';
 export * from './useHoldApi.js';
 export * from './useProjectDictionary.js';
+// WU1: useArchiveInventory moved to useHoldApi.ts (lives next to the other
+// archive/hold hooks). Public import path stays stable via the barrel above.
