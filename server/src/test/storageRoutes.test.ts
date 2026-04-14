@@ -75,6 +75,8 @@ function copyRecursive(src: string, dest: string) {
 // Imports AFTER mocks
 import { createStorageRoutes } from '../routes/storage.js';
 import { getStorageTree, HEAVY_SUBFOLDERS } from '../utils/storageTree.js';
+import { readStorageActivity } from '../utils/storageActivityLog.js';
+import * as activityLog from '../utils/storageActivityLog.js';
 import type { Config, StorageMutationResponse, StorageTreeResponse } from '../../../shared/types.js';
 
 describe('storage-panel WU1', () => {
@@ -155,7 +157,7 @@ describe('storage-panel WU1', () => {
     nodeFs.writeFileSync(nodePath.join(p, 'r.mov'), Buffer.alloc(128, 1));
   }
 
-  function createApp(overrides: Partial<Config> = {}) {
+  function createApp(overrides: Partial<Config> = {}): express.Express & { __logPath: string } {
     const config: Config = {
       watchDirectory: '/tmp/watch',
       projectDirectory: projectsRoot,
@@ -168,10 +170,14 @@ describe('storage-panel WU1', () => {
       imageSourceDirectory: '/tmp/downloads',
       ...overrides,
     };
-    const router = createStorageRoutes(() => config);
-    const app = express();
+    // WU5: route tests inject a tmp log path so mutation tests don't touch
+    // ~/.flihub on the host machine.
+    const logPath = nodePath.join(tmpRoot, 'storage-activity.jsonl');
+    const router = createStorageRoutes(() => config, () => logPath);
+    const app = express() as express.Express & { __logPath: string };
     app.use(express.json());
     app.use('/api/projects', router);
+    app.__logPath = logPath;
     return app;
   }
 
@@ -726,6 +732,230 @@ describe('storage-panel WU1', () => {
       );
       expect(calls.length).toBeGreaterThan(0);
       for (const args of calls) assertExcludesPresent(args);
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // P1 (review): POST /held-archive — atomic Held → Archive endpoint.
+  // ---------------------------------------------------------------------
+  describe('P1 (review): POST /:code/held-archive', () => {
+    it('happy path: restores heavy from HOLDING, publishes to PUBLISHED, deletes local + HOLDING', async () => {
+      makeHeldProject('a1');
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/held-archive').send({});
+      expect(res.status).toBe(200);
+      const body = res.body as StorageMutationResponse;
+      expect(body.success).toBe(true);
+      expect(body.newState).toBe('archived');
+      // Local folder deleted
+      expect(nodeFs.existsSync(nodePath.join(projectsRoot, 'a1'))).toBe(false);
+      // HOLDING deleted
+      expect(nodeFs.existsSync(nodePath.join(holdingRoot, 'a1'))).toBe(false);
+      // PUBLISHED has the heavy content + previously-local light files
+      expect(nodeFs.existsSync(nodePath.join(publishedRoot, 'a1', 'recordings', 'a.mov'))).toBe(true);
+      expect(nodeFs.existsSync(nodePath.join(publishedRoot, 'a1', 'assets', 'img.png'))).toBe(true);
+    });
+
+    it('refuses when relay is non-empty — nothing destructive', async () => {
+      makeHeldProject('a1');
+      const relayRoot = nodePath.join(tmpRoot, 'relay');
+      makeRelayNonEmpty(relayRoot, 'a1');
+      const app = createApp({ relayEnabled: true, relayDirectory: relayRoot });
+      const res = await request(app).post('/api/projects/a1/held-archive').send({});
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/relay/i);
+      // HOLDING still intact
+      expect(nodeFs.existsSync(nodePath.join(holdingRoot, 'a1', 'recordings', 'a.mov'))).toBe(true);
+    });
+
+    it('refuses when T7 (HOLDING) is not mounted', async () => {
+      makeHeldProject('a1');
+      const app = createApp({ holdingPath: '/this/does/not/exist/youtube-HOLDING/appydave' });
+      const res = await request(app).post('/api/projects/a1/held-archive').send({});
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/not mounted/i);
+    });
+
+    it('refuses when project state is not `held` (active)', async () => {
+      makeActiveProject('a1');
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/held-archive').send({});
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.newState).toBe('active');
+    });
+
+    it('refuses when tree is degraded', async () => {
+      // Held + extra published content → degraded.
+      makeHeldProject('a1');
+      const pub = nodePath.join(publishedRoot, 'a1');
+      nodeFs.mkdirSync(pub, { recursive: true });
+      nodeFs.writeFileSync(nodePath.join(pub, 'extra.mov'), Buffer.alloc(32, 1));
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/held-archive').send({});
+      expect(res.status).toBe(409);
+      expect(res.body.error).toMatch(/degraded/i);
+    });
+
+    it('leaves everything intact when publish-verify fails', async () => {
+      makeHeldProject('a1');
+      // spawn: perform real copy on HOLDING→local (restore step) but truncate
+      // files on the local→PUBLISHED rsync so byte-count diverges.
+      const cp = await import('child_process');
+      const spawnSpy = vi.spyOn(cp, 'spawn').mockImplementation(((cmd: string, args: string[]) => {
+        const src = args[args.length - 2];
+        const dest = args[args.length - 1];
+        const emitter = new EventEmitter() as EventEmitter & {
+          stdin: unknown;
+          stdout: EventEmitter;
+          stderr: EventEmitter;
+        };
+        emitter.stdout = new EventEmitter();
+        emitter.stderr = new EventEmitter();
+        setImmediate(() => {
+          try {
+            const srcDir = src.replace(/\/$/, '');
+            const destDir = dest.replace(/\/$/, '');
+            copyRecursive(srcDir, destDir);
+            // If this is the publish step (dest inside publishedRoot), shrink.
+            if (destDir.startsWith(publishedRoot + nodePath.sep) || destDir === publishedRoot) {
+              const shrink = (dir: string) => {
+                for (const e of nodeFs.readdirSync(dir, { withFileTypes: true })) {
+                  const p = nodePath.join(dir, e.name);
+                  if (e.isDirectory()) shrink(p);
+                  else if (e.isFile()) nodeFs.writeFileSync(p, Buffer.alloc(1, 0));
+                }
+              };
+              shrink(destDir);
+            }
+            emitter.emit('close', 0);
+          } catch (err) {
+            emitter.emit('error', err);
+          }
+        });
+        return emitter as unknown as import('child_process').ChildProcess;
+      }) as typeof cp.spawn);
+
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/held-archive').send({});
+      spawnSpy.mockRestore();
+
+      expect(res.status).toBe(500);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error).toMatch(/verification/i);
+      // HOLDING still intact (not deleted)
+      expect(nodeFs.existsSync(nodePath.join(holdingRoot, 'a1', 'recordings', 'a.mov'))).toBe(true);
+      // Local still exists
+      expect(nodeFs.existsSync(nodePath.join(projectsRoot, 'a1'))).toBe(true);
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // P5 (review): mutation → activity-log side effect + no-log-on-failure.
+  // ---------------------------------------------------------------------
+  describe('P5 (review): mutation appends exactly one activity log entry on success', () => {
+    it('hold: appends one entry', async () => {
+      makeActiveProject('a1');
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/hold').send({});
+      expect(res.status).toBe(200);
+      const entries = await readStorageActivity({ logPath: app.__logPath });
+      expect(entries.length).toBe(1);
+      expect(entries[0].action).toBe('hold');
+      expect(entries[0].projectCode).toBe('a1');
+    });
+
+    it('restore-held: appends one entry', async () => {
+      makeHeldProject('a1');
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/restore-held').send({});
+      expect(res.status).toBe(200);
+      const entries = await readStorageActivity({ logPath: app.__logPath });
+      expect(entries.length).toBe(1);
+      expect(entries[0].action).toBe('restore-held');
+    });
+
+    it('archive: appends one entry', async () => {
+      makeActiveProject('a1');
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/archive').send({});
+      expect(res.status).toBe(200);
+      const entries = await readStorageActivity({ logPath: app.__logPath });
+      expect(entries.length).toBe(1);
+      expect(entries[0].action).toBe('archive');
+    });
+
+    it('unarchive: appends one entry', async () => {
+      makeArchivedProject('a1');
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/unarchive').send({});
+      expect(res.status).toBe(200);
+      const entries = await readStorageActivity({ logPath: app.__logPath });
+      expect(entries.length).toBe(1);
+      expect(entries[0].action).toBe('unarchive');
+    });
+
+    it('held-archive: appends one entry', async () => {
+      makeHeldProject('a1');
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/held-archive').send({});
+      expect(res.status).toBe(200);
+      const entries = await readStorageActivity({ logPath: app.__logPath });
+      expect(entries.length).toBe(1);
+      expect(entries[0].action).toBe('held-archive');
+    });
+  });
+
+  describe('P5 (review): refused mutations do NOT append activity entries', () => {
+    it('hold relay-blocked: no log entry', async () => {
+      makeActiveProject('a1');
+      const relayRoot = nodePath.join(tmpRoot, 'relay');
+      makeRelayNonEmpty(relayRoot, 'a1');
+      const app = createApp({ relayEnabled: true, relayDirectory: relayRoot });
+      const res = await request(app).post('/api/projects/a1/hold').send({});
+      expect(res.status).toBe(400);
+      const entries = await readStorageActivity({ logPath: app.__logPath });
+      expect(entries.length).toBe(0);
+    });
+
+    it('archive degraded: no log entry', async () => {
+      // Both local + published → degraded.
+      makeActiveProject('a1');
+      const pub = nodePath.join(publishedRoot, 'a1');
+      nodeFs.mkdirSync(nodePath.join(pub, 'recordings'), { recursive: true });
+      nodeFs.writeFileSync(nodePath.join(pub, 'recordings', 'x.mov'), Buffer.alloc(16, 1));
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/archive').send({});
+      expect(res.status).toBe(409);
+      const entries = await readStorageActivity({ logPath: app.__logPath });
+      expect(entries.length).toBe(0);
+    });
+
+    it('held-archive not-held refusal: no log entry', async () => {
+      makeActiveProject('a1');
+      const app = createApp();
+      const res = await request(app).post('/api/projects/a1/held-archive').send({});
+      expect(res.status).toBe(400);
+      const entries = await readStorageActivity({ logPath: app.__logPath });
+      expect(entries.length).toBe(0);
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // P7 (review): activity-log failure must NOT fail the mutation.
+  // ---------------------------------------------------------------------
+  describe('P7 (review): mutation succeeds even when activity logging throws', () => {
+    it('hold returns 200 success when appendStorageActivity rejects', async () => {
+      makeActiveProject('a1');
+      const app = createApp();
+      const spy = vi.spyOn(activityLog, 'appendStorageActivity').mockRejectedValueOnce(
+        new Error('simulated EACCES on log dir'),
+      );
+      const res = await request(app).post('/api/projects/a1/hold').send({});
+      spy.mockRestore();
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.newState).toBe('held');
     });
   });
 });

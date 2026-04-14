@@ -84,17 +84,13 @@ export function ToolsSidebar({
           Storage
         </div>
         <div className="flex flex-col gap-1">
+          {/* WU3: Storage replaces the old read-only "SSD Status" entry.
+              The Storage panel itself surfaces SSD mount state inline. */}
           <ToolButton
-            label="SSD Status"
+            label="Storage"
             active={activeTool === 'storage'}
             onClick={() => onToolClick('storage')}
-            tooltip="Per-project SSD status — opens Archive for actions"
-          />
-          <ToolButton
-            label="Archive"
-            active={activeTool === 'archive'}
-            onClick={() => onToolClick('archive')}
-            tooltip="Unified archive / offload / restore for all projects"
+            tooltip="Hold heavy files / archive whole project — per active project"
           />
         </div>
       </div>

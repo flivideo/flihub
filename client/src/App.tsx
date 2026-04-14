@@ -126,19 +126,56 @@ function App() {
   const [isDevDrawerOpen, setIsDevDrawerOpen] = useState(false);
   // B044: Manage tool navigation (for SyncIndicator click-through)
   const [manageTool, setManageTool] = useState<string | null>(null);
-  // WU4: Deep-link params for the Archive tool. Reset each navigation so
-  // ManagePanel's effect re-fires with fresh values.
-  const [manageArchiveFilter, setManageArchiveFilter] = useState<
-    'all' | 'local' | 'held' | 'reclaimable' | undefined
-  >(undefined);
-  const [manageArchiveSearch, setManageArchiveSearch] = useState<string | undefined>(undefined);
-  // Helper: set tool + archive params together so callers can deep-link in one go.
-  const navigateToManage = (
+  // P2 (review): guard against interleaved deep-link switches. If a switch is
+  // already in flight, a second caller awaits the same promise rather than
+  // kicking off a second mutation.
+  const pendingSwitchRef = useRef<Promise<void> | null>(null);
+  // Helper: set tool + deep-link params together so callers can navigate in one go.
+  // WU3: extended with `projectCode` — when provided alongside tool='storage',
+  // the active project is switched first so StoragePanel renders for the right
+  // project.
+  //
+  // P2 (review): made async so the config mutation is awaited before the tab
+  // flips. Previously this was fire-and-forget which could race — StoragePanel
+  // would render against the stale activeProject until the mutation settled.
+  const navigateToManage = async (
     tool: string,
-    opts?: { archiveFilter?: 'all' | 'local' | 'held' | 'reclaimable'; archiveSearch?: string }
+    opts?: {
+      projectCode?: string;
+    }
   ) => {
-    setManageArchiveFilter(opts?.archiveFilter);
-    setManageArchiveSearch(opts?.archiveSearch);
+    // WU3: Deep-link target wants a specific project active. Look up the path
+    // from the loaded projects list and switch before opening the tool.
+    // If the requested code IS already active, skip the round-trip.
+    if (tool === 'storage' && opts?.projectCode) {
+      const targetCode = opts.projectCode;
+      const currentActive = config?.activeProject;
+      if (targetCode !== currentActive) {
+        const match = projectsData?.projects?.find((p) => p.code === targetCode);
+        if (match) {
+          try {
+            // P2: if a switch is already in flight, dedupe onto it.
+            if (pendingSwitchRef.current) {
+              await pendingSwitchRef.current;
+            } else {
+              const p = (async () => {
+                await updateConfig.mutateAsync({ projectDirectory: match.path });
+              })();
+              pendingSwitchRef.current = p;
+              try {
+                await p;
+              } finally {
+                pendingSwitchRef.current = null;
+              }
+            }
+          } catch {
+            toast.error('Could not switch project');
+            return; // Do NOT flip the tool on switch failure.
+          }
+        }
+      }
+    }
+
     setManageTool(tool);
     changeTab('export');
   };
@@ -516,9 +553,9 @@ function App() {
                 changeTab('export');
                 setManageTool('relay');
               }} />
-              <SsdIndicator onNavigateToArchive={() => {
-                // WU4: T7 pill now deep-links to Archive pre-filtered to On T7.
-                navigateToManage('archive', { archiveFilter: 'held' });
+              <SsdIndicator onNavigateToStorage={() => {
+                // WU3: T7 pill now opens Storage panel for the active project.
+                navigateToManage('storage');
               }} />
               <div className="w-px h-5 bg-warm-divider" />
             </div>
@@ -812,12 +849,8 @@ function App() {
           <section>
             <ManagePanel
               initialTool={manageTool}
-              initialArchiveFilter={manageArchiveFilter}
-              initialArchiveSearch={manageArchiveSearch}
               onToolActivated={() => {
                 setManageTool(null);
-                setManageArchiveFilter(undefined);
-                setManageArchiveSearch(undefined);
               }}
             />
           </section>
@@ -828,9 +861,10 @@ function App() {
           <section>
             <ProjectsPanel
               onNavigateToTab={changeTab}
-              onNavigateToArchive={(projectCode) => {
-                // WU4: table T7 badge deep-links to Archive pre-filtered.
-                navigateToManage('archive', { archiveSearch: projectCode });
+              onNavigateToStorage={(projectCode) => {
+                // WU3: table T7 badge opens Storage panel for that specific
+                // project. App switches active project first if needed.
+                navigateToManage('storage', { projectCode });
               }}
             />
           </section>

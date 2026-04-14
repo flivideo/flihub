@@ -70,4 +70,11 @@ export const QUERY_KEYS = {
   holdStatus: (code: string) => ['hold-status', code] as const,
   // WU1: Archive tool unified inventory
   archiveInventory: ['archive-inventory'] as const,
+  // storage-panel WU2: per-project storage tree (Hold + Archive verbs)
+  storageTree: (code: string) => ['storage-tree', code] as const,
+  // storage-panel WU5: per-project storage activity feed
+  storageActivity: (code: string, limit: number) => ['storage-activity', code, limit] as const,
+  // P4: invalidation prefix (React Query prefix-match) — sourced from factory
+  // instead of a literal so renames stay consistent.
+  storageActivityBase: (code: string) => ['storage-activity', code] as const,
 } as const;

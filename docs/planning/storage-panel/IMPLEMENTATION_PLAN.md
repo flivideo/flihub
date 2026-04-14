@@ -6,7 +6,7 @@
 **Supersedes**: `archive-tool` campaign (kept the data layer + endpoints, replacing the UI shape)
 
 ## Summary
-- Total: 5 | Complete: 1 | In Progress: 0 | Pending: 4 | Failed: 0
+- Total: 5 | Complete: 5 | In Progress: 0 | Pending: 0 | Failed: 0
 
 ## Mental Model (read first)
 
@@ -101,10 +101,10 @@ T7: ● Connected      Local: ~/dev/video-projects/v-appydave/c36-archon-bmad
 
 ## Wave B — Main Wave (run in parallel after WU1)
 
-- [ ] **WU2** — `StoragePanel.tsx` + tree view + state-aware action buttons + confirms
-- [ ] **WU3** — Wire StoragePanel into ManagePanel sidebar; deep-link from T7 pill + table T7 badge; rename sidebar entry
-- [ ] **WU4** — Remove old `ArchiveTool.tsx` + multi-project list view + related dead hooks/state from App.tsx, ManagePanel, SsdIndicator
-- [ ] **WU5** — Activity log persistence + Recent Activity feed in panel
+- [x] **WU2** — `StoragePanel.tsx` + tree view + state-aware action buttons + confirms. Added `StoragePanel` + `storage/` subcomponents (`StorageStateHeader`, `StorageTree`, `StorageActions`), `useStorageApi` hooks, `useInvalidateProjectStorage` helper, `QUERY_KEYS.storageTree`. Client tests +11. Completed 2026-04-14.
+- [x] **WU3** — Sidebar wiring + deep-links. Replaced SSD Status with Storage in ToolsSidebar; `SsdIndicator` / ProjectsPanel T7 badges navigate to storage for chosen project; `App.navigateToManage` accepts `{ projectCode? }` and switches active project. Completed 2026-04-14.
+- [x] **WU4** — Removed old `ArchiveTool.tsx` + archiveToolUtils + tests; stripped archive filter state from App.tsx/ManagePanel; deleted `useArchiveInventory`/`useBatchOffload`/`useBatchDeleteLocal` hooks. Server endpoints left intact for future Projects-page chips. Completed 2026-04-14.
+- [x] **WU5** — Activity log persistence + feed. New `storageActivityLog` util (JSONL at `~/.flihub/storage-activity.jsonl`, injectable path), `GET /api/projects/:code/storage-activity`, `useStorageActivity` hook, `StorageActivityFeed` component rendered below tree. Server +9 tests, client +5 tests. Completed 2026-04-14.
 
 ## Pending
 
@@ -270,3 +270,19 @@ Delivery review verdict: FAIL (2 critical, 9 high). 11 patches applied in one pa
 - **Why we keep `archive-inventory` server-side**: Future Projects-page filter chips (`Local only` / `Held` / `Archived` / `Reclaimable`) will reuse it. Cheap to keep, expensive to rebuild.
 - **What we drop from prior campaign**: the multi-project list UI, batch UI, all related state, deep-link query params. All committed work in `archive-tool` campaign — see `docs/planning/archive-tool/IMPLEMENTATION_PLAN.md` for what was built.
 - **Naming locked in**: `Storage` (tool name), `Hold` (verb), `Archive` (verb), `Restore` (verb back from Held), `Unarchive` (verb back from Archived). State labels: `Active` / `Held` / `Archived`.
+
+## Patches Applied — After Wave B Delivery Review
+
+6-dimension review (BH/EC/AA/AR/CQ/UT) returned CONDITIONAL PASS. All 7 patches applied in a single pass before commit.
+
+| # | Patch | Source | Action |
+|---|---|---|---|
+| P1 | Held→Archive chain not atomic (restore left HOLDING orphan → degraded) | DVR-BH-001, DVR-EC-003 | New server `POST /api/projects/:code/held-archive` atomic endpoint (restore + verify + rsync + verify + delete local + delete HOLDING). New `useHeldArchiveProject` client mutation. `StorageActivityAction` union extended with `'held-archive'`. |
+| P2 | Deep-link project-switch race (fire-and-forget `updateConfig.mutate`) | DVR-EC-001 | `navigateToManage` is now async; awaits `updateConfig.mutateAsync` before flipping tool; surfaces toast on failure; dedupes concurrent switches via ref. StoragePanel renders "Switching project…" gate when projectCode ≠ activeProject. |
+| P3 | Dead `StorageTool.tsx` still exported with stale ArchiveTool comment | DVR-AR-001, DVR-AA-009, DVR-BH-003, DVR-CQ-001 | Deleted component, removed barrel export, updated stale comment in `useRelayApi.ts`. |
+| P4 | Activity-log invalidation uses raw literal tuple | DVR-EC-002, DVR-AR-002, DVR-BH-005 | Added `QUERY_KEYS.storageActivityBase(code)`; `useInvalidateProjectStorage` now sources prefix from factory. |
+| P5 | Route-level mutation → activity-log side effect untested | DVR-UT-003, DVR-UT-004 | 5 happy-path tests assert exactly-one entry; 3 refusal tests assert empty log. |
+| P6 | `useInvalidateProjectStorage` 6-key contract untested | DVR-UT-002 | New `client/src/test/useInvalidateProjectStorage.test.tsx` — pins all keys + total call count. |
+| P7 | `await logActivity` inside route try/catch contradicted "best-effort" comment | DVR-UT-005 | Each route wraps `logActivity` in its own try/catch → console.warn only; test with `appendStorageActivity` rejection confirms 200 still returned. |
+
+**Post-patch gates**: client 236/16 ✓ · server 1230+2skip/46 ✓ · shared 80/2 ✓ · both builds ✓

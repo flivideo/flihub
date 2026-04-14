@@ -39,8 +39,9 @@ import type {
 interface ProjectsPanelProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onNavigateToTab?: (tab: any) => void;
-  // WU4: Deep-link from the T7 badge in the project row into the Archive tool.
-  onNavigateToArchive?: (projectCode: string) => void;
+  // WU3: Deep-link from the T7 badge in the project row into the Storage panel
+  // for that specific project (App switches active project then opens tool).
+  onNavigateToStorage?: (projectCode: string) => void;
 }
 
 // Valid project code pattern: letter + 2 digits + optional suffix (e.g., b71, b72-awesome)
@@ -113,14 +114,14 @@ const HOLD_BADGE_CONFIG: Partial<Record<HoldLocation, { text: string; bg: string
 };
 
 // B064: Per-row hold badge — calls useHoldStatus(code) to derive badge from HoldLocation
-// WU4: Badge is now a button that deep-links into the Archive tool pre-filtered
-// to this project code. Stops propagation so the row-click (drawer) doesn't fire.
+// WU3: Badge is now a button that deep-links into the Storage panel for this
+// specific project. Stops propagation so the row-click (drawer) doesn't fire.
 function HoldBadge({
   code,
-  onNavigateToArchive,
+  onNavigateToStorage,
 }: {
   code: string;
-  onNavigateToArchive?: (projectCode: string) => void;
+  onNavigateToStorage?: (projectCode: string) => void;
 }) {
   const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
   const { data: holdStatus } = useHoldStatus(code);
@@ -130,8 +131,8 @@ function HoldBadge({
   const badgeConfig = HOLD_BADGE_CONFIG[holdStatus.location];
   if (!badgeConfig) return null; // 'local-only' and 'unknown' — no badge
 
-  const clickable = !!onNavigateToArchive;
-  const tooltip = clickable ? `${badgeConfig.tooltip} — click to open in Archive` : badgeConfig.tooltip;
+  const clickable = !!onNavigateToStorage;
+  const tooltip = clickable ? `${badgeConfig.tooltip} — click to open in Storage` : badgeConfig.tooltip;
 
   return (
     <span
@@ -144,7 +145,7 @@ function HoldBadge({
         data-testid={`hold-badge-${code}`}
         onClick={(e) => {
           e.stopPropagation();
-          onNavigateToArchive?.(code);
+          onNavigateToStorage?.(code);
         }}
         disabled={!clickable}
         title={tooltip}
@@ -509,7 +510,7 @@ const STAGE_ROW_TINT: Record<ProjectStage, string> = {
 };
 
 export function ProjectsPanel(props: ProjectsPanelProps) {
-  const { onNavigateToArchive } = props;
+  const { onNavigateToStorage } = props;
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectCode, setNewProjectCode] = useState('');
   // FR-148: Filter state
@@ -877,7 +878,7 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                       <td className="px-2 text-center" style={{ width: '64px' }}>
                         <span className="inline-flex items-center gap-0.5">
                           <RelayIndicator relayProject={relayByCode.get(project.code)} />
-                          <HoldBadge code={project.code} onNavigateToArchive={onNavigateToArchive} /> {/* B064 + WU4 */}
+                          <HoldBadge code={project.code} onNavigateToStorage={onNavigateToStorage} /> {/* B064 + WU4 */}
                         </span>
                       </td>
 

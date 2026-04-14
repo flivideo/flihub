@@ -170,7 +170,7 @@ export function useRelayClear() {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayEnhancedBrowse });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayDivergence });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayActivity });
-        // Invalidate all hold-status queries so StorageTool sees relayBytes drop to 0
+        // Invalidate all hold-status queries so StoragePanel sees relayBytes drop to 0
         queryClient.invalidateQueries({ queryKey: ['hold-status'] });
       } else {
         toast.error(data.error || 'Clear failed');

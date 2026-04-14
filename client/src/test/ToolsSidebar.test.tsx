@@ -22,8 +22,20 @@ describe('ToolsSidebar', () => {
     expect(screen.getByText('Relay')).toBeInTheDocument();
     expect(screen.getByText('AWB')).toBeInTheDocument();
     expect(screen.getByText('Sync')).toBeInTheDocument();
-    expect(screen.getByText('SSD Status')).toBeInTheDocument();
-    expect(screen.getByText('Archive')).toBeInTheDocument();
+    // WU3: Storage heading + Storage tool button both exist — use getAllByText
+    expect(screen.getAllByText('Storage').length).toBeGreaterThan(0);
+    // WU3: SSD Status entry has been replaced by Storage.
+    expect(screen.queryByText('SSD Status')).not.toBeInTheDocument();
+    // WU4: Archive entry removed from sidebar.
+    expect(screen.queryByText('Archive')).not.toBeInTheDocument();
+  });
+
+  it('WU3: clicking Storage button calls onToolClick with "storage"', () => {
+    const props = renderSidebar();
+    // Both heading and button render the text "Storage" — pick the BUTTON role.
+    const storageButton = screen.getByRole('button', { name: /^Storage$/ });
+    fireEvent.click(storageButton);
+    expect(props.onToolClick).toHaveBeenCalledWith('storage');
   });
 
   it('active tool button has active styling (text-blue-600)', () => {
@@ -45,8 +57,6 @@ describe('ToolsSidebar', () => {
       { label: 'Relay', tool: 'relay' },
       { label: 'AWB', tool: 'awb' },
       { label: 'Sync', tool: 'sync' },
-      { label: 'SSD Status', tool: 'storage' },
-      { label: 'Archive', tool: 'archive' },
     ];
 
     tools.forEach(({ label, tool }) => {
@@ -76,7 +86,8 @@ describe('ToolsSidebar', () => {
 
     it('renders Storage heading', () => {
       renderSidebar();
-      expect(screen.getByText('Storage')).toBeInTheDocument();
+      // Heading + button both labelled "Storage" — assert at least one exists.
+      expect(screen.getAllByText('Storage').length).toBeGreaterThan(0);
     });
   });
 });

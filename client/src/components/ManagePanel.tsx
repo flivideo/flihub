@@ -24,11 +24,10 @@ import {
   GlingEditTool,
   RelayTool,
   SyncTool,
-  StorageTool,
-  ArchiveTool,
 } from './shared';
 import type { ChapterSettings } from './shared';
-import type { ArchiveFilter } from './shared/archiveToolUtils';
+// WU3: per-active-project Storage panel (WU2 deliverable).
+import { StoragePanel } from './shared/StoragePanel';
 import { extractTagsFromName } from '../../../shared/naming';
 import { PoemWuiPage } from './PoemWuiPage';
 import type { RecordingFile } from '../../../shared/types';
@@ -87,26 +86,18 @@ const toolHeadings: Record<string, string> = {
   sync: 'Sync',
   awb: 'AWB',
   storage: 'Storage',
-  archive: 'Archive',
 };
 
-export type ActiveTool = 'regen' | 'gling-edit' | 'relay' | 'awb' | 'sync' | 'storage' | 'archive';
+export type ActiveTool = 'regen' | 'gling-edit' | 'relay' | 'awb' | 'sync' | 'storage';
 
 export interface ManagePanelProps {
   initialTool?: string | null;
   onToolActivated?: () => void;
-  // WU4: Deep-link params forwarded to ArchiveTool. Change the `initialTool`
-  // ref along with these (App.tsx always sets a fresh object) so the effect
-  // below re-applies even when tool === 'archive' already.
-  initialArchiveFilter?: ArchiveFilter;
-  initialArchiveSearch?: string;
 }
 
 export function ManagePanel({
   initialTool,
   onToolActivated,
-  initialArchiveFilter,
-  initialArchiveSearch,
 }: ManagePanelProps = {}) {
   const { data, isLoading, error } = useRecordings();
   const { data: config } = useConfig();
@@ -116,31 +107,14 @@ export function ManagePanel({
   // B041: Tool-oriented design — each tool owns center content, default to regen
   const [activeTool, setActiveTool] = useState<ActiveTool>('regen');
 
-  // WU4: Local override for Archive deep-link params — set when the Storage
-  // tool escape-hatch or internal navigation wants to push a filter/search
-  // without roundtripping through App.tsx props.
-  const [localArchiveFilter, setLocalArchiveFilter] = useState<ArchiveFilter | undefined>(undefined);
-  const [localArchiveSearch, setLocalArchiveSearch] = useState<string | undefined>(undefined);
-  // Bumping this key re-mounts ArchiveTool so it re-reads `initial*` props
-  // even when the user is already on the Archive tool and clicks a new badge.
-  const [archiveMountKey, setArchiveMountKey] = useState(0);
-
   // B044: Allow parent to navigate to a specific tool (e.g. from SyncIndicator).
-  // WU4: also forwards Archive filter/search params and bumps the remount key
-  // so a fresh badge click re-applies even when already on Archive.
   useEffect(() => {
     if (initialTool) {
       setActiveTool(initialTool as ActiveTool);
-      // Clear local overrides — parent-provided props take precedence this cycle.
-      setLocalArchiveFilter(undefined);
-      setLocalArchiveSearch(undefined);
-      setArchiveMountKey((k) => k + 1);
       onToolActivated?.();
     }
-    // Intentionally depend on the full param tuple — App.tsx sends a fresh
-    // value each navigation so this re-fires even when tool === activeTool.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialTool, initialArchiveFilter, initialArchiveSearch]);
+  }, [initialTool]);
 
   // Confirmation modal state
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -669,25 +643,8 @@ export function ManagePanel({
             {activeTool === 'gling-edit' && <GlingEditTool />}
             {activeTool === 'awb' && <PoemWuiPage />}
             {activeTool === 'storage' && (
-              <StorageTool
-                projectCode={config?.activeProject || ''}
-                onNavigateToArchive={(projectCode) => {
-                  // WU5: Storage-tool "Manage in Archive" escape hatch.
-                  // Set the local search override first, then flip activeTool so
-                  // ArchiveTool mounts with the correct initialSearch prop.
-                  setLocalArchiveSearch(projectCode);
-                  setLocalArchiveFilter(undefined);
-                  setArchiveMountKey((k) => k + 1);
-                  setActiveTool('archive');
-                }}
-              />
-            )}
-            {activeTool === 'archive' && (
-              <ArchiveTool
-                key={archiveMountKey}
-                initialFilter={localArchiveFilter ?? initialArchiveFilter}
-                initialSearch={localArchiveSearch ?? initialArchiveSearch}
-              />
+              // WU3: per-active-project Storage panel.
+              <StoragePanel projectCode={config?.activeProject || ''} />
             )}
           </>
         )}

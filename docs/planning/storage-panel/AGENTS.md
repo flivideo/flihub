@@ -99,12 +99,12 @@ Coordinator: capture at campaign start.
 
 | Metric | Baseline | After Wave A | After Wave B |
 |---|---|---|---|
-| Client tests | 247 passed (15 files) | 247 | |
-| Server tests | 555 passed + 1 skipped (21 files) | 591 passed + 1 skipped (22 files, post-patches) | |
-| Shared tests | 80 passed (2 files) | 80 | |
-| Client typecheck | pass | pass | |
-| Server typecheck | pass | pass | |
-| Client build | pass | pass | |
+| Client tests | 247 passed (15 files) | 247 | 235 passed (15 files) — net −12 after Archive test removals (WU4: −27) + StoragePanel/feed tests (WU2+WU5: +16) |
+| Server tests | 555 passed + 1 skipped (21 files) | 591 passed + 1 skipped (22 files, post-patches) | 600 passed + 1 skipped (23 files) — +9 from storageActivity tests |
+| Shared tests | 80 passed (2 files) | 80 | 80 |
+| Client typecheck | pass | pass | pass |
+| Server typecheck | pass | pass | pass |
+| Client build | pass | pass | pass |
 
 A degraded baseline blocks the next wave.
 

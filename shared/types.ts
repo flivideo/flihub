@@ -371,6 +371,24 @@ export interface StorageMutationResponse {
   newState?: StorageState;
 }
 
+// storage-panel WU5: One entry per successful storage mutation. JSONL-persisted
+// in `~/.flihub/storage-activity.jsonl` (global across projects so archived
+// projects with no local folder still have a breadcrumb trail).
+export type StorageActivityAction = 'hold' | 'restore-held' | 'archive' | 'unarchive' | 'held-archive';
+
+export interface StorageActivityEntry {
+  projectCode: string;
+  action: StorageActivityAction;
+  sizeBytes: number;
+  timestamp: string; // ISO 8601
+}
+
+export interface StorageActivityResponse {
+  success: boolean;
+  entries: StorageActivityEntry[];
+  error?: string;
+}
+
 // B064: Result of any hold operation (rsync, delete, verify)
 export interface HoldOperationResult {
   success: boolean;
