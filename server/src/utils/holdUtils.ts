@@ -5,10 +5,20 @@ import { spawn } from 'child_process';
 import type { HoldVerification, HoldStatus, HoldOperationResult } from '../../../shared/types.js';
 
 // ---------------------------------------------------------------------------
+// WU3: Rsync exclude patterns — junk folders that should never be held/restored.
+// Mirrors the pattern in relay.ts (RSYNC_EXCLUDES / rsyncExcludeArgs).
+// ---------------------------------------------------------------------------
+export const HOLD_EXCLUDES = ['-trash/', 's3-staging/', '.DS_Store', '._*'];
+
+export function holdExcludeArgs(): string[] {
+  return HOLD_EXCLUDES.flatMap(pattern => ['--exclude', pattern]);
+}
+
+// ---------------------------------------------------------------------------
 // B064: Internal helper — recursive dir stats (file count + total bytes)
 // Returns { fileCount: 0, totalBytes: 0 } if dir does not exist or any error.
 // ---------------------------------------------------------------------------
-async function getDirStats(dirPath: string): Promise<{ fileCount: number; totalBytes: number }> {
+export async function getDirStats(dirPath: string): Promise<{ fileCount: number; totalBytes: number }> {
   try {
     const entries = await fs.readdir(dirPath, { withFileTypes: true, recursive: true });
     let fileCount = 0;
@@ -213,7 +223,7 @@ export async function holdProject(
 
     // B064: rsync with array args — no shell string interpolation
     // Trailing slash on source means "copy contents into dest"
-    await spawnAsync('rsync', ['-a', projectDir + '/', destDir + '/']);
+    await spawnAsync('rsync', ['-a', ...holdExcludeArgs(), projectDir + '/', destDir + '/']);
 
     return {
       success: true,
@@ -244,7 +254,7 @@ export async function restoreFromHolding(
     await fs.mkdir(localDir, { recursive: true });
 
     // B064: rsync with array args — no shell string interpolation
-    await spawnAsync('rsync', ['-a', holdingDir + '/', localDir + '/']);
+    await spawnAsync('rsync', ['-a', ...holdExcludeArgs(), holdingDir + '/', localDir + '/']);
 
     return {
       success: true,

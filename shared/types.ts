@@ -108,6 +108,13 @@ export interface RelayPromoteResponse {
   error?: string;
 }
 
+export interface RelayClearResponse {
+  success: boolean;
+  deleted?: number;
+  subfolder?: string;
+  error?: string;
+}
+
 // Promote-to-final: version file in edit-2nd/
 export interface EditVersion {
   filename: string;
@@ -1205,7 +1212,7 @@ export interface RelayActivityEvent {
   id: string;           // unique id (timestamp + random)
   projectCode: string;
   subfolder: RelaySubfolder;
-  action: 'push' | 'collect' | 'promote' | 'file-detected';
+  action: 'push' | 'collect' | 'promote' | 'clear' | 'file-detected';
   description: string;  // "You pushed 15 recordings (338 MB)"
   timestamp: string;    // ISO date
   fileCount?: number;

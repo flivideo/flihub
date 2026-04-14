@@ -13,13 +13,13 @@
     "skool": "https://skool.com/appydave-6257"
   },
   "ctas": {
-    "foldCta": {
-      "label": "Join Skool Community",
-      "url": "https://skool.com/appydave-6257"
-    },
     "primaryCta": {
       "label": "Access Benefits",
       "url": "https://www.appydave.com/opt-in"
+    },
+    "foldCta": {
+      "label": "Join Skool Community",
+      "url": "https://skool.com/appydave-6257"
     }
   },
   "affiliates": [

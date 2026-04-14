@@ -50,6 +50,29 @@ export function useDeleteTrash(code: string | null) {
   });
 }
 
+// WU2: Delete contents of a project subfolder (pre-offload cleanup)
+export function useDeleteSubfolder(code: string | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { subfolder: string }) => {
+      const res = await fetch('/api/manage/delete-subfolder', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Delete failed');
+      return res.json() as Promise<{ success: boolean; deleted: number; subfolder: string }>;
+    },
+    onSuccess: () => {
+      // Refresh disk data so the breakdown updates
+      if (code) {
+        queryClient.removeQueries({ queryKey: QUERY_KEYS.projectDisk(code) });
+      }
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.holdStatus(code ?? '') });
+    },
+  });
+}
+
 // B062: Get disk data for one project (on-demand, uses server cache)
 export function useProjectDisk(code: string | null) {
   return useQuery({

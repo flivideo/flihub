@@ -78,6 +78,21 @@ export function ToolsSidebar({
         </div>
       </div>
 
+      {/* Storage group */}
+      <div>
+        <div className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-3 px-2">
+          Storage
+        </div>
+        <div className="flex flex-col gap-1">
+          <ToolButton
+            label="SSD Offload"
+            active={activeTool === 'storage'}
+            onClick={() => onToolClick('storage')}
+            tooltip="Offload to T7 SSD / restore from T7"
+          />
+        </div>
+      </div>
+
     </div>
   );
 }

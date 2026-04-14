@@ -22,6 +22,7 @@ export interface KanbanLaneProps {
   isDrawerOpen: boolean;
   onToggleDrawer: () => void;
   onEnsureFolders: () => void;
+  onClear?: () => void;
 }
 
 export function KanbanLane({
@@ -34,6 +35,7 @@ export function KanbanLane({
   isDrawerOpen,
   onToggleDrawer,
   onEnsureFolders,
+  onClear,
 }: KanbanLaneProps) {
   const { mutate: openFolder } = useOpenFolder();
   const folderExists = divergence?.folderExists ?? true;
@@ -143,6 +145,17 @@ export function KanbanLane({
           className="w-full px-3 py-1.5 text-sm font-medium bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? 'Creating...' : 'Create Folders'}
+        </button>
+      )}
+
+      {/* Clear relay — only when synced and relay has files */}
+      {onClear && direction === 'synced' && relayCount > 0 && (
+        <button
+          onClick={onClear}
+          disabled={isPending}
+          className="text-red-600 hover:text-red-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Clear
         </button>
       )}
 

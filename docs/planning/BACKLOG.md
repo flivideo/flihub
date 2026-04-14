@@ -1,8 +1,8 @@
 # Project Backlog — FliHub
 
-**Last updated**: 2026-04-08
-**Total open**: 13 | Pending: 13 | In Progress: 0 | Deferred: 6 | Rejected: 4
-**Last reconciled**: archive-offload + B065 polish (2026-04-08)
+**Last updated**: 2026-04-12
+**Total open**: 15 | Pending: 15 | In Progress: 0 | Deferred: 6 | Rejected: 4
+**Last reconciled**: whisper-dictionary + video-controls session (2026-04-12)
 
 ---
 
@@ -44,7 +44,7 @@
 - [ ] B033 — Add transcription queue tests + optionally extract into class | Priority: medium | Reshaped: concurrency risk overstated (single-process Node.js), real issue is zero test coverage for most complex server module (839 lines). Class extraction is polish, not critical.
 - [x] B034 — Remove dead asyncHandler code (Express 5 handles async natively) | Priority: medium | Completed: recordings-page-polish | Reshaped: both asyncHandler definitions were dead code (never imported). Removed. Broader error response standardization (281 inconsistent formats) is a separate future campaign (NFR-67).
 - [-] B035 — Add React error boundary around tab components in App.tsx | Priority: deferred | Reshaped: all 12 tab components already handle errors defensively with early returns. No active crashes. Defensive pattern only — implement if a crash actually occurs.
-- [ ] B036 — Externalize Whisper configuration to config (binary + model + language) | Priority: medium-high | Reshaped from just WHISPER_BINARY to include MODEL + LANGUAGE. Blocks Jan/Mary on remote machines. Follows existing config pattern (relayDirectory, machineRole).
+- [ ] B036 — Externalize Whisper configuration to config (binary + model + language) | Priority: medium-high | Reshaped from just WHISPER_BINARY to include MODEL + LANGUAGE. Blocks Jan/Mary on remote machines. Follows existing config pattern (relayDirectory, machineRole). **Partial**: binary path already reads from config (`config.whisperBinary`); `--initial-prompt` wired (B066). Remaining: model + language still hardcoded in `transcriptions.ts:126-127`.
 - [x] B037 — Remove debug console.log statements from production code | Priority: low | Completed: recordings-page-polish | Removed 15 FR-89/FR-112 debug logs from App.tsx, FileCard.tsx, routes/index.ts. Broader logging strategy (100+ feature-tagged logs) is a separate future item.
 
 ---
@@ -65,6 +65,16 @@
 - [x] B061 — Relay Kanban Fixes — collect-without-folder, badge colors (amber not red), header RelayIndicator pill, open-folder buttons on Sync/Relay tools. Feedback F006-F010+F012 resolved. 3/3 complete. +12 tests (900 total). | Priority: high | Campaign: relay-kanban-fixes | Completed: relay-kanban-fixes
 
 - [x] B062 — Project List Redesign — filterable table + detail drawer (FR-148) | Priority: high | Campaign: project-list-redesign | PRD: `docs/prd/fr-148-project-list-redesign.md` | Completed: project-list-redesign
+
+## Video Controls & Dictionary (2026-04-12 session)
+
+- [x] B066 — Whisper `--initial-prompt` from global dictionary — feeds `glingDictionary` to MLX Whisper at transcription start to bias recognition toward domain-specific terms (AppyDave, BMAD, tmux, etc.). | Completed: 2026-04-12
+- [x] B067 — Delete Transcripts / Delete Shadows on Manage page — selection-aware (selected files or all), red text-link style below regen row, confirmation modal with "cannot be undone" warning. Server routes: `DELETE /api/manage/delete-transcripts` + `DELETE /api/manage/delete-shadows`, both accept optional `files[]` body param. | Completed: 2026-04-12
+- [ ] B068 — Video controls shared components (refactor) — Extract `SpeedControl` and `PlayPauseButton` into `client/src/components/shared/`. Watch page to use existing `SizeToggle` (already in shared, not used by Watch). Watch page to adopt `useVideoPlayback` hook directly (currently reimplements the same logic). Pure refactor — no visible UX change. Prerequisite for B069. | Priority: medium
+- [ ] B069 — Recordings modal — Watch-parity controls — Add Size toggle (N/L), Autoplay toggle, Auto Next toggle, and Prev/Next navigation (with `n/total` counter) to `VideoPlayerModal`. Prev/Next passed as optional `onPrevious`/`onNext` callbacks + `position` prop from `RecordingsView`. Uses shared components from B068. Keyboard: left/right arrow = prev/next when modal open. All toggles persisted to localStorage. | Priority: high
+- [ ] B070 — Dictionary quick-add on Incoming + Recordings pages — `DictionaryQuickAdd` component: compact `+ word...` input + `Global` / `Project` pill buttons, inline in `VideoPlayerModal` controls bar (right side, after speed buttons, separated by `|`). Client-side duplicate detection (case-insensitive). Global add: `POST /api/config` full array. Project add: `PATCH /api/projects/:code/state/dictionary` full array. `Project` button disabled when no `activeProject`. Not added to Transcripts page. `VideoPlayerModal` gets optional `dictionaryProps?: DictionaryQuickAddProps` — backward compatible. | Priority: high
+
+## Feature Backlog (general)
 
 - [ ] B001 — Dual Transcription System with Progress Tracking (FR-132) | Priority: medium | PRD: `docs/prd/fr-132-dual-transcription-progress.md`
 - [ ] B010 — Split Query Routes into Sub-Modules (NFR-68) | Priority: low | PRD: `docs/prd/nfr-68-split-query-routes.md`
@@ -98,6 +108,8 @@ The following items shipped successfully. Full completion notes are in each PRD 
 
 | ID | Title | Shipped |
 |----|-------|---------|
+| B067 | Delete Transcripts / Delete Shadows on Manage page — selection-aware red text-link buttons below regen row. Server DELETE routes with optional files[] body. Confirmation modal. | 2026-04-12 |
+| B066 | Whisper `--initial-prompt` from global dictionary — `glingDictionary` joined as comma-separated string passed to MLX Whisper at job start. Logged to server console. | 2026-04-12 |
 | B065 | B064+B062 Polish — response unwrap fix (SSD UI was always showing "not connected"), regex fix for codes with dots, global ssd-status endpoint, SsdIndicator in app header, "SSD Offload" terminology rename, Preview dry-run output, disk column totals in table thead+tfoot (column-aligned). End-to-end delete not yet tested by David. | 2026-04-08 |
 | B064 | Archive Offload (archive-offload) — SSD hold/restore with T7, relay-block guard, 5-gate safety chain, HoldDeleteModal, drawer section, ProjectsPanel badge. 8/8 complete. +1006 server tests. | 2026-04-08 |
 | B063 | Disk Space Observability (disk-observability) — toggle-on columns (REC/TRASH/SHADOWS/OTHER/R-REC/R-1ST/R-2ND/TOTAL), configurable thresholds, stage multiplier, detail drawer with subfolder breakdown, trash delete with safeDelete validation chain. 11/11 complete. 928 server tests pass. | 2026-04-07 |

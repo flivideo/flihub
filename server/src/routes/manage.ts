@@ -968,6 +968,165 @@ export function createManageRoutes(
   }
 
   /**
+   * DELETE /api/manage/delete-transcripts
+   * Delete transcript files (.txt, .srt, .json) for the current project.
+   * Body: { files?: string[] } — recording filenames; omit for all.
+   */
+  router.delete('/delete-transcripts', async (req, res) => {
+    try {
+      const config = getConfig();
+      const paths = getProjectPaths(expandPath(config.projectDirectory));
+      const transcriptsDir = paths.transcripts;
+
+      if (!fs.existsSync(transcriptsDir)) {
+        return res.json({ success: true, deleted: 0 });
+      }
+
+      const { files: targetFiles } = req.body as { files?: string[] };
+      let deleted = 0;
+
+      if (targetFiles && targetFiles.length > 0) {
+        // Delete only transcripts for the specified recording filenames
+        for (const filename of targetFiles) {
+          const baseName = path.basename(filename, path.extname(filename));
+          for (const ext of ['.txt', '.srt', '.json']) {
+            const filePath = path.join(transcriptsDir, `${baseName}${ext}`);
+            if (fs.existsSync(filePath)) {
+              await fs.remove(filePath);
+              deleted++;
+            }
+          }
+        }
+      } else {
+        // Delete all transcript files
+        const allFiles = await fs.readdir(transcriptsDir);
+        for (const file of allFiles.filter((f) => /\.(txt|srt|json)$/i.test(f))) {
+          await fs.remove(path.join(transcriptsDir, file));
+          deleted++;
+        }
+      }
+
+      console.log(`[delete-transcripts] Deleted ${deleted} files from ${transcriptsDir}`);
+      res.json({ success: true, deleted });
+    } catch (err) {
+      console.error('[delete-transcripts] Error:', err);
+      res.status(500).json({
+        success: false,
+        error: err instanceof Error ? err.message : 'Internal server error',
+      });
+    }
+  });
+
+  /**
+   * DELETE /api/manage/delete-shadows
+   * Delete shadow files for the current project.
+   * Body: { files?: string[] } — recording filenames; omit for all.
+   */
+  router.delete('/delete-shadows', async (req, res) => {
+    try {
+      const config = getConfig();
+      const projectPath = expandPath(config.projectDirectory);
+      const shadowsDir = path.join(projectPath, 'recording-shadows');
+
+      if (!fs.existsSync(shadowsDir)) {
+        return res.json({ success: true, deleted: 0 });
+      }
+
+      const { files: targetFiles } = req.body as { files?: string[] };
+      let deleted = 0;
+
+      if (targetFiles && targetFiles.length > 0) {
+        // Delete only shadows for specified recording filenames
+        const dirs = [shadowsDir, path.join(shadowsDir, '-safe')];
+        for (const filename of targetFiles) {
+          const baseName = path.basename(filename, path.extname(filename));
+          for (const dir of dirs) {
+            const shadowPath = path.join(dir, `${baseName}.mp4`);
+            if (fs.existsSync(shadowPath)) {
+              await fs.remove(shadowPath);
+              deleted++;
+            }
+          }
+        }
+      } else {
+        // Delete all shadow files
+        const dirs = [shadowsDir, path.join(shadowsDir, '-safe')];
+        for (const dir of dirs) {
+          if (!fs.existsSync(dir)) continue;
+          const files = await fs.readdir(dir);
+          for (const file of files) {
+            const fullPath = path.join(dir, file);
+            const stat = await fs.stat(fullPath);
+            if (stat.isFile()) {
+              await fs.remove(fullPath);
+              deleted++;
+            }
+          }
+        }
+      }
+
+      console.log(`[delete-shadows] Deleted ${deleted} files from ${shadowsDir}`);
+      res.json({ success: true, deleted });
+    } catch (err) {
+      console.error('[delete-shadows] Error:', err);
+      res.status(500).json({
+        success: false,
+        error: err instanceof Error ? err.message : 'Internal server error',
+      });
+    }
+  });
+
+  /**
+   * DELETE /api/manage/delete-subfolder
+   * WU2: Delete contents of a project subfolder (pre-offload cleanup).
+   * Body: { subfolder: string }
+   * Only allowed subfolders can be deleted — recordings and transcripts are protected.
+   */
+  const DELETABLE_SUBFOLDERS = ['edit-1st', 'edit-2nd', 'final', '-trash', 's3-staging', 'inbox'];
+
+  router.delete('/delete-subfolder', async (req, res) => {
+    try {
+      const { subfolder } = req.body as { subfolder?: string };
+
+      if (!subfolder) {
+        return res.status(400).json({ success: false, error: 'Missing subfolder' });
+      }
+
+      if (!DELETABLE_SUBFOLDERS.includes(subfolder)) {
+        return res.status(400).json({
+          success: false,
+          error: `Subfolder '${subfolder}' is not deletable`,
+        });
+      }
+
+      const config = getConfig();
+      const projectPath = expandPath(config.projectDirectory);
+      const folderPath = path.join(projectPath, subfolder);
+
+      if (!fs.existsSync(folderPath)) {
+        return res.json({ success: true, deleted: 0 });
+      }
+
+      const entries = await fs.readdir(folderPath);
+      let deleted = 0;
+
+      for (const entry of entries) {
+        await fs.remove(path.join(folderPath, entry));
+        deleted++;
+      }
+
+      console.log(`[delete-subfolder] Deleted ${deleted} entries from ${folderPath}`);
+      res.json({ success: true, deleted, subfolder });
+    } catch (err) {
+      console.error('[delete-subfolder] Error:', err);
+      res.status(500).json({
+        success: false,
+        error: err instanceof Error ? err.message : 'Internal server error',
+      });
+    }
+  });
+
+  /**
    * POST /api/manage/rename-chapter
    * FR-140: Rename all files in a chapter
    *

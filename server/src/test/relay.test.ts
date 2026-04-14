@@ -50,6 +50,7 @@ const mockReaddir = vi.fn();
 const mockStat = vi.fn();
 const mockCopy = vi.fn().mockResolvedValue(undefined);
 const mockMkdir = vi.fn().mockResolvedValue(undefined);
+const mockRemove = vi.fn().mockResolvedValue(undefined);
 vi.mock('fs-extra', () => ({
   default: {
     ensureDir: (...args: unknown[]) => mockEnsureDir(...args),
@@ -62,6 +63,7 @@ vi.mock('fs-extra', () => ({
     access: vi.fn(),
     copy: (...args: unknown[]) => mockCopy(...args),
     mkdir: (...args: unknown[]) => mockMkdir(...args),
+    remove: (...args: unknown[]) => mockRemove(...args),
   },
 }));
 
@@ -2068,5 +2070,150 @@ describe('FR-147: collect blocks for missing projects', () => {
       .send({ subfolder: 'edit-1st' });
 
     expect(res.body.success).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DELETE /api/relay/clear — clear relay subfolder
+// ---------------------------------------------------------------------------
+
+describe('DELETE /api/relay/clear', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearActivityLog();
+    mockPathExists.mockResolvedValue(true);
+  });
+
+  it('returns 200 and clears files when synced', async () => {
+    // Both relay and local have 2 files → synced
+    mockReaddir.mockImplementation((dirPath: string) => {
+      if (dirPath.includes('relay')) return Promise.resolve(['file1.mov', 'file2.mov']);
+      return Promise.resolve(['file1.mov', 'file2.mov']);
+    });
+    const app = buildRelayApp();
+    const res = await request(app)
+      .delete('/api/relay/clear')
+      .send({ subfolder: 'recordings' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.deleted).toBe(2);
+    expect(res.body.subfolder).toBe('recordings');
+    // fs.remove should have been called for each file
+    expect(mockRemove).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns 400 when not synced (relay has more files than local)', async () => {
+    // Relay has 3 files, local has 1 → behind
+    mockReaddir.mockImplementation((dirPath: string) => {
+      if (dirPath.includes('relay')) return Promise.resolve(['file1.mov', 'file2.mov', 'file3.mov']);
+      return Promise.resolve(['file1.mov']);
+    });
+    const app = buildRelayApp();
+    const res = await request(app)
+      .delete('/api/relay/clear')
+      .send({ subfolder: 'recordings' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toContain('must be synced');
+    expect(mockRemove).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when not synced (local has more files than relay)', async () => {
+    // Relay has 1 file, local has 3 → ahead
+    mockReaddir.mockImplementation((dirPath: string) => {
+      if (dirPath.includes('relay')) return Promise.resolve(['file1.mov']);
+      return Promise.resolve(['file1.mov', 'file2.mov', 'file3.mov']);
+    });
+    const app = buildRelayApp();
+    const res = await request(app)
+      .delete('/api/relay/clear')
+      .send({ subfolder: 'edit-1st' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toContain('must be synced');
+    expect(mockRemove).not.toHaveBeenCalled();
+  });
+
+  it('leaves the folder itself intact after clearing (only removes files, not dir)', async () => {
+    mockReaddir.mockImplementation((dirPath: string) => {
+      if (dirPath.includes('relay')) return Promise.resolve(['file1.mov']);
+      return Promise.resolve(['file1.mov']);
+    });
+    const app = buildRelayApp();
+    const res = await request(app)
+      .delete('/api/relay/clear')
+      .send({ subfolder: 'edit-2nd' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    // remove is called on files, not the directory itself
+    expect(mockRemove).toHaveBeenCalledTimes(1);
+    const removedPath = mockRemove.mock.calls[0][0] as string;
+    expect(removedPath).toContain('file1.mov');
+    // The relay subfolder path should NOT have been removed
+    expect(removedPath).not.toMatch(/edit-2nd$/);
+  });
+
+  it('returns 400 for invalid subfolder', async () => {
+    const app = buildRelayApp();
+    const res = await request(app)
+      .delete('/api/relay/clear')
+      .send({ subfolder: 'invalid-folder' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toContain('Invalid subfolder');
+  });
+
+  it('returns 400 when no subfolder provided', async () => {
+    const app = buildRelayApp();
+    const res = await request(app)
+      .delete('/api/relay/clear')
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('skips hidden files (dotfiles) when clearing', async () => {
+    mockReaddir.mockImplementation((dirPath: string) => {
+      if (dirPath.includes('relay')) return Promise.resolve(['.DS_Store', 'file1.mov', '.gitkeep']);
+      return Promise.resolve(['file1.mov']);
+    });
+    const app = buildRelayApp();
+    const res = await request(app)
+      .delete('/api/relay/clear')
+      .send({ subfolder: 'recordings' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.deleted).toBe(1);
+    expect(mockRemove).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns error when relay not enabled', async () => {
+    const app = buildRelayApp({ relayEnabled: false });
+    const res = await request(app)
+      .delete('/api/relay/clear')
+      .send({ subfolder: 'recordings' });
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toMatch(/not enabled/i);
+  });
+
+  it('logs a relay activity event with action clear', async () => {
+    mockReaddir.mockImplementation(() => Promise.resolve(['file1.mov']));
+    const app = buildRelayApp();
+    await request(app)
+      .delete('/api/relay/clear')
+      .send({ subfolder: 'recordings' });
+
+    // Verify activity was logged by checking the activity endpoint
+    const actRes = await request(app).get('/api/relay/activity');
+    expect(actRes.body.events.length).toBeGreaterThan(0);
+    expect(actRes.body.events[0].action).toBe('clear');
+    expect(actRes.body.events[0].subfolder).toBe('recordings');
   });
 });

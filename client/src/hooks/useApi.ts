@@ -31,3 +31,4 @@ export * from './useSyncApi.js';
 export * from './useEditingApi.js';
 export * from './useProjectDiskApi.js';
 export * from './useHoldApi.js';
+export * from './useProjectDictionary.js';

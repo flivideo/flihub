@@ -338,6 +338,31 @@ The following DAM commands must exist and work:
 
 ---
 
+## Future Direction: Amazon S3 Files (NFS Mount)
+
+> **Note (2026-04-11)**: A new AWS feature announced April 2026 may supersede this entire feature.
+
+**Amazon S3 Files** allows mounting S3 buckets directly as NFS v4.1/v4.2 filesystems on AWS compute — full POSIX semantics, ~1ms latency, no data copying. If adopted for FliHub:
+
+- Mount `v-{brand}` bucket at a local NFS path FliHub already uses
+- Jan mounts the same bucket on his machine — files are immediately shared
+- No `dam s3-up` / `dam s3-down` needed — NFS handles it transparently
+- `s3-staging/` concept collapses — there is only the S3 path
+- FR-105 DAM buttons become redundant
+
+**Disk impact**: Current workflow creates ~3 local copies per project (~1.5GB per 500MB video). NFS mount eliminates the `s3-staging/` copy entirely.
+
+**Risk**: NFS over internet has latency — video playback from the UI may buffer. A local preview cache would be needed for smooth playback; file reads/writes for processing are fine.
+
+**Status**: Watching — pricing not yet announced (April 2026). When ready:
+- Design a new FR to remap project paths to NFS mount point
+- Retire `s3-staging/` concept
+- Retire DAM upload/download buttons (keep Clean S3)
+
+**Reference**: `brains/til/2026-04-11-amazon-s3-files-nfs-filesystem.md`
+
+---
+
 ## Completion Notes
 
 **Implemented:** 2025-12-18

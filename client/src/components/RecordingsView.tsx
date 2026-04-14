@@ -497,6 +497,8 @@ export function RecordingsView() {
 
   // FR-128: State for recording preview modal
   const [previewRecording, setPreviewRecording] = useState<RecordingFile | null>(null);
+  // B069: Track which index is open in the modal for prev/next navigation
+  const [previewIndex, setPreviewIndex] = useState<number>(-1);
 
   // B047: Selection state
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
@@ -1382,7 +1384,12 @@ export function RecordingsView() {
                     onToggleSelect={toggleSelect}
                     onInlineRename={handleInlineRename}
                     onTagRemove={handleTagRemove}
-                    onPlay={setPreviewRecording}
+                    onPlay={(rec) => {
+                      // B069: Track index for prev/next navigation
+                      const idx = filteredRecordings.findIndex((r) => r.filename === rec.filename);
+                      setPreviewIndex(idx);
+                      setPreviewRecording(rec);
+                    }}
                     onSplitHere={handleSplitHereFromRow}
                     onPark={handlePark}
                     onSafe={handleMoveToSafe}
@@ -1494,7 +1501,18 @@ export function RecordingsView() {
           filename={previewRecording.filename}
           duration={previewRecording.duration}
           size={previewRecording.size}
-          onClose={() => setPreviewRecording(null)}
+          onClose={() => { setPreviewRecording(null); setPreviewIndex(-1); }}
+          onPrevious={previewIndex > 0 ? () => {
+            // B069: Navigate to previous recording in filtered list
+            const prev = filteredRecordings[previewIndex - 1];
+            if (prev) { setPreviewIndex(previewIndex - 1); setPreviewRecording(prev); }
+          } : undefined}
+          onNext={previewIndex < filteredRecordings.length - 1 ? () => {
+            // B069: Navigate to next recording in filtered list
+            const next = filteredRecordings[previewIndex + 1];
+            if (next) { setPreviewIndex(previewIndex + 1); setPreviewRecording(next); }
+          } : undefined}
+          position={previewIndex >= 0 ? { current: previewIndex + 1, total: filteredRecordings.length } : undefined}
         />
       )}
 

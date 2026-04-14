@@ -14,10 +14,11 @@ export interface KanbanLaneWrapperProps {
   isDrawerOpen: boolean;
   onToggleDrawer: () => void;
   onEnsureFolders: () => void;
+  onClear?: (subfolder: RelaySubfolder) => void;
 }
 
 export function KanbanLaneWrapper({
-  lane, divergence, isCreator, onAction, isPending, isDrawerOpen, onToggleDrawer, onEnsureFolders,
+  lane, divergence, isCreator, onAction, isPending, isDrawerOpen, onToggleDrawer, onEnsureFolders, onClear,
 }: KanbanLaneWrapperProps) {
   const direction: SyncDirection = divergence?.direction ?? 'synced';
   const isPush = direction === 'outgoing' || (direction === 'synced' && defaultIsPush(lane.subfolder!, isCreator));
@@ -33,6 +34,7 @@ export function KanbanLaneWrapper({
       isDrawerOpen={isDrawerOpen}
       onToggleDrawer={onToggleDrawer}
       onEnsureFolders={onEnsureFolders}
+      onClear={onClear ? () => onClear(lane.subfolder!) : undefined}
     />
   );
 }

@@ -574,6 +574,57 @@ export function createRelayRoutes(getConfig: () => Config) {
     }
   });
 
+  // DELETE /api/relay/clear — remove all files from a relay subfolder (keeps folder)
+  router.delete('/clear', async (req, res) => {
+    try {
+      const config = getConfig();
+      const paths = getRelayPaths(config);
+      if ('error' in paths) return res.json({ success: false, error: paths.error });
+
+      const subfolder: RelaySubfolder = req.body?.subfolder;
+      if (!subfolder || !RELAY_SUBFOLDERS.includes(subfolder)) {
+        return res.status(400).json({ success: false, error: `Invalid subfolder: ${subfolder}` });
+      }
+
+      const { projectDir, relayProjectDir, projectCode } = paths;
+
+      // Guard: only allow clear when synced (relay count === local count)
+      const relayDir = path.join(relayProjectDir, subfolder);
+      const localDir = path.join(projectDir, subfolder);
+      const relayCounts = await countFiles(relayDir);
+      const localCounts = await countFiles(localDir);
+      const syncStatus = deriveSyncStatus(relayCounts.fileCount, localCounts.fileCount, localCounts.exists);
+
+      if (syncStatus !== 'synced') {
+        return res.status(400).json({
+          success: false,
+          error: `Cannot clear ${subfolder}: status is "${syncStatus}" — must be synced first`,
+        });
+      }
+
+      // Delete all files in relay subfolder, keep the folder itself
+      let deleted = 0;
+      const entries = await fs.readdir(relayDir);
+      for (const entry of entries) {
+        if (entry.startsWith('.')) continue;
+        await fs.remove(path.join(relayDir, entry));
+        deleted++;
+      }
+
+      logRelayActivity({
+        projectCode,
+        subfolder,
+        action: 'clear',
+        description: `Cleared ${deleted} files from relay ${subfolder}`,
+        timestamp: new Date().toISOString(),
+      });
+
+      res.json({ success: true, deleted, subfolder });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
   return router;
 }
 

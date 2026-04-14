@@ -500,7 +500,10 @@ function App() {
                 changeTab('export');
                 setManageTool('relay');
               }} />
-              <SsdIndicator onNavigateToProjects={() => changeTab('projects')} />
+              <SsdIndicator onNavigateToStorage={() => {
+                changeTab('export');
+                setManageTool('storage');
+              }} />
               <div className="w-px h-5 bg-warm-divider" />
             </div>
             {/* FR-69: Settings dropdown */}

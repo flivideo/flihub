@@ -47,6 +47,7 @@ vi.mock('fs-extra', () => ({
     rename: vi.fn().mockResolvedValue(undefined),
     ensureDir: vi.fn().mockResolvedValue(undefined),
     remove: vi.fn().mockResolvedValue(undefined),
+    existsSync: vi.fn().mockReturnValue(false),
   },
 }));
 
@@ -417,6 +418,8 @@ describe('POST /api/manage/undo-rename', () => {
 import fs from 'fs-extra';
 const mockReaddir = vi.mocked(fs.readdir);
 const mockPathExists = vi.mocked(fs.pathExists);
+const mockRemove = vi.mocked(fs.remove);
+const mockExistsSync = vi.mocked(fs.existsSync);
 
 describe('POST /api/manage/split-chapter', () => {
   beforeEach(() => {
@@ -827,5 +830,100 @@ describe('POST /api/manage/split-chapter — undo mapping', () => {
     const undoBody: UndoRenameResponse = undoRes.body;
     expect(undoBody.success).toBe(true);
     expect(undoBody.filesReverted).toBe(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: DELETE /api/manage/delete-subfolder
+// ---------------------------------------------------------------------------
+
+describe('DELETE /api/manage/delete-subfolder', () => {
+  beforeEach(() => {
+    mockExistsSync.mockReset();
+    mockExistsSync.mockReturnValue(false);
+    mockReaddir.mockReset();
+    mockReaddir.mockResolvedValue([] as unknown as never);
+    mockRemove.mockReset();
+    mockRemove.mockResolvedValue(undefined as never);
+  });
+
+  it('returns 400 for missing subfolder', async () => {
+    const { app } = createApp();
+
+    const res = await request(app).delete('/api/manage/delete-subfolder').send({});
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Missing subfolder/);
+  });
+
+  it('returns 400 for disallowed subfolder (recordings)', async () => {
+    const { app } = createApp();
+
+    const res = await request(app)
+      .delete('/api/manage/delete-subfolder')
+      .send({ subfolder: 'recordings' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/not deletable/);
+  });
+
+  it('returns 400 for disallowed subfolder (recording-transcripts)', async () => {
+    const { app } = createApp();
+
+    const res = await request(app)
+      .delete('/api/manage/delete-subfolder')
+      .send({ subfolder: 'recording-transcripts' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/not deletable/);
+  });
+
+  it('returns deleted: 0 when folder does not exist', async () => {
+    const { app } = createApp();
+    mockExistsSync.mockReturnValue(false);
+
+    const res = await request(app)
+      .delete('/api/manage/delete-subfolder')
+      .send({ subfolder: 'edit-2nd' });
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, deleted: 0 });
+  });
+
+  it('deletes files for allowed subfolder and returns count', async () => {
+    const { app } = createApp();
+    mockExistsSync.mockReturnValue(true);
+    mockReaddir.mockResolvedValue([
+      'file1.mp4',
+      'file2.mp4',
+      'subdir',
+    ] as unknown as never);
+
+    const res = await request(app)
+      .delete('/api/manage/delete-subfolder')
+      .send({ subfolder: 'edit-2nd' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.deleted).toBe(3);
+    expect(res.body.subfolder).toBe('edit-2nd');
+
+    // Verify fs.remove was called for each entry
+    expect(mockRemove).toHaveBeenCalledTimes(3);
+    expect(mockRemove).toHaveBeenCalledWith('/tmp/project/edit-2nd/file1.mp4');
+    expect(mockRemove).toHaveBeenCalledWith('/tmp/project/edit-2nd/file2.mp4');
+    expect(mockRemove).toHaveBeenCalledWith('/tmp/project/edit-2nd/subdir');
+  });
+
+  it('leaves the folder itself intact after deletion', async () => {
+    const { app } = createApp();
+    mockExistsSync.mockReturnValue(true);
+    mockReaddir.mockResolvedValue(['only-file.txt'] as unknown as never);
+
+    await request(app)
+      .delete('/api/manage/delete-subfolder')
+      .send({ subfolder: 'final' });
+
+    // fs.remove should only be called for the file, not the folder itself
+    expect(mockRemove).toHaveBeenCalledTimes(1);
+    expect(mockRemove).toHaveBeenCalledWith('/tmp/project/final/only-file.txt');
+    // The folder path itself should NOT be passed to remove
+    expect(mockRemove).not.toHaveBeenCalledWith('/tmp/project/final');
   });
 });

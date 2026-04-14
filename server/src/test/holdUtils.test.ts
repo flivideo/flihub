@@ -46,6 +46,8 @@ import {
   restoreFromHolding,
   deleteLocalProject,
   deleteHoldingProject,
+  HOLD_EXCLUDES,
+  holdExcludeArgs,
 } from '../utils/holdUtils.js';
 
 // ---------------------------------------------------------------------------
@@ -344,6 +346,7 @@ describe('holdProject — rsync args', () => {
     // B064: Must be array args — never a shell-interpolated string
     expect(lastSpawnArgs!.args).toEqual([
       '-a',
+      ...holdExcludeArgs(),
       projectDir + '/',
       path.join(holdingRoot, path.basename(projectDir)) + '/',
     ]);
@@ -393,6 +396,7 @@ describe('restoreFromHolding — rsync args', () => {
     expect(lastSpawnArgs!.cmd).toBe('rsync');
     expect(lastSpawnArgs!.args).toEqual([
       '-a',
+      ...holdExcludeArgs(),
       holdingDir + '/',
       localDir + '/',
     ]);
@@ -571,5 +575,70 @@ describe('getHoldStatus', () => {
     expect(status.location).toBe('both');
     expect(status.verification).toBeDefined();
     expect(status.verification!.match).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WU3: holdExcludeArgs — rsync exclude patterns
+// ---------------------------------------------------------------------------
+
+describe('holdExcludeArgs — rsync exclude patterns', () => {
+  it('WU3: returns --exclude flag pairs for all HOLD_EXCLUDES', () => {
+    const args = holdExcludeArgs();
+
+    // Each pattern should produce ['--exclude', pattern]
+    expect(args.length).toBe(HOLD_EXCLUDES.length * 2);
+    for (let i = 0; i < HOLD_EXCLUDES.length; i++) {
+      expect(args[i * 2]).toBe('--exclude');
+      expect(args[i * 2 + 1]).toBe(HOLD_EXCLUDES[i]);
+    }
+  });
+
+  it('WU3: includes -trash/, s3-staging/, .DS_Store, and ._* patterns', () => {
+    expect(HOLD_EXCLUDES).toContain('-trash/');
+    expect(HOLD_EXCLUDES).toContain('s3-staging/');
+    expect(HOLD_EXCLUDES).toContain('.DS_Store');
+    expect(HOLD_EXCLUDES).toContain('._*');
+  });
+
+  it('WU3: holdProject rsync args include exclude patterns', async () => {
+    const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'flihub-hold-'));
+    try {
+      lastSpawnArgs = null;
+      mockSpawnShouldFail = false;
+      const { projectDir, holdingRoot } = await createProjectFixture(tmpRoot);
+
+      await holdProject(projectDir, holdingRoot);
+
+      // Verify exclude args are present between -a and source path
+      const args = lastSpawnArgs!.args;
+      expect(args[0]).toBe('-a');
+      expect(args).toContain('--exclude');
+      expect(args).toContain('-trash/');
+      expect(args).toContain('s3-staging/');
+    } finally {
+      await fs.rm(tmpRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('WU3: restoreFromHolding rsync args include exclude patterns', async () => {
+    const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'flihub-hold-'));
+    try {
+      lastSpawnArgs = null;
+      mockSpawnShouldFail = false;
+      const holdingDir = path.join(tmpRoot, 'holding', 'b72-test-project');
+      const localDir = path.join(tmpRoot, 'projects', 'b72-test-project');
+      await fs.mkdir(holdingDir, { recursive: true });
+
+      await restoreFromHolding(holdingDir, localDir);
+
+      const args = lastSpawnArgs!.args;
+      expect(args[0]).toBe('-a');
+      expect(args).toContain('--exclude');
+      expect(args).toContain('-trash/');
+      expect(args).toContain('s3-staging/');
+    } finally {
+      await fs.rm(tmpRoot, { recursive: true, force: true });
+    }
   });
 });

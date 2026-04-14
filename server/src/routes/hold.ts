@@ -11,6 +11,7 @@ import {
   restoreFromHolding,
   deleteLocalProject,
   deleteHoldingProject,
+  getDirStats,
 } from '../utils/holdUtils.js';
 import { updateDiskCacheHoldData, invalidateDiskCacheEntry } from './projects.js';
 import type { Config } from '../../../shared/types.js';
@@ -133,11 +134,19 @@ export function createHoldRoutes(getConfig: () => Config): Router {
         // verifyHoldingMatch on local only gives us localFiles + localBytes.
         // We pass a path that won't exist so holdingFiles/holdingBytes stay 0.
         const dryVerification = await verifyHoldingMatch(projectDir, computedHoldingPath);
+
+        // WU3: Subtract excluded folders from reported bytes — rsync won't transfer these
+        const [trashStats, stagingStats] = await Promise.all([
+          getDirStats(path.join(projectDir, '-trash')),
+          getDirStats(path.join(projectDir, 's3-staging')),
+        ]);
+        const excludedBytes = trashStats.totalBytes + stagingStats.totalBytes;
+
         res.json({
           success: true,
           dryRun: true,
           holdingPath: computedHoldingPath,
-          localBytes: dryVerification.localBytes,
+          localBytes: dryVerification.localBytes - excludedBytes,
         });
         return;
       }

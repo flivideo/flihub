@@ -11,6 +11,7 @@ import type {
   RelayPreviewResponse,
   RelayPushResponse,
   RelayCollectResponse,
+  RelayClearResponse,
   RelayVersionsResponse,
   RelayPromoteResponse,
   RelayActivityResponse,
@@ -144,6 +145,38 @@ export function useRelayCollect() {
       }
     },
     onError: () => toast.error('Collect failed'),
+  });
+}
+
+export function useRelayClear() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ subfolder }: { subfolder: RelaySubfolder }): Promise<RelayClearResponse> => {
+      const res = await fetch(`${API_URL}/api/relay/clear`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subfolder }),
+      });
+      if (!res.ok) {
+        throw new Error(`Relay API error: ${res.status} ${res.statusText}`);
+      }
+      const data: RelayClearResponse = await res.json();
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(`Cleared ${data.deleted} files from relay ${data.subfolder || ''}`);
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayEnhancedBrowse });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayDivergence });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.relayActivity });
+        // Invalidate all hold-status queries so StorageTool sees relayBytes drop to 0
+        queryClient.invalidateQueries({ queryKey: ['hold-status'] });
+      } else {
+        toast.error(data.error || 'Clear failed');
+      }
+    },
+    onError: () => toast.error('Clear failed'),
   });
 }
 

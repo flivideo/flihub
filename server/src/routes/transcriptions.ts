@@ -125,11 +125,18 @@ export function createTranscriptionRoutes(
     const whisperBinary = expandPath(config.whisperBinary || '~/.pyenv/shims/mlx_whisper');
     const whisperModel = config.whisperModel || 'mlx-community/whisper-large-v3-turbo';
     const whisperLanguage = config.whisperLanguage || 'en';
+    const whisperInitialPrompt = config.glingDictionary?.length
+      ? config.glingDictionary.join(', ')
+      : null;
     const videoPath = activeJob.videoPath;
 
     console.log(`Starting transcription: ${activeJob.videoFilename}`);
     console.log(`Using Whisper: ${whisperBinary}`);
+    console.log(`[transcription] model: ${whisperModel}, language: ${whisperLanguage}`); // B036
     console.log(`Output dir: ${transcriptsDir}`);
+    if (whisperInitialPrompt) {
+      console.log(`Initial prompt: ${whisperInitialPrompt}`);
+    }
 
     // FR-99: Capture timing data for telemetry
     const transcriptionStartTime = Date.now();
@@ -145,7 +152,7 @@ export function createTranscriptionRoutes(
     // FR-74: Output TXT (plain text), SRT (timed subtitles), and JSON (word-level timestamps)
     // FR-98: Use 'all' format then delete unwanted vtt/tsv files after completion
     // (Whisper only accepts a single format argument, not multiple)
-    activeProcess = spawn(whisperBinary, [
+    const whisperArgs = [
       videoPath,
       '--model',
       whisperModel,
@@ -155,7 +162,11 @@ export function createTranscriptionRoutes(
       'all',
       '--output-dir',
       transcriptsDir,
-    ]);
+    ];
+    if (whisperInitialPrompt) {
+      whisperArgs.push('--initial-prompt', whisperInitialPrompt);
+    }
+    activeProcess = spawn(whisperBinary, whisperArgs);
 
     const currentJobId = activeJob.jobId;
 

@@ -44,15 +44,13 @@ import { TranscriptSyncPanel } from './TranscriptSyncPanel';
 import { toast } from 'sonner';
 import { API_URL } from '../config';
 import type { RecordingFile } from '../../../shared/types';
-import { SPEED_PRESETS, DEFAULT_SPEED, SPEED_STORAGE_KEY } from '../hooks/useVideoPlayback';
+import { SPEED_STORAGE_KEY, useVideoPlayback } from '../hooks/useVideoPlayback'; // B068
+import { VideoControlsBar } from './shared/VideoControlsBar';
 
 // FR-71: Size options
 // FR-91: Simplified to just N and L
-type VideoSize = 'normal' | 'large';
-const SIZE_LABELS: Record<VideoSize, string> = {
-  normal: 'N',
-  large: 'L',
-};
+// B068: VideoSize uses display labels ('N'|'L') — managed by VideoControlsBar
+type VideoSize = 'N' | 'L';
 
 // FR-71: localStorage keys
 const STORAGE_KEYS = {
@@ -67,8 +65,8 @@ const STORAGE_KEYS = {
 // FR-71/FR-91: Size CSS classes
 // N = 896px (max-w-4xl), L = breaks out of container to ~1280px
 const SIZE_CLASSES: Record<VideoSize, string> = {
-  normal: 'max-w-4xl mx-auto',
-  large: 'w-[calc(100vw-2rem)] max-w-7xl relative left-1/2 -translate-x-1/2', // Break out to viewport
+  N: 'max-w-4xl mx-auto',
+  L: 'w-[calc(100vw-2rem)] max-w-7xl relative left-1/2 -translate-x-1/2', // Break out to viewport
 };
 
 // Chapter group with files and timing
@@ -171,8 +169,17 @@ interface VideoMeta {
 export function WatchPage() {
   const { data: config } = useConfig();
   const { data, isLoading, error } = useRecordings();
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [currentVideo, setCurrentVideo] = useState<VideoMeta | null>(null);
+
+  // B068: useVideoPlayback provides videoRef, isPlaying, playbackSpeed, handlers, and Space shortcut
+  const {
+    videoRef,
+    isPlaying,
+    playbackSpeed,
+    handlePlayPause,
+    handleSpeedChange,
+    videoEventHandlers,
+  } = useVideoPlayback();
   // FR-117: Delayed hover for chapter→segment panel transitions
   // 250ms enter delay allows mouse to cross chapters without triggering change
   // 200ms leave delay keeps panel visible while moving toward it
@@ -184,16 +191,13 @@ export function WatchPage() {
     cancelPendingEnter: lockCurrentChapter,
   } = useDelayedHoverValue<ChapterGroup>(250, 200);
 
-  // FR-71: Speed and size state with localStorage persistence
-  const [playbackSpeed, setPlaybackSpeed] = useState<number>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.speed);
-    return saved ? parseFloat(saved) : DEFAULT_SPEED;
-  });
+  // FR-71: Size state with localStorage persistence (speed managed by useVideoPlayback)
   const [videoSize, setVideoSize] = useState<VideoSize>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.size);
-    // FR-91: Validate saved value (xl was removed)
-    if (saved === 'normal' || saved === 'large') return saved;
-    return 'normal';
+    // B068: VideoSize now uses short labels; also accept legacy 'normal'/'large' values
+    if (saved === 'N' || saved === 'L') return saved;
+    if (saved === 'large') return 'L'; // migrate legacy value
+    return 'N'; // default (replaces legacy 'normal')
   });
 
   // FR-75/FR-77: Transcript panel collapsed state
@@ -201,9 +205,6 @@ export function WatchPage() {
 
   // FR-75: Video time tracking for transcript sync
   const [currentTime, setCurrentTime] = useState(0);
-
-  // Play/pause state for manual control
-  const [isPlaying, setIsPlaying] = useState(false);
 
   // Autoplay state - starts playing when you click a video
   const [autoplay, setAutoplay] = useState<boolean>(() => {
@@ -342,22 +343,6 @@ export function WatchPage() {
     }
   }, [mostRecentRecording, projectCode, currentVideo]);
 
-  // FR-71: Apply playback speed when video changes or speed changes
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = playbackSpeed;
-    }
-  }, [playbackSpeed, currentVideo]);
-
-  // FR-71: Persist speed preference
-  const handleSpeedChange = useCallback((speed: number) => {
-    setPlaybackSpeed(speed);
-    localStorage.setItem(STORAGE_KEYS.speed, speed.toString());
-    if (videoRef.current) {
-      videoRef.current.playbackRate = speed;
-    }
-  }, []);
-
   // FR-71: Persist size preference
   const handleSizeChange = useCallback((size: VideoSize) => {
     setVideoSize(size);
@@ -398,37 +383,6 @@ export function WatchPage() {
       localStorage.setItem(STORAGE_KEYS.showParked, String(newValue));
       return newValue;
     });
-  }, []);
-
-  // Toggle play/pause for current video
-  const handlePlayPause = useCallback(() => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
-    }
-  }, [isPlaying]);
-
-  // Keyboard: Space to pause/resume
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-
-      if (e.key === ' ' || e.code === 'Space') {
-        e.preventDefault();
-        if (videoRef.current) {
-          if (videoRef.current.paused) {
-            videoRef.current.play();
-          } else {
-            videoRef.current.pause();
-          }
-        }
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // FR-75: Seek video to a specific time (for transcript click-to-seek)
@@ -689,21 +643,18 @@ export function WatchPage() {
               controls
               className="w-full h-full object-contain"
               onLoadedMetadata={() => {
-                // FR-71: Apply saved playback speed when video loads
-                if (videoRef.current) {
-                  videoRef.current.playbackRate = playbackSpeed;
-                  // Auto-start playback when autoplay is enabled
-                  if (autoplay) {
-                    videoRef.current.play();
-                  }
+                // B068: Hook sets playback speed; also handle autoplay
+                videoEventHandlers.onLoadedMetadata();
+                if (autoplay && videoRef.current) {
+                  videoRef.current.play();
                 }
               }}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
+              onPlay={videoEventHandlers.onPlay}
+              onPause={videoEventHandlers.onPause}
               onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
               onError={handleVideoError}
               onEnded={() => {
-                setIsPlaying(false);
+                videoEventHandlers.onEnded();
                 if (autonext) {
                   playNextSegment();
                 }
@@ -741,214 +692,64 @@ export function WatchPage() {
         </div>
 
         {/* FR-123: Consolidated Controls Bar */}
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          {/* Left: Navigation + Now Playing */}
-          <div className="flex items-center gap-2">
-            {currentVideo && !currentVideo.isChapter ? (
-              <>
-                {/* FR-123: Previous button */}
-                <button
-                  onClick={handlePrevious}
-                  disabled={!hasPrevious}
-                  className={`px-2 py-1 text-lg transition-colors ${
-                    hasPrevious
-                      ? 'text-warm-secondary hover:text-warm-primary'
-                      : 'text-warm-faint cursor-not-allowed'
-                  }`}
-                  title="Previous recording"
-                >
-                  ←
-                </button>
+        {/* FR-123: Consolidated Controls Bar — VideoControlsBar shared component */}
+        {(() => {
+          const isRegularVideo = currentVideo && !currentVideo.isChapter;
+          const currentIsParked = isRegularVideo
+            ? sortedRecordings.find((r) => r.filename === currentVideo.segmentName + '.mov')?.isParked ?? false
+            : false;
 
-                {/* Play/Stop button */}
-                <button
-                  onClick={handlePlayPause}
-                  className={`text-lg transition-colors ${
-                    isPlaying
-                      ? 'text-red-500 hover:text-red-600'
-                      : 'text-blue-500 hover:text-blue-600'
-                  }`}
-                  title={isPlaying ? 'Stop playback' : 'Start playback'}
-                >
-                  {isPlaying ? '⏹' : '▶'}
-                </button>
+          const infoSlot = currentVideo ? (
+            <>
+              <h3 className="font-medium text-warm-primary ml-1">{currentVideo.title}</h3>
+              {isRegularVideo && sortedRecordings.length > 0 && (
+                <span className="text-sm text-warm-muted">
+                  ({currentIndex + 1}/{sortedRecordings.length})
+                </span>
+              )}
+              {currentVideo.isChapter && (
+                <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
+                  Chapter Recording
+                </span>
+              )}
+              {currentVideo.isShadow && (
+                <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded flex items-center gap-1">
+                  <span>👻</span> Shadow
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-warm-muted text-sm ml-2">No video selected</span>
+          );
 
-                {/* FR-123: Next button */}
-                <button
-                  onClick={handleNext}
-                  disabled={!hasNext}
-                  className={`px-2 py-1 text-lg transition-colors ${
-                    hasNext
-                      ? 'text-warm-secondary hover:text-warm-primary'
-                      : 'text-warm-faint cursor-not-allowed'
-                  }`}
-                  title="Next recording"
-                >
-                  →
-                </button>
-
-                {/* FR-123: Park/Unpark button - moved here between nav and filename */}
-                {(() => {
-                  const filename = currentVideo.segmentName + '.mov';
-                  const isParked = sortedRecordings.find((r) => r.filename === filename)?.isParked;
-                  return (
-                    <button
-                      onClick={handleParkToggle}
-                      className={`px-3 py-1 text-xs rounded font-medium transition-colors ml-2 ${
-                        isParked
-                          ? 'bg-pink-600 text-white hover:bg-pink-700'
-                          : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
-                      }`}
-                      title={isParked ? 'Click to unpark' : 'Click to park (exclude from edit)'}
-                    >
-                      {isParked ? '← Unpark' : 'Park →'}
-                    </button>
-                  );
-                })()}
-
-                {/* Filename + counter */}
-                <h3 className="font-medium text-warm-primary ml-1">{currentVideo.title}</h3>
-                {sortedRecordings.length > 0 && (
-                  <span className="text-sm text-warm-muted">
-                    ({currentIndex + 1}/{sortedRecordings.length})
-                  </span>
-                )}
-
-                {/* Badges */}
-                {currentVideo.isShadow && (
-                  <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded flex items-center gap-1">
-                    <span>👻</span> Shadow
-                  </span>
-                )}
-              </>
-            ) : currentVideo ? (
-              <>
-                {/* Chapter video - no navigation */}
-                <button
-                  onClick={handlePlayPause}
-                  className={`text-lg transition-colors ${
-                    isPlaying
-                      ? 'text-red-500 hover:text-red-600'
-                      : 'text-blue-500 hover:text-blue-600'
-                  }`}
-                  title={isPlaying ? 'Stop playback' : 'Start playback'}
-                >
-                  {isPlaying ? '⏹' : '▶'}
-                </button>
-                <h3 className="font-medium text-warm-primary">{currentVideo.title}</h3>
-                {currentVideo.isChapter && (
-                  <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
-                    Chapter Recording
-                  </span>
-                )}
-                {currentVideo.isShadow && (
-                  <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded flex items-center gap-1">
-                    <span>👻</span> Shadow
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="text-warm-muted text-sm">No video selected</span>
-            )}
-          </div>
-
-          {/* Right: Speed + Size Controls */}
-          <div className="flex items-center gap-6">
-            {/* FR-71: Speed Control */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-warm-muted font-medium">Speed:</span>
-              <div className="flex gap-1">
-                {SPEED_PRESETS.map((speed) => (
-                  <button
-                    key={speed}
-                    onClick={() => handleSpeedChange(speed)}
-                    className={`px-2 py-1 text-xs rounded transition-colors ${
-                      playbackSpeed === speed
-                        ? 'bg-blue-600 text-white font-medium'
-                        : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
-                    }`}
-                  >
-                    {speed}x
-                  </button>
-                ))}
-              </div>
+          return (
+            <div className="mt-3">
+              <VideoControlsBar
+                isPlaying={isPlaying}
+                onPlayPause={handlePlayPause}
+                playbackSpeed={playbackSpeed}
+                onSpeedChange={handleSpeedChange}
+                videoSize={videoSize}
+                onSizeChange={handleSizeChange}
+                autoplay={autoplay}
+                onToggleAutoplay={handleAutoplayToggle}
+                autoNext={autonext}
+                onToggleAutoNext={handleAutonextToggle}
+                onPrevious={isRegularVideo ? handlePrevious : undefined}
+                onNext={isRegularVideo ? handleNext : undefined}
+                prevDisabled={!hasPrevious}
+                nextDisabled={!hasNext}
+                onPark={isRegularVideo ? handleParkToggle : undefined}
+                isParkActive={currentIsParked}
+                onShowSafe={handleShowSafeToggle}
+                showSafe={showSafe}
+                onShowParked={handleShowParkedToggle}
+                showParked={showParked}
+                infoSlot={infoSlot}
+              />
             </div>
-
-            {/* FR-71: Size Toggle */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-warm-muted font-medium">Size:</span>
-              <div className="flex gap-1">
-                {(Object.keys(SIZE_LABELS) as VideoSize[]).map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => handleSizeChange(size)}
-                    className={`px-2 py-1 text-xs rounded transition-colors ${
-                      videoSize === size
-                        ? 'bg-blue-600 text-white font-medium'
-                        : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
-                    }`}
-                  >
-                    {SIZE_LABELS[size]}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Autoplay Toggle - starts playing on click */}
-            <button
-              onClick={handleAutoplayToggle}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
-                autoplay
-                  ? 'bg-green-600 text-white font-medium'
-                  : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
-              }`}
-              title={autoplay ? 'Autoplay ON - videos start playing when clicked' : 'Autoplay OFF'}
-            >
-              Autoplay
-            </button>
-
-            {/* Auto-next Toggle - plays next segment when video ends */}
-            <button
-              onClick={handleAutonextToggle}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
-                autonext
-                  ? 'bg-green-600 text-white font-medium'
-                  : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
-              }`}
-              title={
-                autonext ? 'Auto-next ON - plays next segment when video ends' : 'Auto-next OFF'
-              }
-            >
-              Auto Next
-            </button>
-
-            {/* FR-111 Phase 4: Show Safe Toggle - shows hidden safe recordings */}
-            <button
-              onClick={handleShowSafeToggle}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
-                showSafe
-                  ? 'bg-yellow-500 text-white font-medium'
-                  : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
-              }`}
-              title={showSafe ? 'Showing safe recordings' : 'Safe recordings hidden'}
-            >
-              Safe
-            </button>
-
-            {/* FR-121: Show Parked Toggle - shows parked recordings */}
-            <button
-              onClick={handleShowParkedToggle}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
-                showParked
-                  ? 'bg-pink-500 text-white font-medium'
-                  : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
-              }`}
-              title={showParked ? 'Showing parked recordings' : 'Parked recordings hidden'}
-            >
-              Parked
-            </button>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* FR-123: Annotation field when parked */}
         {currentVideo &&

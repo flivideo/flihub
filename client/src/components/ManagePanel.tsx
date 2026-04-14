@@ -24,6 +24,7 @@ import {
   GlingEditTool,
   RelayTool,
   SyncTool,
+  StorageTool,
 } from './shared';
 import type { ChapterSettings } from './shared';
 import { extractTagsFromName } from '../../../shared/naming';
@@ -83,9 +84,10 @@ const toolHeadings: Record<string, string> = {
   relay: 'Relay Collaboration',
   sync: 'Sync',
   awb: 'AWB',
+  storage: 'Storage',
 };
 
-export type ActiveTool = 'regen' | 'gling-edit' | 'relay' | 'awb' | 'sync';
+export type ActiveTool = 'regen' | 'gling-edit' | 'relay' | 'awb' | 'sync' | 'storage';
 
 export interface ManagePanelProps {
   initialTool?: string | null;
@@ -263,6 +265,38 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
     });
   }, []);
 
+  // Delete transcripts or shadows — selection-aware (selected files only, or all if none selected)
+  const handleDeleteClick = (target: 'transcripts' | 'shadows') => {
+    const label = target === 'transcripts' ? 'transcripts' : 'shadow files';
+    const selectedFilesArray = Array.from(selectedFiles);
+    const targetFiles = selectedFilesArray.length > 0 ? selectedFilesArray : undefined;
+    const scope = targetFiles
+      ? `${targetFiles.length} selected file${targetFiles.length === 1 ? '' : 's'}`
+      : `all ${data?.recordings?.length || 0} files`;
+
+    setConfirmationModal({
+      title: `Delete ${label}`,
+      message: `Delete ${label} for ${scope}?`,
+      warning: 'This cannot be undone. Files will need to be regenerated from scratch.',
+      variant: 'danger',
+      onConfirm: async () => {
+        setConfirmationModal(null);
+        try {
+          const response = await fetch(`${API_URL}/api/manage/delete-${target}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ files: targetFiles }),
+          });
+          const result = await response.json();
+          if (!result.success) throw new Error(result.error || 'Delete failed');
+          toast.success(`Deleted ${result.deleted} ${label}`);
+        } catch (err) {
+          toast.error(`Failed to delete ${label}: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      },
+    });
+  };
+
   // B041: Regen action handler (inline buttons trigger confirmation modal)
   const handleRegenClick = (
     tool: 'regen-shadows' | 'regen-transcripts' | 'regen-all'
@@ -421,7 +455,7 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
           <>
             {/* B041: Regen inline toolbar — only when regen is active */}
             {activeTool === 'regen' && (
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
                 <button
                   onClick={() => handleRegenClick('regen-shadows')}
                   className="px-3 py-1.5 text-sm font-medium text-warm-secondary bg-surface border border-warm-strong rounded-md hover:bg-surface-hover hover:text-warm-primary transition-colors"
@@ -439,6 +473,19 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
                   className="px-3 py-1.5 text-sm font-medium text-orange-600 bg-surface border border-orange-300 rounded-md hover:bg-orange-50 hover:text-orange-700 transition-colors"
                 >
                   Regen All
+                </button>
+                <span className="text-warm-faint select-none">|</span>
+                <button
+                  onClick={() => handleDeleteClick('transcripts')}
+                  className="px-3 py-1.5 text-sm text-red-500 hover:text-red-700 hover:underline transition-colors"
+                >
+                  {selectedFiles.size > 0 ? `Delete Transcripts (${selectedFiles.size})` : 'Delete Transcripts'}
+                </button>
+                <button
+                  onClick={() => handleDeleteClick('shadows')}
+                  className="px-3 py-1.5 text-sm text-red-500 hover:text-red-700 hover:underline transition-colors"
+                >
+                  {selectedFiles.size > 0 ? `Delete Shadows (${selectedFiles.size})` : 'Delete Shadows'}
                 </button>
               </div>
             )}
@@ -590,6 +637,7 @@ export function ManagePanel({ initialTool, onToolActivated }: ManagePanelProps =
             {activeTool === 'sync' && <SyncTool />}
             {activeTool === 'gling-edit' && <GlingEditTool />}
             {activeTool === 'awb' && <PoemWuiPage />}
+            {activeTool === 'storage' && <StorageTool projectCode={config?.activeProject || ''} onNavigateToRelay={() => setActiveTool('relay')} />}
           </>
         )}
       </div>

@@ -6,6 +6,7 @@ import {
   useRelayDivergence,
   useRelayPush,
   useRelayCollect,
+  useRelayClear,
   useRelayVersions,
   useRelayPromote,
   useEnsureFolders,
@@ -49,6 +50,7 @@ export function RelayTool() {
   const push = useRelayPush();
   const collect = useRelayCollect();
   const promote = useRelayPromote();
+  const clear = useRelayClear();
   const ensureFolders = useEnsureFolders();
   const { mutate: openRelay } = useOpenFolder();
 
@@ -108,7 +110,7 @@ export function RelayTool() {
     }
   };
 
-  const isActionPending = push.isPending || collect.isPending || promote.isPending || ensureFolders.isPending;
+  const isActionPending = push.isPending || collect.isPending || promote.isPending || clear.isPending || ensureFolders.isPending;
 
   // ─── Loading / Not Configured States ───
 
@@ -183,6 +185,7 @@ export function RelayTool() {
                   setOpenDrawer(openDrawer === lane.subfolder ? null : lane.subfolder!)
                 }
                 onEnsureFolders={() => ensureFolders.mutate()}
+                onClear={(subfolder) => clear.mutate({ subfolder })}
               />
             ) : (
               <FinalLane
