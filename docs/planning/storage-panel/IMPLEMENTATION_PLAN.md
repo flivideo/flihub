@@ -6,7 +6,7 @@
 **Supersedes**: `archive-tool` campaign (kept the data layer + endpoints, replacing the UI shape)
 
 ## Summary
-- Total: 5 | Complete: 0 | In Progress: 0 | Pending: 5 | Failed: 0
+- Total: 5 | Complete: 1 | In Progress: 0 | Pending: 4 | Failed: 0
 
 ## Mental Model (read first)
 
@@ -97,7 +97,7 @@ T7: ● Connected      Local: ~/dev/video-projects/v-appydave/c36-archon-bmad
 
 ## Wave A — Prerequisites (run first, in sequence)
 
-- [ ] **WU1** — Backend foundation: heavy/light classification + storage-tree util + endpoints (`hold`, `restore-held`, `archive`, `unarchive`, `GET storage-tree`)
+- [x] **WU1** — Backend foundation: `HEAVY_SUBFOLDERS` + `getStorageTree` util + 5 endpoints + 25 route/util tests. Server 555→580 (+25), shared unchanged. SSD mount check ordered before state derivation (prevents mis-classifying held/archived as active when T7 unplugged). New `Config.publishedPath` field added; not yet wired into `config.template.json` (flagged for WU3). Completed 2026-04-14.
 
 ## Wave B — Main Wave (run in parallel after WU1)
 
@@ -224,6 +224,33 @@ T7: ● Connected      Local: ~/dev/video-projects/v-appydave/c36-archon-bmad
 
 ## Failed / Needs Retry
 (coordinator moves items here with [!], adds failure reason)
+
+## Patches Applied — After Wave A Delivery Review
+
+Delivery review verdict: FAIL (2 critical, 9 high). 11 patches applied in one pass. Server tests 580→591 (+11). All quality gates green.
+
+| # | Finding | Source | Action | Status |
+|---|---|---|---|---|
+| P1 | Archive silently merges into existing PUBLISHED | DVR-EC-001 | Refuse archive if publishedDir has content (409) | [x] |
+| P2 | Unarchive silently merges into existing local | DVR-EC-002 | Refuse unarchive if localDir exists (409) | [x] |
+| P3 | Hold orphans HOLDING on partial failure | DVR-BH-001 | Two-pass: stage+verify ALL heavy subs, then delete all locals | [x] |
+| P4 | Archive verify is fileCount-only | DVR-BH-002 | New `verifyDirsMatch(src, dest)` util (count+bytes); used by archive + hold pass-1 | [x] |
+| P5 | `{ok}` envelope diverges from project `{success}` | DVR-AR-001 | Renamed `ok→success` (flat shape, not `{data:…}`) | [x] |
+| P6 | `spawnAsync` duplicated verbatim | DVR-CQ-001, AR-002 | Exported from `holdUtils.ts`; duplicate removed | [x] |
+| P7 | SSD probe in storageTree was no-op | DVR-BH-005, CQ-004, AR-003 | Delegates to `checkSsdMounted`; shim deleted | [x] |
+| P8 | `degraded: true` not enforced by mutations | DVR-EC-019, AA-003 | All 4 mutations return 409 when degraded | [x] |
+| P9 | Hold with zero heavy content lies about newState | DVR-BH-003, EC-017 | Refuse 400 with `newState: 'active'` | [x] |
+| P10 | Verify-failure branch had zero coverage | DVR-UT-002 | Archive test truncates bytes; asserts 500 + local preserved. Hold pass-1 test asserts all locals preserved on mid-seq failure | [x] |
+| P11 | rsync `--exclude` args not asserted | DVR-UT-001 | New `captureRsyncCalls` spy; 4 tests assert every `holdExcludeArgs()` pattern per mutation | [x] |
+
+**Deferred to Wave B/later** (documented, not blocking):
+- Concurrency mutex (DVR-EC-013, EC-014, BH-010) — single-user app; revisit post-MVP
+- Socket emits + disk-cache invalidation on storage mutations (DVR-AR-006) — wire in WU3 when UI needs it
+- Brand derivation / publishedPath template (DVR-BH-008, AA-005) — WU3 config wiring
+- `.DS_Store`-only relay blocking (DVR-EC-011) — filter hidden files in relay-bytes probe
+- Held→Archive atomic shortcut (DVR-AA-002) — UI chain in WU2
+- `-chapters/` nested heavy test (DVR-UT-004, AA-001) — add in WU2
+- Safety gate moved to top of archive handler (DVR-BH-011), symlink handling (DVR-BH-012)
 
 ## Open Questions Summary
 

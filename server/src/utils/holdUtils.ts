@@ -47,10 +47,11 @@ export async function getDirStats(dirPath: string): Promise<{ fileCount: number;
 }
 
 // ---------------------------------------------------------------------------
-// B064: Internal helper — promise wrapper around child_process.spawn
+// B064: Promise wrapper around child_process.spawn
 // Resolves with exit code 0, rejects on non-zero or spawn error.
+// Exported (storage-panel P6) — single implementation shared across routes/utils.
 // ---------------------------------------------------------------------------
-function spawnAsync(cmd: string, args: string[]): Promise<void> {
+export function spawnAsync(cmd: string, args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const proc = spawn(cmd, args);
     proc.on('error', (err) => reject(err));
@@ -137,6 +138,36 @@ export async function verifyHoldingMatch(localDir: string, holdingDir: string): 
     };
   } catch {
     return empty;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// storage-panel P4: verifyDirsMatch
+// General-purpose directory-pair verifier used by archive + hold (Pass 1).
+// Matches when BOTH fileCount AND totalBytes are equal on src vs dest.
+// Unlike verifyHoldingMatch, this:
+//   - does not treat "both empty" as inconclusive (caller decides)
+//   - does not require destDir to pre-exist (empty counts compare validly)
+//   - compares bytes strictly — cross-filesystem byte drift on the same
+//     source tree indicates a partial/corrupt copy, which is what we want to
+//     catch before deleting the original.
+// Never throws.
+// ---------------------------------------------------------------------------
+export async function verifyDirsMatch(
+  srcDir: string,
+  destDir: string,
+): Promise<{ ok: boolean; srcFiles: number; destFiles: number; srcBytes: number; destBytes: number }> {
+  try {
+    const [src, dest] = await Promise.all([getDirStats(srcDir), getDirStats(destDir)]);
+    return {
+      ok: src.fileCount === dest.fileCount && src.totalBytes === dest.totalBytes,
+      srcFiles: src.fileCount,
+      destFiles: dest.fileCount,
+      srcBytes: src.totalBytes,
+      destBytes: dest.totalBytes,
+    };
+  } catch {
+    return { ok: false, srcFiles: 0, destFiles: 0, srcBytes: 0, destBytes: 0 };
   }
 }
 

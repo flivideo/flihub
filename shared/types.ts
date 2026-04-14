@@ -213,6 +213,7 @@ export interface Config {
   machineRole?: MachineRole; // B039: Machine role — recorder shows archive/promote/cleanup, editor hides them
   diskThresholds?: DiskThresholds;  // B062: Pain thresholds for disk observability columns
   holdingPath?: string;             // B064: External holding drive path (e.g. /Volumes/T7/youtube-HOLDING/appydave)
+  publishedPath?: string;           // storage-panel WU1: External published archive path (e.g. /Volumes/T7/youtube-PUBLISHED/appydave). Flat — no range buckets.
   whisperBinary?: string;   // B036: Path to mlx_whisper binary (default: ~/.pyenv/shims/mlx_whisper)
   whisperModel?: string;    // B036: Whisper model (default: mlx-community/whisper-large-v3-turbo)
   whisperLanguage?: string; // B036: Transcription language (default: en)
@@ -312,6 +313,62 @@ export interface ArchiveRow {
 
 export interface ArchiveInventoryResponse {
   rows: ArchiveRow[];
+}
+
+// ---------------------------------------------------------------------------
+// storage-panel WU1: Storage tree — per-project hierarchical view of disk usage
+// across Local / HOLDING / PUBLISHED with Heavy/Light classification.
+// ---------------------------------------------------------------------------
+
+export type StorageState = 'active' | 'held' | 'archived';
+export type StorageClassification = 'heavy' | 'light';
+export type StorageLocation = 'local' | 'holding' | 'published';
+
+export interface StorageTreeNode {
+  name: string;
+  path: string;
+  sizeBytes: number;
+  classification: StorageClassification;
+  location: StorageLocation;
+  children?: StorageTreeNode[];
+}
+
+export interface StorageTreeSizes {
+  localTotal: number;
+  heavyTotal: number;   // Heavy subfolders currently on local
+  lightTotal: number;   // Light files currently on local
+  heldTotal: number;    // Bytes in HOLDING
+  archivedTotal: number; // Bytes in PUBLISHED
+}
+
+export interface StorageTreePaths {
+  local: string;
+  holding: string | null;
+  published: string | null;
+}
+
+export interface StorageTreeResponse {
+  state: StorageState;
+  nodes: StorageTreeNode[];
+  sizes: StorageTreeSizes;
+  paths: StorageTreePaths;
+  relayBlocked: boolean;
+  relayBytes: number;
+  ssdMounted: boolean;
+  degraded?: boolean;
+  error?: string;
+}
+
+// storage-panel WU1: Shape returned by all mutation endpoints
+// (hold / restore-held / archive / unarchive).
+// storage-panel P5: envelope renamed `ok` → `success` for consistency with
+// the rest of the FliHub API. `newState` remains top-level (not wrapped in
+// `data`) so Wave-B client code can read it alongside `success` / `error`
+// without reaching through an envelope.
+export interface StorageMutationResponse {
+  success: boolean;
+  error?: string;
+  newState?: StorageState;
 }
 
 // B064: Result of any hold operation (rsync, delete, verify)

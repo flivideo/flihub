@@ -99,12 +99,12 @@ Coordinator: capture at campaign start.
 
 | Metric | Baseline | After Wave A | After Wave B |
 |---|---|---|---|
-| Client tests | TBD (~247) | | |
-| Server tests | TBD (~1110) | | |
-| Shared tests | TBD (~80) | | |
-| Client typecheck | pass | | |
-| Server typecheck | pass | | |
-| Client build | pass | | |
+| Client tests | 247 passed (15 files) | 247 | |
+| Server tests | 555 passed + 1 skipped (21 files) | 591 passed + 1 skipped (22 files, post-patches) | |
+| Shared tests | 80 passed (2 files) | 80 | |
+| Client typecheck | pass | pass | |
+| Server typecheck | pass | pass | |
+| Client build | pass | pass | |
 
 A degraded baseline blocks the next wave.
 
