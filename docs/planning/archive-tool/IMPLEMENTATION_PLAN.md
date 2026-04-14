@@ -196,6 +196,25 @@ Delivery review verdict: **FAIL** → CONDITIONAL after patches. All 8 blockers 
 - `deriveArchiveState(localBytes, heldBytes)` is exported from `server/src/utils/archiveInventory.ts` — WU3 batch endpoints should use it for allowlist validation
 - Hook import path unchanged (`useArchiveInventory` still re-exported from `useApi`)
 
+## Patches Applied — After Wave B Delivery Review (2026-04-14)
+
+Delivery review verdict: **CONDITIONAL PASS** → READY TO MERGE after patches. All 8 patches applied in one pass. Commit `7b271fd`. Tests: 247 client / 1110 server / 80 shared passing.
+
+| # | Finding | Source | Action | Status |
+|---|---|---|---|---|
+| P1 | Single-row mutations don't invalidate archive inventory (stale UI 30s) | BH-001 (critical) | Added `QUERY_KEYS.archiveInventory` invalidation to `useHoldProject`, `useDeleteLocal`, `useRestoreFromHolding`, `useDeleteHolding` | [x] done |
+| P2 | `held-only` Delete-everything fails server-side (requires local copy) | BH-003/AR-005/AA-001 | Removed `Delete everything` button from held-only rows; removed `syntheticHeldOnlyVerification` and `nukeTarget` state | [x] done |
+| P3 | Batch buttons double-click race | EC-001 | Disabled while `batchOffloadMut.isPending \|\| batchDeleteLocalMut.isPending` | [x] done |
+| P4 | Misleading `1/N` batch progress (never advances) | AA-002 | Changed to `"Offloading N projects…"` / `"Deleting N projects…"` | [x] done |
+| P5 | Undo setTimeout leaks on unmount + magic 2000 | CQ-005/EC-004 | Extracted `UNDO_WINDOW_MS`, stored timer in ref, cleanup in `useEffect` | [x] done |
+| P6 | Restore popover uses stale heldBytes snapshot | EC-003 | `confirmRestore` re-reads row from inventory; aborts if state changed | [x] done |
+| P7 | Degraded rows invisible outside `all` filter | EC-005 | `matchesArchiveFilter` returns true for degraded regardless of filter; +2 tests | [x] done |
+| P8 | Dead `onNavigateToRelay` prop on StorageTool | CQ-002 | Removed from StorageTool props + ManagePanel callsite | [x] done |
+
+**Deferred to follow-ups**: AR-002 ArchiveTool at 845 lines (extract `useBatchSelection`), AR-003/CQ-003 `archiveMountKey` nonce → explicit `navigationNonce`, CQ-001 hardcoded `left-[232px]` footer → sticky inside scroll container, CQ-004 batch endpoints 3× disk scans per project, AA-004 restore confirm form factor (modal vs inline popover), AA-005 StorageTool line count, BH-005 selection ghost after filter change, EC-002 re-navigation no-op, UT-001/002/004 test hardening.
+
+**Follow-up campaign recommendation**: "Archive tool polish" mini-wave for the deferred structural items — none block merge.
+
 ## Notes & Decisions
 
 - **Batch scope**: Batch offload is the #1 user value — David already knows which projects to archive. Batch restore intentionally excluded from this wave (rarer, higher stakes, can revisit if requested).

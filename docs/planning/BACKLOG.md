@@ -1,12 +1,18 @@
 # Project Backlog — FliHub
 
-**Last updated**: 2026-04-12
+**Last updated**: 2026-04-14
 **Total open**: 15 | Pending: 15 | In Progress: 0 | Deferred: 6 | Rejected: 4
-**Last reconciled**: whisper-dictionary + video-controls session (2026-04-12)
+**Last reconciled**: archive-tool campaign close (2026-04-14)
 
 ---
 
 ## Pending
+
+## Archive Tool (2026-04-14)
+
+- [x] Archive tool — unified offload UX: filterable table, inline actions, batch offload/delete, deep-links, restore confirm | Completed: archive-tool
+- [ ] B071 — Archive tool polish: extract `useBatchSelection`, replace mount nonce with explicit `navigationNonce`, `left-[232px]` footer layout fix, batch endpoint disk-scan dedupe | Priority: low | Deferred from archive-tool Wave B delivery review
+- [ ] B072 — Add `DELETE /holding-only` endpoint to restore "Delete everything" on held-only rows (currently hidden because server requires local copy for verification) | Priority: medium | Deferred from archive-tool
 
 ## B047 Critical Fixes (from 3-lens audit 2026-03-24)
 
