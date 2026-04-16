@@ -129,6 +129,8 @@ export function createRoutes(
       relayDirectory,
       relayEnabled,
       machineRole,
+      holdingPath,
+      publishedPath,
     } = req.body;
     const updatedConfig = updateConfig({
       watchDirectory,
@@ -142,6 +144,8 @@ export function createRoutes(
       relayDirectory,
       relayEnabled,
       machineRole,
+      holdingPath,
+      publishedPath,
     });
     console.log('Config updated:', updatedConfig);
     res.json(updatedConfig);

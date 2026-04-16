@@ -48,6 +48,8 @@ import {
   deleteHoldingProject,
   HOLD_EXCLUDES,
   holdExcludeArgs,
+  verifyDirsMatch,
+  matchesExcludePattern,
 } from '../utils/holdUtils.js';
 
 // ---------------------------------------------------------------------------
@@ -640,5 +642,112 @@ describe('holdExcludeArgs — rsync exclude patterns', () => {
     } finally {
       await fs.rm(tmpRoot, { recursive: true, force: true });
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// storage-panel: matchesExcludePattern — pattern semantics
+// ---------------------------------------------------------------------------
+describe('matchesExcludePattern', () => {
+  it('matches literal file name', () => {
+    expect(matchesExcludePattern('.DS_Store', false, ['.DS_Store'])).toBe(true);
+    expect(matchesExcludePattern('other.txt', false, ['.DS_Store'])).toBe(false);
+  });
+
+  it('matches wildcard pattern like ._*', () => {
+    expect(matchesExcludePattern('._hidden', false, ['._*'])).toBe(true);
+    expect(matchesExcludePattern('_hidden', false, ['._*'])).toBe(false);
+    expect(matchesExcludePattern('data.txt', false, ['._*'])).toBe(false);
+  });
+
+  it('trailing slash restricts to directories', () => {
+    expect(matchesExcludePattern('-trash', true, ['-trash/'])).toBe(true);
+    expect(matchesExcludePattern('-trash', false, ['-trash/'])).toBe(false);
+  });
+
+  it('checks all HOLD_EXCLUDES together', () => {
+    expect(matchesExcludePattern('-trash', true, HOLD_EXCLUDES)).toBe(true);
+    expect(matchesExcludePattern('s3-staging', true, HOLD_EXCLUDES)).toBe(true);
+    expect(matchesExcludePattern('.DS_Store', false, HOLD_EXCLUDES)).toBe(true);
+    expect(matchesExcludePattern('._afile', false, HOLD_EXCLUDES)).toBe(true);
+    expect(matchesExcludePattern('recordings', true, HOLD_EXCLUDES)).toBe(false);
+    expect(matchesExcludePattern('clip.mov', false, HOLD_EXCLUDES)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// storage-panel: verifyDirsMatch — treats HOLD_EXCLUDES as invisible on both
+// sides, so macOS junk present only in the source never causes a spurious
+// verification failure after a clean rsync --exclude transfer.
+// Regression: c36-archon-bmad archive had local=99 / published=92 because
+// .DS_Store + -trash/ entries existed locally but were excluded by rsync —
+// verifyDirsMatch flagged it as failed and skipped the local deletion.
+// ---------------------------------------------------------------------------
+describe('verifyDirsMatch — excluded files ignored', () => {
+  let tmpRoot: string;
+
+  beforeEach(async () => {
+    tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'verify-dirs-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+  });
+
+  it('ok=true when real files match and only excluded files differ', async () => {
+    const src = path.join(tmpRoot, 'src');
+    const dest = path.join(tmpRoot, 'dest');
+    await fs.mkdir(path.join(src, 'recordings'), { recursive: true });
+    await fs.mkdir(path.join(dest, 'recordings'), { recursive: true });
+
+    // Real payload on both sides — identical
+    await fs.writeFile(path.join(src, 'recordings', 'a.mov'), 'aaaa');
+    await fs.writeFile(path.join(dest, 'recordings', 'a.mov'), 'aaaa');
+
+    // Excluded noise only on src — this is what rsync would skip
+    await fs.writeFile(path.join(src, '.DS_Store'), 'junk');
+    await fs.writeFile(path.join(src, 'recordings', '.DS_Store'), 'junk');
+    await fs.mkdir(path.join(src, '-trash'), { recursive: true });
+    await fs.writeFile(path.join(src, '-trash', 'old.mov'), 'garbage');
+    await fs.mkdir(path.join(src, 's3-staging'), { recursive: true });
+    await fs.writeFile(path.join(src, 's3-staging', 'sent.zip'), 'zzz');
+    await fs.writeFile(path.join(src, '._metadata'), 'resource-fork');
+
+    const v = await verifyDirsMatch(src, dest);
+    expect(v.ok).toBe(true);
+    expect(v.srcFiles).toBe(1);
+    expect(v.destFiles).toBe(1);
+    expect(v.srcBytes).toBe(v.destBytes);
+  });
+
+  it('ok=false when a real file is missing on dest', async () => {
+    const src = path.join(tmpRoot, 'src');
+    const dest = path.join(tmpRoot, 'dest');
+    await fs.mkdir(path.join(src, 'recordings'), { recursive: true });
+    await fs.mkdir(path.join(dest, 'recordings'), { recursive: true });
+
+    await fs.writeFile(path.join(src, 'recordings', 'a.mov'), 'aaaa');
+    await fs.writeFile(path.join(src, 'recordings', 'b.mov'), 'bbbb');
+    await fs.writeFile(path.join(dest, 'recordings', 'a.mov'), 'aaaa');
+    // b.mov missing on dest — real partial copy
+
+    const v = await verifyDirsMatch(src, dest);
+    expect(v.ok).toBe(false);
+    expect(v.srcFiles).toBe(2);
+    expect(v.destFiles).toBe(1);
+  });
+
+  it('ok=false when real file bytes differ', async () => {
+    const src = path.join(tmpRoot, 'src');
+    const dest = path.join(tmpRoot, 'dest');
+    await fs.mkdir(src, { recursive: true });
+    await fs.mkdir(dest, { recursive: true });
+
+    await fs.writeFile(path.join(src, 'a.mov'), 'aaaa');
+    await fs.writeFile(path.join(dest, 'a.mov'), 'aa'); // truncated
+
+    const v = await verifyDirsMatch(src, dest);
+    expect(v.ok).toBe(false);
+    expect(v.srcBytes).not.toBe(v.destBytes);
   });
 });

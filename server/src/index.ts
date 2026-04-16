@@ -194,6 +194,10 @@ function updateConfig(newConfig: Partial<Config>): Config {
   if (newConfig.relayDirectory !== undefined) currentConfig.relayDirectory = newConfig.relayDirectory;
   if (newConfig.machineRole !== undefined) currentConfig.machineRole = newConfig.machineRole;
 
+  // storage-panel: Handle T7 holding + published paths
+  if (newConfig.holdingPath !== undefined) currentConfig.holdingPath = newConfig.holdingPath;
+  if (newConfig.publishedPath !== undefined) currentConfig.publishedPath = newConfig.publishedPath;
+
   // Persist config to file
   saveConfigToFile(currentConfig);
 

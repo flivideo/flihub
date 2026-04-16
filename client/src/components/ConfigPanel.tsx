@@ -317,6 +317,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const [relayDirectory, setRelayDirectory] = useState('');
   const [relayEnabled, setRelayEnabled] = useState(false);
   const [machineRole, setMachineRole] = useState<MachineRole>('recorder');
+  const [holdingPath, setHoldingPath] = useState('');
+  const [publishedPath, setPublishedPath] = useState('');
 
   // FR-102: Gling dictionary words (global)
   const [glingDictionary, setGlingDictionary] = useState('');
@@ -331,6 +333,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const [rootDirExists, setRootDirExists] = useState<PathExistsStatus>('unknown');
   const [imageDirExists, setImageDirExists] = useState<PathExistsStatus>('unknown');
   const [relayDirExists, setRelayDirExists] = useState<PathExistsStatus>('unknown');
+  const [holdingPathExists, setHoldingPathExists] = useState<PathExistsStatus>('unknown');
+  const [publishedPathExists, setPublishedPathExists] = useState<PathExistsStatus>('unknown');
 
   // FR-89 Part 2: Check path existence via API
   const checkPathExists = useCallback(
@@ -387,6 +391,11 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       setRelayEnabled(config.relayEnabled || false);
       setMachineRole(config.machineRole || 'recorder');
 
+      const holdingPathInit = collapsePath(config.holdingPath || '');
+      const publishedPathInit = collapsePath(config.publishedPath || '');
+      setHoldingPath(holdingPathInit);
+      setPublishedPath(publishedPathInit);
+
       // FR-102: Initialize Gling dictionary (one word per line)
       setGlingDictionary((config.glingDictionary || []).join('\n'));
 
@@ -401,6 +410,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       checkPathExists(rootPath, setRootDirExists);
       checkPathExists(imagePath, setImageDirExists);
       if (relayPath) checkPathExists(relayPath, setRelayDirExists);
+      if (holdingPathInit) checkPathExists(holdingPathInit, setHoldingPathExists);
+      if (publishedPathInit) checkPathExists(publishedPathInit, setPublishedPathExists);
     }
   }, [config, checkPathExists]);
 
@@ -469,6 +480,10 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       (config.relayEnabled || false) !== relayEnabled ||
       (config.machineRole || 'recorder') !== machineRole;
 
+    const storagePathsChanged =
+      collapsePath(config.holdingPath || '') !== holdingPath ||
+      collapsePath(config.publishedPath || '') !== publishedPath;
+
     // FR-102: Check Gling dictionary changes
     const currentDict = (config.glingDictionary || []).join('\n');
     const dictChanged = currentDict !== glingDictionary;
@@ -488,7 +503,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     const commonNamesChanged =
       JSON.stringify(config.commonNames || []) !== JSON.stringify(commonNames);
 
-    return pathsChanged || relayChanged || dictChanged || chapterChanged || shadowChanged || commonNamesChanged;
+    return pathsChanged || relayChanged || storagePathsChanged || dictChanged || chapterChanged || shadowChanged || commonNamesChanged;
   }, [
     config,
     watchDirectory,
@@ -498,6 +513,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     relayDirectory,
     relayEnabled,
     machineRole,
+    holdingPath,
+    publishedPath,
     glingDictionary,
     chapterConfig,
     includeTitleSlides,
@@ -514,7 +531,9 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const rootError = validatePath(projectsRootDirectory);
   const imageSourceError = validatePath(imageSourceDirectory);
   const relayError = relayDirectory.trim() ? validatePath(relayDirectory) : null;
-  const hasErrors = !!(watchError || rootError || imageSourceError || relayError);
+  const holdingError = holdingPath.trim() ? validatePath(holdingPath) : null;
+  const publishedError = publishedPath.trim() ? validatePath(publishedPath) : null;
+  const hasErrors = !!(watchError || rootError || imageSourceError || relayError || holdingError || publishedError);
 
   const handleSave = async () => {
     if (hasErrors) {
@@ -563,6 +582,11 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       const relaySanitized = sanitizePath(relayDirectory);
       if (relaySanitized.sanitized !== relayDirectory) setRelayDirectory(relaySanitized.sanitized);
 
+      const holdingSanitized = sanitizePath(holdingPath);
+      if (holdingSanitized.sanitized !== holdingPath) setHoldingPath(holdingSanitized.sanitized);
+      const publishedSanitized = sanitizePath(publishedPath);
+      if (publishedSanitized.sanitized !== publishedPath) setPublishedPath(publishedSanitized.sanitized);
+
       await updateConfig.mutateAsync({
         watchDirectory: watchSanitized.sanitized,
         projectsRootDirectory: rootSanitized.sanitized,
@@ -574,6 +598,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         relayDirectory: relaySanitized.sanitized || undefined,
         relayEnabled,
         machineRole,
+        holdingPath: holdingSanitized.sanitized || undefined,
+        publishedPath: publishedSanitized.sanitized || undefined,
       });
 
       // FR-76: Save chapter recording defaults
@@ -816,6 +842,56 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             <PathExistsIndicator
               status={imageDirExists}
               description="Directory to scan for incoming images (Assets page)"
+            />
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm text-warm-secondary mb-1">T7 Holding Path</label>
+          <input
+            type="text"
+            value={holdingPath}
+            onChange={(e) => {
+              setHoldingPath(e.target.value);
+              setHoldingPathExists('unknown');
+            }}
+            onBlur={() => holdingPath && checkPathExists(holdingPath, setHoldingPathExists)}
+            className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              holdingError ? 'border-red-300 bg-red-50' : 'border-warm-strong'
+            }`}
+            placeholder="/Volumes/T7/youtube-HOLDING/appydave"
+          />
+          {holdingError ? (
+            <p className="text-xs text-red-500 mt-1">{holdingError}</p>
+          ) : (
+            <PathExistsIndicator
+              status={holdingPath ? holdingPathExists : 'unknown'}
+              description="External SSD path where held (heavy) project files are staged"
+            />
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm text-warm-secondary mb-1">T7 Published Path</label>
+          <input
+            type="text"
+            value={publishedPath}
+            onChange={(e) => {
+              setPublishedPath(e.target.value);
+              setPublishedPathExists('unknown');
+            }}
+            onBlur={() => publishedPath && checkPathExists(publishedPath, setPublishedPathExists)}
+            className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              publishedError ? 'border-red-300 bg-red-50' : 'border-warm-strong'
+            }`}
+            placeholder="/Volumes/T7/youtube-PUBLISHED/appydave"
+          />
+          {publishedError ? (
+            <p className="text-xs text-red-500 mt-1">{publishedError}</p>
+          ) : (
+            <PathExistsIndicator
+              status={publishedPath ? publishedPathExists : 'unknown'}
+              description="External SSD path where archived (published) projects are stored"
             />
           )}
         </div>

@@ -15,10 +15,75 @@ export function holdExcludeArgs(): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// storage-panel: Match a single dir-entry name against an rsync-style exclude
+// pattern list. Supports: trailing '/' for directory-only matches, literal
+// names, and a single '*' wildcard (e.g. '._*'). Keep this in step with
+// HOLD_EXCLUDES — used by getDirStats so that pre/post rsync verification
+// counts the same files rsync actually transferred.
+// ---------------------------------------------------------------------------
+export function matchesExcludePattern(name: string, isDir: boolean, patterns: string[]): boolean {
+  for (const raw of patterns) {
+    const dirOnly = raw.endsWith('/');
+    const pat = dirOnly ? raw.slice(0, -1) : raw;
+    if (dirOnly && !isDir) continue;
+    if (pat.includes('*')) {
+      const re = new RegExp(
+        '^' + pat.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$',
+      );
+      if (re.test(name)) return true;
+    } else if (name === pat) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// ---------------------------------------------------------------------------
 // B064: Internal helper — recursive dir stats (file count + total bytes)
 // Returns { fileCount: 0, totalBytes: 0 } if dir does not exist or any error.
+// storage-panel: `excludes` honours rsync-style patterns so verify counts
+// match rsync's actual transfer set.
 // ---------------------------------------------------------------------------
-export async function getDirStats(dirPath: string): Promise<{ fileCount: number; totalBytes: number }> {
+export async function getDirStats(
+  dirPath: string,
+  excludes: string[] = [],
+): Promise<{ fileCount: number; totalBytes: number }> {
+  if (excludes.length > 0) {
+    let fileCount = 0;
+    let totalBytes = 0;
+    const walk = async (dir: string): Promise<void> => {
+      let entries: import('fs').Dirent[];
+      try {
+        entries = await fs.readdir(dir, { withFileTypes: true });
+      } catch {
+        return;
+      }
+      await Promise.all(
+        entries.map(async (e) => {
+          if (matchesExcludePattern(e.name, e.isDirectory(), excludes)) return;
+          const full = path.join(dir, e.name);
+          if (e.isDirectory()) {
+            await walk(full);
+          } else if (e.isFile()) {
+            try {
+              const st = await fs.stat(full);
+              fileCount++;
+              totalBytes += st.size;
+            } catch {
+              /* removed between readdir and stat */
+            }
+          }
+        }),
+      );
+    };
+    try {
+      await walk(dirPath);
+    } catch {
+      /* ignore */
+    }
+    return { fileCount, totalBytes };
+  }
+
   try {
     const entries = await fs.readdir(dirPath, { withFileTypes: true, recursive: true });
     let fileCount = 0;
@@ -158,7 +223,14 @@ export async function verifyDirsMatch(
   destDir: string,
 ): Promise<{ ok: boolean; srcFiles: number; destFiles: number; srcBytes: number; destBytes: number }> {
   try {
-    const [src, dest] = await Promise.all([getDirStats(srcDir), getDirStats(destDir)]);
+    // storage-panel: apply HOLD_EXCLUDES so the verify count matches rsync's
+    // actual transfer set (.DS_Store, -trash/, s3-staging/, ._* are skipped
+    // on both sides — otherwise verify spuriously fails when the source has
+    // macOS junk files that the destination legitimately never received).
+    const [src, dest] = await Promise.all([
+      getDirStats(srcDir, HOLD_EXCLUDES),
+      getDirStats(destDir, HOLD_EXCLUDES),
+    ]);
     return {
       ok: src.fileCount === dest.fileCount && src.totalBytes === dest.totalBytes,
       srcFiles: src.fileCount,
