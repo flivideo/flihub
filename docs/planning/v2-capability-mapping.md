@@ -8,6 +8,9 @@
 question is not "what does FliHub do" but "which inventory rows does it provide, which does it consume,
 and which does it duplicate" — so v2 scope falls out of gaps rather than out of a wishlist.
 
+**Revised 2026-08-18** — transcription reframed as delegate-vs-pattern-adopt after verifying the
+sequencing; the two cheap measurements written out with method and honest cost.
+
 **Method note**: FliHub's code and `CONTEXT.md` were **read, not run**, in this pass. Every FliHub
 binding added to the manifest is therefore `reachable-untested`, and every quality cell is `?`. That is
 the inventory's rule, not a judgement about FliHub — the validator rejects a grade without evidence.
@@ -67,11 +70,12 @@ autopilot *watcher* only (`gling-puppeteer/docs/HANDOVER.md` finding 7).
 
 Six coordination rows plus `generate-proxy`. Now in the manifest; brain page and viewer regenerated.
 
-### 4. FliHub duplicates a row served better elsewhere ⚠️
+### 4. FliHub holds a row the arsenal later grew a canon provider for ⚠️
 
 **`transcribe-speech`.** `server/src/routes/transcriptions.ts` spawns
 `~/.pyenv/shims/mlx_whisper` **directly** — its own invocation of the same model the canon tool wraps.
-It therefore does not get:
+⚠️ **This predates the canon tool by ~3 months and is not a design error** — see *Transcription* in the
+extraction list for the verified sequencing. It therefore does not get:
 
 - the repetition-hallucination suppression flags (`--condition-on-previous-text False
   --compression-ratio-threshold 2.0`), and
@@ -84,10 +88,14 @@ exposed to it and has no detector. This is the clearest deletion case in v2.
 
 ## Ranked v2 scope
 
-### Rank 1 — Stop reimplementing a graded provider *(deletion)*
+### Rank 1 — Delegate transcription to the canon tool *(deletion)*
 Replace FliHub's own `mlx_whisper` spawn with a call to `~/bin/transcribe`. Deletes a code path, inherits
-the suppression flags and the health sidecar, and removes a silent-corruption exposure. Smallest change
-with the largest correctness gain.
+the suppression flags and the health sidecar, and removes a **measured** silent-corruption exposure.
+Smallest change with the largest correctness gain, and no decision needed.
+
+Not a criticism of the original: FliHub's worker predates the canon tool by ~3 months. The alternative —
+adopting the flags without delegating — is written up as Option B under *Transcription* in the extraction
+list, along with the machine-dependency check and why delegation still wins.
 
 ### Rank 2 — Own the coordination rows deliberately *(identity)*
 Nothing else in the arsenal holds these six. They are not FliHub's incidental plumbing — they are the
@@ -112,6 +120,51 @@ From the inventory's own gaps, in order of payoff:
 Anything in the edit cluster. Gling's algorithm is ~777 readable lines, but reimplementing it is a
 separate decision with a licence question attached — see `brains/gling/gling-capability-palette.md`
 § *Port vs automate*.
+
+---
+
+## The two cheap measurements
+
+Both convert `?` cells in the capability inventory into graded ones. Neither spends credit. **Do the
+second one first** — it is cheaper and more certain.
+
+### A. Static trace of the six `EnhancementType` values — DO THIS FIRST
+
+**What it settles.** Six `?` cells in the manifest: `jumpCutZoom`, `audioDenoise`, `bRoll`,
+`speechEnhancement`, `aiStudio`, `smartCaptions`. For each, nobody knows whether it computes
+**server-side or client-side** — and that single fact decides whether L1 can reach it at all. The enum
+lives in `packages/server-client`, which *hints* at server involvement and proves nothing: the core cut
+flow is demonstrably client-side despite identical packaging.
+
+**What you actually do.** Follow each enum value through the reconstructed study tree at
+`~/dev/upstream/repos/gling-study/current` until it lands in either a REST call or a renderer module.
+Grep, read, record. Same method that answered the `packages/takes` question.
+
+**Honest cost.** Reading only — no credit, no app running, no network, nothing installed. An hour or two
+of grep-and-read, and the tree is already extracted at 1.53.2. **This is the cheapest and most certain
+measurement available**, and it resolves six cells rather than one.
+
+### B. Silence A/B against `auto-editor`
+
+**What it settles.** Whether the palette's row 2 (cut silence) is genuinely unique or simply replaceable.
+Gling cuts on a **fixed 0.5-second gap between word timestamps** — it reads the transcript. `auto-editor`
+cuts on a **dB threshold** — it hears quiet. The real question is whether *reading* beats *listening* in
+practice, and no amount of code-reading answers it.
+
+**What you actually do.** Take one clip containing both deliberate dramatic pauses **and** genuine dead
+air. Cut it both ways. Compare which pauses survived: a dramatic pause that Gling keeps and `auto-editor`
+removes is the whole case for the row.
+
+**⚠️ Honest cost — higher than "an hour", and the earlier estimate was wrong.** Two reasons:
+
+1. **`auto-editor` is `not-wired`** in the inventory — cloned, never run. The estimate assumed a tool
+   that has never been invoked once. Budget install, first-run and parameter-fumbling before any
+   comparison starts.
+2. **The Gling side cannot run headless.** The cut is client-side, so this runs *through the app*, by
+   hand, with a plan-minutes transcription first.
+
+Call it a half-day with a real chance of a snag, not an hour. Still cheap for what it settles — but it is
+the more expensive of the two and it should go second.
 
 ---
 
@@ -191,11 +244,75 @@ identifiable second caller is not a candidate.
 | **Second caller** | **None found.** Dam'It models asset *roles*, not this `{chapter}-{sequence}-{name}-{tags}` convention. No fli sibling imports it. `fligen` calls FliHub's transcript API, not its naming. |
 | **Verdict** | **Not a candidate yet**, by the stated test. The convention is also deeply FliHub-specific (Postel's-law parsing, the NFR-65 pure-number rule) — generalising it before a second caller exists would be speculative. Revisit if Dam'It adopts the convention. |
 
-### 4. Transcription — not an extraction, a deletion *(unchanged, still rank 1 overall)*
+### 4. Transcription — neither an extraction nor a rewrite
 
-The direction is reversed: FliHub should **stop owning** a spawn and **call** `~/bin/transcribe`. It
-currently invokes `~/.pyenv/shims/mlx_whisper` itself and therefore misses the repetition-suppression
-flags and the `health.json` sidecar for a failure mode **measured at 10 of 21 files**.
+⚠️ **Sequencing correction — FliHub did not duplicate a mature system, it predates one.** Verified from
+the repos:
+
+| | Date |
+|---|---|
+| FliHub's transcription path fixed to the pyenv shim | **April 2026** (`CONTEXT.md`, generated 2026-04-08) |
+| `~/bin/transcribe` symlink created | **2026-07-09** |
+| `voice-analysis` brain makes it canon | **2026-07-25** |
+
+FliHub's worker is roughly **three months older** than the tool it is now measured against. **The
+duplication is an artefact of sequence, not a design error** — there was nothing to delegate to when it
+was written. Earlier wording in this doc read as a criticism of a decision nobody made; it isn't one.
+
+"Rewrite" is also the wrong word and inflates the cost. There are two distinct options that have been
+collapsing into one item:
+
+**Option A — delegate to.** FliHub stops owning transcription and shells out to `~/bin/transcribe`.
+
+- Deletes the spawn; inherits the `--condition-on-previous-text False --compression-ratio-threshold 2.0`
+  suppression flags and the `<stem>.health.json` sidecar **for free**
+- Any future improvement to the canon tool arrives with **no FliHub change**
+- **Cost: one route file** (`server/src/routes/transcriptions.ts`)
+- **Creates a hard dependency** on the tool being installed wherever FliHub transcribes
+
+**Option B — observe the patterns of.** FliHub keeps its own invocation but adopts what the mature tool
+proved: the two suppression flags, plus writing a health sidecar it can then act on.
+
+- Keeps FliHub self-contained — no new dependency
+- **Keeps the duplication**, so the next fix must be applied twice
+- Fixes today's known failure mode and leaves FliHub to rediscover the next one
+
+**The dependency check, done rather than assumed:**
+
+| Machine | `~/bin/transcribe` | `mlx_whisper` shim |
+|---|---|---|
+| Roamy (this machine) | ✅ present (Jul 9) | ✅ |
+| mac-mini-m4 | ✅ present (Jul 9) | ✅ |
+| mac-mini-jan / mac-mini-mary | ⚠️ **could not check** — SSH key auth refused from Roamy | ⚠️ unknown |
+
+⚠️ **Permission-denied is not evidence of absence.** Jan's and Mary's machines are unverified, not bare.
+
+But `CONTEXT.md` resolves it from the other side: **transcription is a `recorder`-role function.** A
+`recorder` machine sees incoming recordings, naming and transcription; an `editor` machine sees
+relay-collect, shadow previews and edit-delivery. The editor machines do not transcribe, so the
+dependency lands only on recorder-role machines — **and both verified recorder machines already have the
+tool.**
+
+**Recommendation: Option A, delegate.** The dependency that made B attractive largely evaporates once
+role scoping is accounted for. Decisive point: **only delegation removes the measured exposure
+permanently.** Pattern-adoption fixes the *known* failure mode — repetition-hallucination, measured at
+**10 of 21 files** — and leaves FliHub to rediscover the next one on its own, three months late, exactly
+as happened this time.
+
+⚠️ **Confirm before shipping A**: that no `editor`-role machine ever triggers transcription (the
+"Transcribe All" slide-out, FR-151, is the path worth checking), and that Jan's and Mary's machines are
+provisioned if any does.
+
+**Three systems in this arsenal touch transcription, and only one is canon:**
+
+1. **`~/bin/transcribe`** — canon (`voice-analysis` brain)
+2. **FliHub** — its own `mlx_whisper` spawn
+3. **Captain's Log** (`~/dev/ad/apps/captains-log` + the `captains-log` plugin) — a separate
+   transcript-capture backlog with its own server and MCP surface
+
+**Whether Captain's Log and FliHub should both delegate to the same tool is worth recording, not
+answering here.** It is a wider convergence question than v2 scope, and Captain's Log has not been read
+in this pass.
 
 ### Confirmed control plane — do not extract
 
