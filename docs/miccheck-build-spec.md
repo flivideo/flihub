@@ -422,6 +422,20 @@ must never look the same. `audio-clean` hit exactly this on 2026-08-26 with
 
 ### 3.2 Layout — SPEAKING mode *(revised)*
 
+> ⚠️ **This layout is the TARGET END-STATE, not the Phase 1.5 increment.**
+>
+> As drawn it shows B1 (SNR), B2 (proximity), B3 (pops), B4 (sibilance), C1 (correlation) and
+> C2 (fan-band Δ) — which §6 assigns to **Phases 2 and 3**. The "1.5" label describes the *UX
+> model* (modes + trajectory + events), **not** the metric coverage.
+>
+> Read as "the next small step after Phase 1" it will mislead: the layout needs nearly all of
+> Phases 2 and 3 to populate. Build the frame in 1.5 and let panels arrive grey-with-reason as
+> their metrics land — which is exactly what §3.1's grey state is for, and doubles as a live
+> demonstration that grey ≠ green.
+>
+> *(Raised by `flihub-fix-bugs`, 2026-08-26. Correct catch.)*
+
+
 ```
 ┌─ MicCheck ─ [ ROOM │ ●SPEAKING ] ─── ● HyperX QuadCast · 48 kHz · 2ch · 16-bit ─┐
 │                                                                                 │
