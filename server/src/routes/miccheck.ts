@@ -17,10 +17,13 @@ import type {
   ClientToServerEvents,
   ServerToClientEvents,
   MicCheckTick,
+  MicCheckMode,
 } from '../../../shared/types.js';
 import {
   startSession,
   appendTick,
+  appendEvent,
+  setRoomReference,
   finishSession,
   getActiveSession,
   defaultMicCheckDir,
@@ -80,17 +83,32 @@ export function createMicCheckRoutes(
     const sessionId = String(req.params.id);
     const body = req.body ?? {};
 
+    // Mode is DECLARED by the client, never guessed here. An unrecognised value is
+    // rejected rather than defaulted — silently assuming 'speaking' would grade room
+    // tone as a voice.
+    const mode: MicCheckMode | null =
+      body.mode === 'room' || body.mode === 'speaking' ? body.mode : null;
+    if (!mode) {
+      res.status(400).json({
+        success: false,
+        error: 'tick requires mode: "room" | "speaking" — it is declared, never inferred',
+      });
+      return;
+    }
+
     const tick: MicCheckTick = {
       t: int(body.t),
+      mode,
       shortTermLufs: num(body.shortTermLufs),
       samplePeakDbfs: num(body.samplePeakDbfs),
       clipCount: int(body.clipCount),
       nearClipCount: int(body.nearClipCount),
       windowFull: body.windowFull === true,
-      hasSpeech: body.hasSpeech === true,
+      speechDetected: body.speechDetected === true,
     };
 
     const accepted = appendTick(sessionId, tick);
+
     if (!accepted) {
       // A stale tab posting into a finished run. 409, not 404: the resource concept
       // exists, this client is simply no longer the live one.
@@ -101,7 +119,50 @@ export function createMicCheckRoutes(
       return;
     }
 
+    // Intent vs behaviour disagreeing is itself a finding: speech during a room capture
+    // contaminates the reference every later comparison depends on.
+    if (tick.mode === 'room' && tick.speechDetected) {
+      appendEvent(sessionId, {
+        t: tick.t,
+        kind: 'room-contaminated',
+        label: 'Speech detected during room capture — reference may be contaminated',
+      });
+    }
+
     io?.emit('miccheck:tick', { sessionId, tick });
+    res.json({ success: true });
+  });
+
+  // POST /session/:id/event — client-detected observations that cannot be re-derived
+  // from the 1 Hz series (a level step is defined over 500 ms).
+  router.post('/session/:id/event', (req: Request, res: Response) => {
+    const sessionId = String(req.params.id);
+    const body = req.body ?? {};
+    if (typeof body.kind !== 'string' || typeof body.label !== 'string') {
+      res.status(400).json({ success: false, error: 'event requires kind and label' });
+      return;
+    }
+    const ok = appendEvent(sessionId, {
+      t: int(body.t),
+      kind: body.kind,
+      label: body.label,
+      deltaDb: num(body.deltaDb) ?? undefined,
+    });
+    if (!ok) {
+      res.status(409).json({ success: false, error: 'No active session with that id' });
+      return;
+    }
+    res.json({ success: true });
+  });
+
+  // POST /session/:id/room-reference — store the captured noise floor
+  router.post('/session/:id/room-reference', (req: Request, res: Response) => {
+    const sessionId = String(req.params.id);
+    const ok = setRoomReference(sessionId, num((req.body ?? {}).lufs));
+    if (!ok) {
+      res.status(409).json({ success: false, error: 'No active session with that id' });
+      return;
+    }
     res.json({ success: true });
   });
 

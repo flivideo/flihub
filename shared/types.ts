@@ -1425,17 +1425,57 @@ export interface UndoRenameResponse {
  * never a plausible-looking number. -Infinity does not survive JSON, so silence
  * arrives here as null with `windowFull` saying whether the window had even filled.
  */
+export type MicCheckMode = 'room' | 'speaking';
+
 export interface MicCheckTick {
   /** Milliseconds since session start. */
   t: number;
+  /**
+   * DECLARED — which screen the operator pressed. Authoritative, never inferred.
+   * Inferring the mode means a wrong inference yields a confidently wrong reading.
+   */
+  mode: MicCheckMode;
   shortTermLufs: number | null;
   samplePeakDbfs: number | null;
   clipCount: number;
   nearClipCount: number;
   /** False until a full 3 s short-term window has been observed. */
   windowFull: boolean;
-  /** True when the level is above the speech floor — i.e. this is a voice, not room tone. */
-  hasSpeech: boolean;
+  /**
+   * MEASURED — does THIS tick contain speech (level vs the floor)?
+   *
+   * Distinct from `mode`, and both are needed. Inside SPEAKING it gates the loudness
+   * stats, so pauses between sentences do not drag the average down. Inside ROOM it is
+   * an ERROR SIGNAL: speech during a room capture means the reference is contaminated
+   * and every later delta would be measured against a lie.
+   *
+   * It must never decide the mode. `mode` records intent; this records behaviour, and
+   * the interesting case is when they disagree.
+   */
+  speechDetected: boolean;
+}
+
+export type MicCheckEventKind =
+  | 'level-step'
+  | 'clip'
+  | 'near-clip-run'
+  | 'level-instability'
+  | 'room-contaminated';
+
+/**
+ * A timestamped observation. Persisted because it CANNOT be re-derived later: a level
+ * step is defined over 500 ms and the stored series is 1 Hz, so the resolution needed to
+ * find it is already gone by the time anything reaches disk.
+ *
+ * Trajectory is deliberately NOT here — direction and sparkline are a rendering of the
+ * series, and storing a rendering beside its source creates two truths free to drift.
+ */
+export interface MicCheckEvent {
+  t: number;
+  kind: MicCheckEventKind;
+  /** Phrased as an observation, never an attributed cause. */
+  label: string;
+  deltaDb?: number;
 }
 
 /** The four-way constraint report: what we asked for vs what we actually got. */
@@ -1499,6 +1539,9 @@ export interface MicCheckSession {
   probe: MicCheckProbe | null;
   summary: MicCheckSummary | null;
   series: MicCheckTick[];
+  events: MicCheckEvent[];
+  /** Noise floor captured during ROOM mode, in LUFS. Null when never captured. */
+  roomReferenceLufs: number | null;
   not_measured: MicCheckNotMeasured[];
 }
 

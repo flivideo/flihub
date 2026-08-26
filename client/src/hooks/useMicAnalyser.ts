@@ -50,6 +50,13 @@ export const TICK_POST_INTERVAL_MS = 1000;
 
 export type MicStatus = 'idle' | 'starting' | 'running' | 'error';
 
+/**
+ * DECLARED by the operator, never inferred (spec §3.0). ROOM characterises the background
+ * noise; SPEAKING grades the voice. Guessing which one someone is in means a wrong guess
+ * produces a confidently wrong reading.
+ */
+export type MicMode = 'room' | 'speaking';
+
 export interface MicMetrics {
   shortTermLufs: number;
   samplePeakDbfs: number;
@@ -139,6 +146,9 @@ export function useMicAnalyser() {
   const [probeRunning, setProbeRunning] = useState(false);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [mode, setModeState] = useState<MicMode>('room');
+  const [roomReferenceLufs, setRoomReferenceLufs] = useState<number | null>(null);
+  const modeRef = useRef<MicMode>('room');
 
   const streamRef = useRef<MediaStream | null>(null);
   const sessionIdRef = useRef<string | null>(null);
@@ -296,6 +306,9 @@ export function useMicAnalyser() {
 
       // Open the server-side record. Failure here is non-fatal: the meter still works,
       // it just will not be visible outside this tab.
+      modeRef.current = 'room';
+      setModeState('room');
+      setRoomReferenceLufs(null);
       sessionStartRef.current = performance.now();
       lastPostRef.current = 0;
       const started = (await post('/session/start', {
@@ -333,12 +346,16 @@ export function useMicAnalyser() {
 
         void post(`/session/${id}/tick`, {
           t: Math.round(now - sessionStartRef.current),
+          // Declared, not derived — the server rejects a tick without it.
+          mode: modeRef.current,
           shortTermLufs: finite(m.shortTermLufs),
           samplePeakDbfs: finite(m.samplePeakDbfs),
           clipCount: m.clipCount,
           nearClipCount: m.nearClipCount,
           windowFull: m.windowFull,
-          hasSpeech:
+          // Measured, and deliberately separate from mode. Inside SPEAKING it keeps pauses
+          // out of the average; inside ROOM it means the reference is contaminated.
+          speechDetected:
             m.windowFull && Number.isFinite(m.shortTermLufs) && m.shortTermLufs >= SPEECH_FLOOR_LUFS,
         });
       };
@@ -378,6 +395,33 @@ export function useMicAnalyser() {
       });
     }
   }, [stop, post]);
+
+  const setMode = useCallback((next: MicMode) => {
+    modeRef.current = next;
+    setModeState(next);
+  }, []);
+
+  /**
+   * Store the ROOM noise floor. SPEAKING stays unavailable until this exists, because
+   * every later "vs the room" figure is relative to it — offered greyed with the reason,
+   * never silently degraded into a comparison against nothing.
+   */
+  const captureRoomReference = useCallback(
+    (lufs: number | null) => {
+      setRoomReferenceLufs(lufs);
+      const id = sessionIdRef.current;
+      if (id) void post(`/session/${id}/room-reference`, { lufs });
+    },
+    [post]
+  );
+
+  const reportEvent = useCallback(
+    (event: { t: number; kind: string; label: string; deltaDb?: number }) => {
+      const id = sessionIdRef.current;
+      if (id) void post(`/session/${id}/event`, event);
+    },
+    [post]
+  );
 
   /**
    * Gate 3 — the system-processing probe.
@@ -516,6 +560,11 @@ export function useMicAnalyser() {
     status,
     error,
     sessionId,
+    mode,
+    setMode,
+    roomReferenceLufs,
+    captureRoomReference,
+    reportEvent,
     device,
     constraints,
     metrics,

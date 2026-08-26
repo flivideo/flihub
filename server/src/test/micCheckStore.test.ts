@@ -31,12 +31,13 @@ const DEVICE = { label: 'HyperX QuadCast', sampleRate: 48000, channelCount: 2, s
 function tick(over: Partial<MicCheckTick> = {}): MicCheckTick {
   return {
     t: 0,
+    mode: 'speaking',
     shortTermLufs: -23,
     samplePeakDbfs: -12,
     clipCount: 0,
     nearClipCount: 0,
     windowFull: true,
-    hasSpeech: true,
+    speechDetected: true,
     ...over,
   };
 }
@@ -121,9 +122,9 @@ describe('summarise', () => {
     // Averaging silence into the mean would report a quieter session than was
     // ever actually spoken, and would make a good take look like a bad one.
     const summary = summarise([
-      tick({ t: 1000, shortTermLufs: -23, hasSpeech: true }),
-      tick({ t: 2000, shortTermLufs: -61, hasSpeech: false }),
-      tick({ t: 3000, shortTermLufs: -23, hasSpeech: true }),
+      tick({ t: 1000, shortTermLufs: -23, speechDetected: true }),
+      tick({ t: 2000, shortTermLufs: -61, speechDetected: false }),
+      tick({ t: 3000, shortTermLufs: -23, speechDetected: true }),
     ]);
     expect(summary.shortTermLufs?.mean).toBe(-23);
     expect(summary.measurableTickCount).toBe(2);
@@ -139,7 +140,7 @@ describe('summarise', () => {
   });
 
   it('returns NULL loudness when nothing was gradeable — never 0', () => {
-    const summary = summarise([tick({ shortTermLufs: null, hasSpeech: false, windowFull: false })]);
+    const summary = summarise([tick({ shortTermLufs: null, speechDetected: false, windowFull: false })]);
     expect(summary.shortTermLufs).toBeNull();
     expect(summary.driftLu).toBeNull();
     expect(summary.measurableTickCount).toBe(0);
@@ -191,6 +192,8 @@ describe('not_measured — the grey-never-becomes-green rule as data', () => {
     probe: null,
     summary: summarise([tick()]),
     series: [],
+    events: [],
+    roomReferenceLufs: null,
     not_measured: [],
     ...over,
   });
@@ -228,7 +231,7 @@ describe('not_measured — the grey-never-becomes-green rule as data', () => {
   });
 
   it('flags loudness as unmeasured when only room tone was captured', () => {
-    const roomToneOnly = base({ summary: summarise([tick({ hasSpeech: false })]) });
+    const roomToneOnly = base({ summary: summarise([tick({ speechDetected: false })]) });
     const entry = buildNotMeasured(roomToneOnly).find((n) => n.metric === 'shortTermLufs');
     expect(entry).toBeTruthy();
     expect(entry!.reason).toMatch(/only room tone/i);

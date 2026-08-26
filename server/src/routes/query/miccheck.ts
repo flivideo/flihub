@@ -70,7 +70,11 @@ export function createMicCheckQueryRoutes(
       reason = 'Run has started but no samples have arrived yet.';
     } else if (!latest.windowFull) {
       reason = 'The 3 s short-term window has not filled yet.';
-    } else if (!latest.hasSpeech) {
+    } else if (latest.mode === 'room') {
+      reason =
+        'Run is in ROOM mode — it is characterising the background noise, not grading a voice. ' +
+        'Loudness is deliberately not graded here.';
+    } else if (!latest.speechDetected) {
       reason = 'Only room tone is present — no speech detected, so the level is not gradeable.';
     } else {
       measurable = true;

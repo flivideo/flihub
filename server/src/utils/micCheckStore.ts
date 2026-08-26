@@ -28,6 +28,7 @@ import { randomUUID } from 'crypto';
 import type {
   MicCheckSession,
   MicCheckTick,
+  MicCheckEvent,
   MicCheckSummary,
   MicCheckNotMeasured,
   MicCheckSessionListEntry,
@@ -72,6 +73,8 @@ export function startSession(input: StartSessionInput): MicCheckSession {
     probe: null,
     summary: null,
     series: [],
+    events: [],
+    roomReferenceLufs: null,
     not_measured: [],
   };
   seriesTruncated = false;
@@ -89,6 +92,20 @@ export function appendTick(sessionId: string, tick: MicCheckTick): boolean {
   return true;
 }
 
+/** Record a timestamped observation on the live run. */
+export function appendEvent(sessionId: string, event: MicCheckEvent): boolean {
+  if (!activeSession || activeSession.sessionId !== sessionId) return false;
+  activeSession.events.push(event);
+  return true;
+}
+
+/** Store the ROOM-mode noise floor every later comparison is relative to. */
+export function setRoomReference(sessionId: string, lufs: number | null): boolean {
+  if (!activeSession || activeSession.sessionId !== sessionId) return false;
+  activeSession.roomReferenceLufs = lufs;
+  return true;
+}
+
 /**
  * Derive the summary from the series rather than trusting a client-supplied one.
  * Only ticks that were actually gradeable (window full AND speech present) feed the
@@ -96,8 +113,15 @@ export function appendTick(sessionId: string, tick: MicCheckTick): boolean {
  * report a quieter session than was ever spoken.
  */
 export function summarise(series: MicCheckTick[]): MicCheckSummary {
+  // Only SPEAKING ticks that actually contained speech are gradeable. Room-mode ticks are
+  // measuring the enemy, not the voice; including them reports a quieter session than was
+  // ever spoken.
   const gradeable = series.filter(
-    (t) => t.windowFull && t.hasSpeech && typeof t.shortTermLufs === 'number'
+    (t) =>
+      t.mode === 'speaking' &&
+      t.windowFull &&
+      t.speechDetected &&
+      typeof t.shortTermLufs === 'number'
   );
 
   const lufsValues = gradeable.map((t) => t.shortTermLufs as number);
@@ -206,6 +230,24 @@ export function buildNotMeasured(session: MicCheckSession): MicCheckNotMeasured[
         summary.tickCount === 0
           ? 'No samples were received during this session.'
           : 'No tick reached a full 3 s window with speech present — only room tone was captured.',
+    });
+  }
+
+  if (session.roomReferenceLufs === null) {
+    entries.push({
+      metric: 'roomReference',
+      reason:
+        'ROOM mode was never captured, so there is no noise-floor reference. Any figure ' +
+        'expressed as a change "vs the room" is therefore absent, not zero.',
+    });
+  }
+
+  if (session.events.some((e) => e.kind === 'room-contaminated')) {
+    entries.push({
+      metric: 'roomReference.trustworthy',
+      reason:
+        'Speech was detected during the ROOM capture, so the reference describes a voice ' +
+        'plus the room rather than the room alone. Treat comparisons against it as suspect.',
     });
   }
 
