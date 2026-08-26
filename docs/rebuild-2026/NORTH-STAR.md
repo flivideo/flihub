@@ -56,6 +56,53 @@ That is a superset, not a disagreement.
 
 **Treat §1 as settled.** The open questions are in §9, not here.
 
+### Corollary — what makes a tab acceptable
+
+*Added 2026-08-26 after MicCheck Phase 1 shipped hours after this rule was written, giving it an
+immediate live test.*
+
+"Everything else is a tab" is a scope rule, not a prohibition. The failure in v1 was never the **count**
+of tabs — it was their **coupling**. Measured in this audit: props threaded through a 922-line `App.tsx`,
+zero React context, four independent `groupByChapter` implementations, 15 hand-rolled modals with five
+different backdrops, and a `components/shared/` where only 8 of 41 files had more than one consumer.
+Each tab reached into shared state and reimplemented selection, filtering and modals.
+
+**MicCheck is the counter-example, and it is instructive.** Measured at `7553b9b`:
+
+| Module | Imports |
+|---|---|
+| `client/public/miccheck-worklet.js` | **none** |
+| `client/src/hooks/useMicAnalyser.ts` | React only |
+| `client/src/utils/micGrading.ts` | one, from its own hook |
+| `client/src/components/MicCheckPage.tsx` | React + its own modules |
+| `client/src/App.tsx` | **+17 lines**. No server work. |
+
+**Zero coupling to the spine.** The capability (worklet + grading, both unit-tested) is already cleanly
+separated from the surface — so it can move to Teletubby's `SetupPanel`, or become a shared capability
+both apps call, with essentially no rework. The split this audit recommended already exists in the code;
+only the *mounting point* is still a decision.
+
+**The rule, restated:** a tab may exist when it is an island — self-contained, testable alone, and
+removable without touching the spine. A tab may not exist when it reaches into shared state, re-derives
+project identity, or reimplements a primitive. Judge tabs by their **import graph**, not by their number.
+
+### And a fifth "failure looks like success"
+
+`useMicAnalyser.ts` pins the microphone by `deviceId` and **refuses virtual devices**, because the macOS
+default input is `krisp microphone` — which denoises *before* anything downstream sees the audio. A plain
+`{audio: true}` would have produced a confident, entirely fake noise-rejection result with no outward
+sign of being wrong.
+
+That is the same defect class as L12 (the lying preview), L14 (the class emitting no CSS) and L15 (the
+config writer dropping keys) — except this time it was **caught prospectively**, before shipping. The
+same discipline appears twice more in that commit: *"GREY never falls back to green"* (room tone reads
+"no speech detected", not red), and Phase 1's limits stated in the UI rather than assumed.
+
+**Promote this to a v2 principle:** every input FliHub trusts — the watch folder, the microphone, the
+config file, a transcript, a relay directory — needs an *"am I actually getting what I think I am
+getting?"* check. Absence and success must never render identically. This audit found four cases where
+they did; the tooling to prevent a fifth already exists in the codebase and should be generalised.
+
 ---
 
 ## 2. Why a rewrite, and why now
