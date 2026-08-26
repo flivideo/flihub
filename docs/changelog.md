@@ -14,6 +14,53 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## FR-154 — Orientation-Aware Video Playback (2026-08-26)
+
+Ecamm vertical recordings played back letterboxed into a landscape frame. Every video
+stage in the client hardcoded `aspectRatio: '16/9'`, so a true 1080x1920 source was
+pillarboxed into a 896x504 box — measured 596px of dead black, video reduced to a strip.
+
+The file itself was never the problem: `ffprobe` confirms 1080x1920, h264, no rotation
+tag and no side-data rotation. Purely a client layout assumption.
+
+**New:**
+- `client/src/hooks/useVideoAspect.ts` — reads `videoWidth / videoHeight` on
+  `loadedmetadata`, exposes `{ aspect, isPortrait, readAspect, reset }`. Defaults to
+  16:9 until metadata arrives so the common landscape case never flickers.
+
+**Changed:**
+- `client/src/components/shared/VideoPlayerModal.tsx` — stage uses the measured aspect
+  with `maxHeight: 70vh`; modal narrows to `max-w-md` / `max-w-lg` for portrait sources;
+  aspect resets on `videoUrl` change so prev/next re-measures. Covers Incoming,
+  Recordings and Relay previews.
+- `client/src/components/WatchPage.tsx` — same treatment; added `PORTRAIT_SIZE_CLASSES`
+  alongside the existing `SIZE_CLASSES`.
+
+**Verified in the running app** (measured via DOM, not eyeballed):
+
+| Source | Stage before | Stage after | Sheet |
+| ------ | ------------ | ----------- | ----- |
+| 1080x1920 portrait | 896x504, 596px pillarbox | 448x741, zero pillarbox | `max-w-md` |
+| 1920x1080 landscape | 896x504 | 896x504 (unchanged) | `max-w-4xl` |
+
+Suite: 1237 passed, 2 skipped, 46 files. Typecheck clean.
+
+**Not covered:** rotation-metadata files (`rotate=90`) — Ecamm does not produce them.
+
+---
+
+## FR-155 — Ecamm Dual-Mode Ingestion (2026-08-26, documented only)
+
+Captured, not built. Ecamm dual mode writes a folder-per-take containing both a
+landscape and a vertical `.mov`; `server/src/watcher.ts:15` globs `~/ecamm/*.mov`
+flat, so dual-mode takes are invisible — `/api/files` returned `[]` with both files
+on disk. Recursing the glob is trivial; deciding what the vertical file *is* (variant,
+shadow, or discard) is the open question. See `docs/prd/fr-155-ecamm-dual-mode-ingestion.md`.
+
+**Interim guidance:** leave dual mode off.
+
+---
+
 ## B065 — Archive Offload + Disk Observability Polish (2026-04-08)
 
 Post-B064 polish pass. No new campaign — fixes and UX improvements from first real use.

@@ -18,6 +18,8 @@ Requirements index for FliHub.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-155 | [Ecamm Dual-Mode Recording Ingestion](prd/fr-155-ecamm-dual-mode-ingestion.md)          | 2026-08-26 | Future (documented — design decision open)                      |
+| FR-154 | [Orientation-Aware Video Playback](prd/fr-154-orientation-aware-video-playback.md)     | 2026-08-26 | ✓ Implemented                                                   |
 | FR-153 | [Storage Workflow Redesign — Hold, Archive, Restore](prd/fr-153-storage-workflow-redesign.md) | 2026-04-09 | Pending                                                         |
 | FR-152 | [Safe Project Delete](prd/fr-152-safe-project-delete.md)                                        | 2026-04-08 | ✓ Implemented                                                   |
 | FR-151 | [Transcribe All Button in Project Slide-out](prd/fr-151-transcribe-all-slideout.md)             | 2026-04-08 | ✓ Implemented                                                   |

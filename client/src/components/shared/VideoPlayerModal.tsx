@@ -6,6 +6,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useVideoPlayback } from '../../hooks/useVideoPlayback';
+import { useVideoAspect } from '../../hooks/useVideoAspect';
 import { VideoControlsBar } from './VideoControlsBar';
 import { formatDuration, formatFileSize } from '../../utils/formatting';
 import { TranscriptSyncPanel } from '../TranscriptSyncPanel';
@@ -82,6 +83,9 @@ export function VideoPlayerModal({ title, videoUrl, onClose, duration, size, pro
     videoEventHandlers,
   } = useVideoPlayback({ onEscape: onClose });
 
+  // FR-154: Size the stage to the source video, not a hardcoded 16:9
+  const { aspect, isPortrait, readAspect, reset: resetAspect } = useVideoAspect();
+
   const [currentTime, setCurrentTime] = useState(0);
   const [transcriptCollapsed, setTranscriptCollapsed] = useState(false);
 
@@ -92,6 +96,18 @@ export function VideoPlayerModal({ title, videoUrl, onClose, duration, size, pro
     if (!parsed) return null;
     return `${parsed.chapter}-${parsed.sequence}-${parsed.name}`;
   })();
+
+  // FR-154: Re-measure on source change so prev/next between a landscape and a
+  // portrait take doesn't inherit the previous shape
+  useEffect(() => {
+    resetAspect();
+  }, [videoUrl, resetAspect]);
+
+  // FR-154: Wrap (don't replace) the hook's handler — it also sets playbackRate
+  const handleLoadedMetadata = useCallback(() => {
+    videoEventHandlers.onLoadedMetadata();
+    readAspect(videoRef.current);
+  }, [videoEventHandlers, readAspect, videoRef]);
 
   const handleSeek = useCallback((time: number) => {
     if (videoRef.current) {
@@ -157,7 +173,10 @@ export function VideoPlayerModal({ title, videoUrl, onClose, duration, size, pro
   const showTranscriptPanel = showTranscript && (!!srtUrl || (!!projectCode && !!segmentName));
 
   // B069: Max width based on size toggle
-  const containerMaxWidth = videoSize === 'L' ? 'max-w-6xl' : 'max-w-4xl';
+  // FR-154: Portrait sources get a narrow sheet so the frame is tall, not letterboxed
+  const containerMaxWidth = isPortrait
+    ? (videoSize === 'L' ? 'max-w-lg' : 'max-w-md')
+    : (videoSize === 'L' ? 'max-w-6xl' : 'max-w-4xl');
 
   // B069: Determine nav button disabled states
   const prevDisabled = !onPrevious || (!!position && position.current === 1);
@@ -200,7 +219,12 @@ export function VideoPlayerModal({ title, videoUrl, onClose, duration, size, pro
         </div>
 
         {/* Video Player */}
-        <div className="bg-black" style={{ aspectRatio: '16/9' }}>
+        {/* FR-154: stage adopts the source aspect ratio; height clamped so the
+            controls bar / transcript / dictionary stay on screen for tall sources */}
+        <div
+          className="bg-black flex items-center justify-center"
+          style={{ aspectRatio: aspect, maxHeight: '70vh' }}
+        >
           <video
             ref={videoRef}
             src={videoUrl}
@@ -208,6 +232,7 @@ export function VideoPlayerModal({ title, videoUrl, onClose, duration, size, pro
             autoPlay={autoplay}
             className="w-full h-full object-contain"
             {...videoEventHandlers}
+            onLoadedMetadata={handleLoadedMetadata}
             onEnded={handleEnded}
             onTimeUpdate={showTranscriptPanel ? (e) => setCurrentTime((e.target as HTMLVideoElement).currentTime) : undefined}
           />

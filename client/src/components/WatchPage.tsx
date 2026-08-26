@@ -45,6 +45,7 @@ import { toast } from 'sonner';
 import { API_URL } from '../config';
 import type { RecordingFile } from '../../../shared/types';
 import { SPEED_STORAGE_KEY, useVideoPlayback } from '../hooks/useVideoPlayback'; // B068
+import { useVideoAspect } from '../hooks/useVideoAspect'; // FR-154
 import { VideoControlsBar } from './shared/VideoControlsBar';
 
 // FR-71: Size options
@@ -67,6 +68,12 @@ const STORAGE_KEYS = {
 const SIZE_CLASSES: Record<VideoSize, string> = {
   N: 'max-w-4xl mx-auto',
   L: 'w-[calc(100vw-2rem)] max-w-7xl relative left-1/2 -translate-x-1/2', // Break out to viewport
+};
+
+// FR-154: Portrait sources get a narrow column so the frame is tall, not letterboxed
+const PORTRAIT_SIZE_CLASSES: Record<VideoSize, string> = {
+  N: 'max-w-md mx-auto',
+  L: 'max-w-lg mx-auto',
 };
 
 // Chapter group with files and timing
@@ -180,6 +187,16 @@ export function WatchPage() {
     handleSpeedChange,
     videoEventHandlers,
   } = useVideoPlayback();
+
+  // FR-154: Size the stage to the source video, not a hardcoded 16:9
+  const { aspect, isPortrait, readAspect, reset: resetAspect } = useVideoAspect();
+
+  // FR-154: Re-measure when the selected video changes, so moving between a
+  // landscape and a portrait segment doesn't inherit the previous shape
+  useEffect(() => {
+    resetAspect();
+  }, [currentVideo?.url, resetAspect]);
+
   // FR-117: Delayed hover for chapter→segment panel transitions
   // 250ms enter delay allows mouse to cross chapters without triggering change
   // 200ms leave delay keeps panel visible while moving toward it
@@ -623,11 +640,13 @@ export function WatchPage() {
   return (
     <div className="relative">
       {/* FR-71: Size-responsive container */}
-      <div className={SIZE_CLASSES[videoSize]}>
+      <div className={isPortrait ? PORTRAIT_SIZE_CLASSES[videoSize] : SIZE_CLASSES[videoSize]}>
         {/* Full-width Video Player */}
+        {/* FR-154: stage adopts the source aspect ratio, clamped so tall sources
+            don't push the controls bar and transcript panel off screen */}
         <div
-          className="bg-black rounded-lg overflow-hidden relative"
-          style={{ aspectRatio: '16/9' }}
+          className="bg-black rounded-lg overflow-hidden relative flex items-center justify-center"
+          style={{ aspectRatio: aspect, maxHeight: '70vh' }}
         >
           {/* FR-83: Shadow indicator badge */}
           {currentVideo?.isShadow && (
@@ -645,6 +664,8 @@ export function WatchPage() {
               onLoadedMetadata={() => {
                 // B068: Hook sets playback speed; also handle autoplay
                 videoEventHandlers.onLoadedMetadata();
+                // FR-154: measure the source so the stage can match its shape
+                readAspect(videoRef.current);
                 if (autoplay && videoRef.current) {
                   videoRef.current.play();
                 }
