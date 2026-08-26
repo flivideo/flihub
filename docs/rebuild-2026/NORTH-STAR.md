@@ -98,13 +98,68 @@ Despite the name, **FliHub is not the hub of the suite.** Era 1, verbatim:
 > "FliVideo is a main system for me. It's an umbrella in which I've got **FliGen, FliHub, FliDeck, and
 > Storyline**."
 
-**FliVideo** is the umbrella; FliHub is one child among four (now more). This kills any rebuild
-instinct to make FliHub the orchestrator, the registry, or the place other apps' data lives. It is a
-station, not a switchboard — which is exactly what §5.3 (events out, not reach-in) encodes.
+**FliVideo** is the umbrella; FliHub is one child among four (now more).
+
+**But naming hierarchy is not functional role — and I initially drew the wrong conclusion from this.**
+See §2c.
 
 ---
 
-## 2c. The three UX laws
+## 2c. FliHub is the control plane
+
+*Reconciled 2026-08-26 with `docs/planning/v2-capability-mapping.md` (authored 2026-08-18, eight days
+before B475 — prior work this audit did not know about until it landed mid-session).*
+
+That document maps FliHub through the 36-capability inventory at
+`~/dev/ad/brains/video-editing-as-code/capability-inventory.yaml` and reaches a conclusion this audit
+did not:
+
+> **FliHub is the control plane. The capability inventory is the service layer.** FliHub is not a peer
+> provider listed in the inventory; it is the thing that *calls* the inventory.
+
+The evidence is strong and independent of anything here. The inventory turned out to be **entirely
+transformation capabilities** — every row *changes an artefact* and therefore sits at one pipeline
+stage. Six verbs would not file:
+
+| Verb | FliHub entry point |
+|---|---|
+| Watch a location for new arrivals | `WatcherManager.ts` — 9 chokidar watchers |
+| Detect a finished render | `utils/finalMedia.ts` |
+| Name and file a deliverable | `shared/naming.ts` |
+| Move assets between machines | `routes/relay.ts` |
+| Track a project's state across tools | stage inference + `projectStageOverrides` |
+| Synchronise code and project repos | `routes/sync.ts` |
+
+These **move work between stages** and belong to none. **All six are provided by FliHub alone.**
+
+### Correcting this document
+
+An earlier draft of §2b concluded *"it is a station, not a switchboard."* **That was wrong.** It
+inferred a functional role from a naming hierarchy. FliVideo is the product-family *name*; FliHub is
+functionally the *coordinator* within it. Both are true at once.
+
+And the two framings agree at the mechanism level, which is the real check: **every verb in the North
+Star sentence — watch, route, hold, promote — is a coordination verb, not a transformation.** §1 was
+already describing a control plane; it just called it something else.
+
+### What actually changes
+
+The rebuild question shifts from *"what is FliHub"* to **"what should FliHub stop holding privately?"**
+— a migration, not a classification. §5.1 (one API, n unprivileged clients) is the mechanism for it, and
+the precedent already exists in the codebase: `fligen/server/src/tools/flihub/client.ts` already calls
+FliHub over HTTP.
+
+**What stays control plane** (verified in that document as having no identifiable second caller):
+watch-for-arrivals · track-project-state · sync-repos · move-assets-between-machines *(flagged for
+revisit — rsync-between-machines is generic, but the relay's per-subfolder `synced/ahead/behind/diverged`
+model is bound to the project layout)*.
+
+**What should be extracted:** proxy/shadow generation, export detection. Naming/parsing: defer — no
+confirmed second caller.
+
+---
+
+## 2d. The three UX laws
 
 These recur across all three eras and are the closest thing FliHub has to design DNA.
 
@@ -234,12 +289,20 @@ FliHub emits domain events (`take.queued`, `take.transcribed`, `take.scored`, `t
 independent sync/realtime mechanisms exist (socket, Relay/rsync, Sync Hub/git) with no shared abstraction,
 and FR-147 named the flaw then explicitly declined to fix it.
 
-### 5.4 Transcribe at queue time
+### 5.4 Transcribe at queue time — by delegating, not by owning
 > "Transcription does not happen until you place the video you like into the FliHub project. **That's
 > going to change** — because firstly I think transcription should happen the moment the video hits the
 > queue, because there's a lot of stuff the agents could do in FliHub to decide which is the better video."
 
 This one change unlocks the spine. It moves FliHub from *"you pick a take"* to *"FliHub helps you pick"*.
+
+**And it should delegate, not own.** `docs/planning/v2-capability-mapping.md` ranks this its #1 v2 change:
+replace FliHub's own `mlx_whisper` spawn with a call to the canon tool `~/bin/transcribe`. That deletes a
+code path, inherits the suppression flags and health sidecar, and removes a *measured* silent-corruption
+exposure. FliHub's worker predates the canon tool by ~3 months — this is sequencing, not criticism.
+
+The two rulings compose: **transcribe at queue time, by calling the canon tool.** Queue-time is *when*;
+delegation is *who*. This audit supplied the first; the capability mapping supplied the second.
 
 ### 5.5 Take scoring replaces the length-and-recency heuristic
 Today's colours are, in David's words, *"deterministic... a probability score that something is good if

@@ -78,7 +78,7 @@ nothing else. **Ship it and use it for real before Season 2 starts.**
 |---|---|---|---|
 | **1** | **The watcher and the queue** | Ecamm folder watched; every take lands in a queue for its segment; takes are held, never overwritten. Stable **take ids** that survive leaving the machine (§4 of North Star). | *"The filesystem is still the database — but the filename stops being the primary key."* This is the founding-bet reversal. Huge content. |
 | **2** | **One API, three clients** | The core as a library; HTTP, CLI and MCP as three thin adapters over it, all unprivileged. Project identity is a **parameter**, never a global. | *"Why the UI gets no special privileges"* — and a live demo of doing the same operation three ways. |
-| **3** | **Transcribe at queue time** | Every take transcribed on arrival, not on promote. Queue shows transcripts as they land. | *"Why this one change is the whole redesign"* — the move from *you pick* to *it helps you pick*. |
+| **3** | **Transcribe at queue time — by delegating** | Every take transcribed on arrival, not on promote. FliHub's own `mlx_whisper` spawn is **deleted** and replaced with a call to the canon tool `~/bin/transcribe` (ranked #1 in `docs/planning/v2-capability-mapping.md`). Queue shows transcripts as they land. | *"Why this one change is the whole redesign"* — the move from *you pick* to *it helps you pick*. |
 | **4** | **The take bench** | The crown jewel rebuilt: transcript-synced player with keyword highlighting, as the surface where you compare takes and promote one. Keyboard-first (see below). | *"The one screen from v1 worth keeping"* — and the keyboard layer that was designed in Jan 2026 and never shipped. |
 | **5** | **Scoring, not guessing** | Jaccard fidelity vs the script, cadence comparison, failure-marker detection ("fuck it"). Replaces length-and-recency. | *"Measuring a take"* — your own numbers: read ≈1.0, improvised 0.13–0.19; 11-word vs 7-word cadence. |
 
@@ -95,7 +95,7 @@ FliHub stops being an island. Each episode is a contract with a neighbour.
 
 | Ep | Title | What ships | Neighbour |
 |---|---|---|---|
-| **6** | **Events out** | Domain events: `take.queued`, `take.transcribed`, `take.scored`, `take.promoted`, `video.assembled`. Consumers subscribe; nobody reaches into the filesystem. | Teletubby — *"Teletubby should be told as an event... the Teletubby agent decides what to do with it."* |
+| **6** | **Events out** (this is the control-plane migration — see NORTH-STAR §2c) | Domain events: `take.queued`, `take.transcribed`, `take.scored`, `take.promoted`, `video.assembled`. Consumers subscribe; nobody reaches into the filesystem. | Teletubby — *"Teletubby should be told as an event... the Teletubby agent decides what to do with it."* |
 | **7** | **Assembly** | Many promoted takes → one video. Top-and-tail trims at take boundaries (the §3 ruling). No composition. | Hyperframes takes it from here. |
 | **8** | **Deterministic project truth** | The triage endpoint from the May design: derived completion booleans + drift flags, `stage` as *intent* vs completion as *fact*. Resolve "shelved: state or move?" (§9.2). | FliLaunch, and any agent that currently re-derives state from disk. |
 | **9** | **The editor relay, rebuilt once** | One synchronisation model, not three. v1 grew Relay (rsync) *and* Sync Hub (git) *and* the socket layer, and FR-147 named the flaw then declined to fix it. | Jan and Mary. |
