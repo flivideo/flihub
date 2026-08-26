@@ -77,10 +77,24 @@ Each tab reached into shared state and reimplemented selection, filtering and mo
 | `client/src/components/MicCheckPage.tsx` | React + its own modules |
 | `client/src/App.tsx` | **+17 lines**. No server work. |
 
-**Zero coupling to the spine.** The capability (worklet + grading, both unit-tested) is already cleanly
-separated from the surface — so it can move to Teletubby's `SetupPanel`, or become a shared capability
-both apps call, with essentially no rework. The split this audit recommended already exists in the code;
-only the *mounting point* is still a decision.
+**Zero coupling to the spine** — *at `7553b9b`.* The capability was cleanly separated from the surface,
+so moving it to Teletubby's `SetupPanel` would have been close to free.
+
+> ⚠️ **That window closed the same day.** Commit `80a51f9` gave MicCheck a server API:
+> `server/src/routes/miccheck.ts` (165 lines), `routes/query/miccheck.ts` (109),
+> `utils/micCheckStore.ts` (314), **+125 lines in `shared/types.ts`**, three socket events
+> (`miccheck:started|tick|finished`), reports persisted to `~/.flihub/miccheck/<id>.json`, and a
+> `miccheck-command.md` registered in the machine-wide `flihub` skill.
+>
+> The measurement above is left standing rather than rewritten, because the *sequence* is the finding:
+> **a feature was portable for roughly four hours and then was not.** Nobody decided to couple it; the
+> coupling arrived as the natural next commit. This is the same gravity that grew v1's eleven tabs —
+> observed live, at hour resolution, in an app whose rebuild was being planned in parallel.
+>
+> Relocating MicCheck is now a migration with a wire format, a persisted store, socket events, a shared
+> type surface and an external skill contract attached. That does not make it wrong to live in FliHub —
+> it makes the question **expensive to reopen**, which is precisely why the North Star tries to settle
+> placement before the third commit rather than after.
 
 **The rule, restated:** a tab may exist when it is an island — self-contained, testable alone, and
 removable without touching the spine. A tab may not exist when it reaches into shared state, re-derives
