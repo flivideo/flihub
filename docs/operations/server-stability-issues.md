@@ -13,6 +13,7 @@ Track server stability problems, root causes, and fixes applied.
 | Graceful Shutdown        | Clean termination of server and child processes         |
 | File Watchers            | Nodemon restarts, chokidar issues                       |
 | Resource Leaks           | Memory, file handles, connections                       |
+| Process Supervision      | Overmind/tmux supervisor lifecycle, stale sockets        |
 
 ---
 
@@ -132,6 +133,56 @@ transcripts change detected
 - Run transcription again to capture actual error
 - Check if "event emitted successfully" logs before crash
 - Examine full error output with new handlers
+
+### 2026-08-26: Closing the Terminal Kills FliHub; Orphaned Overmind Supervisor
+
+**Symptom:** FliHub appeared to be running, then was entirely down (nothing on 5100/5101,
+`.overmind.sock` gone). A stale `overmind start` process from earlier that morning was still
+alive with an orphan tmux session, owning no client/server processes.
+
+**Root Cause:** `start.sh` runs `overmind start` in the **foreground** under:
+
+```bash
+trap 'rm -f ./.overmind.sock' EXIT INT TERM
+```
+
+The terminal window that runs `./start.sh` *is* the supervisor. Two failure modes follow:
+
+| Failure                        | Mechanism                                                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Close window → FliHub dies     | Trap fires on EXIT, socket deleted, Overmind + all children torn down                                               |
+| Hard close → CLI-unreachable orphan | Trap deletes the socket but `overmind start` / tmux survive; `overmind ps`, `restart`, `quit` can no longer reach them |
+
+`start.sh` also does not reap a stale supervisor: it runs `overmind stop` (which needs the
+socket that was just deleted) and force-kills ports 5100/5101, but never kills a leftover
+`overmind start` process or its tmux session. These accumulate one per hard-closed window.
+
+**Compounding doc bug:** `CLAUDE.md` documented `./start.sh` under *"To start persistently
+(survives terminal close)"* — the exact opposite of its behaviour. Anyone following the docs
+was guaranteed to hit this.
+
+**Fixes Applied:**
+
+1. **Corrected `CLAUDE.md` → Dev Server Management** — documents `overmind start -D`
+   (daemonize) as the persistent mode, `./start.sh` as the foreground/live-logs mode, with
+   explicit warnings on the EXIT trap and on backgrounding `start.sh`.
+
+2. **Added an orphan-recovery runbook** to the same section — identify the FliHub supervisor
+   by process **cwd** before killing, since AngelEye and Captain's Log also run under Overmind
+   on this machine (`pkill overmind` would take all three down).
+
+**Correct usage:**
+
+```bash
+overmind start -D    # persistent, no window owned  ← use this
+./start.sh           # foreground, live logs, dies with the window
+```
+
+**Still Open (not fixed):**
+
+- `start.sh` does not reap stale `overmind start` processes or their tmux sessions.
+- `start.sh` has no `--daemon` flag, so the two launch modes are two different commands.
+- `overmind restart <proc>` is safe and window-independent; prefer it over stop/start cycles.
 
 ---
 

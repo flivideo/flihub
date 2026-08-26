@@ -94,21 +94,68 @@ lsof -i :5101 | grep LISTEN
 
 If a process is listed, the service is UP — do not restart it, do not change ports. Never kill a running dev server unless explicitly asked.
 
-**To start persistently** (survives terminal close):
+### Two launch modes — pick deliberately
+
+| Mode           | Command            | Owns a terminal window?  | Use when                                                |
+| -------------- | ------------------ | ------------------------ | ------------------------------------------------------- |
+| **Detached**   | `overmind start -D` | No — returns your prompt | Normal use. Survives closing the window.                |
+| **Foreground** | `./start.sh`       | **Yes**                  | You want live colour-coded logs + browser auto-open     |
+
+> ⚠️ **`./start.sh` does NOT survive a terminal close.** It runs `overmind start` in the
+> foreground under `trap 'rm -f ./.overmind.sock' EXIT INT TERM`. Close the window and the
+> trap fires, the control socket is deleted, and every FliHub process dies with it.
+>
+> *This file previously claimed `./start.sh` was the "survives terminal close" option. It is
+> the opposite. Corrected 2026-08-26 after a live incident — see
+> [docs/operations/server-stability-issues.md](docs/operations/server-stability-issues.md).*
+
+> ⚠️ **Never background `start.sh`** (`./start.sh &`, `nohup ./start.sh`). The EXIT trap
+> deletes `.overmind.sock` the moment the script returns, so `overmind ps` / `restart` /
+> `quit` all stop working *even though the processes are still alive* — an orphan the CLI
+> can no longer reach. Use `overmind start -D` instead.
+
+### Commands (run from repo root)
 
 ```bash
-./start.sh           # builds shared, port-checks, then launches via Overmind
-overmind start       # direct launch (assumes shared already built)
+overmind start -D        # start detached — the normal way
+overmind ps              # what's running
+overmind echo            # tail combined logs (Ctrl-C stops watching, NOT the server)
+overmind connect server  # attach to server pane (Ctrl+B then D to detach)
+overmind restart server  # recycle the API (5101) only — leaves Vite/HMR alone
+overmind restart client  # recycle the UI (5100) only
+overmind quit            # stop everything (daemonized instance)
+overmind stop            # stop everything (foreground instance)
 ```
 
-**Overmind commands:**
+`overmind restart <proc>` talks over `.overmind.sock`, so it works from **any** terminal —
+you never need to find the window that launched it.
+
+### Recovering an orphaned supervisor
+
+**Symptom:** `.overmind.sock` is missing, or `overmind ps` errors, while `overmind start`
+processes are still alive. Cause: a hard-closed window fired the EXIT trap (socket deleted)
+but left the supervisor and its tmux session running.
 
 ```bash
-overmind connect client  # attach to client logs (Ctrl+B D to detach)
-overmind connect server  # attach to server logs
-overmind restart client  # restart just the client
-overmind stop            # stop all processes
+# 1. Identify FliHub's overmind by its cwd — other apps use Overmind too
+ps aux | grep "overmind start" | grep -v grep | awk '{print $2}' | \
+  while read p; do echo "$p $(lsof -a -p $p -d cwd -Fn 2>/dev/null | grep ^n | cut -c2-)"; done
+
+# 2. Kill only the one whose cwd is .../flivideo/flihub, plus its tmux
+kill -9 <pid>
+rm -rf "${TMPDIR}"overmind-flihub-*
+rm -f ./.overmind.sock
+
+# 3. Clear ports, then relaunch
+for port in 5100 5101; do
+  pids=$(lsof -ti :$port 2>/dev/null); [ -n "$pids" ] && echo "$pids" | xargs kill -9 2>/dev/null
+done
+overmind start -D
 ```
+
+> ⚠️ **Other Overmind apps run on this machine** — AngelEye (`~/dev/ad/apps/angeleye`) and
+> Captain's Log (`~/dev/ad/apps/captains-log`). Always confirm the process cwd before
+> killing. `pkill overmind` would take all of them down.
 
 ---
 
