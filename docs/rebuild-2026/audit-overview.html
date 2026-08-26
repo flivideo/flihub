@@ -179,6 +179,17 @@ footer p{max-width:var(--measure);}
     <p class="coda">Everything else is a tab.</p>
   </div>
   <p class="attrib">"Everything else is a tab" is David's own phrase. It is the scope rule, not a flourish.</p>
+
+  <h3>And FliHub is the control plane</h3>
+  <p>A second document — <code>v2-capability-mapping.md</code>, written 18 August, eight days before B475 — landed on the repo mid-audit. It maps FliHub through a 36-capability inventory and reaches a conclusion this audit had got wrong.</p>
+  <p>The inventory turned out to be <strong>entirely transformation capabilities</strong>: every row changes an artefact, so every row sits at one pipeline stage. Six verbs would not file — watch for arrivals, detect a finished render, name and file a deliverable, move assets between machines, track project state, synchronise repos. They <em>move work between stages</em> and belong to none. <strong>All six are FliHub's alone.</strong></p>
+
+  <div class="callout">
+    <span class="h">A correction, and the check that settles it</span>
+    <p>An earlier draft of the North Star concluded FliHub was <em>“a station, not a switchboard.”</em> That was wrong — it inferred a functional role from a naming hierarchy. FliVideo is the product-family name; FliHub is the coordinator within it. Both are true at once.</p>
+    <p>The check: <strong>every verb in the North Star sentence — watch, route, hold, promote — is a coordination verb, not a transformation.</strong> The sentence was already describing a control plane. It just called it something else.</p>
+    <p>What changes is the question. Not “what is FliHub”, but <strong>“what should FliHub stop holding privately?”</strong> — a migration, not a classification.</p>
+  </div>
 </section>
 
 <section>
