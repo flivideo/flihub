@@ -11,6 +11,9 @@ import {
   useGenerateChapterRecordings,
   usePendingTranscriptionCount,
   useRenameRecording,
+  usePreviewTrashRecordings,
+  useTrashRecordings,
+  type TrashPreviewItem,
 } from '../hooks/useApi';
 import { useRecordingsSocket, useChapterRecordingSocket } from '../hooks/useSocket';
 import { QUERY_KEYS } from '../constants/queryKeys';
@@ -38,6 +41,7 @@ import {
   formatTimestamp,
 } from '../utils/formatting';
 import { LoadingSpinner, ErrorMessage } from './shared';
+import { ConfirmationModal } from './shared/ConfirmationModal'; // FR-156
 import { API_URL } from '../config';
 
 // FR-41: Group info with active/safe/parked file counts and total duration
@@ -604,6 +608,41 @@ export function RecordingsView() {
   };
 
   // FR-120: Handle parking a file
+  // FR-156: Delete a recording — preview artifacts, confirm, then trash
+  const previewTrash = usePreviewTrashRecordings();
+  const trashRecordings = useTrashRecordings();
+  const [trashPreview, setTrashPreview] = useState<TrashPreviewItem[] | null>(null);
+
+  const handleDelete = (filename: string) => {
+    previewTrash.mutate([filename], {
+      onSuccess: (data) => {
+        if (!data.items || data.items.length === 0) {
+          toast.error(data.errors?.[0] || 'Nothing found on disk to delete');
+          return;
+        }
+        setTrashPreview(data.items);
+      },
+      onError: (err) => toast.error(err.message || 'Failed to inspect recording'),
+    });
+  };
+
+  const confirmTrash = () => {
+    const files = (trashPreview ?? []).map((i) => i.filename);
+    setTrashPreview(null);
+    trashRecordings.mutate(files, {
+      onSuccess: (data) => {
+        if (data.success) {
+          toast.success(
+            `Moved ${data.artifactCount} file${data.artifactCount === 1 ? '' : 's'} to -trash`
+          );
+        } else {
+          toast.error(data.errors?.[0] || data.error || 'Failed to delete');
+        }
+      },
+      onError: (err) => toast.error(err.message || 'Failed to delete'),
+    });
+  };
+
   const handlePark = (filename: string) => {
     parkRecording.mutate(
       { files: [filename] },
@@ -1395,6 +1434,7 @@ export function RecordingsView() {
                     onSafe={handleMoveToSafe}
                     onRestore={handleRestore}
                     onUnpark={handleUnpark}
+                    onDelete={handleDelete}
                     transcriptionBadge={
                       <TranscriptionBadge
                         filename={file.filename}
@@ -1482,6 +1522,37 @@ export function RecordingsView() {
       {viewingTranscript && (
         <TranscriptModal filename={viewingTranscript} onClose={() => setViewingTranscript(null)} />
       )}
+
+      {/* FR-156: Delete confirmation — lists exactly what the server found on disk */}
+      {trashPreview && (() => {
+        const artifacts = trashPreview.flatMap((i) => i.artifacts);
+        const totalBytes = trashPreview.reduce((sum, i) => sum + i.totalBytes, 0);
+        const extras = artifacts.filter((a) => a.kind !== 'recording').length;
+        return (
+          <ConfirmationModal
+            title={trashPreview.length === 1 ? 'Delete this recording?' : `Delete ${trashPreview.length} recordings?`}
+            message={
+              `${artifacts.length} file${artifacts.length === 1 ? '' : 's'} (${formatFileSize(totalBytes)}) will be moved to -trash/.` +
+              (extras > 0
+                ? `\n\nThat includes ${extras} linked file${extras === 1 ? '' : 's'} — the transcript and shadow are deleted with the recording so nothing is orphaned.`
+                : '')
+            }
+            filesLabel="Will be moved to -trash/:"
+            files={artifacts.map((a) => `${a.label} — ${a.filename}`)}
+            maxFilesShown={8}
+            warning={
+              'These files leave the project immediately. They stay recoverable in -trash/ until you empty it from the Project drawer, which deletes them for good.' +
+              (artifacts.some((a) => a.kind === 'transcript')
+                ? '\nThis take has been transcribed — that transcript will need regenerating if you restore it.'
+                : '')
+            }
+            variant="danger"
+            confirmText="Move to -trash"
+            onConfirm={confirmTrash}
+            onCancel={() => setTrashPreview(null)}
+          />
+        );
+      })()}
 
       {/* FR-131: Rename Chapter Label Modal removed - use Manage panel */}
 

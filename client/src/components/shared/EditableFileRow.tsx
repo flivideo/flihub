@@ -6,7 +6,7 @@
  * - Play button
  * - Clickable filename segments (chapter, name) that turn into inline inputs
  * - Tags as purple badges with remove button
- * - Action buttons (Safe, Park, Restore, Unpark)
+ * - Action buttons (Safe, Park, Restore, Unpark, Delete)
  * - Transcription badge
  * - Visual states: selected (blue ring), shadow (purple), safe (gray), parked (pink)
  */
@@ -27,6 +27,8 @@ export interface EditableFileRowProps {
   onSafe: (filename: string) => void;
   onRestore: (filename: string) => void;
   onUnpark: (filename: string) => void;
+  /** FR-156: Trash the recording and its sibling artifacts (shows a confirmation first) */
+  onDelete: (filename: string) => void;
   /** Rendered in the right-hand action area, typically a TranscriptionBadge component */
   transcriptionBadge?: ReactNode;
   pendingChange?: { oldFilename: string; newFilename: string };
@@ -48,6 +50,7 @@ export function EditableFileRow({
   onSafe,
   onRestore,
   onUnpark,
+  onDelete,
   transcriptionBadge,
   pendingChange,
   disabled,
@@ -380,6 +383,14 @@ export function EditableFileRow({
               className="text-xs text-warm-muted hover:text-pink-600 px-2 py-0.5 hover:bg-pink-100 rounded transition-colors"
             >
               &#8594; Park
+            </button>
+            {/* FR-156: Trash — confirms first, moves to -trash/ (recoverable) */}
+            <button
+              onClick={() => onDelete(recording.filename)}
+              className="text-xs text-warm-muted hover:text-red-600 px-2 py-0.5 hover:bg-red-100 rounded transition-colors"
+              title="Move this recording and its transcript/shadow to -trash"
+            >
+              Delete
             </button>
           </div>
         )}

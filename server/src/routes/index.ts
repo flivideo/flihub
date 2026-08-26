@@ -25,6 +25,11 @@ import {
 } from '../utils/projectState.js';
 import { renameRecording } from '../utils/renameRecording.js'; // FR-130: Simplified rename logic
 import {
+  findRecordingArtifacts,
+  moveArtifactToTrash,
+  type RecordingArtifact,
+} from '../utils/recordingArtifacts.js'; // FR-156
+import {
   NAMING_RULES,
   parseRecordingFilename,
   buildRecordingFilename,
@@ -959,6 +964,102 @@ export function createRoutes(
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to unpark files',
+      });
+    }
+  });
+
+  // FR-156: POST /api/recordings/trash - Move recording(s) and every sibling
+  // artifact (shadow + transcripts) into -trash/.
+  // Pass dryRun: true to get the same discovery result without moving anything —
+  // the confirmation dialog uses this so the warning always matches the action.
+  router.post('/recordings/trash', async (req: Request, res: Response) => {
+    const { files, dryRun } = req.body as { files?: string[]; dryRun?: boolean };
+
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      res.status(400).json({ success: false, error: 'Files array is required' });
+      return;
+    }
+
+    try {
+      const projectDir = expandPath(config.projectDirectory);
+      const paths = getProjectPaths(projectDir);
+
+      const items: Array<{
+        filename: string;
+        artifacts: RecordingArtifact[];
+        totalBytes: number;
+      }> = [];
+      const errors: string[] = [];
+
+      for (const filename of files) {
+        const artifacts = await findRecordingArtifacts(projectDir, filename);
+        if (artifacts.length === 0) {
+          errors.push(`No files found on disk for: ${filename}`);
+          continue;
+        }
+        items.push({
+          filename,
+          artifacts,
+          totalBytes: artifacts.reduce((sum, a) => sum + a.size, 0),
+        });
+      }
+
+      const totalBytes = items.reduce((sum, i) => sum + i.totalBytes, 0);
+      const artifactCount = items.reduce((sum, i) => sum + i.artifacts.length, 0);
+
+      // Preview only — report what WOULD move, touch nothing
+      if (dryRun) {
+        res.json({
+          success: errors.length === 0,
+          dryRun: true,
+          items,
+          artifactCount,
+          totalBytes,
+          errors: errors.length > 0 ? errors : undefined,
+        });
+        return;
+      }
+
+      let state = await readProjectState(config.projectDirectory);
+      const trashed: string[] = [];
+
+      for (const item of items) {
+        for (const artifact of item.artifacts) {
+          try {
+            await moveArtifactToTrash(paths.trash, artifact);
+          } catch (err) {
+            errors.push(
+              `Failed to trash ${artifact.filename}: ${err instanceof Error ? err.message : 'Unknown error'}`
+            );
+          }
+        }
+        // Clear safe/parked flags so a restored-then-renamed file doesn't inherit them
+        state = setRecordingSafe(state, item.filename, false);
+        state = setRecordingParked(state, item.filename, false);
+        trashed.push(item.filename);
+        console.log(`[FR-156] Trashed ${item.artifacts.length} file(s) for: ${item.filename}`);
+      }
+
+      await writeProjectState(config.projectDirectory, state);
+
+      if (io) {
+        io.emit('recordings:changed');
+        io.emit('transcripts:changed');
+      }
+
+      res.json({
+        success: errors.length === 0,
+        trashed,
+        count: trashed.length,
+        artifactCount,
+        totalBytes,
+        errors: errors.length > 0 ? errors : undefined,
+      });
+    } catch (error) {
+      console.error('Error trashing recordings:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to trash recordings',
       });
     }
   });

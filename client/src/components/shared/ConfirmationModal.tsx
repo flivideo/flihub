@@ -18,6 +18,10 @@ interface ConfirmationModalProps {
   message: string;
   /** Optional list of files to show */
   files?: string[];
+  /** Heading above the file list (default: "Files to process:") */
+  filesLabel?: string;
+  /** How many files to list before collapsing to "... and N more" (default: 3) */
+  maxFilesShown?: number;
   /** Optional warning message */
   warning?: string;
   /** Confirm button text (default: "Continue") */
@@ -38,6 +42,8 @@ export function ConfirmationModal({
   title,
   message,
   files,
+  filesLabel = 'Files to process:',
+  maxFilesShown = 3,
   warning,
   confirmText = 'Continue',
   cancelText = 'Cancel',
@@ -78,15 +84,17 @@ export function ConfirmationModal({
         {/* File list (if provided) */}
         {files && files.length > 0 && (
           <div className="mb-3 p-3 bg-surface-muted rounded border border-warm">
-            <p className="text-xs font-medium text-warm-secondary mb-2">Files to process:</p>
+            <p className="text-xs font-medium text-warm-secondary mb-2">{filesLabel}</p>
             <ul className="text-sm text-warm-secondary space-y-1">
-              {files.slice(0, 3).map((file, i) => (
+              {files.slice(0, maxFilesShown).map((file, i) => (
                 <li key={i} className="font-mono text-xs truncate">
                   • {file}
                 </li>
               ))}
-              {files.length > 3 && (
-                <li className="text-xs text-warm-muted italic">... and {files.length - 3} more</li>
+              {files.length > maxFilesShown && (
+                <li className="text-xs text-warm-muted italic">
+                  ... and {files.length - maxFilesShown} more
+                </li>
               )}
             </ul>
           </div>

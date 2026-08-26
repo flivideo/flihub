@@ -51,6 +51,62 @@ export function useTrashFile() {
   });
 }
 
+// FR-156: Trash recording(s) plus every sibling artifact (shadow + transcripts)
+export interface TrashArtifact {
+  kind: 'recording' | 'shadow' | 'transcript';
+  label: string;
+  path: string;
+  filename: string;
+  size: number;
+}
+
+export interface TrashPreviewItem {
+  filename: string;
+  artifacts: TrashArtifact[];
+  totalBytes: number;
+}
+
+export interface TrashRecordingsResponse {
+  success: boolean;
+  dryRun?: boolean;
+  items?: TrashPreviewItem[];
+  trashed?: string[];
+  count?: number;
+  artifactCount?: number;
+  totalBytes?: number;
+  errors?: string[];
+  error?: string;
+}
+
+/**
+ * Ask the server what WOULD be trashed, without moving anything.
+ * The confirmation dialog is built from this so the warning can never drift
+ * from what the trash call actually does — same server-side discovery.
+ */
+export function usePreviewTrashRecordings() {
+  return useMutation({
+    mutationFn: (files: string[]) =>
+      fetchApi<TrashRecordingsResponse>('/api/recordings/trash', {
+        method: 'POST',
+        body: JSON.stringify({ files, dryRun: true }),
+      }),
+  });
+}
+
+export function useTrashRecordings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (files: string[]) =>
+      fetchApi<TrashRecordingsResponse>('/api/recordings/trash', {
+        method: 'POST',
+        body: JSON.stringify({ files }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });
+    },
+  });
+}
+
 // FR-4: Get suggested naming based on existing files in target directory
 export function useSuggestedNaming() {
   return useQuery({

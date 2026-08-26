@@ -14,6 +14,44 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## FR-156 — Delete Recording (2026-08-26)
+
+Once a take was renamed into the project there was no way to remove it from the app —
+Rename / Move to Chapter / +Tag / Split / Safe / Park and nothing else. Finder was the
+only escape.
+
+The catch: renaming fans one take out into up to five files across three folders
+(.mov + shadow + .json/.srt/.txt transcripts). The pre-existing `POST /api/trash`
+(FR-5) moves only the path given, so wiring it straight in would have left four
+orphans.
+
+**New:**
+- `server/src/utils/recordingArtifacts.ts` — `findRecordingArtifacts()` discovers
+  every file belonging to a recording; `moveArtifactToTrash()` suffixes on collision
+  so an earlier trashed take is never overwritten.
+- `POST /api/recordings/trash` with a `dryRun` flag.
+- Delete button on the recording row + a confirmation dialog naming every file,
+  its role and the total size.
+
+**Design note:** the warning and the action share one server-side discovery path
+(`dryRun: true` vs not). A client-side guess at "what will be deleted" would drift
+from what actually moves, and that failure is silent — you'd be warned about three
+files while five moved.
+
+**Changed:**
+- `ConfirmationModal` gained `filesLabel` and `maxFilesShown` (default 3 preserved).
+
+**Verified against the running server:** dryRun reported 5 and touched nothing; real
+run moved all 5 and left the source folders empty; a same-name second take suffixed
+to `-1.mov` with the earlier copy byte-identical; nonexistent file returned a clean
+error. Full UI round-trip confirmed — toast read "Moved 5 files to -trash" and disk
+matched. 11 new unit tests.
+
+**Not built:** batch delete from the multi-select toolbar (endpoint already takes an
+array), undo/restore from `-trash`, and "send back to Incoming".
+
+---
+
 ## FR-154 — Orientation-Aware Video Playback (2026-08-26)
 
 Ecamm vertical recordings played back letterboxed into a landscape frame. Every video
