@@ -1,0 +1,18 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html",        "x": 0,    "y": 0,    "w": 960, "h": 720,  "title": "Live — too quiet" },
+    { "file": "LiveGood.dc.html",    "x": 1080, "y": 0,    "w": 960, "h": 720,  "title": "Live — in range" },
+    { "file": "LiveWaiting.dc.html", "x": 2160, "y": 0,    "w": 960, "h": 720,  "title": "Live — nothing to measure" },
+    { "file": "ReportSteady.dc.html","x": 0,    "y": 900,  "w": 960, "h": 1180, "title": "Report — steady take", "print": "flow" },
+    { "file": "ReportDrifted.dc.html","x": 1080,"y": 900,  "w": 960, "h": 1400, "title": "Report — level drifted", "print": "flow" }
+  ],
+  "annotations": [
+    { "id": "live-row", "x": 0, "y": -150, "w": 700,
+      "text": "LIVE VIEW — a control instrument.\nOne dominant thing: the physical action, sized to read from two metres while your hand is on the knob. The number that caused it sits below; peak and clipping are deliberately small because they are guards, not targets." },
+    { "id": "report-row", "x": 0, "y": 760, "w": 700,
+      "text": "SESSION REPORT — a record, not an instrument.\nLeads with a verdict, then the time series. Compare the two chart shapes: steady vs sliding is legible before you read a single number." },
+    { "id": "grey-note", "x": 2160, "y": -150, "w": 620,
+      "text": "The state that matters most.\nGrey, never green — and it says WHY. \"Your level is fine\" and \"nothing has been said yet\" are different facts." }
+  ],
+  "launch": { "view": "canvas" }
+}

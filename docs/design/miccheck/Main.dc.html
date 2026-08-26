@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@200..700&family=Roboto:ital,wght@0,300..700;1,300..700&family=Roboto+Mono:wght@400;600&display=swap">
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Roboto, -apple-system, sans-serif; }
+    a { color: #2E91FC; } a:hover { color: #1f6fc4; }
+  </style>
+</helmet>
+
+<div style="width: 960px; height: 720px; background: #faf5ec; color: #342d2d; padding: 28px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+
+  <!-- Device strip: rule 1 — the device name is ALWAYS on screen -->
+  <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 3px solid #342d2d;">
+    <div style="font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: .02em; line-height: 1;">MIC CHECK</div>
+    <div style="flex-grow: 1;"></div>
+    <div style="width: 9px; height: 9px; border-radius: 50%; background: #2f7d52;"></div>
+    <div style="font-family: Oswald, sans-serif; font-size: 14px; font-weight: 500; letter-spacing: .04em;">HYPERX QUADCAST</div>
+    <div style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #7a6e5e;">48 kHz · 2 ch · 16-bit</div>
+  </div>
+
+  <!-- THE ONE DOMINANT THING: the physical action, readable across a room -->
+  <div style="background: #b03a2e; color: #faf5ec; padding: 26px 30px; display: flex; align-items: center; gap: 28px;">
+    <div style="flex-grow: 1;">
+      <div style="font-family: Oswald, sans-serif; font-size: 13px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; opacity: .82; margin-bottom: 6px;">Front knob · gain</div>
+      <div style="font-family: Oswald, sans-serif; font-size: 54px; font-weight: 600; line-height: 1; text-transform: uppercase; letter-spacing: .01em;">Turn the gain up</div>
+    </div>
+    <div style="font-family: 'Bebas Neue', sans-serif; font-size: 92px; line-height: .82; white-space: nowrap;">16 dB</div>
+  </div>
+
+  <!-- The number the action came from -->
+  <div style="display: flex; align-items: flex-end; gap: 22px;">
+    <div style="font-family: 'Roboto Mono', monospace; font-size: 78px; font-weight: 600; line-height: .9; letter-spacing: -.02em;">&minus;39.0</div>
+    <div style="padding-bottom: 10px;">
+      <div style="font-family: Oswald, sans-serif; font-size: 17px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;">LUFS &mdash; loudness</div>
+      <div style="font-size: 16px; color: #7a6e5e; max-width: 42ch; line-height: 1.45;">How loud your voice actually is. This is the number the gain knob moves.</div>
+    </div>
+  </div>
+
+  <!-- The scale. Plain-language anchors, not just numbers. -->
+  <div>
+    <div style="position: relative; height: 44px; background: #e8e0d4; border: 1px solid #d4cdc4;">
+      <div style="position: absolute; left: 46.7%; top: 0; bottom: 0; width: 20%; background: #cde3d4; border-left: 1px solid #2f7d52; border-right: 1px solid #2f7d52;"></div>
+      <div style="position: absolute; left: 3.3%; top: -7px; bottom: -7px; width: 4px; background: #b03a2e;"></div>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-top: 7px; font-family: 'Roboto Mono', monospace; font-size: 11px; color: #7a6e5e;">
+      <span>&minus;40</span><span>&minus;34</span><span style="color: #2f7d52; font-weight: 600;">&minus;26 &hellip; &minus;20</span><span>&minus;16</span><span>&minus;10</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-top: 2px; font-family: Oswald, sans-serif; font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: #7a6e5e;">
+      <span>Too quiet &mdash; wasting the mic</span>
+      <span style="color: #2f7d52;">Just right</span>
+      <span>Too loud &mdash; risks clipping</span>
+    </div>
+  </div>
+
+  <!-- Subordinate. Deliberately small: these are guards, not targets. -->
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+    <div style="background: #f0ebe4; border: 1px solid #d4cdc4; padding: 14px 16px; display: flex; align-items: center; gap: 14px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f7d52" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <div style="flex-grow: 1;">
+        <div style="font-family: Oswald, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;">Peak &nbsp;<span style="font-family: 'Roboto Mono', monospace; font-weight: 400;">&minus;23.0 dBFS</span></div>
+        <div style="font-size: 14px; color: #7a6e5e; line-height: 1.4;">Nowhere near the ceiling. Safe &mdash; a low peak is not a reason to turn up.</div>
+      </div>
+    </div>
+    <div style="background: #f0ebe4; border: 1px solid #d4cdc4; padding: 14px 16px; display: flex; align-items: center; gap: 14px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2f7d52" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <div style="flex-grow: 1;">
+        <div style="font-family: Oswald, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;">Clipping &nbsp;<span style="font-family: 'Roboto Mono', monospace; font-weight: 400;">0</span></div>
+        <div style="font-size: 14px; color: #7a6e5e; line-height: 1.4;">Nothing destroyed. Clipped audio cannot be repaired afterwards.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <!-- Honesty strip: the artifact promised SIX numbers. Three exist. Say so. -->
+  <div style="border-top: 1px solid #d4cdc4; padding-top: 12px; display: flex; align-items: baseline; gap: 12px;">
+    <div style="font-family: Oswald, sans-serif; font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: #c8841a;">Not measured yet</div>
+    <div style="font-size: 14px; color: #7a6e5e; line-height: 1.4;">Room noise (SNR) &middot; spectrum &middot; proximity &middot; sibilance &middot; pops &middot; polar pattern &mdash; <em>not "fine", simply not looked at.</em></div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

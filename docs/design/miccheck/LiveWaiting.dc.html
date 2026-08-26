@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@200..700&family=Roboto:ital,wght@0,300..700;1,300..700&family=Roboto+Mono:wght@400;600&display=swap">
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Roboto, -apple-system, sans-serif; }
+    a { color: #2E91FC; } a:hover { color: #1f6fc4; }
+  </style>
+</helmet>
+
+<div style="width: 960px; height: 720px; background: #faf5ec; color: #342d2d; padding: 28px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+
+  <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 3px solid #342d2d;">
+    <div style="font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: .02em; line-height: 1;">MIC CHECK</div>
+    <div style="flex-grow: 1;"></div>
+    <div style="width: 9px; height: 9px; border-radius: 50%; background: #2f7d52;"></div>
+    <div style="font-family: Oswald, sans-serif; font-size: 14px; font-weight: 500; letter-spacing: .04em;">HYPERX QUADCAST</div>
+    <div style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #7a6e5e;">48 kHz · 2 ch · 16-bit</div>
+  </div>
+
+  <!-- GREY. Not green. The tool is listening but has nothing to grade, and says why. -->
+  <div style="background: #e8e0d4; color: #342d2d; padding: 26px 30px; display: flex; align-items: center; gap: 28px; border: 1px solid #d4cdc4;">
+    <div style="flex-grow: 1;">
+      <div style="font-family: Oswald, sans-serif; font-size: 13px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #7a6e5e; margin-bottom: 6px;">Nothing to measure yet</div>
+      <div style="font-family: Oswald, sans-serif; font-size: 46px; font-weight: 600; line-height: 1.06; text-transform: uppercase; letter-spacing: .01em;">Say something<br>at your normal distance</div>
+    </div>
+    <svg width="86" height="86" viewBox="0 0 24 24" fill="none" stroke="#7a6e5e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>
+    </svg>
+  </div>
+
+  <div style="display: flex; align-items: flex-end; gap: 22px;">
+    <div style="font-family: 'Roboto Mono', monospace; font-size: 78px; font-weight: 600; line-height: .9; letter-spacing: -.02em; color: #a89a88;">&mdash;&mdash;</div>
+    <div style="padding-bottom: 10px;">
+      <div style="font-family: Oswald, sans-serif; font-size: 17px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: #7a6e5e;">LUFS &mdash; loudness</div>
+      <div style="font-size: 16px; color: #7a6e5e; max-width: 46ch; line-height: 1.45;">The microphone is open and working. What it can hear right now is room tone &mdash; your fans, not your voice.</div>
+    </div>
+  </div>
+
+  <div>
+    <div style="position: relative; height: 44px; background: #e8e0d4; border: 1px solid #d4cdc4;">
+      <div style="position: absolute; left: 46.7%; top: 0; bottom: 0; width: 20%; background: #cde3d4; border-left: 1px solid #2f7d52; border-right: 1px solid #2f7d52;"></div>
+      <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: Oswald, sans-serif; font-size: 13px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: #7a6e5e;">Waiting for your voice</div>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-top: 7px; font-family: 'Roboto Mono', monospace; font-size: 11px; color: #7a6e5e;">
+      <span>&minus;40</span><span>&minus;34</span><span style="color: #2f7d52; font-weight: 600;">&minus;26 &hellip; &minus;20</span><span>&minus;16</span><span>&minus;10</span>
+    </div>
+  </div>
+
+  <!-- The distinction this whole panel exists to protect -->
+  <div style="background: #25201e; color: #ded4c6; padding: 20px 24px; border-left: 5px solid #ffde59;">
+    <div style="font-family: Oswald, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: #ffde59; margin-bottom: 7px;">Why this is grey and not green</div>
+    <div style="font-size: 16px; line-height: 1.55; max-width: 74ch;">A green light here would mean <em>&ldquo;your level is fine&rdquo;</em>. It isn&rsquo;t &mdash; it is <em>unknown</em>, because nothing has been said yet. Those are different facts and they must never look the same.</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+    <div style="background: #f0ebe4; border: 1px solid #d4cdc4; padding: 14px 16px;">
+      <div style="font-family: Oswald, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: #7a6e5e;">Peak &nbsp;<span style="font-family: 'Roboto Mono', monospace; font-weight: 400;">&mdash;</span></div>
+      <div style="font-size: 14px; color: #7a6e5e; line-height: 1.4;">Nothing has peaked yet.</div>
+    </div>
+    <div style="background: #f0ebe4; border: 1px solid #d4cdc4; padding: 14px 16px;">
+      <div style="font-family: Oswald, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: #7a6e5e;">Clipping &nbsp;<span style="font-family: 'Roboto Mono', monospace; font-weight: 400;">&mdash;</span></div>
+      <div style="font-size: 14px; color: #7a6e5e; line-height: 1.4;">No signal to judge.</div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="border-top: 1px solid #d4cdc4; padding-top: 12px; display: flex; align-items: baseline; gap: 12px;">
+    <div style="font-family: Oswald, sans-serif; font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: #c8841a;">Not measured yet</div>
+    <div style="font-size: 14px; color: #7a6e5e; line-height: 1.4;">Room noise (SNR) &middot; spectrum &middot; proximity &middot; sibilance &middot; pops &middot; polar pattern</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
