@@ -36,6 +36,26 @@ David, correcting an agent that had got it wrong, 19 Aug 2026:
 That last clause is David's, and it is the scope rule. A tab is allowed to exist. A tab is not allowed
 to define the app, outrank the spine, or block a rebuild of it.
 
+### Independently ratified, in another repo, a week earlier
+
+This sentence is **not this audit's inference.** `~/dev/ad/apps/teletubby/docs/open-questions.md` §Q5
+— *"Scope boundary with FliHub ✅ answered 2026-08-19"*, interviewed and ratified with David — states it
+almost word for word, and corrects an earlier wrong assumption to get there:
+
+> The old assumption here — *"FliHub owns capture, storage and stitching"* — was wrong... **Ecamm Live
+> owns capture**, driven by David personally (foot pedal to start/stop, Stream Deck for scenes). When he
+> stops, a file lands in a folder. **FliHub is a watcher** on that folder: it routes each take into a
+> queue of takes for that video, creating the queue if none exists, and **holds every attempt** — record,
+> dislike, record again is the normal loop, and holding all of them is what FliHub does well. When David
+> is ready he **promotes** one and it becomes the project video.
+
+Two teams, two repos, two independent processes, one sentence. The only clause this audit adds is
+*"helps you know which one is good"* — which comes from the later recording the same day
+(19 Aug, 09:32) where David rules that transcription must move to queue time so agents can score takes.
+That is a superset, not a disagreement.
+
+**Treat §1 as settled.** The open questions are in §9, not here.
+
 ---
 
 ## 2. Why a rewrite, and why now
@@ -244,6 +264,45 @@ respected, not sneered at. But the audit priced it, and the bill is specific:
 
 **The rule for v2:** keep the filesystem as the store. Give every project and every take a **stable id
 that survives leaving the machine**. The filename stays human-meaningful; it stops being the primary key.
+
+---
+
+### Live confirmation — 26 Aug 2026, the same morning this audit ran
+
+A parallel `flihub-fix-bugs` session shipped four commits while this audit was being written. **Three of
+them are the same root cause**, arrived at independently, without knowledge of this document:
+
+| Commit | Symptom | Cause |
+|---|---|---|
+| **FR-155** Ecamm dual mode *(documented, not built)* | Dual mode writes a folder-per-take with a landscape **and** a vertical `.mov`. `GET /api/files` returned `[]` with both files on disk. | The naming convention has **exactly one slot per recording**. A take with two renditions has nowhere to live. |
+| **FR-156** delete recording | Renaming fans one take across **5 files in 3 folders** (`.mov` + 240p shadow + `.json`/`.srt`/`.txt`). `POST /api/trash` moves one path, so it would delete the `.mov` and orphan four. | No id binds the set. `findRecordingArtifacts()` has to **re-derive** it by string-matching basename + known extensions + hardcoded folder names. |
+| **`fix(watcher)`** `*.mov` → `*.{mov,mp4}` | `audio-clean` emitted a cleaned `.mp4`; it never appeared in Incoming. | The cleaned file is a **rendition of an existing take**, but nothing pairs them — post-fix it surfaces as an unrelated new take. |
+
+**FR-155's own spec states the problem in the model's own terms** (`docs/prd/fr-155-ecamm-dual-mode-ingestion.md`):
+
+> "Recursing the glob is a one-line change and is **not** the hard part. The hard part is that dual mode
+> yields **two files per take**, and FliHub's naming convention has exactly one slot per recording... a
+> decision is required before any code is written."
+
+Its four options (ignore the vertical / tag it as a variant / treat it as a shadow / make it a second
+recording) are all workarounds **inside** the filename-as-primary-key model. The working position —
+*"vertical is a derivative, not a recording"* — is the best of them and should ship if v1 needs it now.
+
+**Under §4's rule the decision does not arise.** A take is an entity; it has N renditions (landscape,
+vertical, 240p shadow, cleaned `.mp4`); the filename is a human-readable label on each rendition, not the
+identity. FR-155, FR-156's fan-out and the watcher's pairing gap collapse into one model.
+
+### The cost, measured over three hours
+
+This audit found `recording-shadows` **absent from `shared/paths.ts`** and hand-constructed in **14
+non-test files**. After the morning's four commits: **17**.
+
+The debt grew while the code got *better* — those commits carry live verification, 1,255 passing tests,
+and a `dryRun` that shares one server-side discovery path with the real operation specifically so the
+warning cannot drift from what moves. That is careful engineering. The structural number still went up.
+
+**This is the clearest available argument for rebuilding rather than repairing:** the flaw is not
+reachable by doing the current work well.
 
 ---
 

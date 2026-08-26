@@ -154,9 +154,16 @@ The audit was asked for flaws, so it found flaws. These earned their place and s
 
 1. **Scope regrowth.** v1's tabs all arrived because FliHub "was the app that already had the filesystem
    open." The same gravity will act on v2. §1's "everything else is a tab" is the defence.
-2. **The suite may not arrive.** Van Dam, Teletubby and Hyperframes are partly concepts. If Assets leaves
-   FliHub and Van Dam doesn't exist, you lose a working capability. **Mitigation:** nothing is deleted
-   from v1 until its replacement is real; v1 keeps running until Season 1 is in daily use.
+2. **The suite may not arrive — but it is arriving unevenly.** *Re-assessed 2026-08-26 against the disk:*
+
+   | App | Status | Consequence |
+   |---|---|---|
+   | **Teletubby** | **Real.** 30 commits, `~/dev/ad/apps/teletubby`, started 2026-08-19. Electron. Has a ratified North Star, a `SetupPanel`, a saved `rig` model, a `CadencePanel` and a `control-server.ts`. | Episode 6 (events out) is **not speculative** — Teletubby's own North Star clause *"learn from every fumbled take"* depends on FliHub emitting take + transcript events. |
+   | **Hyperframes** | Partial — a brain and test assets (`brains/video-as-code/`), no app. | Episode 7 must stop at trims; composition has no home yet. |
+   | **Van Dam / DAMMIT** | **Does not exist.** No repo found. | ⚠️ **Season 3 must not move Assets out of FliHub.** There is nowhere for it to go. |
+
+   **Mitigation, unchanged and now load-bearing:** nothing is deleted from v1 until its replacement is
+   real; v1 keeps running until Season 1 is in daily use.
 3. **Episode drift.** A build-out that becomes a video has pressure to look good, not to be right. The
    named decision per episode is the defence — the content is the reasoning, not the typing.
 4. **Doing the audit again.** 27 campaigns produced 108 files of process exhaust and seven disagreeing
