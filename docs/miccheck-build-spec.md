@@ -358,6 +358,209 @@ report "mono pattern (one of three)" and offer the Step 3 wizard to identify whi
 
 ## 3. UI layout and the green/orange/red model
 
+> ### 🔄 PHASE 1.5 REVISION — 2026-08-26
+>
+> **The original §3 measured *state*. It needed to show *movement*.**
+>
+> David is turning a knob he cannot see while reading a meter he cannot look at simultaneously.
+> A correct-but-static number does not help him: he needs to know whether the last thing he did
+> made it **better or worse**, and by how much, in the unit he is adjusting.
+>
+> **The framing:** *you are not reading a meter, you are playing hot-and-cold with your own voice.*
+>
+> §3.0 (modes), §3.4 (trajectory), §3.5 (change events) and §3.6 (live events) are new.
+> §3.1 and §3.2 are revised. Phase 1 shipped as `7553b9b`; this is a revision, not a rewrite.
+
+### 3.0 Two modes — explicitly switched, never inferred
+
+The original design derived speech-vs-pause by gating inside one continuous view. **Replace that
+with an explicit mode toggle.** The two states need different screens, different metrics and
+different instructions, and inferring the mode means a wrong inference produces a *confidently
+wrong reading*.
+
+| | **ROOM** | **SPEAKING** |
+|---|---|---|
+| David is | silent, ~10 s | talking, continuous |
+| Purpose | Characterise the enemy, store the reference | Dial in |
+| Shows | Noise floor · spectrum with fan band called out · **dominant frequency** | Everything else |
+| Loudness / SNR / PSR | ⚪ **GREY, with the reason** — meaningless without speech | graded |
+| Ends by | Capturing the room-tone reference every later Δ compares against | — |
+
+**ROOM mode's headline readout is the dominant frequency**, not a level: *"Your room peaks at
+250 Hz — fan/HVAC rumble."* A number he can act on beats a level he cannot interpret.
+
+⚠️ **Mode must be obvious and persistent on screen** — a large, permanent indicator, not a subtle
+tab. **A wrong-mode reading is a lying reading**, and an SNR computed against no reference, or a
+loudness computed during silence, is exactly the absence-looks-like-success failure this spec
+exists to avoid.
+
+⚠️ **SPEAKING mode is unavailable until ROOM has been captured.** Every Δ, every rejection figure
+and the whole background panel are *relative to the stored reference*. Offer it greyed with the
+reason, never silently degraded.
+
+### 3.1 The colour model *(revised)*
+
+| Colour | Meaning | What the UI must do |
+|---|---|---|
+| 🟢 **Green** | In range | Say nothing more |
+| 🟠 **Orange** | Usable, improvable | Name the action **and the distance** |
+| 🔴 **Red** | Will damage the recording | Name the action, the distance **and the consequence** |
+| ⚪ **Grey** | **Not yet measurable** | State the reason. **Never default to green** |
+
+**Every non-green state carries three things, not one:**
+
+1. **An imperative naming the physical control** — *"turn the GAIN knob"*, not *"level low"*
+2. **The distance, in the unit he is adjusting** — *"+4 dB"*, never *"orange"*
+3. **A direction indicator** — is the last thing he did helping? (§3.4)
+
+⚠️ **The imperative must flip on overshoot.** *"turn GAIN up ~4 dB"* becomes *"back off ~2 dB"*
+the moment he goes past. An instruction that only ever points one way trains him to overshoot.
+
+**Grey remains load-bearing.** *"No pause detected, so SNR is unmeasured"* and *"SNR is fine"*
+must never look the same. `audio-clean` hit exactly this on 2026-08-26 with
+`SNR unmeasurable: no pause found`.
+
+### 3.2 Layout — SPEAKING mode *(revised)*
+
+```
+┌─ MicCheck ─ [ ROOM │ ●SPEAKING ] ─── ● HyperX QuadCast · 48 kHz · 2ch · 16-bit ─┐
+│                                                                                 │
+│  ┌── GAIN ───────────────────────────────────────────────────────────────────┐  │
+│  │  Short-term      -28.4 LUFS    🟠    ▲ improving                          │  │
+│  │  ╭─────────────────────────────────────────────────────────────────────╮  │  │
+│  │  │      ╷            ╷                                    ▁▂▃▄▅▆       │  │  │
+│  │  │  ▁▁▂▂│▃▃▃▃▄▄▄▄▄▄▄▄│▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▅▆▆▆▆▆▆▆▆▆       │  │  │
+│  │  ╰──────┴────────────┴─────────────────────────────────────────────────╯  │  │
+│  │         ↑ knob        ↑ knob                              ← 30 s →        │  │
+│  │                                                                           │  │
+│  │  ▶  TURN GAIN UP  ~4 dB          target -26…-20 LUFS                      │  │
+│  │                                                                           │  │
+│  │  True peak       -18.7 dBTP    🟢    guard — headroom 12.7 dB             │  │
+│  │  Clips  0   ·   Near-clip  0                                              │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  ┌── POSITION ─────────────────────┐  ┌── PATTERN ─────────────────────────┐    │
+│  │  SNR       33.8 dB  🟠  ▼ worse │  │  Fan-band Δ   -4.2 dB   ▲ better   │    │
+│  │  ▁▂▃▅▆▇▆▅▃▂▁▁▂▃▄▅▄▃▂            │  │  ▁▁▂▃▅▆█▆▅▃▂▁      vs ROOM ref     │    │
+│  │  ▶ MOVE CLOSER — you're 6 dB    │  │  ▶ rear knob: keep turning         │    │
+│  │    short, and gain won't fix it │  │    (rejection caps ~4.8 dB)        │    │
+│  │  Proximity -6.2 dB  🟢  ● flat  │  │  ⓘ pattern change detected 8 s ago │    │
+│  └─────────────────────────────────┘  └────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌── EVENTS ─────────────────────────────────────────────────── last 60 s ──┐   │
+│  │  12:41:08  ● pop            "…particular…"                               │   │
+│  │  12:41:02  ◆ pattern change  correlation 1.00 → 0.62                     │   │
+│  │  12:40:51  ● sibilance       -6.8 dB — above comfort                     │   │
+│  │  12:40:44  ◆ gain change     level step +5.2 dB                          │   │
+│  └──────────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+**ROOM mode** shows only: noise floor, the spectrum with the fan band shaded and labelled, the
+dominant-frequency callout, and a capture button. **Everything speech-derived is grey with its
+reason.** It ends by storing the reference and offering the switch to SPEAKING.
+
+### 3.3 Non-negotiable UI rules
+
+1. **The device name is always on screen.** See §5.2 — the default input on this machine is *not*
+   the QuadCast, and picking the wrong one silently invalidates everything.
+2. **The mode is always on screen** (§3.0).
+3. **The spectrum overlays the stored ROOM reference** (dotted) under the live trace.
+4. **Named band regions under the spectrum axis** — fan / speech / sibilance. It teaches while it
+   measures.
+5. **Grey ≠ green** (§3.1).
+6. **A "why?" affordance on every threshold**, revealing its basis and whether it is 📄 standard or
+   🔶 convention.
+
+### 3.4 ⭐ Trajectory — the part the original spec was missing
+
+Every graded metric carries **four** things: current value, colour, **direction**, and **distance
+to target in the adjustment unit**.
+
+#### Direction detection — and why it needs hysteresis
+
+Naively comparing successive samples makes the arrow flicker on knob noise and normal speech
+variation, and **a flickering arrow destroys trust faster than no arrow at all.**
+
+🔶 **Convention — these values are a starting point, tune them on real use:**
+
+| Parameter | Value | Why |
+|---|---|---|
+| Comparison window | **3 s median** vs the preceding **3 s median** | 📄 Matches the EBU Tech 3343 short-term window; median rejects single transients |
+| Update rate | **2 Hz** | Fast enough to feel live, slow enough to be readable |
+| **Dead-band** | **±0.7 dB** → show `● flat` | Below this is speech variation, not a knob turn |
+| **Hysteresis** | **3 consecutive** same-direction updates before the arrow flips | ~1.5 s of agreement. Prevents oscillation at the boundary |
+| Sparkline | **30 s**, 60 points at 2 Hz | Long enough to show two or three adjustments as a shape |
+
+**Direction is relative to the target, not to the value.** Moving from −34 to −30 LUFS is
+`▲ improving` (toward the window); moving from −22 to −18 is `▼ worsening` (past it). ⚠️ Getting
+this backwards on the far side of the target is the obvious implementation bug — **write the test
+first.**
+
+#### Distance-to-target
+
+Report against the **centre** of the green band, not its edge, so he lands mid-window rather than
+teetering:
+
+| Metric | Target centre | Reported as |
+|---|---|---|
+| Short-term LUFS | **−23 LUFS** | `TURN GAIN UP ~4 dB` |
+| True peak | guard only | `headroom 12.7 dB` — never an instruction to raise |
+| SNR | ≥ 40 dB | `you're 6 dB short` |
+| Fan-band Δ | vs ROOM ref | `-4.2 dB` — signed, lower is better |
+
+⚠️ **Round to whole dB.** `~4 dB` is actionable on a knob with no markings; `4.3 dB` implies a
+precision the hardware does not have.
+
+### 3.5 ⭐ Change-event markers — the causal link
+
+**He cannot watch the knob and the meter simultaneously.** Without markers he sees *that* a number
+moved but not *what moved it*, and the whole loop fails.
+
+**Detect a discontinuity and drop a vertical marker on every sparkline**, timestamped into the
+event log:
+
+| Signal | 🔶 Trigger | Reads as |
+|---|---|---|
+| **Level step** | short-term LUFS moves **> 3 dB within 500 ms** and holds ≥ 2 s | `gain change` |
+| **Correlation step** | \|Δ L/R correlation\| **> 0.15** sustained 1 s | `pattern change` |
+| **Spectral shape** | cosine distance between successive 1 s mean spectra **> 0.15** | `position or pattern change` |
+
+⚠️ **A marker is a hypothesis, not a fact.** Label it *"level step detected"*, not *"you turned the
+gain"* — he may have leaned in, or a fan may have cycled. Overclaiming causation here is the same
+error class as the rest of this document.
+
+### 3.6 ⭐ Live event detection while speaking
+
+David explicitly wants the tool to **tell him what it notices**. Each fires as a **timestamped
+event on the timeline**, not merely a counter — a counter says *"3 pops"*; a timeline says *"a pop
+when you said 'particular'"*, which he can act on.
+
+| Event | 🔶 Detection | Note |
+|---|---|---|
+| **Pop** | > 6 dB rise in **20–300 Hz** over 20 ms **without** a matching speech-band rise | ⚠️ **Label "pop", never "plosive"** — 📄 the phonetic /p/ burst peaks *above* 3 kHz; the pop artifact is the LF aerodynamic blast. Conflating them makes the tool look broken to anyone who knows phonetics |
+| **Sibilance excursion** | 5–10 kHz ÷ speech band exceeds **−7 dB** for > 200 ms | Band must be speaker-adjustable |
+| **Clipping** | any true clip, or ≥ 3 near-clips in 10 s | Red, always |
+| **Level instability** | short-term LUFS range **> 8 dB** across a 15 s window | Reads as *"you're moving"* — distinguishes drift from a deliberate adjustment |
+
+#### 🔓 Open question — audible alerts
+
+David asked to *hear* about events. A soft tick on a pop would close the loop faster than a visual.
+
+⚠️ **But anything routed into his monitoring path risks contaminating the measurement** — the tick
+re-enters through the microphone and could itself register as an event, or as noise in the floor.
+
+**Deliberately unresolved.** Options, none chosen:
+- Visual only *(safe, slowest feedback)*
+- Audible, but **only in ROOM mode** *(no speech to contaminate — but events fire in SPEAKING)*
+- Audible on a **separate output device** from the monitoring path *(needs verification that the tick is not picked up acoustically)*
+- **Post-session** audible summary *(no contamination, no live loop)*
+
+Decide with a measurement, not an opinion: fire the tick, measure whether the floor moves.
+
+---
+
+
 ### 3.1 The colour model
 
 Three states, and one rule that makes the tool trustworthy:
@@ -440,6 +643,20 @@ state honestly rather than defaulting to a reassuring colour.
 Five steps, strictly ordered. **The order is not arbitrary**: gain is set last-but-one because
 moving position and pattern changes the level, and re-setting gain afterwards would be wasted
 work. Each step has an explicit pass condition and cannot be skipped silently.
+
+> ### 🔄 PHASE 1.5 — the flow is now mode-driven
+>
+> **Step 1 *is* ROOM mode. Steps 2–5 *are* SPEAKING mode.** The wizard is no longer a separate
+> construct laid over a single view — it is a scripted walk through the two modes of §3.0, so
+> the guided and free-running paths share one implementation and cannot drift apart.
+>
+> **Every step gains a trajectory target.** A step passes when its metric is not merely *in range*
+> but **stable in range** — 🔶 within band and `● flat` for ≥ 3 s. Passing on a value that is
+> still moving means passing on a value he is about to move past.
+>
+> **Every step shows its sparkline and change markers** (§3.4, §3.5), so the wizard teaches the
+> same reading skill the free-running view needs. A user who finishes calibration should be able
+> to drive the main screen unaided — that is the wizard's real output, alongside the settings.
 
 ### Step 0 — Device & integrity check *(automatic, ~2 s)*
 
@@ -551,6 +768,9 @@ report deliberately **shaped like `audio-clean`'s** so the two are comparable ov
                "identified_by": "acoustic-test" },
   "checks":  { "level": "green", "peak": "green", "snr": "orange",
                "psr": "orange", "position": "green", "all_passed": false },
+  "mode_sequence": [{"mode":"room","dur_s":10},{"mode":"speaking","dur_s":195}],
+  "events":  [{"t":44.2,"type":"gain_change","detail":"level step +5.2 dB"},
+              {"t":68.1,"type":"pop","detail":"LF burst, no speech-band rise"}],
   "not_measured": ["rt60", "drr"]
 }
 ```
