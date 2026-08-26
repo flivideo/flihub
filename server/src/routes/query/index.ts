@@ -20,6 +20,7 @@ import { createChaptersRoutes } from './chapters.js';
 import { createImagesRoutes } from './images.js';
 import { createExportRoutes } from './export.js';
 import { createInboxRoutes } from './inbox.js';
+import { createMicCheckQueryRoutes } from './miccheck.js';
 
 export function createQueryRoutes(getConfig: () => Config): Router {
   const router = Router();
@@ -57,6 +58,9 @@ export function createQueryRoutes(getConfig: () => Config): Router {
   router.use('/projects/:code/images', createImagesRoutes(getConfig));
   router.use('/projects/:code/export', createExportRoutes(getConfig));
   router.use('/projects/:code/inbox', createInboxRoutes(getConfig));
+
+  // MicCheck — live run + finished session reports
+  router.use('/miccheck', createMicCheckQueryRoutes(getConfig));
 
   return router;
 }

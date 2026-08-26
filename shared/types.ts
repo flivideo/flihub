@@ -704,6 +704,10 @@ export interface ServerToClientEvents {
   // B038: relay collaboration
   'relay:changed': (data: RelayChangeEvent) => void;
   'transcripts:changed': () => void; // NFR-85: Transcript added/removed/changed
+  // MicCheck: live monitoring session events
+  'miccheck:started': (data: { sessionId: string }) => void;
+  'miccheck:tick': (data: { sessionId: string; tick: MicCheckTick }) => void;
+  'miccheck:finished': (data: { sessionId: string }) => void;
   // FR-58: Chapter recording events
   'chapters:generating': (data: { chapter: string; total: number; current: number }) => void;
   'chapters:generated': (data: { chapter: string; outputFile: string; srtFile?: string }) => void; // FR-76: srtFile added
@@ -1407,4 +1411,125 @@ export interface UndoRenameResponse {
   success: boolean;
   filesReverted: number;
   error?: string;
+}
+
+// ============================================
+// MicCheck — microphone monitoring sessions
+// ============================================
+
+/**
+ * One rolling sample, posted ~1 Hz. The worklet emits ~23 Hz; posting at that rate
+ * would be 23x the traffic for no extra insight, since the underlying window is 3 s.
+ *
+ * Nulls are load-bearing: a metric that is not yet measurable is null, never 0 and
+ * never a plausible-looking number. -Infinity does not survive JSON, so silence
+ * arrives here as null with `windowFull` saying whether the window had even filled.
+ */
+export interface MicCheckTick {
+  /** Milliseconds since session start. */
+  t: number;
+  shortTermLufs: number | null;
+  samplePeakDbfs: number | null;
+  clipCount: number;
+  nearClipCount: number;
+  /** False until a full 3 s short-term window has been observed. */
+  windowFull: boolean;
+  /** True when the level is above the speech floor — i.e. this is a voice, not room tone. */
+  hasSpeech: boolean;
+}
+
+/** The four-way constraint report: what we asked for vs what we actually got. */
+export interface MicCheckConstraints {
+  asked: Record<string, unknown>;
+  got: Record<string, unknown>;
+  capable: Record<string, unknown> | null;
+  supported: Record<string, unknown>;
+}
+
+export type MicCheckProbeVerdict = 'clean' | 'suspicious' | 'inconclusive';
+
+export interface MicCheckProbe {
+  verdict: MicCheckProbeVerdict;
+  findings: string[];
+  capturedLevelDbfs: number;
+  levelDriftDb: number;
+  deepestNotchDb: number;
+}
+
+/**
+ * Every metric NOT measured, and why. This is the grey-never-becomes-green rule
+ * expressed as data: a consumer must be able to tell "SNR was fine" from
+ * "SNR was never measured", and an absent key cannot carry that distinction.
+ */
+export interface MicCheckNotMeasured {
+  metric: string;
+  reason: string;
+}
+
+export interface MicCheckDevice {
+  label: string;
+  sampleRate: number | null;
+  channelCount: number | null;
+  sampleSize: number | null;
+}
+
+export interface MicCheckSummary {
+  durationMs: number;
+  tickCount: number;
+  /** Ticks where the window was full AND speech was present — the only gradeable ones. */
+  measurableTickCount: number;
+  /** Null when no tick was ever measurable. Never silently 0. */
+  shortTermLufs: { min: number; max: number; mean: number } | null;
+  /** Widest observed spread in LUFS. Large => the level drifted rather than held. */
+  driftLu: number | null;
+  sessionPeakDbfs: number | null;
+  clipCount: number;
+  nearClipCount: number;
+}
+
+export interface MicCheckSession {
+  sessionId: string;
+  startedAt: string;
+  finishedAt: string | null;
+  /** Active project at session start, if any. Lets a report attach to a take later. */
+  projectCode: string | null;
+  workletVersion: string | null;
+  device: MicCheckDevice;
+  constraints: MicCheckConstraints | null;
+  probe: MicCheckProbe | null;
+  summary: MicCheckSummary | null;
+  series: MicCheckTick[];
+  not_measured: MicCheckNotMeasured[];
+}
+
+/** Listing entry — the summary fields, without the series. */
+export interface MicCheckSessionListEntry {
+  sessionId: string;
+  startedAt: string;
+  finishedAt: string | null;
+  projectCode: string | null;
+  deviceLabel: string;
+  summary: MicCheckSummary | null;
+  probeVerdict: MicCheckProbeVerdict | null;
+}
+
+/**
+ * GET /api/query/miccheck/live
+ *
+ * Three distinct states, deliberately not collapsible:
+ *   active=false                  — no run in progress
+ *   active=true, measurable=false — running, but nothing gradeable yet (and why)
+ *   active=true, measurable=true  — running and reading real numbers
+ *
+ * Returning an empty/zeroed payload for the first two would rebuild, in the API,
+ * exactly the grey-vs-green confusion the UI was built to avoid.
+ */
+export interface MicCheckLiveResponse {
+  success: boolean;
+  active: boolean;
+  measurable: boolean;
+  /** Always populated when active=false or measurable=false. */
+  reason: string | null;
+  session: MicCheckSession | null;
+  latest: MicCheckTick | null;
 }

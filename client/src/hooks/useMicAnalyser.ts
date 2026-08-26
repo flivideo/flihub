@@ -13,6 +13,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { API_URL } from '../config';
 
 // ---------------------------------------------------------------------------
 // Device policy
@@ -32,6 +33,16 @@ const TARGET_SAMPLE_RATE = 48000;
 /** Below this, the meter has no speech to measure and must say so rather than advise.
  *  Grounded in Appendix A: room tone measured -61.5 LUFS, speech -39.0 LUFS. */
 export const SPEECH_FLOOR_LUFS = -50;
+
+/**
+ * How often rolling metrics are POSTed to the server.
+ *
+ * The worklet emits ~23 Hz. Posting at that rate would be ~23x the traffic for no extra
+ * insight — the underlying measurement is a 3 s window, so consecutive emissions overlap
+ * almost entirely. 1 Hz still resolves drift over a session, which is the question the
+ * series exists to answer.
+ */
+export const TICK_POST_INTERVAL_MS = 1000;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -127,10 +138,34 @@ export function useMicAnalyser() {
   const [probe, setProbe] = useState<ProbeResult | null>(null);
   const [probeRunning, setProbeRunning] = useState(false);
 
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
   const streamRef = useRef<MediaStream | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
+  const sessionStartRef = useRef<number>(0);
+  const lastPostRef = useRef<number>(0);
+  const probeRef = useRef<ProbeResult | null>(null);
+  const constraintsRef = useRef<ConstraintReport | null>(null);
   const contextRef = useRef<AudioContext | null>(null);
   const nodeRef = useRef<AudioWorkletNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+
+  /**
+   * Fire-and-forget POST. A telemetry failure must never break monitoring — the meter
+   * on screen is the primary product; the server copy is a convenience for agents.
+   */
+  const post = useCallback(async (path: string, body: unknown): Promise<unknown | null> => {
+    try {
+      const res = await fetch(`${API_URL}/api/miccheck${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }, []);
 
   const stop = useCallback(() => {
     nodeRef.current?.port.postMessage({ type: 'stop' });
@@ -142,9 +177,22 @@ export function useMicAnalyser() {
     streamRef.current = null;
     contextRef.current?.close().catch(() => {});
     contextRef.current = null;
+
+    // Finalise the server-side record. The server derives the summary from the series
+    // it received rather than trusting anything computed here.
+    const id = sessionIdRef.current;
+    if (id) {
+      sessionIdRef.current = null;
+      setSessionId(null);
+      void post(`/session/${id}/finish`, {
+        constraints: constraintsRef.current,
+        probe: probeRef.current,
+      });
+    }
+
     setStatus('idle');
     setMetrics(INITIAL_METRICS);
-  }, []);
+  }, [post]);
 
   useEffect(() => stop, [stop]);
 
@@ -215,12 +263,15 @@ export function useMicAnalyser() {
       }
 
       const settings = track.getSettings();
-      setConstraints({
+      const constraintReport: ConstraintReport = {
         asked: buildConstraints(target.deviceId) as Record<string, unknown>,
         got: settings,
         capable: typeof track.getCapabilities === 'function' ? track.getCapabilities() : null,
         supported: navigator.mediaDevices.getSupportedConstraints(),
-      });
+      };
+      constraintsRef.current = constraintReport;
+      probeRef.current = null;
+      setConstraints(constraintReport);
       setDevice({ deviceId: target.deviceId, label: track.label || target.label });
 
       // Step 5 — open the context at the device's own rate so no resampler appears.
@@ -243,8 +294,53 @@ export function useMicAnalyser() {
       });
       nodeRef.current = node;
 
+      // Open the server-side record. Failure here is non-fatal: the meter still works,
+      // it just will not be visible outside this tab.
+      sessionStartRef.current = performance.now();
+      lastPostRef.current = 0;
+      const started = (await post('/session/start', {
+        device: {
+          label: track.label || target.label,
+          sampleRate: settings.sampleRate ?? null,
+          channelCount: settings.channelCount ?? null,
+          sampleSize: (settings as { sampleSize?: number }).sampleSize ?? null,
+        },
+        constraints: constraintReport,
+      })) as { success?: boolean; sessionId?: string } | null;
+
+      if (started?.success && started.sessionId) {
+        sessionIdRef.current = started.sessionId;
+        setSessionId(started.sessionId);
+      }
+
       node.port.onmessage = (event) => {
-        if (event.data?.type === 'metrics') setMetrics(event.data as MicMetrics);
+        if (event.data?.type !== 'metrics') return;
+        const m = event.data as MicMetrics & { workletVersion?: string };
+        setMetrics(m);
+
+        // Throttle to ~1 Hz. The worklet emits ~23 Hz, but its underlying measurement is
+        // a 3 s window — consecutive emissions overlap almost entirely, so posting them
+        // all would multiply traffic without adding information.
+        const id = sessionIdRef.current;
+        if (!id) return;
+        const now = performance.now();
+        if (now - lastPostRef.current < TICK_POST_INTERVAL_MS) return;
+        lastPostRef.current = now;
+
+        // -Infinity does not survive JSON. Silence goes over the wire as null, never as
+        // a number, so a consumer cannot mistake "nothing to measure" for a real level.
+        const finite = (v: number) => (Number.isFinite(v) ? v : null);
+
+        void post(`/session/${id}/tick`, {
+          t: Math.round(now - sessionStartRef.current),
+          shortTermLufs: finite(m.shortTermLufs),
+          samplePeakDbfs: finite(m.samplePeakDbfs),
+          clipCount: m.clipCount,
+          nearClipCount: m.nearClipCount,
+          windowFull: m.windowFull,
+          hasSpeech:
+            m.windowFull && Number.isFinite(m.shortTermLufs) && m.shortTermLufs >= SPEECH_FLOOR_LUFS,
+        });
       };
 
       // Analyser is for the processing probe only — never for a graded metric.
@@ -281,7 +377,7 @@ export function useMicAnalyser() {
           : `${e?.name || 'Error'}: ${e?.message || String(err)}`,
       });
     }
-  }, [stop]);
+  }, [stop, post]);
 
   /**
    * Gate 3 — the system-processing probe.
@@ -400,7 +496,7 @@ export function useMicAnalyser() {
         }
       }
 
-      setProbe({
+      const result: ProbeResult = {
         verdict,
         findings,
         capturedLevelDbfs,
@@ -408,7 +504,9 @@ export function useMicAnalyser() {
         deepestNotchDb,
         spectrum: Array.from(avg),
         binHz,
-      });
+      };
+      probeRef.current = result;
+      setProbe(result);
     } finally {
       setProbeRunning(false);
     }
@@ -417,6 +515,7 @@ export function useMicAnalyser() {
   return {
     status,
     error,
+    sessionId,
     device,
     constraints,
     metrics,

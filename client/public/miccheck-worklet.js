@@ -110,6 +110,9 @@ const CLIP_RUN_LENGTH = 3;
 /** How often to post metrics to the main thread. ~23 Hz; Tech 3341 wants >= 10 Hz. */
 const EMIT_INTERVAL_BLOCKS = 16;
 
+/** Bumped whenever the DSP changes, so a stored session report says which maths produced it. */
+const WORKLET_VERSION = '1.0.0';
+
 class MicCheckProcessor extends AudioWorkletProcessor {
   constructor(options) {
     super();
@@ -272,6 +275,7 @@ class MicCheckProcessor extends AudioWorkletProcessor {
       windowFillRatio: this.ringLength > 0 ? this.blocksSeen / this.ringLength : 0,
       channelCount: this.channelCount,
       sampleRate: this.rate,
+      workletVersion: WORKLET_VERSION,
     };
   }
 }

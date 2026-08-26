@@ -28,6 +28,7 @@ import { createRelayRoutes } from './routes/relay.js';
 import { createSyncRoutes } from './routes/sync.js';
 import { createHoldRoutes } from './routes/hold.js'; // B064: archive-offload hold routes
 import { createStorageRoutes } from './routes/storage.js'; // storage-panel WU1: per-project Hold + Archive verbs
+import { createMicCheckRoutes } from './routes/miccheck.js'; // MicCheck: live monitoring session API
 import { migrateSafeFolder, needsMigration } from './utils/safeMigration.js';
 import { loadConfig, saveConfig } from './config/configManager.js';
 import { WatcherManager } from './WatcherManager.js';
@@ -324,6 +325,11 @@ app.use('/api/projects', holdRoutes);
 // storage-panel WU1: Setup storage routes — per-project Hold + Archive verbs
 const storageRoutes = createStorageRoutes(() => currentConfig);
 app.use('/api/projects', storageRoutes);
+
+// MicCheck: write side of the microphone-monitoring API.
+// Reads live under /api/query/miccheck/* (the namespace the flihub skill reaches).
+const micCheckRoutes = createMicCheckRoutes(() => currentConfig, io);
+app.use('/api/miccheck', micCheckRoutes);
 
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);
