@@ -12,7 +12,10 @@ export function createWatcher(
   onFileDeleted?: (filePath: string) => void
 ): chokidar.FSWatcher {
   const expandedPath = expandPath(watchDir);
-  const watchPattern = path.join(expandedPath, '*.mov');
+  // Watch both containers. audio-clean and other post-processing tools emit .mp4 while
+  // Ecamm records .mov — a .mov-only glob makes processed files invisible in Incoming.
+  // The rest of FliHub already handles both (see holdRoutes/holdBatch: ['.mov', '.mp4']).
+  const watchPattern = path.join(expandedPath, '*.{mov,mp4}');
 
   console.log(`Setting up watcher for: ${watchPattern}`);
 
