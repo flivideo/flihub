@@ -14,6 +14,53 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## MicCheck Phase 1 — live microphone monitoring (2026-08-26)
+
+New `Mic Check` tab. Answers one question: **am I loud enough?**
+
+Two takes measured -40.2 and -39.0 LUFS — ~20 dB too quiet, using ~7 of the QuadCast's
+16 bits. The cause was reading a PEAK meter: with a peak-to-loudness ratio of 20-29 LU
+(healthy spoken word is 11-15), one transient parks the peak ~28 dB above the body of
+the speech, so peaks look healthy while loudness is far too low. So MicCheck sets gain by
+**short-term loudness (3 s, ungated)** and treats true peak as a **guard, never a target**.
+
+Capture targets (NOT delivery targets — audio-clean applies make-up gain downstream):
+short-term -26..-20 LUFS green; true peak <= -6 dBTP guard.
+
+**New:**
+- `client/public/miccheck-worklet.js` — BS.1770 K-weighting -> short-term LUFS + sample
+  peak + clip counts. In `public/` so Vite ships it untransformed; loaded via
+  `audioWorklet.addModule('/miccheck-worklet.js')`.
+- `client/src/hooks/useMicAnalyser.ts` — device acquisition. Pins the QuadCast by
+  deviceId and **refuses virtual devices**: the macOS default input is `krisp microphone`,
+  which denoises before anything downstream sees the audio, so a plain `{audio:true}`
+  would have produced a spectacular fake noise-rejection result.
+- `client/src/utils/micGrading.ts` — the colour model, kept separate and unit-tested
+  because a wrong number is visible but a wrong *colour* is trusted.
+- `client/src/components/MicCheckPage.tsx` — three metric cards, four-way constraint
+  display (asked/got/capable/supported), and the system-processing probe.
+
+**Changed:** `client/src/App.tsx` — five mechanical edits mirroring the `mockups` tab.
+No server work in Phase 1.
+
+**Acceptance gate:**
+- EBU Tech 3341 calibration: 1 kHz sine at -18 dBFS reads **-17.993 LUFS** (target
+  -18.0 +/- 0.1) — in Node AND in Chrome's real AudioWorklet scope via OfflineAudioContext,
+  against the file Vite serves.
+- ffmpeg `ebur128` cross-check on the same file: **0.007 LUFS** apart on sine,
+  **0.039** on pink noise.
+- 17 worklet tests + 25 grading tests. The worklet tests import the shipped file and
+  shim the AudioWorklet globals — they do not reimplement the DSP.
+
+**Colour model:** GREY means "not yet measurable" and always states why; it never falls
+back to green. Room tone at -61.5 LUFS reads grey ("no speech detected"), NOT red —
+grading it red would tell David to turn the gain up until his fans hit -23 LUFS.
+
+**Phase 1 limits, stated in the UI:** sample peak, not true peak (no 4x oversampling yet,
+so it reads up to ~3 dB optimistic); no SNR, spectrum, proximity or pattern detection.
+
+---
+
 ## FR-156 — Delete Recording (2026-08-26)
 
 Once a take was renamed into the project there was no way to remove it from the app —

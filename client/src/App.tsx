@@ -26,6 +26,7 @@ import { ThumbsPage } from './components/ThumbsPage';
 import { TranscriptionsPage } from './components/TranscriptionsPage';
 import { InboxPage } from './components/InboxPage';
 import { MockupsPage } from './components/MockupsPage';
+import { MicCheckPage } from './components/MicCheckPage';
 import { WatchPage } from './components/WatchPage';
 // FR-141: S3StagingPage removed - consolidated into ExportS3Tool in Manage panel
 import { ManagePanel } from './components/ManagePanel';
@@ -52,6 +53,7 @@ type ViewTab =
   | 'projects'
   | 'config'
   | 'mockups'
+  | 'miccheck'
   | 'api-explorer';
 
 const VALID_TABS: ViewTab[] = [
@@ -66,6 +68,7 @@ const VALID_TABS: ViewTab[] = [
   'projects',
   'config',
   'mockups',
+  'miccheck',
   'api-explorer',
 ];
 
@@ -563,7 +566,7 @@ function App() {
             <HeaderDropdown
               trigger={
                 <svg
-                  className={`w-5 h-5 ${activeTab === 'config' || activeTab === 'mockups' || activeTab === 'api-explorer' ? 'text-blue-600' : ''}`}
+                  className={`w-5 h-5 ${activeTab === 'config' || activeTab === 'mockups' || activeTab === 'miccheck' || activeTab === 'api-explorer' ? 'text-blue-600' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -593,6 +596,11 @@ function App() {
                   label: 'Mockups',
                   icon: <span className="text-purple-500">🎨</span>,
                   onClick: () => changeTab('mockups'),
+                },
+                {
+                  label: 'Mic Check',
+                  icon: <span className="text-blue-500">🎙️</span>,
+                  onClick: () => changeTab('miccheck'),
                 },
                 {
                   label: 'API Explorer',
@@ -885,6 +893,13 @@ function App() {
         {activeTab === 'mockups' && (
           <section>
             <MockupsPage />
+          </section>
+        )}
+
+        {/* Mic Check Tab - live microphone monitoring (MicCheck Phase 1) */}
+        {activeTab === 'miccheck' && (
+          <section>
+            <MicCheckPage />
           </section>
         )}
 
