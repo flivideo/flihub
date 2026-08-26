@@ -1,0 +1,361 @@
+<title>FliHub Rebuild Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@200..700&family=Roboto:ital,wght@0,300..900;1,300..900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  color-scheme: light;
+  --brown:#342d2d; --gold:#ccba9d; --yellow:#ffde59; --amber:#c8841a;
+  --muted:#7a6e5e; --near-white:#faf5ec; --surface:#f0ebe4; --linen:#e8e0d4;
+  --border:#d4cdc4; --chrome:#1a1515; --dark-surface:#25201e; --blue:#2E91FC;
+  --rule:rgba(52,45,45,0.12);
+  --measure:68ch;
+}
+*{box-sizing:border-box;}
+body{
+  background:var(--near-white); color:var(--brown);
+  font-family:'Roboto',system-ui,-apple-system,sans-serif;
+  font-weight:400; line-height:1.65; margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 96px;}
+
+/* ---------- masthead ---------- */
+.masthead{padding:64px 0 40px;border-bottom:2px solid var(--brown);}
+.eyebrow{
+  font-family:'Oswald',sans-serif;font-weight:500;font-size:11px;
+  text-transform:uppercase;letter-spacing:.22em;color:var(--amber);margin:0 0 18px;
+}
+h1{
+  font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;
+  font-size:clamp(48px,8vw,92px);line-height:.92;letter-spacing:.01em;
+  margin:0 0 20px;text-wrap:balance;
+}
+.standfirst{
+  font-size:19px;color:var(--muted);max-width:var(--measure);margin:0;
+  font-weight:300;
+}
+.dateline{
+  font-family:'Roboto Mono',monospace;font-size:12px;color:var(--muted);
+  margin-top:26px;letter-spacing:.02em;
+}
+
+/* ---------- sections ---------- */
+section{padding-top:56px;}
+h2{
+  font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;
+  text-transform:uppercase;letter-spacing:.18em;color:var(--brown);
+  margin:0 0 8px;padding-bottom:10px;border-bottom:1px solid var(--rule);
+}
+.sub{color:var(--muted);font-size:15px;max-width:var(--measure);margin:14px 0 26px;}
+h3{
+  font-family:'Oswald',sans-serif;font-weight:500;font-size:19px;
+  margin:34px 0 10px;letter-spacing:.01em;text-wrap:balance;
+}
+p{max-width:var(--measure);}
+a{color:var(--blue);}
+
+/* ---------- the north star block ---------- */
+.northstar{
+  background:var(--dark-surface);color:var(--near-white);
+  padding:44px 40px;margin:36px 0 8px;
+}
+.northstar .label{
+  font-family:'Oswald',sans-serif;font-size:10px;font-weight:500;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--yellow);margin:0 0 20px;
+}
+.northstar .line{
+  font-family:'Bebas Neue',Impact,sans-serif;font-size:clamp(28px,4.4vw,46px);
+  line-height:1.06;margin:0;color:var(--near-white);letter-spacing:.015em;
+}
+.northstar .coda{
+  font-family:'Bebas Neue',Impact,sans-serif;font-size:clamp(22px,3vw,32px);
+  color:var(--yellow);margin:16px 0 0;letter-spacing:.02em;
+}
+.attrib{font-size:13px;color:var(--muted);margin:12px 0 0;font-style:italic;}
+
+/* ---------- stat strip ---------- */
+.stats{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+  gap:1px;background:var(--border);border:1px solid var(--border);margin:28px 0 0;
+}
+.stat{background:var(--near-white);padding:20px 18px;}
+.stat .n{
+  font-family:'Oswald',sans-serif;font-weight:600;font-size:32px;line-height:1;
+  font-variant-numeric:tabular-nums;display:block;
+}
+.stat .k{
+  font-family:'Oswald',sans-serif;font-size:10px;font-weight:400;
+  text-transform:uppercase;letter-spacing:.12em;color:var(--muted);
+  margin-top:8px;display:block;line-height:1.35;
+}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:22px 0;border:1px solid var(--border);}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:520px;}
+th{
+  font-family:'Oswald',sans-serif;font-weight:500;font-size:10px;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--muted);
+  text-align:left;padding:13px 16px;background:var(--surface);
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+td{padding:13px 16px;border-bottom:1px solid var(--rule);vertical-align:top;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even){background:rgba(232,224,212,0.34);}
+td.num{font-variant-numeric:tabular-nums;font-family:'Roboto Mono',monospace;
+  font-size:13px;white-space:nowrap;}
+code,.mono{
+  font-family:'Roboto Mono',monospace;font-size:12.5px;
+  background:var(--linen);padding:1px 5px;
+}
+.bad{color:#9c2b2b;font-weight:500;}
+.good{color:#3f6b3f;font-weight:500;}
+
+/* ---------- numbered season list (a real sequence) ---------- */
+.seasons{list-style:none;padding:0;margin:26px 0 0;}
+.seasons li{
+  display:grid;grid-template-columns:58px 1fr;gap:20px;
+  padding:22px 0;border-top:1px solid var(--rule);
+}
+.seasons li:last-child{border-bottom:1px solid var(--rule);}
+.seasons .idx{
+  font-family:'Oswald',sans-serif;font-weight:600;font-size:26px;
+  color:var(--amber);font-variant-numeric:tabular-nums;line-height:1.1;
+}
+.seasons h4{
+  font-family:'Oswald',sans-serif;font-weight:500;font-size:17px;
+  margin:0 0 6px;letter-spacing:.01em;
+}
+.seasons p{margin:0;font-size:14.5px;color:var(--muted);}
+
+/* ---------- callout ---------- */
+.callout{
+  border-left:3px solid var(--amber);background:var(--surface);
+  padding:20px 24px;margin:26px 0;
+}
+.callout p{margin:0;font-size:15px;}
+.callout p + p{margin-top:12px;}
+.callout .h{
+  font-family:'Oswald',sans-serif;font-weight:500;font-size:11px;
+  text-transform:uppercase;letter-spacing:.16em;color:var(--amber);
+  margin:0 0 10px;display:block;
+}
+blockquote{
+  margin:20px 0;padding:0 0 0 22px;border-left:2px solid var(--gold);
+  font-style:italic;color:var(--brown);max-width:var(--measure);font-size:16px;
+}
+.files{
+  font-family:'Roboto Mono',monospace;font-size:13px;line-height:2.1;
+  background:var(--surface);padding:20px 24px;margin:22px 0;
+  border:1px solid var(--border);overflow-x:auto;
+}
+footer{
+  margin-top:72px;padding-top:26px;border-top:2px solid var(--brown);
+  font-size:13.5px;color:var(--muted);
+}
+footer p{max-width:var(--measure);}
+@media (max-width:640px){
+  .wrap{padding:0 18px 64px;}
+  .northstar{padding:30px 24px;}
+  .seasons li{grid-template-columns:38px 1fr;gap:14px;}
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Captain's Log B475 · Deep Audit</p>
+  <h1>FliHub Rebuild Audit</h1>
+  <p class="standfirst">Twenty-seven agents read every one of the 203 commits, the whole codebase, 236 documents and eight months of recorded intent — to answer one question before rebuilding starts: what problems are we walking into?</p>
+  <p class="dateline">26 AUG 2026 · HEAD 3b3b2f1 · 63,614 LOC · 25 REPORTS</p>
+</header>
+
+<section>
+  <h2>The sentence the rebuild is built on</h2>
+  <p class="sub">Found in a recording from 19 August, where David corrects an agent that had described FliHub wrongly. It is the clearest definition of the app in eight months of corpus.</p>
+
+  <div class="northstar">
+    <p class="label">North Star</p>
+    <p class="line">FliHub watches the folder, routes every take into the video's queue, holds all of them, helps you know which one is good, and promotes the one you pick.</p>
+    <p class="coda">Everything else is a tab.</p>
+  </div>
+  <p class="attrib">"Everything else is a tab" is David's own phrase. It is the scope rule, not a flourish.</p>
+</section>
+
+<section>
+  <h2>The audit in numbers</h2>
+  <div class="stats">
+    <div class="stat"><span class="n">203</span><span class="k">Commits read</span></div>
+    <div class="stat"><span class="n">230</span><span class="k">Features shipped</span></div>
+    <div class="stat"><span class="n">64</span><span class="k">Dead ends</span></div>
+    <div class="stat"><span class="n">46</span><span class="k">Design pivots</span></div>
+    <div class="stat"><span class="n">65</span><span class="k">Pain signals</span></div>
+    <div class="stat"><span class="n">2,748</span><span class="k">Dead lines of code</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Three complaints, three exact causes</h2>
+  <p class="sub">The most useful result. Each of these was a vague, long-standing frustration on record — a <em>feeling</em>, never pinned down. Each turned out to have a precise mechanical cause, verified in source and against the running app.</p>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr><th>What was reported</th><th>The actual cause</th><th>Scale</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>“Rename tools feel untrustworthy”</td>
+          <td>The filename <strong>preview</strong> and the <strong>writer</strong> call two different sanitisers. They disagree on periods, hyphen runs, trimming and length. You read one name and a different one is written.</td>
+          <td class="num">8 of 65<br>project codes<br>affected</td>
+        </tr>
+        <tr>
+          <td>“The theme needs a consistency pass”</td>
+          <td>A bulk token migration followed a guide that named the tokens wrongly. A later fix corrected two of four. <code>text-warm-primary</code> and <code>text-warm-faint</code> emit <strong>no CSS at all</strong> — those elements silently inherit colour.</td>
+          <td class="num">153<br>elements</td>
+        </tr>
+        <tr>
+          <td>Whisper binary path keeps needing fixing</td>
+          <td><code>saveConfig</code> writes a hand-maintained list of keys. Six declared keys are dropped — including <code>whisperBinary</code>, which is <em>read</em> to spawn the process. Any unrelated save erases a hand-edited value.</td>
+          <td class="num">6 of 25<br>config keys</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <span class="h">Why this matters for the rebuild</span>
+    <p>All three share a shape: <strong>the failure and the success look identical.</strong> The API returns <code>success: true</code>. The class name is spelled correctly. The preview renders. Nothing errors, so nothing gets reported as a bug — it gets reported as a feeling.</p>
+    <p>That is the class of defect a rebuild must design against, and it is exactly what B475 asked for: architectural flaws, not bugs.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Why the repo went silent</h2>
+  <p>The last commit is 16 April 2026. Four months of nothing. The archaeology found the reason, and it was not fatigue.</p>
+
+  <blockquote>On 12 April 2026 — four days before the final commit — a complete rebuild specification was commissioned. Everything committed after that date was work on an application whose owner had already decided to replace it.</blockquote>
+
+  <p>That specification is still in the repo, 2,423 lines across two files, never acted on. <strong>It should not be used as the build brief.</strong> Its opening instruction is <em>“replicate what works faithfully — don't strip features — this is a well-engineered, mature application”</em>, which is the opposite of what this audit was asked to find. It preserves all eleven tabs and the global config the audit finds structurally wrong; its eight “improvements” are cosmetic; and it was generated from 50 commits when the repo had 193 — never seeing the genesis era where the constraining decisions were made.</p>
+  <p>It remains the most complete <em>feature inventory</em> in existence. Mine it for that, and nothing else.</p>
+</section>
+
+<section>
+  <h2>The founding bet, and its bill</h2>
+  <p class="sub">Genesis (December 2025) chose: the filesystem is the database, and the filename is the primary key. That bought real speed — a working app in two weeks with no schema to fight. The audit priced what it cost.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Consequence</th><th>Measured</th></tr></thead>
+      <tbody>
+        <tr><td><strong>No identity survives the editor handoff.</strong> Segments go out, a finished video comes back, and the app must guess the mapping to recover chapter timestamps.</td><td class="num">779 lines of fuzzy<br>trigram matching<br>+ an LLM adjudicator</td></tr>
+        <tr><td><strong>Path knowledge leaked everywhere.</strong> <code>shared/paths.ts</code> describes the structure but never creates it.</td><td class="num">39 mkdir sites<br>58 hardcoded joins<br>bypassing it</td></tr>
+        <tr><td><strong>Filename parsing forked.</strong> Which parser you get depends on which endpoint you hit.</td><td class="num">15 ad-hoc regexes<br>outside naming.ts</td></tr>
+        <tr><td><strong>Per-project state went global.</strong> Stage lives in one server-wide config map that never prunes.</td><td class="num">17 of 36 entries<br>point at deleted<br>folders</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>The rule for v2:</strong> keep the filesystem as the store. Give every project and take a stable id that survives leaving the machine. The filename stays human-meaningful — it stops being the key.</p>
+</section>
+
+<section>
+  <h2>What the project could not tell itself</h2>
+  <p class="sub">B475 asks what got built and never used. The reason that question was hard is structural.</p>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Contract</th><th>Reality</th><th>Documented</th><th>In-app registry</th></tr></thead>
+      <tbody>
+        <tr><td>HTTP routes</td><td class="num bad">156</td><td class="num">71</td><td class="num">34</td></tr>
+        <tr><td>Socket events</td><td class="num bad">27</td><td class="num">20</td><td class="num">13</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The reference documentation was written on 18 December 2025 — five days after the first commit — and has never had a content edit since. Everything after that went into new campaign folders. Of 236 documents and 75,198 lines, <strong>43% were written once and never revised</strong>, and <strong>46% are process exhaust</strong> from 27 autonomous campaigns.</p>
+
+  <p>Requirements were tracked in <strong>seven separate ledgers with disjoint ID namespaces, and no two agreed.</strong> One row says a test-coverage requirement is pending; another says it shipped in March; the repo has 41 test files and 942 test blocks wired into <code>npm test</code>.</p>
+</section>
+
+<section>
+  <h2>The plan: a season, not a sprint</h2>
+  <p class="sub">Each build session doubles as a video, section by section. That makes the unit an episode — so every one must end in something demoable, and each carries a named decision that goes on camera.</p>
+
+  <ol class="seasons">
+    <li>
+      <span class="idx">00</span>
+      <div>
+        <h4>Before any code</h4>
+        <p>The audit, the North Star, David's live-usage narration — and the real blocker: <strong>there is no design system.</strong> Two generations of exploration produced four whole-app designs and thirteen mockups, and neither produced a token spec, type scale or component vocabulary. The measured result is 108 distinct container treatments across 181 instances.</p>
+      </div>
+    </li>
+    <li>
+      <span class="idx">01</span>
+      <div>
+        <h4>The spine</h4>
+        <p>Five episodes building the North Star sentence end to end: the watcher and queue with stable take ids · one API with three unprivileged clients · transcribe at queue time · the take bench · scoring instead of guessing. Ship it and use it for real before anything else starts.</p>
+      </div>
+    </li>
+    <li>
+      <span class="idx">02</span>
+      <div>
+        <h4>The pipeline joints</h4>
+        <p>FliHub stops being an island. Events out to Teletubby · assembly of many takes into one video · deterministic project truth for FliLaunch · one synchronisation model for Jan and Mary, replacing the three that grew independently.</p>
+      </div>
+    </li>
+    <li>
+      <span class="idx">03</span>
+      <div>
+        <h4>The tabs, judged one at a time</h4>
+        <p>Not ported — each gets a hearing against one test: does it raise videos-shipped-per-week, and does something else in the suite now own it better? Assets likely leaves for Van Dam, Thumbs for FliLaunch, and the dev scaffolding shipped in the product gets deleted.</p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<section>
+  <h2>What v1 got right</h2>
+  <p class="sub">The audit was asked for flaws, so it found flaws. These earned their place and should survive the rebuild.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Keep</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><strong>The socket contract</strong></td><td>The one genuinely enforced contract in the codebase — typed on both ends. The rebuild should copy this pattern onto HTTP rather than invent something new.</td></tr>
+        <tr><td><strong>The transcript-synced player</strong></td><td>The crown jewel. The only FliHub screen praised anywhere in eight months of recordings — and praised twice, eight months apart.</td></tr>
+        <tr><td><strong>State over deletion</strong></td><td><code>-safe/</code>, <code>-trash/</code>, the five-gate hold chain. This instinct becomes <em>more</em> important once agents are callers.</td></tr>
+        <tr><td><strong>The visualisation instinct</strong></td><td>Confidence icons, match-method badges, divergence borders, threshold colouring. Dozens, and they are good. Keep the instinct; give it a vocabulary.</td></tr>
+        <tr><td><strong>React Query · <code>shared/naming.ts</code></strong></td><td>Right calls. The flaw in each case is that they were not the <em>only</em> implementation.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Method, and what it does not establish</h2>
+  <p>Twenty-seven agents across two workflows, plus direct work against the running application. Every architecture strand was <strong>adversarially verified by a second agent instructed to refute it</strong>.</p>
+
+  <p>That pass mattered. Every finding survived, but sub-claims were killed and counts moved in both directions — a claimed “320-line handler” was actually 21 lines, a measurement artefact; “69 RPC-shaped routes” could not be reproduced and became 45; “30 errors returned as HTTP 200” turned out to be at least 51. Two of the corrections were to the lead session's own claims, including an early hypothesis that seven socket listeners were dead. Six of the seven are emitted through a config-table indirection that literal grep cannot see.</p>
+
+  <div class="callout">
+    <span class="h">Limits</span>
+    <p>This audit did not run the test suite, did not exercise the app through the UI beyond read-only screenshots, and did not test the multi-machine relay against Jan's or Mary's machines. Claims about runtime behaviour derived from source are marked as such in each report.</p>
+    <p>Three files were uncommitted in the working tree throughout — findings touching them are flagged as needing a re-check against a clean tree.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Where everything lives</h2>
+  <div class="files">docs/rebuild-2026/README.md              ← index, read this first
+docs/rebuild-2026/NORTH-STAR.md          ← what we're building, and why
+docs/rebuild-2026/REBUILD-ROADMAP.md     ← the season plan
+docs/rebuild-2026/NARRATION-GUIDE.md     ← for using the app and narrating it
+docs/rebuild-2026/DEAD-ENDS-AND-PAIN.md  ← 64 dead ends, 46 pivots, 65 pain signals
+docs/rebuild-2026/audit/                 ← 25 full reports, ~13,000 lines</div>
+</section>
+
+<footer>
+  <p><strong>Still open:</strong> five rulings only David can make — the trim boundary, whether shelved is a state or a move, which tabs the suite now owns, how brand becomes a modelled attribute, and whatever the live-usage narration turns up.</p>
+  <p style="margin-top:14px">Generated 26 August 2026 from Captain's Log capture B475 · FliHub @ <span class="mono">3b3b2f1</span></p>
+</footer>
+
+</div>
