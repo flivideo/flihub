@@ -177,6 +177,16 @@ export function MicCheckPage() {
   const [showConstraints, setShowConstraints] = useState(false);
 
   const running = status === 'running';
+
+  // Device format, preferring the track's own settings over the worklet's view.
+  const trackRate = constraints?.got.sampleRate ?? null;
+  const trackChannels = constraints?.got.channelCount ?? null;
+  const rate = metrics.sampleRate || trackRate;
+  const channels = metrics.channelCount || trackChannels;
+  const formatRate = rate ? `${(rate / 1000).toFixed(0)} kHz` : 'rate unknown';
+  const formatChannels = channels ? `${channels} ch` : 'channels unknown';
+  const formatDepth = constraints?.got.sampleSize ? ` · ${constraints.got.sampleSize}-bit` : '';
+
   const signal = hasSpeechSignal(metrics.shortTermLufs, metrics.windowFull);
 
   const loudness = gradeShortTermLoudness({
@@ -234,10 +244,15 @@ export function MicCheckPage() {
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 rounded border border-warm bg-surface-muted text-sm">
           <span className={`inline-block w-2 h-2 rounded-full ${running ? 'bg-green-500' : 'bg-gray-400'}`} />
           <span className="font-medium text-warm-primary">{device.label}</span>
+          {/* Read the format from the TRACK, not from the worklet. metrics.* is zero
+              until the first render quantum arrives and resets to zero on stop, which
+              made this line read "— · — · 16-bit" while the constraint table directly
+              below it said 48000 / 2 — the panel visibly contradicting itself. */}
           <span className="text-warm-muted font-mono text-xs">
-            {metrics.sampleRate ? `${(metrics.sampleRate / 1000).toFixed(0)} kHz` : '—'} ·{' '}
-            {metrics.channelCount ? `${metrics.channelCount} ch` : '—'}
-            {constraints?.got.sampleSize ? ` · ${constraints.got.sampleSize}-bit` : ''}
+            {formatRate}
+            {' · '}
+            {formatChannels}
+            {formatDepth}
           </span>
           <button
             onClick={() => setShowConstraints((v) => !v)}
