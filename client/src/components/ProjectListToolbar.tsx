@@ -2,10 +2,31 @@
 export { STAGE_DISPLAY, STAGE_ORDER } from '../constants/stages';
 import { STAGE_DISPLAY, STAGE_ORDER } from '../constants/stages';
 const PRESETS = [
-  { key: 'all', label: 'All' },
-  { key: 'needs-attention', label: 'Needs Attention' },
-  { key: 'dead', label: 'Dead' },
-  { key: 'ready-to-edit', label: 'Ready to Edit' },
+  {
+    key: 'all',
+    label: 'All',
+    description: 'Show all projects — no preset filter applied.',
+  },
+  {
+    key: 'needs-attention',
+    label: 'Needs Attention',
+    description: 'Has recordings but zero transcripts — needs transcription.',
+  },
+  {
+    key: 'dead',
+    label: 'Dead',
+    description: 'Two or fewer files and no activity in 30+ days — likely abandoned.',
+  },
+  {
+    key: 'ready-to-edit',
+    label: 'Ready to Edit',
+    description: 'All recordings transcribed and no final video yet — ready for first edit. Stage-agnostic.',
+  },
+  {
+    key: 'ready-to-launch-optimise',
+    label: 'Launch Optimise',
+    description: 'Has a final video OR stage is 2nd/Ready — video work essentially done, next step is launch optimisation (titles, thumbs, description). Excludes published/archived/shelved.',
+  },
 ] as const;
 
 export interface ProjectListToolbarProps {
@@ -84,6 +105,7 @@ export function ProjectListToolbar({
                 key={preset.key}
                 type="button"
                 onClick={() => onPresetChange(preset.key)}
+                title={preset.description}
                 className={`rounded-md px-2.5 py-0.5 text-[11px] font-medium transition-colors select-none ${
                   isActive
                     ? 'bg-[#2a2018] text-surface border border-[#2a2018]'

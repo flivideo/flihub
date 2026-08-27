@@ -125,16 +125,119 @@ describe('filterProjects', () => {
   });
 
   describe('preset: ready-to-edit', () => {
-    it('finds recording-stage projects with 100% transcripts', () => {
+    it('finds projects with 100% transcripts and no final video — stage-agnostic', () => {
       const result = filterProjects(projects, { ...defaultOptions, activePreset: 'ready-to-edit' });
-      expect(result).toHaveLength(1);
-      expect(result[0].code).toBe('C03-outro-clip');
+      const codes = result.map((p) => p.code).sort();
+      expect(codes).toEqual(['B02-tutorial-setup', 'C03-outro-clip']);
     });
 
-    it('excludes non-recording stages even with 100% transcripts', () => {
-      // B02 has 100% but is in first-edit stage
-      const result = filterProjects(projects, { ...defaultOptions, activePreset: 'ready-to-edit' });
-      expect(result.find((p) => p.code === 'B02-tutorial-setup')).toBeUndefined();
+    it('excludes projects with a final video even when 100% transcribed', () => {
+      const alreadyEdited = makeProject({
+        code: 'K11-already-edited',
+        stage: 'first-edit',
+        totalFiles: 12,
+        transcriptPercent: 100,
+        hasFinal: true,
+      });
+      const result = filterProjects([alreadyEdited], { ...defaultOptions, activePreset: 'ready-to-edit' });
+      expect(result).toHaveLength(0);
+    });
+
+    it('excludes projects with zero files', () => {
+      const empty = makeProject({ code: 'L12-empty', totalFiles: 0, transcriptPercent: 100 });
+      const result = filterProjects([empty], { ...defaultOptions, activePreset: 'ready-to-edit' });
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('preset: ready-to-launch-optimise', () => {
+    it('includes projects with a final video regardless of stage', () => {
+      const withFinal = makeProject({
+        code: 'M13-has-final',
+        stage: 'first-edit',
+        hasFinal: true,
+      });
+      const result = filterProjects([withFinal], {
+        ...defaultOptions,
+        activePreset: 'ready-to-launch-optimise',
+      });
+      expect(result).toHaveLength(1);
+    });
+
+    it('includes projects at second-edit stage even without final', () => {
+      const secondEdit = makeProject({
+        code: 'N14-second-edit',
+        stage: 'second-edit',
+        hasFinal: false,
+      });
+      const result = filterProjects([secondEdit], {
+        ...defaultOptions,
+        activePreset: 'ready-to-launch-optimise',
+      });
+      expect(result).toHaveLength(1);
+    });
+
+    it('includes projects at ready-to-publish stage even without final', () => {
+      const ready = makeProject({
+        code: 'O15-ready',
+        stage: 'ready-to-publish',
+        hasFinal: false,
+      });
+      const result = filterProjects([ready], {
+        ...defaultOptions,
+        activePreset: 'ready-to-launch-optimise',
+      });
+      expect(result).toHaveLength(1);
+    });
+
+    it('excludes first-edit stage without a final', () => {
+      const firstEdit = makeProject({
+        code: 'P16-first-edit',
+        stage: 'first-edit',
+        hasFinal: false,
+      });
+      const result = filterProjects([firstEdit], {
+        ...defaultOptions,
+        activePreset: 'ready-to-launch-optimise',
+      });
+      expect(result).toHaveLength(0);
+    });
+
+    it('excludes published projects even if they have a final', () => {
+      const published = makeProject({
+        code: 'Q17-published',
+        stage: 'published',
+        hasFinal: true,
+      });
+      const result = filterProjects([published], {
+        ...defaultOptions,
+        activePreset: 'ready-to-launch-optimise',
+      });
+      expect(result).toHaveLength(0);
+    });
+
+    it('excludes archived and shelved projects', () => {
+      const archived = makeProject({ code: 'R18-archived', stage: 'archived', hasFinal: true });
+      const shelved = makeProject({ code: 'S19-shelved', stage: 'shelved', hasFinal: true });
+      const result = filterProjects([archived, shelved], {
+        ...defaultOptions,
+        activePreset: 'ready-to-launch-optimise',
+      });
+      expect(result).toHaveLength(0);
+    });
+
+    it('excludes recording-stage projects without a final', () => {
+      const recording = makeProject({
+        code: 'T20-recording',
+        stage: 'recording',
+        hasFinal: false,
+        transcriptPercent: 100,
+      });
+      const result = filterProjects([recording], {
+        ...defaultOptions,
+        activePreset: 'ready-to-launch-optimise',
+      });
+      expect(result).toHaveLength(0);
     });
   });
 

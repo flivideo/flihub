@@ -44,7 +44,17 @@ export function filterProjects(projects: ProjectStats[], options: FilterOptions)
       return p.totalFiles <= 2 && daysSince > 30;
     });
   } else if (activePreset === 'ready-to-edit') {
-    result = result.filter((p) => p.transcriptPercent === 100 && p.stage === 'recording');
+    result = result.filter(
+      (p) => p.totalFiles > 0 && p.transcriptPercent === 100 && !p.hasFinal
+    );
+  } else if (activePreset === 'ready-to-launch-optimise') {
+    result = result.filter((p) => {
+      const isCandidate =
+        p.hasFinal || p.stage === 'second-edit' || p.stage === 'ready-to-publish';
+      const isShipped =
+        p.stage === 'published' || p.stage === 'archived' || p.stage === 'shelved';
+      return isCandidate && !isShipped;
+    });
   }
 
   return result;

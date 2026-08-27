@@ -11,6 +11,7 @@
 
 import { useState } from 'react';
 import { useMicAnalyser } from '../hooks/useMicAnalyser';
+import { MicCheckReport } from './MicCheckReport';
 import {
   gradeShortTermLoudness,
   gradeTruePeak,
@@ -164,6 +165,10 @@ export function MicCheckPage() {
   const {
     status,
     error,
+    mode,
+    setMode,
+    trajectory,
+    lastSession,
     device,
     constraints,
     metrics,
@@ -187,13 +192,33 @@ export function MicCheckPage() {
   const formatChannels = channels ? `${channels} ch` : 'channels unknown';
   const formatDepth = constraints?.got.sampleSize ? ` · ${constraints.got.sampleSize}-bit` : '';
 
-  const signal = hasSpeechSignal(metrics.shortTermLufs, metrics.windowFull);
+  const signal = mode === 'speaking' && hasSpeechSignal(metrics.shortTermLufs, metrics.windowFull);
 
-  const loudness = gradeShortTermLoudness({
-    shortTermLufs: metrics.shortTermLufs,
-    windowFull: metrics.windowFull,
-    windowFillRatio: metrics.windowFillRatio,
-  });
+  // In ROOM mode the level is deliberately not graded: the run is characterising the
+  // background, so "turn the gain up" against it would tell you to amplify your fans.
+  // This is the fix for a real failure — a -48 LUFS room-tone reading was being graded
+  // red with "turn the GAIN knob up ~25 dB" because a single inferred threshold cannot
+  // separate a quiet voice from a loud room. The declared mode can.
+  const loudness =
+    mode === 'room'
+      ? {
+          grade: 'grey' as const,
+          value: Number.isFinite(metrics.shortTermLufs)
+            ? `${metrics.shortTermLufs.toFixed(1)} LUFS`
+            : null,
+          message:
+            'Room mode — this is the background level, not your voice. Switch to Speaking to ' +
+            'have it graded.',
+          basis:
+            'Grading a level in room mode would produce gain advice measured against silence. ' +
+            'The mode is declared, never inferred, precisely so that cannot happen.',
+          isConvention: false,
+        }
+      : gradeShortTermLoudness({
+          shortTermLufs: metrics.shortTermLufs,
+          windowFull: metrics.windowFull,
+          windowFillRatio: metrics.windowFillRatio,
+        });
   const peak = gradeTruePeak({ samplePeakDbfs: metrics.samplePeakDbfs, hasSignal: signal });
   const clipping = gradeClipping({
     clipCount: metrics.clipCount,
@@ -311,8 +336,98 @@ export function MicCheckPage() {
         </div>
       )}
 
+      {/* The report — pressing Stop used to leave a blank screen while a full record
+          was written to disk that nothing ever showed. */}
+      {!running && lastSession && (
+        <MicCheckReport session={lastSession} onDismiss={() => window.location.reload()} />
+      )}
+
       {running && (
         <>
+          {/* MODE — declared, never inferred. A wrong-mode reading is a lying reading,
+              so this is large and permanent rather than a subtle tab. */}
+          <div className="mb-4 flex items-stretch gap-2">
+            {(['room', 'speaking'] as const).map((m) => {
+              const active = mode === m;
+              return (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  className={`flex-1 text-left px-4 py-3 rounded-lg border transition-colors ${
+                    active
+                      ? m === 'room'
+                        ? 'border-warm-strong bg-surface-muted'
+                        : 'border-blue-400 bg-blue-50'
+                      : 'border-warm bg-surface hover:bg-surface-hover'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-block w-2.5 h-2.5 rounded-full ${
+                        active ? (m === 'room' ? 'bg-warm-strong' : 'bg-blue-500') : 'bg-transparent border border-warm-strong'
+                      }`}
+                    />
+                    <span className="text-sm font-medium text-warm-primary uppercase tracking-wide">
+                      {m === 'room' ? 'Room' : 'Speaking'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-warm-muted mt-0.5 ml-[18px] leading-snug">
+                    {m === 'room'
+                      ? 'Sit still and stay silent — measuring the background.'
+                      : 'Talk normally — measuring your voice.'}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {mode === 'room' && (
+            <div className="mb-4 px-4 py-2.5 rounded border border-warm bg-surface-muted text-sm text-warm-secondary">
+              Room mode measures the background, so your level is deliberately <strong>not</strong>{' '}
+              graded here. Switch to <strong>Speaking</strong> before you start talking — otherwise
+              the run records your voice while believing it is measuring silence.
+            </div>
+          )}
+
+          {/* TRAJECTORY — the thing a static number cannot give you: is the last
+              adjustment helping? */}
+          {mode === 'speaking' && trajectory && (
+            <div className="mb-4 flex items-center gap-4 px-4 py-3 rounded-lg border border-warm bg-surface">
+              <div className="shrink-0 w-32">
+                <div className="text-[11px] uppercase tracking-wider text-warm-muted">Direction</div>
+                <div
+                  className={`text-lg font-medium ${
+                    trajectory.direction === 'improving'
+                      ? 'text-green-700'
+                      : trajectory.direction === 'worsening'
+                        ? 'text-red-700'
+                        : 'text-warm-secondary'
+                  }`}
+                >
+                  {trajectory.direction === 'improving' && '▲ better'}
+                  {trajectory.direction === 'worsening' && '▼ worse'}
+                  {trajectory.direction === 'flat' && '● holding'}
+                  {trajectory.direction === 'unknown' && '— no reading'}
+                </div>
+              </div>
+              <div className="flex-grow min-w-0">
+                <svg viewBox="0 0 300 44" className="w-full h-11 block" preserveAspectRatio="none">
+                  <rect x={0} y={14} width={300} height={12} fill="#cde3d4" />
+                  {(() => {
+                    const pts = trajectory.sparkline.filter((p) => p.value !== null);
+                    if (pts.length < 2) return null;
+                    const y = (v: number) => ((-14 - v) / 32) * 44;
+                    const d = pts
+                      .map((p, i) => `${i === 0 ? 'M' : 'L'} ${(i / (pts.length - 1)) * 300} ${Math.max(0, Math.min(44, y(p.value!)))}`)
+                      .join(' ');
+                    return <path d={d} fill="none" stroke="#342d2d" strokeWidth={1.5} />;
+                  })()}
+                </svg>
+                <div className="text-[10px] text-warm-muted font-mono">last 30 s</div>
+              </div>
+            </div>
+          )}
+
           {/* Loudness bar — the primary needle */}
           <div className="mb-4 p-4 rounded-lg border border-warm bg-surface">
             <div className="flex items-baseline justify-between mb-2">

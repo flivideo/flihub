@@ -14,6 +14,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { API_URL } from '../config';
+import { TrajectoryTracker, type TrajectoryReading } from '../utils/micTrajectory';
+import { SHORT_TERM_TARGET_LUFS } from '../utils/micGrading';
+import type { MicCheckSession } from '../../../shared/types';
 
 // ---------------------------------------------------------------------------
 // Device policy
@@ -147,6 +150,11 @@ export function useMicAnalyser() {
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [mode, setModeState] = useState<MicMode>('room');
+  /** The finished report, kept after Stop so the page can show it instead of a blank screen. */
+  const [lastSession, setLastSession] = useState<MicCheckSession | null>(null);
+  const [trajectory, setTrajectory] = useState<TrajectoryReading | null>(null);
+  const trackerRef = useRef<TrajectoryTracker | null>(null);
+  const lastTrajectoryRef = useRef<number>(0);
   const [roomReferenceLufs, setRoomReferenceLufs] = useState<number | null>(null);
   const modeRef = useRef<MicMode>('room');
 
@@ -197,6 +205,9 @@ export function useMicAnalyser() {
       void post(`/session/${id}/finish`, {
         constraints: constraintsRef.current,
         probe: probeRef.current,
+      }).then((res) => {
+        const session = (res as { session?: MicCheckSession } | null)?.session;
+        if (session) setLastSession(session);
       });
     }
 
@@ -308,6 +319,10 @@ export function useMicAnalyser() {
       // it just will not be visible outside this tab.
       modeRef.current = 'room';
       setModeState('room');
+      setLastSession(null);
+      setTrajectory(null);
+      trackerRef.current = new TrajectoryTracker({ target: SHORT_TERM_TARGET_LUFS });
+      lastTrajectoryRef.current = 0;
       setRoomReferenceLufs(null);
       sessionStartRef.current = performance.now();
       lastPostRef.current = 0;
@@ -331,12 +346,39 @@ export function useMicAnalyser() {
         const m = event.data as MicMetrics & { workletVersion?: string };
         setMetrics(m);
 
+        const now = performance.now();
+
+        // Trajectory runs at 2 Hz — fast enough to feel live, slow enough to read.
+        if (now - lastTrajectoryRef.current >= 500) {
+          lastTrajectoryRef.current = now;
+          const tracker = trackerRef.current;
+          if (tracker) {
+            const gradeable =
+              modeRef.current === 'speaking' &&
+              m.windowFull &&
+              Number.isFinite(m.shortTermLufs) &&
+              m.shortTermLufs >= SPEECH_FLOOR_LUFS;
+            const reading = tracker.push(
+              gradeable ? m.shortTermLufs : null,
+              Math.round(now - sessionStartRef.current)
+            );
+            setTrajectory(reading);
+            if (reading.changeEvent) {
+              reportEventRef.current?.({
+                t: reading.changeEvent.t,
+                kind: 'level-step',
+                label: reading.changeEvent.label,
+                deltaDb: reading.changeEvent.deltaDb,
+              });
+            }
+          }
+        }
+
         // Throttle to ~1 Hz. The worklet emits ~23 Hz, but its underlying measurement is
         // a 3 s window — consecutive emissions overlap almost entirely, so posting them
         // all would multiply traffic without adding information.
         const id = sessionIdRef.current;
         if (!id) return;
-        const now = performance.now();
         if (now - lastPostRef.current < TICK_POST_INTERVAL_MS) return;
         lastPostRef.current = now;
 
@@ -415,6 +457,8 @@ export function useMicAnalyser() {
     [post]
   );
 
+  const reportEventRef = useRef<((e: { t: number; kind: string; label: string; deltaDb?: number }) => void) | null>(null);
+
   const reportEvent = useCallback(
     (event: { t: number; kind: string; label: string; deltaDb?: number }) => {
       const id = sessionIdRef.current;
@@ -422,6 +466,7 @@ export function useMicAnalyser() {
     },
     [post]
   );
+  reportEventRef.current = reportEvent;
 
   /**
    * Gate 3 — the system-processing probe.
@@ -562,6 +607,8 @@ export function useMicAnalyser() {
     sessionId,
     mode,
     setMode,
+    trajectory,
+    lastSession,
     roomReferenceLufs,
     captureRoomReference,
     reportEvent,
