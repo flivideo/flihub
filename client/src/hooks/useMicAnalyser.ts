@@ -480,6 +480,19 @@ export function useMicAnalyser() {
    * fingerprints of hidden DSP: an adaptive level collapse (a gate learning the room) and
    * narrow spectral holes (notching).
    */
+  /**
+   * Raw time-domain samples off the SAME analyser node the processing probe uses — for a
+   * live waveform ribbon during the Phase 1.6 snapshot test. This is display only; nothing
+   * downstream of it feeds a grade. Returns null while no session is running.
+   */
+  const getWaveform = useCallback((): Uint8Array | null => {
+    const analyserNode = analyserRef.current;
+    if (!analyserNode) return null;
+    const data = new Uint8Array(analyserNode.fftSize);
+    analyserNode.getByteTimeDomainData(data);
+    return data;
+  }, []);
+
   const runProcessingProbe = useCallback(async () => {
     const context = contextRef.current;
     const analyser = analyserRef.current;
@@ -619,6 +632,7 @@ export function useMicAnalyser() {
     probeRunning,
     start,
     stop,
+    getWaveform,
     runProcessingProbe,
   };
 }

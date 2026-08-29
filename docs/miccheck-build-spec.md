@@ -1274,3 +1274,106 @@ SPEECH (take 11:24:57, from audio-clean report)
 - Measured report — `/Users/davidcruwys/ecamm/Ecamm Recording on 2026-08-26 at 11.24.57 - clean.audio-clean.json`
 - Virtual-device feedback-loop rule — `/Users/davidcruwys/dev/ad/brains/krisp/krisp-recording-onset.md` §6b
 - FliHub tab seam — `/Users/davidcruwys/dev/ad/flivideo/flihub/client/src/App.tsx`
+
+---
+
+## 9. ⭐ PHASE 1.6 — Snapshot verdict test (supersedes continuous monitoring as primary mode)
+
+**Written 2026-08-27, from a live usability session.** David ran Phase 1.5's continuous monitor
+for real, live, on this document's author, for about 20 minutes. It did not fail — every number
+it produced was correct — but David could not use it unassisted: every recheck required a human
+(this session) to do the "`-23` minus your reading" arithmetic and say which way to turn the
+knob. That is not a rare failure mode; it happened on **every single check**. A tool that requires
+a person standing next to it to translate its own numbers has not shipped the thing it was built
+to ship.
+
+### 9.1 What was actually compared, and what it settled
+
+Mid-session, David pulled up real screenshots of Adobe Podcast's actual Mic Check UI (not the
+`vdash` mock he'd first mistaken for it — see §9.5 for that correction). ✅ **MEASURED** (observed
+directly from the screenshots, not from memory or a review site):
+
+Adobe's Mic Check is **four horizontal tracks** — Distance to microphone, Gain, Background noise,
+Echo — each rendered identically:
+- a scale with plain-English poles (`Too close` ↔ `Too far`, `Less gain` ↔ `More gain`)
+- a **dashed bracket** marking the sweet spot, drawn on the track, not stated as a number
+- a **pin marker** at the measured position, carrying either a green ✓ or a black ✗
+- **one line of coaching text** under any failing track — imperative, plain, no jargon
+  ("Turn down gain. Gain measures your microphone's sensitivity. Turn down the gain to reach the
+  sweet spot.")
+
+**No dB, no LUFS, no numeric readout is shown anywhere in this UI.** The number exists internally
+— it has to — but the product deliberately never surfaces it. The user sees a position and a
+verdict, never a figure to interpret.
+
+**The flow is a discrete test, not a running meter**: click **"Test mic,"** say one prompted
+sentence ("How is my microphone setup and placement?"), get all four results at once, adjust,
+click test again. It is not something you watch while you talk indefinitely.
+
+David's direct instruction on seeing this, verbatim: *"I don't want the continuous live thing. I
+want a snapshot test. I want to talk for 10 seconds, figure out whether there's a problem, try and
+modify a knob, then try again. And have little inputs or coaching along the way."*
+
+⚠️ **This overrides the framing earlier in this document and in this session's own live
+walkthrough**, which treated continuous monitoring as the correct model because it lets you watch
+a needle move while turning the knob in real time. David is saying plainly that in practice, the
+opposite is true for him: a bounded, disposable 10-second test — with a clear stop, a clear
+verdict, and a deliberate re-test action — is what he can actually drive himself. Continuous
+monitoring stays available (§9.4), but it is no longer the primary surface.
+
+### 9.2 The new primary flow
+
+Replaces "Start monitoring" / "Stop" as the default mode. 🔶 **CONVENTION** — durations below are
+a starting point, not measured; tune on real use per the rule in §0.1.
+
+1. **Button: "Test mic."** No mode toggle to get right first — this is the whole screen.
+2. **Fixed test window, 10 s.** Long enough to fill the existing 3 s short-term LUFS window more
+   than once with margin; short enough to not feel like a chore. A visible countdown
+   ("listening… 4s") plus the *existing* live waveform/level display during the window — so David
+   knows it is hearing him — but **no live verdict, no needle, no arrow** while the window runs.
+   The grading trajectory/hysteresis machinery built for continuous viewing (§3.4/§3.5) solves a
+   flicker problem a bounded window does not have; it is not needed here and should not be ported
+   into this flow.
+3. **Window ends automatically.** No stop button to remember to press.
+4. **Verdict screen — one row per metric, Adobe's exact grammar:**
+   - a large ✓ (green) or ✗ (red/orange) — reuses the `grade` already computed by
+     `micGrading.ts`'s `gradeShortTermLoudness` / `gradeTruePeak` / clip grading; **no new
+     measurement logic required**, this is a display change over data the tool already produces.
+   - **one imperative sentence** under any ✗ — the `message` field these functions already return
+     ("turn the GAIN knob up ~5 dB") is already written in this register; use it verbatim.
+   - the raw number (LUFS, dBFS) is **demoted**, not deleted — small, monospace, secondary,
+     revealed via the "why?" affordance the `basis` field already exists for. It is data for the
+     curious, never the headline.
+5. **Button: "Test again."** Re-runs step 2 immediately — this is the retry loop David asked for
+   ("modify a knob, then try again"), and it should be the fastest, most obvious action on the
+   verdict screen.
+
+### 9.3 Coverage stays honest — do not synthesise the axes Phase 1 cannot measure
+
+Adobe grades four axes; Phase 1 can only measure loudness, with peak and clipping as guards, not
+targets in their own right (§2, §3.1). ⚠️ **Do not invent a ✓/✗ for distance, background noise, or
+echo to visually match Adobe** — `proximityIndex` and `snrDb` are correctly in `not_measured` (§6)
+and echo has no field at all yet. Applying the check/✗ *presentation* to peak and clipping is fine
+— they are real guards with real pass/fail thresholds already. Applying it to axes with no
+measurement behind them would violate the rule in §0.1: never promote a 🔶 (or, here, a
+nonexistent measurement) to a ✅ in the UI. Where Adobe has four checked tracks, Phase 1.6 honestly
+has one graded track (loudness) and two guard checks (peak, clipping) — say so, rather than
+padding the screen with three fake green ticks.
+
+### 9.4 Continuous monitoring is not deleted — it changes rank
+
+The Phase 1.5 live view (needle, trajectory sparkline, direction arrow) remains useful for a
+different task — actually watching level *during a real take*, not setting up gain beforehand. It
+should survive as a secondary mode (a toggle or a second tab), not be thrown away. It should not
+be the first thing David sees when he opens Mic Check.
+
+### 9.5 Correction on the reference image, for whoever builds this
+
+Mid-session David initially compared FliHub's loudness bar to a screenshot that turned out to be
+the `vdash` audio-profile mock (a *different*, unbuilt tool for grading already-recorded footage —
+see that project's own spec, referenced only for contrast, not reused here), not Adobe. The
+visual grammar (bracketed target zone + position marker) is genuinely shared between `vdash`,
+FliHub's existing loudness bar, and Adobe's real UI — three independent designs converging on the
+same idea is a good sign the idea is right. But §9.1's description of Adobe's actual screen is
+from real screenshots of Adobe Podcast, confirmed after that correction — treat §9.1–9.4 as the
+reliable source for what to build, not the earlier mock comparison.

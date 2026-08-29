@@ -1,16 +1,24 @@
 /**
- * MicCheck — Phase 1: "am I loud enough?"
+ * MicCheck — Phase 1 measurement, Phase 1.6 primary UI.
  *
  * Three metrics only: short-term loudness (the gain needle), sample peak (a guard), and
  * clip counts. Everything else in the spec — SNR, spectrum, proximity, pattern detection
  * — is Phase 2+ and deliberately absent rather than stubbed, because a stubbed metric
  * showing a plausible number is worse than no metric at all.
  *
- * See docs/miccheck-build-spec.md §6.
+ * The PRIMARY surface is the Phase 1.6 snapshot verdict test (MicCheckSnapshot): press
+ * Test mic, talk for 10 s, get a check/fail per metric. The Phase 1.5 continuous monitor
+ * (needle bar, trajectory, ROOM/SPEAKING toggle) still exists in full — it is the better
+ * tool for watching level *during* an actual take — but it is now secondary, reached via
+ * "Switch to live monitor", not the first thing on screen.
+ *
+ * See docs/miccheck-build-spec.md §6 (Phase 1 scope) and §9 (Phase 1.6 — why the primary
+ * mode changed, and what must not be faked).
  */
 
 import { useState } from 'react';
 import { useMicAnalyser } from '../hooks/useMicAnalyser';
+import { MicCheckSnapshot } from './MicCheckSnapshot';
 import { MicCheckReport } from './MicCheckReport';
 import {
   gradeShortTermLoudness,
@@ -161,7 +169,57 @@ function ConstraintTable({ report }: { report: NonNullable<ReturnType<typeof use
   );
 }
 
+function LearnMore() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-8 border-t-2 border-warm pt-4">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="text-xs uppercase tracking-wide text-warm-muted hover:text-warm-secondary"
+      >
+        {open ? '▾' : '▸'} Why these numbers
+      </button>
+      {open && (
+        <div className="mt-3 max-w-2xl space-y-3 text-sm leading-relaxed text-warm-muted">
+          <div>
+            <h4 className="text-xs font-medium uppercase tracking-wide text-warm-faint">
+              What&apos;s actually measured
+            </h4>
+            <p>
+              Loudness is <strong>short-term LUFS</strong> — a 3-second, K-weighted, gated window,
+              the same family of measurement EBU Tech 3343 recommends for setting a narrator&apos;s
+              level. Peak is a <strong>guard</strong>, not a target: a single transient can park it
+              far above your actual speech, so a low peak reading is never a reason to add gain.
+              Clipping is cumulative and unrecoverable once it happens — it stays green until it
+              doesn&apos;t.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-xs font-medium uppercase tracking-wide text-warm-faint">
+              Why not just watch the peak meter
+            </h4>
+            <p>
+              Peak-only gain-setting is what produced a real -40 LUFS take on this rig — a hot
+              transient looked fine on peak while the actual voice sat far too quiet underneath it.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-xs font-medium uppercase tracking-wide text-warm-faint">Sourcing</h4>
+            <p>
+              Target band -26 to -20 LUFS (centre -23) is derived from the ACX spoken-word capture
+              band and this mic&apos;s measured peak-to-loudness ratio. Loudness math follows
+              ITU-R BS.1770-5 / EBU R128. Full citations and the interaction spec this screen
+              implements: <code className="font-mono text-xs">docs/miccheck-build-spec.md §9</code>.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function MicCheckPage() {
+  const analyser = useMicAnalyser();
   const {
     status,
     error,
@@ -177,8 +235,9 @@ export function MicCheckPage() {
     start,
     stop,
     runProcessingProbe,
-  } = useMicAnalyser();
+  } = analyser;
 
+  const [uiMode, setUiMode] = useState<'snapshot' | 'continuous'>('snapshot');
   const [showConstraints, setShowConstraints] = useState(false);
 
   const running = status === 'running';
@@ -240,31 +299,37 @@ export function MicCheckPage() {
         <div>
           <h2 className="text-lg font-medium text-warm-secondary">Mic Check</h2>
           <p className="text-sm text-warm-muted mt-0.5">
-            Set your gain by loudness, not by peaks. Phase 1 — level only.
+            {uiMode === 'snapshot'
+              ? 'Press Test mic, talk for 10 seconds, get a verdict.'
+              : 'Set your gain by loudness, not by peaks. Live monitor.'}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {running ? (
-            <button
-              onClick={stop}
-              className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
-            >
-              Stop
-            </button>
-          ) : (
-            <button
-              onClick={start}
-              disabled={status === 'starting'}
-              className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors disabled:opacity-50"
-            >
-              {status === 'starting' ? 'Opening microphone…' : 'Start monitoring'}
-            </button>
-          )}
-        </div>
+        {/* The snapshot flow owns its own Test mic / Test again buttons — a second global
+            Start/Stop here would just be a second way to do the same thing, badly. */}
+        {uiMode === 'continuous' && (
+          <div className="flex items-center gap-2 shrink-0">
+            {running ? (
+              <button
+                onClick={stop}
+                className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+              >
+                Stop
+              </button>
+            ) : (
+              <button
+                onClick={start}
+                disabled={status === 'starting'}
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors disabled:opacity-50"
+              >
+                {status === 'starting' ? 'Opening microphone…' : 'Start monitoring'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* UI rule 1: the device name is ALWAYS on screen. Picking the wrong one
-          silently invalidates every number below it. */}
+      {/* UI rule 1: the device name is ALWAYS on screen, in either mode. Picking the
+          wrong one silently invalidates every number below it. */}
       {device && (
         <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 rounded border border-warm bg-surface-muted text-sm">
           <span className={`inline-block w-2 h-2 rounded-full ${running ? 'bg-green-500' : 'bg-gray-400'}`} />
@@ -321,229 +386,253 @@ export function MicCheckPage() {
         </div>
       )}
 
-      {status === 'idle' && !error && (
-        <div className="p-4 rounded border border-warm bg-surface-muted text-sm text-warm-secondary leading-relaxed">
-          <p>
-            This measures <strong>short-term loudness</strong> — a 3-second window — because that
-            is the number that tells you whether your voice is loud enough. The peak meter is not
-            that number: a single transient can park the peak ~28&nbsp;dB above your speech, which
-            is how a take can look healthy on peaks and still land 20&nbsp;dB too quiet.
-          </p>
-          <p className="mt-2">
-            Press <strong>Start monitoring</strong>, talk normally at your recording distance, and
-            adjust the QuadCast&apos;s gain knob until the level reads green.
-          </p>
-        </div>
-      )}
-
-      {/* The report — pressing Stop used to leave a blank screen while a full record
-          was written to disk that nothing ever showed. */}
-      {!running && lastSession && (
-        <MicCheckReport session={lastSession} onDismiss={() => window.location.reload()} />
-      )}
-
-      {running && (
+      {uiMode === 'snapshot' ? (
+        <MicCheckSnapshot analyser={analyser} onSwitchToContinuous={() => setUiMode('continuous')} />
+      ) : (
         <>
-          {/* MODE — declared, never inferred. A wrong-mode reading is a lying reading,
-              so this is large and permanent rather than a subtle tab. */}
-          <div className="mb-4 flex items-stretch gap-2">
-            {(['room', 'speaking'] as const).map((m) => {
-              const active = mode === m;
-              return (
-                <button
-                  key={m}
-                  onClick={() => setMode(m)}
-                  className={`flex-1 text-left px-4 py-3 rounded-lg border transition-colors ${
-                    active
-                      ? m === 'room'
-                        ? 'border-warm-strong bg-surface-muted'
-                        : 'border-blue-400 bg-blue-50'
-                      : 'border-warm bg-surface hover:bg-surface-hover'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-block w-2.5 h-2.5 rounded-full ${
-                        active ? (m === 'room' ? 'bg-warm-strong' : 'bg-blue-500') : 'bg-transparent border border-warm-strong'
+          {status === 'idle' && !error && (
+            <div className="p-4 rounded border border-warm bg-surface-muted text-sm text-warm-secondary leading-relaxed">
+              <p>
+                This measures <strong>short-term loudness</strong> — a 3-second window — because
+                that is the number that tells you whether your voice is loud enough. The peak
+                meter is not that number: a single transient can park the peak ~28&nbsp;dB above
+                your speech, which is how a take can look healthy on peaks and still land
+                20&nbsp;dB too quiet.
+              </p>
+              <p className="mt-2">
+                Press <strong>Start monitoring</strong>, talk normally at your recording distance,
+                and adjust the QuadCast&apos;s gain knob until the level reads green.
+              </p>
+            </div>
+          )}
+
+          {/* The report — pressing Stop used to leave a blank screen while a full record
+              was written to disk that nothing ever showed. Gated to continuous mode: the
+              snapshot flow shows its own verdict, not this report. */}
+          {!running && lastSession && (
+            <MicCheckReport session={lastSession} onDismiss={() => window.location.reload()} />
+          )}
+
+          {running && (
+            <>
+              {/* MODE — declared, never inferred. A wrong-mode reading is a lying reading,
+                  so this is large and permanent rather than a subtle tab. */}
+              <div className="mb-4 flex items-stretch gap-2">
+                {(['room', 'speaking'] as const).map((m) => {
+                  const active = mode === m;
+                  return (
+                    <button
+                      key={m}
+                      onClick={() => setMode(m)}
+                      className={`flex-1 text-left px-4 py-3 rounded-lg border transition-colors ${
+                        active
+                          ? m === 'room'
+                            ? 'border-warm-strong bg-surface-muted'
+                            : 'border-blue-400 bg-blue-50'
+                          : 'border-warm bg-surface hover:bg-surface-hover'
                       }`}
-                    />
-                    <span className="text-sm font-medium text-warm-primary uppercase tracking-wide">
-                      {m === 'room' ? 'Room' : 'Speaking'}
-                    </span>
-                  </div>
-                  <div className="text-xs text-warm-muted mt-0.5 ml-[18px] leading-snug">
-                    {m === 'room'
-                      ? 'Sit still and stay silent — measuring the background.'
-                      : 'Talk normally — measuring your voice.'}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-block w-2.5 h-2.5 rounded-full ${
+                            active
+                              ? m === 'room'
+                                ? 'bg-warm-strong'
+                                : 'bg-blue-500'
+                              : 'bg-transparent border border-warm-strong'
+                          }`}
+                        />
+                        <span className="text-sm font-medium text-warm-primary uppercase tracking-wide">
+                          {m === 'room' ? 'Room' : 'Speaking'}
+                        </span>
+                      </div>
+                      <div className="text-xs text-warm-muted mt-0.5 ml-[18px] leading-snug">
+                        {m === 'room'
+                          ? 'Sit still and stay silent — measuring the background.'
+                          : 'Talk normally — measuring your voice.'}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
 
-          {mode === 'room' && (
-            <div className="mb-4 px-4 py-2.5 rounded border border-warm bg-surface-muted text-sm text-warm-secondary">
-              Room mode measures the background, so your level is deliberately <strong>not</strong>{' '}
-              graded here. Switch to <strong>Speaking</strong> before you start talking — otherwise
-              the run records your voice while believing it is measuring silence.
-            </div>
-          )}
-
-          {/* TRAJECTORY — the thing a static number cannot give you: is the last
-              adjustment helping? */}
-          {mode === 'speaking' && trajectory && (
-            <div className="mb-4 flex items-center gap-4 px-4 py-3 rounded-lg border border-warm bg-surface">
-              <div className="shrink-0 w-32">
-                <div className="text-[11px] uppercase tracking-wider text-warm-muted">Direction</div>
-                <div
-                  className={`text-lg font-medium ${
-                    trajectory.direction === 'improving'
-                      ? 'text-green-700'
-                      : trajectory.direction === 'worsening'
-                        ? 'text-red-700'
-                        : 'text-warm-secondary'
-                  }`}
-                >
-                  {trajectory.direction === 'improving' && '▲ better'}
-                  {trajectory.direction === 'worsening' && '▼ worse'}
-                  {trajectory.direction === 'flat' && '● holding'}
-                  {trajectory.direction === 'unknown' && '— no reading'}
+              {mode === 'room' && (
+                <div className="mb-4 px-4 py-2.5 rounded border border-warm bg-surface-muted text-sm text-warm-secondary">
+                  Room mode measures the background, so your level is deliberately{' '}
+                  <strong>not</strong> graded here. Switch to <strong>Speaking</strong> before you
+                  start talking — otherwise the run records your voice while believing it is
+                  measuring silence.
                 </div>
-              </div>
-              <div className="flex-grow min-w-0">
-                <svg viewBox="0 0 300 44" className="w-full h-11 block" preserveAspectRatio="none">
-                  <rect x={0} y={14} width={300} height={12} fill="#cde3d4" />
-                  {(() => {
-                    const pts = trajectory.sparkline.filter((p) => p.value !== null);
-                    if (pts.length < 2) return null;
-                    const y = (v: number) => ((-14 - v) / 32) * 44;
-                    const d = pts
-                      .map((p, i) => `${i === 0 ? 'M' : 'L'} ${(i / (pts.length - 1)) * 300} ${Math.max(0, Math.min(44, y(p.value!)))}`)
-                      .join(' ');
-                    return <path d={d} fill="none" stroke="#342d2d" strokeWidth={1.5} />;
-                  })()}
-                </svg>
-                <div className="text-[10px] text-warm-muted font-mono">last 30 s</div>
-              </div>
-            </div>
-          )}
-
-          {/* Loudness bar — the primary needle */}
-          <div className="mb-4 p-4 rounded-lg border border-warm bg-surface">
-            <div className="flex items-baseline justify-between mb-2">
-              <span className="text-sm font-medium text-warm-primary">Short-term loudness</span>
-              <span className="text-xs text-warm-muted font-mono">3 s window · ungated</span>
-            </div>
-            <div className="relative h-8 rounded bg-surface-muted overflow-hidden border border-warm">
-              <div
-                className="absolute inset-y-0 bg-green-200"
-                style={{ left: `${greenStart}%`, width: `${greenWidth}%` }}
-              />
-              {metrics.windowFull && Number.isFinite(metrics.shortTermLufs) && (
-                <div
-                  className="absolute inset-y-0 w-1 bg-warm-primary"
-                  style={{ left: `${barPercent}%` }}
-                />
               )}
-            </div>
-            <div className="flex justify-between mt-1 text-[10px] text-warm-muted font-mono">
-              <span>-40</span>
-              <span>-33</span>
-              <span className="text-green-700 font-medium">-26 … -20</span>
-              <span>-16</span>
-              <span>-10 LUFS</span>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <MetricCard
-              title="Short-term loudness"
-              subtitle="the gain needle"
-              reading={loudness}
-            />
-            <MetricCard
-              title="Sample peak"
-              subtitle="session max — a guard, not a target"
-              reading={peak}
-            />
-            <MetricCard title="Clipping" subtitle="cumulative this session" reading={clipping} />
-          </div>
+              {/* TRAJECTORY — the thing a static number cannot give you: is the last
+                  adjustment helping? */}
+              {mode === 'speaking' && trajectory && (
+                <div className="mb-4 flex items-center gap-4 px-4 py-3 rounded-lg border border-warm bg-surface">
+                  <div className="shrink-0 w-32">
+                    <div className="text-[11px] uppercase tracking-wider text-warm-muted">Direction</div>
+                    <div
+                      className={`text-lg font-medium ${
+                        trajectory.direction === 'improving'
+                          ? 'text-green-700'
+                          : trajectory.direction === 'worsening'
+                            ? 'text-red-700'
+                            : 'text-warm-secondary'
+                      }`}
+                    >
+                      {trajectory.direction === 'improving' && '▲ better'}
+                      {trajectory.direction === 'worsening' && '▼ worse'}
+                      {trajectory.direction === 'flat' && '● holding'}
+                      {trajectory.direction === 'unknown' && '— no reading'}
+                    </div>
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <svg viewBox="0 0 300 44" className="w-full h-11 block" preserveAspectRatio="none">
+                      <rect x={0} y={14} width={300} height={12} fill="#cde3d4" />
+                      {(() => {
+                        const pts = trajectory.sparkline.filter((p) => p.value !== null);
+                        if (pts.length < 2) return null;
+                        const y = (v: number) => ((-14 - v) / 32) * 44;
+                        const d = pts
+                          .map(
+                            (p, i) =>
+                              `${i === 0 ? 'M' : 'L'} ${(i / (pts.length - 1)) * 300} ${Math.max(0, Math.min(44, y(p.value!)))}`
+                          )
+                          .join(' ');
+                        return <path d={d} fill="none" stroke="#342d2d" strokeWidth={1.5} />;
+                      })()}
+                    </svg>
+                    <div className="text-[10px] text-warm-muted font-mono">last 30 s</div>
+                  </div>
+                </div>
+              )}
 
-          {/* Gate 3 — the system-processing probe */}
-          <div className="mt-4 p-4 rounded-lg border border-warm bg-surface">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-warm-primary">System-processing probe</h3>
-                <p className="text-xs text-warm-muted mt-0.5 max-w-2xl leading-relaxed">
-                  Plays 3 s of noise through your <strong>speakers</strong> and listens for gating
-                  or notching. This is the only check that can distinguish &ldquo;no
-                  processing&rdquo; from &ldquo;processing Chrome cannot see&rdquo;. Turn your
-                  speakers on and up to a normal level first.
-                </p>
-              </div>
-              <button
-                onClick={runProcessingProbe}
-                disabled={probeRunning}
-                className="px-3 py-1.5 text-sm border border-warm-strong rounded hover:bg-surface-hover transition-colors disabled:opacity-50 shrink-0"
-              >
-                {probeRunning ? 'Listening…' : 'Run probe'}
-              </button>
-            </div>
-
-            {probe && (
-              <div
-                className={`mt-3 p-3 rounded border ${
-                  probe.verdict === 'clean'
-                    ? 'border-green-300 bg-green-50'
-                    : probe.verdict === 'suspicious'
-                      ? 'border-orange-300 bg-orange-50'
-                      : 'border-warm bg-surface-muted'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-block w-2.5 h-2.5 rounded-full ${
-                      probe.verdict === 'clean'
-                        ? 'bg-green-500'
-                        : probe.verdict === 'suspicious'
-                          ? 'bg-orange-500'
-                          : 'bg-gray-400'
-                    }`}
+              {/* Loudness bar — the primary needle */}
+              <div className="mb-4 p-4 rounded-lg border border-warm bg-surface">
+                <div className="flex items-baseline justify-between mb-2">
+                  <span className="text-sm font-medium text-warm-primary">Short-term loudness</span>
+                  <span className="text-xs text-warm-muted font-mono">3 s window · ungated</span>
+                </div>
+                <div className="relative h-8 rounded bg-surface-muted overflow-hidden border border-warm">
+                  <div
+                    className="absolute inset-y-0 bg-green-200"
+                    style={{ left: `${greenStart}%`, width: `${greenWidth}%` }}
                   />
-                  <span className="text-sm font-medium text-warm-primary">
-                    {probe.verdict === 'clean'
-                      ? 'No hidden processing detected'
-                      : probe.verdict === 'suspicious'
-                        ? 'Something is processing this signal'
-                        : 'Inconclusive — the test did not run'}
-                  </span>
+                  {metrics.windowFull && Number.isFinite(metrics.shortTermLufs) && (
+                    <div
+                      className="absolute inset-y-0 w-1 bg-warm-primary"
+                      style={{ left: `${barPercent}%` }}
+                    />
+                  )}
                 </div>
-                <ul className="mt-2 space-y-1">
-                  {probe.findings.map((f, i) => (
-                    <li key={i} className="text-sm text-warm-secondary leading-snug">
-                      • {f}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-2 text-xs font-mono text-warm-muted">
-                  captured {probe.capturedLevelDbfs.toFixed(1)} dBFS · drift{' '}
-                  {probe.levelDriftDb.toFixed(1)} dB · deepest notch{' '}
-                  {probe.deepestNotchDb.toFixed(1)} dB
+                <div className="flex justify-between mt-1 text-[10px] text-warm-muted font-mono">
+                  <span>-40</span>
+                  <span>-33</span>
+                  <span className="text-green-700 font-medium">-26 … -20</span>
+                  <span>-16</span>
+                  <span>-10 LUFS</span>
                 </div>
               </div>
-            )}
-          </div>
 
-          <p className="mt-4 text-xs text-warm-muted leading-relaxed">
-            <span className="font-medium">Phase 1 scope.</span> Loudness, peak and clipping only.
-            No SNR, spectrum, proximity or pattern detection yet — those need speech/pause gating
-            and a room-tone reference (Phase 2). Peak is <em>sample</em> peak, not true peak: without
-            4× oversampling it can read up to ~3 dB low on inter-sample peaks, so treat it as
-            slightly optimistic. These are <strong>capture</strong> targets; audio-clean applies
-            make-up gain for delivery later.
-          </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <MetricCard title="Short-term loudness" subtitle="the gain needle" reading={loudness} />
+                <MetricCard
+                  title="Sample peak"
+                  subtitle="session max — a guard, not a target"
+                  reading={peak}
+                />
+                <MetricCard title="Clipping" subtitle="cumulative this session" reading={clipping} />
+              </div>
+
+              {/* Gate 3 — the system-processing probe */}
+              <div className="mt-4 p-4 rounded-lg border border-warm bg-surface">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-warm-primary">System-processing probe</h3>
+                    <p className="text-xs text-warm-muted mt-0.5 max-w-2xl leading-relaxed">
+                      Plays 3 s of noise through your <strong>speakers</strong> and listens for
+                      gating or notching. This is the only check that can distinguish &ldquo;no
+                      processing&rdquo; from &ldquo;processing Chrome cannot see&rdquo;. Turn your
+                      speakers on and up to a normal level first.
+                    </p>
+                  </div>
+                  <button
+                    onClick={runProcessingProbe}
+                    disabled={probeRunning}
+                    className="px-3 py-1.5 text-sm border border-warm-strong rounded hover:bg-surface-hover transition-colors disabled:opacity-50 shrink-0"
+                  >
+                    {probeRunning ? 'Listening…' : 'Run probe'}
+                  </button>
+                </div>
+
+                {probe && (
+                  <div
+                    className={`mt-3 p-3 rounded border ${
+                      probe.verdict === 'clean'
+                        ? 'border-green-300 bg-green-50'
+                        : probe.verdict === 'suspicious'
+                          ? 'border-orange-300 bg-orange-50'
+                          : 'border-warm bg-surface-muted'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-block w-2.5 h-2.5 rounded-full ${
+                          probe.verdict === 'clean'
+                            ? 'bg-green-500'
+                            : probe.verdict === 'suspicious'
+                              ? 'bg-orange-500'
+                              : 'bg-gray-400'
+                        }`}
+                      />
+                      <span className="text-sm font-medium text-warm-primary">
+                        {probe.verdict === 'clean'
+                          ? 'No hidden processing detected'
+                          : probe.verdict === 'suspicious'
+                            ? 'Something is processing this signal'
+                            : 'Inconclusive — the test did not run'}
+                      </span>
+                    </div>
+                    <ul className="mt-2 space-y-1">
+                      {probe.findings.map((f, i) => (
+                        <li key={i} className="text-sm text-warm-secondary leading-snug">
+                          • {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-2 text-xs font-mono text-warm-muted">
+                      captured {probe.capturedLevelDbfs.toFixed(1)} dBFS · drift{' '}
+                      {probe.levelDriftDb.toFixed(1)} dB · deepest notch{' '}
+                      {probe.deepestNotchDb.toFixed(1)} dB
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <p className="mt-4 text-xs text-warm-muted leading-relaxed">
+                <span className="font-medium">Phase 1 scope.</span> Loudness, peak and clipping
+                only. No SNR, spectrum, proximity or pattern detection yet — those need
+                speech/pause gating and a room-tone reference (Phase 2). Peak is <em>sample</em>{' '}
+                peak, not true peak: without 4× oversampling it can read up to ~3 dB low on
+                inter-sample peaks, so treat it as slightly optimistic. These are{' '}
+                <strong>capture</strong> targets; audio-clean applies make-up gain for delivery
+                later.
+              </p>
+            </>
+          )}
+
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setUiMode('snapshot')}
+              className="text-xs uppercase tracking-wide text-warm-muted hover:text-warm-secondary underline"
+            >
+              Switch to snapshot test
+            </button>
+          </div>
         </>
       )}
+
+      <LearnMore />
     </section>
   );
 }
