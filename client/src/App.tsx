@@ -11,6 +11,7 @@ import {
   useRecentRenames,
   useUndoRename,
   useRecordings,
+  useSetProjectTitle,
 } from './hooks/useApi';
 import { useBestTake } from './hooks/useBestTake';
 import { discardFiles } from './utils/fileActions';
@@ -20,6 +21,7 @@ import { ConfigPanel } from './components/ConfigPanel';
 import { ProjectsPanel } from './components/ProjectsPanel';
 import { NamingControls } from './components/NamingControls';
 import { DiscardModal } from './components/DiscardModal';
+import { InlineTitle } from './components/shared/InlineTitle';
 import { RecordingsView } from './components/RecordingsView';
 import { AssetsPage } from './components/AssetsPage';
 import { ThumbsPage } from './components/ThumbsPage';
@@ -203,6 +205,7 @@ function App() {
   const { data: suggestedNaming } = useSuggestedNaming();
   // FR-112: Get recordings to calculate highest chapter
   const { data: recordingsData } = useRecordings();
+  const setProjectTitle = useSetProjectTitle(); // FR-157
   // FR-115: Real-time updates for recordings (invalidates cache on socket event)
   useRecordingsSocket();
   useRelaySocket();  // B046: relay change notifications
@@ -808,6 +811,23 @@ function App() {
           <section>
             <div className="flex items-center gap-2 mb-4">
               <h2 className="text-lg font-medium text-warm-secondary">Project Recordings</h2>
+              {/* FR-157: project YouTube title — edit in place */}
+              {recordingsData?.project && (
+                <InlineTitle
+                  value={recordingsData.project.title}
+                  placeholder="+ YouTube title"
+                  onSave={async (t) => {
+                    try {
+                      await setProjectTitle.mutateAsync({ code: recordingsData.project!.code, title: t });
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : 'Failed to save title');
+                    }
+                  }}
+                  title="Project YouTube title — click to edit"
+                  className="text-sm text-warm-muted ml-1"
+                  inputClassName="text-sm w-96"
+                />
+              )}
               <OpenFolderButton folder="recordings" label="Recordings" />
               <OpenFolderButton folder="safe" label="Safe" />
             </div>

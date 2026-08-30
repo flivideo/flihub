@@ -21,7 +21,9 @@ Track what was implemented, fixed, or changed and when.
 query API (`title` field, `Title:` line in text format, chapter `displayName`). d01-kybernesis
 seeded with its five titles + playlist name. Same day: the Recordings view (panel + chapter
 headers) and the POEM `chapter-data` payload now read the same titles via one server helper, so
-the UI no longer shows the title-cased filename slug when a title exists.
+the UI no longer shows the title-cased filename slug when a title exists. Third pass: name and
+title both shown — name primary, YouTube title as an editable muted second line (chapter headers,
+CHAPTERS panel) plus an editable project title beside "Project Recordings".
 → `docs/prd/fr-157-project-and-chapter-titles.md`
 
 ---

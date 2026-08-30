@@ -25,6 +25,7 @@ export function useRecordings() {
         totalRecordingsSize: number; // FR-95: Total size of real recordings in bytes
         totalShadowsSize: number | null; // FR-95: Total shadow size (null if none)
         chapterTitles?: Record<string, string>; // FR-157: persisted chapter titles by 2-digit key
+        project?: { code: string; title: string | null }; // FR-157: current project + its title
         error?: string;
       }>('/api/recordings'),
   });
@@ -237,6 +238,37 @@ export function useUndoRename() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recentRenames });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.suggestedNaming });
+    },
+  });
+}
+
+// FR-157: Set the project-level YouTube title ('' clears)
+export function useSetProjectTitle() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ code, title }: { code: string; title: string }) =>
+      fetchApi<{ success: boolean; title: string | null; error?: string }>(
+        `/api/projects/${encodeURIComponent(code)}/title`,
+        { method: 'PUT', body: JSON.stringify({ title }) }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
+    },
+  });
+}
+
+// FR-157: Set a chapter's YouTube title ('' clears)
+export function useSetChapterTitle() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ code, chapter, title }: { code: string; chapter: string; title: string }) =>
+      fetchApi<{ success: boolean; chapter: string; title: string | null; error?: string }>(
+        `/api/projects/${encodeURIComponent(code)}/chapters/${chapter}/title`,
+        { method: 'PUT', body: JSON.stringify({ title }) }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });
     },
   });
 }

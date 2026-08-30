@@ -586,6 +586,7 @@ export function createRoutes(
         totalRecordingsSize, // FR-95: Total size of real recordings in bytes
         totalShadowsSize: totalShadowsSize > 0 ? totalShadowsSize : null, // FR-95: Total shadow size (null if none)
         chapterTitles: getChapterTitles(state), // FR-157: { "03": "title" } from .flihub-state.json
+        project: { code: path.basename(paths.project), title: state.title ?? null }, // FR-157
       });
     } catch (error) {
       console.error('Error listing recordings:', error);

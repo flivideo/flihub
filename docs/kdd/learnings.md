@@ -9,6 +9,13 @@ what you learned → what to do about it.
 
 ## 2026-08-30
 
+- **[FR-157] "Replace the wrong thing on screen" is not the same as "show the right thing".** The
+  first UI pass swapped the chapter *name* (dash notation David types, files keyed by it) for the
+  new *title* wherever the name appeared — fixing the mangled ch03 display by silently conflating
+  two concepts. David's rule from the redo: when a new field is a different KIND of thing, add it
+  beside the old one (secondary, editable in place), never substitute. Ask "what does this label
+  mean to the person reading it" before choosing which field a heading shows.
+
 - **[FR-157] "Chapters" are derived in THREE places, and two of the three timestamp columns
   measure different things.** Recordings view groups `NN-` prefixes client-side and sums raw take
   durations for `starts @`; `/api/query/…/chapters` + FR-34 take names/timestamps from a final

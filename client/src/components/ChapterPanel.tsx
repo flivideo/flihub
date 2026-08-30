@@ -5,7 +5,8 @@ import { API_URL } from '../config';
 
 interface ChapterInfo {
   chapterKey: string;
-  title: string; // display-ready (FR-157: persisted title, else title-cased slug)
+  name: string; // display-ready chapter name (title-cased slug)
+  title?: string; // FR-157: persisted YouTube title, shown secondary
   startTime: number;
   fileCount: number;
 }
@@ -58,7 +59,6 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
         <div className="py-1">
           {chapters.map((chapter) => {
             const isActive = chapter.chapterKey === currentChapter;
-            const title = chapter.title;
 
             return (
               <button
@@ -84,12 +84,19 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
                 >
                   {formatDuration(chapter.startTime, 'youtube')}
                 </span>
-                <span
-                  className={`text-sm leading-tight ${
-                    isActive ? 'text-blue-700 font-medium' : 'text-warm-secondary'
-                  }`}
-                >
-                  {title || `Chapter ${chapter.chapterKey}`}
+                <span className="flex flex-col min-w-0">
+                  <span
+                    className={`text-sm leading-tight ${
+                      isActive ? 'text-blue-700 font-medium' : 'text-warm-secondary'
+                    }`}
+                  >
+                    {chapter.name || `Chapter ${chapter.chapterKey}`}
+                  </span>
+                  {chapter.title && (
+                    <span className="text-xs leading-tight text-warm-muted mt-0.5" title="YouTube title">
+                      {chapter.title}
+                    </span>
+                  )}
                 </span>
                 {isActive && <span className="text-blue-500 ml-auto flex-shrink-0">◀</span>}
               </button>

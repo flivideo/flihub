@@ -11,6 +11,7 @@ import {
   useGenerateChapterRecordings,
   usePendingTranscriptionCount,
   useRenameRecording,
+  useSetChapterTitle,
   usePreviewTrashRecordings,
   useTrashRecordings,
   type TrashPreviewItem,
@@ -18,6 +19,7 @@ import {
 import { useRecordingsSocket, useChapterRecordingSocket } from '../hooks/useSocket';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { TranscriptModal } from './TranscriptModal';
+import { InlineTitle } from './shared/InlineTitle';
 import { VideoTranscriptModal } from './VideoTranscriptModal';
 // FR-131: RenameLabelModal removed - bulk rename moved to Manage panel
 import { ChapterPanel } from './ChapterPanel';
@@ -263,6 +265,7 @@ function ChapterHeader({
   chapter,
   name,
   title,
+  onSetTitle,
   fileCount,
   totalDuration,
   startTime,
@@ -286,7 +289,8 @@ function ChapterHeader({
 }: {
   chapter: string;
   name: string;
-  title?: string; // FR-157: persisted chapter title (wins over slug)
+  title?: string; // FR-157: persisted YouTube title (secondary, editable)
+  onSetTitle?: (title: string) => Promise<unknown> | unknown; // FR-157
   fileCount: number;
   totalDuration: number;
   startTime: number;
@@ -322,18 +326,31 @@ function ChapterHeader({
 
   return (
     <div className="group relative flex items-center justify-between bg-surface-muted border border-warm rounded-lg px-4 py-2.5 mb-2 mt-5">
-      <div className="flex items-baseline gap-3">
-        <span className={`text-[15px] font-semibold ${isAllSafe ? 'text-warm-muted' : 'text-warm-primary'}`}>
-          {chapter} {title ?? formatChapterTitle(name)}
-        </span>
-        {totalDuration > 0 && (
-          <span className="text-sm font-medium text-warm-secondary font-mono bg-surface px-2.5 py-0.5 rounded-full">
-            {formatDuration(totalDuration, 'smart')}
+      <div className="flex flex-col min-w-0">
+        <div className="flex items-baseline gap-3">
+          <span className={`text-[15px] font-semibold ${isAllSafe ? 'text-warm-muted' : 'text-warm-primary'}`}>
+            {chapter} {formatChapterTitle(name)}
           </span>
+          {totalDuration > 0 && (
+            <span className="text-sm font-medium text-warm-secondary font-mono bg-surface px-2.5 py-0.5 rounded-full">
+              {formatDuration(totalDuration, 'smart')}
+            </span>
+          )}
+          <span className="text-xs text-warm-faint">
+            {fileCount} file{fileCount !== 1 ? 's'  : ''} · starts @ {formatDuration(startTime, 'youtube')}
+          </span>
+        </div>
+        {/* FR-157: YouTube title — secondary line, edit in place */}
+        {onSetTitle && (
+          <InlineTitle
+            value={title}
+            placeholder="+ YouTube title"
+            onSave={onSetTitle}
+            title="YouTube title — click to edit"
+            className="text-xs text-warm-muted mt-0.5"
+            inputClassName="text-xs w-96 mt-0.5"
+          />
         )}
-        <span className="text-xs text-warm-faint">
-          {fileCount} file{fileCount !== 1 ? 's'  : ''} · starts @ {formatDuration(startTime, 'youtube')}
-        </span>
       </div>
 
       {/* Overflow menu trigger — opens on hover, no click needed */}
@@ -1130,12 +1147,15 @@ export function RecordingsView() {
   }, [data?.recordings]);
 
   // FR-56: Prepare chapter info for the panel
-  // FR-157: Persisted chapter title wins; otherwise title-case the filename slug
+  // FR-157: Persisted chapter titles (secondary line under the chapter name)
   const chapterTitles = data?.chapterTitles;
+  const projectCode = data?.project?.code ?? null;
+  const setChapterTitle = useSetChapterTitle();
   const chapterPanelData = useMemo(() => {
     return chaptersWithTiming.map((ch) => ({
       chapterKey: ch.chapterKey,
-      title: chapterTitles?.[ch.chapterKey] ?? formatChapterTitle(getChapterDisplayName(ch.files)),
+      name: formatChapterTitle(getChapterDisplayName(ch.files)),
+      title: chapterTitles?.[ch.chapterKey],
       startTime: ch.startTime,
       fileCount: ch.files.length,
     }));
@@ -1375,6 +1395,17 @@ export function RecordingsView() {
                 chapter={chapter}
                 name={name}
                 title={chapterTitles?.[chapter]}
+                onSetTitle={
+                  projectCode
+                    ? async (t: string) => {
+                        try {
+                          await setChapterTitle.mutateAsync({ code: projectCode, chapter, title: t });
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : 'Failed to save title');
+                        }
+                      }
+                    : undefined
+                }
                 fileCount={group.files.length}
                 totalDuration={group.totalDuration}
                 startTime={chapterData.startTime}
