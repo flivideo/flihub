@@ -40,6 +40,10 @@ docs/
 - `docs/backlog.md` - Current FRs/NFRs with status
 - `docs/prd/*.md` - Detailed feature specifications
 - `docs/architecture/patterns.md` - Code conventions
+- `docs/kdd/` - Learnings + patterns (KDD). **Mandatory:** when you learn something non-obvious,
+  hit a gotcha twice, or fix a bug whose cause wasn't where you looked, capture it via the
+  `appydave:lisa` skill before moving on — reconcile against `docs/kdd/learnings.md` first,
+  bump rather than duplicate. No hook fires this; it is on you.
 
 ## Slash Commands
 
