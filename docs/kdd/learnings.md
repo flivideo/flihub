@@ -9,6 +9,17 @@ what you learned → what to do about it.
 
 ## 2026-08-30
 
+- **[ch03-name] Chapter names are not derived at read time — they ARE the filenames, so a
+  mangled chapter name means a mangled rename, and it lives on disk.** `d01-kybernesis` ch03 read
+  `why-agents-need-governed-memorywhy-ai-pilots-becom`: the new name (31 chars) prepended to the
+  previous name (ch02's, carried into the ch03 take), clipped at exactly 50 by `sanitizeName()`'s
+  silent `.slice(0, maxLength)` (`shared/naming.ts:334`) / the input's `maxLength={50}`. The
+  orphan `03-1-why-ai-pilots-become-dead-ends.*` transcript is the fossil of the pre-rename name.
+  Diagnosis rule: when a chapter name looks concatenated, `ls recordings/` first — the API has no
+  chapter store to be wrong in (`GET …/chapters` counts `NN-` prefixes; names come only from
+  `extractChapters` over a final SRT, absent here → "Chapter N"). A truncation that never errors
+  is the class: clamps should reject, not slice.
+
 - **[ops] Never launch FliHub with `npm run dev` — it collides with the Overmind instance David
   actually runs.** `npm run dev` is the `concurrently` path; it binds 5100/5101 itself, so on a
   machine where Overmind already supervises FliHub it either fails with `EADDRINUSE` or (via the
