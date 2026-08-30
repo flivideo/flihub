@@ -46,7 +46,7 @@ convention.
   durations, the API's are final-cut positions — different quantities.
 - **UI (2026-08-30, third pass):** *name* and *title* are two concepts and both stay visible.
   Chapter headings and the CHAPTERS panel show the **name** (title-cased dash notation you typed)
-  as primary; the **YouTube title** is a muted second line, click-to-edit in place (Enter saves,
-  Esc/blur cancels, empty clears). Project title is an editable line beside "Project Recordings"
+  as primary; the **YouTube title** is a muted second line, click-to-edit in place (Enter or click-away
+  saves, Esc cancels, empty clears). Project title is an editable line beside "Project Recordings"
   (`/api/recordings` now returns `project { code, title }`). Shared widget:
   `client/src/components/shared/InlineTitle.tsx`.
