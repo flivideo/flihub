@@ -9,6 +9,14 @@ what you learned → what to do about it.
 
 ## 2026-08-30
 
+- **[process] An investigation step in a ticket is worth more than the ticket.** A relayed
+  ticket for "persist chapters with slug/marker/youtube + a project-shape flag" was written from
+  the `flihub` skill doc, not the code. A 20-minute read-only §1 killed three premises before a
+  line was written (chapters aren't SRT-derived here; the mangled name is on disk, not computed;
+  no `title` field exists anywhere) and the ticket collapsed to two fields. Rule: when a ticket
+  describes your own system from the outside, verify every premise against source and the live
+  API first, and treat each mismatch as a finding — then re-scope before designing.
+
 - **[ch03-name] Chapter names are not derived at read time — they ARE the filenames, so a
   mangled chapter name means a mangled rename, and it lives on disk.** `d01-kybernesis` ch03 read
   `why-agents-need-governed-memorywhy-ai-pilots-becom`: the new name (31 chars) prepended to the
