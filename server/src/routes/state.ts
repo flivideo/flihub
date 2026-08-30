@@ -7,6 +7,8 @@
  * Endpoints:
  * - GET /api/projects/:code/state - Read project state
  * - POST /api/projects/:code/state - Update project state
+ * - PUT /api/projects/:code/title - FR-157: Set project title ('' clears)
+ * - PUT /api/projects/:code/chapters/:chapter/title - FR-157: Set chapter title ('' clears)
  */
 
 import { Router, Request, Response } from 'express';
@@ -19,6 +21,9 @@ import {
   writeProjectState,
   mergeRecordingStates,
   setProjectDictionary,
+  setProjectTitle,
+  setChapterTitle,
+  normaliseChapterKey,
 } from '../utils/projectState.js';
 import type {
   Config,
@@ -213,6 +218,78 @@ export function createStateRoutes(
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update dictionary',
+      });
+    }
+  });
+
+  /**
+   * Resolve a project code to its directory, or null.
+   */
+  async function resolveProjectDir(code: string): Promise<string | null> {
+    const config = getConfig();
+    if (!config.projectsRootDirectory) return null;
+    const projectsRoot = expandPath(config.projectsRootDirectory);
+    const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
+    const projectFolder = entries.find((e) => e.isDirectory() && e.name.startsWith(code));
+    return projectFolder ? path.join(projectsRoot, projectFolder.name) : null;
+  }
+
+  /**
+   * PUT /api/projects/:code/title
+   * FR-157: Set the project-level YouTube title. Body: { title: string } ('' clears)
+   */
+  router.put('/projects/:code/title', async (req: Request, res: Response) => {
+    const code = queryString(req.params.code);
+    const { title } = req.body as { title?: unknown };
+    if (typeof title !== 'string') {
+      return res.status(400).json({ success: false, error: 'Missing or invalid title (string)' });
+    }
+    try {
+      const projectDir = await resolveProjectDir(code);
+      if (!projectDir) {
+        return res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      }
+      const state = setProjectTitle(await readProjectState(projectDir), title);
+      await writeProjectState(projectDir, state);
+      io.emit('projects:changed');
+      res.json({ success: true, title: state.title ?? null });
+    } catch (error) {
+      console.error(`[FR-157] Error setting title for ${code}:`, error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to set title',
+      });
+    }
+  });
+
+  /**
+   * PUT /api/projects/:code/chapters/:chapter/title
+   * FR-157: Set a chapter's YouTube title. Body: { title: string } ('' clears)
+   */
+  router.put('/projects/:code/chapters/:chapter/title', async (req: Request, res: Response) => {
+    const code = queryString(req.params.code);
+    const chapterKey = normaliseChapterKey(queryString(req.params.chapter));
+    const { title } = req.body as { title?: unknown };
+    if (!chapterKey) {
+      return res.status(400).json({ success: false, error: 'Invalid chapter (1-99)' });
+    }
+    if (typeof title !== 'string') {
+      return res.status(400).json({ success: false, error: 'Missing or invalid title (string)' });
+    }
+    try {
+      const projectDir = await resolveProjectDir(code);
+      if (!projectDir) {
+        return res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      }
+      const state = setChapterTitle(await readProjectState(projectDir), chapterKey, title);
+      await writeProjectState(projectDir, state);
+      io.emit('recordings:changed');
+      res.json({ success: true, chapter: chapterKey, title: state.chapters?.[chapterKey]?.title ?? null });
+    } catch (error) {
+      console.error(`[FR-157] Error setting chapter title for ${code}/${chapterKey}:`, error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to set chapter title',
       });
     }
   });

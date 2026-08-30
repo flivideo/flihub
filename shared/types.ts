@@ -987,6 +987,7 @@ export interface QueryProjectSummary {
 export interface QueryProjectDetail {
   code: string;
   path: string;
+  title?: string; // FR-157: Project-level YouTube title (from .flihub-state.json)
   stage: ProjectStage;
   priority: ProjectPriority;
   // FR-111: safe removed (safe status is per-file in state)
@@ -1045,6 +1046,7 @@ export interface QueryChapter {
   chapter: number;
   name: string;
   displayName: string;
+  title?: string; // FR-157: Persisted chapter title (from .flihub-state.json); displayName uses it when set
   timestamp: string | null;
   timestampSeconds: number | null;
   recordingCount: number;
@@ -1191,10 +1193,17 @@ export interface RecordingState {
   stage?: string; // Future: per-recording stage (recording, first-edit, review, etc.)
 }
 
+// FR-157: Per-chapter persisted state (chapters are otherwise derived from filenames)
+export interface ChapterState {
+  title?: string; // YouTube title for this chapter
+}
+
 // Full project state file schema
 export interface ProjectState {
   version: 1;
   recordings: Record<string, RecordingState>; // Keyed by filename (e.g., "01-1-intro.mov")
+  title?: string; // FR-157: Project-level YouTube title
+  chapters?: Record<string, ChapterState>; // FR-157: Keyed by 2-digit chapter ("03")
   glingDictionary?: string[]; // FR-118: Project-specific dictionary words
   editManifest?: EditManifest; // FR-126: Edit folder manifest tracking
 }

@@ -12,6 +12,7 @@ import { detectFinalMedia } from '../../utils/finalMedia.js';
 import { extractChapters } from '../../utils/chapterExtraction.js';
 import { readDirSafe } from '../../utils/filesystem.js';
 import { formatChaptersReport } from '../../utils/reporters.js';
+import { readProjectState, getChapterTitle } from '../../utils/projectState.js';
 import type { Config, QueryChapter } from '../../../../shared/types.js';
 
 export function createChaptersRoutes(getConfig: () => Config): Router {
@@ -34,6 +35,9 @@ export function createChaptersRoutes(getConfig: () => Config): Router {
       const { code, path: projectPath } = resolved;
 
       const paths = getProjectPaths(projectPath);
+
+      // FR-157: Persisted chapter titles override the derived display name
+      const projectState = await readProjectState(projectPath);
 
       // Get recording counts per chapter
       const chapterRecordings = new Map<string, number>();
@@ -99,6 +103,15 @@ export function createChaptersRoutes(getConfig: () => Config): Router {
           });
         }
         chaptersWithTimestamps.sort((a, b) => a.chapter - b.chapter);
+      }
+
+      // FR-157: Apply persisted titles
+      for (const ch of chaptersWithTimestamps) {
+        const title = getChapterTitle(projectState, String(ch.chapter).padStart(2, '0'));
+        if (title) {
+          ch.title = title;
+          ch.displayName = title;
+        }
       }
 
       // Generate formatted string for YouTube

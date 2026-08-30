@@ -88,6 +88,11 @@ export async function writeProjectState(projectDir: string, state: ProjectState)
       : {}),
     // FR-126: Preserve edit manifest if present
     ...(state.editManifest ? { editManifest: state.editManifest } : {}),
+    // FR-157: Preserve project + chapter titles if present
+    ...(state.title ? { title: state.title } : {}),
+    ...(state.chapters && Object.keys(state.chapters).length > 0
+      ? { chapters: state.chapters }
+      : {}),
   };
 
   const tmpPath = stateFilePath + '.tmp';
@@ -290,4 +295,50 @@ export function setEditManifest(
       [folder]: manifest,
     },
   };
+}
+
+// ============================================
+// FR-157: Project + chapter titles
+// ============================================
+
+/** Normalise a chapter key to 2 digits ("3" -> "03"). Returns null if not a number. */
+export function normaliseChapterKey(chapter: string | number): string | null {
+  const n = typeof chapter === 'number' ? chapter : parseInt(chapter, 10);
+  if (!Number.isInteger(n) || n < 1 || n > 99) return null;
+  return String(n).padStart(2, '0');
+}
+
+/** Set (or clear with '') the project-level title. Returns a new state. */
+export function setProjectTitle(state: ProjectState, title: string): ProjectState {
+  const trimmed = title.trim();
+  const next: ProjectState = { ...state };
+  if (trimmed) next.title = trimmed;
+  else delete next.title;
+  return next;
+}
+
+/** Set (or clear with '') a chapter title. Returns a new state. */
+export function setChapterTitle(
+  state: ProjectState,
+  chapterKey: string,
+  title: string
+): ProjectState {
+  const trimmed = title.trim();
+  const chapters = { ...(state.chapters || {}) };
+  if (trimmed) {
+    chapters[chapterKey] = { ...(chapters[chapterKey] || {}), title: trimmed };
+  } else if (chapters[chapterKey]) {
+    const { title: _drop, ...rest } = chapters[chapterKey];
+    if (Object.keys(rest).length > 0) chapters[chapterKey] = rest;
+    else delete chapters[chapterKey];
+  }
+  const next: ProjectState = { ...state };
+  if (Object.keys(chapters).length > 0) next.chapters = chapters;
+  else delete next.chapters;
+  return next;
+}
+
+/** Get a chapter title, or undefined. */
+export function getChapterTitle(state: ProjectState, chapterKey: string): string | undefined {
+  return state.chapters?.[chapterKey]?.title;
 }

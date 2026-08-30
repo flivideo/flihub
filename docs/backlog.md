@@ -18,6 +18,7 @@ Requirements index for FliHub.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-157 | [Project and Chapter YouTube Titles](prd/fr-157-project-and-chapter-titles.md)          | 2026-08-30 | ✓ Implemented                                                   |
 | FR-156 | [Delete Recording (with confirmation)](prd/fr-156-delete-recording.md)                | 2026-08-26 | ✓ Implemented                                                   |
 | FR-155 | [Ecamm Dual-Mode Recording Ingestion](prd/fr-155-ecamm-dual-mode-ingestion.md)          | 2026-08-26 | Future (documented — design decision open)                      |
 | FR-154 | [Orientation-Aware Video Playback](prd/fr-154-orientation-aware-video-playback.md)     | 2026-08-26 | ✓ Implemented                                                   |

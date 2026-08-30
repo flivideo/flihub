@@ -9,6 +9,14 @@ what you learned → what to do about it.
 
 ## 2026-08-30
 
+- **[FR-157] `writeProjectState()` is an ALLOWLIST — a new field on `ProjectState` is silently
+  dropped on the next write unless you also add it to the spread in
+  `server/src/utils/projectState.ts`.** Adding `title`/`chapters` to the type alone would have
+  round-tripped once and vanished on the next dictionary or safe-flag save. Same class as
+  Captain's Log's *Diff-the-generated-artifact* pattern (field mappers drop what they don't
+  name). Rule: after adding a state field, write it, then trigger an unrelated state write and
+  re-read the file.
+
 - **[process] An investigation step in a ticket is worth more than the ticket.** A relayed
   ticket for "persist chapters with slug/marker/youtube + a project-shape flag" was written from
   the `flihub` skill doc, not the code. A 20-minute read-only §1 killed three premises before a

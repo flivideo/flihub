@@ -25,6 +25,7 @@ import {
   getProjectIndicators,
 } from '../../utils/scanning.js';
 import { formatProjectsReport, formatProjectDetail } from '../../utils/reporters.js';
+import { readProjectState } from '../../utils/projectState.js';
 import type {
   Config,
   ProjectPriority,
@@ -325,10 +326,14 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
       // NFR-9: Use shared utility for stats calculation
       const raw = await getProjectStatsRaw(projectPath, code, config, { includeFinalMedia: true });
 
+      // FR-157: Project-level title lives in .flihub-state.json
+      const projectState = await readProjectState(projectPath);
+
       const project: QueryProjectDetail = {
         // FR-111: recordingsCount and safeCount removed (safe status is per-file)
         code,
         path: projectPath,
+        ...(projectState.title ? { title: projectState.title } : {}),
         stage: raw.stage,
         priority: raw.priority,
         stats: {

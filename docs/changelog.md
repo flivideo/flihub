@@ -14,6 +14,15 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## FR-157 — Project and chapter YouTube titles (2026-08-30)
+
+`title` at project level and per-chapter, both persisted in `.flihub-state.json`.
+`PUT /api/projects/:code/title`, `PUT /api/projects/:code/chapters/:n/title`; surfaced on the
+query API (`title` field, `Title:` line in text format, chapter `displayName`). d01-kybernesis
+seeded with its five titles + playlist name. → `docs/prd/fr-157-project-and-chapter-titles.md`
+
+---
+
 ## MicCheck Phase 1 — live microphone monitoring (2026-08-26)
 
 New `Mic Check` tab. Answers one question: **am I loud enough?**

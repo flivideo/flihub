@@ -40,6 +40,7 @@ interface ProjectSummary {
 // FR-111: safe removed (safe status is per-file in state)
 interface ProjectDetail {
   code: string;
+  title?: string; // FR-157
   path: string;
   stage: string;
   priority: string;
@@ -159,6 +160,7 @@ export function formatProjectDetail(project: ProjectDetail): string {
 
   // Header
   lines.push(`${STATUS.FOLDER} Project: ${project.code}`);
+  if (project.title) lines.push(`   Title: ${project.title}`);
   lines.push(`   Stage: ${project.stage.toUpperCase()} | Priority: ${project.priority}`);
   lines.push(`   Path: ${shortenPath(project.path)}`);
   lines.push('');
