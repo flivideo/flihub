@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { readDirSafe } from './filesystem.js';
+import { readProjectState, getChapterTitle } from './projectState.js';
 import { stripSrt } from './srtUtils.js';
 
 // Bundled fallback brand config (committed to repo, works on any machine)
@@ -100,8 +101,9 @@ export async function findAllSrts(projectDir: string): Promise<{
 }
 
 // Build fliHubChapters array: scan recordings dirs, pull first 50 words from each chapter transcript
-export async function buildFliHubChapters(projectDir: string): Promise<{ folderNumber: string; chapterName: string; firstWords: string | null }[]> {
+export async function buildFliHubChapters(projectDir: string): Promise<{ folderNumber: string; chapterName: string; title: string | null; firstWords: string | null }[]> {
   const paths = getProjectPaths(projectDir);
+  const state = await readProjectState(projectDir); // FR-157: persisted chapter titles
   const chapterMap = new Map<string, string>();
   for (const dir of [paths.recordings, paths.safe]) {
     const files = (await readDirSafe(dir)).sort();
@@ -120,6 +122,7 @@ export async function buildFliHubChapters(projectDir: string): Promise<{ folderN
       return {
         folderNumber: prefix,
         chapterName: chapterMap.get(prefix) ?? '',
+        title: getChapterTitle(state, prefix) ?? null, // FR-157
         firstWords: content ? firstWords(content) : null,
       };
     })

@@ -22,6 +22,7 @@ import {
   setRecordingParked,
   isRecordingParked,
   getRecordingAnnotation,
+  getChapterTitles,
 } from '../utils/projectState.js';
 import { renameRecording } from '../utils/renameRecording.js'; // FR-130: Simplified rename logic
 import {
@@ -584,6 +585,7 @@ export function createRoutes(
         recordings,
         totalRecordingsSize, // FR-95: Total size of real recordings in bytes
         totalShadowsSize: totalShadowsSize > 0 ? totalShadowsSize : null, // FR-95: Total shadow size (null if none)
+        chapterTitles: getChapterTitles(state), // FR-157: { "03": "title" } from .flihub-state.json
       });
     } catch (error) {
       console.error('Error listing recordings:', error);

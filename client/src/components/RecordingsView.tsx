@@ -262,6 +262,7 @@ async function fetchTranscriptContent(filename: string): Promise<string> {
 function ChapterHeader({
   chapter,
   name,
+  title,
   fileCount,
   totalDuration,
   startTime,
@@ -285,6 +286,7 @@ function ChapterHeader({
 }: {
   chapter: string;
   name: string;
+  title?: string; // FR-157: persisted chapter title (wins over slug)
   fileCount: number;
   totalDuration: number;
   startTime: number;
@@ -322,7 +324,7 @@ function ChapterHeader({
     <div className="group relative flex items-center justify-between bg-surface-muted border border-warm rounded-lg px-4 py-2.5 mb-2 mt-5">
       <div className="flex items-baseline gap-3">
         <span className={`text-[15px] font-semibold ${isAllSafe ? 'text-warm-muted' : 'text-warm-primary'}`}>
-          {chapter} {formatChapterTitle(name)}
+          {chapter} {title ?? formatChapterTitle(name)}
         </span>
         {totalDuration > 0 && (
           <span className="text-sm font-medium text-warm-secondary font-mono bg-surface px-2.5 py-0.5 rounded-full">
@@ -1128,14 +1130,16 @@ export function RecordingsView() {
   }, [data?.recordings]);
 
   // FR-56: Prepare chapter info for the panel
+  // FR-157: Persisted chapter title wins; otherwise title-case the filename slug
+  const chapterTitles = data?.chapterTitles;
   const chapterPanelData = useMemo(() => {
     return chaptersWithTiming.map((ch) => ({
       chapterKey: ch.chapterKey,
-      title: getChapterDisplayName(ch.files),
+      title: chapterTitles?.[ch.chapterKey] ?? formatChapterTitle(getChapterDisplayName(ch.files)),
       startTime: ch.startTime,
       fileCount: ch.files.length,
     }));
-  }, [chaptersWithTiming]);
+  }, [chaptersWithTiming, chapterTitles]);
 
   // B047: Compute selected chapter info for BatchToolbar
   const selectedChapterInfo = useMemo(
@@ -1370,6 +1374,7 @@ export function RecordingsView() {
               <ChapterHeader
                 chapter={chapter}
                 name={name}
+                title={chapterTitles?.[chapter]}
                 fileCount={group.files.length}
                 totalDuration={group.totalDuration}
                 startTime={chapterData.startTime}

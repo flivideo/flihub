@@ -1,11 +1,11 @@
 // FR-56: Chapter Navigation Panel - Fixed sidebar showing chapter table of contents
 import { toast } from 'sonner';
-import { formatDuration, formatChapterTitle } from '../utils/formatting';
+import { formatDuration } from '../utils/formatting';
 import { API_URL } from '../config';
 
 interface ChapterInfo {
   chapterKey: string;
-  title: string;
+  title: string; // display-ready (FR-157: persisted title, else title-cased slug)
   startTime: number;
   fileCount: number;
 }
@@ -58,7 +58,7 @@ export function ChapterPanel({ chapters, currentChapter, onChapterClick }: Chapt
         <div className="py-1">
           {chapters.map((chapter) => {
             const isActive = chapter.chapterKey === currentChapter;
-            const title = formatChapterTitle(chapter.title);
+            const title = chapter.title;
 
             return (
               <button

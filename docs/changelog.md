@@ -19,7 +19,10 @@ Track what was implemented, fixed, or changed and when.
 `title` at project level and per-chapter, both persisted in `.flihub-state.json`.
 `PUT /api/projects/:code/title`, `PUT /api/projects/:code/chapters/:n/title`; surfaced on the
 query API (`title` field, `Title:` line in text format, chapter `displayName`). d01-kybernesis
-seeded with its five titles + playlist name. → `docs/prd/fr-157-project-and-chapter-titles.md`
+seeded with its five titles + playlist name. Same day: the Recordings view (panel + chapter
+headers) and the POEM `chapter-data` payload now read the same titles via one server helper, so
+the UI no longer shows the title-cased filename slug when a title exists.
+→ `docs/prd/fr-157-project-and-chapter-titles.md`
 
 ---
 

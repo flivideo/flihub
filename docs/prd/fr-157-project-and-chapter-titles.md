@@ -36,4 +36,11 @@ convention.
   mangled filename (see d01 chapter 03) does not affect the title.
 - `.chapter-overrides.json` (FR-34) was deliberately not reused: it is an array of timestamp
   actions keyed by `chapter+name`, the wrong shape for a title.
-- No UI yet; API + `flihub` skill surface only.
+- **Consumers converged (2026-08-30, same day):** three code paths derive chapters independently
+  from filenames — the Recordings view (client-side grouping + cumulative raw-take timestamps), the
+  chapters query API (final-SRT timestamps), and the POEM `chapter-data` payload. Names now all
+  come from one server helper (`getChapterTitles` / `getChapterTitle` over `.flihub-state.json`):
+  `/api/recordings` returns `chapterTitles`, the CHAPTERS panel and chapter group headers prefer it
+  over the title-cased slug, and the POEM payload carries `title` next to `chapterName` (kept —
+  POEM keys on it). **Timestamps were deliberately not merged**: the UI's are cumulative raw take
+  durations, the API's are final-cut positions — different quantities.

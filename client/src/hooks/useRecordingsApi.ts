@@ -24,6 +24,7 @@ export function useRecordings() {
         recordings: RecordingFile[];
         totalRecordingsSize: number; // FR-95: Total size of real recordings in bytes
         totalShadowsSize: number | null; // FR-95: Total shadow size (null if none)
+        chapterTitles?: Record<string, string>; // FR-157: persisted chapter titles by 2-digit key
         error?: string;
       }>('/api/recordings'),
   });

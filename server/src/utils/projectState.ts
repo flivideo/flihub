@@ -338,6 +338,15 @@ export function setChapterTitle(
   return next;
 }
 
+/** All chapter titles as { "03": "…" } (FR-157). */
+export function getChapterTitles(state: ProjectState): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, ch] of Object.entries(state.chapters || {})) {
+    if (ch.title) out[key] = ch.title;
+  }
+  return out;
+}
+
 /** Get a chapter title, or undefined. */
 export function getChapterTitle(state: ProjectState, chapterKey: string): string | undefined {
   return state.chapters?.[chapterKey]?.title;

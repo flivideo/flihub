@@ -9,6 +9,15 @@ what you learned → what to do about it.
 
 ## 2026-08-30
 
+- **[FR-157] "Chapters" are derived in THREE places, and two of the three timestamp columns
+  measure different things.** Recordings view groups `NN-` prefixes client-side and sums raw take
+  durations for `starts @`; `/api/query/…/chapters` + FR-34 take names/timestamps from a final
+  SRT (null without one); `/api/poem-wui/chapter-data` re-derives names from filenames. A fix in
+  any one leaves the others stale — the FR-157 title landed in the API and the UI kept showing the
+  slug. Convergence rule used: one server helper over the one store, every consumer reads it, and
+  do NOT unify fields that only share a name (raw-cumulative vs final-cut timestamps). Before
+  touching a "chapter" anything: `grep -rn 'NN-\|/^(\\d{2})-/'` across client + server first.
+
 - **[FR-157] `writeProjectState()` is an ALLOWLIST — a new field on `ProjectState` is silently
   dropped on the next write unless you also add it to the spread in
   `server/src/utils/projectState.ts`.** Adding `title`/`chapters` to the type alone would have
