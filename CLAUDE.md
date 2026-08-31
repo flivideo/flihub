@@ -267,6 +267,28 @@ FliHub runs on multiple machines. **Never rediscover this — use this table.**
 
 **Authoritative source**: `~/dev/ad/agent-os/ansible/inventory/hosts.yml`
 
+## Operating Rules (earned locally)
+
+**A refusal that looks like success is a defect — even when refusing is correct.**
+When an operation declines, skips, or no-ops, the response and the UI must say WHICH,
+because "failed", "skipped" and "not pressed" are otherwise the same pixels.
+Earned 2026-08-31 (FR-159): `POST /api/transcriptions/queue` returned `success:true, job:null`
+for a silently vetoed job, no client path toasted a null job, and the queue-all toast claimed
+*"All videos already have transcripts"* while two recordings sat untranscribed for four days.
+Reference implementation: `/queue` now returns a `reason` on skip and the toast reports
+"nothing queued". Corollary from the same bug: **a gate whose correct case is unreachable can
+only ever fire wrongly** — the `recentJobs` "recently transcribed" check sat below a gate that
+already returned whenever a transcript existed, so it exclusively blocked legitimate work.
+Related fact a future session needs: **FliHub has no log file** — server output goes only to
+the Overmind tmux pane (`overmind connect server`), so silent failures leave no trail.
+
+**The live-instrument rule.** David uses FliHub *during* recording days. While he is using it
+in anger, no visual or behavioural change reaches the running app unannounced — HMR makes
+shipping frictionless, which is exactly the hazard. Say in one line what is about to change
+(and that nodemon will recycle 5101, when touching `server/src/`) BEFORE the edit lands.
+This is not "stop shipping": mid-shoot fixes are often right — keep the speed, add the line.
+Tests, types and docs are exempt.
+
 ## Git Workflow
 
 Semantic commit helpers:
