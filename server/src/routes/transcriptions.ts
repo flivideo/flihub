@@ -332,11 +332,16 @@ export function createTranscriptionRoutes(
       return existing;
     }
 
-    // FR-94: Skip if already in recent (prevents re-queuing just-completed jobs)
+    // FR-94 → FR-159: a 'complete' entry in recentJobs is STALE if we got this far — the
+    // hasTranscriptFile check above already established the transcript is missing (the
+    // delete-then-re-record flow trashes the old transcript with the old take). Skipping
+    // here silently blocked re-transcribes for up to 5 jobs; purge the stale entry instead.
     const inRecent = recentJobs.find((j) => getBaseName(j.videoFilename) === baseName);
     if (inRecent && inRecent.status === 'complete') {
-      console.log(`${videoFilename} was recently transcribed, skipping`);
-      return null;
+      console.log(
+        `${videoFilename}: stale 'complete' entry in recent (transcript missing on disk) — purging and re-queuing`
+      );
+      recentJobs = recentJobs.filter((j) => getBaseName(j.videoFilename) !== baseName);
     }
 
     // FR-36: Get file size and duration
@@ -516,6 +521,16 @@ export function createTranscriptionRoutes(
     }
 
     const job = await queueTranscription(expandedPath);
+    // FR-159: a null job means the request was SKIPPED — say why, so the UI can show it
+    if (!job) {
+      res.json({
+        success: true,
+        job: null,
+        skipped: true,
+        reason: 'Transcript already exists for this recording',
+      });
+      return;
+    }
     res.json({ success: true, job });
   });
 

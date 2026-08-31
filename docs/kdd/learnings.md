@@ -9,6 +9,18 @@ what you learned → what to do about it.
 
 ## 2026-08-31
 
+- **[FR-159] A dedupe gate that never re-checks its ground truth becomes a permanent silent
+  veto.** `queueTranscription` skipped any base name in the in-memory last-5 `recentJobs` with
+  status `complete` — but the gate above it already returns when the transcript EXISTS, so this
+  gate could only ever fire when the transcript was MISSING (delete-then-re-record trashes the
+  old transcript with the old take). Every skip path returned `success:true, job:null` with no
+  toast, so "failed", "skipped" and "not pressed" were indistinguishable for four days; telemetry
+  showed zero failures because whisper genuinely never failed — the work was refused upstream.
+  Fix-class: a cache/dedupe entry is only as good as the artifact it stands for — verify the
+  artifact before honouring the entry, and every refusal an API makes must carry a reason the UI
+  shows. Diagnosis rule: "button does nothing" + zero errors anywhere = look for a silent skip
+  gate, not a failing worker.
+
 - **[FR-158] A right-edge hover flyout's hit area is its CONTAINER, not its visible tab — a
   translated-away panel still leaves a ~300px invisible hover strip over the content.** The
   Chapters/Help/DAM slide-outs used `group-hover` on a fixed container whose width came from the

@@ -811,8 +811,10 @@ export function RecordingsView() {
             toast.success(
               `Queued ${data.queuedCount} video${data.queuedCount > 1 ? 's' : ''} for transcription`
             );
+          } else if (data.skippedCount > 0) {
+            toast.info(`Nothing queued — ${data.skippedCount} video${data.skippedCount > 1 ? 's' : ''} already transcribed`);
           } else {
-            toast.info('All videos already have transcripts');
+            toast.info('No videos found to transcribe');
           }
         },
         onError: (err) => {
