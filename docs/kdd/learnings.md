@@ -7,6 +7,17 @@ what you learned → what to do about it.
 
 ---
 
+## 2026-08-31
+
+- **[FR-158] A right-edge hover flyout's hit area is its CONTAINER, not its visible tab — a
+  translated-away panel still leaves a ~300px invisible hover strip over the content.** The
+  Chapters/Help/DAM slide-outs used `group-hover` on a fixed container whose width came from the
+  hidden panel (`translate-x-full` moves rendering AND hit-testing, but the parent box stays), so
+  approaching any `⋯` menu near the right edge popped a panel over it — the menus were
+  unreachable. Fix-class: edge flyouts are click-to-open with `pointer-events-none` on the closed
+  container (only the tab re-enables events); hover may highlight, never open. Diagnosis rule:
+  when hover triggers "too early", measure the hover element's box, not its visible pixels.
+
 ## 2026-08-30
 
 - **[FR-157] "Replace the wrong thing on screen" is not the same as "show the right thing".** The

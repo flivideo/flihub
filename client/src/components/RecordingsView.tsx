@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -261,6 +261,56 @@ async function fetchTranscriptContent(filename: string): Promise<string> {
 }
 
 // B049: Chapter header — card style with overflow menu
+// FR-158: Right-edge slide-out, CLICK to open (hover used to open these and the popped
+// panel landed on top of the chapter/row menus, making them unreachable). The closed
+// container is pointer-events-none so only the tab strip itself is interactive.
+function EdgeFlyout({
+  label,
+  open,
+  onToggle,
+  positionClassName,
+  widthClassName,
+  children,
+}: {
+  label: string;
+  open: boolean;
+  onToggle: () => void;
+  positionClassName: string; // fixed-position classes (top offset etc.)
+  widthClassName: string; // panel width
+  children: ReactNode;
+}) {
+  return (
+    <div data-flyout-root className={`fixed right-0 z-40 pointer-events-none ${positionClassName}`}>
+      {/* Click trigger tab — hover only highlights, never opens */}
+      <div className="absolute right-0 top-0 h-full flex items-start pt-8 z-10">
+        <button
+          type="button"
+          onClick={onToggle}
+          title={open ? `Close ${label}` : `Open ${label}`}
+          className={`pointer-events-auto border border-r-0 border-warm-strong rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm transition-colors ${
+            open ? 'bg-blue-50 border-blue-300' : 'bg-surface-muted hover:bg-surface-hover'
+          }`}
+        >
+          <span
+            className={`text-xs font-medium ${open ? 'text-blue-700' : 'text-warm-secondary'}`}
+            style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+          >
+            {label}
+          </span>
+        </button>
+      </div>
+      {/* Slide-out panel */}
+      <div
+        className={`h-full transition-transform duration-200 ease-out ${widthClassName} ${
+          open ? 'translate-x-0 pointer-events-auto' : 'translate-x-full'
+        }`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function ChapterHeader({
   chapter,
   name,
@@ -1151,6 +1201,26 @@ export function RecordingsView() {
   const chapterTitles = data?.chapterTitles;
   const projectCode = data?.project?.code ?? null;
   const setChapterTitle = useSetChapterTitle();
+
+  // FR-158: which right-edge flyout is open (click-to-open; Esc / click-away closes)
+  const [openFlyout, setOpenFlyout] = useState<'chapters' | 'help' | 'dam' | null>(null);
+  useEffect(() => {
+    if (!openFlyout) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenFlyout(null);
+    };
+    const onDown = (e: MouseEvent) => {
+      if (!(e.target instanceof Element) || !e.target.closest('[data-flyout-root]')) {
+        setOpenFlyout(null);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onDown);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onDown);
+    };
+  }, [openFlyout]);
   const chapterPanelData = useMemo(() => {
     return chaptersWithTiming.map((ch) => ({
       chapterKey: ch.chapterKey,
@@ -1493,66 +1563,42 @@ export function RecordingsView() {
         })}
       </div>
 
-      {/* FR-56: Slide-out Chapter Panel - hover to expand */}
-      <div className="fixed right-0 top-32 bottom-4 z-40 group">
-        {/* Hover trigger tab */}
-        <div className="absolute right-0 top-0 h-full flex items-start pt-8">
-          <div className="bg-surface-muted border border-r-0 border-warm-strong rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover:opacity-0 transition-opacity">
-            <span
-              className="text-xs font-medium text-warm-secondary"
-              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-            >
-              Chapters ({chapterPanelData.length})
-            </span>
-          </div>
-        </div>
-        {/* Slide-out panel */}
-        <div className="h-full w-72 translate-x-full group-hover:translate-x-0 transition-transform duration-200 ease-out">
-          <ChapterPanel
-            chapters={chapterPanelData}
-            currentChapter={currentChapter}
-            onChapterClick={handleChapterClick}
-          />
-        </div>
-      </div>
+      {/* FR-56/FR-158: Slide-out Chapter Panel - click to open */}
+      <EdgeFlyout
+        label={`Chapters (${chapterPanelData.length})`}
+        open={openFlyout === 'chapters'}
+        onToggle={() => setOpenFlyout(openFlyout === 'chapters' ? null : 'chapters')}
+        positionClassName="top-32 bottom-4"
+        widthClassName="w-72"
+      >
+        <ChapterPanel
+          chapters={chapterPanelData}
+          currentChapter={currentChapter}
+          onChapterClick={handleChapterClick}
+        />
+      </EdgeFlyout>
 
-      {/* Chapter Help slide-out - positioned below Chapters panel */}
-      <div className="fixed right-0 top-80 bottom-4 z-40 group/help">
-        {/* Hover trigger tab */}
-        <div className="absolute right-0 top-0 h-full flex items-start pt-8">
-          <div className="bg-surface-muted border border-r-0 border-warm-strong rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover/help:opacity-0 transition-opacity">
-            <span
-              className="text-xs font-medium text-warm-secondary"
-              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-            >
-              Help
-            </span>
-          </div>
-        </div>
-        {/* Slide-out panel */}
-        <div className="h-full w-80 translate-x-full group-hover/help:translate-x-0 transition-transform duration-200 ease-out">
-          <ChapterHelpPanel />
-        </div>
-      </div>
+      {/* FR-158: Chapter Help slide-out - click to open, below Chapters tab */}
+      <EdgeFlyout
+        label="Help"
+        open={openFlyout === 'help'}
+        onToggle={() => setOpenFlyout(openFlyout === 'help' ? null : 'help')}
+        positionClassName="top-80 bottom-4"
+        widthClassName="w-80"
+      >
+        <ChapterHelpPanel />
+      </EdgeFlyout>
 
-      {/* DAM & Archiving slide-out - positioned below Help panel */}
-      <div className="fixed right-0 bottom-4 z-40 group/dam" style={{ top: 'calc(20rem + 8rem)' }}>
-        {/* Hover trigger tab */}
-        <div className="absolute right-0 top-0 h-full flex items-start pt-8">
-          <div className="bg-surface-muted border border-r-0 border-warm-strong rounded-l-lg px-1.5 py-3 cursor-pointer shadow-sm group-hover/dam:opacity-0 transition-opacity">
-            <span
-              className="text-xs font-medium text-warm-secondary"
-              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-            >
-              DAM
-            </span>
-          </div>
-        </div>
-        {/* Slide-out panel */}
-        <div className="h-full w-80 translate-x-full group-hover/dam:translate-x-0 transition-transform duration-200 ease-out">
-          <DamHelpPanel />
-        </div>
-      </div>
+      {/* FR-158: DAM & Archiving slide-out - click to open, below Help tab */}
+      <EdgeFlyout
+        label="DAM"
+        open={openFlyout === 'dam'}
+        onToggle={() => setOpenFlyout(openFlyout === 'dam' ? null : 'dam')}
+        positionClassName="bottom-4 top-[28rem]"
+        widthClassName="w-80"
+      >
+        <DamHelpPanel />
+      </EdgeFlyout>
 
       {/* FR-30: Transcript Modal */}
       {viewingTranscript && (
