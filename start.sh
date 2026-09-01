@@ -1,32 +1,33 @@
 #!/bin/bash
 # Project: FliHub
-# Description: Video project system - query projects, recordings, transcripts, chapters, images
 cd "$(dirname "$0")"
+
+trap 'rm -f ./.overmind.sock' EXIT INT TERM
 
 echo "================================================"
 echo "FliHub - Development Server"
 echo "================================================"
 echo ""
 
-# Check if already running
-if lsof -i :5101 | grep -q LISTEN; then
-  echo "FliHub is already running on ports 5100/5101"
-  echo "Opening browser..."
-  open http://localhost:5100
-  exit 0
-fi
+# Stop overmind if running, then remove stale socket
+overmind stop 2>/dev/null
+sleep 0.5
+rm -f ./.overmind.sock
 
-echo "Building shared types..."
-npm run build -w shared
+# Kill anything on our ports
+for port in 5100 5101; do
+  pids=$(lsof -ti :$port 2>/dev/null)
+  [ -n "$pids" ] && echo "Clearing port $port..." && echo "$pids" | xargs kill -9 2>/dev/null
+done
+sleep 0.5
 
 echo ""
-echo "Starting FliHub (client: 5100, server: 5101) via Overmind..."
-echo "  overmind connect client  — attach to client logs"
-echo "  overmind connect server  — attach to server logs"
-echo "  overmind stop            — stop all processes"
+echo "Starting via Overmind (client: 5100, server: 5101)..."
+echo "  overmind connect client  — client logs"
+echo "  overmind connect server  — server logs"
+echo "  overmind stop            — stop all"
 echo ""
 
-# Open browser after delay (background — gives server time to start)
 (sleep 4 && open http://localhost:5100) &
 
 overmind start
