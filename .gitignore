@@ -42,3 +42,6 @@ server/config.json
 # Git worktrees
 .worktrees/
 .playwright-mcp/
+
+.logs/
+.overmind.sock
