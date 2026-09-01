@@ -11,6 +11,29 @@ technically available). It is **not** a post-processing tool — see §0.3 on `a
 
 ---
 
+## ⚠️ Host note (added 2026-09-01, after the build)
+
+**FliHub was chosen as MicCheck's host for AVAILABILITY, not because it is the right home.**
+§1 below scores TUI vs FliHub panel and picks FliHub because it was the already-running
+graphical host with a secure `localhost` context and a toolchain on disk. That reasoning was
+sound on the day and is unchanged. What has changed is the premise: **the moment David actually
+wants a mic check is at Teletubby** (the prompter, about to record), not in FliHub.
+
+A future reader must not infer FliHub was the *right* home — only the *open* one.
+
+What this does and does not mean:
+- **Not a move.** MicCheck stays here. Host ≠ owner: the measurement engine, the session
+  lifecycle, and the global store (`~/.flihub/miccheck/`) are FliHub-hosted but not
+  FliHub-coupled — the server code touches no project, recording, or `.flihub-state.json`.
+- **Reachable from elsewhere by design.** The API is a standalone namespace: write side
+  `/api/miccheck/*` (session start / tick / event / room-reference / finish / abandon), read
+  side `/api/query/miccheck/*` (live / sessions / sessions/:id). A second consumer (Teletubby)
+  is a client concern — the mount here is the "5-line tab seam" of §5.6 — not a
+  re-architecture. The capture itself runs in the browser (`getUserMedia` + AudioWorklet),
+  so a second host needs its own capture surface but can share the store and the grading.
+- **The dependency the spec already named** (§1.5: "no dependency on FliHub's dev server being
+  up" was the TUI's advantage) is now a real cost: at Teletubby, FliHub must be running.
+
 ## 0. Ground rules for reading this document
 
 ### 0.1 Evidence markers
