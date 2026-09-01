@@ -76,8 +76,25 @@ by `writeProjectState`, so no allowlist change (unlike FR-157's top-level fields
 - `/api/recordings` rows: `containerAvDeltaMs: number | null`
 - `/api/query/projects/:code/recordings` (json + `?format=text` column) — the FC-16 read path.
 
-## Decision log
+## Provenance / decision log
 
-- **Backfill all existing recordings, not forward-only** (orch ruling 2026-09-01, reasoning:
-  every chapter FC-16 exists to fix is already recorded — forward-only would have no data for
-  ten of twelve chapters; cost is ~37 read-only ffprobe calls).
+Who said what matters here, because a relayed instruction and a first-hand one look identical
+on the page.
+
+- **The measurement itself — David's direction**, as relayed by the orchestrator session
+  (2026-09-01; his text in his own message to it, not a quote inside someone else's):
+  > "FliHub still gets a piece, and a cheap one: probing takes before they're joined.
+  > Catching +20 vs +41 ms at ingest is much cheaper than reconstructing it from a finished
+  > cut. That's a measurement on recordings — squarely FliHub's model, one probe, no UI."
+
+  Status: **direction given, direct confirmation pending** — the build waits on David's own
+  "go" in the FliHub session, because it is a server change.
+- **Backfill all existing recordings, not forward-only — orchestrator's ruling**, scope of the
+  already-directed measurement (reasoning: every chapter FC-16 exists to fix is already
+  recorded; forward-only would have no data for ten of twelve chapters; cost is ~37
+  read-only ffprobe calls).
+- **Provenance must be explicit — orchestrator's condition**; the typed
+  `avDeltaSource: 'ingest' | 'backfill'` field is this session's implementation of it (an
+  enum cannot decay into ambiguity the way an inferred timestamp comparison can).
+- **Two-tool positive control** — this session, unprompted: raw `ffprobe` vs `av-sync.py`'s
+  independently noted spread agree, so the spread is a fact, not an artefact of either tool.
