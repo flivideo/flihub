@@ -9,6 +9,20 @@ what you learned → what to do about it.
 
 ## 2026-09-02
 
+- **[query-layer] The query layer's output shape is not derived from the model it describes,
+  and nothing internal consumes it — so nothing internal notices when it drifts.** (Named by
+  video-projects-orch, 2026-09-02, from three same-day instances in this repo:
+  `/api/query/config` serving the abandoned 4-value stage vocabulary
+  (`routes/query/index.ts:44`, hardcoded literal); `/api/query/projects` listing non-project
+  folders (`catalog`, `poem`, `tools`, `docs`) as projects; and `brand` serialised per-ROW when
+  it is per-ROOT (`query/projects.ts:105-107`, `182-184`) — shape implying that two projects in
+  one listing could differ in brand when they structurally cannot.) The class, not the
+  instances: hand-maintained response literals + zero internal consumers = an interface that
+  only external agents read and only external agents can catch lying. Fix-class: derive
+  response vocabularies from the model's own constants (`DEFAULT_PROJECT_STAGES`, the union),
+  and serialise per-collection facts at the collection level. A fourth instance, if it exists,
+  is in the remaining query endpoints. Fixes held for David.
+
 - **[ops] A wrong path in a handover doc propagates as fact — three flags to fix the flihub
   skill died because they cited `~/.claude/skills/flihub/SKILL.md`, which does not exist.**
   The real source is `~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md` (plugin repo;
