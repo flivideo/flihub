@@ -11,7 +11,7 @@ You are querying FliHub and its microphone-monitoring data. **Do not write appli
 Load the **`flihub`** skill. It covers projects, recordings, transcripts, chapters, images, inbox
 and — added 2026-08-26 — **MicCheck**.
 
-The MicCheck reference is `/Users/davidcruwys/.claude/skills/flihub/miccheck-command.md`, registered
+The MicCheck reference is `/Users/davidcruwys/dev/ad/appydave-plugins/flivideo/skills/flihub/miccheck-command.md`, registered
 in that skill's `SKILL.md` Quick Reference. **Read it before answering anything about microphone
 levels.**
 

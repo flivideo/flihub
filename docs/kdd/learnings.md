@@ -7,6 +7,18 @@ what you learned → what to do about it.
 
 ---
 
+## 2026-09-02
+
+- **[ops] A wrong path in a handover doc propagates as fact — three flags to fix the flihub
+  skill died because they cited `~/.claude/skills/flihub/SKILL.md`, which does not exist.**
+  The real source is `~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md` (plugin repo;
+  installed copies under `~/.claude/plugins/cache/`). The bad address came from this repo's own
+  `docs/handover-miccheck-query.md` and was repeated verbatim each time. Rule: before flagging
+  a file for someone else to edit, `ls` the path once — a flag with a dead address reads as
+  actioned and silently is not. (Same session: `/api/query/config` found serving a hardcoded
+  pre-FR-80 stage list `['none','recording','editing','done']` disproven by its own project
+  data — endpoint defect recorded, fix held for David.)
+
 ## 2026-08-31
 
 - **[FR-159] A dedupe gate that never re-checks its ground truth becomes a permanent silent

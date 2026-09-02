@@ -61,7 +61,7 @@ The flaw is that the public API keeps its own **private, hardcoded copy of a dom
 **Blast radius.** Any external agent that does the correct thing — ask `/api/query/config` what the
 valid stages are, then filter — gets a vocabulary that can address at most 47 of 65 projects, and
 silently returns zero for `editing`/`done`/`none` if the shim is bypassed. The `flihub` skill at
-`~/.claude/skills/flihub/SKILL.md` documents `?stage=recording` and `?stage=editing` as the examples.
+`~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md` documents `?stage=recording` and `?stage=editing` as the examples.
 
 **Rebuild implication.** The stage vocabulary must have exactly one definition, and the public API must
 project from it rather than restate it. If the API needs a coarser public vocabulary, that mapping is a
@@ -144,7 +144,7 @@ The doc's fallback rule is *"if down -> write directly to the filesystem"*. So a
 concludes FliHub is down **every time**, and always takes the fallback path — silently. The failure and the
 success look identical from the agent's side.
 
-The live skill (`~/.claude/skills/flihub/SKILL.md:42`) has it right. Only the brain doc is stale. The same
+The live skill (`~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md:42`) has it right. Only the brain doc is stale. The same
 doc also specifies `POST /api/projects/:code/inbox`; the endpoint that shipped is
 `POST /api/projects/:code/inbox/write` (`server/src/routes/projects.ts:726`).
 

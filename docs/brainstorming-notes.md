@@ -167,7 +167,7 @@ Add a tips/shortcuts panel to FliHub that shows how to interact with it from Cla
 #### Why This Is Useful
 
 - Users may not know FliHub has a Claude Code skill
-- Skill documentation lives in `~/.claude/skills/flihub/` - not discoverable from the UI
+- Skill documentation lives in `~/dev/ad/appydave-plugins/flivideo/skills/flihub/` - not discoverable from the UI
 - Copy-paste examples would speed up integration
 - Shows the "API-first" philosophy of FliHub
 
@@ -197,7 +197,7 @@ Add a tips/shortcuts panel to FliHub that shows how to interact with it from Cla
 
 #### Content Source
 
-The content should mirror what's in the FliHub skill (`~/.claude/skills/flihub/`):
+The content should mirror what's in the FliHub skill (`~/dev/ad/appydave-plugins/flivideo/skills/flihub/`):
 
 - Could be hand-written HTML
 - Or dynamically generated from skill markdown files
@@ -523,7 +523,7 @@ Resources are a TYPE of asset, alongside images and prompts:
 **Implemented 2025-12-14:**
 
 - Skill renamed: `querying-flihub` → `flihub`
-- Location: `~/.claude/skills/flihub/`
+- Location: `~/dev/ad/appydave-plugins/flivideo/skills/flihub/`
 - Added `health` command
 - Added `write` command for inbox
 - Added `resolve` command for project lookup (FR-61)

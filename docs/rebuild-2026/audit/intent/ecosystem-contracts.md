@@ -9,7 +9,7 @@ method: Read the 4 named high-signal sources, then swept 388 markdown files outs
 
 **Headline:** FliHub is already a service. Six independent systems call it over HTTP on `:5101` today,
 and FliHub itself is an HTTP client of two more. But nobody wrote the contract down in a place that
-holds — the de-facto public API (`~/.claude/skills/flihub/SKILL.md`) has **five live falsehoods** in it,
+holds — the de-facto public API (`~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md`) has **five live falsehoods** in it,
 the repo's own `docs/architecture/api-reference.md` documents two endpoint families that no longer
 exist and omits seven that do, and the one consumer doc with the richest endpoint table
 (`flilaunch/docs/data-sources/flihub.md`) points at a skill that was archived on 2026-08-02.
@@ -28,7 +28,7 @@ labelled as such.
 |---|---|---|---|---|
 | 1 | **FliGen** (Day 9 "Prompt Intake") | HTTP REST | `GET /api/system/health`<br>`GET /api/query/projects/:code/transcripts?chapter=N&segments=1,2,3&include=content` | `/Users/davidcruwys/dev/ad/flivideo/fligen/server/src/tools/flihub/client.ts` — `FLIHUB_BASE_URL = process.env.FLIHUB_BASE_URL \|\| 'http://localhost:5101'`; UI at `client/src/components/tools/Day9PromptIntake.tsx` |
 | 2 | **FliVoice** (voice agent + client tools) | HTTP REST | server: `GET /api/query/projects`, `/api/query/projects/:code/transcripts`, `/api/query/projects/:code/recordings`, `GET /health` ⚠️<br>client: `GET /api/query/projects`, `/api/query/projects/:code/transcripts`, `GET /api/system/health` | `/Users/davidcruwys/dev/ad/flivideo/flivoice/server/src/tools/flihub/integration.ts`; `client/src/tools/clientTools.ts`; `client/src/hooks/useHealthCheck.ts` |
-| 3 | **The `flihub` agent skill** (any Claude session, machine-wide) | HTTP REST via curl | 13 documented endpoints — full table in §2.1 | `/Users/davidcruwys/.claude/skills/flihub/SKILL.md` + 11 sibling `*-command.md` files |
+| 3 | **The `flihub` agent skill** (any Claude session, machine-wide) | HTTP REST via curl | 13 documented endpoints — full table in §2.1 | `/Users/davidcruwys/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md` + 11 sibling `*-command.md` files |
 | 4 | **Brand Dave commands** (`/gather`, `/solo-deck`, `/scene-deck`, `/current-deck`) | HTTP REST via curl | `GET /api/query/projects`, `/api/query/projects/:code`, `/api/query/projects/:code/recordings`, `?recent=10`, and `POST /api/projects/:code/inbox/write` | `/Users/davidcruwys/dev/ad/appydave-plugins/brand-dave/commands/{gather,solo-deck,scene-deck,current-deck}.md` |
 | 5 | **FliLaunch** (YouTube launch optimizer) | HTTP REST via curl in workflow docs | `GET /api/projects/stats` (health check + BI feed), `/api/projects/:code/transcript-sync`, plus 6 more it *believes* it can call | `/Users/davidcruwys/dev/ad/flivideo/flilaunch/docs/data-sources/flihub.md`, `CLAUDE.md`, `HANDOVER.md` |
 | 6 | **FliHub's own client** (React, `:5100`) | HTTP + Socket.io | 39 endpoints via `shared/apiRegistry.ts`; ~10 socket events | `client/`, `shared/apiRegistry.ts` |
@@ -81,7 +81,7 @@ work. The app's own centre of gravity had already moved off the operator loop.
 
 ### 2.1 The `flihub` skill — the de-facto public API, audited line by line
 
-Every endpoint in `~/.claude/skills/flihub/SKILL.md` checked against `server/src/routes/`:
+Every endpoint in `~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md` checked against `server/src/routes/`:
 
 | Documented | Real route | Verdict |
 |---|---|---|
@@ -130,7 +130,7 @@ Every endpoint in `~/.claude/skills/flihub/SKILL.md` checked against `server/src
 - **Dead pointer.** `solo-deck.md:190`, `scene-deck.md:19,199` and `current-deck.md:9,72` all say
   *"Video mode: Use FliHub (see `skills/flihub-integration.md`)"*. That skill was **archived on 2026-08-02**
   (commit `ff02351` in `appydave-plugins`). The commands were not updated. **(a) SAID** — David's own commit
-  message states the rationale: *"flihub-integration — duplicate of ~/.claude/skills/flihub/, which covers the
+  message states the rationale: *"flihub-integration — duplicate of ~/dev/ad/appydave-plugins/flivideo/skills/flihub/, which covers the
   same surface and is less stale. Removes a discovery collision, not capability."*
   **(c) INFERRED:** the dedup was correct, but "less stale" was generous — §2.1 shows the survivor carries five
   errors, and three commands now point at nothing.
@@ -167,7 +167,7 @@ Against the real code:
 | Phase 1 item | Real status |
 |---|---|
 | FliHub creates inbox folder structure | ✅ SHIPPED — FR-59, `inbox/{raw,dataset,presentation}` in `shared/paths.ts`, plus a dedicated chokidar watcher |
-| FliHub skill renamed to `flihub`, gains `write` | ✅ SHIPPED — `~/.claude/skills/flihub/` with `write-command.md` |
+| FliHub skill renamed to `flihub`, gains `write` | ✅ SHIPPED — `~/dev/ad/appydave-plugins/flivideo/skills/flihub/` with `write-command.md` |
 | FliHub adds `promote` command (`inbox/* → resources/`) | ❌ **NEVER BUILT.** No route matches. The only `promote` in the codebase is `POST /api/relay/promote` (`relay.ts:537`), which copies `edit-2nd/ → final/` — a completely different concept. There is no `resources/` directory anywhere in FliHub's vocabulary. |
 | FliHub documents the API contract | ⚠️ Partial — `docs/architecture/api-reference.md` exists but is stale (§2.6) |
 
@@ -284,7 +284,7 @@ Being rigorous, here is the evidence on both sides.
    *"Why FliHub Instead of File System? — FliHub is the source of truth for video projects […] No need to know
    the full file path."* And from the design doc's priority order: *"1. FliHub API (primary) - Fast, controlled,
    FliHub decides placement. 2. Filesystem (fallback) - When FliHub is down."*
-5. **A skill was promoted to machine-global.** `~/.claude/skills/flihub/` sits in the user's home skill dir —
+5. **A skill was promoted to machine-global.** `~/dev/ad/appydave-plugins/flivideo/skills/flihub/` sits in the user's home skill dir —
    loaded in every Claude session on the machine regardless of cwd. Twelve files. It is the largest single
    description of FliHub anywhere.
 6. **The registry describes it as backend-first.** `~/.config/appydave/apps.json`:

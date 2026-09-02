@@ -476,7 +476,7 @@ to hand-repair the registry after archiving.**
 ### 4.8 BREAK — a documented integration surface that consumers were told to use, and one of them was told not to
 
 Two live consumer documents point at FliHub's HTTP API as a contract
-(`flilaunch/docs/data-sources/flihub.md`, `~/.claude/skills/flihub/SKILL.md`), including a health
+(`flilaunch/docs/data-sources/flihub.md`, `~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md`), including a health
 check that starts the server if down. Meanwhile Teletubby — the newest and most active neighbour —
 inspected the same surface and was ruled off it:
 
@@ -661,7 +661,7 @@ for b in ~/dev/video-projects/published/*/; do \
 - `/Users/davidcruwys/dev/ad/apps/teletubby/{README.md,CLAUDE.md,AGENTS.md}`
 - `/Users/davidcruwys/dev/ad/apps/teletubby/docs/{concept.md,open-questions.md,requirements.md,spec.md,north-star.md}`
 - `/Users/davidcruwys/dev/ad/flivideo/flilaunch/docs/data-sources/flihub.md`
-- `/Users/davidcruwys/.claude/skills/flihub/SKILL.md`
+- `/Users/davidcruwys/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md`
 - `/Users/davidcruwys/.claude/skills/ecamm/SKILL.md`
 
 **FliHub's own:**

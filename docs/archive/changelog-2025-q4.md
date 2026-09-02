@@ -911,8 +911,8 @@ intro
 
 - `server/src/routes/query.ts` - resolve endpoint, brand/path fields
 - `client/src/App.tsx` - header rename, copy path button
-- `~/.claude/skills/flihub/SKILL.md` - documentation update
-- `~/.claude/skills/flihub/resolve-command.md` - new file
+- `~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md` - documentation update
+- `~/dev/ad/appydave-plugins/flivideo/skills/flihub/resolve-command.md` - new file
 
 ---
 
@@ -929,7 +929,7 @@ intro
 - Created `health-command.md` - documents GET /api/system/health
 - Created `write-command.md` - documents POST /api/projects/:code/inbox/write
 
-**Skill location:** `~/.claude/skills/flihub/`
+**Skill location:** `~/dev/ad/appydave-plugins/flivideo/skills/flihub/`
 
 **Files in skill:**
 

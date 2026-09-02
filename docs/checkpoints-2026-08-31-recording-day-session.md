@@ -59,7 +59,7 @@ Everything below is committed and pushed on `main` as of this checkpoint.
   deleted `.claude/scheduled_tasks.lock`.
 - `~/.config/appydave/apps.json` flihub entry is wrong on three counts (start_script,
   ports.client null, "no client UI" note) — cross-repo, reported to David twice, not fixed.
-- `~/.claude/skills/flihub/SKILL.md` predates FR-157/159: says chapters are SRT-derived,
+- `~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md` predates FR-157/159: says chapters are SRT-derived,
   lacks the title endpoints. Outside the repo; David's call.
 
 ## Single next action
