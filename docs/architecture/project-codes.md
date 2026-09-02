@@ -34,6 +34,11 @@ Every claim here is checked against this repo's code or the projects folder on d
   in `.flihub-state.json` — a title is metadata, not identity.) David's recollection that
   "renaming should rename the folder but doesn't always happen" describes an unbuilt feature,
   not flaky behaviour.
+- **If FliHub ever builds rename or move, the pattern already exists — match it.** Teletubby
+  implemented these semantics first (2026-09-02, from this contract): `project` identity is
+  the FliHub folder name verbatim and immutable; rename changes *title only* (the FR-157
+  layer); `null→value` is an attach; `value→different` is refused as "that's a move, not a
+  rename". A FliHub implementation must mirror that, not invent a second shape.
 - **"Moving projects" is solved only in the STORAGE sense** (`server/src/routes/storage.ts`):
   `hold` / `restore-held` (evacuate heavy subfolders to HOLDING), `archive` / `unarchive`
   (whole folder to/from PUBLISHED root). Identity never changes. A code-change "move"
