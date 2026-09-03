@@ -30,6 +30,10 @@ export function useSwitchBrand() {
       ),
     onSuccess: () => {
       // The whole UI is now pointed at a different root — refresh everything.
+      // ⚠️ FR-163 depends on this sweep: an open New Project form recomputes its
+      // pre-filled code via QUERY_KEYS.nextProjectCode (AC 15). If this is ever
+      // narrowed to specific keys, that key MUST stay in the list — a stale code
+      // creates a real folder in the new root under the old brand's series.
       queryClient.invalidateQueries();
     },
   });

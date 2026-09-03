@@ -119,16 +119,27 @@ export async function computeNextCode(config: Config): Promise<NextCodeResult> {
   };
   collect(rootDirs);
 
-  // archived/<bucket>/<project> — one level into each bucket (§3)
-  for (const bucket of await listDirsSafe(path.join(root, 'archived'))) {
-    collect(await listDirsSafe(path.join(root, 'archived', bucket)));
-  }
+  // Collect a directory's own listing AND one level into each subdirectory.
+  // Both levels matter: projects can sit directly in archived/ or the published
+  // root, or inside hand-made buckets like b50-b99/ (review bugs 1+2 — a shallow
+  // scan of a bucketed tree returns the bucket NAME's parse, a confident wrong code).
+  const collectTwoLevels = async (dir: string) => {
+    const top = await listDirsSafe(dir);
+    collect(top);
+    for (const sub of top) {
+      collect(await listDirsSafe(path.join(dir, sub)));
+    }
+  };
 
-  // publishedPath when reachable — skipped silently when T7 is unmounted (§3)
+  // archived/ — direct drop-ins and bucket contents (§3)
+  await collectTwoLevels(path.join(root, 'archived'));
+
+  // publishedPath when reachable — skipped silently when T7 is unmounted (§3);
+  // scanned symmetrically with archived/ (projects accumulate in hand-made buckets there)
   if (config.publishedPath) {
     const pub = expandPath(config.publishedPath);
     if (await fs.pathExists(pub)) {
-      collect(await listDirsSafe(pub));
+      await collectTwoLevels(pub);
     }
   }
 

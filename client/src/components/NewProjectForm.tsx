@@ -155,6 +155,9 @@ export function NewProjectForm({ existingNames, pending, onCreate, onCancel }: N
       {codeInvalid && (
         <p className="text-xs text-red-600 mt-1">Code must be a letter and two digits (e.g. d03)</p>
       )}
+      {unlocked && code === '' && !mustBeManual && (
+        <p className="text-xs text-warm-muted mt-1">Enter a code (letter + two digits), or ↺ to restore {computed || 'the computed code'}.</p>
+      )}
       {collision && (
         <p className="text-xs text-red-600 mt-1">Project {fullName} already exists</p>
       )}

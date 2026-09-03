@@ -32,6 +32,7 @@ export const QUERY_KEYS = {
   finalMedia: (code: string) => ['final-media', code] as const,
   // FR-34: Chapter timestamp extraction
   chapters: (code: string) => ['chapters', code] as const,
+  nextProjectCode: ['next-project-code'] as const, // FR-163: brand switch must invalidate this
   // FR-34 Enhancement: Chapter overrides
   chapterOverrides: (code: string) => ['chapter-overrides', code] as const,
   // FR-48: Transcript sync validation

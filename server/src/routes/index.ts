@@ -15,7 +15,6 @@ import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { createShadowFile, deleteShadowFile } from '../utils/shadowFiles.js';
 import { computeNextCode, parseSeriesCode, compareSeriesCodes, codeToString } from '../utils/nextProjectCode.js';
-import { expandPath as expandPathFr163 } from '../utils/pathUtils.js';
 import {
   readProjectState,
   writeProjectState,
@@ -403,7 +402,7 @@ export function createRoutes(
       // FR-163: raise the per-root high-water mark if this code tops it (never decreases)
       const createdSeries = parseSeriesCode(code);
       if (createdSeries) {
-        const rootKey = expandPathFr163(config.projectsRootDirectory!);
+        const rootKey = expandPath(config.projectsRootDirectory!);
         const current = config.projectCodeHighWater?.[rootKey];
         const currentSeries = current ? parseSeriesCode(current) : null;
         if (!currentSeries || compareSeriesCodes(createdSeries, currentSeries) > 0) {

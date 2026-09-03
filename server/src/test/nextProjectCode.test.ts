@@ -81,6 +81,19 @@ describe('computeNextCode', () => {
     const r2 = await computeNextCode(cfg());
     expect(r2).toMatchObject({ next: 'b74', highest: 'b73' });
   });
+  it('review bug 1: publishedPath BUCKETS are scanned one level deep', async () => {
+    const pub = path.join(tmp, 'fake-t7');
+    await fs.ensureDir(path.join(pub, 'b50-b99', 'b63-remotion-tutorial'));
+    await fs.ensureDir(path.join(tmp, 'a01-live'));
+    const r = await computeNextCode(cfg({ publishedPath: pub }));
+    expect(r).toMatchObject({ next: 'b64', highest: 'b63' }); // not b51 from the bucket name
+  });
+  it('review bug 2: a project directly inside archived/ (no bucket) is counted', async () => {
+    await fs.ensureDir(path.join(tmp, 'a01-live'));
+    await fs.ensureDir(path.join(tmp, 'archived', 'd09-direct'));
+    const r = await computeNextCode(cfg());
+    expect(r).toMatchObject({ next: 'd10', highest: 'd09' });
+  });
   it('includes publishedPath when reachable, skips silently when not', async () => {
     const pub = path.join(tmp, 'fake-t7');
     await fs.ensureDir(path.join(pub, 'e05-published'));

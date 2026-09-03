@@ -292,7 +292,7 @@ export interface NextCodeResponse {
 
 export function useNextProjectCode(enabled: boolean) {
   return useQuery({
-    queryKey: ['next-project-code'],
+    queryKey: QUERY_KEYS.nextProjectCode,
     queryFn: () => fetchApi<NextCodeResponse>('/api/projects/next-code'),
     enabled,
     staleTime: 0,
