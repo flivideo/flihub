@@ -240,11 +240,18 @@ change and the rest of the spec is unaffected. The empty-root case is live right
 | Source | In the max? | Why |
 |---|---|---|
 | Live `projectsRootDirectory` | ✅ | The existing scan (`projects.ts:112-120`) |
-| `<root>/archived/*/` (one level into each bucket) | ✅ | Local, always readable; holds 92 of 97 known codes |
-| `publishedPath` (`config.json:138`) | ✅ **when reachable** | Holds `c36`, `b59`; skipped without error when T7 is unmounted |
+| `<root>/archived/` — **its own listing AND one level into each subfolder** | ✅ | Local, always readable; holds 92 of 97 known codes. Both levels are required: a project can sit directly in `archived/`, or inside a hand-made bucket (`b50-b99/`) |
+| `publishedPath` (`config.json:138`) — **scanned identically, two levels** | ✅ **when reachable** | Holds `c36`, `b59` directly *and* `b50-b99/b63-…` inside buckets; skipped without error when T7 is unmounted |
 | `holdingPath` | ❌ | Hold evacuates *subfolders*; the project folder stays in the live root (`storageTree.ts` HEAVY_SUBFOLDERS) — already counted |
 | Stored high-water mark | ✅ | The floor, per D2 |
 | Other brand roots (`v-aitldr`, `v-voz`, …) | ❌ | Series is per-root (§1.7) |
+
+⚠️ **A shallow scan of a bucketed tree fails LOUDLY-looking but silently wrong.** Bucket names
+like `b50-b99` themselves match `^[a-z]\d{2}-`, so stopping at the bucket level does not return
+"nothing found" — it returns the bucket name's parse (`b50`), a confident wrong code that reads
+like a real one. Both bucketed trees must be walked two levels. *(Found in review of the first
+FR-163 implementation, 2026-09-03; fixed in `2a4f7e5` with a shared `collectTwoLevels` helper and
+two regression tests. The live root stays one level — its children are projects, not buckets.)*
 | `.`-prefixed, `-`-prefixed folders; files | ❌ | Existing exclusions (`projects.ts:114-120`) |
 
 ---
