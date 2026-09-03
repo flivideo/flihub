@@ -18,6 +18,7 @@ import { useHoldStatus } from '../hooks/useHoldApi'; // B064
 import { LoadingSpinner, ErrorMessage } from './shared';
 import { ProjectListToolbar, STAGE_DISPLAY, STAGE_ORDER } from './ProjectListToolbar';
 import { ProjectDrawer } from './ProjectDrawer';
+import { NewProjectForm } from './NewProjectForm';
 import { copyProjectTranscript } from '../utils/clipboard';
 import { filterProjects, extractProjectName } from '../utils/projectFilters';
 import { formatShortDate } from '../utils/formatting';
@@ -512,7 +513,6 @@ const STAGE_ROW_TINT: Record<ProjectStage, string> = {
 export function ProjectsPanel(props: ProjectsPanelProps) {
   const { onNavigateToStorage } = props;
   const [showNewProject, setShowNewProject] = useState(false);
-  const [newProjectCode, setNewProjectCode] = useState('');
   // FR-148: Filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [activeStages, setActiveStages] = useState<Set<string>>(new Set());
@@ -593,19 +593,18 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
   };
 
   // FR-12: Create a new project and switch to it
-  const handleCreateProject = async () => {
-    if (!newProjectCode.trim()) {
+  const handleCreateProject = async (fullName: string) => {
+    if (!fullName.trim()) {
       toast.error('Project code is required');
       return;
     }
 
     try {
-      const result = await createProject.mutateAsync(newProjectCode.trim());
+      const result = await createProject.mutateAsync(fullName.trim());
       if (result.success && result.project) {
         toast.success(`Created project: ${result.project.code}`);
         // Auto-switch to the new project
         await handleSelectProject(result.project.path, result.project.code);
-        setNewProjectCode('');
         setShowNewProject(false);
       } else {
         toast.error(result.error || 'Failed to create project');
@@ -956,36 +955,12 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
             {/* FR-12: New Project Form - at bottom of table */}
             <div className="px-4 py-3">
               {showNewProject ? (
-                <div className="p-3 bg-surface-muted rounded-lg border border-warm">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newProjectCode}
-                      onChange={(e) => setNewProjectCode(e.target.value.toLowerCase())}
-                      placeholder="b73-project-name"
-                      className="flex-1 px-3 py-1.5 text-sm font-mono border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
-                      autoFocus
-                    />
-                    <button
-                      onClick={handleCreateProject}
-                      disabled={createProject.isPending}
-                      className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
-                    >
-                      {createProject.isPending ? 'Creating...' : 'Create'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowNewProject(false);
-                        setNewProjectCode('');
-                      }}
-                      className="px-3 py-1.5 text-sm text-warm-secondary hover:bg-surface-hover rounded transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  <p className="text-xs text-warm-muted mt-2">Use kebab-case (e.g., b73-my-new-video)</p>
-                </div>
+                <NewProjectForm
+                  existingNames={(data?.projects || []).map((p) => p.code)}
+                  pending={createProject.isPending}
+                  onCreate={handleCreateProject}
+                  onCancel={() => setShowNewProject(false)}
+                />
               ) : (
                 <button
                   onClick={() => setShowNewProject(true)}

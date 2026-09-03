@@ -14,6 +14,18 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## FR-163 — Auto-filled project codes (2026-09-03)
+
+New Project form pre-fills the next code (highest-ever + 1 per root, persisted high-water
+mark in config — gaps never refilled, deletes never reissue). Two fields: read-only code
+with pencil-unlock/reset, free-text description converted live (accents, &→and, dots kept,
+never truncated) with exact-folder preview and warn-not-block 50-char counter. Collision,
+below-next, invalid-code and unreadable/exhausted-root states all surfaced inline.
+GET /api/projects/next-code; mark raised on create. 13 server + 7 client unit tests.
+Spec: `docs/prd/fr-163-auto-filled-project-codes.md` (§7 open: a00 vs a01; 50 threshold).
+
+---
+
 ## FR-162 — Brand switcher dropdown (2026-09-03)
 
 Header gains `FliHub › [brand ▾]`. Brands come from ~/.config/appydave/brands.json merged

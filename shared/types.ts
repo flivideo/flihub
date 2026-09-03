@@ -201,6 +201,7 @@ export interface Config {
   imageSourceDirectory: string; // FR-17: Source for incoming images (default: ~/Downloads)
   projectPriorities?: Record<string, 'pinned'>; // FR-32: Pinned projects (absent = normal)
   projectStageOverrides?: Record<string, ProjectStage>; // FR-80: Manual stage overrides (absent = auto-detect)
+  projectCodeHighWater?: Record<string, string>; // FR-163: highest code ever issued, keyed by expanded root path — never decreased
   projectStages?: ProjectStage[]; // FR-80: Configurable stage list (defaults to DEFAULT_PROJECT_STAGES)
   chapterRecordings?: ChapterRecordingConfig; // FR-58: Chapter recording settings
   shadowResolution?: number; // FR-89 Part 6: Shadow video resolution (default: 240)

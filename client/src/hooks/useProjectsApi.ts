@@ -279,3 +279,22 @@ export function useUpdateProjectDictionary() {
     },
   });
 }
+
+// FR-163: next project code for the current root (highest ever + 1, per-root mark)
+export interface NextCodeResponse {
+  success: boolean;
+  state: 'ok' | 'empty' | 'unreadable' | 'exhausted';
+  next: string | null;
+  highest: string | null;
+  root: string;
+  reason?: string;
+}
+
+export function useNextProjectCode(enabled: boolean) {
+  return useQuery({
+    queryKey: ['next-project-code'],
+    queryFn: () => fetchApi<NextCodeResponse>('/api/projects/next-code'),
+    enabled,
+    staleTime: 0,
+  });
+}

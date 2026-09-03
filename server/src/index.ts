@@ -196,6 +196,14 @@ function updateConfig(newConfig: Partial<Config>): Config {
   if (newConfig.relayDirectory !== undefined) currentConfig.relayDirectory = newConfig.relayDirectory;
   if (newConfig.machineRole !== undefined) currentConfig.machineRole = newConfig.machineRole;
 
+  // FR-163: merge per-root project-code high-water marks (callers guarantee never-decrease)
+  if (newConfig.projectCodeHighWater !== undefined) {
+    currentConfig.projectCodeHighWater = {
+      ...currentConfig.projectCodeHighWater,
+      ...newConfig.projectCodeHighWater,
+    };
+  }
+
   // storage-panel: Handle T7 holding + published paths
   if (newConfig.holdingPath !== undefined) currentConfig.holdingPath = newConfig.holdingPath;
   if (newConfig.publishedPath !== undefined) currentConfig.publishedPath = newConfig.publishedPath;

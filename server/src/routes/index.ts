@@ -14,6 +14,8 @@ import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { createShadowFile, deleteShadowFile } from '../utils/shadowFiles.js';
+import { computeNextCode, parseSeriesCode, compareSeriesCodes, codeToString } from '../utils/nextProjectCode.js';
+import { expandPath as expandPathFr163 } from '../utils/pathUtils.js';
 import {
   readProjectState,
   writeProjectState,
@@ -347,6 +349,21 @@ export function createRoutes(
   });
 
   // FR-12: POST /api/projects - Create a new AppyDave video project
+  // FR-163: Next project code — highest ever issued + 1, per root (D1/D2)
+  router.get('/projects/next-code', async (_req: Request, res: Response) => {
+    try {
+      const result = await computeNextCode(config);
+      // Seed the high-water mark on first computation for this root (D2)
+      if (result.seeded && result.highest) {
+        updateConfig({ projectCodeHighWater: { [result.root]: result.highest } });
+      }
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error('[FR-163] next-code failed:', error);
+      res.status(500).json({ success: false, error: 'Failed to compute next code' });
+    }
+  });
+
   router.post('/projects', async (req: Request, res: Response) => {
     const { code } = req.body;
 
@@ -382,6 +399,17 @@ export function createRoutes(
       await fs.ensureDir(recordingsPath);
 
       console.log(`Created project: ${code} at ${projectPath}`);
+
+      // FR-163: raise the per-root high-water mark if this code tops it (never decreases)
+      const createdSeries = parseSeriesCode(code);
+      if (createdSeries) {
+        const rootKey = expandPathFr163(config.projectsRootDirectory!);
+        const current = config.projectCodeHighWater?.[rootKey];
+        const currentSeries = current ? parseSeriesCode(current) : null;
+        if (!currentSeries || compareSeriesCodes(createdSeries, currentSeries) > 0) {
+          updateConfig({ projectCodeHighWater: { [rootKey]: codeToString(createdSeries) } });
+        }
+      }
 
       res.json({
         success: true,

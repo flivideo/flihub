@@ -143,6 +143,10 @@ export function saveConfig(configPath: string, config: Config): void {
     if (config.projectStageOverrides && Object.keys(config.projectStageOverrides).length > 0) {
       toSave.projectStageOverrides = config.projectStageOverrides;
     }
+    // FR-163: per-root high-water mark for project codes
+    if (config.projectCodeHighWater && Object.keys(config.projectCodeHighWater).length > 0) {
+      toSave.projectCodeHighWater = config.projectCodeHighWater;
+    }
     // FR-89 Part 6: Save shadow resolution if set
     if (config.shadowResolution) {
       toSave.shadowResolution = config.shadowResolution;
