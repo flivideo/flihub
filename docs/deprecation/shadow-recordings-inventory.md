@@ -5,6 +5,10 @@ this is the complete trace for a later, approved strip-out.**
 
 ## 6 · What it was for (the record, before erasure)
 
+**David, directly, 2026-09-03 (via agent-a-day-orch):** *"`recording-shadows/` was a
+pre-relay bandwidth fix for Jan. With the relay in place it no longer makes sense."* That is
+the why the code could not state: shadows predate the relay lane; the relay superseded them.
+
 `server/src/utils/shadowFiles.ts` header: 240p H.264 + 128kbps AAC `.mp4` mirrors of every
 recording, in `recording-shadows/` (sibling of `recordings/`), so **collaborators (editors, e.g.
 Jan) can watch/transcribe/chapter content without the heavy source files**. FR-83; resolution
@@ -80,8 +84,11 @@ workflow was the audience (machineRole=editor plays shadows in Watch).
 4. **FR-155 (open design doc)** leans on shadows: its working position for Ecamm vertical
    files is "treat like recording-shadows — fits the FR-83 model" (fr-155 doc :63). Removing
    shadows removes that option's foundation.
-5. `getVideoDuration` lives IN `shadowFiles.ts` and is imported by transcription telemetry —
-   **do not delete the file wholesale; relocate the helper first.**
+5. `getVideoDuration` exists TWICE — `shadowFiles.ts:42` and a standalone
+   `utils/videoDuration.ts:7`. Telemetry/watcher/manage/index import the STANDALONE one
+   (first inventory said telemetry — wrong caller, corrected 2026-09-03). The one real
+   importer of the shadowFiles copy is **`routes/query/recordings.ts:18`** — repoint that
+   import (or delete the duplicate in favour of videoDuration.ts) before removing the file.
 6. `pending-count`/queue-all shadow-vs-real pairing (`transcriptions.ts:636-740`).
 
 ## 5 · What silently shifts if the files vanish (no code change)
