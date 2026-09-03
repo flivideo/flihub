@@ -110,10 +110,27 @@ workflow was the audience (machineRole=editor plays shadows in Watch).
 7. LAST, after code ships: delete `recording-shadows/` folders on disk (David's word; d01 =
    48 files/15MB is the only one found).
 
-## Disk truth (2026-09-03)
+## Disk truth (corrected 2026-09-03, second measurement)
 
-`find ~/dev/video-projects -type d -name '*shadow*'` → exactly ONE:
-`v-appydave/d01-kybernesis-12-videos/recording-shadows` (48 files). None under `archived/`,
-none in other roots, no `recording-shadows-safe` anywhere (URL convention only). **David said
-"two folders" — UNSURE what the second is; not found under ~/dev/video-projects.** d02 has no
-shadows (animation/storyboard project, no recordings/).
+**⚠️ First reading understated scope — a root move happened between measurements.** My
+initial `find` covered only `~/dev/video-projects` (→ exactly one folder, d01, 48 files) and
+called that "ecosystem-wide". video-projects-orch corrected it; re-verified directly:
+
+- `~/dev/video-projects` (local): **1** — `v-appydave/d01-kybernesis-12-videos/recording-shadows`, 48 files / 15 MB
+- `/Volumes/T7/v-appydave-old/*/recording-shadows` (offloaded this morning with the archived
+  projects): **56 folders, 1,200 files, 1367 MB**
+
+Total: **57 folders**. No `recording-shadows-safe` exists anywhere on disk (URL convention in
+WatchPage only). David's "two folders" remains UNSURE against this count — possibly he meant
+the two *locations* (local + T7).
+
+**Restore hazard for the strip-out:** any project restored from `v-appydave-old` brings its
+`recording-shadows/` back into a tree that no longer expects it — and until the ingest-rename
+auto-producer (`routes/index.ts:263`) is removed, a single rename regenerates shadows locally
+anyway. Step 1 of the removal order (kill producers) is what makes the disk cleanup stick;
+step 7 must include the T7 folders or a documented decision to leave offloaded copies as
+historical record.
+
+**Method lesson (recorded so the next measurement doesn't repeat it):** a `find` answers only
+for the tree it was pointed at; "ecosystem-wide" requires enumerating the roots first —
+local + T7 + any relay. Counts from a moving system carry a timestamp or they mislead.
