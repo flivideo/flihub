@@ -18,6 +18,7 @@ Requirements index for FliHub.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-162 | [Auto-filled Project Codes on New Project](prd/fr-162-auto-filled-project-codes.md) | 2026-09-03 | Specified (awaiting David — 2 rulings in §7)                     |
 | FR-157 | [Project and Chapter YouTube Titles](prd/fr-157-project-and-chapter-titles.md)          | 2026-08-30 | ✓ Implemented                                                   |
 | FR-156 | [Delete Recording (with confirmation)](prd/fr-156-delete-recording.md)                | 2026-08-26 | ✓ Implemented                                                   |
 | FR-155 | [Ecamm Dual-Mode Recording Ingestion](prd/fr-155-ecamm-dual-mode-ingestion.md)          | 2026-08-26 | Future (documented — design decision open)                      |
