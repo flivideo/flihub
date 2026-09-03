@@ -1,4 +1,4 @@
-# FR-162: Auto-filled project codes on New Project
+# FR-163: Auto-filled project codes on New Project
 
 **Status:** Specified 2026-09-03, awaiting David. Not implemented.
 **Trigger:** Pressing **New Project** should pre-fill the next code. Today the whole folder
@@ -116,7 +116,7 @@ it is the live configuration as of writing. Roots are per-brand (`v-aitldr`, `v-
 *"Project X already exists"*. The success toast at `:604` fires only inside
 `if (result.success && result.project)`.
 
-**This is not a defect to fix — it is a property to preserve.** FR-162 adds an auto-fill
+**This is not a defect to fix — it is a property to preserve.** FR-163 adds an auto-fill
 step that can itself decline (unreadable root, collision on a computed code); those new
 failure modes must be surfaced with the same honesty. See §4.5.
 
@@ -249,6 +249,38 @@ change and the rest of the spec is unaffected. The empty-root case is live right
 
 ---
 
+## 3b · Reconciliation with FR-162 (brand switcher, shipped 2026-09-03)
+
+FR-162 made the projects root a **live, user-switchable** value: `POST /api/brands/switch`
+sets `projectsRootDirectory`, clears `activeProject`, and re-derives `publishedPath` /
+`holdingPath` per brand (`server/src/routes/brands.ts`; `docs/prd/fr-162-brand-switcher.md`).
+FR-162's own "Not built" note names this ticket — *"project-code auto-suggestion on create
+(next `{letter}{NN}` **per brand**)"* — so the two specs agree and do not overlap.
+
+Three consequences for FR-163:
+
+1. **Per-root keying is now load-bearing, not theoretical.** D2's high-water mark must be
+   keyed by root path (or brand key), and switching brands must not leak a code series
+   between them. This is the same bleed class as archaeology #4 (stage/priority keyed by
+   code in global config); do not repeat it.
+2. **The form must recompute on brand switch.** FR-162 emits `projects:changed` and does a
+   full react-query invalidation. If the New Project form is open across a switch, a stale
+   pre-filled code from the previous brand is a wrong-folder hazard. Added as AC 15.
+3. **`publishedPath` now travels with the brand**, so §3's "publishedPath when reachable"
+   entry stays correct after a switch instead of pointing at the previous brand's T7 folder.
+
+⭐ **A live worked example of D1/D2, from FR-162's own testing.** That session created a
+disposable `a00-…` project in `v-kybernesis` to verify the switcher, then deleted it — the
+root is back to `phase-1` + `README.md` (verified 2026-09-03). **A scan-only implementation
+would now hand out `a00` a second time.** With the D2 high-water mark seeded during that
+test, it correctly returns `a01`. This is not a hypothetical: it already happened, once, in
+the first hour the switcher existed.
+
+*(Side evidence for §7 Q1: that session reached for `a00`, not `a01`, when inventing a first
+project by hand.)*
+
+---
+
 ## 4 · The requirement
 
 ### 4.1 Pre-fill on open
@@ -302,7 +334,7 @@ which §4.4 forbids here; specify the rules, do not simply reuse it):
 ⚠️ **Note for implementation:** `archiveInventory.ts`'s `isValidProjectDirName`
 (`/^[a-z0-9][a-z0-9-]+$/i`) rejects periods, so a dotted name is invisible to the archive
 scanner. That is archaeology finding #5, marked **DEFECT**, with "dot-grammar
-reconciliation" already in the held-recommendations queue. FR-162 follows the **create**
+reconciliation" already in the held-recommendations queue. FR-163 follows the **create**
 grammar (dots allowed) and does not resolve the conflict.
 
 **When conversion is shown: LIVE, as the user types.** The point of splitting the fields is
@@ -337,7 +369,7 @@ description segment.
 ### 4.5 Refusals must be visible — applied to this flow
 
 Per `CLAUDE.md` → Operating Rules: *a refusal that looks like success is a defect.*
-Every path where FR-162 declines or no-ops:
+Every path where FR-163 declines or no-ops:
 
 | Situation | Response must say | UI must show | Toast |
 |---|---|---|---|
@@ -388,13 +420,16 @@ Given `projectsRootDirectory` contains `d01-kybernesis-12-videos` and `d02-cutty
 13. With `a99-…` the highest, the next code is **`b00`**.
 14. A root containing `catalog`, `docs`, `poem`, `tools`, `phase-1` and `d02-x` yields
     **`d03`**; none of the non-conforming folders produce an error or affect the result.
+15. With the New Project form **open**, switch brands via the FR-162 header dropdown → the
+    pre-filled code recomputes for the new root (or clears with a reason per D6). It must
+    never keep the previous brand's code.
 
 ---
 
 ## 6 · Out of scope
 
 - **Renaming existing projects.** No rename exists in FliHub
-  (`docs/architecture/project-codes.md` — no route, no client path). FR-162 does not add one.
+  (`docs/architecture/project-codes.md` — no route, no client path). FR-163 does not add one.
   If rename is ever built, it must mirror the Teletubby semantics already defined there.
 - **Backfilling or repairing codes for existing folders.** The `x01-test` / `v38-…`
   exceptions, the 2 over-length names, and the `archived/**` buckets stay exactly as they are.
@@ -406,7 +441,7 @@ Given `projectsRootDirectory` contains `d01-kybernesis-12-videos` and `d02-cutty
 - **Making codes globally unique** across roots (archaeology #4). The high-water mark is
   per-root and does not address code bleed between brands.
 - **Moving stage/priority state out of global config** (archaeology #4's held
-  recommendation). FR-162 adds one per-root key to config and takes no position on that.
+  recommendation). FR-163 adds one per-root key to config and takes no position on that.
 - **Creating anything beyond `recordings/`** at project creation. Unchanged from
   `index.ts:382`.
 
