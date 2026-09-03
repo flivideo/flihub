@@ -57,11 +57,15 @@ Each item marked **DEFECT** / **DELIBERATE** / **UNKNOWN**, with file:line.
    NOWHERE (only a stale gitignored `dist/` fossil of a deleted s3-staging route did).
    Recommendation (held): derive the brand segment at use-time in `storage.ts` resolveRoots.
    **DEFECT waiting to fire** on the first real brand switch.
-8. **The 50-char truncation is recording-grain, not project-grain — corrected twice, so the
-   correction is the record:** `sanitizeName()` silently `.slice(0,50)`s recording *names*
-   (`shared/naming.ts:334`; the d01-ch03 mangle). Project create validates pattern ONLY
-   (`routes/index.ts:359`) — **no length cap at all** on project names. **DEFECT** in both
-   directions: silent clamp on one grain, no clamp on the other.
+8. **The 50-char cap: silently enforced on one grain, declared-but-unenforced on the other —
+   corrected twice, so the correction history is the record:** `sanitizeName()` silently
+   `.slice(0,50)`s recording *names* (`shared/naming.ts:334`; the d01-ch03 mangle).
+   `NAMING_RULES.name.maxLength: 50` exists (`naming.ts:44,49`) and `validateName()` enforces
+   it (`naming.ts:117`) — but the project-create route never calls `validateName`; it tests
+   `pattern` only (`routes/index.ts:359`), so a 60-char project name passes the API.
+   **DEFECT** in both directions: silent clamp on recordings, bypassed validator on projects.
+   (Established 2026-09-03 after a third query; the earlier "no cap at all" phrasing was
+   imprecise — the cap exists in the rules and is not applied on that path.)
 9. **The registry silently read 66 → 6 across the archive move** — correct both times
    (`archived` exclusion is DELIBERATE), and **nothing distinguishes "archived on purpose"
    from "root pointed somewhere wrong"** — same silence class as a root rename (no caches;

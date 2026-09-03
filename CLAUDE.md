@@ -14,6 +14,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ---
 
+## ⭐ Rebuild input — read before trusting the April specs
+
+`docs/rebuild-2026/requirements-archaeology-2026-09.md` is the consolidated survey of what
+this codebase ACTUALLY does (2026-09 sessions): every finding marked defect/deliberate/unknown
+with file:line, the Jan-exit deprecation cluster, and the held-recommendations queue awaiting
+David. A rebuild or archaeology session starts THERE. Companions:
+`docs/architecture/project-codes.md`, `docs/architecture/edit-folders.md`,
+`docs/deprecation/shadow-recordings-inventory.md`.
+
 **System context**: See [CONTEXT.md](CONTEXT.md) for purpose, core abstractions, key workflows, design decisions, non-obvious constraints, expert mental model, scope limits, and failure modes.
 
 ## Project Overview
