@@ -1,8 +1,9 @@
 /**
  * FR-163: Next project code — {letter}{NN}, highest-ever + 1, gaps never refilled.
  *
- * next = max(scan, stored high-water mark) + 1  (D1/D2). The scan covers the live root,
- * archived/<bucket>/ one level deep, and publishedPath when reachable (D2 seeding, §3).
+ * next = max(scan, stored high-water mark) + 1  (D1/D2). The scan covers the live root
+ * (one level, deliberately), and archived/ + publishedPath (when reachable) each scanned
+ * TWO levels — their own listing plus one level into each hand-made bucket (D2 seeding, §3).
  * Ordering is letter-then-number on the parsed pair, never lexical on folder names (D3).
  * x99 → (x+1)00; z99 has no successor and must decline visibly (D4).
  */

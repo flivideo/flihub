@@ -7,6 +7,18 @@ what you learned → what to do about it.
 
 ---
 
+## 2026-09-03
+
+- **[FR-163] A bucketed tree scanned shallow returns the bucket NAME's parse, not nothing —
+  a confident wrong code.** `b50-b99/` itself matches `^[a-z]\d{2}-`, so a one-level scan of
+  the published root reported highest=b50 while b63 sat inside the bucket. Silent
+  underestimate → the high-water mark seeds too low → codes get reissued, the exact failure
+  the feature exists to prevent. Second lesson from the same review: the spec literally
+  described the asymmetry (archived recursed, published unstated) and I implemented the doc,
+  not the disk — when two scan paths cover same-shaped trees, make them symmetric and test
+  the level the fixture DOESN'T naturally exercise. (Caught by flihub-spec-writer's probe;
+  fixed 2a4f7e5; spec corrected d36c885 so the doc can't re-teach it.)
+
 ## 2026-09-02
 
 - **[query-layer] The query layer's output shape is not derived from the model it describes,
