@@ -37,6 +37,7 @@ import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
 import { OpenFolderButton, SyncIndicator, RelayIndicator, SsdIndicator } from './components/shared';
 import { HeaderDropdown } from './components/HeaderDropdown';
+import { BrandSwitcher } from './components/BrandSwitcher';
 import { RecentlyNamedStrip } from './components/RecentlyNamedStrip';
 import { useOpenFolder } from './hooks/useOpenFolder';
 import ApiExplorer from './components/ApiExplorer';
@@ -450,6 +451,9 @@ function App() {
           <div className="py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
               <h1 className="text-xl font-semibold text-warm-primary flex-shrink-0">FliHub</h1>
+              <span className="text-warm-muted flex-shrink-0">›</span>
+              {/* Brand dropdown — switching repoints the whole app at that brand's root */}
+              <BrandSwitcher onSwitched={() => changeTab('projects')} />
               {config?.activeProject && (
                 <>
                   <span className="text-warm-muted flex-shrink-0">›</span>

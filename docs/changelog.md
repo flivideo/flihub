@@ -14,6 +14,15 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## FR-162 — Brand switcher dropdown (2026-09-03)
+
+Header gains `FliHub › [brand ▾]`. Brands come from ~/.config/appydave/brands.json merged
+with unregistered on-disk v-* roots; switching repoints the whole app (root + activeProject
+cleared + T7 published/holding paths derived with it) live, no restart, full UI refresh.
+kybernesis added to brands.json. → `docs/prd/fr-162-brand-switcher.md`
+
+---
+
 ## FR-157 — Project and chapter YouTube titles (2026-08-30)
 
 `title` at project level and per-chapter, both persisted in `.flihub-state.json`.

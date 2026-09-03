@@ -54,7 +54,9 @@ Each item marked **DEFECT** / **DELIBERATE** / **UNKNOWN**, with file:line.
    structural link to the root (`server/config.json`). `~/.config/appydave/brands.json`
    (canonical, self-declared) supplies `ssd_backup` (= published) per brand but has **no
    holding equivalent** — that hole is David's file to fill. Live FliHub reads brands.json
-   NOWHERE (only a stale gitignored `dist/` fossil of a deleted s3-staging route did).
+   NOWHERE — **superseded 2026-09-03: FR-162's brand switcher now reads it** (never writes)
+   and derives both T7 paths with the root on every switch, closing the switch-path half of
+   this seam. The holding-field hole in brands.json remains David's to fill.
    Recommendation (held): derive the brand segment at use-time in `storage.ts` resolveRoots.
    **DEFECT waiting to fire** on the first real brand switch.
 8. **The 50-char cap: silently enforced on one grain, declared-but-unenforced on the other —
