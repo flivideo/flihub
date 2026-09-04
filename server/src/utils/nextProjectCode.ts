@@ -66,7 +66,7 @@ export function maxCodeInNames(names: string[]): SeriesCode | null {
 
 export interface NextCodeResult {
   state: 'ok' | 'empty' | 'unreadable' | 'exhausted';
-  next: string | null; // the code to pre-fill, e.g. "d03" ("a00" when state==='empty')
+  next: string | null; // the code to pre-fill, e.g. "d03" ("a01" when state==='empty' — David's ruling 2026-09-04)
   highest: string | null; // the max this was computed from (scan ∪ mark)
   root: string; // expanded root the answer applies to (AC 15: client resets on change)
   reason?: string; // human-readable, for the D6/D4 decline paths
@@ -152,7 +152,7 @@ export async function computeNextCode(config: Config): Promise<NextCodeResult> {
 
   if (!highest) {
     // Genuinely empty (root readable, zero conforming codes, no mark) — D6.
-    return { state: 'empty', next: 'a00', highest: null, root, reason: 'First project in this root.' };
+    return { state: 'empty', next: 'a01', highest: null, root, reason: 'First project in this root.' };
   }
 
   const next = incrementSeriesCode(highest);

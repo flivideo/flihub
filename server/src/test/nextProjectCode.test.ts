@@ -103,10 +103,10 @@ describe('computeNextCode', () => {
     const r2 = await computeNextCode(cfg({ publishedPath: path.join(tmp, 'missing') }));
     expect(r2.next).toBe('d02');
   });
-  it('D6: empty root → a00/state empty; unreadable root → state unreadable, no a00', async () => {
+  it('D6: empty root → a01/state empty; unreadable root → state unreadable, no code', async () => {
     await fs.ensureDir(path.join(tmp, 'not-a-project'));
     const r = await computeNextCode(cfg());
-    expect(r).toMatchObject({ state: 'empty', next: 'a00' });
+    expect(r).toMatchObject({ state: 'empty', next: 'a01' });
     const r2 = await computeNextCode(cfg({ projectsRootDirectory: path.join(tmp, 'gone') }));
     expect(r2).toMatchObject({ state: 'unreadable', next: null });
   });

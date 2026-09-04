@@ -17,10 +17,8 @@ then this file.
 
 ## Open — David's word pending (one-word answers)
 
-1. **FR-163 §7: first code of an empty brand — `a00` (built) or `a01`?** Both this session and
-   flihub-spec-writer recommend **a01** (every real series starts at 01). Fires on Kybernesis's
-   first project.
-2. **50-char length warning threshold** — keep 50 or another number (warn-only either way).
+~~Both ruled 2026-09-04~~: **`a01`** for an empty brand's first code (shipped, tests updated),
+and the 50-char length-warning threshold **stays 50** (no change was needed).
 
 ## Held queue (unchanged, all designed/scoped, in `docs/rebuild-2026/requirements-archaeology-2026-09.md`)
 

@@ -221,17 +221,16 @@ than a rare wrong pre-fill. Neither exception is present in the current roots (c
 
 | Condition | Behaviour |
 |---|---|
-| Root readable, **zero** conforming folders, no stored mark | Pre-fill **`a00`** and unlock the field (see note below) |
+| Root readable, **zero** conforming folders, no stored mark | Pre-fill **`a01`** and unlock the field (see note below) |
 | Root **missing or unreadable** (`fs.pathExists` false, or readdir throws) | **No pre-fill.** Code field is empty, unlocked, and shows *"Could not read the projects directory — enter a code manually."* Create is still allowed; the server will fail honestly if the directory really is gone. **Never** silently fall back to `a00`, because "empty" and "unreadable" would then look identical — the exact ambiguity archaeology #9 names as a rebuild requirement. |
 
-**⚠️ Decision made on David's behalf, flag for ruling.** `a00` follows the stated scheme
-(`a00`→`a99`) and is consistent with D4's rollover (`a99`→`b00`). **But every series
-actually observed on disk starts at `01`, not `00`:** lowest live codes are `a01`, `b01`,
-`d01`, and `docs/architecture/project-codes.md` records specifically that *"the d-series
-started at `d01`, not `d00`"*. `b00-b49` and `-01-25` are archive **bucket** names, not
-projects. If David wants the first code of a fresh root to be `a01`, this is a one-word
-change and the rest of the spec is unaffected. The empty-root case is live right now
-(`v-kybernesis`, §1.7), so this will fire on the next brand root.
+**✅ RULED by David 2026-09-04: `a01`.** Originally built as `a00` (consistent with D4's
+rollover `a99`→`b00`), but every series actually observed on disk starts at `01`: lowest
+live codes are `a01`, `b01`, `d01`, and `docs/architecture/project-codes.md` records that
+*"the d-series started at `d01`, not `d00`"*. `b00-b49` and `-01-25` are archive **bucket**
+names, not projects. David's word: "a01". Rollover behaviour (D4) is unchanged — `a99`
+still increments to `b00`. In the same ruling: the 50-char length-warning threshold stays
+at 50 (warn-only).
 
 ---
 
