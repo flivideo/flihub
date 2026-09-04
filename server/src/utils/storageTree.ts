@@ -20,7 +20,7 @@ import type {
 // `recordings/-chapters/` is nested within `recordings/` and rides along in
 // the rsync — the directory walk treats it as a regular child of recordings.
 // ---------------------------------------------------------------------------
-export const HEAVY_SUBFOLDERS = ['recordings', 'recording-shadows', 'final'] as const;
+export const HEAVY_SUBFOLDERS = ['recordings', 'recording-shadows', 'final', 'b-roll'] as const; // FR-161: b-roll travels on hold/offload
 export type HeavySubfolder = typeof HEAVY_SUBFOLDERS[number];
 
 export function isHeavySubfolder(name: string): boolean {

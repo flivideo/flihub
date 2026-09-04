@@ -1,6 +1,6 @@
 # FR-161: B-roll lane — promote target that is not `recordings/`
 
-**Status:** Designed 2026-09-03, awaiting David. Stopgap available today (§5).
+**Status:** ✓ Implemented 2026-09-04 (David approved the sibling design). §5 stopgap superseded by the built lane.
 **Direction from David (verbatim, via orch):** record b-roll via Ecamm → lands in ingestion →
 "I don't have a place to put it other than recordings… happy to have a brand new page…
 promoted to that location… they're not part of the regular recording flow."
@@ -44,8 +44,8 @@ grouping, chapter counts, transcript pairing, FR-34 chapters. Options and costs:
 | Stage flip | **does not** — auto-detect counts `recordings/` only (`projectStats.ts`) | separate folder inert |
 | Stats/counts/verify gates | **not distorted** — all `paths.recordings`-scoped | ✓ |
 | **Archive/unarchive** | **travels** — whole-folder copy (`storage.ts`) | ✓ |
-| ⚠️ **Hold/offload** | **does NOT travel** — `HEAVY_SUBFOLDERS = ['recordings','recording-shadows','final']` (`storageTree.ts:23`); `b-roll/` stays local on hold | add to the list when built, or accept |
-| Delete/undo, FR-156 artifacts | recordings-only today; b-roll page needs its own delete (simple move to `-trash/`) | |
+| ⚠️ **Hold/offload** | **TRAVELS — decided at build (2026-09-04): `b-roll` added to `HEAVY_SUBFOLDERS`** (`storageTree.ts:23`). B-roll is heavy source media; leaving it behind on offload would be a silent data-locality surprise | ✓ built |
+| Delete/undo, FR-156 artifacts | b-roll page has its own delete (`DELETE /api/broll/:filename` → `-trash/`, collision-suffixed); promote is undo-tracked via the existing recent-renames | ✓ built |
 
 ## 5 · Stopgap for TODAY (no code)
 

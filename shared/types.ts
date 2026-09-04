@@ -400,6 +400,7 @@ export interface HoldOperationResult {
 }
 
 export interface RenameRequest {
+  destination?: 'recordings' | 'b-roll'; // FR-161: default 'recordings'
   originalPath: string;
   chapter: string;
   sequence: string | null;

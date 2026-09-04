@@ -14,6 +14,19 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## FR-161 — B-roll lane (2026-09-04)
+
+`b-roll/` as a top-level sibling of `recordings/` — chapter-less source media outside the
+recording flow. Incoming cards gain a purple **B-roll** button (name only, no chapter);
+promote reuses POST /api/rename with `destination: 'b-roll'` — same move + undo tracking,
+transcription and shadow deliberately do NOT fire. New B-Roll tab lists/plays/deletes
+(delete → `-trash/`). `b-roll` added to HEAVY_SUBFOLDERS so it travels on hold/offload as
+well as archive. Verified end-to-end with a generated clip: stats, chapters, stage,
+pending-count, queue and shadows all measured identical before/after.
+→ `docs/prd/fr-161-b-roll-lane.md`
+
+---
+
 ## FR-163 — Auto-filled project codes (2026-09-03)
 
 New Project form pre-fills the next code (highest-ever + 1 per root, persisted high-water

@@ -38,6 +38,7 @@ import { ConnectionIndicator } from './components/ConnectionIndicator';
 import { OpenFolderButton, SyncIndicator, RelayIndicator, SsdIndicator } from './components/shared';
 import { HeaderDropdown } from './components/HeaderDropdown';
 import { BrandSwitcher } from './components/BrandSwitcher';
+import { BRollPage } from './components/BRollPage';
 import { RecentlyNamedStrip } from './components/RecentlyNamedStrip';
 import { useOpenFolder } from './hooks/useOpenFolder';
 import ApiExplorer from './components/ApiExplorer';
@@ -53,6 +54,7 @@ type ViewTab =
   | 'assets'
   | 'thumbs'
   | 'export'
+  | 'b-roll'
   | 'projects'
   | 'config'
   | 'mockups'
@@ -62,6 +64,7 @@ type ViewTab =
 const VALID_TABS: ViewTab[] = [
   'incoming',
   'recordings',
+  'b-roll',
   'watch',
   'transcriptions',
   'inbox',
@@ -663,6 +666,16 @@ function App() {
               Recordings
             </button>
             <button
+              onClick={() => changeTab('b-roll')}
+              className={`text-sm transition-colors ${
+                activeTab === 'b-roll'
+                  ? 'text-blue-600 font-medium'
+                  : 'text-warm-muted hover:text-warm-secondary'
+              }`}
+            >
+              B-Roll
+            </button>
+            <button
               onClick={() => changeTab('watch')}
               className={`text-sm transition-colors ${
                 activeTab === 'watch'
@@ -808,6 +821,13 @@ function App() {
               />
             )}
           </>
+        )}
+
+        {/* FR-161: B-Roll Tab */}
+        {activeTab === 'b-roll' && (
+          <section>
+            <BRollPage />
+          </section>
         )}
 
         {/* Recordings Tab */}

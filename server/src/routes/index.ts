@@ -166,21 +166,35 @@ export function createRoutes(
 
   // POST /api/rename - Rename and move a file
   router.post('/rename', async (req: Request, res: Response) => {
-    const { originalPath, chapter, sequence, name, tags }: RenameRequest = req.body;
+    const { originalPath, chapter, sequence, name, tags, destination }: RenameRequest = req.body;
+    const isBroll = destination === 'b-roll'; // FR-161: chapter-less lane
 
-    // Validate inputs
-    if (!originalPath || !chapter || !name) {
+    // Validate inputs (FR-161: b-roll needs no chapter — its absence IS the marker)
+    if (!originalPath || !name || (!isBroll && !chapter)) {
       res.status(400).json({
         success: false,
         oldPath: originalPath,
         newPath: '',
-        error: 'Missing required fields: originalPath, chapter, and name are required',
+        error: isBroll
+          ? 'Missing required fields: originalPath and name are required'
+          : 'Missing required fields: originalPath, chapter, and name are required',
+      } as RenameResponse);
+      return;
+    }
+
+    // FR-161: validate the b-roll name against the same grammar, rejecting — never slicing
+    if (isBroll && !NAMING_RULES.name.pattern.test(name)) {
+      res.status(400).json({
+        success: false,
+        oldPath: originalPath,
+        newPath: '',
+        error: NAMING_RULES.name.errorMessage,
       } as RenameResponse);
       return;
     }
 
     // Validate chapter format (2 digits)
-    if (!NAMING_RULES.chapter.pattern.test(chapter)) {
+    if (!isBroll && !NAMING_RULES.chapter.pattern.test(chapter!)) {
       res.status(400).json({
         success: false,
         oldPath: originalPath,
@@ -215,9 +229,13 @@ export function createRoutes(
 
       // Build new filename
       // NFR-6: Using projectDirectory with getProjectPaths()
-      const newFilename = buildRecordingFilename(chapter, sequence, name, tags || []);
+      // FR-161: b-roll = {kebab-name}[-TAGS].mov, no chapter prefix, lands in b-roll/
+      const newFilename = isBroll
+        ? [name, ...(tags || [])].join('-') + '.mov'
+        : buildRecordingFilename(chapter!, sequence, name, tags || []);
       const paths = getProjectPaths(expandPath(config.projectDirectory));
-      const newPath = path.join(paths.recordings, newFilename);
+      const targetDir = isBroll ? paths.broll : paths.recordings;
+      const newPath = path.join(targetDir, newFilename);
 
       // Check for conflicts
       if (await fs.pathExists(newPath)) {
@@ -230,8 +248,8 @@ export function createRoutes(
         return;
       }
 
-      // Ensure recordings directory exists
-      await fs.ensureDir(paths.recordings);
+      // Ensure target directory exists
+      await fs.ensureDir(targetDir);
 
       // Move and rename file
       await fs.move(originalPath, newPath);
@@ -256,16 +274,17 @@ export function createRoutes(
       }
       console.log(`Tracked rename: ${renameEntry.originalName} -> ${renameEntry.newName}`);
 
-      // FR-30: Auto-queue transcription after successful rename
-      if (queueTranscription) {
-        queueTranscription(newPath);
+      // FR-30/FR-83: transcription + shadow fire for RECORDINGS only —
+      // FR-161: b-roll is outside the recording flow; neither applies.
+      if (!isBroll) {
+        if (queueTranscription) {
+          queueTranscription(newPath);
+        }
+        const shadowDir = path.join(paths.project, 'recording-shadows');
+        createShadowFile(newPath, shadowDir).catch((err) => {
+          console.warn('Failed to create shadow file:', err);
+        });
       }
-
-      // FR-83: Auto-generate shadow file for collaborators
-      const shadowDir = path.join(paths.project, 'recording-shadows');
-      createShadowFile(newPath, shadowDir).catch((err) => {
-        console.warn('Failed to create shadow file:', err);
-      });
 
       res.json({
         success: true,
@@ -425,6 +444,56 @@ export function createRoutes(
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create project',
       });
+    }
+  });
+
+  // FR-161: GET /api/broll — list the current project's b-roll files
+  router.get('/broll', async (_req: Request, res: Response) => {
+    try {
+      const paths = getProjectPaths(expandPath(config.projectDirectory));
+      let files: { filename: string; size: number; timestamp: string }[] = [];
+      try {
+        const entries = await fs.readdir(paths.broll);
+        for (const f of entries) {
+          if (!/\.(mov|mp4)$/i.test(f)) continue;
+          const st = await fs.stat(path.join(paths.broll, f));
+          files.push({ filename: f, size: st.size, timestamp: st.mtime.toISOString() });
+        }
+      } catch {
+        files = []; // folder absent = empty lane, not an error
+      }
+      files.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+      res.json({ success: true, files });
+    } catch (error) {
+      console.error('[FR-161] broll list failed:', error);
+      res.status(500).json({ success: false, error: 'Failed to list b-roll', files: [] });
+    }
+  });
+
+  // FR-161: DELETE /api/broll/:filename — move to -trash/ (recoverable)
+  router.delete('/broll/:filename', async (req: Request, res: Response) => {
+    const filename = queryString(req.params.filename);
+    if (!filename || filename.includes('..') || filename.includes('/')) {
+      res.status(400).json({ success: false, error: 'Invalid filename' });
+      return;
+    }
+    try {
+      const paths = getProjectPaths(expandPath(config.projectDirectory));
+      const src = path.join(paths.broll, filename);
+      if (!(await fs.pathExists(src))) {
+        res.status(404).json({ success: false, error: `Not found in b-roll: ${filename}` });
+        return;
+      }
+      await fs.ensureDir(paths.trash);
+      let dest = path.join(paths.trash, filename);
+      if (await fs.pathExists(dest)) {
+        dest = path.join(paths.trash, `${Date.now()}-${filename}`);
+      }
+      await fs.move(src, dest);
+      res.json({ success: true, trashedTo: dest });
+    } catch (error) {
+      console.error('[FR-161] broll delete failed:', error);
+      res.status(500).json({ success: false, error: 'Failed to delete b-roll file' });
     }
   });
 

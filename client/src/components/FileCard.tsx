@@ -74,6 +74,33 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
     }
   };
 
+  // FR-161: promote to b-roll — name only, no chapter; transcription/shadow do not fire
+  const handleBroll = async () => {
+    const name = namingState.name.trim();
+    if (!name) {
+      toast.error('Enter a name first (no chapter needed for b-roll)');
+      return;
+    }
+    try {
+      const result = await renameMutation.mutateAsync({
+        originalPath: file.path,
+        chapter: '',
+        sequence: null,
+        name,
+        tags: [],
+        destination: 'b-roll',
+      } as RenameRequest);
+      if (result.success) {
+        toast.success(`Moved to b-roll: ${result.newPath.split('/').pop()}`);
+        onRenamed();
+      } else {
+        toast.error(result.error || 'B-roll move failed');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'B-roll move failed');
+    }
+  };
+
   // FR-5: Discard moves to .trash/ directory
   const handleDiscard = async () => {
     try {
@@ -163,6 +190,14 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
             className="px-3 py-1.5 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
           >
             {trashMutation.isPending ? 'Trashing...' : 'Discard'}
+          </button>
+          <button
+            onClick={handleBroll}
+            disabled={isLoading || !name}
+            title="Move to b-roll/ — chapter-less; no transcription, no shadow (FR-161)"
+            className="px-3 py-1.5 text-sm text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            B-roll
           </button>
           <button
             onClick={handleRename}

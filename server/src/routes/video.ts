@@ -55,6 +55,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
     // FR-83: Allow recordings, chapters, shadow, and edit folders
     const allowedFolders = [
       'recordings',
+      'b-roll', // FR-161
       '-chapters',
       'recording-shadows',
       'recording-shadows-safe',
