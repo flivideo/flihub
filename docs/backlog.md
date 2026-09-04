@@ -12,13 +12,28 @@ Requirements index for FliHub.
 
 **Priority Order:** FR-140 (HIGH - validated by data) → 8 manual fixes (15 min) → FR-134/133/135 (OPTIONAL future enhancements)
 
+**Ruled, not yet actioned (2026-09-04):** David ruled the project-folder convention as
+`recordings/` · `recording-transcripts/` · `b-roll/` · `first-edit/` · `audio/` ·
+`second-edit/` · `final/`. The dead `edit-1st`/`edit-2nd` strings (FliHub never reads or
+writes them — see `architecture/edit-folders.md`) and the relay edit lanes can be retired
+when that lands. Captured only; no ticket yet. Also 2026-09-04: shadow recordings (FR-83)
+code fully removed — see `deprecation/shadow-recordings-inventory.md`; disk cleanup (57
+folders) still awaits David's word.
+
 ---
 
 ## Functional Requirements
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
-| FR-163 | [Auto-filled Project Codes on New Project](prd/fr-163-auto-filled-project-codes.md) | 2026-09-03 | ✓ Implemented (open: a00-vs-a01, 50-char threshold — §7)            |
+| FR-170 | [Chapter Seed Export for FliCut](prd/fr-170-chapter-seed-export.md)                     | 2026-09-04 | Pending (blocked on FR-169; FliCut half = FC-30)                |
+| FR-169 | [Word-Level Timestamps in Transcription](prd/fr-169-word-level-timestamps.md)           | 2026-09-04 | Pending (blocker for FR-170/FC-30; one-flag change + dictionary question) |
+| FR-168 | [`ships` Field: per-project / per-chapter](prd/fr-168-ships-field.md)                   | 2026-09-04 | Pending — design RULED by David 2026-09-04                      |
+| FR-167 | [Chapter Extraction Anchors Wrong Take](prd/fr-167-chapter-extraction-last-take.md)     | 2026-09-04 | Pending (FR-34 fragility; needs David's read on options)        |
+| FR-166 | [Bulk-Rename Honest Response](prd/fr-166-bulk-rename-honest-response.md)                | 2026-09-04 | Pending (defect, observed live)                                 |
+| FR-165 | [One Undo Story for Renames](prd/fr-165-unified-rename-undo.md)                         | 2026-09-04 | Pending (design gap, observed live)                             |
+| FR-164 | [Swap-Chapters Strands FR-157 Titles](prd/fr-164-swap-chapters-title-remap.md)          | 2026-09-04 | Pending (latent defect)                                         |
+| FR-163 | [Auto-filled Project Codes on New Project](prd/fr-163-auto-filled-project-codes.md) | 2026-09-03 | ✓ Implemented (a01 + 50-char threshold ruled 2026-09-04)            |
 | FR-161 | [B-roll Lane](prd/fr-161-b-roll-lane.md)                                                | 2026-09-03 | ✓ Implemented                                                   |
 | FR-162 | [Brand Switcher Dropdown](prd/fr-162-brand-switcher.md)                                 | 2026-09-03 | ✓ Implemented                                                   |
 | FR-157 | [Project and Chapter YouTube Titles](prd/fr-157-project-and-chapter-titles.md)          | 2026-08-30 | ✓ Implemented                                                   |
