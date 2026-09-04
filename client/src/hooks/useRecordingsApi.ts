@@ -23,7 +23,6 @@ export function useRecordings() {
       fetchApi<{
         recordings: RecordingFile[];
         totalRecordingsSize: number; // FR-95: Total size of real recordings in bytes
-        totalShadowsSize: number | null; // FR-95: Total shadow size (null if none)
         chapterTitles?: Record<string, string>; // FR-157: persisted chapter titles by 2-digit key
         project?: { code: string; title: string | null }; // FR-157: current project + its title
         error?: string;
@@ -53,9 +52,9 @@ export function useTrashFile() {
   });
 }
 
-// FR-156: Trash recording(s) plus every sibling artifact (shadow + transcripts)
+// FR-156: Trash recording(s) plus every sibling artifact (transcripts)
 export interface TrashArtifact {
-  kind: 'recording' | 'shadow' | 'transcript';
+  kind: 'recording' | 'transcript';
   label: string;
   path: string;
   filename: string;

@@ -13,7 +13,6 @@ import type {
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
-import { createShadowFile, deleteShadowFile } from '../utils/shadowFiles.js';
 import { computeNextCode, parseSeriesCode, compareSeriesCodes, codeToString } from '../utils/nextProjectCode.js';
 import {
   readProjectState,
@@ -130,7 +129,6 @@ export function createRoutes(
       projectsRootDirectory,
       activeProject,
       imageSourceDirectory,
-      shadowResolution,
       glingDictionary,
       commonNames,
       relayDirectory,
@@ -145,7 +143,6 @@ export function createRoutes(
       projectsRootDirectory,
       activeProject,
       imageSourceDirectory,
-      shadowResolution,
       glingDictionary,
       commonNames,
       relayDirectory,
@@ -274,16 +271,11 @@ export function createRoutes(
       }
       console.log(`Tracked rename: ${renameEntry.originalName} -> ${renameEntry.newName}`);
 
-      // FR-30/FR-83: transcription + shadow fire for RECORDINGS only —
-      // FR-161: b-roll is outside the recording flow; neither applies.
-      if (!isBroll) {
-        if (queueTranscription) {
-          queueTranscription(newPath);
-        }
-        const shadowDir = path.join(paths.project, 'recording-shadows');
-        createShadowFile(newPath, shadowDir).catch((err) => {
-          console.warn('Failed to create shadow file:', err);
-        });
+      // FR-30: transcription fires for RECORDINGS only —
+      // FR-161: b-roll is outside the recording flow.
+      // Shadow generation removed 2026-09-04 (FR-83 deprecated — relay superseded it).
+      if (!isBroll && queueTranscription) {
+        queueTranscription(newPath);
       }
 
       res.json({
@@ -499,7 +491,6 @@ export function createRoutes(
 
   // FR-14: GET /api/recordings - List all recordings in project's recordings directory
   // NFR-6: Using projectDirectory with getProjectPaths()
-  // FR-88: Unified scanning - merges real recordings with shadow video files
   // FR-111 Phase 3: Rewritten to use state file instead of -safe folder
   router.get('/recordings', async (_req: Request, res: Response) => {
     try {
@@ -507,9 +498,6 @@ export function createRoutes(
 
       // FR-111: Read project state for isSafe flags
       const state = await readProjectState(config.projectDirectory);
-
-      // FR-88: Shadow directory (no longer scanning -safe subfolder)
-      const shadowDir = path.join(paths.project, 'recording-shadows');
 
       // Known tags that can appear at the end of filenames
       const knownTags = new Set((config.availableTags || []).map((t) => t.toLowerCase()));
@@ -533,63 +521,7 @@ export function createRoutes(
         return { name: nameParts.join('-'), tags };
       };
 
-      // FR-88: Build unified map - baseName -> recording (real takes precedence over shadow)
       const unifiedMap = new Map<string, RecordingFile>();
-
-      // FR-88: Track which baseNames have shadow files (for hasShadow flag)
-      const shadowSet = new Map<
-        string,
-        { size: number; duration: number | null; shadowPath: string }
-      >();
-
-      // FR-111: Only scan main shadow directory (no -safe subfolder)
-      if (await fs.pathExists(shadowDir)) {
-        const entries = await fs.readdir(shadowDir, { withFileTypes: true });
-        for (const entry of entries) {
-          // Skip -safe directory if it still exists (migration not complete)
-          if (entry.isDirectory() && entry.name === '-safe') continue;
-          if (!entry.isFile() || !entry.name.match(/\.mp4$/i)) continue;
-
-          const shadowPath = path.join(shadowDir, entry.name);
-          const baseName = entry.name.replace(/\.mp4$/i, '');
-          const parsed = parseRecordingFilename(baseName + '.mov');
-          if (!parsed) continue;
-
-          const stats = await fs.stat(shadowPath);
-          const duration = await getVideoDuration(shadowPath);
-
-          // Track shadow for hasShadow check on real files
-          shadowSet.set(baseName, { size: stats.size, duration, shadowPath });
-
-          // Extract name and tags
-          const { name, tags } = extractNameAndTags(parsed.name);
-
-          // FR-111/FR-120/FR-123: Check state for isSafe, isParked, and annotation
-          const isSafe = isRecordingSafe(state, `${baseName}.mov`);
-          const isParked = isRecordingParked(state, `${baseName}.mov`);
-          const annotation = getRecordingAnnotation(state, `${baseName}.mov`);
-
-          // Add as shadow-only entry (may be overwritten by real file)
-          unifiedMap.set(baseName, {
-            filename: `${baseName}.mov`, // Report as .mov for UI consistency
-            path: shadowPath, // Path points to shadow video
-            size: stats.size,
-            timestamp: stats.mtime.toISOString(),
-            duration: duration ?? undefined,
-            chapter: parsed.chapter,
-            sequence: parsed.sequence || '1',
-            name,
-            tags,
-            folder: 'recordings', // FR-111: Always 'recordings' now
-            isSafe, // FR-111: From state file
-            isParked, // FR-120: From state file
-            annotation, // FR-123: From state file
-            isShadow: true,
-            hasShadow: true, // Shadow-only files obviously have shadow
-            shadowSize: stats.size, // FR-95: Shadow-only, so shadow size = file size
-          });
-        }
-      }
 
       // FR-111: Only scan main recordings folder (no -safe subfolder)
       if (await fs.pathExists(paths.recordings)) {
@@ -606,12 +538,10 @@ export function createRoutes(
 
             const stats = await fs.stat(filePath);
 
-            // Check if this recording has a shadow
             const baseName = entry.name.replace('.mov', '');
-            const shadowInfo = shadowSet.get(baseName);
 
-            // FR-36: Get video duration (prefer shadow duration if available, faster to read)
-            const duration = shadowInfo?.duration ?? (await getVideoDuration(filePath));
+            // FR-36: Get video duration
+            const duration = await getVideoDuration(filePath);
 
             const { name, tags } = extractNameAndTags(parsed.name);
 
@@ -636,15 +566,11 @@ export function createRoutes(
                 isSafe, // FR-111: From state file
                 isParked, // FR-120: From state file
                 annotation, // FR-123: From state file
-                isShadow: false,
-                hasShadow: !!shadowInfo,
-                shadowSize: shadowInfo?.size ?? null, // FR-95: Shadow file size (null if no shadow)
               } satisfies RecordingFile,
             };
           })
         );
 
-        // Add real recordings to map (overwrites shadow-only entries)
         for (const result of results) {
           if (result) {
             unifiedMap.set(result.baseName, result.recording);
@@ -664,23 +590,15 @@ export function createRoutes(
         return a.timestamp.localeCompare(b.timestamp);
       });
 
-      // FR-95: Calculate total sizes for header display
+      // FR-95: Calculate total size for header display
       let totalRecordingsSize = 0;
-      let totalShadowsSize = 0;
-
       for (const r of recordings) {
-        if (!r.isShadow) {
-          totalRecordingsSize += r.size;
-        }
-        if (r.shadowSize) {
-          totalShadowsSize += r.shadowSize;
-        }
+        totalRecordingsSize += r.size;
       }
 
       res.json({
         recordings,
         totalRecordingsSize, // FR-95: Total size of real recordings in bytes
-        totalShadowsSize: totalShadowsSize > 0 ? totalShadowsSize : null, // FR-95: Total shadow size (null if none)
         chapterTitles: getChapterTitles(state), // FR-157: { "03": "title" } from .flihub-state.json
         project: { code: path.basename(paths.project), title: state.title ?? null }, // FR-157
       });
@@ -689,7 +607,6 @@ export function createRoutes(
       res.status(500).json({
         recordings: [],
         totalRecordingsSize: 0,
-        totalShadowsSize: null,
         error: error instanceof Error ? error.message : 'Failed to list recordings',
       });
     }
@@ -767,14 +684,6 @@ export function createRoutes(
 
       // Move file back to original location with original name
       await fs.move(rename.newPath, rename.originalPath);
-
-      // FR-83: Delete shadow file since recording is being moved back to watch directory
-      const paths = getProjectPaths(expandPath(config.projectDirectory));
-      const shadowDir = path.join(paths.project, 'recording-shadows');
-      const baseName = rename.newName.replace(/\.mov$/i, '');
-      deleteShadowFile(baseName, shadowDir).catch((err) => {
-        console.warn(`Failed to delete shadow for undone rename:`, err);
-      });
 
       // Remove from tracking
       recentRenames.splice(renameIndex, 1);
@@ -1068,7 +977,7 @@ export function createRoutes(
   });
 
   // FR-156: POST /api/recordings/trash - Move recording(s) and every sibling
-  // artifact (shadow + transcripts) into -trash/.
+  // artifact (transcripts) into -trash/.
   // Pass dryRun: true to get the same discovery result without moving anything —
   // the confirmation dialog uses this so the warning always matches the action.
   router.post('/recordings/trash', async (req: Request, res: Response) => {
@@ -1201,7 +1110,7 @@ export function createRoutes(
       // Find all .mov files matching this chapter-label pattern
       const recordingsToRename: { oldFilename: string; newFilename: string }[] = [];
 
-      // Helper to find recordings (only .mov files, not transcripts or shadows)
+      // Helper to find recordings (only .mov files, not transcripts)
       const findRecordings = async (dirPath: string) => {
         if (!(await fs.pathExists(dirPath))) return;
 

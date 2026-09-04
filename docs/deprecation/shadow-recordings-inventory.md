@@ -1,7 +1,19 @@
 # Shadow Recordings (FR-83) — deprecation inventory
 
-**Status: IDENTIFY ONLY (2026-09-03). Nothing removed. David has ruled the feature deprecated;
-this is the complete trace for a later, approved strip-out.**
+**Status: CODE REMOVED 2026-09-04** on David's repeated direct instruction (relayed with his
+quoted words via agent-a-day-orch). Steps 1–6 of §7 executed; **step 7 (disk deletion) NOT
+executed** — all 57 `recording-shadows/` folders (1 local, 56 on T7) remain on disk untouched,
+awaiting David's separate word. Two deliberate code keeps: `HEAVY_SUBFOLDERS` retains
+`'recording-shadows'` so legacy folders still travel on hold/offload instead of being stranded,
+and disk observability shows legacy folders itemised under "other". This document is now the
+historical record of what the feature was.
+
+**How "remove the code" became "identify only" (the mechanism, answered 2026-09-04):** the
+2026-09-03 relay carried David's *why* (pre-relay bandwidth fix, superseded) — read as a
+deprecation ruling, not a build go — so under the hold-on-bare-relays protocol the strip-out
+was staged in the held queue awaiting his direct word, and that pending state was recorded
+only in repo docs, never surfaced to him. He believed dealt-with meant done. Lesson: when an
+instruction is downgraded to a scoping step, the downgrade itself must be reported back.
 
 ## 6 · What it was for (the record, before erasure)
 

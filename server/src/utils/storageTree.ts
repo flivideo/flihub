@@ -21,6 +21,8 @@ import type {
 // the rsync — the directory walk treats it as a regular child of recordings.
 // ---------------------------------------------------------------------------
 export const HEAVY_SUBFOLDERS = ['recordings', 'recording-shadows', 'final', 'b-roll'] as const; // FR-161: b-roll travels on hold/offload
+// 'recording-shadows' stays ONLY so legacy folders (FR-83, deprecated 2026-09-04) still travel
+// on hold/offload instead of being stranded. No code creates or reads shadows any more.
 export type HeavySubfolder = typeof HEAVY_SUBFOLDERS[number];
 
 export function isHeavySubfolder(name: string): boolean {

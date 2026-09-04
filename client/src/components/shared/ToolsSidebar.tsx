@@ -31,7 +31,7 @@ export function ToolsSidebar({
             label="Regen"
             active={activeTool === 'regen'}
             onClick={() => onToolClick('regen')}
-            tooltip="Regenerate shadows, transcripts, and chapters"
+            tooltip="Regenerate transcripts and chapters"
           />
         </div>
       </div>

@@ -19,10 +19,6 @@ vi.mock('../utils/renameRecording.js', () => ({
   renameRecording: (...args: unknown[]) => mockRenameRecording(...args),
 }));
 
-// Mock shadowFiles (used by regen-shadows routes)
-vi.mock('../utils/shadowFiles.js', () => ({
-  createShadowFile: vi.fn().mockResolvedValue({ success: true, shadowPath: '/tmp/shadow.mp4' }),
-}));
 
 // Mock chapterRecording (used by regen-chapters routes)
 vi.mock('../utils/chapterRecording.js', () => ({

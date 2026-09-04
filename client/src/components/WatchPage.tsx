@@ -143,20 +143,11 @@ function groupByChapterWithTiming(
 }
 
 // Build video URL for a recording
-// FR-83: Support shadow videos with different folder and .mp4 extension
 function getVideoUrl(
   projectCode: string,
   filename: string,
-  folder: 'recordings' | '-chapters' = 'recordings',
-  options?: { isShadow?: boolean; shadowFolder?: 'recordings' | 'safe' }
+  folder: 'recordings' | '-chapters' = 'recordings'
 ): string {
-  if (options?.isShadow) {
-    // Shadow videos are .mp4 in recording-shadows/ folder
-    const shadowFilename = filename.replace(/\.mov$/i, '.mp4');
-    const shadowFolder =
-      options.shadowFolder === 'safe' ? 'recording-shadows-safe' : 'recording-shadows';
-    return `${API_URL}/api/video/${projectCode}/${shadowFolder}/${shadowFilename}`;
-  }
   return `${API_URL}/api/video/${projectCode}/${folder}/${filename}`;
 }
 
@@ -169,8 +160,6 @@ interface VideoMeta {
   chapterLabel?: string; // FR-77: For chapter videos, the label (e.g., "intro")
   segmentName?: string; // For segment videos, the full name without extension (e.g., "01-1-intro")
   chapterFiles?: RecordingFile[]; // For chapter videos, all segments in the chapter
-  isShadow?: boolean; // FR-83: True if playing 240p preview video
-  sourceFile?: RecordingFile; // FR-88: Original file for fallback logic
 }
 
 export function WatchPage() {
@@ -293,38 +282,23 @@ export function WatchPage() {
   }, [currentVideo?.segmentName, sortedRecordings]);
 
   // FR-100: Navigation handlers
-  // FR-111: Simplified - no more -safe subfolder for shadows
   const handlePrevious = useCallback(() => {
     if (currentIndex <= 0 || !projectCode) return;
     const prev = sortedRecordings[currentIndex - 1];
-    const isShadow = 'isShadow' in prev && prev.isShadow;
-    const url = getVideoUrl(projectCode, prev.filename, 'recordings', {
-      isShadow,
-      shadowFolder: 'recordings', // FR-111: Always recordings now
-    });
     setCurrentVideo({
-      url,
+      url: getVideoUrl(projectCode, prev.filename),
       title: prev.filename,
       segmentName: prev.filename.replace(/\.mov$/i, ''),
-      isShadow,
-      sourceFile: prev,
     });
   }, [currentIndex, sortedRecordings, projectCode]);
 
   const handleNext = useCallback(() => {
     if (currentIndex >= sortedRecordings.length - 1 || !projectCode) return;
     const next = sortedRecordings[currentIndex + 1];
-    const isShadow = 'isShadow' in next && next.isShadow;
-    const url = getVideoUrl(projectCode, next.filename, 'recordings', {
-      isShadow,
-      shadowFolder: 'recordings', // FR-111: Always recordings now
-    });
     setCurrentVideo({
-      url,
+      url: getVideoUrl(projectCode, next.filename),
       title: next.filename,
       segmentName: next.filename.replace(/\.mov$/i, ''),
-      isShadow,
-      sourceFile: next,
     });
   }, [currentIndex, sortedRecordings, projectCode]);
 
@@ -415,7 +389,6 @@ export function WatchPage() {
   }, [chapters]);
 
   // Find and play the next segment
-  // FR-88: Handle shadow files and include sourceFile for fallback
   const playNextSegment = useCallback(() => {
     if (!currentVideo || !projectCode || currentVideo.isChapter) return;
 
@@ -429,20 +402,12 @@ export function WatchPage() {
     if (currentIndex === -1 || currentIndex >= allSegments.length - 1) return;
 
     // Play next segment
-    // FR-111: Simplified - no more -safe subfolder for shadows
     const nextSegment = allSegments[currentIndex + 1];
-    const isShadow = 'isShadow' in nextSegment && nextSegment.isShadow;
-    const url = getVideoUrl(projectCode, nextSegment.filename, 'recordings', {
-      isShadow,
-      shadowFolder: 'recordings', // FR-111: Always recordings now
-    });
     const segmentName = nextSegment.filename.replace(/\.mov$/, '');
     setCurrentVideo({
-      url,
+      url: getVideoUrl(projectCode, nextSegment.filename),
       title: nextSegment.filename,
       segmentName,
-      isShadow,
-      sourceFile: nextSegment, // FR-88: Include for fallback
     });
 
     // Auto-play the video
@@ -454,24 +419,14 @@ export function WatchPage() {
   }, [currentVideo, projectCode, allSegments]);
 
   // Play a specific recording (segment)
-  // FR-83: Shadow files play from recording-shadows/ folder as .mp4
-  // FR-88: Include source file for shadow fallback
-  // FR-111: Simplified - no more -safe subfolder for shadows
   const playRecording = useCallback(
     (file: RecordingFile) => {
       if (!projectCode) return;
-      const isShadow = 'isShadow' in file && file.isShadow;
-      const url = getVideoUrl(projectCode, file.filename, 'recordings', {
-        isShadow,
-        shadowFolder: 'recordings', // FR-111: Always recordings now
-      });
       const segmentName = file.filename.replace(/\.mov$/, '');
       setCurrentVideo({
-        url,
+        url: getVideoUrl(projectCode, file.filename),
         title: file.filename,
         segmentName,
-        isShadow,
-        sourceFile: file, // FR-88: Keep reference for fallback
       });
     },
     [projectCode]
@@ -497,42 +452,9 @@ export function WatchPage() {
     [projectCode]
   );
 
-  // FR-88: Handle video load error with shadow fallback
-  const handleVideoError = useCallback(
-    (e: React.SyntheticEvent<HTMLVideoElement>) => {
-      console.error('Video error:', e);
-
-      // If we're already playing a shadow or no source file, nothing to fall back to
-      if (!currentVideo || currentVideo.isShadow || !currentVideo.sourceFile) {
-        console.log('[FR-88] No fallback available - already shadow or no source file');
-        return;
-      }
-
-      const file = currentVideo.sourceFile;
-      const hasShadow = 'hasShadow' in file && file.hasShadow;
-
-      if (hasShadow && projectCode) {
-        console.log('[FR-88] Falling back to shadow video for:', file.filename);
-        // FR-111: Always recordings now (no more -safe folder)
-        const shadowUrl = getVideoUrl(projectCode, file.filename, 'recordings', {
-          isShadow: true,
-          shadowFolder: 'recordings',
-        });
-        setCurrentVideo((prev) =>
-          prev
-            ? {
-                ...prev,
-                url: shadowUrl,
-                isShadow: true,
-              }
-            : null
-        );
-      } else {
-        console.log('[FR-88] No shadow available for fallback');
-      }
-    },
-    [currentVideo, projectCode]
-  );
+  const handleVideoError = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
+    console.error('Video error:', e);
+  }, []);
 
   // FR-123: Park/Unpark handlers
   const handleParkToggle = useCallback(async () => {
@@ -648,13 +570,6 @@ export function WatchPage() {
           className="bg-black rounded-lg overflow-hidden relative flex items-center justify-center"
           style={{ aspectRatio: aspect, maxHeight: '70vh' }}
         >
-          {/* FR-83: Shadow indicator badge */}
-          {currentVideo?.isShadow && (
-            <div className="absolute top-3 left-3 z-10 bg-black/70 text-yellow-400 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
-              <span>👻</span>
-              <span>240p Preview</span>
-            </div>
-          )}
           {currentVideo ? (
             <video
               ref={videoRef}
@@ -731,11 +646,6 @@ export function WatchPage() {
               {currentVideo.isChapter && (
                 <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
                   Chapter Recording
-                </span>
-              )}
-              {currentVideo.isShadow && (
-                <span className="text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded flex items-center gap-1">
-                  <span>👻</span> Shadow
                 </span>
               )}
             </>
@@ -916,31 +826,14 @@ export function WatchPage() {
               {hoveredChapter?.files.map((file) => {
                 const isPlaying =
                   currentVideo?.url.includes(file.filename) && !currentVideo?.isChapter;
-                // FR-83: Recording status
-                const isShadow = 'isShadow' in file && file.isShadow;
-                const hasShadow = 'hasShadow' in file && file.hasShadow;
                 // FR-111 Phase 4: Safe status
                 const isSafe = 'isSafe' in file && file.isSafe;
                 // FR-121: Parked status
                 const isParked = 'isParked' in file && file.isParked;
 
-                // FR-83/FR-88: Status indicator - show both playing state AND shadow status
-                // 📹 = Real | 👻 = Shadow only | 📹👻 = Real + Shadow
                 // ▶ prefix = currently playing
-                let statusIcon: string;
-                let statusTitle: string;
-                if (isShadow) {
-                  statusIcon = isPlaying ? '▶ 👻' : '👻';
-                  statusTitle = isPlaying
-                    ? 'Playing (shadow only)'
-                    : 'Shadow only (collaborator mode)';
-                } else if (hasShadow) {
-                  statusIcon = isPlaying ? '▶ 📹👻' : '📹👻';
-                  statusTitle = isPlaying ? 'Playing (real + shadow)' : 'Real + Shadow';
-                } else {
-                  statusIcon = isPlaying ? '▶ 📹' : '📹';
-                  statusTitle = isPlaying ? 'Playing (real only)' : 'Real recording (no shadow)';
-                }
+                const statusIcon = isPlaying ? '▶ 📹' : '📹';
+                const statusTitle = isPlaying ? 'Playing' : 'Recording';
 
                 // FR-111/FR-121: Determine row styling - safe=yellow, parked=pink
                 let rowClasses: string;
@@ -952,8 +845,6 @@ export function WatchPage() {
                 } else if (isParked) {
                   rowClasses =
                     'bg-pink-50 text-pink-700 hover:bg-pink-100 border-l-2 border-pink-400';
-                } else if (isShadow) {
-                  rowClasses = 'hover:bg-purple-50 text-purple-600 border-l-2 border-transparent';
                 } else {
                   rowClasses = 'hover:bg-surface-hover text-warm-secondary border-l-2 border-transparent';
                 }
@@ -972,7 +863,7 @@ export function WatchPage() {
                     }
                   >
                     <span
-                      className={`text-xs ${isPlaying ? 'text-blue-500' : isSafe ? 'text-yellow-500' : isShadow ? 'text-purple-400' : 'text-warm-muted'}`}
+                      className={`text-xs ${isPlaying ? 'text-blue-500' : isSafe ? 'text-yellow-500' : 'text-warm-muted'}`}
                     >
                       {statusIcon}
                     </span>

@@ -290,10 +290,6 @@ vi.mock('../utils/projectState.js', () => ({
   writeProjectState: vi.fn().mockResolvedValue(undefined),
 }));
 
-// Mock shadowFiles so regenerateDerivableFiles doesn't spawn ffmpeg
-vi.mock('../utils/shadowFiles.js', () => ({
-  createShadowFile: vi.fn().mockResolvedValue({ success: true, shadowPath: '/fake/shadow.mp4' }),
-}));
 
 describe('renameRecording', () => {
   let renameRecording: typeof import('../utils/renameRecording.js').renameRecording;
@@ -379,21 +375,20 @@ describe('renameRecording', () => {
 
   // ── 2. Smart-rename uses fs.rename for derivatives (not delete+regenerate) ─
 
-  it('calls fs.rename for derivative files (shadow + transcripts) before core rename', async () => {
+  it('calls fs.rename for derivative files (transcripts) before core rename', async () => {
     const renameCalls: string[] = [];
     const trackingImpl = async (oldPath: string) => {
       const basename = oldPath.split('/').pop() || '';
       renameCalls.push(basename);
     };
-    // 7 calls: shadow (1) + transcripts (5) + core recording (1)
-    for (let i = 0; i < 7; i++) {
+    // 6 calls: transcripts (5) + core recording (1)
+    for (let i = 0; i < 6; i++) {
       (fsMock.rename as ReturnType<typeof vi.fn>).mockImplementationOnce(trackingImpl);
     }
 
     await renameRecording('01-1-intro.mov', '01-1-introduction.mov', makePaths(), null, []);
 
-    // Should have renamed: shadow (.mp4), 5 transcript extensions, plus the core recording
-    expect(renameCalls).toContain('01-1-intro.mp4'); // shadow file
+    // Should have renamed: 5 transcript extensions, plus the core recording
     expect(renameCalls).toContain('01-1-intro.txt');
     expect(renameCalls).toContain('01-1-intro.srt');
     expect(renameCalls).toContain('01-1-intro.json');
@@ -405,8 +400,8 @@ describe('renameRecording', () => {
   // ── 3. If the core rename fails, it surfaces the error ─────────────────────
 
   it('does not succeed when fs.rename throws for the core recording file', async () => {
-    // First 6 calls (derivatives) succeed, 7th call (core recording) fails
-    for (let i = 0; i < 6; i++) {
+    // First 5 calls (derivatives) succeed, 6th call (core recording) fails
+    for (let i = 0; i < 5; i++) {
       (fsMock.rename as ReturnType<typeof vi.fn>).mockResolvedValueOnce(undefined);
     }
     (fsMock.rename as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
@@ -433,11 +428,11 @@ describe('renameRecording', () => {
       e.code = 'ENOENT';
       return e;
     };
-    // 6 derivative calls (shadow + 5 transcripts) — safeRename swallows these
-    for (let i = 0; i < 6; i++) {
+    // 5 derivative calls (5 transcripts) — safeRename swallows these
+    for (let i = 0; i < 5; i++) {
       (fsMock.rename as ReturnType<typeof vi.fn>).mockRejectedValueOnce(enoent());
     }
-    // 7th call: core rename fails with a real error
+    // 6th call: core rename fails with a real error
     (fsMock.rename as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
       new Error('EACCES: permission denied')
     );
@@ -463,21 +458,6 @@ describe('renameRecording', () => {
     expect(result.error).toBeUndefined();
   });
 
-  it('does not call createShadowFile (no regeneration in smart-rename)', async () => {
-    const shadowMod = await import('../utils/shadowFiles.js');
-    const createShadowFileMock = shadowMod.createShadowFile as ReturnType<typeof vi.fn>;
-
-    await renameRecording(
-      '01-1-intro.mov',
-      '01-1-introduction.mov',
-      makePaths(),
-      null,
-      []
-    );
-
-    // Smart-rename should NOT call createShadowFile — it renames in-place
-    expect(createShadowFileMock).not.toHaveBeenCalled();
-  });
 });
 
 // ---------------------------------------------------------------------------
@@ -519,15 +499,6 @@ describe('renameDerivableFiles', () => {
       stateFile: '/fake/project/.flihub-state.json',
     };
   }
-
-  it('renames the shadow file from old to new base name', async () => {
-    await renameDerivableFiles('01-1-intro.mov', '01-1-introduction.mov', makePaths());
-
-    expect(fsMock.rename).toHaveBeenCalledWith(
-      '/fake/project/recording-shadows/01-1-intro.mp4',
-      '/fake/project/recording-shadows/01-1-introduction.mp4'
-    );
-  });
 
   it('renames all 5 transcript extensions', async () => {
     await renameDerivableFiles('01-1-intro.mov', '01-1-introduction.mov', makePaths());
@@ -587,10 +558,6 @@ describe('renameDerivableFiles', () => {
   it('handles .mp4 source files correctly (strips extension for base name)', async () => {
     await renameDerivableFiles('05-3-demo.mp4', '05-3-walkthrough.mp4', makePaths());
 
-    expect(fsMock.rename).toHaveBeenCalledWith(
-      '/fake/project/recording-shadows/05-3-demo.mp4',
-      '/fake/project/recording-shadows/05-3-walkthrough.mp4'
-    );
     expect(fsMock.rename).toHaveBeenCalledWith(
       '/fake/project/recording-transcripts/05-3-demo.txt',
       '/fake/project/recording-transcripts/05-3-walkthrough.txt'

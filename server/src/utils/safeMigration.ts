@@ -15,7 +15,6 @@ import { readProjectState, writeProjectState, setRecordingSafe } from './project
 
 export interface MigrationResult {
   migrated: number;
-  shadowsMigrated: number;
   errors: string[];
   skipped: string[];
 }
@@ -45,18 +44,14 @@ export async function needsMigration(projectDir: string): Promise<boolean> {
  * 2. If exists, read all .mov files
  * 3. Move each file back to recordings/
  * 4. Update state file to mark each as safe: true
- * 5. Move shadow files from recording-shadows/-safe/ to recording-shadows/
  * 6. Delete empty -safe folders
  */
 export async function migrateSafeFolder(projectDir: string): Promise<MigrationResult> {
   const expandedDir = expandPath(projectDir);
   const paths = getProjectPaths(expandedDir);
-  const shadowDir = path.join(expandedDir, 'recording-shadows');
-  const shadowSafeDir = path.join(shadowDir, '-safe');
 
   const result: MigrationResult = {
     migrated: 0,
-    shadowsMigrated: 0,
     errors: [],
     skipped: [],
   };
@@ -76,7 +71,7 @@ export async function migrateSafeFolder(projectDir: string): Promise<MigrationRe
 
   if (movFiles.length === 0) {
     console.log('[FR-111] -safe folder is empty, cleaning up');
-    await cleanupEmptyFolders(paths.safe, shadowSafeDir);
+    await cleanupEmptyFolders(paths.safe);
     return result;
   }
 
@@ -116,39 +111,12 @@ export async function migrateSafeFolder(projectDir: string): Promise<MigrationRe
       }
     }
 
-    // Move shadow files if they exist
-    if (await fs.pathExists(shadowSafeDir)) {
-      const shadowEntries = await fs.readdir(shadowSafeDir);
-      const shadowFiles = shadowEntries.filter((f) => f.endsWith('.mp4'));
-
-      for (const filename of shadowFiles) {
-        const srcPath = path.join(shadowSafeDir, filename);
-        const destPath = path.join(shadowDir, filename);
-
-        // Check if shadow already exists
-        if (await fs.pathExists(destPath)) {
-          result.errors.push(`Shadow ${filename}: already exists, skipped`);
-          continue;
-        }
-
-        try {
-          await fs.move(srcPath, destPath);
-          result.shadowsMigrated++;
-          console.log(`[FR-111] Migrated shadow: ${filename}`);
-        } catch (err) {
-          result.errors.push(
-            `Shadow ${filename}: ${err instanceof Error ? err.message : 'move failed'}`
-          );
-        }
-      }
-    }
-
     // Write updated state file
     await writeProjectState(projectDir, state);
     console.log('[FR-111] State file updated with safe flags');
 
     // Clean up empty folders
-    await cleanupEmptyFolders(paths.safe, shadowSafeDir);
+    await cleanupEmptyFolders(paths.safe);
   } catch (err) {
     // Rollback on critical failure
     console.error('[FR-111] Migration failed, attempting rollback:', err);
@@ -178,7 +146,7 @@ export async function migrateSafeFolder(projectDir: string): Promise<MigrationRe
 /**
  * Clean up empty -safe folders
  */
-async function cleanupEmptyFolders(safePath: string, shadowSafePath: string): Promise<void> {
+async function cleanupEmptyFolders(safePath: string): Promise<void> {
   // Remove recordings/-safe/ if empty
   if (await fs.pathExists(safePath)) {
     const entries = await fs.readdir(safePath);
@@ -188,14 +156,6 @@ async function cleanupEmptyFolders(safePath: string, shadowSafePath: string): Pr
     }
   }
 
-  // Remove recording-shadows/-safe/ if empty
-  if (await fs.pathExists(shadowSafePath)) {
-    const entries = await fs.readdir(shadowSafePath);
-    if (entries.length === 0) {
-      await fs.rmdir(shadowSafePath);
-      console.log('[FR-111] Removed empty recording-shadows/-safe/ folder');
-    }
-  }
 }
 
 /**

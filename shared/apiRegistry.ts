@@ -880,7 +880,6 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
           'final',
           's3Staging',
           'inbox',
-          'shadows',
           'chapters',
         ],
         description: 'Folder key to open',

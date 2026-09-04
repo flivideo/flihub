@@ -135,21 +135,6 @@ export function ManagePanel({
   useEffect(() => {
     const socket = getSocket();
 
-    const handleShadowsProgress = (data: { current: number; total: number; filename: string }) => {
-      toast.loading(`Shadows: ${data.current}/${data.total} - ${data.filename}`, {
-        id: 'shadows-progress',
-      });
-    };
-
-    const handleShadowsComplete = (data: { completed: number; failed: number }) => {
-      toast.dismiss('shadows-progress');
-      if (data.failed > 0) {
-        toast.warning(`Shadows: ${data.completed} done, ${data.failed} failed`);
-      } else {
-        toast.success(`Shadows: ${data.completed} regenerated`);
-      }
-    };
-
     const handleChaptersProgress = (data: { current: number; total: number; chapter: string }) => {
       toast.loading(`Chapters: ${data.current}/${data.total} - Chapter ${data.chapter}`, {
         id: 'chapters-progress',
@@ -176,16 +161,12 @@ export function ManagePanel({
       toast.success('All derivative files regenerated');
     };
 
-    socket.on('regen:shadows:progress', handleShadowsProgress);
-    socket.on('regen:shadows:complete', handleShadowsComplete);
     socket.on('regen:chapters:progress', handleChaptersProgress);
     socket.on('regen:chapters:complete', handleChaptersComplete);
     socket.on('regen:all:progress', handleAllProgress);
     socket.on('regen:all:complete', handleAllComplete);
 
     return () => {
-      socket.off('regen:shadows:progress', handleShadowsProgress);
-      socket.off('regen:shadows:complete', handleShadowsComplete);
       socket.off('regen:chapters:progress', handleChaptersProgress);
       socket.off('regen:chapters:complete', handleChaptersComplete);
       socket.off('regen:all:progress', handleAllProgress);
@@ -270,9 +251,9 @@ export function ManagePanel({
     });
   }, []);
 
-  // Delete transcripts or shadows — selection-aware (selected files only, or all if none selected)
-  const handleDeleteClick = (target: 'transcripts' | 'shadows') => {
-    const label = target === 'transcripts' ? 'transcripts' : 'shadow files';
+  // Delete transcripts — selection-aware (selected files only, or all if none selected)
+  const handleDeleteClick = (target: 'transcripts') => {
+    const label = 'transcripts';
     const selectedFilesArray = Array.from(selectedFiles);
     const targetFiles = selectedFilesArray.length > 0 ? selectedFilesArray : undefined;
     const scope = targetFiles
@@ -304,7 +285,7 @@ export function ManagePanel({
 
   // B041: Regen action handler (inline buttons trigger confirmation modal)
   const handleRegenClick = (
-    tool: 'regen-shadows' | 'regen-transcripts' | 'regen-all'
+    tool: 'regen-transcripts' | 'regen-all'
   ) => {
     const selectedFilesArray = Array.from(selectedFiles);
 
@@ -317,12 +298,7 @@ export function ManagePanel({
 
     // Determine type and labels
     const type = tool.replace('regen-', '');
-    const typeLabel =
-      type === 'shadows'
-        ? 'shadows'
-        : type === 'transcripts'
-          ? 'transcripts'
-          : 'all derivative files';
+    const typeLabel = type === 'transcripts' ? 'transcripts' : 'all derivative files';
 
     // Build warning message and chapter settings
     let warning: string | undefined;
@@ -351,7 +327,7 @@ export function ManagePanel({
       };
 
       warning =
-        'This will run all three operations sequentially:\n1. Regenerate shadows\n2. Queue transcriptions\n3. Regenerate chapter videos\n\nThis may take a long time.';
+        'This will run both operations sequentially:\n1. Queue transcriptions\n2. Regenerate chapter videos\n\nThis may take a long time.';
     }
 
     // Show confirmation modal
@@ -367,12 +343,7 @@ export function ManagePanel({
         setConfirmationModal(null);
 
         // Show start toast
-        const toastLabel =
-          type === 'shadows'
-            ? 'Shadow Files'
-            : type === 'transcripts'
-              ? 'Transcripts'
-              : 'All Files';
+        const toastLabel = type === 'transcripts' ? 'Transcripts' : 'All Files';
         toast.info(`Regenerating ${toastLabel}...`);
 
         try {
@@ -402,7 +373,7 @@ export function ManagePanel({
             toast.success(`Queued ${queued} file${queued !== 1 ? 's' : ''} for transcription`);
           }
 
-          // For shadows and all - Socket.io events will handle progress/completion
+          // For all - Socket.io events will handle progress/completion
         } catch (err) {
           console.error(`[Regen ${type}] Error:`, err);
           toast.error(
@@ -462,12 +433,6 @@ export function ManagePanel({
             {activeTool === 'regen' && (
               <div className="flex items-center gap-2 mb-4 flex-wrap">
                 <button
-                  onClick={() => handleRegenClick('regen-shadows')}
-                  className="px-3 py-1.5 text-sm font-medium text-warm-secondary bg-surface border border-warm-strong rounded-md hover:bg-surface-hover hover:text-warm-primary transition-colors"
-                >
-                  Regen Shadows
-                </button>
-                <button
                   onClick={() => handleRegenClick('regen-transcripts')}
                   className="px-3 py-1.5 text-sm font-medium text-warm-secondary bg-surface border border-warm-strong rounded-md hover:bg-surface-hover hover:text-warm-primary transition-colors"
                 >
@@ -485,12 +450,6 @@ export function ManagePanel({
                   className="px-3 py-1.5 text-sm text-red-500 hover:text-red-700 hover:underline transition-colors"
                 >
                   {selectedFiles.size > 0 ? `Delete Transcripts (${selectedFiles.size})` : 'Delete Transcripts'}
-                </button>
-                <button
-                  onClick={() => handleDeleteClick('shadows')}
-                  className="px-3 py-1.5 text-sm text-red-500 hover:text-red-700 hover:underline transition-colors"
-                >
-                  {selectedFiles.size > 0 ? `Delete Shadows (${selectedFiles.size})` : 'Delete Shadows'}
                 </button>
               </div>
             )}

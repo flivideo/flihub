@@ -9,7 +9,6 @@ export const DEFAULT_DISK_THRESHOLDS: DiskThresholds = {
   columns: {
     trash:   { faint: '0',      amber: '300MB',  red: '1GB'   },
     rec:     { faint: '2GB',    amber: '5GB',    red: '10GB'  },
-    shadows: { faint: '100MB',  amber: '300MB',  red: '500MB' },
     other:   { faint: '500MB',  amber: '1GB',    red: null    },
     rRec:    { faint: '1GB',    amber: '3GB',    red: '6GB'   },
     r1st:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
@@ -37,7 +36,6 @@ export function getDefaultConfig(): Config {
       { name: 'outro', suggestTags: ['ENDCARD'] }, // suggestTags appear only for this name
     ],
     imageSourceDirectory: process.env.IMAGE_SOURCE_DIR || '~/Downloads', // FR-17
-    shadowResolution: 240, // FR-89 Part 6: Default shadow resolution
   };
 }
 
@@ -93,7 +91,6 @@ export function loadConfig(configPath: string): Config {
         };
         if (saved.projectPriorities) toSave.projectPriorities = saved.projectPriorities;
         if (saved.projectStages) toSave.projectStages = saved.projectStages;
-        if (saved.shadowResolution) toSave.shadowResolution = saved.shadowResolution;
         if (saved.relayDirectory) toSave.relayDirectory = saved.relayDirectory;
         if (saved.relayEnabled !== undefined) toSave.relayEnabled = saved.relayEnabled;
         if (saved.machineRole) toSave.machineRole = saved.machineRole;
@@ -146,10 +143,6 @@ export function saveConfig(configPath: string, config: Config): void {
     // FR-163: per-root high-water mark for project codes
     if (config.projectCodeHighWater && Object.keys(config.projectCodeHighWater).length > 0) {
       toSave.projectCodeHighWater = config.projectCodeHighWater;
-    }
-    // FR-89 Part 6: Save shadow resolution if set
-    if (config.shadowResolution) {
-      toSave.shadowResolution = config.shadowResolution;
     }
     // FR-144: Persist POEM WUI settings
     if (config.poemWuiUrl) {

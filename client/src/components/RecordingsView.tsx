@@ -1146,17 +1146,13 @@ export function RecordingsView() {
 
   // B047: Compute preview changes from pendingChanges Map
   const computePreviewChanges = useCallback((): PreviewChange[] => {
-    return Array.from(pendingChanges.values()).map((change) => {
-      const recording = data?.recordings.find((r) => r.filename === change.oldFilename);
-      return {
-        oldFilename: change.oldFilename,
-        newFilename: change.newFilename,
-        hasShadow: recording?.hasShadow ?? false,
-        transcriptCount: 5,
-        needsReTranscription: false,
-      };
-    });
-  }, [pendingChanges, data?.recordings]);
+    return Array.from(pendingChanges.values()).map((change) => ({
+      oldFilename: change.oldFilename,
+      newFilename: change.newFilename,
+      transcriptCount: 5,
+      needsReTranscription: false,
+    }));
+  }, [pendingChanges]);
 
   // B047: Split here handler (from single row)
   const handleSplitHereFromRow = useCallback(
@@ -1327,10 +1323,6 @@ export function RecordingsView() {
         {/* FR-95: Recording size */}
         {data?.totalRecordingsSize != null && data.totalRecordingsSize > 0 && (
           <span className="text-warm-muted">| {formatFileSize(data.totalRecordingsSize)}</span>
-        )}
-        {/* FR-95: Shadow size — secondary, purple */}
-        {data?.totalShadowsSize != null && data.totalShadowsSize > 0 && (
-          <span className="text-purple-400">· shadows: {formatFileSize(data.totalShadowsSize)}</span>
         )}
       </div>
 
@@ -1551,7 +1543,6 @@ export function RecordingsView() {
                       />
                     }
                     pendingChange={pendingChanges.get(file.filename)}
-                    disabled={!!file.isShadow}
                     formatDuration={formatDuration}
                     formatFileSize={formatFileSize}
                     formatTimestamp={formatTimestamp}
@@ -1618,7 +1609,7 @@ export function RecordingsView() {
             message={
               `${artifacts.length} file${artifacts.length === 1 ? '' : 's'} (${formatFileSize(totalBytes)}) will be moved to -trash/.` +
               (extras > 0
-                ? `\n\nThat includes ${extras} linked file${extras === 1 ? '' : 's'} — the transcript and shadow are deleted with the recording so nothing is orphaned.`
+                ? `\n\nThat includes ${extras} linked file${extras === 1 ? '' : 's'} — the transcripts are deleted with the recording so nothing is orphaned.`
                 : '')
             }
             filesLabel="Will be moved to -trash/:"

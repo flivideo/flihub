@@ -1,11 +1,10 @@
 /**
  * FR-131 Phase 2: Regeneration Toolbar
  *
- * Collapsible toolbar with 4 buttons to regenerate derivative files:
- * - Regen Shadows (fast ~1ms per file)
+ * Collapsible toolbar with buttons to regenerate derivative files:
  * - Regen Transcripts (slow ~5-10 min per file, queued)
  * - Regen Chapters (expensive ~30-60s per chapter)
- * - Regen All (runs all three sequentially)
+ * - Regen All (runs both sequentially)
  */
 
 import { useState, useEffect } from 'react';
@@ -15,7 +14,7 @@ import { getSocket } from '../../hooks/useSocket';
 import { SelectionBadge } from './SelectionBadge';
 
 export interface RegenProgress {
-  type: 'shadows' | 'transcripts' | 'chapters' | 'all';
+  type: 'transcripts' | 'chapters' | 'all';
   current: number;
   total: number;
   currentItem?: string; // e.g., "Chapter 05"
@@ -26,7 +25,7 @@ interface RegenToolbarProps {
   projectCode: string;
   selectedFiles: string[]; // FR-136: Array of selected filenames
   totalFiles: number; // FR-136: Total count for badge
-  onRegenComplete?: (type: 'shadows' | 'transcripts' | 'chapters' | 'all') => void;
+  onRegenComplete?: (type: 'transcripts' | 'chapters' | 'all') => void;
 }
 
 export function RegenToolbar({
@@ -51,17 +50,6 @@ export function RegenToolbar({
   useEffect(() => {
     const socket = getSocket();
     console.log('[RegenToolbar] useEffect: Setting up socket listeners');
-
-    const handleShadowsProgress = (data: { current: number; total: number; filename: string }) => {
-      console.log(`[Frontend] Regen progress: ${data.current}/${data.total} - ${data.filename}`);
-      setProgress({
-        type: 'shadows',
-        current: data.current,
-        total: data.total,
-        currentItem: `Processing ${data.filename}`,
-        status: 'running',
-      });
-    };
 
     const handleChaptersProgress = (data: { current: number; total: number; chapter: string }) => {
       setProgress({
@@ -100,42 +88,7 @@ export function RegenToolbar({
       onRegenComplete?.('all');
     };
 
-    const handleShadowsComplete = (data: { completed: number; failed: number }) => {
-      const completed = data.completed || 0;
-      const failed = data.failed || 0;
-      const total = completed + failed;
-
-      setProgress({
-        type: 'shadows',
-        current: completed,
-        total: total,
-        currentItem: `Regenerated ${completed} shadow file${completed !== 1 ? 's' : ''}`,
-        status: 'complete',
-      });
-
-      // Show completion toast
-      if (failed > 0) {
-        toast.warning(`Regenerated ${completed}/${total} shadow files (${failed} failed)`, {
-          duration: 5000,
-        });
-      } else {
-        toast.success(`Regenerated ${completed} shadow file${completed !== 1 ? 's' : ''}`, {
-          duration: 3000,
-        });
-      }
-
-      // Keep completion state visible for 3 seconds
-      setTimeout(() => {
-        setIsRegenerating(false);
-        setProgress(null);
-      }, 3000);
-
-      onRegenComplete?.('shadows');
-    };
-
     console.log('[RegenToolbar] Registering socket listeners...');
-    socket.on('regen:shadows:progress', handleShadowsProgress);
-    socket.on('regen:shadows:complete', handleShadowsComplete);
     socket.on('regen:chapters:progress', handleChaptersProgress);
     socket.on('regen:chapters:complete', handleChaptersComplete);
     socket.on('regen:all:progress', handleAllProgress);
@@ -144,8 +97,6 @@ export function RegenToolbar({
 
     return () => {
       console.log('[RegenToolbar] Cleaning up socket listeners');
-      socket.off('regen:shadows:progress', handleShadowsProgress);
-      socket.off('regen:shadows:complete', handleShadowsComplete);
       socket.off('regen:chapters:progress', handleChaptersProgress);
       socket.off('regen:chapters:complete', handleChaptersComplete);
       socket.off('regen:all:progress', handleAllProgress);
@@ -153,7 +104,7 @@ export function RegenToolbar({
     };
   }, [onRegenComplete]);
 
-  const handleRegen = async (type: 'shadows' | 'transcripts' | 'chapters' | 'all') => {
+  const handleRegen = async (type: 'transcripts' | 'chapters' | 'all') => {
     // FR-136: Determine scope (selected files or all files)
     const targetFiles = selectedFiles.length > 0 ? selectedFiles : undefined;
     const scope =
@@ -173,13 +124,11 @@ export function RegenToolbar({
 
     // FR-136: Confirmation dialogs showing explicit scope
     const typeLabel =
-      type === 'shadows'
-        ? 'shadows'
-        : type === 'transcripts'
-          ? 'transcripts'
-          : type === 'chapters'
-            ? 'chapter videos'
-            : 'all derivative files';
+      type === 'transcripts'
+        ? 'transcripts'
+        : type === 'chapters'
+          ? 'chapter videos'
+          : 'all derivative files';
 
     let confirmMessage = `Regenerate ${typeLabel} for ${scope}?`;
 
@@ -192,9 +141,8 @@ export function RegenToolbar({
     } else if (type === 'all') {
       confirmMessage +=
         `\n\nThis will:\n` +
-        `1. Regenerate shadows\n` +
-        `2. Queue transcriptions\n` +
-        `3. Regenerate chapter videos\n\n` +
+        `1. Queue transcriptions\n` +
+        `2. Regenerate chapter videos\n\n` +
         `This may take a long time.`;
     }
 
@@ -214,13 +162,11 @@ export function RegenToolbar({
 
     // Show start toast
     const toastLabel =
-      type === 'shadows'
-        ? 'Shadow Files'
-        : type === 'transcripts'
-          ? 'Transcripts'
-          : type === 'chapters'
-            ? 'Chapter Videos'
-            : 'All Files';
+      type === 'transcripts'
+        ? 'Transcripts'
+        : type === 'chapters'
+          ? 'Chapter Videos'
+          : 'All Files';
     toast.info(`Regenerating ${toastLabel}...`);
 
     try {
@@ -237,11 +183,7 @@ export function RegenToolbar({
         throw new Error(result.error || 'Regeneration failed');
       }
 
-      // For shadows - Socket.io events handle progress, just show final toast
-      if (type === 'shadows') {
-        // Progress updates come via Socket.io, completion handled by handleShadowsComplete
-        // Just wait for the socket event
-      } else if (type === 'transcripts') {
+      if (type === 'transcripts') {
         const queued = result.queued || 0;
         const total = result.total || 0;
 
@@ -302,20 +244,6 @@ export function RegenToolbar({
           {/* Button row */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => handleRegen('shadows')}
-              disabled={isRegenerating || totalFiles === 0}
-              className="px-3 py-2 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-              title={
-                totalFiles === 0
-                  ? 'No files to regenerate'
-                  : selectedFiles.length > 0
-                    ? `Regenerate shadows for ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
-                    : `Regenerate shadows for all ${totalFiles} files`
-              }
-            >
-              ↻ Regen Shadows
-            </button>
-            <button
               onClick={() => handleRegen('transcripts')}
               disabled={isRegenerating || totalFiles === 0}
               className="px-3 py-2 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
@@ -352,7 +280,7 @@ export function RegenToolbar({
                   ? 'No files to regenerate'
                   : selectedFiles.length > 0
                     ? `Regenerate all derivative files for ${selectedFiles.length} selected file${selectedFiles.length === 1 ? '' : 's'}`
-                    : `Regenerate all derivative files (shadows → transcripts → chapters)`
+                    : `Regenerate all derivative files (transcripts → chapters)`
               }
             >
               ↻ Regen All
@@ -364,8 +292,8 @@ export function RegenToolbar({
 
           {/* Help text */}
           <p className="text-xs text-warm-muted">
-            Regeneration tools delete and recreate derivative files. Shadows are fast (~1 minute),
-            transcripts are queued (5-10 min/file), chapters are slow (~30-60s each).
+            Regeneration tools delete and recreate derivative files. Transcripts are queued
+            (5-10 min/file), chapters are slow (~30-60s each).
           </p>
         </div>
       )}

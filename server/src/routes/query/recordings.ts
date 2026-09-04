@@ -3,8 +3,6 @@
  *
  * Endpoint: GET / (mounted at /projects/:code/recordings)
  *
- * FR-83: Unified scanning - merges real recordings with shadow video files.
- * Real files take precedence over shadows. Shadows are 240p preview videos.
  */
 
 import { Router, Request, Response } from 'express';
@@ -15,18 +13,11 @@ import { getProjectPaths } from '../../../../shared/paths.js';
 import { parseRecordingFilename, extractTagsFromName } from '../../../../shared/naming.js';
 import { readDirSafe, statSafe } from '../../utils/filesystem.js';
 import { formatRecordingsReport } from '../../utils/reporters.js';
-import { getVideoDuration } from '../../utils/shadowFiles.js';
+import { getVideoDuration } from '../../utils/videoDuration.js';
 import type { Config, QueryRecording } from '../../../../shared/types.js';
 
-// FR-83/FR-111: Extended recording with shadow support
-// isShadow: true = shadow-only (no real recording)
-// hasShadow: true = real recording has a corresponding shadow
-// FR-95: shadowSize = size of corresponding shadow file (null if no shadow)
 // FR-111: folder is always 'recordings', isSafe comes from state file
 interface UnifiedRecording extends QueryRecording {
-  isShadow?: boolean;
-  hasShadow?: boolean;
-  shadowSize?: number | null;
 }
 
 export function createRecordingsRoutes(getConfig: () => Config): Router {
@@ -52,14 +43,10 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
 
       const paths = getProjectPaths(projectPath);
 
-      // FR-83/FR-111: Shadow directory (no more -safe folder)
-      const shadowDir = path.join(projectPath, 'recording-shadows');
 
       // Build unified map: baseName -> recording (real takes precedence)
       const unifiedMap = new Map<string, UnifiedRecording>();
 
-      // FR-83: Track which baseNames have shadow files
-      const shadowSet = new Map<string, { size: number; duration: number | null }>();
 
       // FR-111: Read state file for safe flags
       // FR-120: Also check parked flags
@@ -79,55 +66,6 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         }
       }
 
-      // FR-83/FR-111: First, scan shadow video files to build shadowSet
-      // Then add shadow-only entries (will be overwritten by real files)
-      // Only scan recording-shadows/ (no more -safe folder)
-      const shadowFiles = await readDirSafe(shadowDir);
-      for (const filename of shadowFiles) {
-        if (!filename.match(/\.mp4$/i)) continue;
-
-        const shadowPath = path.join(shadowDir, filename);
-        const stat = await statSafe(shadowPath);
-        if (!stat) continue;
-
-        // Shadow filename matches original baseName (e.g., 01-1-intro.mp4)
-        const baseName = filename.replace(/\.mp4$/i, '');
-        const parsed = parseRecordingFilename(filename);
-        if (!parsed) continue;
-
-        // Get duration from shadow video
-        const duration = await getVideoDuration(shadowPath);
-
-        // Track that this baseName has a shadow
-        shadowSet.set(baseName, { size: stat.size, duration });
-
-        const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
-
-        // Add as shadow-only entry (may be overwritten by real file)
-        const annotationValue = getRecordingAnnotation(state, `${baseName}.mov`);
-        console.log(`[RECORDINGS API] Shadow ${baseName}.mov - annotation:`, annotationValue);
-
-        const recording: UnifiedRecording = {
-          filename: `${baseName}.mov`, // Report as .mov for consistency
-          chapter: parsed.chapter,
-          sequence: parsed.sequence || '0',
-          name: cleanName,
-          tags,
-          folder: 'recordings', // FR-111: Always recordings
-          isSafe: isRecordingSafe(state, `${baseName}.mov`), // FR-111: From state
-          isParked: isRecordingParked(state, `${baseName}.mov`), // FR-120: From state
-          annotation: annotationValue, // FR-123: From state
-          size: stat.size,
-          duration: duration,
-          hasTranscript: transcriptSet.has(baseName),
-          isShadow: true,
-          hasShadow: true, // Shadow-only files obviously have shadow
-          shadowSize: stat.size, // FR-95: Shadow-only, so shadow size = file size
-        };
-
-        unifiedMap.set(baseName, recording);
-      }
-
       // FR-111: Scan only recordings/ (no more -safe folder)
       const realFiles = await readDirSafe(paths.recordings);
       for (const filename of realFiles) {
@@ -143,10 +81,6 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         const baseName = filename.replace('.mov', '');
         const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
 
-        // Check if this real recording has a corresponding shadow
-        const shadowInfo = shadowSet.get(baseName);
-        const hasShadow = !!shadowInfo;
-
         const annotationValue = getRecordingAnnotation(state, filename);
         console.log(`[RECORDINGS API] Real ${filename} - annotation:`, annotationValue);
 
@@ -161,14 +95,10 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
           isParked: isRecordingParked(state, filename), // FR-120: From state
           annotation: annotationValue, // FR-123: From state
           size: stat.size,
-          duration: shadowInfo?.duration ?? null, // Use shadow duration if available
+          duration: await getVideoDuration(filePath),
           hasTranscript: transcriptSet.has(baseName),
-          isShadow: false,
-          hasShadow,
-          shadowSize: shadowInfo?.size ?? null, // FR-95: Shadow file size (null if no shadow)
         };
 
-        // Real file overwrites shadow
         unifiedMap.set(baseName, recording);
       }
 
@@ -194,19 +124,10 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         filtered = filtered.filter((r) => !r.hasTranscript);
       }
 
-      // FR-95: Calculate total sizes for header display
-      // Real recordings: sum of actual .mov file sizes (excludes shadow-only)
-      // Shadows: sum of all shadow file sizes
+      // FR-95: Calculate total size for header display
       let totalRecordingsSize = 0;
-      let totalShadowsSize = 0;
-
       for (const r of recordings) {
-        if (!r.isShadow) {
-          totalRecordingsSize += r.size;
-        }
-        if (r.shadowSize) {
-          totalShadowsSize += r.shadowSize;
-        }
+        totalRecordingsSize += r.size;
       }
 
       // FR-53: ASCII format support
@@ -228,7 +149,6 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         success: true,
         recordings: filtered,
         totalRecordingsSize, // FR-95: Total size of real recordings in bytes
-        totalShadowsSize: totalShadowsSize > 0 ? totalShadowsSize : null, // FR-95: Total shadow size (null if none)
       });
     } catch (error) {
       console.error('Error listing recordings:', error);

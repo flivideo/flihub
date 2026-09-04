@@ -633,7 +633,7 @@ export function createTranscriptionRoutes(
   });
 
   // FR-30 Enhancement: POST /api/transcriptions/queue-all - Queue transcription for all videos
-  // FR-94: Only transcribe real recordings, NOT shadow files (shadows are just low-res copies)
+  // FR-94: Only transcribe real recordings
   router.post('/queue-all', async (req: Request, res: Response) => {
     const { scope, chapter } = req.body;
 
@@ -652,10 +652,10 @@ export function createTranscriptionRoutes(
     const projectPaths = getProjectPaths(projectPath);
 
     try {
-      // FR-94: Only scan real recordings - shadows should never be transcribed
-      const videoMap = new Map<string, { path: string; isShadow: boolean }>();
+      // FR-94: Only scan real recordings
+      const videoMap = new Map<string, { path: string }>();
 
-      // Only scan real recordings (not shadows)
+      // Only scan real recordings
       const realDirs = [projectPaths.recordings, projectPaths.safe];
 
       for (const dir of realDirs) {
@@ -672,8 +672,7 @@ export function createTranscriptionRoutes(
               if (!match || match[1] !== chapter) continue;
             }
 
-            // Real file overwrites shadow
-            videoMap.set(baseName, { path: path.join(dir, file), isShadow: false });
+            videoMap.set(baseName, { path: path.join(dir, file) });
           }
         }
       }
@@ -721,26 +720,8 @@ export function createTranscriptionRoutes(
 
     try {
       // FR-92: Build unified map of videos (same logic as queue-all)
-      const videoMap = new Map<string, { path: string; isShadow: boolean }>();
+      const videoMap = new Map<string, { path: string }>();
 
-      // First, add shadow files
-      const shadowDirs = [
-        { dir: path.join(projectPath, 'recording-shadows'), folder: 'recordings' },
-        { dir: path.join(projectPath, 'recording-shadows', '-safe'), folder: 'safe' },
-      ];
-
-      for (const { dir } of shadowDirs) {
-        if (fs.existsSync(dir)) {
-          const files = await fs.readdir(dir);
-          for (const file of files) {
-            if (!file.match(/\.mp4$/i)) continue;
-            const baseName = file.replace(/\.mp4$/i, '');
-            videoMap.set(baseName, { path: path.join(dir, file), isShadow: true });
-          }
-        }
-      }
-
-      // Then, add real recordings (overwrite shadows)
       const realDirs = [projectPaths.recordings, projectPaths.safe];
 
       for (const dir of realDirs) {
@@ -749,7 +730,7 @@ export function createTranscriptionRoutes(
           for (const file of files) {
             if (!file.endsWith('.mov')) continue;
             const baseName = file.replace('.mov', '');
-            videoMap.set(baseName, { path: path.join(dir, file), isShadow: false });
+            videoMap.set(baseName, { path: path.join(dir, file) });
           }
         }
       }

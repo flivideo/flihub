@@ -56,7 +56,6 @@ describe('loadConfig — missing file', () => {
 
     expect(config.fileExtensions).toEqual(['.mov']);
     expect(config.availableTags).toEqual(['CTA', 'SKOOL']);
-    expect(config.shadowResolution).toBe(240);
     // Ensure fs.readJsonSync was never called
     expect(fs.readJsonSync).not.toHaveBeenCalled();
   });
@@ -88,7 +87,6 @@ describe('loadConfig — valid JSON', () => {
       availableTags: ['CTA', 'SKOOL', 'CUSTOM'],
       commonNames: [{ name: 'intro', autoSequence: true }],
       imageSourceDirectory: '~/Desktop',
-      shadowResolution: 480,
     });
 
     const config = loadConfig(TEST_CONFIG_PATH);
@@ -101,7 +99,6 @@ describe('loadConfig — valid JSON', () => {
       path.join('~/dev/video-projects', 'my-project')
     );
     expect(config.fileExtensions).toEqual(['.mov', '.mp4']);
-    expect(config.shadowResolution).toBe(480);
     expect(config.availableTags).toContain('CUSTOM');
   });
 

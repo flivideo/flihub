@@ -305,7 +305,6 @@ export function createSystemRoutes(getConfig: () => Config, watcherManager?: Wat
       s3Prep: path.join(paths.s3Staging, 'prep'),
       s3Post: path.join(paths.s3Staging, 'post'),
       inbox: paths.inbox,
-      shadows: path.join(projectPath, 'recording-shadows'),
       chapters: path.join(paths.recordings, '-chapters'),
       'edit-1st': path.join(projectPath, 'edit-1st'),
       'edit-2nd': path.join(projectPath, 'edit-2nd'),

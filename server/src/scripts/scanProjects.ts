@@ -474,17 +474,7 @@ async function checkDerivatives(
 ): Promise<Discrepancy[]> {
   const discrepancies: Discrepancy[] = [];
 
-  const shadowsPath = path.join(projectPath, 'recording-shadows');
   const transcriptsPath = path.join(projectPath, 'recording-transcripts');
-
-  // Get existing shadows
-  let shadows: string[] = [];
-  try {
-    shadows = await fs.readdir(shadowsPath);
-    shadows = shadows.filter((f) => f.endsWith('.mp4'));
-  } catch {
-    // Shadow folder doesn't exist - that's OK
-  }
 
   // Get existing transcripts
   let transcripts: string[] = [];
@@ -493,48 +483,6 @@ async function checkDerivatives(
     transcripts = transcripts.filter((f) => f.endsWith('.txt'));
   } catch {
     // Transcript folder doesn't exist - that's OK
-  }
-
-  // Check for missing shadows
-  if (DECISIONS.missingDerivatives) {
-    for (const recording of recordings) {
-      const baseName = recording.replace(/\.(mov|mp4)$/i, '');
-      const shadowName = `${baseName}.mp4`;
-
-      if (!shadows.includes(shadowName)) {
-        discrepancies.push({
-          projectCode,
-          projectPath,
-          type: 'derivative',
-          severity: DECISIONS.missingDerivatives,
-          issue: 'Missing shadow file',
-          file: recording,
-          details: `Shadow file not found: ${shadowName}`,
-          suggestion: 'Use FR-136 Regen Shadows tool to regenerate',
-        });
-      }
-    }
-  }
-
-  // Check for orphaned shadows
-  if (DECISIONS.orphanedDerivatives) {
-    for (const shadow of shadows) {
-      const baseName = shadow.replace(/\.mp4$/i, '');
-      const recordingExists = recordings.some((r) => r.replace(/\.(mov|mp4)$/i, '') === baseName);
-
-      if (!recordingExists) {
-        discrepancies.push({
-          projectCode,
-          projectPath,
-          type: 'derivative',
-          severity: DECISIONS.orphanedDerivatives,
-          issue: 'Orphaned shadow file',
-          file: shadow,
-          details: `Shadow exists but source recording not found`,
-          suggestion: 'Delete orphaned shadow file to save disk space',
-        });
-      }
-    }
   }
 
   // Check for missing transcripts

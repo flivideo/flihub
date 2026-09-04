@@ -135,7 +135,7 @@ export function ChapterHelpPanel() {
             </div>
             <div className="flex items-start gap-2">
               <span className="font-mono text-warm-faint w-24 flex-shrink-0">Manage</span>
-              <span>Regen Shadows/Transcripts, Relay Sync</span>
+              <span>Regen Transcripts, Relay Sync</span>
             </div>
           </div>
         </div>

@@ -51,7 +51,6 @@ function makeProject(overrides: Partial<ProjectStats> = {}): ProjectStats {
     hasChapters: true,
     inboxCount: 0,
     chapterVideoCount: 2,
-    shadowCount: 0,
     ...overrides,
   }) as ProjectStats;
 }
@@ -71,7 +70,7 @@ describe('ProjectDrawer', () => {
   it('shows correct stats numbers', () => {
     renderWithQuery(
       <ProjectDrawer
-        project={makeProject({ totalFiles: 5, chapterCount: 3, imageCount: 2, thumbCount: 1, shadowCount: 0 })}
+        project={makeProject({ totalFiles: 5, chapterCount: 3, imageCount: 2, thumbCount: 1 })}
         onClose={vi.fn()}
       />
     );
@@ -79,7 +78,6 @@ describe('ProjectDrawer', () => {
     expect(screen.getByText('Chapters').previousElementSibling?.textContent).toBe('3');
     expect(screen.getByText('Images').previousElementSibling?.textContent).toBe('2');
     expect(screen.getByText('Thumbs').previousElementSibling?.textContent).toBe('1');
-    expect(screen.getByText('Shadows').previousElementSibling?.textContent).toBe('0');
     expect(screen.getByText('Transcripts').previousElementSibling?.textContent).toBe('80%');
   });
 

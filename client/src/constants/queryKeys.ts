@@ -47,8 +47,6 @@ export const QUERY_KEYS = {
   // FR-58: Chapter recording management
   chapterRecordingConfig: ['chapter-recording-config'] as const,
   chapterRecordingStatus: ['chapter-recording-status'] as const,
-  // FR-83: Shadow recording management
-  shadowStatus: ['shadow-status'] as const,
   // FR-90: File watcher management
   watchers: ['watchers'] as const,
   // FR-127: Developer tools

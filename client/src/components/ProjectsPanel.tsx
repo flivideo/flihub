@@ -479,7 +479,6 @@ const DEFAULT_DISK_THRESHOLDS: DiskThresholds = {
   columns: {
     trash:   { faint: '0',      amber: '300MB',  red: '1GB'   },
     rec:     { faint: '2GB',    amber: '5GB',    red: '10GB'  },
-    shadows: { faint: '100MB',  amber: '300MB',  red: '500MB' },
     other:   { faint: '500MB',  amber: '1GB',    red: null    },
     rRec:    { faint: '1GB',    amber: '3GB',    red: '6GB'   },
     r1st:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
@@ -646,21 +645,20 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
 
   // B065: Disk column totals — sum over filtered projects that have loaded disk data
   const diskTotals = useMemo(() => {
-    let rec = 0, trash = 0, shadows = 0, other = 0, rRec = 0, r1st = 0, r2nd = 0, total = 0, count = 0;
+    let rec = 0, trash = 0, other = 0, rRec = 0, r1st = 0, r2nd = 0, total = 0, count = 0;
     for (const p of filteredProjects) {
       const pd = diskData[p.code];
       if (!pd) continue;
       count++;
       rec     += pd.rec     ?? 0;
       trash   += pd.trash   ?? 0;
-      shadows += pd.shadows ?? 0;
       other   += pd.other   ?? 0;
       rRec    += pd.rRec    ?? 0;
       r1st    += pd.r1st    ?? 0;
       r2nd    += pd.r2nd    ?? 0;
       total   += pd.total   ?? 0;
     }
-    return { rec, trash, shadows, other, rRec, r1st, r2nd, total, count };
+    return { rec, trash, other, rRec, r1st, r2nd, total, count };
   }, [filteredProjects, diskData]);
 
   // FR-148: Stage toggle handler — resets preset to 'all' when toggling stages
@@ -750,7 +748,6 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                     <>
                       <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right border-l border-warm-strong">REC</th>
                       <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">TRASH</th>
-                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">SHADOWS</th>
                       <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">OTHER</th>
                       <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">R-REC</th>
                       <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">R-1ST</th>
@@ -773,7 +770,6 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                     <td className="py-1 px-2" />
                     <td className="py-1 px-2 text-right border-l border-warm-strong">{formatBytes(diskTotals.rec)}</td>
                     <td className="py-1 px-2 text-right">{diskTotals.trash > 0 ? formatBytes(diskTotals.trash) : '—'}</td>
-                    <td className="py-1 px-2 text-right">{diskTotals.shadows > 0 ? formatBytes(diskTotals.shadows) : '—'}</td>
                     <td className="py-1 px-2 text-right">{diskTotals.other > 0 ? formatBytes(diskTotals.other) : '—'}</td>
                     <td className="py-1 px-2 text-right">{diskTotals.rRec > 0 ? formatBytes(diskTotals.rRec) : '—'}</td>
                     <td className="py-1 px-2 text-right">{diskTotals.r1st > 0 ? formatBytes(diskTotals.r1st) : '—'}</td>
@@ -911,7 +907,6 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                           <>
                             {diskCell(pd?.rec,     'rec', 'border-l border-warm-strong')}
                             {diskCell(pd?.trash,   'trash')}
-                            {diskCell(pd?.shadows, 'shadows')}
                             {diskCell(pd?.other,   'other')}
                             {diskCell(pd?.rRec,    'rRec')}
                             {diskCell(pd?.r1st,    'r1st')}
@@ -941,7 +936,6 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                     {/* 8 disk columns */}
                     <td className="py-1.5 px-2 text-right border-l border-warm-strong">{formatBytes(diskTotals.rec)}</td>
                     <td className="py-1.5 px-2 text-right">{diskTotals.trash > 0 ? formatBytes(diskTotals.trash) : '—'}</td>
-                    <td className="py-1.5 px-2 text-right">{diskTotals.shadows > 0 ? formatBytes(diskTotals.shadows) : '—'}</td>
                     <td className="py-1.5 px-2 text-right">{diskTotals.other > 0 ? formatBytes(diskTotals.other) : '—'}</td>
                     <td className="py-1.5 px-2 text-right">{diskTotals.rRec > 0 ? formatBytes(diskTotals.rRec) : '—'}</td>
                     <td className="py-1.5 px-2 text-right">{diskTotals.r1st > 0 ? formatBytes(diskTotals.r1st) : '—'}</td>

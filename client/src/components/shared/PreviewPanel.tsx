@@ -8,7 +8,6 @@
 export interface PreviewChange {
   oldFilename: string;
   newFilename: string;
-  hasShadow: boolean;
   transcriptCount: number;
   needsReTranscription: boolean;
 }
@@ -81,7 +80,6 @@ export function PreviewPanel({
             {/* Per-change rows */}
             {chapterChanges.map((change, idx) => {
               const extras: string[] = [];
-              if (change.hasShadow) extras.push('shadow');
               if (change.transcriptCount > 0) extras.push(`${change.transcriptCount} transcripts`);
               const note = extras.length > 0 ? `+ ${extras.join(' + ')}` : '';
 
@@ -129,7 +127,7 @@ export function PreviewPanel({
         <div className="flex items-center gap-4 text-[10px] text-warm-muted mb-3">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
-            Instant: rename .mov + shadow + transcripts (no re-processing)
+            Instant: rename .mov + transcripts (no re-processing)
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />

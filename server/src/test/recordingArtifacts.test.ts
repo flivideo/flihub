@@ -29,19 +29,17 @@ afterEach(async () => {
 });
 
 describe('findRecordingArtifacts', () => {
-  it('finds the recording, shadow and all three transcripts', async () => {
+  it('finds the recording and all three transcripts', async () => {
     await writeFile('recordings/01-1-intro.mov', 'mov');
-    await writeFile('recording-shadows/01-1-intro.mp4', 'shadow');
     await writeFile('recording-transcripts/01-1-intro.json', '{}');
     await writeFile('recording-transcripts/01-1-intro.srt', 'srt');
     await writeFile('recording-transcripts/01-1-intro.txt', 'txt');
 
     const artifacts = await findRecordingArtifacts(projectDir, '01-1-intro.mov');
 
-    expect(artifacts).toHaveLength(5);
+    expect(artifacts).toHaveLength(4);
     expect(artifacts.map((a) => a.kind)).toEqual([
       'recording',
-      'shadow',
       'transcript',
       'transcript',
       'transcript',
@@ -144,7 +142,6 @@ describe('moveArtifactToTrash', () => {
 
   it('moves a full artifact set without name clashes between extensions', async () => {
     await writeFile('recordings/01-1-intro.mov', 'mov');
-    await writeFile('recording-shadows/01-1-intro.mp4', 'shadow');
     await writeFile('recording-transcripts/01-1-intro.srt', 'srt');
     const trashDir = path.join(projectDir, '-trash');
 
@@ -155,7 +152,6 @@ describe('moveArtifactToTrash', () => {
 
     expect((await fs.readdir(trashDir)).sort()).toEqual([
       '01-1-intro.mov',
-      '01-1-intro.mp4',
       '01-1-intro.srt',
     ]);
   });

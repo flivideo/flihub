@@ -3,7 +3,6 @@ import fs from 'fs-extra';
 import path from 'path';
 import type { ProjectPaths } from '../../../shared/paths.js';
 import type { ProjectState, TranscriptionJob } from '../../../shared/types.js';
-import { createShadowFile } from './shadowFiles.js';
 import { readProjectState, writeProjectState } from './projectState.js';
 
 /**
@@ -76,7 +75,7 @@ export async function deleteChapterVideo(
 }
 
 /**
- * Rename derivative files (shadows, transcripts) in-place via fs.rename
+ * Rename derivative files (transcripts) in-place via fs.rename
  * If chapter number changed, delete the old chapter video (it's now stale)
  */
 export async function renameDerivableFiles(
@@ -88,13 +87,6 @@ export async function renameDerivableFiles(
   const newBase = newFilename.replace(/\.(mov|mp4)$/, '');
 
   console.log(`[B047] Renaming derivative files: ${oldBase} → ${newBase}`);
-
-  // Rename shadow file (.mp4 in recording-shadows/)
-  const shadowDir = path.join(paths.project, 'recording-shadows');
-  await safeRename(
-    path.join(shadowDir, `${oldBase}.mp4`),
-    path.join(shadowDir, `${newBase}.mp4`)
-  );
 
   // Rename transcript files (all 5 extensions)
   const transcriptExts = ['.txt', '.srt', '.json', '.vtt', '.tsv'];
@@ -117,7 +109,6 @@ export async function renameDerivableFiles(
 
 /**
  * Delete derivable files that can be regenerated
- * - Shadow files (both main and -safe directories)
  * - Transcript files (.txt and .srt)
  * - Chapter videos (if exists)
  *
@@ -130,10 +121,6 @@ export async function deleteDerivableFiles(
   console.log(`[FR-130] Deleting derivable files for: ${oldFilename}`);
   const baseName = oldFilename.replace(/\.(mov|mp4)$/, '');
 
-  // Delete shadow files
-  // FR-111: Shadow files are always .mp4, only in main recording-shadows/ folder (no -safe subfolder)
-  const shadowPaths = [path.join(paths.project, 'recording-shadows', `${baseName}.mp4`)];
-
   // Delete transcript files (Whisper creates .txt, .srt, .json, .vtt, .tsv)
   const transcriptPaths = [
     path.join(paths.transcripts, `${baseName}.txt`),
@@ -145,7 +132,7 @@ export async function deleteDerivableFiles(
 
   // Delete all (log errors but don't fail the rename)
   await Promise.all(
-    [...shadowPaths, ...transcriptPaths].map(async (p) => {
+    transcriptPaths.map(async (p) => {
       try {
         await fs.unlink(p);
         console.log(`[FR-130] Deleted: ${path.basename(p)}`);
@@ -261,7 +248,6 @@ export async function renameCoreFiles(
 
 /**
  * Regenerate derivable files using existing systems
- * - Shadow files: instant regeneration
  * - Transcripts: queued for async processing
  *
  * NOTE: Still exported for use by Regen endpoints in manage.ts
@@ -274,19 +260,7 @@ export async function regenerateDerivableFiles(
   console.log(`[FR-130] Regenerating derivable files for: ${newFilename}`);
 
   // FR-111: All files stay in main folders (safe is just a state flag, not a physical location)
-  const shadowDir = path.join(paths.project, 'recording-shadows');
   const videoPath = path.join(paths.recordings, newFilename);
-
-  try {
-    const result = await createShadowFile(videoPath, shadowDir);
-    if (result.success) {
-      console.log(`[FR-130] Created shadow file: ${path.basename(result.shadowPath!)}`);
-    } else {
-      console.error('[FR-130] Failed to create shadow file:', result.error);
-    }
-  } catch (err) {
-    console.error('[FR-130] Failed to create shadow file:', err);
-  }
 
   // Queue transcription (async, non-blocking)
   if (queueTranscription) {
@@ -296,7 +270,7 @@ export async function regenerateDerivableFiles(
 
 /**
  * Rename recording using smart-rename pattern (B047)
- * Phase 1: Rename derivative files in-place (shadows, transcripts)
+ * Phase 1: Rename derivative files in-place (transcripts)
  * Phase 2: Rename core files (recording + state migration)
  */
 export async function renameRecording(

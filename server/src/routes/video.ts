@@ -1,6 +1,5 @@
 /**
  * FR-70: Video Streaming Routes
- * FR-83: Shadow video support
  *
  * Endpoints:
  * - GET /video/:projectCode/:folder/:filename - Stream video file with Range support
@@ -8,8 +7,6 @@
  * Folders:
  * - recordings: Real video recordings
  * - -chapters: Generated chapter videos
- * - recording-shadows: 240p preview videos (FR-83)
- * - recording-shadows-safe: 240p previews from safe folder (FR-83)
  */
 
 import { Router, Request, Response } from 'express';
@@ -52,13 +49,11 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       return;
     }
 
-    // FR-83: Allow recordings, chapters, shadow, and edit folders
+    // Allow recordings, chapters, and edit folders
     const allowedFolders = [
       'recordings',
       'b-roll', // FR-161
       '-chapters',
-      'recording-shadows',
-      'recording-shadows-safe',
       'edit-1st',
       'edit-2nd',
       'final',
@@ -90,12 +85,9 @@ export function createVideoRoutes(getConfig: () => Config): Router {
 
       // Map folder aliases to actual paths
       // Note: -chapters is inside recordings/ folder
-      // FR-83: recording-shadows-safe maps to recording-shadows/-safe
       let actualFolder: string;
       if (folder === '-chapters') {
         actualFolder = 'recordings/-chapters';
-      } else if (folder === 'recording-shadows-safe') {
-        actualFolder = 'recording-shadows/-safe';
       } else {
         actualFolder = folder;
       }

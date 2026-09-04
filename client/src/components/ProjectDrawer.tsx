@@ -129,7 +129,6 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
     { value: `${project.transcriptPercent}%`, label: 'Transcripts' },
     { value: project.imageCount, label: 'Images' },
     { value: project.thumbCount, label: 'Thumbs' },
-    { value: project.shadowCount, label: 'Shadows' },
   ];
 
   return (
@@ -315,19 +314,6 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
                   ))}
                 </div>
               )}
-
-              {/* B062 Wave 2: Shadows row with folder-open button */}
-              <div className="flex items-center justify-between py-0.5 text-[12px]">
-                <span className="text-warm-muted">Shadows</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-warm-secondary tabular-nums">{formatBytes(diskData.shadows)}</span>
-                  <button
-                    onClick={() => openFolder.mutate({ folder: 'shadows', projectCode: project.code })}
-                    className="text-[10px] text-warm-faint hover:text-warm-muted transition-colors flex-shrink-0"
-                    title="Open in Finder: recording-shadows"
-                  >📂</button>
-                </div>
-              </div>
 
               {/* B062 Wave 2: Other row with folder-open button (opens project root) */}
               <div className="flex items-center justify-between py-0.5 text-[12px]">

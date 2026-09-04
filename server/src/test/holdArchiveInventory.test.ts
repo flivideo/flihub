@@ -224,7 +224,7 @@ describe('GET /api/projects/archive-inventory', () => {
       }
       // Fall through to real behaviour for the healthy project
       return {
-        rec: 1024, trash: 0, shadows: 0, other: 0,
+        rec: 1024, trash: 0, other: 0,
         rRec: 0, r1st: 0, r2nd: 0, total: 1024,
         calculatedAt: new Date().toISOString(),
         detail: { other: {}, recTopFiles: [], trashFiles: [] },

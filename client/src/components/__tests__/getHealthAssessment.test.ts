@@ -25,7 +25,6 @@ function makeProject(overrides: Partial<ProjectStats> = {}): ProjectStats {
     hasChapters: false,
     inboxCount: 0,
     chapterVideoCount: 0,
-    shadowCount: 0,
     hasFinal: false,
   };
   return { ...defaults, ...overrides };

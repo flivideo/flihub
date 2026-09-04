@@ -8,7 +8,7 @@
  * - Tags as purple badges with remove button
  * - Action buttons (Safe, Park, Restore, Unpark, Delete)
  * - Transcription badge
- * - Visual states: selected (blue ring), shadow (purple), safe (gray), parked (pink)
+ * - Visual states: selected (blue ring), safe (gray), parked (pink)
  */
 
 import { useState, useRef, useEffect, type ReactNode } from 'react';
@@ -63,8 +63,7 @@ export function EditableFileRow({
   const [editError, setEditError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const isShadow = !!recording.isShadow;
-  const isDisabled = disabled || isShadow;
+  const isDisabled = !!disabled;
 
   // Focus input when editing starts
   useEffect(() => {
@@ -136,9 +135,7 @@ export function EditableFileRow({
 
   // Row styling
   let rowClasses: string;
-  if (isShadow) {
-    rowClasses = 'bg-purple-50 border-purple-200';
-  } else if (recording.isSafe) {
+  if (recording.isSafe) {
     rowClasses = 'bg-surface-muted border-warm';
   } else if (recording.isParked) {
     rowClasses = 'bg-pink-50 border-pink-200';
@@ -156,36 +153,23 @@ export function EditableFileRow({
     >
       <div className="flex items-center gap-3">
         {/* Checkbox — faint until row hover or checked */}
-        {!isShadow && (
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => onToggleSelect(recording.filename)}
-            className={`w-3.5 h-3.5 rounded border-warm-strong focus:ring-blue-500 cursor-pointer transition-opacity ${
-              isSelected ? 'opacity-100 text-blue-600' : 'opacity-15 group-hover:opacity-60'
-            }`}
-          />
-        )}
-        {isShadow && <span className="w-3.5" />}
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onToggleSelect(recording.filename)}
+          className={`w-3.5 h-3.5 rounded border-warm-strong focus:ring-blue-500 cursor-pointer transition-opacity ${
+            isSelected ? 'opacity-100 text-blue-600' : 'opacity-15 group-hover:opacity-60'
+          }`}
+        />
 
         {/* Play button */}
         <button
           onClick={() => onPlay(recording)}
-          disabled={isShadow}
-          className={`text-blue-600 hover:text-blue-700 transition-colors ${
-            isShadow ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
-          }`}
-          title={isShadow ? 'Video not available locally' : 'Preview recording'}
+          className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+          title="Preview recording"
         >
           ▶
         </button>
-
-        {/* Shadow ghost icon */}
-        {isShadow && (
-          <span className="text-sm" title="Shadow only - video not available locally">
-            👻
-          </span>
-        )}
 
         {/* Filename segments */}
         <div className="flex items-center font-mono text-sm">
@@ -331,17 +315,7 @@ export function EditableFileRow({
 
         <span className="font-mono">{fmtDuration(recording.duration)}</span>
 
-        {/* File size with shadow tooltip */}
-        <span
-          title={
-            recording.shadowSize
-              ? `Shadow: ${fmtFileSize(recording.shadowSize)}`
-              : 'No shadow'
-          }
-          className="cursor-help"
-        >
-          {fmtFileSize(recording.size)}
-        </span>
+        <span>{fmtFileSize(recording.size)}</span>
 
         <span>{fmtTimestamp(recording.timestamp)}</span>
 
@@ -349,14 +323,7 @@ export function EditableFileRow({
         {transcriptionBadge}
 
         {/* Action buttons */}
-        {isShadow ? (
-          <span
-            className="text-xs text-warm-faint px-2 py-0.5"
-            title="Actions unavailable for shadow files"
-          >
-            -
-          </span>
-        ) : recording.isSafe ? (
+        {recording.isSafe ? (
           <button
             onClick={() => onRestore(recording.filename)}
             className="text-xs text-green-600 hover:text-green-700 px-2 py-0.5 hover:bg-green-100 rounded transition-colors"
@@ -388,7 +355,7 @@ export function EditableFileRow({
             <button
               onClick={() => onDelete(recording.filename)}
               className="text-xs text-warm-muted hover:text-red-600 px-2 py-0.5 hover:bg-red-100 rounded transition-colors"
-              title="Move this recording and its transcript/shadow to -trash"
+              title="Move this recording and its transcripts to -trash"
             >
               Delete
             </button>

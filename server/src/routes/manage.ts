@@ -12,7 +12,6 @@ import {
   formatChapter,
 } from '../../../shared/naming.js';
 import { renameRecording } from '../utils/renameRecording.js';
-import { createShadowFile } from '../utils/shadowFiles.js';
 import { generateChapterRecording } from '../utils/chapterRecording.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
@@ -200,121 +199,6 @@ export function createManageRoutes(
       });
     } catch (err) {
       console.error('[FR-138] Bulk rename error:', err);
-      res.status(500).json({
-        success: false,
-        error: err instanceof Error ? err.message : 'Internal server error',
-      });
-    }
-  });
-
-  /**
-   * POST /api/manage/regen-shadows
-   * FR-131 Phase 2: Regenerate shadow files for all recordings
-   *
-   * Returns:
-   * {
-   *   success: boolean;
-   *   completed: number;
-   *   failed: number;
-   *   total: number;
-   *   errors?: Array<{ file: string; error: string }>;
-   * }
-   */
-  router.post('/regen-shadows', async (req, res) => {
-    try {
-      const { files } = req.body; // FR-136: Optional array of filenames
-      const config = getConfig();
-      const paths = getProjectPaths(expandPath(config.projectDirectory));
-
-      const recordingsDir = paths.recordings;
-      const shadowDir = path.join(paths.project, 'recording-shadows');
-
-      // FR-136: Determine target files (selected or all)
-      let recordings: string[];
-      const scope = files && Array.isArray(files) && files.length > 0 ? 'selected' : 'all';
-
-      if (scope === 'selected') {
-        recordings = files;
-      } else {
-        const allFiles = await fs.readdir(recordingsDir);
-        recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
-      }
-
-      const results = {
-        completed: 0,
-        failed: 0,
-        errors: [] as Array<{ file: string; error: string }>,
-      };
-
-      console.log(`[FR-131] Regen shadows: Processing ${recordings.length} ${scope} recordings`);
-
-      for (let i = 0; i < recordings.length; i++) {
-        const filename = recordings[i];
-        try {
-          const recordingPath = path.join(recordingsDir, filename);
-          const baseName = filename.replace(/\.(mov|mp4)$/i, '');
-
-          // Emit progress update
-          console.log(`[FR-131 Regen Progress] ${i + 1}/${recordings.length}: ${filename}`);
-          io.emit('regen:shadows:progress', {
-            current: i + 1,
-            total: recordings.length,
-            filename,
-          });
-
-          // Delete existing shadow file
-          const shadowPath = path.join(shadowDir, `${baseName}.mp4`);
-          await fs.remove(shadowPath);
-
-          // Regenerate shadow
-          const result = await createShadowFile(
-            recordingPath,
-            shadowDir,
-            undefined,
-            config.shadowResolution || 240
-          );
-
-          if (result.success) {
-            results.completed++;
-            console.log(`[FR-131 Regen Shadows] Created: ${filename}`);
-          } else {
-            // If error is "already exists", count as skipped (race condition protection)
-            if (result.error === 'Shadow file already exists') {
-              results.completed++;
-            } else {
-              results.failed++;
-              results.errors.push({ file: filename, error: result.error || 'Unknown error' });
-              console.error(`[FR-131 Regen Shadows] Failed: ${filename}`, result.error);
-            }
-          }
-        } catch (err) {
-          results.failed++;
-          results.errors.push({ file: filename, error: String(err) });
-          console.error(`[FR-131 Regen Shadows] Error: ${filename}`, err);
-        }
-      }
-
-      // Emit Socket.io event
-      io.emit('regen:shadows:complete', {
-        completed: results.completed,
-        failed: results.failed,
-        errors: results.errors.length > 0 ? results.errors : undefined,
-      });
-
-      console.log(
-        `[FR-131] Regen shadows complete: ${results.completed} created, ${results.failed} failed`
-      );
-
-      res.json({
-        success: true,
-        completed: results.completed,
-        failed: results.failed,
-        total: recordings.length,
-        scope, // FR-136: Report whether 'selected' or 'all'
-        errors: results.errors.length > 0 ? results.errors : undefined,
-      });
-    } catch (err) {
-      console.error('[FR-131 Regen Shadows] Error:', err);
       res.status(500).json({
         success: false,
         error: err instanceof Error ? err.message : 'Internal server error',
@@ -643,7 +527,7 @@ export function createManageRoutes(
 
   /**
    * POST /api/manage/regen-all
-   * FR-131 Phase 2: Regenerate all derivative files (shadows, transcripts, chapters)
+   * FR-131 Phase 2: Regenerate all derivative files (transcripts, chapters)
    * Runs sequentially with progress updates
    *
    * Returns immediately and processes async:
@@ -694,20 +578,16 @@ export function createManageRoutes(
       const scope = files && files.length > 0 ? 'selected' : 'all';
       console.log(`[FR-131] Regen all: Starting (${scope})...`);
 
-      // Step 1: Shadows
-      io.emit('regen:all:progress', { step: 'shadows', current: 1, total: 3 });
-      const shadowsResult = await regenerateShadowsInternal(getConfig, io, files);
-
-      // Step 2: Transcripts
-      io.emit('regen:all:progress', { step: 'transcripts', current: 2, total: 3 });
+      // Step 1: Transcripts (shadows step removed 2026-09-04 — FR-83 deprecated)
+      io.emit('regen:all:progress', { step: 'transcripts', current: 1, total: 2 });
       const transcriptsResult = await regenerateTranscriptsInternal(
         getConfig,
         queueTranscription,
         files
       );
 
-      // Step 3: Chapters
-      io.emit('regen:all:progress', { step: 'chapters', current: 3, total: 3 });
+      // Step 2: Chapters
+      io.emit('regen:all:progress', { step: 'chapters', current: 2, total: 2 });
       const chaptersResult = await regenerateChaptersInternal(
         getConfig,
         io,
@@ -717,7 +597,6 @@ export function createManageRoutes(
 
       // Emit completion
       io.emit('regen:all:complete', {
-        shadows: shadowsResult,
         transcripts: transcriptsResult,
         chapters: chaptersResult,
       });
@@ -727,67 +606,6 @@ export function createManageRoutes(
       console.error('[FR-131 Regen All] Error:', err);
       io.emit('regen:all:error', { error: String(err) });
     }
-  }
-
-  /**
-   * Internal helper: Regenerate shadows
-   * FR-136: Accept optional files parameter for selection-aware behavior
-   */
-  async function regenerateShadowsInternal(
-    getConfig: () => Config,
-    io: Server<ClientToServerEvents, ServerToClientEvents>,
-    targetFiles?: string[]
-  ): Promise<{ completed: number; failed: number }> {
-    const config = getConfig();
-    const paths = getProjectPaths(expandPath(config.projectDirectory));
-    const recordingsDir = paths.recordings;
-    const shadowDir = path.join(paths.project, 'recording-shadows');
-
-    // FR-136: Use provided files or get all
-    let recordings: string[];
-    if (targetFiles && targetFiles.length > 0) {
-      recordings = targetFiles;
-    } else {
-      const allFiles = await fs.readdir(recordingsDir);
-      recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
-    }
-
-    const results = { completed: 0, failed: 0 };
-
-    for (let i = 0; i < recordings.length; i++) {
-      const filename = recordings[i];
-      try {
-        const recordingPath = path.join(recordingsDir, filename);
-        const baseName = filename.replace(/\.(mov|mp4)$/i, '');
-        const shadowPath = path.join(shadowDir, `${baseName}.mp4`);
-
-        // Emit progress (for regen-all operation)
-        io.emit('regen:shadows:progress', {
-          current: i + 1,
-          total: recordings.length,
-          filename,
-        });
-
-        await fs.remove(shadowPath);
-
-        const result = await createShadowFile(
-          recordingPath,
-          shadowDir,
-          undefined,
-          config.shadowResolution || 240
-        );
-
-        if (result.success || result.error === 'Shadow file already exists') {
-          results.completed++;
-        } else {
-          results.failed++;
-        }
-      } catch (_err) {
-        results.failed++;
-      }
-    }
-
-    return results;
   }
 
   /**
@@ -1010,65 +828,6 @@ export function createManageRoutes(
       res.json({ success: true, deleted });
     } catch (err) {
       console.error('[delete-transcripts] Error:', err);
-      res.status(500).json({
-        success: false,
-        error: err instanceof Error ? err.message : 'Internal server error',
-      });
-    }
-  });
-
-  /**
-   * DELETE /api/manage/delete-shadows
-   * Delete shadow files for the current project.
-   * Body: { files?: string[] } — recording filenames; omit for all.
-   */
-  router.delete('/delete-shadows', async (req, res) => {
-    try {
-      const config = getConfig();
-      const projectPath = expandPath(config.projectDirectory);
-      const shadowsDir = path.join(projectPath, 'recording-shadows');
-
-      if (!fs.existsSync(shadowsDir)) {
-        return res.json({ success: true, deleted: 0 });
-      }
-
-      const { files: targetFiles } = req.body as { files?: string[] };
-      let deleted = 0;
-
-      if (targetFiles && targetFiles.length > 0) {
-        // Delete only shadows for specified recording filenames
-        const dirs = [shadowsDir, path.join(shadowsDir, '-safe')];
-        for (const filename of targetFiles) {
-          const baseName = path.basename(filename, path.extname(filename));
-          for (const dir of dirs) {
-            const shadowPath = path.join(dir, `${baseName}.mp4`);
-            if (fs.existsSync(shadowPath)) {
-              await fs.remove(shadowPath);
-              deleted++;
-            }
-          }
-        }
-      } else {
-        // Delete all shadow files
-        const dirs = [shadowsDir, path.join(shadowsDir, '-safe')];
-        for (const dir of dirs) {
-          if (!fs.existsSync(dir)) continue;
-          const files = await fs.readdir(dir);
-          for (const file of files) {
-            const fullPath = path.join(dir, file);
-            const stat = await fs.stat(fullPath);
-            if (stat.isFile()) {
-              await fs.remove(fullPath);
-              deleted++;
-            }
-          }
-        }
-      }
-
-      console.log(`[delete-shadows] Deleted ${deleted} files from ${shadowsDir}`);
-      res.json({ success: true, deleted });
-    } catch (err) {
-      console.error('[delete-shadows] Error:', err);
       res.status(500).json({
         success: false,
         error: err instanceof Error ? err.message : 'Internal server error',

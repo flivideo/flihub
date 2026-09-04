@@ -43,7 +43,7 @@ export function BRollPage() {
         <h2 className="text-lg font-medium text-warm-secondary">B-Roll</h2>
         <span className="text-sm text-warm-muted">
           {files.length} file{files.length !== 1 ? 's' : ''} · chapter-less source media —
-          promoted from Incoming, never transcribed, no shadows
+          promoted from Incoming, never transcribed
         </span>
       </div>
 

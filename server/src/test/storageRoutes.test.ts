@@ -119,6 +119,8 @@ describe('storage-panel WU1', () => {
     nodeFs.writeFileSync(nodePath.join(base, 'final', 'final.mov'), Buffer.alloc(512, 1));
     nodeFs.mkdirSync(nodePath.join(base, 'recording-shadows'), { recursive: true });
     nodeFs.writeFileSync(nodePath.join(base, 'recording-shadows', 's.mp4'), Buffer.alloc(256, 1));
+    nodeFs.mkdirSync(nodePath.join(base, 'b-roll'), { recursive: true });
+    nodeFs.writeFileSync(nodePath.join(base, 'b-roll', 'clip-1.mov'), Buffer.alloc(128, 1));
     // Light
     nodeFs.mkdirSync(nodePath.join(base, 'assets'), { recursive: true });
     nodeFs.writeFileSync(nodePath.join(base, 'assets', 'img.png'), Buffer.alloc(64, 1));
@@ -196,9 +198,9 @@ describe('storage-panel WU1', () => {
       expect(tree.state).toBe('active');
       const names = tree.nodes.map((n) => n.name).sort();
       // Heavy + light should be present
-      expect(names).toEqual(expect.arrayContaining(['recordings', 'final', 'recording-shadows', 'assets', 'inbox']));
+      expect(names).toEqual(expect.arrayContaining(['recordings', 'final', 'recording-shadows', 'b-roll', 'assets', 'inbox']));
       const heavyNames = tree.nodes.filter((n) => n.classification === 'heavy').map((n) => n.name).sort();
-      expect(heavyNames).toEqual(['final', 'recording-shadows', 'recordings']);
+      expect(heavyNames).toEqual(['b-roll', 'final', 'recording-shadows', 'recordings']);
       const lightNames = tree.nodes.filter((n) => n.classification === 'light').map((n) => n.name).sort();
       expect(lightNames).toEqual(expect.arrayContaining(['assets', 'inbox']));
       expect(tree.sizes.heavyTotal).toBeGreaterThan(0);
@@ -248,7 +250,7 @@ describe('storage-panel WU1', () => {
     });
 
     it('HEAVY_SUBFOLDERS is the documented allowlist', () => {
-      expect([...HEAVY_SUBFOLDERS]).toEqual(['recordings', 'recording-shadows', 'final']);
+      expect([...HEAVY_SUBFOLDERS]).toEqual(['recordings', 'recording-shadows', 'final', 'b-roll']);
     });
   });
 
@@ -510,7 +512,7 @@ describe('storage-panel WU1', () => {
     it('leaves ALL local heavy subfolders intact if verification fails on the 2nd subfolder', async () => {
       const localDir = makeActiveProject('a1');
       // Swap spawn mock: copy only a subset of files for the SECOND heavy
-      // subfolder rsync. HEAVY_SUBFOLDERS is ['recordings','recording-shadows','final'].
+      // subfolder rsync. HEAVY_SUBFOLDERS is ['recordings','recording-shadows','final','b-roll'].
       // We want subfolder #2 (recording-shadows) to verify-fail.
       let heavyCallIndex = 0;
       const cp = await import('child_process');

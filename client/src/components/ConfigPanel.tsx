@@ -8,9 +8,6 @@ import {
   useRefetchSuggestedNaming,
   useChapterRecordingConfig,
   useUpdateChapterRecordingConfig,
-  useShadowStatus,
-  useGenerateShadows,
-  useGenerateAllShadows,
   useWatchers,
   useEnvironment,
 } from '../hooks/useApi';
@@ -266,15 +263,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const { data: chapterConfig, isLoading: chapterConfigLoading } = useChapterRecordingConfig();
   const updateChapterConfig = useUpdateChapterRecordingConfig();
 
-  // FR-83: Shadow recording management
-  const {
-    data: shadowStatus,
-    isLoading: shadowStatusLoading,
-    refetch: refetchShadowStatus,
-  } = useShadowStatus();
-  const generateShadows = useGenerateShadows();
-  const generateAllShadows = useGenerateAllShadows();
-
   // FR-90: File watchers
   const { data: watchersData } = useWatchers();
   const [showWatchers, setShowWatchers] = useState(false);
@@ -368,8 +356,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const [resolution, setResolution] = useState<'720p' | '1080p'>('720p');
   const [autoGenerate, setAutoGenerate] = useState(false);
 
-  // FR-89 Part 6: Shadow resolution (240p, 180p, 160p)
-  const [shadowResolution, setShadowResolution] = useState<number>(240);
 
   // C-1: Initialize with collapsed paths (using ~)
   // FR-89 Part 5: Initialize split project directory fields
@@ -402,8 +388,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       // FR-116/FR-73: Initialize common names (full objects with filters)
       setCommonNames(config.commonNames || []);
 
-      // FR-89 Part 6: Initialize shadow resolution
-      setShadowResolution(config.shadowResolution || 240);
 
       // Check existence on load
       checkPathExists(watchPath, setWatchDirExists);
@@ -496,14 +480,12 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         chapterConfig.config.resolution !== resolution ||
         chapterConfig.config.autoGenerate !== autoGenerate);
 
-    // FR-89 Part 6: Check shadow resolution changes
-    const shadowChanged = (config.shadowResolution || 240) !== shadowResolution;
 
     // FR-116/FR-73: Check common names changes (full objects with filters)
     const commonNamesChanged =
       JSON.stringify(config.commonNames || []) !== JSON.stringify(commonNames);
 
-    return pathsChanged || relayChanged || storagePathsChanged || dictChanged || chapterChanged || shadowChanged || commonNamesChanged;
+    return pathsChanged || relayChanged || storagePathsChanged || dictChanged || chapterChanged || commonNamesChanged;
   }, [
     config,
     watchDirectory,
@@ -521,7 +503,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     slideDuration,
     resolution,
     autoGenerate,
-    shadowResolution,
     commonNames,
   ]);
 
@@ -575,7 +556,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       });
 
       // FR-89 Part 5: Send split project directory fields
-      // FR-89 Part 6: Include shadow resolution
       // FR-102: Include Gling dictionary
       // FR-116: Include common names
       // B038: Sanitize relay directory
@@ -592,7 +572,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         projectsRootDirectory: rootSanitized.sanitized,
         activeProject: activeProject.trim(),
         imageSourceDirectory: imageSanitized.sanitized,
-        shadowResolution,
         glingDictionary: dictWords,
         commonNames: updatedCommonNames,
         relayDirectory: relaySanitized.sanitized || undefined,
@@ -612,26 +591,9 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
 
       // FR-4: Refetch suggested naming when project directory changes
       refetchSuggestedNaming();
-      // FR-83: Refetch shadow status when watch/project directory changes
-      refetchShadowStatus();
       toast.success('Configuration saved');
     } catch (_error) {
       toast.error('Failed to save configuration');
-    }
-  };
-
-  // FR-83: Generate shadows for current project
-  const handleGenerateShadows = async () => {
-    try {
-      const result = await generateShadows.mutateAsync();
-      if (result.success) {
-        toast.success(
-          `Created ${result.created} shadow files${result.skipped > 0 ? ` (${result.skipped} skipped)` : ''}`
-        );
-        refetchShadowStatus();
-      }
-    } catch (_error) {
-      toast.error('Failed to generate shadow files');
     }
   };
 
@@ -641,19 +603,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       await updateConfig.mutateAsync({ commonNames: names });
     } catch {
       toast.error('Failed to save common names');
-    }
-  };
-
-  // FR-83: Generate shadows for all projects
-  const handleGenerateAllShadows = async () => {
-    try {
-      const result = await generateAllShadows.mutateAsync();
-      if (result.success) {
-        toast.success(`Created ${result.created} shadow files across ${result.projects} projects`);
-        refetchShadowStatus();
-      }
-    } catch (_error) {
-      toast.error('Failed to generate shadow files');
     }
   };
 
@@ -1257,93 +1206,11 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             </label>
           </div>
 
-        {/* FR-83: Shadow Recordings Section */}
+        {/* FR-90: File Watchers (Shadow Recordings section removed 2026-09-04 — FR-83 deprecated) */}
         <div className="border-t border-warm pt-3 mt-1">
-          <h3 className="text-sm font-medium text-warm-secondary mb-3">Shadow Recordings</h3>
-          <p className="text-xs text-warm-muted mb-3">
-            Shadow files allow collaborators to see project structure without the actual video
-            files.
-          </p>
-
-          {/* FR-89 Part 6: Shadow Resolution Selection */}
-          <div className="mb-4">
-            <label className="block text-sm text-warm-secondary mb-2">Default Shadow Resolution</label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="shadowResolution"
-                  value={240}
-                  checked={shadowResolution === 240}
-                  onChange={() => setShadowResolution(240)}
-                  className="text-purple-500"
-                />
-                <span className="text-sm">240p</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="shadowResolution"
-                  value={180}
-                  checked={shadowResolution === 180}
-                  onChange={() => setShadowResolution(180)}
-                  className="text-purple-500"
-                />
-                <span className="text-sm">180p</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="shadowResolution"
-                  value={160}
-                  checked={shadowResolution === 160}
-                  onChange={() => setShadowResolution(160)}
-                  className="text-purple-500"
-                />
-                <span className="text-sm">160p</span>
-              </label>
-            </div>
-            <p className="text-xs text-warm-muted mt-1">Lower = smaller files, less detail</p>
-          </div>
-
-          {/* Watch Directory Status */}
+          <h3 className="text-sm font-medium text-warm-secondary mb-3">File Watchers</h3>
           <div className="mb-4 p-3 bg-surface-muted rounded-lg">
-            {shadowStatus?.watchDirectory ? (
-              shadowStatus.watchDirectory.exists ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-green-500">🟢</span>
-                  <span className="text-sm text-warm-secondary">
-                    Ecamm:{' '}
-                    <code className="text-xs bg-surface-muted px-1 rounded">
-                      {collapsePath(shadowStatus.watchDirectory.path)}
-                    </code>
-                  </span>
-                </div>
-              ) : shadowStatus.watchDirectory.configured ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-yellow-500">🟡</span>
-                  <span className="text-sm text-warm-secondary">
-                    Path not found:{' '}
-                    <code className="text-xs bg-surface-muted px-1 rounded">
-                      {collapsePath(shadowStatus.watchDirectory.path)}
-                    </code>
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-red-500">🔴</span>
-                  <span className="text-sm text-warm-secondary">
-                    Not configured - Ecamm files will not be detected
-                  </span>
-                </div>
-              )
-            ) : shadowStatusLoading ? (
-              <span className="text-sm text-warm-muted">Loading status...</span>
-            ) : (
-              <span className="text-sm text-warm-muted">Unable to load status</span>
-            )}
-
-            {/* FR-90: All Active Watchers */}
+          {/* FR-90: All Active Watchers */}
             {watchersData?.watchers && watchersData.watchers.length > 0 && (
               <div className="mt-3 pt-3 border-t border-warm">
                 <button
@@ -1378,39 +1245,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
             )}
           </div>
 
-          {/* Current Project Status */}
-          {shadowStatus?.currentProject && (
-            <div className="mb-4 text-sm text-warm-secondary">
-              Current project:{' '}
-              <span className="font-medium">{shadowStatus.currentProject.recordings}</span>{' '}
-              recordings, <span className="font-medium">{shadowStatus.currentProject.shadows}</span>{' '}
-              shadows
-              {shadowStatus.currentProject.missing > 0 && (
-                <span className="text-amber-600">
-                  {' '}
-                  ({shadowStatus.currentProject.missing} missing)
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Generate Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={handleGenerateShadows}
-              disabled={generateShadows.isPending || generateAllShadows.isPending}
-              className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-surface-muted disabled:cursor-not-allowed transition-colors"
-            >
-              {generateShadows.isPending ? 'Generating...' : 'Generate Shadows'}
-            </button>
-            <button
-              onClick={handleGenerateAllShadows}
-              disabled={generateShadows.isPending || generateAllShadows.isPending}
-              className="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 disabled:bg-surface-muted disabled:cursor-not-allowed transition-colors"
-            >
-              {generateAllShadows.isPending ? 'Generating...' : 'Generate All Projects'}
-            </button>
-          </div>
         </div>
         </>)}
 

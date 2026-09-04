@@ -16,7 +16,6 @@ import {
   getProjectIndicators,
 } from './scanning.js';
 import { detectFinalMedia } from './finalMedia.js';
-import { getShadowCounts } from './shadowFiles.js';
 import type {
   Config,
   ProjectPriority,
@@ -78,8 +77,6 @@ export interface ProjectStatsRaw {
   inboxCount: number;
   chapterVideoCount: number;
 
-  // FR-83: Shadow recordings
-  shadowCount: number;
 
   // FR-148: Has files in final/ directory
   hasFinal: boolean;
@@ -135,9 +132,6 @@ export async function getProjectStatsRaw(
   // FR-80: Get content indicators
   const indicators = await getProjectIndicators(projectPath);
 
-  // FR-83/FR-111: Get shadow counts (no more -safe folders)
-  const shadowDir = path.join(projectPath, 'recording-shadows');
-  const shadowCounts = await getShadowCounts(recordingsDir, shadowDir);
 
   // FR-148: Check if final/ directory has video files
   const finalDir = path.join(projectPath, 'final');
@@ -195,7 +189,6 @@ export async function getProjectStatsRaw(
     hasChapters: indicators.hasChapters,
     inboxCount: indicators.inboxCount,
     chapterVideoCount: indicators.chapterVideoCount,
-    shadowCount: shadowCounts.shadows,
     // FR-148: Has files in final/ directory
     hasFinal,
   };

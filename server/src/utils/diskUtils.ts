@@ -122,26 +122,24 @@ export async function calculateProjectDiskSize(
   projectDir: string,
   relayProjectDir: string | null
 ): Promise<DiskSizeData> {
-  const [rec, trash, shadows, rRec, r1st, r2nd, totalProjectDir, trashFiles, recTopFiles, otherSubfolders] = await Promise.all([
+  const [rec, trash, rRec, r1st, r2nd, totalProjectDir, trashFiles, recTopFiles, otherSubfolders] = await Promise.all([
     getDirSize(path.join(projectDir, 'recordings')),
     getDirSize(path.join(projectDir, '-trash')),
-    getDirSize(path.join(projectDir, 'recording-shadows')),
     relayProjectDir ? getDirSize(path.join(relayProjectDir, 'recordings')) : Promise.resolve(0),
     relayProjectDir ? getDirSize(path.join(relayProjectDir, 'edit-1st')) : Promise.resolve(0),
     relayProjectDir ? getDirSize(path.join(relayProjectDir, 'edit-2nd')) : Promise.resolve(0),
     getDirSize(projectDir),
     getFileList(path.join(projectDir, '-trash')),
     getFileList(path.join(projectDir, 'recordings')).then(files => files.slice(0, 5)),
-    getSubfolderSizes(projectDir, ['recordings', '-trash', 'recording-shadows']),
+    getSubfolderSizes(projectDir, ['recordings', '-trash']), // legacy recording-shadows/ folders now itemize under 'other'
   ]);
 
-  const other = Math.max(0, totalProjectDir - rec - trash - shadows);
-  const total = rec + trash + shadows + other + rRec + r1st + r2nd;
+  const other = Math.max(0, totalProjectDir - rec - trash);
+  const total = rec + trash + other + rRec + r1st + r2nd;
 
   return {
     rec,
     trash,
-    shadows,
     other,
     rRec,
     r1st,

@@ -74,7 +74,7 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
     }
   };
 
-  // FR-161: promote to b-roll — name only, no chapter; transcription/shadow do not fire
+  // FR-161: promote to b-roll — name only, no chapter; transcription does not fire
   const handleBroll = async () => {
     const name = namingState.name.trim();
     if (!name) {
@@ -194,7 +194,7 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
           <button
             onClick={handleBroll}
             disabled={isLoading || !name}
-            title="Move to b-roll/ — chapter-less; no transcription, no shadow (FR-161)"
+            title="Move to b-roll/ — chapter-less; no transcription (FR-161)"
             className="px-3 py-1.5 text-sm text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             B-roll

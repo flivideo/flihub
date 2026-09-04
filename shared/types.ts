@@ -204,7 +204,6 @@ export interface Config {
   projectCodeHighWater?: Record<string, string>; // FR-163: highest code ever issued, keyed by expanded root path — never decreased
   projectStages?: ProjectStage[]; // FR-80: Configurable stage list (defaults to DEFAULT_PROJECT_STAGES)
   chapterRecordings?: ChapterRecordingConfig; // FR-58: Chapter recording settings
-  shadowResolution?: number; // FR-89 Part 6: Shadow video resolution (default: 240)
   glingDictionary?: string[]; // FR-102: Custom dictionary words for Gling transcription
   poemWuiUrl?: string; // FR-144: AWB server URL (default: http://localhost:5041)
   brandConfigPath?: string; // FR-144: Path to brand-config.json for YouTube Launch Optimizer
@@ -224,7 +223,6 @@ export interface Config {
 export interface DiskSizeData {
   rec: number;        // bytes — recordings/ folder
   trash: number;      // bytes — -trash/ folder
-  shadows: number;    // bytes — recording-shadows/ folder
   other: number;      // bytes — everything else in project dir
   rRec: number;       // bytes — relay/{project}/recordings/
   r1st: number;       // bytes — relay/{project}/edit-1st/
@@ -255,7 +253,6 @@ export interface DiskThresholds {
   columns: {
     trash:   DiskThresholdConfig;
     rec:     DiskThresholdConfig;
-    shadows: DiskThresholdConfig;
     other:   DiskThresholdConfig;
     rRec:    DiskThresholdConfig;
     r1st:    DiskThresholdConfig;
@@ -535,9 +532,6 @@ export interface ProjectStats {
   inboxCount: number; // FR-82: File count in inbox/ (for tooltip)
   chapterVideoCount: number; // FR-82: .mov count in recordings/-chapters/ (for tooltip)
 
-  // FR-83: Shadow recordings
-  shadowCount: number; // Shadow files in recording-shadows/
-
   // FR-148: Has files in final/ directory
   hasFinal: boolean;
 }
@@ -557,38 +551,6 @@ export interface RecordingFile {
   isSafe: boolean; // FR-111: True if hidden from active view (from state file)
   isParked: boolean; // FR-120: True if parked (excluded from this edit)
   annotation?: string; // FR-123: Optional note explaining why parked
-  isShadow?: boolean; // FR-83: True if shadow-only (no real recording)
-  hasShadow?: boolean; // FR-83: True if this recording has a shadow file
-  shadowSize?: number | null; // FR-95: Shadow file size in bytes (null if no shadow)
-}
-
-// FR-83: Shadow generation API responses
-export interface ShadowStatusResponse {
-  currentProject: {
-    recordings: number;
-    shadows: number;
-    missing: number;
-  };
-  watchDirectory: {
-    configured: boolean;
-    exists: boolean;
-    path: string;
-  };
-}
-
-export interface ShadowGenerateResponse {
-  success: boolean;
-  created: number;
-  skipped: number;
-  errors?: string[];
-}
-
-export interface ShadowGenerateAllResponse {
-  success: boolean;
-  projects: number;
-  created: number;
-  skipped: number;
-  errors?: string[];
 }
 
 // FR-17: Image info for incoming images from Downloads
@@ -725,12 +687,6 @@ export interface ServerToClientEvents {
   }) => void;
   'transcription:error': (job: { jobId: string; videoPath: string; error: string }) => void;
   // FR-131 Phase 2: Regeneration events
-  'regen:shadows:progress': (data: { current: number; total: number; filename: string }) => void;
-  'regen:shadows:complete': (data: {
-    completed: number;
-    failed: number;
-    errors?: Array<{ file: string; error: string }>;
-  }) => void;
   'regen:chapters:progress': (data: { current: number; total: number; chapter: string }) => void;
   'regen:chapters:complete': (data: {
     completed: number;
@@ -739,12 +695,12 @@ export interface ServerToClientEvents {
   }) => void;
   'regen:all:started': () => void;
   'regen:all:progress': (data: {
-    step: 'shadows' | 'transcripts' | 'chapters';
+    step: 'transcripts' | 'chapters';
     current: number;
     total: number;
   }) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  'regen:all:complete': (data: { shadows: any; transcripts: any; chapters: any }) => void;
+  'regen:all:complete': (data: { transcripts: any; chapters: any }) => void;
   'regen:all:error': (data: { error: string }) => void;
 }
 
@@ -1027,9 +983,6 @@ export interface QueryRecording {
   size: number;
   duration: number | null;
   hasTranscript: boolean;
-  isShadow?: boolean; // FR-83: True if shadow-only (no real recording)
-  hasShadow?: boolean; // FR-83: True if this recording has a shadow file
-  shadowSize?: number | null; // FR-95: Shadow file size in bytes (null if no shadow)
 }
 
 // Query API: Transcript info
@@ -1263,7 +1216,6 @@ export type FolderKey =
   | 's3Prep'
   | 's3Post'
   | 'inbox'
-  | 'shadows'
   | 'chapters'
   | 'relay'
   | 'edit-1st'

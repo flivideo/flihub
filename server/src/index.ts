@@ -18,7 +18,6 @@ import { createProjectRoutes } from './routes/projects.js';
 import { createQueryRoutes } from './routes/query/index.js';
 import { createChapterRoutes } from './routes/chapters.js';
 import { createVideoRoutes } from './routes/video.js';
-import { createShadowsRouter } from './routes/shadows.js';
 import { createEditRoutes } from './routes/edit.js';
 import { createManageRoutes } from './routes/manage.js';
 import { createPoemWuiRoutes } from './routes/poem-wui.js';
@@ -180,10 +179,6 @@ function updateConfig(newConfig: Partial<Config>): Config {
     currentConfig.projectDirectory = currentConfig.projectsRootDirectory;
   }
 
-  // FR-89 Part 6: Handle shadow resolution
-  if (newConfig.shadowResolution !== undefined)
-    currentConfig.shadowResolution = newConfig.shadowResolution;
-
   // FR-108: Handle Gling dictionary
   if (newConfig.glingDictionary !== undefined)
     currentConfig.glingDictionary = newConfig.glingDictionary;
@@ -289,10 +284,6 @@ app.use('/api/chapters', chapterRoutes);
 const videoRoutes = createVideoRoutes(() => currentConfig);
 app.use('/api/video', videoRoutes);
 
-// FR-83: Setup shadow recording routes
-const shadowRoutes = createShadowsRouter(() => currentConfig);
-app.use('/api/shadows', shadowRoutes);
-
 // FR-102: Setup edit prep routes
 const editRoutes = createEditRoutes(() => currentConfig);
 app.use('/api/edit', editRoutes);
@@ -371,7 +362,7 @@ export { io, pendingFiles };
         console.log('[FR-111] Starting safe folder migration...');
         const result = await migrateSafeFolder(currentConfig.projectDirectory);
         console.log(
-          `[FR-111] Migration complete: ${result.migrated} files, ${result.shadowsMigrated} shadows`
+          `[FR-111] Migration complete: ${result.migrated} files`
         );
         if (result.errors.length > 0) {
           console.warn('[FR-111] Migration warnings:', result.errors);
