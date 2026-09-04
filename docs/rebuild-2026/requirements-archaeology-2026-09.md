@@ -100,6 +100,10 @@ them for removal is David's call; the relationship is the fact.)
 
 ## Held recommendations queue (David rules; none actioned)
 
+swap-chapters leaves FR-157 titles behind (found 2026-09-04: `manage.ts` `/swap-chapters`
+three-phase renameRecording sweep moves files, transcripts, shadows and state recording-keys,
+but never remaps `.flihub-state.json` `chapters[NN].title` — after a swap the title labels the
+wrong content; FR-140 predates FR-157, nothing reconciled them — **DEFECT**, unhit so far) ·
 /config stages fix · FR-160 A/V delta + backfill · take-marks · re-transcribe-confirm ·
 T7 derive-don't-gate · stage/priority into state file · shadow strip-out (inventory ready) ·
 dot-grammar reconciliation.
