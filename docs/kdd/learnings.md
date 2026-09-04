@@ -7,6 +7,25 @@ what you learned → what to do about it.
 
 ---
 
+## 2026-09-04
+
+- **[shadows] When an instruction gets downgraded to a scoping step, the DOWNGRADE itself
+  must be reported back — recording "pending" in repo docs is not telling David.** David's
+  "remove all the shadow code" arrived (or was read) as a deprecation ruling; the strip-out
+  was correctly staged behind the hold-on-bare-relays protocol, but the pending state lived
+  only in the held queue and checkpoints. He believed dealt-with meant done, and shadows kept
+  generating for a day. The protocol that stops unapproved builds is right; it needs a
+  mandatory companion: "I have staged X as identify-only, awaiting your go" said TO him, not
+  filed. (Resolved by full strip-out `494b440`; mechanism recorded in
+  `docs/deprecation/shadow-recordings-inventory.md`.)
+
+- **[FR-169] A structure that COULD hold the data was described as one that DOES.** Reported
+  FliHub's transcript JSONs as carrying word-level timestamps because a `.json` next to
+  `.txt`/`.srt` reads as "the rich one" — nobody opened it. flicut-dev measured: segment-level
+  only, no `words` key, 0 words across 13 files. Same failure shape as
+  `transcriptionQueued:true` and the skill's rename claim: capability asserted as fact.
+  Rule: before claiming a file format contains a field, open one file and look.
+
 ## 2026-09-03
 
 - **[FR-163] A bucketed tree scanned shallow returns the bucket NAME's parse, not nothing —
