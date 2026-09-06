@@ -7,6 +7,17 @@ what you learned → what to do about it.
 
 ---
 
+## 2026-09-06
+
+- **[freeze] Archive is the one verb that erases `-trash/` everywhere.** HOLD_EXCLUDES omits
+  `-trash/` from the archive copy, then the local folder is deleted after verify — quietly
+  stronger than the explicit empty-trash button. Surfaced when six mis-filed recording takes
+  in `d01/-trash/` were, for two days, the only copies of that footage. Ticketed FR-171.
+  Second finding from the same investigation: `.flihub-state.json` is git-tracked but never
+  committed by FliHub's flows, so for state content **absence-in-git and loss are
+  indistinguishable** — state that is never committed cannot be recovered or proven to have
+  existed.
+
 ## 2026-09-04
 
 - **[shadows] When an instruction gets downgraded to a scoping step, the DOWNGRADE itself

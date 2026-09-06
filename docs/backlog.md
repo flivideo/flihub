@@ -26,6 +26,7 @@ folders) still awaits David's word.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-171 | [Archive Destroys -trash (data-safety)](prd/fr-171-archive-preserves-trash.md)         | 2026-09-06 | Pending (from D02 freeze investigation; needs David's pick of fix) |
 | FR-170 | [Chapter Seed Export for FliCut](prd/fr-170-chapter-seed-export.md)                     | 2026-09-04 | Pending (blocked on FR-169; FliCut half = FC-30)                |
 | FR-169 | [Word-Level Timestamps in Transcription](prd/fr-169-word-level-timestamps.md)           | 2026-09-04 | Pending (blocker for FR-170/FC-30; one-flag change + dictionary question) |
 | FR-168 | [`ships` Field: per-project / per-chapter](prd/fr-168-ships-field.md)                   | 2026-09-04 | Pending — design RULED by David 2026-09-04                      |
