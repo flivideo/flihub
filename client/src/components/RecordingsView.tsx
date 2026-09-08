@@ -337,11 +337,13 @@ function ChapterHeader({
   unparkPending,
   transcribePending,
   onViewCombined,
+  ships,
 }: {
   chapter: string;
   name: string;
   title?: string; // FR-157: persisted YouTube title (secondary, editable)
   onSetTitle?: (title: string) => Promise<unknown> | unknown; // FR-157
+  ships?: 'per-project' | 'per-chapter'; // FR-168: decides the title label and "starts @"
   fileCount: number;
   totalDuration: number;
   startTime: number;
@@ -388,16 +390,27 @@ function ChapterHeader({
             </span>
           )}
           <span className="text-xs text-warm-faint">
-            {fileCount} file{fileCount !== 1 ? 's'  : ''} · starts @ {formatDuration(startTime, 'youtube')}
+            {fileCount} file{fileCount !== 1 ? 's'  : ''}
+            {/* FR-168: "starts @" is a cumulative offset into ONE timeline. When each chapter
+                ships as its own video there is no shared timeline, so the offset is a correct
+                computation of a meaningless quantity — suppress it rather than explain it. */}
+            {ships !== 'per-chapter' && <> · starts @ {formatDuration(startTime, 'youtube')}</>}
           </span>
         </div>
         {/* FR-157: YouTube title — secondary line, edit in place */}
         {onSetTitle && (
           <InlineTitle
             value={title}
-            placeholder="+ YouTube title"
+            /* FR-168: per-chapter this IS deliverable NN's video title; per-project it is a
+               chapter marker inside one video's description (query/chapters.ts builds the
+               MM:SS lines from it). Relabel, never hide — the value is load-bearing in both. */
+            placeholder={ships === 'per-chapter' ? '+ Video title' : '+ Chapter title'}
             onSave={onSetTitle}
-            title="YouTube title — click to edit"
+            title={
+              ships === 'per-chapter'
+                ? `Video title for ${chapter}-….mp4`
+                : 'Chapter marker in the video description (MM:SS Title)'
+            }
             className="text-xs text-warm-muted mt-0.5"
             inputClassName="text-xs w-96 mt-0.5"
           />
@@ -1455,6 +1468,7 @@ export function RecordingsView() {
                 chapter={chapter}
                 name={name}
                 title={chapterTitles?.[chapter]}
+                ships={data?.project?.ships}
                 onSetTitle={
                   projectCode
                     ? async (t: string) => {

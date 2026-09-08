@@ -11,6 +11,10 @@ import { useTranscribeAll } from '../hooks/useTranscriptionsApi';
 // FR-152: Safe project deletion
 import { useDeleteProject } from '../hooks/useProjectsApi';
 import { ProjectDeleteModal } from './ProjectDeleteModal';
+// FR-168: render grain
+import { toast } from 'sonner';
+import { ShipsSelector, SHIPS_LABEL } from './shared/ShipsSelector';
+import { useSetProjectShips } from '../hooks/useRecordingsApi';
 
 // B062: Local formatBytes — TODO: consolidate with client/src/utils/formatBytes.ts later
 function formatBytes(bytes: number): string {
@@ -92,6 +96,7 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const deleteProject = useDeleteProject();
 
+  const setShips = useSetProjectShips(); // FR-168
   // Close on Escape key — but not when the delete modal is open (modal handles its own Escape)
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -182,6 +187,37 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* FR-168: render grain — settable AFTER create, which is required, not a nicety:
+            both known per-chapter projects existed before the field did and can never pass
+            through the create form. Sits above the checklist because it changes how the
+            titles below are read. */}
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-wide text-warm-faint mb-1.5">
+            Ships
+            {!project.shipsDeclared && (
+              <span className="ml-1.5 font-normal normal-case tracking-normal text-warm-muted">
+                (default — never declared)
+              </span>
+            )}
+          </div>
+          <ShipsSelector
+            value={project.ships}
+            disabled={setShips.isPending}
+            name={`ships-${project.code}`}
+            onChange={(v) => {
+              if (v === project.ships) return;
+              setShips.mutate(
+                { code: project.code, ships: v },
+                {
+                  onSuccess: () => toast.success(`${project.code}: ${SHIPS_LABEL[v]}`),
+                  onError: (e) =>
+                    toast.error(e instanceof Error ? e.message : 'Failed to set render grain'),
+                }
+              );
+            }}
+          />
         </div>
 
         {/* Progress checklist */}

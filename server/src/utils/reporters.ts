@@ -27,6 +27,8 @@ interface ProjectSummary {
   code: string;
   stage: string;
   priority: string;
+  ships?: string; // FR-168: render grain
+  shipsDeclared?: boolean;
   stats: {
     recordings: number;
     chapters: number;
@@ -41,6 +43,8 @@ interface ProjectSummary {
 interface ProjectDetail {
   code: string;
   title?: string; // FR-157
+  ships?: string; // FR-168: render grain
+  shipsDeclared?: boolean;
   path: string;
   stage: string;
   priority: string;
@@ -160,6 +164,12 @@ export function formatProjectDetail(project: ProjectDetail): string {
 
   // Header
   lines.push(`${STATUS.FOLDER} Project: ${project.code}`);
+  // FR-168: the grain decides how the titles below should be READ, so it goes above them.
+  if (project.ships) {
+    const grain = project.ships === 'per-chapter' ? 'video per chapter' : 'video per project';
+    const note = project.ships === 'per-chapter' ? ' (Title = series name)' : '';
+    lines.push(`   Ships: ${grain}${project.shipsDeclared === false ? ' (default — never declared)' : ''}${note}`);
+  }
   if (project.title) lines.push(`   Title: ${project.title}`);
   lines.push(`   Stage: ${project.stage.toUpperCase()} | Priority: ${project.priority}`);
   lines.push(`   Path: ${shortenPath(project.path)}`);

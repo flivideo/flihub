@@ -16,6 +16,7 @@ import {
   getProjectIndicators,
 } from './scanning.js';
 import { detectFinalMedia } from './finalMedia.js';
+import { readProjectState, resolveShips } from './projectState.js';
 import type {
   Config,
   ProjectPriority,
@@ -49,6 +50,9 @@ function migrateOldStage(oldStage: string | undefined): ProjectStage | undefined
 export interface ProjectStatsRaw {
   code: string;
   projectPath: string;
+  // FR-168: render grain, always resolved
+  ships: import('../../../shared/types.js').ProjectShips;
+  shipsDeclared: boolean;
 
   // File counts (FR-111: safeCount removed, safe status is per-file in state)
   totalFiles: number;
@@ -132,6 +136,9 @@ export async function getProjectStatsRaw(
   // FR-80: Get content indicators
   const indicators = await getProjectIndicators(projectPath);
 
+  // FR-168: render grain. Read-only — resolveShips never writes, and most projects have no
+  // state file at all, which resolves to the default rather than erroring.
+  const { ships, declared: shipsDeclared } = resolveShips(await readProjectState(projectPath));
 
   // FR-148: Check if final/ directory has video files
   const finalDir = path.join(projectPath, 'final');
@@ -191,6 +198,9 @@ export async function getProjectStatsRaw(
     chapterVideoCount: indicators.chapterVideoCount,
     // FR-148: Has files in final/ directory
     hasFinal,
+    // FR-168: always resolved, never absent
+    ships,
+    shipsDeclared,
   };
 
   // Optionally include final media

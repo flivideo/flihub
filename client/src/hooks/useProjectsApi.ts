@@ -23,10 +23,12 @@ export function useCreateProject() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (code: string) =>
+    // FR-168: ships is optional; omitting it means the default ('per-project'), which the
+    // server stores as nothing at all.
+    mutationFn: ({ code, ships }: { code: string; ships?: 'per-project' | 'per-chapter' }) =>
       fetchApi<{ success: boolean; project?: ProjectInfo; error?: string }>('/api/projects', {
         method: 'POST',
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, ships }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });

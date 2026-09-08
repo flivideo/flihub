@@ -24,7 +24,13 @@ export function useRecordings() {
         recordings: RecordingFile[];
         totalRecordingsSize: number; // FR-95: Total size of real recordings in bytes
         chapterTitles?: Record<string, string>; // FR-157: persisted chapter titles by 2-digit key
-        project?: { code: string; title: string | null }; // FR-157: current project + its title
+        // FR-157 title + FR-168 render grain (decides the title LABELS on this screen)
+        project?: {
+          code: string;
+          title: string | null;
+          ships?: 'per-project' | 'per-chapter';
+          shipsDeclared?: boolean;
+        };
         error?: string;
       }>('/api/recordings'),
   });
@@ -249,6 +255,26 @@ export function useSetProjectTitle() {
       fetchApi<{ success: boolean; title: string | null; error?: string }>(
         `/api/projects/${encodeURIComponent(code)}/title`,
         { method: 'PUT', body: JSON.stringify({ title }) }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
+    },
+  });
+}
+
+/**
+ * FR-168: set the project's render grain.
+ * Invalidates recordings too — the grain drives the title LABELS on that screen and whether
+ * "starts @" is shown, so a stale recordings cache would leave the wrong words on display.
+ */
+export function useSetProjectShips() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ code, ships }: { code: string; ships: 'per-project' | 'per-chapter' }) =>
+      fetchApi<{ success: boolean; ships: string; shipsDeclared: boolean; error?: string }>(
+        `/api/projects/${encodeURIComponent(code)}/ships`,
+        { method: 'PUT', body: JSON.stringify({ ships }) }
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });

@@ -11,7 +11,7 @@
  */
 
 import fs from 'fs-extra';
-import type { ProjectState, RecordingState } from '../../../shared/types.js';
+import type { ProjectShips, ProjectState, RecordingState } from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from './pathUtils.js';
 
@@ -93,6 +93,13 @@ export async function writeProjectState(projectDir: string, state: ProjectState)
     ...(state.chapters && Object.keys(state.chapters).length > 0
       ? { chapters: state.chapters }
       : {}),
+    // FR-168: render grain, SPARSE — only 'per-chapter' is persisted. 'per-project' is the
+    // default and costs zero bytes, so an undeclared project and a project declared as the
+    // default stay distinguishable on disk (see resolveShips / shipsDeclared).
+    // ⚠️ This object is an ALLOWLIST: a field not listed here is dropped with NO error.
+    // That bit FR-157. If you add a field to ProjectState, add it here and add a
+    // round-trip test (see test/projectStateShips.test.ts).
+    ...(state.ships === 'per-chapter' ? { ships: state.ships } : {}),
   };
 
   const tmpPath = stateFilePath + '.tmp';
@@ -350,4 +357,33 @@ export function getChapterTitles(state: ProjectState): Record<string, string> {
 /** Get a chapter title, or undefined. */
 export function getChapterTitle(state: ProjectState, chapterKey: string): string | undefined {
   return state.chapters?.[chapterKey]?.title;
+}
+
+/**
+ * FR-168: resolve the render grain for reading. NEVER returns absent — every project ships
+ * some way; none of them ships "unknown". A project with no state file at all (the common
+ * case — most projects have never been written to) resolves to the default without creating
+ * one, and reading must never create a file.
+ *
+ * `declared` is the honest half: false means nobody ever said, and a consumer that cares
+ * should ask rather than trust the default.
+ *
+ * A hand-edited or corrupt value falls back to the default rather than propagating — disk is
+ * not trusted.
+ */
+export function resolveShips(state: ProjectState): { ships: ProjectShips; declared: boolean } {
+  const declared = state.ships === 'per-chapter' || state.ships === 'per-project';
+  return { ships: declared ? (state.ships as ProjectShips) : 'per-project', declared };
+}
+
+/**
+ * FR-168: set the render grain. Returns updated state (does not persist).
+ * Setting the default CLEARS the key rather than storing it, keeping the sparse invariant:
+ * what is on disk is only ever the override.
+ */
+export function setProjectShips(state: ProjectState, ships: ProjectShips): ProjectState {
+  const next: ProjectState = { ...state };
+  if (ships === 'per-chapter') next.ships = 'per-chapter';
+  else delete next.ships;
+  return next;
 }

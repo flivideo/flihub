@@ -73,6 +73,9 @@ export function createProjectRoutes(
       chapterCount: raw.chapterCount,
       transcriptCount: raw.transcriptSync.matched,
       transcriptPercent: raw.transcriptPercent,
+      // FR-168: render grain, resolved upstream in getProjectStatsRaw
+      ships: raw.ships,
+      shipsDeclared: raw.shipsDeclared,
       transcriptSync: {
         matched: raw.transcriptSync.matched,
         missingCount: raw.transcriptSync.missingTranscripts.length,

@@ -35,6 +35,7 @@ import type {
   DiskSizeData,
   DiskThresholds,
   HoldLocation, // B064
+  ProjectShips, // FR-168
 } from '../../../shared/types';
 
 interface ProjectsPanelProps {
@@ -592,14 +593,14 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
   };
 
   // FR-12: Create a new project and switch to it
-  const handleCreateProject = async (fullName: string) => {
+  const handleCreateProject = async (fullName: string, ships: ProjectShips = 'per-project') => {
     if (!fullName.trim()) {
       toast.error('Project code is required');
       return;
     }
 
     try {
-      const result = await createProject.mutateAsync(fullName.trim());
+      const result = await createProject.mutateAsync({ code: fullName.trim(), ships });
       if (result.success && result.project) {
         toast.success(`Created project: ${result.project.code}`);
         // Auto-switch to the new project

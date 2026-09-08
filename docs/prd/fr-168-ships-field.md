@@ -1,7 +1,8 @@
 # FR-168 — `ships: per-project | per-chapter` as a Create-Time Project Field
 
-**Status: Pending — DESIGN RULED BY DAVID (2026-09-04), implementation not yet authorised.**
-This ticket is "implement the ruled field", not "consider adding one".
+**Status: ✅ IMPLEMENTED 2026-09-08.** Design ruled by David 2026-09-04, defaults + labels ruled
+2026-09-08, built the same day. Hand-setting the two existing per-chapter projects is the one
+remaining step and is David's action through the drawer control.
 
 ## The gap it closes
 
@@ -19,6 +20,18 @@ machine-readable said which kind of project it was.
 ## What it answers downstream
 
 - How FR-157 titles should be read (video titles vs chapter titles).
+- ⭐ **BOTH title fields flip register, not just the chapter one** (found 2026-09-08, never stated
+  before): `ProjectState.title` is **the video's own title** under per-project and **the SERIES /
+  playlist name** under per-chapter. Measured in the live file — a01-kybernesis stores
+  *'Agents That Actually Hold Together'* beside five distinct video titles, which is a series name
+  sitting in a slot that was labelled "YouTube title". Any agent reading FR-157 titles needs BOTH
+  rules.
+- ⭐ **No deliverable enumeration is needed** (ruled by David 2026-09-08): *"It's not like we're
+  automating chapter video creation through FliCut… nothing happens till I press the button anyway."*
+  Promotion to FliCut is on-demand and one chapter at a time, so FliHub never has to publish a
+  deliverable list, a partition, or a discard flag. `ships` describes the project's SHAPE so humans
+  and agents read the titles in the right register; WHICH chapters ship is decided at button-press
+  time. This is why the field is a bare binary and not a set.
 - How many FliCut runs a project needs.
 - How many uploads FliLaunch should expect.
 - How many files `final/` should end up containing.
@@ -30,8 +43,16 @@ machine-readable said which kind of project it was.
   silently dropped; this bit FR-157 already).
 - `NewProjectForm.tsx` (FR-163): a two-option selector at create time.
 - Surface it in `/api/query/projects` and the reporters so agents can read it.
-- Decide a default for the ~97 existing projects (probably `per-project`, the historical
-  norm) and whether d02 gets hand-set to `per-chapter`.
+- Default for existing projects. ⚠️ **The population cannot be enumerated and nothing may depend
+  on enumerating it** — measured 2026-09-08: **64 project folders across the `v-*` brand roots,
+  plus `published/` and material outside those roots, but only TWO `.flihub-state.json` files exist
+  on the whole machine.** So this is not a migration: it is `absent ⇒ per-project` resolved at read
+  time, plus **one** hand-set value.
+  ⚠️ **The original line here said "whether d02 gets hand-set to per-chapter" — that is BACKWARDS.**
+  d02-cutty-audio-cleanup is the ONE-video exemplar (many chapters, one output) and needs no write
+  at all under sparse storage. The project that needs the explicit write is
+  `v-kybernesis/a01-kybernesis-12-videos`, and `v-beauty-and-joy/a01-nail-art-…` when it is next
+  touched.
 
 ## Cross-references
 
@@ -158,3 +179,44 @@ ticket.
 - Whether `.flihub-state.json` is the only marker FliHub writes. If a second registration surface
   exists, §3's absence reasoning weakens.
 - Nothing here was tested by running FliHub.
+
+
+---
+
+# Implementation notes — 2026-09-08
+
+**Shipped**: `ProjectShips` type + `ProjectState.ships` (shared/types.ts) · allowlist entry +
+`resolveShips` / `setProjectShips` (server/src/utils/projectState.ts) · `PUT /api/projects/:code/ships`
+(routes/state.ts) · create-time write (routes/index.ts) · resolved serve on `/api/query/projects`
+(list + detail) and the text reporters · `ShipsSelector` shared by NewProjectForm and ProjectDrawer ·
+grain-aware relabelling of both title slots · `starts @` suppressed under per-chapter.
+
+**Labels are David's words** — "Video per project" / "Video per chapter" — carried with a mandatory
+COUNT line beneath each. Both phrases are silent about which side multiplies ("video per chapter"
+scans either as *N videos* or as *a video that has chapters*), and that bistability flipped the terms
+in David's own sentence during the design discussion. The count line is the disambiguator; do not
+tidy it away. See the header comment in `client/src/components/shared/ShipsSelector.tsx`.
+
+**Storage is sparse, serving is resolved.** Only `'per-chapter'` is written. Absence means
+per-project, so no file is created for the historical norm and reading never creates one — which
+matters because the most important project (Joy's a01) has no state file at all. Every API response
+carries a concrete `ships` plus `shipsDeclared`, so no consumer has to know the absent-means-default
+rule. **`shipsDeclared: false` is the safety property**: a consumer that cares should ask rather than
+trust the default.
+
+**Set-after-create was required, not optional.** Both known per-chapter projects existed before the
+field did and can never pass through the create form; without the drawer control the feature could
+not describe a single existing project.
+
+**MIXED projects remain unmodelled** — the escape hatch is a per-chapter field, and no project-level
+patch reaches it. Confirmed independently by this session and teletubby-dev.
+
+**Resolved**: the open question *"whether `.flihub-state.json` is the only marker FliHub writes"*.
+There IS a second surface — `projectCodeHighWater` in the GLOBAL `server/config.json`, written only by
+the create route — but it is global, monotonic and carries no per-project state, so §3's absence
+reasoning stands unchanged.
+
+**Not verified**: the per-chapter UI (the "+ Series title" / "+ Video title" labels and the suppressed
+`starts @`) has never been seen rendering, because reaching that state requires declaring a real
+project per-chapter and both candidates sit under a standing hold. David flipping Kybernesis in the
+drawer is itself that verification.

@@ -839,7 +839,12 @@ function App() {
               {recordingsData?.project && (
                 <InlineTitle
                   value={recordingsData.project.title}
-                  placeholder="+ YouTube title"
+                  /* FR-168: the same stored field means different things by grain — the video's
+                     own title when the project ships once, the SERIES name when each chapter
+                     ships separately. Relabel rather than hide: the value is real either way. */
+                  placeholder={
+                    recordingsData.project.ships === 'per-chapter' ? '+ Series title' : '+ YouTube title'
+                  }
                   onSave={async (t) => {
                     try {
                       await setProjectTitle.mutateAsync({ code: recordingsData.project!.code, title: t });
@@ -847,7 +852,11 @@ function App() {
                       toast.error(e instanceof Error ? e.message : 'Failed to save title');
                     }
                   }}
-                  title="Project YouTube title — click to edit"
+                  title={
+                    recordingsData.project.ships === 'per-chapter'
+                      ? 'Series name — the videos are titled per chapter below'
+                      : 'Project YouTube title — click to edit'
+                  }
                   className="text-sm text-warm-muted ml-1"
                   inputClassName="text-sm w-96"
                 />

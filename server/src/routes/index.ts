@@ -17,6 +17,9 @@ import { computeNextCode, parseSeriesCode, compareSeriesCodes, codeToString } fr
 import {
   readProjectState,
   writeProjectState,
+  createEmptyState,
+  resolveShips,
+  setProjectShips,
   setRecordingSafe,
   isRecordingSafe,
   setRecordingParked,
@@ -382,6 +385,9 @@ export function createRoutes(
       return;
     }
 
+    // FR-168: optional render grain; anything but the explicit override means the default.
+    const ships = (req.body as { ships?: unknown }).ships === 'per-chapter' ? 'per-chapter' : 'per-project';
+
     // Validate project code format: kebab-case, typically starts with b followed by number
     if (!NAMING_RULES.name.pattern.test(code)) {
       res.status(400).json({
@@ -407,6 +413,16 @@ export function createRoutes(
 
       // Create project folder and recordings subdirectory
       await fs.ensureDir(recordingsPath);
+
+      // FR-168: persist the render grain ONLY when it is the non-default. Choosing
+      // 'per-project' writes nothing, so an ordinary new project still consists of exactly
+      // one directory and acquires no state file it does not need.
+      if (ships === 'per-chapter') {
+        await writeProjectState(
+          projectPath,
+          setProjectShips(createEmptyState(), 'per-chapter')
+        );
+      }
 
       console.log(`Created project: ${code} at ${projectPath}`);
 
@@ -600,7 +616,16 @@ export function createRoutes(
         recordings,
         totalRecordingsSize, // FR-95: Total size of real recordings in bytes
         chapterTitles: getChapterTitles(state), // FR-157: { "03": "title" } from .flihub-state.json
-        project: { code: path.basename(paths.project), title: state.title ?? null }, // FR-157
+        // FR-157 title + FR-168 render grain (drives the title LABELS on this screen)
+        project: (() => {
+          const { ships, declared } = resolveShips(state);
+          return {
+            code: path.basename(paths.project),
+            title: state.title ?? null,
+            ships,
+            shipsDeclared: declared,
+          };
+        })(),
       });
     } catch (error) {
       console.error('Error listing recordings:', error);

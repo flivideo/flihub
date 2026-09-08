@@ -19,6 +19,8 @@ import { expandPath, queryString } from '../utils/pathUtils.js';
 import {
   readProjectState,
   writeProjectState,
+  setProjectShips,
+  resolveShips,
   mergeRecordingStates,
   setProjectDictionary,
   setProjectTitle,
@@ -258,6 +260,40 @@ export function createStateRoutes(
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to set title',
+      });
+    }
+  });
+
+  /**
+   * PUT /api/projects/:code/ships
+   * FR-168: set the render grain. Body: { ships: 'per-project' | 'per-chapter' }
+   * Required as well as the create-time selector, because BOTH known per-chapter projects
+   * already existed before the field did and can never pass through the create form.
+   */
+  router.put('/projects/:code/ships', async (req: Request, res: Response) => {
+    const code = queryString(req.params.code);
+    const { ships } = req.body as { ships?: unknown };
+    if (ships !== 'per-project' && ships !== 'per-chapter') {
+      return res
+        .status(400)
+        .json({ success: false, error: "ships must be 'per-project' or 'per-chapter'" });
+    }
+    try {
+      const projectDir = await resolveProjectDir(code);
+      if (!projectDir) {
+        return res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      }
+      const state = setProjectShips(await readProjectState(projectDir), ships);
+      await writeProjectState(projectDir, state);
+      io.emit('projects:changed');
+      io.emit('recordings:changed');
+      const { ships: resolved, declared } = resolveShips(state);
+      res.json({ success: true, ships: resolved, shipsDeclared: declared });
+    } catch (error) {
+      console.error(`[FR-168] Error setting ships for ${code}:`, error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to set ships',
       });
     }
   });

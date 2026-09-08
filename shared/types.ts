@@ -529,6 +529,11 @@ export interface ProjectStats {
   hasInbox: boolean; // Has files in inbox/
   hasAssets: boolean; // Has files in assets/images/ or assets/prompts/
   hasChapters: boolean; // Has .mov files in recordings/-chapters/
+
+  // FR-168: render grain — always resolved, never absent. shipsDeclared distinguishes
+  // "never declared" from "declared as the default", which a migration would have destroyed.
+  ships: ProjectShips;
+  shipsDeclared: boolean;
   inboxCount: number; // FR-82: File count in inbox/ (for tooltip)
   chapterVideoCount: number; // FR-82: .mov count in recordings/-chapters/ (for tooltip)
 
@@ -939,13 +944,18 @@ export interface QueryProjectSummary {
   hasInbox: boolean;
   hasAssets: boolean;
   hasChapters: boolean;
+  // FR-168: render grain, always resolved
+  ships: ProjectShips;
+  shipsDeclared: boolean;
 }
 
 // Query API: Project detail (single project view)
 export interface QueryProjectDetail {
   code: string;
   path: string;
-  title?: string; // FR-157: Project-level YouTube title (from .flihub-state.json)
+  title?: string; // FR-157: Project title (video title, or series name under per-chapter)
+  ships?: ProjectShips; // FR-168: render grain, always resolved
+  shipsDeclared?: boolean; // FR-168: false = never declared, running on the default
   stage: ProjectStage;
   priority: ProjectPriority;
   // FR-111: safe removed (safe status is per-file in state)
@@ -1153,12 +1163,34 @@ export interface ChapterState {
   title?: string; // YouTube title for this chapter
 }
 
+/**
+ * FR-168: RENDER GRAIN — does this project ship ONE video, or one video per chapter?
+ *
+ * Modelled nowhere before this. It decides how FR-157 titles are READ, and both fields
+ * flip register together:
+ *   per-project  ProjectState.title = the video's title  · chapters[NN].title = a chapter
+ *                marker in that video's description (MM:SS Title)
+ *   per-chapter  ProjectState.title = the SERIES name    · chapters[NN].title = the video
+ *                title of deliverable NN (David names outputs 01-name.mp4 … 10-name.mp4,
+ *                so the chapter key IS the deliverable's identifier — no extra storage)
+ *
+ * STORED SPARSELY: only 'per-chapter' is written (see writeProjectState). Absence means
+ * per-project, which is why no migration is needed for a population nothing can enumerate.
+ * ALWAYS SERVED RESOLVED, with `shipsDeclared` alongside, so no consumer ever sees absence.
+ *
+ * Deliberately binary. MIXED projects (one long-form plus two shorts in one folder) are not
+ * modelled; if one ever appears the fix is a per-chapter field and no project-level patch
+ * reaches it. Known escape hatch, not a gap to paper over.
+ */
+export type ProjectShips = 'per-project' | 'per-chapter';
+
 // Full project state file schema
 export interface ProjectState {
   version: 1;
   recordings: Record<string, RecordingState>; // Keyed by filename (e.g., "01-1-intro.mov")
-  title?: string; // FR-157: Project-level YouTube title
+  title?: string; // FR-157: Project title — the VIDEO's title, or the SERIES name under per-chapter
   chapters?: Record<string, ChapterState>; // FR-157: Keyed by 2-digit chapter ("03")
+  ships?: ProjectShips; // FR-168: render grain. Absent = 'per-project'. Only 'per-chapter' is stored.
   glingDictionary?: string[]; // FR-118: Project-specific dictionary words
   editManifest?: EditManifest; // FR-126: Edit folder manifest tracking
 }

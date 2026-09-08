@@ -26,6 +26,8 @@ function makeProject(overrides: Partial<ProjectStats> & Pick<ProjectStats, 'code
     inboxCount: 0,
     chapterVideoCount: 0,
     hasFinal: false,
+    ships: 'per-project', // FR-168
+    shipsDeclared: false,
   };
   return { ...defaults, ...overrides };
 }

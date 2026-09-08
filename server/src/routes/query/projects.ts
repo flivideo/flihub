@@ -25,7 +25,7 @@ import {
   getProjectIndicators,
 } from '../../utils/scanning.js';
 import { formatProjectsReport, formatProjectDetail } from '../../utils/reporters.js';
-import { readProjectState } from '../../utils/projectState.js';
+import { readProjectState, resolveShips } from '../../utils/projectState.js';
 import type {
   Config,
   ProjectPriority,
@@ -156,6 +156,9 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
         // FR-80: Get content indicators
         const indicators = await getProjectIndicators(projectPath);
 
+        // FR-168: render grain (read-only; never creates a state file)
+        const { ships, declared: shipsDeclared } = resolveShips(await readProjectState(projectPath));
+
         // FR-80: Stage (manual override or auto-detect)
         // Use projectStageOverrides (new) or fall back to legacy projectStages
         const manualStage =
@@ -201,6 +204,10 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
           hasInbox: indicators.hasInbox,
           hasAssets: indicators.hasAssets,
           hasChapters: indicators.hasChapters,
+          // FR-168: render grain — always a concrete value so no agent has to know the
+          // absent-means-default rule; shipsDeclared says whether anyone actually said.
+          ships,
+          shipsDeclared,
         });
       }
 
@@ -334,6 +341,9 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
         code,
         path: projectPath,
         ...(projectState.title ? { title: projectState.title } : {}),
+        // FR-168: render grain, resolved — decides how the title above should be READ
+        ships: resolveShips(projectState).ships,
+        shipsDeclared: resolveShips(projectState).declared,
         stage: raw.stage,
         priority: raw.priority,
         stats: {

@@ -4,6 +4,8 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useNextProjectCode } from '../hooks/useProjectsApi';
+import { ShipsSelector } from './shared/ShipsSelector';
+import type { ProjectShips } from '../../../shared/types';
 import {
   descriptionToKebab,
   MANUAL_CODE_PATTERN,
@@ -13,7 +15,7 @@ import {
 interface NewProjectFormProps {
   existingNames: string[]; // full folder names in the live root
   pending: boolean;
-  onCreate: (fullName: string) => void;
+  onCreate: (fullName: string, ships: ProjectShips) => void; // FR-168
   onCancel: () => void;
 }
 
@@ -25,6 +27,9 @@ function parseManual(code: string): { letter: string; num: number } | null {
 export function NewProjectForm({ existingNames, pending, onCreate, onCancel }: NewProjectFormProps) {
   const { data: nextData, isLoading } = useNextProjectCode(true);
   const [description, setDescription] = useState('');
+  // FR-168: render grain. Default 'per-project' — the historical norm, and the server stores
+  // it as nothing at all, so an ordinary project still creates exactly one directory.
+  const [ships, setShips] = useState<ProjectShips>('per-project');
   const [manualCode, setManualCode] = useState<string | null>(null); // null = locked to computed
   const descRef = useRef<HTMLInputElement>(null);
 
@@ -64,7 +69,7 @@ export function NewProjectForm({ existingNames, pending, onCreate, onCancel }: N
     pending || isLoading || !kebab || code === '' || codeInvalid || collision;
 
   const submit = () => {
-    if (!createDisabled) onCreate(fullName);
+    if (!createDisabled) onCreate(fullName, ships);
   };
 
   return (
@@ -130,6 +135,12 @@ export function NewProjectForm({ existingNames, pending, onCreate, onCancel }: N
         >
           Cancel
         </button>
+      </div>
+
+      {/* FR-168: render grain, chosen at create time. Deliberately BELOW the code/description
+          row so it never competes with them for attention on the common path. */}
+      <div className="mt-3 border-t border-warm pt-2">
+        <ShipsSelector value={ships} onChange={setShips} disabled={pending} />
       </div>
 
       {/* Live preview of the exact folder name (§4.3) */}
