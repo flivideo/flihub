@@ -724,12 +724,27 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
 
         {data?.error && <p className="text-sm text-yellow-600 px-4 py-2">{data.error}</p>}
 
-        {filteredProjects.length === 0 ? (
-          <p className="text-warm-muted text-sm px-4 py-8">
-            {projects.length === 0 ? 'No projects found' : 'No projects match current filters'}
-          </p>
-        ) : (
-          <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
+          {filteredProjects.length === 0 ? (
+            /* The empty state must offer a way out of itself. The create path (FR-12 / FR-163)
+               used to render only inside the populated branch, so a brand with zero projects
+               had no create affordance anywhere on the page — unreachable, never unbuilt. */
+            <div className="px-4 py-10 text-center">
+              <p className="text-warm-secondary text-sm">
+                {projects.length === 0
+                  ? 'No projects in this brand yet.'
+                  : 'No projects match current filters.'}
+              </p>
+              {projects.length === 0 && !showNewProject && (
+                <button
+                  onClick={() => setShowNewProject(true)}
+                  className="mt-4 px-4 py-2 text-sm font-medium bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                >
+                  + Create the first project
+                </button>
+              )}
+            </div>
+          ) : (
             <table className="w-full" style={{ fontSize: '12px' }}>
               {/* FR-148: Sticky header */}
               <thead>
@@ -945,25 +960,27 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                 </tfoot>
               )}
             </table>
+          )}
 
-            {/* FR-12: New Project Form - at bottom of table */}
-            <div className="px-4 py-3">
-              {showNewProject ? (
-                <NewProjectForm
-                  existingNames={(data?.projects || []).map((p) => p.code)}
-                  pending={createProject.isPending}
-                  onCreate={handleCreateProject}
-                  onCancel={() => setShowNewProject(false)}
-                />
-              ) : (
-                <button
-                  onClick={() => setShowNewProject(true)}
-                  className="text-sm text-green-600 hover:text-green-700"
-                >
-                  + Add new project...
-                </button>
-              )}
-            </div>
+          {/* FR-12: New Project Form — always rendered, never gated on the list having rows.
+              When the brand is empty the prominent button above opens it instead. */}
+          <div className="px-4 py-3">
+            {showNewProject ? (
+              <NewProjectForm
+                existingNames={(data?.projects || []).map((p) => p.code)}
+                pending={createProject.isPending}
+                onCreate={handleCreateProject}
+                onCancel={() => setShowNewProject(false)}
+              />
+            ) : projects.length > 0 ? (
+              <button
+                onClick={() => setShowNewProject(true)}
+                className="text-sm text-green-600 hover:text-green-700"
+              >
+                + Add new project...
+              </button>
+            ) : null}
+          </div>
 
             {/* Bug fix: Show projects with invalid naming in Issues section */}
             {issueProjects.length > 0 && (
@@ -992,8 +1009,7 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                 </div>
               </div>
             )}
-          </div>
-        )}
+        </div>
       </div>
 
       {/* FR-148: Project detail drawer — absolute positioned, pushes table via margin */}
