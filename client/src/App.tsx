@@ -910,7 +910,12 @@ function App() {
 
         {/* Projects Tab */}
         {activeTab === 'projects' && (
-          <section>
+          /* Must be a flex column that fills <main>, NOT a bare block. ProjectsPanel's root
+             carries flex-1 and its drawer is `absolute h-full`; a block wrapper collapses to
+             the table's content height, so flex-1 resolves against nothing and the drawer
+             inherits that height and is clipped by the root's overflow-hidden. Measured: a
+             one-row list gave the drawer 338px for 1169px of content. */
+          <section className="flex-1 flex flex-col min-h-0">
             <ProjectsPanel
               onNavigateToTab={changeTab}
               onNavigateToStorage={(projectCode) => {
