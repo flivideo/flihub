@@ -47,6 +47,7 @@ import type { RecordingFile } from '../../../shared/types';
 import { SPEED_STORAGE_KEY, useVideoPlayback } from '../hooks/useVideoPlayback'; // B068
 import { useVideoAspect } from '../hooks/useVideoAspect'; // FR-154
 import { VideoControlsBar } from './shared/VideoControlsBar';
+import { NoRecordingsState } from './shared/NoRecordingsState';
 
 // FR-71: Size options
 // FR-91: Simplified to just N and L
@@ -550,12 +551,7 @@ export function WatchPage() {
 
   if (!data?.recordings || data.recordings.length === 0) {
     return (
-      <div className="text-center py-12 bg-surface rounded-lg border border-warm">
-        <p className="text-warm-muted">No recordings found</p>
-        <p className="text-sm text-warm-muted mt-1">
-          Recordings will appear here after you rename incoming files
-        </p>
-      </div>
+      <NoRecordingsState />
     );
   }
 

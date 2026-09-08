@@ -31,6 +31,7 @@ import { StoragePanel } from './shared/StoragePanel';
 import { extractTagsFromName } from '../../../shared/naming';
 import { PoemWuiPage } from './PoemWuiPage';
 import type { RecordingFile } from '../../../shared/types';
+import { NoRecordingsState } from './shared/NoRecordingsState';
 
 export interface ChapterGroup {
   chapterKey: string;
@@ -399,12 +400,7 @@ export function ManagePanel({
 
   if (!data?.recordings || data.recordings.length === 0) {
     return (
-      <div className="text-center py-12 bg-surface rounded-lg border border-warm">
-        <p className="text-warm-muted">No recordings found</p>
-        <p className="text-sm text-warm-muted mt-1">
-          Recordings will appear here after you rename incoming files
-        </p>
-      </div>
+      <NoRecordingsState />
     );
   }
 

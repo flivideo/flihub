@@ -45,6 +45,7 @@ import {
 import { LoadingSpinner, ErrorMessage } from './shared';
 import { ConfirmationModal } from './shared/ConfirmationModal'; // FR-156
 import { API_URL } from '../config';
+import { NoRecordingsState } from './shared/NoRecordingsState';
 
 // FR-41: Group info with active/safe/parked file counts and total duration
 interface ChapterGroup {
@@ -1291,12 +1292,7 @@ export function RecordingsView() {
 
   if (!data?.recordings || data.recordings.length === 0) {
     return (
-      <div className="text-center py-12 bg-surface rounded-lg border border-warm">
-        <p className="text-warm-muted">No recordings found</p>
-        <p className="text-sm text-warm-muted mt-1">
-          Recordings will appear here after you rename incoming files
-        </p>
-      </div>
+      <NoRecordingsState />
     );
   }
 
