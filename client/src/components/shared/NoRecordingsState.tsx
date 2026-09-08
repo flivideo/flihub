@@ -33,7 +33,21 @@ export function NoRecordingsState() {
       <div className="text-center py-12 bg-surface rounded-lg border border-warm">
         <p className="text-warm-muted">No project selected</p>
         <p className="text-sm text-warm-muted mt-1">
-          Pick a project on the Projects tab to see its recordings
+          Pick a project on the{' '}
+          {/* An empty state must offer a way OUT of itself, not just name the exit. This
+              sentence told the reader where to go and then made them find it. Tabs are
+              hash-driven (App.tsx getTabFromHash + a hashchange listener), so setting the
+              hash is the whole navigation — no prop threading through three components. */}
+          <button
+            type="button"
+            onClick={() => {
+              window.location.hash = 'projects';
+            }}
+            className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-700"
+          >
+            Projects tab
+          </button>{' '}
+          to see its recordings
           {brandLabel ? <> — currently in <span className="font-medium text-warm-secondary">{brandLabel}</span></> : null}.
         </p>
       </div>

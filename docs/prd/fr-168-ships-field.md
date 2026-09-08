@@ -79,6 +79,20 @@ is marked **[measured]** (read from disk or source, cited) or **[inferred]** (re
   open problems, and the record that **this ruling was re-derived from scratch on 2026-09-08 by a
   session that did not read this file.** That is the failure the cross-references exist to prevent.
 
+## 0 · ⭐ The grain confusion fooled the orchestrator who commissioned this ticket [measured, 2026-09-08]
+
+Four hours after specifying FR-168, `agent-a-day-orch` filed a bug report stating *"Beauty & Joy
+genuinely has 3 projects on disk"*. It has **ONE** — `a01-nail-art-learning-three-customer-groups`,
+containing **three recordings** (`01-1-hobby-learners`, `02-1-working-nail-technician`,
+`03-1-salon-investor`) that are three separate videos. Verified with `find -maxdepth 2`. Its own
+words on discovering this: *"I read 'three videos' and wrote 'three projects'."*
+
+**This is the strongest single justification the field has.** The ambiguity is not a modelling
+nicety that agents trip over through ignorance — it misled the party that had just written the
+specification for it, in the same working session, while holding all the evidence. If "3 videos"
+and "3 projects" are indistinguishable to the author of the ticket, they are indistinguishable
+full stop, and no amount of documentation substitutes for a machine-readable field.
+
 ## 1 · A second per-chapter project exists, in a different brand [measured]
 
 `v-beauty-and-joy/a01-nail-art-learning-three-customer-groups` — three recordings
