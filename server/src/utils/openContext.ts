@@ -65,24 +65,6 @@ type Resolution =
   | { kind: 'resolved'; brand: Brand; root: string; project: string | null }
   | { kind: 'refused'; status: 400 | 404 | 409 | 503; refusal: ContextRefusal };
 
-/**
- * W3 review F5: FliHub hand-rolls the resolution chain (it must accept plain folders and carry an unchecked video, which
- * `resolveOpenContext` refuses), so its refusal codes are its own. This table is how a caller that switches on the
- * library's `OpenContextResult` maps them. `null` = no library kind: FliHub reads brands.json itself.
- */
-export const LIBRARY_REFUSAL: Record<
-  ContextRefusal['code'],
-  { kind: string; result?: string } | null
-> = {
-  'video-invalid': { kind: 'video-invalid' },
-  'brands-unreadable': null,
-  'unknown-brand': { kind: 'unknown-brand' },
-  'no-brand-root': { kind: 'no-brand-root' },
-  'project-not-found': { kind: 'project-refused', result: 'not-found' },
-  'project-ambiguous': { kind: 'project-refused', result: 'ambiguous' },
-  'brand-root-unreadable': { kind: 'project-refused', result: 'unscanned' },
-};
-
 /** A whole project code (`a01`); a prefix is never a match (R31). */
 const CODE = /^[a-z]\d{2}$/;
 
@@ -126,7 +108,7 @@ export function createContextController(deps: ContextDeps) {
     if (brands === null || brands.kind === 'invalid') {
       const file = brandsFilePath({ home });
       return refuse(503, {
-        code: 'brands-unreadable',
+        code: 'registry-unreadable',
         reason: brands === null ? `No brand registry at ${file}.` : `Brand registry ${file} is not valid.`,
       });
     }
@@ -148,7 +130,8 @@ export function createContextController(deps: ContextDeps) {
     const found = await resolveProject(listing, ref);
     if (found.kind === 'unscanned') {
       return refuse(503, {
-        code: 'brand-root-unreadable',
+        // Shared vocabulary has no "root not mounted" slot: no-brand-root, told apart by 503 + the path in reason.
+        code: 'no-brand-root',
         reason: `Brand root ${found.path} could not be read (${found.message}).`,
       });
     }

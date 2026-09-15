@@ -25,16 +25,27 @@ export const HubContextSchema = z.strictObject({
 });
 export type HubContext = z.infer<typeof HubContextSchema>;
 
+/**
+ * The SHARED refusal vocabulary for every Fli app's open contract (Swagger decision 4, flistudio 179cb5c): FliStudio
+ * switches on these across FliHub, FliCut, FliCast and Teletubby, so no app adds its own. FliHub never emits
+ * `not-a-project` (it accepts plain folders, W3 brief §2A) nor `video-not-found` (the video is carried, not checked,
+ * brief §2B). A body that is not even the right shape (e.g. `brand: 5`) is a malformed request outside the vocabulary:
+ * 400 `{ error, issues }` with no code.
+ */
+export const REFUSAL_CODES = [
+  'missing',
+  'unknown-brand',
+  'no-brand-root',
+  'registry-unreadable',
+  'project-not-found',
+  'project-ambiguous',
+  'not-a-project',
+  'video-invalid',
+  'video-not-found',
+] as const;
+
 export const ContextRefusalSchema = z.strictObject({
-  code: z.enum([
-    'video-invalid',
-    'brands-unreadable',
-    'unknown-brand',
-    'no-brand-root',
-    'project-not-found',
-    'project-ambiguous',
-    'brand-root-unreadable',
-  ]),
+  code: z.enum(REFUSAL_CODES),
   reason: z.string(),
   candidates: z.array(z.string()).optional(),
 });

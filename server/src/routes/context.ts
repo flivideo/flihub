@@ -37,7 +37,9 @@ export function createContextRouter(controller: ContextController): Router {
       case 'applied':
         return res.json({ context: result.state.context });
       case 'missing':
-        return res.status(400).json({ error: `Missing: ${result.missing.join(', ')}`, missing: result.missing });
+        return res
+          .status(400)
+          .json({ error: `Missing: ${result.missing.join(', ')}`, code: 'missing', missing: result.missing });
       case 'refused':
         return res.status(result.status).json({ error: result.refusal.reason, ...result.refusal });
     }

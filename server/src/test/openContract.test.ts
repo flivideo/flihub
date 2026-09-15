@@ -11,9 +11,8 @@ import path from 'path';
 import { createContextRouter } from '../routes/context.js';
 import { createSystemRoutes } from '../routes/system.js';
 import { createBrandsRouter } from '../routes/brands.js';
-import { HubContextSchema, OpenContextStateSchema } from '../routes/contextSchemas.js';
-import { OpenContextResult, ProjectRefusal } from '@flivideo/core';
-import { createContextController, LAUNCH_ID_ENV, LIBRARY_REFUSAL, type ContextDeps } from '../utils/openContext.js';
+import { ContextRefusalSchema, HubContextSchema, OpenContextStateSchema, REFUSAL_CODES } from '../routes/contextSchemas.js';
+import { createContextController, LAUNCH_ID_ENV, type ContextDeps } from '../utils/openContext.js';
 import type { Config, OpenContextState } from '../../../shared/types.js';
 
 const XMEN_ID = '3f1c2a4e-8b7d-4c6e-9a1f-2b3c4d5e6f70';
@@ -283,18 +282,44 @@ describe('open contract — edges', () => {
     expect((await getContext(app)).context).toMatchObject({ brand: 'x', root: rewritten, project: 'a01-demo' });
   });
 
-  it('F5 · every FliHub refusal code maps to a real @flivideo/core result kind', () => {
-    const kinds = OpenContextResult.options.map((o) => o.shape.kind.value as string);
-    const projectKinds = ProjectRefusal.options.map((o) => o.shape.kind.value as string);
-    for (const [code, mapped] of Object.entries(LIBRARY_REFUSAL)) {
-      if (mapped === null) continue;
-      expect(kinds, code).toContain(mapped.kind);
-      if (mapped.kind === 'project-refused') expect(projectKinds, code).toContain(mapped.result);
+  it('R1 · refusal codes are exactly the shared vocabulary, and every refusal a door answers uses it', async () => {
+    const SHARED = [
+      'missing', 'unknown-brand', 'no-brand-root', 'registry-unreadable', 'project-not-found',
+      'project-ambiguous', 'not-a-project', 'video-invalid', 'video-not-found',
+    ].sort();
+    expect([...REFUSAL_CODES].sort()).toEqual(SHARED);
+    expect([...ContextRefusalSchema.shape.code.options].sort()).toEqual(SHARED);
+
+    writeJson(path.join(home, '.config', 'appydave', 'brands.json'), {
+      brands: {
+        x: { name: 'Brand X', locations: { video_projects: rootX } },
+        y: { name: 'Brand Y', locations: { video_projects: rootY } },
+        rootless: { name: 'No Root' },
+        gone: { name: 'Gone', locations: { video_projects: path.join(tmp, 'unmounted', 'v-gone') } },
+      },
+    });
+    const { app } = await buildApp();
+    const cases: Array<[Record<string, unknown>, number, string]> = [
+      [{ brand: 'x' }, 400, 'missing'],
+      [{ brand: 'nope', project: 'a01-xmen' }, 404, 'unknown-brand'],
+      [{ brand: 'rootless', project: 'a01' }, 404, 'no-brand-root'],
+      [{ brand: 'gone', project: 'a01' }, 503, 'no-brand-root'],
+      [{ brand: 'x', project: 'z99-nothing' }, 404, 'project-not-found'],
+      [{ brand: 'y', project: 'a01' }, 409, 'project-ambiguous'],
+      [{ brand: 'x', project: 'a01-xmen', video: 'intro' }, 400, 'video-invalid'],
+    ];
+    for (const [body, status, code] of cases) {
+      const res = await request(app).post('/api/context').send(body);
+      expectStatus(res, status);
+      expect(res.body.code, JSON.stringify(body)).toBe(code);
+      expect(REFUSAL_CODES).toContain(res.body.code);
+      if (code === 'project-ambiguous') expect(res.body.candidates).toEqual(['a01-alpha', 'a01-beta']);
     }
-    expect(Object.keys(LIBRARY_REFUSAL).sort()).toEqual([
-      'brand-root-unreadable', 'brands-unreadable', 'no-brand-root', 'project-ambiguous',
-      'project-not-found', 'unknown-brand', 'video-invalid',
-    ]);
+
+    fs.writeFileSync(path.join(home, '.config', 'appydave', 'brands.json'), 'not json');
+    const registry = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen' });
+    expectStatus(registry, 503);
+    expect(registry.body.code).toBe('registry-unreadable');
   });
 
   it('F6 · POST bodies are validated by the zod ContextBody; 200 bodies satisfy HubContext', async () => {
@@ -401,16 +426,17 @@ describe('open contract — edges', () => {
 
     const gone = await request(app).post('/api/context').send({ brand: 'gone', project: 'a01' });
     expectStatus(gone, 503);
-    expect(gone.body.code).toBe('brand-root-unreadable');
+    expect(gone.body.code).toBe('no-brand-root');
+    expect(gone.body.reason).toContain('could not be read');
 
     fs.writeFileSync(path.join(home, '.config', 'appydave', 'brands.json'), 'not json');
     const broken = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen' });
     expectStatus(broken, 503);
-    expect(broken.body.code).toBe('brands-unreadable');
+    expect(broken.body.code).toBe('registry-unreadable');
     expect(await getContext(app)).toMatchObject({ context: null, missing: ['brand', 'project'] });
 
     fs.rmSync(path.join(home, '.config'), { recursive: true });
     const absent = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen' });
-    expect(absent.body.code).toBe('brands-unreadable');
+    expect(absent.body.code).toBe('registry-unreadable');
   });
 });
