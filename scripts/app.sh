@@ -79,9 +79,11 @@ parse_open_args() {
       *) echo "Unknown argument: $1"; return 2 ;;
     esac
     export "FLIVIDEO_$(echo "$name" | tr '[:lower:]' '[:upper:]')=$value"
-    FLIVIDEO_LAUNCH_ID="$(date +%s)-$$"
   done
-  [ -n "${FLIVIDEO_LAUNCH_ID:-}" ] && export FLIVIDEO_LAUNCH_ID
+  # F4: stamp whenever a context is present — flags OR inherited FLIVIDEO_* env.
+  if [ -n "${FLIVIDEO_BRAND:-}" ] || [ -n "${FLIVIDEO_PROJECT:-}" ]; then
+    export FLIVIDEO_LAUNCH_ID="$(date +%s)-$$"
+  fi
   return 0
 }
 
@@ -123,8 +125,10 @@ cmd_start() {
   clear_stale_socket
   mkdir -p "$LOGDIR"
 
+  local already_up=0
   if daemon_up; then
     echo "Overmind is up but the app is not answering yet; waiting."
+    already_up=1
   else
     echo "Starting ${APP} (detached)…"
     local banner
@@ -140,6 +144,10 @@ cmd_start() {
   for _ in $(seq 1 "$READY_TIMEOUT"); do
     if healthy; then
       echo " — up."
+      # F4: overmind's processes kept their old env, so a context for this launch goes through door 3.
+      if [ "$already_up" = 1 ] && [ -n "${FLIVIDEO_LAUNCH_ID:-}" ]; then
+        switch_context || return 1
+      fi
       cmd_status
       return 0
     fi

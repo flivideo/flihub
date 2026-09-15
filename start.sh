@@ -20,9 +20,12 @@ while [ $# -gt 0 ]; do
       exit 2 ;;
   esac
   export "FLIVIDEO_$(echo "$name" | tr '[:lower:]' '[:upper:]')=$value"
-  FLIVIDEO_LAUNCH_ID="$(date +%s)-$$"
 done
-[ -n "${FLIVIDEO_LAUNCH_ID:-}" ] && export FLIVIDEO_LAUNCH_ID
+# W3 F4: stamp whenever a context is present — from flags OR inherited FLIVIDEO_* env — so the server
+# applies it once per launch and a nodemon/overmind restart never re-applies it over a later pick.
+if [ -n "${FLIVIDEO_BRAND:-}" ] || [ -n "${FLIVIDEO_PROJECT:-}" ]; then
+  export FLIVIDEO_LAUNCH_ID="$(date +%s)-$$"
+fi
 
 trap 'rm -f ./.overmind.sock' EXIT INT TERM
 
