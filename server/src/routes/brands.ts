@@ -16,14 +16,15 @@ import { listBrands } from '../utils/brands.js';
 export function createBrandsRouter(
   getConfig: () => Config,
   updateConfig: (newConfig: Partial<Config>) => Config,
-  io: SocketServer<ClientToServerEvents, ServerToClientEvents>
+  io: SocketServer<ClientToServerEvents, ServerToClientEvents>,
+  options: { home?: string } = {} // W3 F2: injected in tests; default os.homedir()
 ): Router {
   const router = Router();
 
   router.get('/', async (_req: Request, res: Response) => {
     try {
       const currentRoot = expandPath(getConfig().projectsRootDirectory || '');
-      const brands = await listBrands(currentRoot);
+      const brands = await listBrands(currentRoot, options);
       res.json({
         success: true,
         brands,
@@ -42,7 +43,7 @@ export function createBrandsRouter(
     }
     try {
       const currentRoot = expandPath(getConfig().projectsRootDirectory || '');
-      const brands = await listBrands(currentRoot);
+      const brands = await listBrands(currentRoot, options);
       const brand = brands.find((b) => b.key === key);
       if (!brand) {
         return res.status(404).json({ success: false, error: `Unknown brand: ${key}` });

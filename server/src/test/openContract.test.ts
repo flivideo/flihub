@@ -10,6 +10,7 @@ import os from 'os';
 import path from 'path';
 import { createContextRouter } from '../routes/context.js';
 import { createSystemRoutes } from '../routes/system.js';
+import { createBrandsRouter } from '../routes/brands.js';
 import { createContextController, LAUNCH_ID_ENV, type ContextDeps } from '../utils/openContext.js';
 import type { Config, OpenContextState } from '../../../shared/types.js';
 
@@ -95,6 +96,8 @@ async function buildApp(initial: Partial<Config> = {}, extra: Partial<ContextDep
   app.use(express.json());
   app.use('/api/context', createContextRouter(controller));
   app.use('/api/system', createSystemRoutes(() => config));
+  const io = { emit: () => true } as unknown as Parameters<typeof createBrandsRouter>[2];
+  app.use('/api/brands', createBrandsRouter(() => config, (patch) => Object.assign(config, patch), io, { home }));
   const server = http.createServer(app);
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -248,6 +251,32 @@ describe('open contract — edges', () => {
 
     const prefix = await request(app).post('/api/context').send({ brand: 'x', project: 'c0' });
     expectStatus(prefix, 404);
+  });
+
+  it('F2 · the brand switcher resolves a root exactly as doors 2/3 do (A5 rewrite)', async () => {
+    // A registry written on another user's Mac: /Users/otheruser/… is rewritten to this home.
+    const rewritten = path.join(home, 'dev', 'video-projects', 'v-x');
+    fs.mkdirSync(path.join(rewritten, 'a01-demo'), { recursive: true });
+    writeJson(path.join(home, '.config', 'appydave', 'brands.json'), {
+      brands: { x: { name: 'Brand X', locations: { video_projects: '/Users/otheruser/dev/video-projects/v-x' } } },
+    });
+
+    const viaDoor3 = await buildApp();
+    const door3 = await request(viaDoor3.app).post('/api/context').send({ brand: 'x', project: 'a01-demo' });
+    expectStatus(door3, 200);
+    expect(door3.body.context.root).toBe(rewritten);
+
+    const { app, config } = await buildApp();
+    const sw = await request(app).post('/api/brands/switch').send({ key: 'x' });
+    expectStatus(sw, 200);
+    expect(config.projectsRootDirectory).toBe(rewritten);
+
+    const list = await request(app).get('/api/brands');
+    expect(list.body.brands.filter((b: { name: string }) => b.name === 'Brand X' || b.name === 'X')).toHaveLength(1);
+    expect(list.body.activeKey).toBe('x');
+
+    config.activeProject = 'a01-demo'; // the project pick
+    expect((await getContext(app)).context).toMatchObject({ brand: 'x', root: rewritten, project: 'a01-demo' });
   });
 
   it('carries a valid video with its project and refuses a malformed one', async () => {

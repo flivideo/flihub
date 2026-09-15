@@ -6,6 +6,7 @@
 import path from 'path';
 import os from 'os';
 import fs from 'fs-extra';
+import { brandsFilePath, readMachineSettings, resolveBrandRoot } from '@flivideo/core';
 
 const BRANDS_JSON = path.join(os.homedir(), '.config', 'appydave', 'brands.json');
 
@@ -67,24 +68,38 @@ export async function brandStoragePaths(
 /**
  * List brands: brands.json entries first, then unregistered on-disk v-* roots
  * under the parent of the current projects root.
+ *
+ * W3 F2: a registry root resolves exactly as doors 2/3 resolve it (@flivideo/core
+ * resolveBrandRoot: /Users/<anyone> rewritten to this machine's home, ~/.fli/machine.json
+ * override), so a brand switch writes the same root POST /api/context would (C1).
  */
-export async function listBrands(currentRoot: string): Promise<BrandInfo[]> {
-  const entries = await readBrandsFile();
+export async function listBrands(
+  currentRoot: string,
+  options: { home?: string } = {}
+): Promise<BrandInfo[]> {
+  const home = options.home ?? os.homedir();
+  const entries = await readBrandsFile(brandsFilePath({ home }));
+  const machine = await readMachineSettings({ home });
+  const machineRoots = machine.kind === 'valid' ? machine.value : null;
+  const current = currentRoot ? path.resolve(currentRoot) : null;
   const brands: BrandInfo[] = [];
   const seenRoots = new Set<string>();
 
   for (const [key, entry] of Object.entries(entries)) {
-    const root = entry.locations?.video_projects;
-    if (!root) continue; // an entry without a video root cannot be switched to
+    const name = entry.name || titleCase(key);
+    const videoProjects = entry.locations?.video_projects;
+    const resolved = resolveBrandRoot({ key, name, videoProjects }, machineRoots, { home });
+    if (!resolved) continue; // an entry without a video root cannot be switched to
+    const root = path.resolve(resolved);
     seenRoots.add(root);
     brands.push({
       key,
-      name: entry.name || titleCase(key),
+      name,
       root,
       publishedPath: entry.locations?.ssd_backup || derivedPublished(key),
       holdingPath: derivedHolding(key),
       source: 'brands.json',
-      active: root === currentRoot,
+      active: root === current,
     });
   }
 
@@ -105,7 +120,7 @@ export async function listBrands(currentRoot: string): Promise<BrandInfo[]> {
         publishedPath: derivedPublished(key),
         holdingPath: derivedHolding(key),
         source: 'disk',
-        active: root === currentRoot,
+        active: root === current,
       });
     }
   } catch (err) {
