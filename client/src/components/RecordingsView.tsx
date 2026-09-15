@@ -1628,8 +1628,6 @@ export function RecordingsView() {
         <VideoTranscriptModal onClose={() => setShowVideoTranscript(false)} />
       )}
 
-      {/* FR-58: Chapter Recording Modal */}
-
       {/* FR-128: Recording Preview Modal */}
       {previewRecording && (
         <RecordingVideoModal

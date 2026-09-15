@@ -9,7 +9,6 @@ export { SelectionBadge } from './SelectionBadge';
 export { ToolsSidebar } from './ToolsSidebar';
 export { SlideOutDrawer } from './SlideOutDrawer';
 export { ConfirmationModal } from './ConfirmationModal';
-export type { ChapterSettings } from './ConfirmationModal';
 export { GlingEditTool } from './GlingEditTool';
 export { RelayTool } from './RelayTool';
 export { SyncTool } from './SyncTool';

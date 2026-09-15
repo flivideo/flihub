@@ -29,9 +29,9 @@ function buildApp(projectDirectory: string) {
   const io = { emit: vi.fn() } as unknown as Parameters<typeof createManageRoutes>[1];
   const app = express();
   app.use(express.json());
-  app.use('/api/chapters', createChapterRoutes(() => config, vi.fn()));
+  app.use('/api/chapters', createChapterRoutes(() => config));
   app.use('/api/manage', createManageRoutes(() => config, io, vi.fn(), () => null, () => []));
-  return { app, io };
+  return { app, io, config };
 }
 
 describe('chapter previews deprecated (§1.2e)', () => {
@@ -52,6 +52,16 @@ describe('chapter previews deprecated (§1.2e)', () => {
       expect(io.emit).not.toHaveBeenCalled();
     }
   );
+
+  it('PUT /api/chapters/config → 410 Gone, the legacy settings are untouched (F8)', async () => {
+    const { app, config } = buildApp('/nowhere');
+
+    const res = await request(app).put('/api/chapters/config').send({ autoGenerate: true, resolution: '1080p' });
+
+    expect(res.status).toBe(410);
+    expect(res.body.error).toBe(CHAPTER_PREVIEWS_GONE);
+    expect(config.chapterRecordings).toBeUndefined();
+  });
 
   it('still lists an existing legacy recordings/-chapters/ folder', async () => {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'flihub-chapters-gone-'));

@@ -274,13 +274,7 @@ const queryRoutes = createQueryRoutes(() => currentConfig);
 app.use('/api/query', queryRoutes);
 
 // FR-58: Chapter recording routes (creation 410 Gone — roadmap §1.2e; legacy status/config remain)
-const chapterRoutes = createChapterRoutes(
-  () => currentConfig,
-  (config: Config) => {
-    Object.assign(currentConfig, config);
-    saveConfigToFile(currentConfig);
-  }
-);
+const chapterRoutes = createChapterRoutes(() => currentConfig);
 app.use('/api/chapters', chapterRoutes);
 
 // FR-70: Setup video streaming routes

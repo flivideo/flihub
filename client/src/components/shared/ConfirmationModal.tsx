@@ -5,12 +5,6 @@
 
 import { useEffect } from 'react';
 
-export interface ChapterSettings {
-  resolution: '720p' | '1080p';
-  includeTitleSlides: boolean;
-  slideDuration: number;
-}
-
 interface ConfirmationModalProps {
   /** Modal title */
   title: string;
@@ -30,11 +24,8 @@ interface ConfirmationModalProps {
   cancelText?: string;
   /** Confirm button color variant */
   variant?: 'primary' | 'danger' | 'warning';
-  /** Optional chapter settings for chapter regeneration */
-  chapterSettings?: ChapterSettings;
-  onChapterSettingsChange?: (settings: ChapterSettings) => void;
   /** Callbacks */
-  onConfirm: (chapterSettings?: ChapterSettings) => void;
+  onConfirm: () => void;
   onCancel: () => void;
 }
 
@@ -48,8 +39,6 @@ export function ConfirmationModal({
   confirmText = 'Continue',
   cancelText = 'Cancel',
   variant = 'primary',
-  chapterSettings,
-  onChapterSettingsChange,
   onConfirm,
   onCancel,
 }: ConfirmationModalProps) {
@@ -100,74 +89,6 @@ export function ConfirmationModal({
           </div>
         )}
 
-        {/* Chapter Settings (if provided) */}
-        {chapterSettings && onChapterSettingsChange && (
-          <div className="mb-3 p-4 bg-blue-50 rounded border border-blue-200">
-            <p className="text-sm font-semibold text-warm-secondary mb-3">Chapter Generation Settings</p>
-
-            {/* Resolution */}
-            <div className="mb-3">
-              <label className="block text-xs font-medium text-warm-secondary mb-1">Resolution</label>
-              <select
-                value={chapterSettings.resolution}
-                onChange={(e) =>
-                  onChapterSettingsChange({
-                    ...chapterSettings,
-                    resolution: e.target.value as '720p' | '1080p',
-                  })
-                }
-                className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="720p">720p (1280×720)</option>
-                <option value="1080p">1080p (1920×1080)</option>
-              </select>
-            </div>
-
-            {/* Include Title Slides */}
-            <div className="mb-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={chapterSettings.includeTitleSlides}
-                  onChange={(e) =>
-                    onChapterSettingsChange({
-                      ...chapterSettings,
-                      includeTitleSlides: e.target.checked,
-                    })
-                  }
-                  className="w-4 h-4 text-blue-600 border-warm-strong rounded focus:ring-blue-500"
-                />
-                <span className="text-sm text-warm-secondary">
-                  Include purple title slides between segments
-                </span>
-              </label>
-            </div>
-
-            {/* Slide Duration (only if title slides enabled) */}
-            {chapterSettings.includeTitleSlides && (
-              <div>
-                <label className="block text-xs font-medium text-warm-secondary mb-1">
-                  Slide Duration (seconds)
-                </label>
-                <input
-                  type="number"
-                  min="0.5"
-                  max="5"
-                  step="0.5"
-                  value={chapterSettings.slideDuration}
-                  onChange={(e) =>
-                    onChapterSettingsChange({
-                      ...chapterSettings,
-                      slideDuration: parseFloat(e.target.value),
-                    })
-                  }
-                  className="w-full px-3 py-2 text-sm border border-warm-strong rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Warning (if provided) */}
         {warning && (
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
@@ -184,7 +105,7 @@ export function ConfirmationModal({
             {cancelText}
           </button>
           <button
-            onClick={() => onConfirm(chapterSettings)}
+            onClick={() => onConfirm()}
             className={`px-4 py-2 text-sm rounded transition-colors ${buttonClasses}`}
           >
             {confirmText}

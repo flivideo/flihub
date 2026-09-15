@@ -2,9 +2,10 @@
  * FR-58: Chapter Recording Routes — chapter previews are DEPRECATED (FliStudio roadmap §1.2e).
  *
  * POST /api/chapters/generate - 410 Gone: FliHub no longer makes chapter previews
- * GET /api/chapters/config - Get chapter recording configuration (legacy setting, read-only use)
- * PUT /api/chapters/config - Update chapter recording configuration (legacy setting)
- * GET /api/chapters/status - Existing recordings/-chapters/ files (legacy folders stay and still play)
+ * GET /api/chapters/config - Legacy chapter recording settings (read only; they drive nothing now)
+ * PUT /api/chapters/config - 410 Gone: the settings configured preview generation, which no longer exists
+ * GET /api/chapters/status - Existing recordings/-chapters/ files (legacy folders stay and still play);
+ *                            isGenerating is always false and kept only for the response shape
  */
 
 import { Router, Request, Response } from 'express';
@@ -25,10 +26,7 @@ const DEFAULT_CHAPTER_CONFIG: ChapterRecordingConfig = {
   includeTitleSlides: false, // FR-76: Purple slides off by default
 };
 
-export function createChapterRoutes(
-  getConfig: () => Config,
-  saveConfig: (config: Config) => void
-) {
+export function createChapterRoutes(getConfig: () => Config) {
   const router = Router();
 
   // Helper to get chapter recording config with defaults
@@ -46,30 +44,9 @@ export function createChapterRoutes(
     });
   });
 
-  // PUT /api/chapters/config - Update chapter recording configuration
-  router.put('/config', (req: Request, res: Response) => {
-    const { slideDuration, resolution, autoGenerate, includeTitleSlides } = req.body;
-    const config = getConfig();
-
-    const newChapterConfig: ChapterRecordingConfig = {
-      slideDuration:
-        typeof slideDuration === 'number' ? slideDuration : DEFAULT_CHAPTER_CONFIG.slideDuration,
-      resolution: resolution === '1080p' ? '1080p' : '720p',
-      autoGenerate:
-        typeof autoGenerate === 'boolean' ? autoGenerate : DEFAULT_CHAPTER_CONFIG.autoGenerate,
-      includeTitleSlides:
-        typeof includeTitleSlides === 'boolean'
-          ? includeTitleSlides
-          : DEFAULT_CHAPTER_CONFIG.includeTitleSlides,
-    };
-
-    config.chapterRecordings = newChapterConfig;
-    saveConfig(config);
-
-    res.json({
-      success: true,
-      config: newChapterConfig,
-    });
+  // PUT /api/chapters/config - 410 Gone (roadmap §1.2e): nothing reads these settings any more
+  router.put('/config', (_req: Request, res: Response) => {
+    res.status(410).json({ success: false, error: CHAPTER_PREVIEWS_GONE });
   });
 
   // POST /api/chapters/generate - 410 Gone (roadmap §1.2e)
