@@ -11,6 +11,7 @@ import path from 'path';
 import { createContextRouter } from '../routes/context.js';
 import { createSystemRoutes } from '../routes/system.js';
 import { createBrandsRouter } from '../routes/brands.js';
+import { HubContextSchema, OpenContextStateSchema } from '../routes/contextSchemas.js';
 import { OpenContextResult, ProjectRefusal } from '@flivideo/core';
 import { createContextController, LAUNCH_ID_ENV, LIBRARY_REFUSAL, type ContextDeps } from '../utils/openContext.js';
 import type { Config, OpenContextState } from '../../../shared/types.js';
@@ -119,7 +120,9 @@ function expectStatus(res: request.Response, status: number) {
   expect(seen, `unexpected HTTP status: ${JSON.stringify(seen)}`).toMatchObject({ status });
 }
 
-const getContext = async (app: http.Server) => (await request(app).get('/api/context')).body as OpenContextState;
+// F6: every GET body the tests capture must satisfy the published zod shape, not just the fields each test reads.
+const getContext = async (app: http.Server): Promise<OpenContextState> =>
+  OpenContextStateSchema.parse((await request(app).get('/api/context')).body);
 
 describe('open contract — one test per door', () => {
   it('1 · launch args → context', async () => {
@@ -292,6 +295,19 @@ describe('open contract — edges', () => {
       'brand-root-unreadable', 'brands-unreadable', 'no-brand-root', 'project-ambiguous',
       'project-not-found', 'unknown-brand', 'video-invalid',
     ]);
+  });
+
+  it('F6 · POST bodies are validated by the zod ContextBody; 200 bodies satisfy HubContext', async () => {
+    const { app, config } = await buildApp();
+
+    const notString = await request(app).post('/api/context').send({ brand: 5, project: 'a01-xmen' });
+    expectStatus(notString, 400);
+    expect(notString.body.issues[0]).toContain('brand');
+    expect(config.activeProject).toBe('');
+
+    const ok = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen', video: '01-intro' });
+    expectStatus(ok, 200);
+    expect(HubContextSchema.parse(ok.body.context)).toEqual(ok.body.context);
   });
 
   it('carries a valid video with its project and refuses a malformed one', async () => {

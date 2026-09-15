@@ -693,36 +693,14 @@ export interface ServerToClientEvents {
 }
 
 // W3 open contract (flistudio docs/open-contract.md §3): the context every door sets.
-export type OpenContextArg = 'brand' | 'project' | 'video';
-
-export interface HubContext {
-  brand: string; // brands.json key
-  root: string; // the brand root on this machine (= projectsRootDirectory)
-  project: string; // project folder name (= activeProject)
-  projectDir: string; // absolute project folder
-  projectId: string | null; // fli.studio.json id, or null when the folder is not a member yet
-  membership: 'member' | 'folder'; // member = valid fli.studio.json; folder = plain FliHub folder
-  video?: string; // <NN>-<name>, carried not validated beyond its shape
-}
-
-export interface ContextRefusal {
-  code:
-    | 'video-invalid'
-    | 'brands-unreadable'
-    | 'unknown-brand'
-    | 'no-brand-root'
-    | 'project-not-found'
-    | 'project-ambiguous'
-    | 'brand-root-unreadable';
-  reason: string;
-  candidates?: string[];
-}
-
-export interface OpenContextState {
-  context: HubContext | null;
-  missing: OpenContextArg[]; // each missing argument is a picker (R25)
-  refused?: ContextRefusal; // the last door-2/door-3 attempt that could not resolve (C3)
-}
+// Defined once as zod in the server (review F6); these are the inferred types.
+export type {
+  OpenContextArg,
+  HubContext,
+  ContextRefusal,
+  OpenContextState,
+} from '../server/src/routes/contextSchemas.js';
+import type { OpenContextState } from '../server/src/routes/contextSchemas.js';
 
 export interface ClientToServerEvents {
   // Currently no client-to-server events needed

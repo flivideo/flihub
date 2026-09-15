@@ -6,12 +6,10 @@
  *    409 { candidates } when ambiguous (R31) · 503 registry or brand root unreadable.
  */
 import { Router, Request, Response } from 'express';
-import type { RawOpenArgs } from '@flivideo/core';
 import type { ContextController } from '../utils/openContext.js';
+import { ContextBodySchema } from './contextSchemas.js';
 
-function field(value: unknown): string | undefined {
-  return typeof value === 'string' && value !== '' ? value : undefined;
-}
+const FIELDS = ['brand', 'project', 'video'] as const;
 
 export function createContextRouter(controller: ContextController): Router {
   const router = Router();
@@ -22,15 +20,19 @@ export function createContextRouter(controller: ContextController): Router {
 
   router.post('/', async (req: Request, res: Response) => {
     const body = (req.body ?? {}) as Record<string, unknown>;
-    const args: RawOpenArgs = {};
-    const brand = field(body.brand);
-    const project = field(body.project);
-    const video = field(body.video);
-    if (brand) args.brand = brand;
-    if (project) args.project = project;
-    if (video) args.video = video;
+    // An empty string is a missing argument (R25), not a malformed one.
+    const given = Object.fromEntries(FIELDS.filter((f) => body[f] !== undefined && body[f] !== '').map((f) => [f, body[f]]));
+    const parsed = ContextBodySchema.safeParse(given);
+    if (!parsed.success) {
+      const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
+      if (parsed.error.issues.every((i) => i.path[0] === 'video')) {
+        const reason = `Video "${String(body.video)}" is not a <NN>-<name> folder name.`;
+        return res.status(400).json({ error: reason, code: 'video-invalid', reason });
+      }
+      return res.status(400).json({ error: 'Invalid body', issues });
+    }
 
-    const result = await controller.applyContext(args, 'api');
+    const result = await controller.applyContext(parsed.data, 'api');
     switch (result.kind) {
       case 'applied':
         return res.json({ context: result.state.context });
