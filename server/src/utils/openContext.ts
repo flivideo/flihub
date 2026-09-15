@@ -65,6 +65,17 @@ type Resolution =
   | { kind: 'resolved'; brand: Brand; root: string; project: string | null }
   | { kind: 'refused'; status: 400 | 404 | 409 | 503; refusal: ContextRefusal };
 
+/** A whole project code (`a01`); a prefix is never a match (R31). */
+const CODE = /^[a-z]\d{2}$/;
+
+function ambiguous(ref: string, brandKey: string, candidates: string[]): Resolution {
+  return refuse(409, {
+    code: 'project-ambiguous',
+    reason: `Project "${ref}" matches ${candidates.length} projects in ${brandKey}; name the folder.`,
+    candidates,
+  });
+}
+
 function refuse(status: 400 | 404 | 409 | 503, refusal: ContextRefusal): Resolution {
   return { kind: 'refused', status, refusal };
 }
@@ -115,30 +126,41 @@ export function createContextController(deps: ContextDeps) {
     if (!args.project) return { kind: 'resolved', brand, root, project: null };
 
     const listing = await listProjects(root);
-    const found = await resolveProject(listing, args.project);
-    switch (found.kind) {
-      case 'found':
-        return { kind: 'resolved', brand, root, project: found.project.folder };
-      case 'not-a-project':
-        // FliHub lists by folder today; adoption (fli.studio.json) is FliStudio's job (W7).
-        return { kind: 'resolved', brand, root, project: found.folder.folder };
-      case 'ambiguous':
-        return refuse(409, {
-          code: 'project-ambiguous',
-          reason: `Project "${args.project}" matches ${found.candidates.length} projects in ${brandKey}; name the folder.`,
-          candidates: found.candidates.map((c) => c.folder),
-        });
-      case 'unscanned':
-        return refuse(503, {
-          code: 'brand-root-unreadable',
-          reason: `Brand root ${found.path} could not be read (${found.message}).`,
-        });
-      case 'not-found':
-        return refuse(404, {
-          code: 'project-not-found',
-          reason: `No project folder "${args.project}" in ${root}.`,
-        });
+    const ref = args.project;
+    const found = await resolveProject(listing, ref);
+    if (found.kind === 'unscanned') {
+      return refuse(503, {
+        code: 'brand-root-unreadable',
+        reason: `Brand root ${found.path} could not be read (${found.message}).`,
+      });
     }
+    // An exact folder name or a member id is unambiguous by construction: the library's answer stands.
+    if (found.kind === 'found' && found.matchedBy !== 'code') {
+      return { kind: 'resolved', brand, root, project: found.project.folder };
+    }
+    if (found.kind === 'not-a-project') {
+      // FliHub lists by folder today; adoption (fli.studio.json) is FliStudio's job (W7).
+      return { kind: 'resolved', brand, root, project: found.folder.folder };
+    }
+    if (found.kind === 'ambiguous' && found.matchedBy === 'id') return ambiguous(ref, brandKey, found.candidates.map((c) => c.folder));
+
+    // A code. The library matches codes against members only, but FliHub counts plain folders as projects too, so a
+    // code is matched across both — one member and one plain folder sharing `a01` is ambiguous, not the member (R31).
+    const matches = new Set<string>();
+    if (CODE.test(ref) && listing.members.state === 'scanned' && listing.otherFolders.state === 'scanned') {
+      for (const m of listing.members.items) {
+        if (m.identity.code === ref || m.parsed?.code === ref) matches.add(m.folder);
+      }
+      for (const f of listing.otherFolders.items) {
+        if (f.parsed?.code === ref) matches.add(f.folder);
+      }
+    }
+    if (matches.size === 1) return { kind: 'resolved', brand, root, project: [...matches][0] };
+    if (matches.size > 1) return ambiguous(ref, brandKey, [...matches].sort());
+    return refuse(404, {
+      code: 'project-not-found',
+      reason: `No project folder "${ref}" in ${root}.`,
+    });
   }
 
   /** The live context, derived from config. */

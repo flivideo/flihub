@@ -217,6 +217,39 @@ describe('open contract — one test per door', () => {
 });
 
 describe('open contract — edges', () => {
+  it('F1 · a code shared by a member and a plain folder is ambiguous through both doors (R31)', async () => {
+    fs.mkdirSync(path.join(rootX, 'a01-old'));
+    const { app, controller, config } = await buildApp({ projectsRootDirectory: rootX, activeProject: 'b02-plain' });
+
+    const api = await request(app).post('/api/context').send({ brand: 'x', project: 'a01' });
+    expectStatus(api, 409);
+    expect(api.body).toMatchObject({ code: 'project-ambiguous', candidates: ['a01-old', 'a01-xmen'] });
+    expect(config.activeProject).toBe('b02-plain');
+
+    const launch = await controller.applyLaunch(['--brand', 'x', '--project', 'a01'], {});
+    expect(launch).toMatchObject({ kind: 'refused', status: 409 });
+    expect(config.activeProject).toBe('b02-plain');
+    expect((await getContext(app)).refused).toMatchObject({ candidates: ['a01-old', 'a01-xmen'] });
+  });
+
+  it('F1 · codes match plain folders: two share one → 409, a single one resolves as a folder', async () => {
+    fs.mkdirSync(path.join(rootX, 'b07-one'));
+    fs.mkdirSync(path.join(rootX, 'b07-two'));
+    fs.mkdirSync(path.join(rootX, 'c03-solo'));
+    const { app } = await buildApp();
+
+    const two = await request(app).post('/api/context').send({ brand: 'x', project: 'b07' });
+    expectStatus(two, 409);
+    expect(two.body.candidates).toEqual(['b07-one', 'b07-two']);
+
+    const one = await request(app).post('/api/context').send({ brand: 'x', project: 'c03' });
+    expectStatus(one, 200);
+    expect(one.body.context).toMatchObject({ project: 'c03-solo', membership: 'folder', projectId: null });
+
+    const prefix = await request(app).post('/api/context').send({ brand: 'x', project: 'c0' });
+    expectStatus(prefix, 404);
+  });
+
   it('carries a valid video with its project and refuses a malformed one', async () => {
     const { app, config } = await buildApp();
 
