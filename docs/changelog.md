@@ -14,6 +14,21 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## W3 — Open contract: launch args + `POST /api/context`; chapter previews deprecated (2026-09-15)
+
+FliHub meets the FliVideo open contract (`flistudio/docs/open-contract.md` §3). Door 2:
+`./start.sh` / `scripts/app.sh start` take `--brand --project [--video]` (→ `FLIVIDEO_*` env,
+stamped with `FLIVIDEO_LAUNCH_ID` so restarts don't re-apply). Door 3: `POST /api/context`
+(200 / 400 / 404 / 409 / 503) and `GET /api/context` `{ context, missing, refused? }`, derived from
+the live config. Both run one `applyContext` resolving through `@flivideo/core` v0.1.0; a folder with
+no `fli.studio.json` is accepted as `membership: 'folder'`. A refusal never falls back and shows as
+an amber strip. Chapter previews (FR-58) deprecated per roadmap §1.2e: `/api/chapters/generate`,
+`/api/manage/regen-chapters`, `/api/manage/regen-all` → 410; the UI affordances and FFmpeg
+generation code are gone; legacy `recordings/-chapters/` still lists and plays.
+Contract tests: `server/src/test/openContract.test.ts`. → README "Open at a brand and project".
+
+---
+
 ## FR-161 — B-roll lane (2026-09-04)
 
 `b-roll/` as a top-level sibling of `recordings/` — chapter-less source media outside the
