@@ -314,3 +314,216 @@ duplicate codes per brand root: none (positive control: v-appydave lists d02, d0
   prove an identical set of messages; the per-file error list at HEAD was checked against W3-touched files.
 
 APPYNET: done — FINDINGS, 1 blocking, 9 minor
+
+---
+
+## Second pass (fix round 2)
+
+Verdict: FINDINGS (0 blocking, 2 minor). F1–F4 and F6–F10 are fixed. **F5 is not fixed against Swagger's decision 4**
+(the shared refusal vocabulary): the builder shipped the mapping-table option from the first pass, not the
+vocabulary. Decision 4 was committed at 23:20 (`flistudio 179cb5c`) and the F5 fix at 23:25 (`535ee15`).
+
+Scope: `8531392..87ce441` (the ten `fix(W3): F<n>` commits), HEAD `87ce441`. `git pull --rebase` reported "Already up
+to date". Reviewer session `flihub-w3-review`, 2026-09-15. No repo file other than this one was edited; nothing
+committed; the app was not started. Probes ran in-process against HEAD source (`tsx`), under a temp `HOME` in the
+session scratchpad. `7c39d38` and `b381e5a` (ephemeral-port test harness, before `0d3a8d8`) are outside this scope,
+but the suite below runs on them.
+
+### Each finding
+
+| # | Status | Proven by (test name) |
+|---|---|---|
+| F1 | **fixed-as-specified**. A code (`/^[a-z]\d{2}$/`) matches members ∪ plain folders. An exact folder or id keeps the library's answer, and a prefix never matches (`server/src/utils/openContext.ts:157-181`). The recommended case (one plain folder by code → 200 `folder`) was taken | `open contract — edges › F1 · a code shared by a member and a plain folder is ambiguous through both doors (R31)`; `F1 · codes match plain folders: two share one → 409, a single one resolves as a folder` (also `c0` prefix → 404) |
+| F2 | **fixed-as-specified**. `listBrands` resolves registry roots through `resolveBrandRoot` with `~/.fli` machine settings and compares with `path.resolve`. A `home` option is threaded through `createBrandsRouter` (`server/src/utils/brands.ts:76-104`, `server/src/routes/brands.ts:20,27,46`) | `F2 · the brand switcher resolves a root exactly as doors 2/3 do (A5 rewrite)` (one entry, `activeKey` x, `GET /api/context` names the brand after switch + pick) |
+| F3 | **fixed-as-specified**, option (a) by ruling: a README line tells callers to check `refused` before `context` (`README.md`, `09e1fe4`) | docs only; behaviour pinned by `4 · refusal bites` (`activeProject` unchanged) |
+| F4 | **fixed-as-specified**. Both scripts stamp `FLIVIDEO_LAUNCH_ID` whenever `FLIVIDEO_BRAND` or `FLIVIDEO_PROJECT` is set (flag or inherited): `start.sh:26-28`, `scripts/app.sh:83-86`. `cmd_start` calls `switch_context` after waiting on an already-up daemon (`scripts/app.sh:147-150`) | no automated test (bash). `bash -n` OK on both. Swagger's report records a runtime env-only launch via `scripts/app.sh` setting context; not reproduced by me |
+| F5 | **not-fixed** (against decision 4). The first-pass fix option was delivered: `LIBRARY_REFUSAL` table plus README table. The shared vocabulary was not. See R1 | `F5 · every FliHub refusal code maps to a real @flivideo/core result kind` pins the **old** codes (`brands-unreadable`, `brand-root-unreadable`) |
+| F6 | **fixed-differently-but-acceptable**. Zod schemas live in `server/src/routes/contextSchemas.ts`, and `shared/types.ts:697-703` re-exports their `z.infer` types (type-only) instead of each side declaring its own. `POST` bodies go through `ContextBodySchema`, and `video` reuses `VideoFolderName` from `@flivideo/core`. The one catch is the direction of the shared → server import (R2) | `F6 · POST bodies are validated by the zod ContextBody; 200 bodies satisfy HubContext`; every contract test's `getContext` now runs `OpenContextStateSchema.parse` on the captured body |
+| F7 | **fixed-as-specified**. The *Deferred* paragraph in `docs/changelog.md` names `shared/paths.ts:48`, the six literal sites, and more: the write path `transcriptions.ts:121/:204` and `renameRecording.ts` | docs only |
+| F8 | **fixed-as-specified**. The chapter-settings block and `ChapterSettings` type are removed from `ConfirmationModal`, and the orphan comment is gone. `PUT /api/chapters/config` → 410, and `createChapterRoutes` no longer takes `saveConfig` (`server/src/index.ts:277`). No client caller of `PUT` remains (`git grep chapters/config`) | `chapter previews deprecated (§1.2e) › PUT /api/chapters/config → 410 Gone, the legacy settings are untouched (F8)` |
+| F9 | **fixed-as-specified**: `lastRefusal` is recorded only for `source === 'launch'` (`server/src/utils/openContext.ts:239-241`) | `F9 · only a refused launch is shown; a door-3 caller keeps its refusal, and it clears once the context moves on` |
+| F10 | **fixed-as-specified**, by ruling: `NFR-172` in `docs/backlog.md` with the exact debt; the W3 bar is "no new lint problems, thresholds unchanged" | lint 52 problems (20 errors), identical to `c69b559` (below) |
+
+### R31 probe via door 3 against HEAD
+
+Temp brand root `v-x`: member `a01-xmen`, plain `a01-old`, `b02-one`, `b02-two`, `c03-solo`; `activeProject` before
+each call = `b02-one`.
+
+```
+a01                                    409 project-ambiguous ["a01-old","a01-xmen"] activeProject=b02-one
+b02                                    409 project-ambiguous ["b02-one","b02-two"] activeProject=b02-one
+c03                                    200 c03-solo/folder  activeProject=c03-solo
+a01-old                                200 a01-old/folder  activeProject=a01-old
+a01-xmen                               200 a01-xmen/member  activeProject=a01-xmen
+3f1c2a4e-8b7d-4c6e-9a1f-2b3c4d5e6f70   200 a01-xmen/member  activeProject=a01-xmen
+c0                                     404 project-not-found  activeProject=b02-one
+z99                                    404 project-not-found  activeProject=b02-one
+
+# door 2, same fixture: applyLaunch --brand x --project a01 → GET /api/context
+{"context":{…"project":"b02-one"…,"membership":"folder"},"missing":[],
+ "refused":{"code":"project-ambiguous","reason":"Project \"a01\" matches 2 projects in x; name the folder.","candidates":["a01-old","a01-xmen"]}}
+```
+
+The refusal bites through both doors, and the config is untouched.
+
+### F2 probe against HEAD
+
+Registry root `/Users/otheruser/dev/video-projects/v-z`; folder at `<home>/dev/video-projects/v-z/a01-demo`.
+
+```
+door3: 200 | root <home>/dev/video-projects/v-z
+GET /api/brands after door3: active = z | entries ["x:disk:<home>/dev/video-projects/v-x","z:brands.json:<home>/dev/video-projects/v-z"]
+switch: 200 | root <home>/dev/video-projects/v-z | same as door3: true
+GET /api/context after switch + pick: {"context":{"brand":"z","root":"<home>/dev/video-projects/v-z","project":"a01-demo",…,"membership":"folder"},"missing":[]}
+```
+
+The `x:disk` row comes from the probe's own leftover `v-x` folder under the same parent. It is the existing on-disk
+merge, and `z` is not duplicated. First pass: two `Z` rows, and `{"context":null,"missing":["brand","project"]}`.
+
+### Zod schemas vs captured bodies
+
+Every captured `GET /api/context` body was run through `OpenContextStateSchema.safeParse`: missing, resolved with
+video, and refused launch all `ok`. `POST` 200 `context` → `HubContextSchema.safeParse` `true`. Inside the suite,
+every `getContext` call in `openContract.test.ts` parses (16 contract tests green). The schemas are `strictObject`,
+so an extra field would fail the tests.
+
+### Refusal codes vs the shared vocabulary (decision 4)
+
+Every code the door-3 surface can answer, captured at HEAD:
+
+| Case | HTTP | Body `code` | Decision 4 | Match |
+|---|---|---|---|---|
+| a field missing | 400 | *(none)*: `{"error":"Missing: project","missing":["project"]}` | `missing` | ⚠️ no `code` field |
+| unknown brand | 404 | `unknown-brand` | `unknown-brand` | ✅ |
+| brand without a root | 404 | `no-brand-root` | `no-brand-root` | ✅ |
+| `brands.json` absent or invalid | 503 | `brands-unreadable` | `registry-unreadable` | ❌ |
+| brand root unreadable (unmounted) | 503 | `brand-root-unreadable` | *(no slot)* | ❌ |
+| no such folder / code / prefix | 404 | `project-not-found` | `project-not-found` | ✅ |
+| shared code | 409 | `project-ambiguous` + `candidates` | `project-ambiguous` | ✅ |
+| a plain folder | 200 `membership: folder` | *(never refused)* | `not-a-project` | ✅ by W3 brief (FliHub accepts plain folders) |
+| malformed video | 400 | `video-invalid` | `video-invalid` | ✅ |
+| well-formed video that does not exist (`09-nope`) | **200**, video carried | *(never refused)* | `video-not-found` | ⚠️ W3 brief §2B says "carried, not validated beyond `parseVideoFolder`"; decision 4 lists the code. Needs a ruling |
+| non-string field (`brand: 5`) | 400 | *(none)*: `{"error":"Invalid body","issues":[…]}` | *(no slot)* | ⚠️ outside the vocabulary |
+
+**Not confirmed**: the codes do not use the shared vocabulary.
+
+### New findings
+
+#### R1 · Door-3 and launch refusals do not use decision 4's shared vocabulary — MINOR (holds the gate: an unimplemented ruling)
+
+`server/src/routes/contextSchemas.ts:28-38` (`code` enum), `server/src/utils/openContext.ts:74-84`
+(`LIBRARY_REFUSAL`) and the `refuse(...)` call sites, `server/src/routes/context.ts:26-43`, the README refusal table,
+and `openContract.test.ts › F5 …` (pins the old keys).
+
+- **What is wrong**: see the table above. Two codes are renamed or unslotted, `missing` carries no `code`, and
+  `video-not-found` is never produced.
+- **Why it matters**: decision 4 is "Sent to W3 and W4, written into the W5/W6 briefs". FliStudio (W7) will switch
+  on one vocabulary across four apps, and FliHub is the first app to drift from it. By the review brief's BLOCKING
+  list this is not blocking (no C1–C4 breach, and every refusal bites). But roadmap §3.1 "review clean" is not met
+  while a ruling given to this workstream is unimplemented.
+- **Fix**:
+  1. `brands-unreadable` → `registry-unreadable` (503 kept).
+  2. `brand-root-unreadable` → `no-brand-root`, with the unreadable path in `reason` (503 kept, so a caller can
+     still tell "no root configured" from "root not mounted" by status). Or Swagger adds a slot to the vocabulary.
+  3. 400 missing body: add `code: 'missing'` beside `missing: [...]`. 400 invalid body: `code: 'missing'` is
+     wrong; either Swagger rules an `invalid-body` code, or it stays code-less as a malformed request outside the
+     refusal vocabulary. Recommend the latter, written down.
+  4. `video-not-found`: **Swagger rules**. (a) Keep carrying an unchecked video (W3 brief §2B) and document that
+     FliHub never emits it. (b) Stat `<projectDir>/videos/<video>/` and answer 404 `video-not-found`.
+     Recommend (a), because FliHub has no `videos/` concept today and a 404 would refuse contexts FliStudio creates
+     before the folder exists.
+  5. Update the `ContextRefusalSchema` enum, `LIBRARY_REFUSAL` keys, the README table, and the `F5 …` test's
+     expected key list. Add assertions that the 503 registry case says `registry-unreadable` and the 400 missing
+     case says `missing`.
+
+#### R2 · `shared/types.ts` now imports types from `server/src` — MINOR (deferrable)
+
+`shared/types.ts:697-703` → `../server/src/routes/contextSchemas.js`.
+
+- **What is wrong**: the dependency direction is inverted: `shared` depends on `server`. It compiles, because the
+  import is type-only and both `zod` and `@flivideo/core` are hoisted to the root `node_modules`. But `client` now
+  type-checks `server/src/routes/contextSchemas.ts`, whose `zod` and `@flivideo/core` imports are declared in
+  neither `client/package.json` nor `shared/package.json`. A non-hoisted install (or the dependency check spec §10
+  asks of W7) would break the client typecheck.
+- **Fix**: move `contextSchemas.ts` to `shared/contextSchemas.ts` and add `zod` + `@flivideo/core` to `shared`'s
+  dependencies (the client still imports types only, so nothing reaches its bundle). Or keep it and defer in
+  writing next to NFR-172.
+
+### Regressions in touched existing files
+
+None found.
+
+- **`server/src/utils/brands.ts`**: on the M4 every registry root already equals its resolved root (8/8 under
+  `/Users/davidcruwys`, no `~/.fli/machine.json` `[measured, first pass]`), so `GET /api/brands` and `switch`
+  write the same values as before. Two things change, and both are acceptable:
+  - a trailing separator in a registry path is now normalised away
+  - a relative `video_projects` would resolve against the server's cwd (door 3 refuses it). No real entry is
+    relative.
+- **`server/src/routes/brands.ts`**: the signature gains an optional 4th arg; the only caller is `index.ts:332`
+  (3 args, default `home`).
+- **`server/src/routes/chapters.ts` / `index.ts:277`**: `PUT /config` → 410. `GET /config` still returns
+  `config.chapterRecordings` or defaults; no client caller of either.
+- **`server/src/routes/context.ts`**:
+  - **Empty-string fields**: still treated as missing.
+  - **Non-string field**: now 400 `Invalid body`. It was previously dropped and answered 400 `missing`: still a 400
+    and still no config change (test F6).
+  - **Missing project plus malformed video**: now answers `video-invalid` before `missing`. Harmless.
+- **`client/.../ConfirmationModal.tsx`**: `onConfirm()` takes no argument, and every remaining caller (Manage
+  panel regen and delete) passes a zero-arg callback. Client typecheck passes.
+- **Scripts**: an inherited `FLIVIDEO_*` in David's shell now re-points FliHub on every `./start.sh`. That is the
+  intended F4 behaviour, and worth one line to David if he ever exports those names.
+- **Lint**: 52 problems (20 errors, 32 warnings), identical to `c69b559`. The only message in a W3-touched file is
+  `server/src/routes/manage.ts:749` `no-unused-vars` (warning), the pre-existing `skippedCount` at base line 1239.
+
+### Checks run (second pass)
+
+```
+$ pwd && git pull --rebase
+/Users/davidcruwys/dev/ad/flivideo/flihub
+Already up to date.
+
+$ git log --oneline aa99f71..HEAD
+87ce441 fix(W3): F10 ticket the pre-existing lint debt and inert coverage config (NFR-172)
+5994ddb fix(W3): F9 only a refused launch reaches GET /api/context and the UI strip
+8cf8435 fix(W3): F8 remove chapter-preview leftovers; PUT /api/chapters/config answers 410
+0a91409 fix(W3): F7 write the transcripts-folder deferral into the changelog with file:line
+33ee30a fix(W3): F6 door-3 API shapes defined once as zod
+535ee15 fix(W3): F5 map FliHub refusal codes to @flivideo/core OpenContextResult kinds
+2959c3f fix(W3): F4 scripts no longer drop a context silently
+09e1fe4 fix(W3): F3 document that a refused launch keeps the previous project — check refused before context
+749be77 fix(W3): F2 the brand switcher resolves roots like doors 2/3 (resolveBrandRoot)
+8531392 fix(W3): F1 a project code matches members AND plain folders; a shared code refuses (R31)
+0d3a8d8 docs: W3 review findings (flihub-w3-review, Opus) — 1 blocking, 9 minor
+b381e5a fix(W3): contract tests use an ephemeral port bound to 127.0.0.1
+7c39d38 fix(W3): contract-test status assertions report what actually answered
+
+$ CI=1 npm test            (exit 0; server/dist absent)
+shared:  Test Files  2 passed (2)    Tests  80 passed (80)
+client:  Test Files  22 passed (22)  Tests  326 passed (326)
+server:  Test Files  29 passed (29)  Tests  702 passed | 1 skipped (703)
+
+$ npm run typecheck        → exit 0, 0 "error TS"
+$ npx eslint .             → ✖ 52 problems (20 errors, 32 warnings)   (identical to c69b559)
+$ bash -n start.sh && bash -n scripts/app.sh → OK
+
+# refusal surface at HEAD (door 3, temp HOME)
+missing        400 {"error":"Missing: project","missing":["project"]}
+unknown brand  404 {…"code":"unknown-brand"…}
+bad video      400 {…"code":"video-invalid"…}
+absent video   200 {"context":{…"project":"a01-xmen",…"video":"09-nope"}}
+bad type       400 {"error":"Invalid body","issues":["brand: Invalid input: expected string, received number"]}
+no root        404 {…"code":"no-brand-root"…}
+unreadable     503 {…"code":"brand-root-unreadable"…}
+registry bad   503 {…"code":"brands-unreadable"…}
+```
+
+**What these checks did not establish.**
+
+- **F4 was not run by me.** Swagger's report records a runtime env-only launch and a door-3 switch; I read the
+  scripts and ran `bash -n` only.
+- **The probes are in-process.** They ran the HEAD controller and routers in a mini Express app under `tsx`, not
+  the real `index.ts` startup.
+- **R2 was not reproduced.** The breakage under a non-hoisted install was reasoned, not run.
+- **The F1 fix was not exercised on Roamy's estate**, where members and shared codes might exist.
+
+APPYNET: done — second pass FINDINGS, 0 blocking, 2 minor (F1–F4, F6–F10 fixed; F5 vocabulary not adopted → R1)
