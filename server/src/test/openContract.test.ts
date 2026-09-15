@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import fs from 'fs';
+import http from 'http';
 import os from 'os';
 import path from 'path';
 import { createContextRouter } from '../routes/context.js';
@@ -58,12 +59,18 @@ beforeEach(() => {
   member(rootY, 'a01-beta', '22222222-2222-4222-8222-222222222222', 'y');
 });
 
-afterEach(() => {
+// Every test app listens on its own ephemeral port bound to 127.0.0.1 — the exact address supertest dials.
+// supertest's own app.listen(0) binds [::] instead, and on macOS another process can bind 127.0.0.1 on that same
+// port and take the request (how a concurrent run answered POST /api/context with 501).
+const servers: http.Server[] = [];
+
+afterEach(async () => {
+  await Promise.all(servers.splice(0).map((server) => new Promise((resolve) => server.close(resolve))));
   vi.unstubAllEnvs();
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-function buildApp(initial: Partial<Config> = {}, extra: Partial<ContextDeps> = {}) {
+async function buildApp(initial: Partial<Config> = {}, extra: Partial<ContextDeps> = {}) {
   const config = {
     watchDirectory: '',
     projectDirectory: '',
@@ -88,7 +95,10 @@ function buildApp(initial: Partial<Config> = {}, extra: Partial<ContextDeps> = {
   app.use(express.json());
   app.use('/api/context', createContextRouter(controller));
   app.use('/api/system', createSystemRoutes(() => config));
-  return { app, config, controller, emitted, logs };
+  const server = http.createServer(app);
+  servers.push(server);
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  return { app: server, config, controller, emitted, logs };
 }
 
 // A status mismatch must say what actually answered: an express handler (JSON body) or something between the test
@@ -105,11 +115,11 @@ function expectStatus(res: request.Response, status: number) {
   expect(seen, `unexpected HTTP status: ${JSON.stringify(seen)}`).toMatchObject({ status });
 }
 
-const getContext = async (app: express.Express) => (await request(app).get('/api/context')).body as OpenContextState;
+const getContext = async (app: http.Server) => (await request(app).get('/api/context')).body as OpenContextState;
 
 describe('open contract — one test per door', () => {
   it('1 · launch args → context', async () => {
-    const { app, controller, config } = buildApp();
+    const { app, controller, config } = await buildApp();
 
     const result = await controller.applyLaunch(['--brand', 'x', '--project', 'a01-xmen'], {});
 
@@ -130,11 +140,11 @@ describe('open contract — one test per door', () => {
   });
 
   it('2 · API → the same context', async () => {
-    const launched = buildApp();
+    const launched = await buildApp();
     await launched.controller.applyLaunch(['--brand', 'x', '--project', 'a01-xmen'], {});
     const viaLaunch = await getContext(launched.app);
 
-    const { app, emitted, config } = buildApp();
+    const { app, emitted, config } = await buildApp();
     const res = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen' });
 
     expectStatus(res, 200);
@@ -147,7 +157,7 @@ describe('open contract — one test per door', () => {
   });
 
   it('3 · missing → picker', async () => {
-    const { app, controller, config } = buildApp();
+    const { app, controller, config } = await buildApp();
     const before = { ...config };
 
     expect((await controller.applyLaunch([], {})).kind).toBe('none');
@@ -163,7 +173,7 @@ describe('open contract — one test per door', () => {
   });
 
   it('4 · refusal bites', async () => {
-    const { app, controller, config, logs } = buildApp({
+    const { app, controller, config, logs } = await buildApp({
       projectsRootDirectory: rootX,
       activeProject: 'b02-plain',
     });
@@ -191,7 +201,7 @@ describe('open contract — one test per door', () => {
   it('5 · env door', async () => {
     const env = { FLIVIDEO_BRAND: 'x', FLIVIDEO_PROJECT: 'b02-plain' };
 
-    const fromEnv = buildApp();
+    const fromEnv = await buildApp();
     await fromEnv.controller.applyLaunch([], env);
     expect((await getContext(fromEnv.app)).context).toMatchObject({
       brand: 'x',
@@ -200,7 +210,7 @@ describe('open contract — one test per door', () => {
       membership: 'folder',
     });
 
-    const argvWins = buildApp();
+    const argvWins = await buildApp();
     await argvWins.controller.applyLaunch(['--project', 'a01-xmen'], env);
     expect((await getContext(argvWins.app)).context).toMatchObject({ brand: 'x', project: 'a01-xmen' });
   });
@@ -208,7 +218,7 @@ describe('open contract — one test per door', () => {
 
 describe('open contract — edges', () => {
   it('carries a valid video with its project and refuses a malformed one', async () => {
-    const { app, config } = buildApp();
+    const { app, config } = await buildApp();
 
     const ok = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen', video: '01-intro' });
     expectStatus(ok, 200);
@@ -225,7 +235,7 @@ describe('open contract — edges', () => {
   });
 
   it('a refusal stops showing once the context moves on', async () => {
-    const { app } = buildApp({ projectsRootDirectory: rootX, activeProject: 'b02-plain' });
+    const { app } = await buildApp({ projectsRootDirectory: rootX, activeProject: 'b02-plain' });
     await request(app).post('/api/context').send({ brand: 'x', project: 'z99-nothing' });
     expect((await getContext(app)).refused).toBeDefined();
 
@@ -234,7 +244,7 @@ describe('open contract — edges', () => {
   });
 
   it('launch with only --brand switches the brand and leaves the project list as the picker', async () => {
-    const { app, controller, config } = buildApp({ projectsRootDirectory: rootY, activeProject: 'a01-alpha' });
+    const { app, controller, config } = await buildApp({ projectsRootDirectory: rootY, activeProject: 'a01-alpha' });
 
     await controller.applyLaunch(['--brand', 'x'], {});
 
@@ -244,7 +254,7 @@ describe('open contract — edges', () => {
   });
 
   it('--project without --brand changes nothing', async () => {
-    const { controller, config, logs } = buildApp({ projectsRootDirectory: rootY, activeProject: 'a01-alpha' });
+    const { controller, config, logs } = await buildApp({ projectsRootDirectory: rootY, activeProject: 'a01-alpha' });
 
     expect(await controller.applyLaunch(['--project', 'a01-xmen'], {})).toEqual({ kind: 'missing', missing: ['brand'] });
     expect(config.activeProject).toBe('a01-alpha');
@@ -254,7 +264,7 @@ describe('open contract — edges', () => {
   it('applies a launch id once, so a restart keeps a later pick', async () => {
     const launchStampPath = path.join(tmp, 'launch.json');
     const env = { FLIVIDEO_BRAND: 'x', FLIVIDEO_PROJECT: 'a01-xmen', [LAUNCH_ID_ENV]: 'launch-1' };
-    const { app, controller, config } = buildApp({}, { launchStampPath });
+    const { app, controller, config } = await buildApp({}, { launchStampPath });
 
     expect((await controller.applyLaunch([], env)).kind).toBe('applied');
     await request(app).post('/api/context').send({ brand: 'x', project: 'b02-plain' });
@@ -283,7 +293,7 @@ describe('open contract — edges', () => {
         gone: { name: 'Gone', locations: { video_projects: path.join(tmp, 'unmounted', 'v-gone') } },
       },
     });
-    const { app } = buildApp();
+    const { app } = await buildApp();
 
     const rootless = await request(app).post('/api/context').send({ brand: 'rootless', project: 'a01' });
     expectStatus(rootless, 404);
