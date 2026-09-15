@@ -91,6 +91,20 @@ function buildApp(initial: Partial<Config> = {}, extra: Partial<ContextDeps> = {
   return { app, config, controller, emitted, logs };
 }
 
+// A status mismatch must say what actually answered: an express handler (JSON body) or something between the test
+// and the in-process app (a proxy/sandbox answering 501 with its own body and headers).
+function expectStatus(res: request.Response, status: number) {
+  const seen = {
+    status: res.status,
+    method: res.request?.method,
+    url: res.request?.url,
+    contentType: res.headers['content-type'],
+    server: res.headers['server'] ?? res.headers['via'] ?? null,
+    body: res.body && Object.keys(res.body).length > 0 ? res.body : res.text,
+  };
+  expect(seen, `unexpected HTTP status: ${JSON.stringify(seen)}`).toMatchObject({ status });
+}
+
 const getContext = async (app: express.Express) => (await request(app).get('/api/context')).body as OpenContextState;
 
 describe('open contract — one test per door', () => {
@@ -123,7 +137,7 @@ describe('open contract — one test per door', () => {
     const { app, emitted, config } = buildApp();
     const res = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen' });
 
-    expect(res.status).toBe(200);
+    expectStatus(res, 200);
     expect(res.body.context).toEqual(viaLaunch.context);
     expect(await getContext(app)).toEqual(viaLaunch);
     // Same effect as a brand switch: T7 paths move with the root, and open UIs are told (C4).
@@ -141,10 +155,10 @@ describe('open contract — one test per door', () => {
     expect(await getContext(app)).toEqual({ context: null, missing: ['brand', 'project'] });
     expect(config).toEqual(before);
     const health = await request(app).get('/api/system/health');
-    expect(health.status).toBe(200);
+    expectStatus(health, 200);
     // Door 3 names the missing field instead of guessing.
     const res = await request(app).post('/api/context').send({ brand: 'x' });
-    expect(res.status).toBe(400);
+    expectStatus(res, 400);
     expect(res.body.missing).toEqual(['project']);
   });
 
@@ -155,11 +169,11 @@ describe('open contract — one test per door', () => {
     });
 
     const unknown = await request(app).post('/api/context').send({ brand: 'nope', project: 'a01-xmen' });
-    expect(unknown.status).toBe(404);
+    expectStatus(unknown, 404);
     expect(unknown.body.code).toBe('unknown-brand');
 
     const ambiguous = await request(app).post('/api/context').send({ brand: 'y', project: 'a01' });
-    expect(ambiguous.status).toBe(409);
+    expectStatus(ambiguous, 409);
     expect(ambiguous.body.candidates).toEqual(['a01-alpha', 'a01-beta']);
 
     const launch = await controller.applyLaunch(['--brand', 'x', '--project', 'z99-nothing'], {});
@@ -197,11 +211,11 @@ describe('open contract — edges', () => {
     const { app, config } = buildApp();
 
     const ok = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen', video: '01-intro' });
-    expect(ok.status).toBe(200);
+    expectStatus(ok, 200);
     expect(ok.body.context.video).toBe('01-intro');
 
     const bad = await request(app).post('/api/context').send({ brand: 'x', project: 'b02-plain', video: 'intro' });
-    expect(bad.status).toBe(400);
+    expectStatus(bad, 400);
     expect(bad.body.code).toBe('video-invalid');
     expect(config.activeProject).toBe('a01-xmen');
 
@@ -272,16 +286,16 @@ describe('open contract — edges', () => {
     const { app } = buildApp();
 
     const rootless = await request(app).post('/api/context').send({ brand: 'rootless', project: 'a01' });
-    expect(rootless.status).toBe(404);
+    expectStatus(rootless, 404);
     expect(rootless.body.code).toBe('no-brand-root');
 
     const gone = await request(app).post('/api/context').send({ brand: 'gone', project: 'a01' });
-    expect(gone.status).toBe(503);
+    expectStatus(gone, 503);
     expect(gone.body.code).toBe('brand-root-unreadable');
 
     fs.writeFileSync(path.join(home, '.config', 'appydave', 'brands.json'), 'not json');
     const broken = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen' });
-    expect(broken.status).toBe(503);
+    expectStatus(broken, 503);
     expect(broken.body.code).toBe('brands-unreadable');
     expect(await getContext(app)).toMatchObject({ context: null, missing: ['brand', 'project'] });
 
