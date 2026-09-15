@@ -64,8 +64,45 @@ clear_stale_socket() {
 
 port_owner() { lsof -i ":$1" -sTCP:LISTEN 2>/dev/null | awk 'NR==2{print $1" (pid "$2")"}'; }
 
+# W3 open contract. Door 2: --brand/--project/--video become FLIVIDEO_* env for the Procfile's server
+# (overmind passes its environment through), stamped with a FLIVIDEO_LAUNCH_ID so a restart does not
+# re-apply them. Door 3: an app that is already running is switched through POST /api/context instead.
+parse_open_args() {
+  local name value
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --brand|--project|--video)
+        if [ -z "${2:-}" ] || [ "${2#--}" != "$2" ]; then echo "$1 needs a value"; return 2; fi
+        name="${1#--}"; value="$2"; shift 2 ;;
+      --brand=*|--project=*|--video=*)
+        name="${1%%=*}"; name="${name#--}"; value="${1#*=}"; shift ;;
+      *) echo "Unknown argument: $1"; return 2 ;;
+    esac
+    export "FLIVIDEO_$(echo "$name" | tr '[:lower:]' '[:upper:]')=$value"
+    FLIVIDEO_LAUNCH_ID="$(date +%s)-$$"
+  done
+  [ -n "${FLIVIDEO_LAUNCH_ID:-}" ] && export FLIVIDEO_LAUNCH_ID
+  return 0
+}
+
+switch_context() {
+  local body
+  body=$(node -e 'const e=process.env,b={brand:e.FLIVIDEO_BRAND,project:e.FLIVIDEO_PROJECT};if(e.FLIVIDEO_VIDEO)b.video=e.FLIVIDEO_VIDEO;console.log(JSON.stringify(b))')
+  echo "Switching the running ${APP} to brand=${FLIVIDEO_BRAND:-?} project=${FLIVIDEO_PROJECT:-?}…"
+  local out code
+  out=$(curl -s -w "\n%{http_code}" -X POST -H 'Content-Type: application/json' \
+    --data "$body" "http://localhost:${SERVER_PORT}/api/context")
+  code="${out##*$'\n'}"
+  echo "${out%$'\n'*}"
+  [ "$code" = "200" ] || { echo "Refused (HTTP ${code}) — the app is unchanged."; return 1; }
+}
+
 cmd_start() {
   if healthy; then
+    if [ -n "${FLIVIDEO_LAUNCH_ID:-}" ]; then
+      switch_context
+      return $?
+    fi
     echo "Already running and healthy — nothing to do."
     cmd_status
     return 0
@@ -182,7 +219,13 @@ cmd_logs_tail() {
   tail -n 25 $logs
 }
 
-case "${1:-start}" in
+VERB="${1:-start}"
+[ $# -gt 0 ] && shift
+case "$VERB" in
+  start|restart) parse_open_args "$@" || { echo "usage: scripts/app.sh {start|restart} [--brand <key> --project <folder> [--video <NN-name>]]"; exit 2; } ;;
+esac
+
+case "$VERB" in
   start)   cmd_start ;;
   stop)    cmd_stop ;;
   restart) cmd_stop; cmd_start ;;
@@ -190,5 +233,5 @@ case "${1:-start}" in
   open)    cmd_open ;;
   logs)    ls "$LOGDIR"/*.log >/dev/null 2>&1 && tail -f "$LOGDIR"/*.log || echo "No logs in $LOGDIR — has it been started?" ;;
   tail)    cmd_logs_tail ;;
-  *) echo "usage: scripts/app.sh {start|stop|restart|status|open|logs|tail}"; exit 2 ;;
+  *) echo "usage: scripts/app.sh {start|stop|restart|status|open|logs|tail} (start/restart also take --brand <key> --project <folder> [--video <NN-name>])"; exit 2 ;;
 esac
