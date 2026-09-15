@@ -7,6 +7,18 @@ what you learned → what to do about it.
 
 ---
 
+## 2026-09-15
+
+- **[W3] `npm test -w server` runs every test TWICE when a stale `server/dist/` exists, and the
+  coverage thresholds are not enforced at all.** `server/dist/server/src/test/*.test.js` (gitignored
+  build output) is collected by vitest's default include, so the server reports ~1356 tests where
+  the source has ~696 — a clean checkout reports half that, and the two numbers look like drift.
+  Separately, `server/vitest.config.ts` puts `coverage` at the top level of `defineConfig`, not
+  under `test`, so `thresholds {lines:16…}` never fire; "All files" also counts only files a test
+  imports. Measured W3: 61.26% → 64.34% lines with `--exclude 'dist/**'` on both sides. Do: compare
+  coverage/test counts only with `dist/**` excluded; fixing the config nesting is a separate change
+  (it may start failing CI-style runs), not something to slip into a feature.
+
 ## 2026-09-06
 
 - **[freeze] Archive is the one verb that erases `-trash/` everywhere.** HOLD_EXCLUDES omits
