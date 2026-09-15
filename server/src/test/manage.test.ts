@@ -19,12 +19,6 @@ vi.mock('../utils/renameRecording.js', () => ({
   renameRecording: (...args: unknown[]) => mockRenameRecording(...args),
 }));
 
-
-// Mock chapterRecording (used by regen-chapters routes)
-vi.mock('../utils/chapterRecording.js', () => ({
-  generateChapterRecording: vi.fn().mockResolvedValue(undefined),
-}));
-
 // Mock videoDuration
 vi.mock('../utils/videoDuration.js', () => ({
   getVideoDuration: vi.fn().mockResolvedValue(10),

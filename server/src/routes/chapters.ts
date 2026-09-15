@@ -1,30 +1,21 @@
 /**
- * FR-58: Chapter Recording Routes
+ * FR-58: Chapter Recording Routes — chapter previews are DEPRECATED (FliStudio roadmap §1.2e).
  *
- * POST /api/chapters/generate - Generate chapter recordings
- * GET /api/chapters/config - Get chapter recording configuration
- * PUT /api/chapters/config - Update chapter recording configuration
+ * POST /api/chapters/generate - 410 Gone: FliHub no longer makes chapter previews
+ * GET /api/chapters/config - Get chapter recording configuration (legacy setting, read-only use)
+ * PUT /api/chapters/config - Update chapter recording configuration (legacy setting)
+ * GET /api/chapters/status - Existing recordings/-chapters/ files (legacy folders stay and still play)
  */
 
 import { Router, Request, Response } from 'express';
-import path from 'path';
 import fs from 'fs-extra';
-import os from 'os';
-import type { Server } from 'socket.io';
-import type {
-  ServerToClientEvents,
-  ClientToServerEvents,
-  Config,
-  ChapterRecordingConfig,
-} from '../../../shared/types.js';
+import type { Config, ChapterRecordingConfig } from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from '../utils/pathUtils.js';
-import {
-  generateChapterRecording,
-  groupRecordingsByChapter,
-  checkFfmpegAvailable,
-  type GenerateOptions,
-} from '../utils/chapterRecording.js';
+import { groupRecordingsByChapter } from '../utils/chapterRecording.js';
+
+export const CHAPTER_PREVIEWS_GONE =
+  'Chapter previews are deprecated (FliStudio roadmap §1.2e); existing recordings/-chapters/ folders are left in place.';
 
 // Default configuration
 const DEFAULT_CHAPTER_CONFIG: ChapterRecordingConfig = {
@@ -34,13 +25,9 @@ const DEFAULT_CHAPTER_CONFIG: ChapterRecordingConfig = {
   includeTitleSlides: false, // FR-76: Purple slides off by default
 };
 
-// Generation state
-let isGenerating = false;
-
 export function createChapterRoutes(
   getConfig: () => Config,
-  saveConfig: (config: Config) => void,
-  io: Server<ClientToServerEvents, ServerToClientEvents>
+  saveConfig: (config: Config) => void
 ) {
   const router = Router();
 
@@ -85,134 +72,12 @@ export function createChapterRoutes(
     });
   });
 
-  // POST /api/chapters/generate - Generate chapter recordings
-  router.post('/generate', async (req: Request, res: Response) => {
-    // Check if already generating
-    if (isGenerating) {
-      res.status(409).json({
-        success: false,
-        error: 'Generation already in progress',
-      });
-      return;
-    }
-
-    // Check FFmpeg availability
-    const ffmpegAvailable = await checkFfmpegAvailable();
-    if (!ffmpegAvailable) {
-      res.status(500).json({
-        success: false,
-        error: 'FFmpeg is not installed or not available in PATH',
-      });
-      return;
-    }
-
-    const { chapter: targetChapter, slideDuration, resolution } = req.body;
-    const config = getConfig();
-    const chapterConfig = getChapterConfig();
-
-    // Get project paths
-    const projectDir = expandPath(config.projectDirectory);
-    const paths = getProjectPaths(projectDir);
-
-    // Get all recordings grouped by chapter
-    const chapters = await groupRecordingsByChapter(paths.recordings);
-
-    if (chapters.size === 0) {
-      res.status(404).json({
-        success: false,
-        error: 'No recordings found',
-      });
-      return;
-    }
-
-    // Filter to specific chapter if requested
-    const chaptersToGenerate = targetChapter
-      ? new Map([[targetChapter, chapters.get(targetChapter)!]]).entries()
-      : chapters.entries();
-
-    const chaptersArray = Array.from(chaptersToGenerate).filter(
-      ([, ch]) => ch && ch.segments.length > 0
-    );
-
-    if (chaptersArray.length === 0) {
-      res.status(404).json({
-        success: false,
-        error: targetChapter ? `Chapter ${targetChapter} not found` : 'No valid chapters found',
-      });
-      return;
-    }
-
-    // Mark as generating
-    isGenerating = true;
-
-    // Prepare options
-    const options: GenerateOptions = {
-      slideDuration: slideDuration ?? chapterConfig.slideDuration,
-      resolution: (resolution as '720p' | '1080p') ?? chapterConfig.resolution,
-      outputDir: paths.chapters,
-      tempDir: path.join(os.tmpdir(), 'flihub-chapters'),
-      includeTitleSlides: chapterConfig.includeTitleSlides ?? false, // FR-76
-      transcriptsDir: paths.transcripts, // FR-76
-    };
-
-    // Start generation in background
-    const generated: string[] = [];
-    const errors: string[] = [];
-
-    // Send immediate response that generation has started
-    res.json({
-      success: true,
-      message: 'Generation started',
-      chaptersToGenerate: chaptersArray.map(([ch]) => ch),
-    });
-
-    // Generate chapters
-    try {
-      let current = 0;
-      const total = chaptersArray.length;
-
-      for (const [chapterNum, chapterData] of chaptersArray) {
-        current++;
-
-        // Emit progress
-        io.emit('chapters:generating', {
-          chapter: chapterNum,
-          total,
-          current,
-        });
-
-        try {
-          const result = await generateChapterRecording(chapterData, options);
-          generated.push(result.videoFilename);
-
-          // Emit individual completion
-          io.emit('chapters:generated', {
-            chapter: chapterNum,
-            outputFile: result.videoFilename,
-            srtFile: result.srtFilename || undefined, // FR-76
-          });
-        } catch (err) {
-          const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-          errors.push(`Chapter ${chapterNum}: ${errorMsg}`);
-          console.error(`Error generating chapter ${chapterNum}:`, errorMsg);
-        }
-      }
-    } finally {
-      isGenerating = false;
-
-      // Clean up temp directory
-      const tempDir = path.join(os.tmpdir(), 'flihub-chapters');
-      await fs.remove(tempDir).catch(() => {});
-    }
-
-    // Emit final completion
-    io.emit('chapters:complete', {
-      generated,
-      errors: errors.length > 0 ? errors : undefined,
-    });
+  // POST /api/chapters/generate - 410 Gone (roadmap §1.2e)
+  router.post('/generate', (_req: Request, res: Response) => {
+    res.status(410).json({ success: false, error: CHAPTER_PREVIEWS_GONE });
   });
 
-  // GET /api/chapters/status - Get generation status and existing chapter recordings
+  // GET /api/chapters/status - Existing chapter recordings (legacy) and the chapters available
   router.get('/status', async (_req: Request, res: Response) => {
     const config = getConfig();
     const projectDir = expandPath(config.projectDirectory);
@@ -237,7 +102,7 @@ export function createChapterRoutes(
 
     res.json({
       success: true,
-      isGenerating,
+      isGenerating: false,
       existing,
       chapters: available,
     });

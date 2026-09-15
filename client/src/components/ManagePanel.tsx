@@ -14,7 +14,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { API_URL } from '../config';
 import { useRecordings, useConfig } from '../hooks/useApi';
-import { useRecordingsSocket, getSocket } from '../hooks/useSocket';
+import { useRecordingsSocket } from '../hooks/useSocket';
 import { formatFileSize, formatChapterTitle } from '../utils/formatting';
 import {
   LoadingSpinner,
@@ -25,7 +25,6 @@ import {
   RelayTool,
   SyncTool,
 } from './shared';
-import type { ChapterSettings } from './shared';
 // WU3: per-active-project Storage panel (WU2 deliverable).
 import { StoragePanel } from './shared/StoragePanel';
 import { extractTagsFromName } from '../../../shared/naming';
@@ -124,56 +123,11 @@ export function ManagePanel({
     files?: string[];
     warning?: string;
     variant?: 'primary' | 'danger' | 'warning';
-    chapterSettings?: ChapterSettings;
-    onChapterSettingsChange?: (settings: ChapterSettings) => void;
-    onConfirm: (chapterSettings?: ChapterSettings) => void;
+    onConfirm: () => void;
   } | null>(null);
 
   // Subscribe to real-time updates
   useRecordingsSocket();
-
-  // Socket.io listeners for regen progress
-  useEffect(() => {
-    const socket = getSocket();
-
-    const handleChaptersProgress = (data: { current: number; total: number; chapter: string }) => {
-      toast.loading(`Chapters: ${data.current}/${data.total} - Chapter ${data.chapter}`, {
-        id: 'chapters-progress',
-      });
-    };
-
-    const handleChaptersComplete = (data: { completed: number; failed: number }) => {
-      toast.dismiss('chapters-progress');
-      if (data.failed > 0) {
-        toast.warning(`Chapters: ${data.completed} done, ${data.failed} failed`);
-      } else {
-        toast.success(`Chapters: ${data.completed} regenerated`);
-      }
-    };
-
-    const handleAllProgress = (data: { step: string; current: number; total: number }) => {
-      toast.loading(`Regen All: Step ${data.current}/${data.total} (${data.step})`, {
-        id: 'all-progress',
-      });
-    };
-
-    const handleAllComplete = () => {
-      toast.dismiss('all-progress');
-      toast.success('All derivative files regenerated');
-    };
-
-    socket.on('regen:chapters:progress', handleChaptersProgress);
-    socket.on('regen:chapters:complete', handleChaptersComplete);
-    socket.on('regen:all:progress', handleAllProgress);
-    socket.on('regen:all:complete', handleAllComplete);
-
-    return () => {
-      socket.off('regen:chapters:progress', handleChaptersProgress);
-      socket.off('regen:chapters:complete', handleChaptersComplete);
-      socket.off('regen:all:progress', handleAllProgress);
-      socket.off('regen:all:complete', handleAllComplete);
-    };
-  }, []);
 
   // Filter recordings based on showParked toggle
   const filteredRecordings = useMemo(() => {
@@ -285,81 +239,29 @@ export function ManagePanel({
   };
 
   // B041: Regen action handler (inline buttons trigger confirmation modal)
-  const handleRegenClick = (
-    tool: 'regen-transcripts' | 'regen-all'
-  ) => {
+  // Regen All (transcripts + chapter previews) removed — chapter previews deprecated (roadmap §1.2e)
+  const handleRegenTranscriptsClick = () => {
     const selectedFilesArray = Array.from(selectedFiles);
-
-    // Determine scope
     const targetFiles = selectedFilesArray.length > 0 ? selectedFilesArray : undefined;
     const scope =
       selectedFilesArray.length > 0
         ? `${selectedFilesArray.length} selected file${selectedFilesArray.length === 1 ? '' : 's'}`
         : `all ${data?.recordings?.length || 0} files`;
 
-    // Determine type and labels
-    const type = tool.replace('regen-', '');
-    const typeLabel = type === 'transcripts' ? 'transcripts' : 'all derivative files';
-
-    // Build warning message and chapter settings
-    let warning: string | undefined;
-    let initialChapterSettings: ChapterSettings | undefined;
-    let onChapterSettingsChange: ((settings: ChapterSettings) => void) | undefined;
-
-    if (type === 'all') {
-      // Initialize chapter settings from config
-      const chapterConfig = config?.chapterRecordings || {
-        resolution: '720p' as '720p' | '1080p',
-        includeTitleSlides: false,
-        slideDuration: 1.0,
-      };
-
-      initialChapterSettings = {
-        resolution: chapterConfig.resolution as '720p' | '1080p',
-        includeTitleSlides: chapterConfig.includeTitleSlides ?? false,
-        slideDuration: chapterConfig.slideDuration ?? 1.0,
-      };
-
-      onChapterSettingsChange = (settings: ChapterSettings) => {
-        // Re-render modal with updated settings
-        setConfirmationModal((prev) =>
-          prev ? { ...prev, chapterSettings: settings } : prev
-        );
-      };
-
-      warning =
-        'This will run both operations sequentially:\n1. Queue transcriptions\n2. Regenerate chapter videos\n\nThis may take a long time.';
-    }
-
-    // Show confirmation modal
     setConfirmationModal({
-      title: `Regenerate ${typeLabel}`,
-      message: `Regenerate ${typeLabel} for ${scope}?`,
-      files: selectedFilesArray.length > 0 ? selectedFilesArray : undefined,
-      warning,
-      variant: type === 'all' ? 'warning' : 'primary',
-      chapterSettings: initialChapterSettings,
-      onChapterSettingsChange,
-      onConfirm: async (confirmedSettings?: ChapterSettings) => {
+      title: 'Regenerate transcripts',
+      message: `Regenerate transcripts for ${scope}?`,
+      files: targetFiles,
+      variant: 'primary',
+      onConfirm: async () => {
         setConfirmationModal(null);
-
-        // Show start toast
-        const toastLabel = type === 'transcripts' ? 'Transcripts' : 'All Files';
-        toast.info(`Regenerating ${toastLabel}...`);
+        toast.info('Regenerating Transcripts...');
 
         try {
-          const endpoint = `/api/manage/${tool}`;
-
-          // Build request body with optional chapter settings
-          const requestBody: { files?: string[]; chapterSettings?: ChapterSettings } = { files: targetFiles };
-          if (type === 'all' && confirmedSettings) {
-            requestBody.chapterSettings = confirmedSettings;
-          }
-
-          const response = await fetch(`${API_URL}${endpoint}`, {
+          const response = await fetch(`${API_URL}/api/manage/regen-transcripts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody),
+            body: JSON.stringify({ files: targetFiles }),
           });
 
           const result = await response.json();
@@ -368,18 +270,11 @@ export function ManagePanel({
             throw new Error(result.error || 'Regeneration failed');
           }
 
-          // For transcripts, show immediate completion (no Socket.io events)
-          if (type === 'transcripts') {
-            const queued = result.queued || 0;
-            toast.success(`Queued ${queued} file${queued !== 1 ? 's' : ''} for transcription`);
-          }
-
-          // For all - Socket.io events will handle progress/completion
+          const queued = result.queued || 0;
+          toast.success(`Queued ${queued} file${queued !== 1 ? 's' : ''} for transcription`);
         } catch (err) {
-          console.error(`[Regen ${type}] Error:`, err);
-          toast.error(
-            `Failed to regenerate ${type}: ${err instanceof Error ? err.message : String(err)}`
-          );
+          console.error('[Regen transcripts] Error:', err);
+          toast.error(`Failed to regenerate transcripts: ${err instanceof Error ? err.message : String(err)}`);
         }
       },
     });
@@ -429,16 +324,10 @@ export function ManagePanel({
             {activeTool === 'regen' && (
               <div className="flex items-center gap-2 mb-4 flex-wrap">
                 <button
-                  onClick={() => handleRegenClick('regen-transcripts')}
+                  onClick={handleRegenTranscriptsClick}
                   className="px-3 py-1.5 text-sm font-medium text-warm-secondary bg-surface border border-warm-strong rounded-md hover:bg-surface-hover hover:text-warm-primary transition-colors"
                 >
                   Regen Transcripts
-                </button>
-                <button
-                  onClick={() => handleRegenClick('regen-all')}
-                  className="px-3 py-1.5 text-sm font-medium text-orange-600 bg-surface border border-orange-300 rounded-md hover:bg-orange-50 hover:text-orange-700 transition-colors"
-                >
-                  Regen All
                 </button>
                 <span className="text-warm-faint select-none">|</span>
                 <button
@@ -621,8 +510,6 @@ export function ManagePanel({
           files={confirmationModal.files}
           warning={confirmationModal.warning}
           variant={confirmationModal.variant}
-          chapterSettings={confirmationModal.chapterSettings}
-          onChapterSettingsChange={confirmationModal.onChapterSettingsChange}
           onConfirm={confirmationModal.onConfirm}
           onCancel={() => setConfirmationModal(null)}
         />

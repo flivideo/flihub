@@ -8,7 +8,6 @@ import {
   useParkRecording,
   useUnparkRecording,
   useTranscribeAll,
-  useGenerateChapterRecordings,
   usePendingTranscriptionCount,
   useRenameRecording,
   useSetChapterTitle,
@@ -16,7 +15,7 @@ import {
   useTrashRecordings,
   type TrashPreviewItem,
 } from '../hooks/useApi';
-import { useRecordingsSocket, useChapterRecordingSocket } from '../hooks/useSocket';
+import { useRecordingsSocket } from '../hooks/useSocket';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { TranscriptModal } from './TranscriptModal';
 import { InlineTitle } from './shared/InlineTitle';
@@ -25,7 +24,6 @@ import { VideoTranscriptModal } from './VideoTranscriptModal';
 import { ChapterPanel } from './ChapterPanel';
 import { ChapterHelpPanel } from './ChapterHelpPanel';
 import { DamHelpPanel } from './DamHelpPanel';
-import { ChapterRecordingModal } from './ChapterRecordingModal';
 import { RecordingVideoModal } from './RecordingVideoModal';
 import { EditableFileRow } from './shared/EditableFileRow';
 import { BatchToolbar } from './shared/BatchToolbar';
@@ -565,8 +563,6 @@ export function RecordingsView() {
   const parkRecording = useParkRecording(); // FR-120
   const unparkRecording = useUnparkRecording(); // FR-120
   const transcribeAll = useTranscribeAll();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const generateChapter = useGenerateChapterRecordings();
   const renameMutation = useRenameRecording(); // B047: For inline single-file renames
   // FR-92: Get count of files pending transcription
   const { data: pendingData } = usePendingTranscriptionCount();
@@ -578,9 +574,6 @@ export function RecordingsView() {
 
   // FR-55: State for video transcript modal
   const [showVideoTranscript, setShowVideoTranscript] = useState(false);
-
-  // FR-58: State for chapter recording modal
-  const [showChapterRecording, setShowChapterRecording] = useState(false);
 
   // FR-128: State for recording preview modal
   const [previewRecording, setPreviewRecording] = useState<RecordingFile | null>(null);
@@ -608,9 +601,6 @@ export function RecordingsView() {
 
   // NFR-5: Subscribe to real-time recordings changes via socket
   useRecordingsSocket();
-
-  // FR-58: Listen for chapter recording completion events
-  useChapterRecordingSocket();
 
   // Handle moving a single file to safe
   const handleMoveToSafe = (filename: string) => {
@@ -1390,14 +1380,6 @@ export function RecordingsView() {
         >
           📄 Transcript
         </button>
-        <span className="text-warm-faint">|</span>
-        <button
-          onClick={() => setShowChapterRecording(true)}
-          className="text-purple-600 hover:text-purple-700"
-          title="Create chapter preview recordings"
-        >
-          🎬 Chapter Recordings
-        </button>
       </div>
 
       {/* B047: Batch toolbar — appears when files are selected */}
@@ -1647,9 +1629,6 @@ export function RecordingsView() {
       )}
 
       {/* FR-58: Chapter Recording Modal */}
-      {showChapterRecording && (
-        <ChapterRecordingModal onClose={() => setShowChapterRecording(false)} />
-      )}
 
       {/* FR-128: Recording Preview Modal */}
       {previewRecording && (

@@ -205,37 +205,6 @@ export function useInboxSocket(projectCode: string | null) {
   }, [queryClient, projectCode]);
 }
 
-// FR-58: Hook for chapter recording socket events - shows completion toast
-export function useChapterRecordingSocket() {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const socket = getSocket();
-
-    const handleComplete = (data: { generated: string[]; errors?: string[] }) => {
-      console.log('Socket: chapters:complete', data);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapterRecordingStatus });
-
-      if (data.generated.length > 0) {
-        toast.success(
-          `Generated ${data.generated.length} chapter recording${data.generated.length > 1 ? 's' : ''}`
-        );
-      }
-      if (data.errors && data.errors.length > 0) {
-        toast.error(
-          `${data.errors.length} error${data.errors.length > 1 ? 's' : ''} during generation`
-        );
-      }
-    };
-
-    socket.on('chapters:complete', handleComplete);
-
-    return () => {
-      socket.off('chapters:complete', handleComplete);
-    };
-  }, [queryClient]);
-}
-
 // NFR-85: Hook for transcript socket events - invalidates React Query cache
 // Fixes stale transcript % in ProjectsPanel
 export function useTranscriptsSocket() {

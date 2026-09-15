@@ -677,10 +677,6 @@ export interface ServerToClientEvents {
   'miccheck:started': (data: { sessionId: string }) => void;
   'miccheck:tick': (data: { sessionId: string; tick: MicCheckTick }) => void;
   'miccheck:finished': (data: { sessionId: string }) => void;
-  // FR-58: Chapter recording events
-  'chapters:generating': (data: { chapter: string; total: number; current: number }) => void;
-  'chapters:generated': (data: { chapter: string; outputFile: string; srtFile?: string }) => void; // FR-76: srtFile added
-  'chapters:complete': (data: { generated: string[]; errors?: string[] }) => void;
   // FR-30: Transcription events
   'transcription:queued': (job: { jobId: string; videoPath: string; position: number }) => void;
   'transcription:started': (job: { jobId: string; videoPath: string }) => void;
@@ -691,22 +687,7 @@ export interface ServerToClientEvents {
     transcriptPath: string;
   }) => void;
   'transcription:error': (job: { jobId: string; videoPath: string; error: string }) => void;
-  // FR-131 Phase 2: Regeneration events
-  'regen:chapters:progress': (data: { current: number; total: number; chapter: string }) => void;
-  'regen:chapters:complete': (data: {
-    completed: number;
-    failed: number;
-    errors?: Array<{ chapter: string; error: string }>;
-  }) => void;
-  'regen:all:started': () => void;
-  'regen:all:progress': (data: {
-    step: 'transcripts' | 'chapters';
-    current: number;
-    total: number;
-  }) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  'regen:all:complete': (data: { transcripts: any; chapters: any }) => void;
-  'regen:all:error': (data: { error: string }) => void;
+  // FR-58/FR-131 chapter-preview + regen-all events removed: previews deprecated (roadmap §1.2e)
   // W3 open contract: the brand/project context was set through a door (launch args or POST /api/context)
   'context:changed': (data: OpenContextState) => void;
 }

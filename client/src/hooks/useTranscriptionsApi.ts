@@ -1,11 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type {
-  QueueAllResponse,
-  ChapterRecordingConfig,
-  ChapterRecordingRequest,
-  ChapterRecordingResponse,
-  ChapterRecordingStatusResponse,
-} from '../../../shared/types';
+import type { QueueAllResponse } from '../../../shared/types';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { fetchApi } from './useApi';
 
@@ -69,58 +63,6 @@ export function useDeleteTranscript() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
-    },
-  });
-}
-
-// FR-58: Get chapter recording configuration (NFR-66: using shared ChapterRecordingStatusResponse type)
-export function useChapterRecordingConfig() {
-  return useQuery({
-    queryKey: QUERY_KEYS.chapterRecordingConfig,
-    queryFn: () =>
-      fetchApi<{ success: boolean; config: ChapterRecordingConfig }>('/api/chapters/config'),
-    staleTime: 0, // FR-76: Always consider stale so defaults sync from Config page
-    refetchOnMount: 'always', // FR-76: Force refetch when modal opens to get latest defaults
-  });
-}
-
-// FR-58: Update chapter recording configuration
-export function useUpdateChapterRecordingConfig() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (config: Partial<ChapterRecordingConfig>) =>
-      fetchApi<{ success: boolean }>('/api/chapters/config', {
-        method: 'PUT',
-        body: JSON.stringify(config),
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapterRecordingConfig });
-    },
-  });
-}
-
-// FR-58: Get chapter recording status (chapters available, existing recordings)
-export function useChapterRecordingStatus() {
-  return useQuery({
-    queryKey: QUERY_KEYS.chapterRecordingStatus,
-    queryFn: () => fetchApi<ChapterRecordingStatusResponse>('/api/chapters/status'),
-    refetchInterval: 5000, // Poll during generation
-  });
-}
-
-// FR-58: Generate chapter recordings
-export function useGenerateChapterRecordings() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (request: ChapterRecordingRequest) =>
-      fetchApi<ChapterRecordingResponse>('/api/chapters/generate', {
-        method: 'POST',
-        body: JSON.stringify(request),
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.chapterRecordingStatus });
     },
   });
 }

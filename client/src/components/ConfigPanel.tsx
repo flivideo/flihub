@@ -6,8 +6,6 @@ import {
   useConfig,
   useUpdateConfig,
   useRefetchSuggestedNaming,
-  useChapterRecordingConfig,
-  useUpdateChapterRecordingConfig,
   useWatchers,
   useEnvironment,
 } from '../hooks/useApi';
@@ -259,9 +257,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const updateConfig = useUpdateConfig();
   const refetchSuggestedNaming = useRefetchSuggestedNaming();
 
-  // FR-76: Chapter recording config
-  const { data: chapterConfig, isLoading: chapterConfigLoading } = useChapterRecordingConfig();
-  const updateChapterConfig = useUpdateChapterRecordingConfig();
 
   // FR-90: File watchers
   const { data: watchersData } = useWatchers();
@@ -350,11 +345,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     []
   );
 
-  // FR-76: Chapter recording defaults
-  const [includeTitleSlides, setIncludeTitleSlides] = useState(false);
-  const [slideDuration, setSlideDuration] = useState(1.0);
-  const [resolution, setResolution] = useState<'720p' | '1080p'>('720p');
-  const [autoGenerate, setAutoGenerate] = useState(false);
 
 
   // C-1: Initialize with collapsed paths (using ~)
@@ -422,16 +412,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     }
   }, [brandConfigResult]);
 
-  // FR-76: Initialize chapter recording config
-  useEffect(() => {
-    if (chapterConfig?.config) {
-      setIncludeTitleSlides(chapterConfig.config.includeTitleSlides ?? false);
-      setSlideDuration(chapterConfig.config.slideDuration ?? 1.0);
-      setResolution(chapterConfig.config.resolution ?? '720p');
-      setAutoGenerate(chapterConfig.config.autoGenerate ?? false);
-    }
-  }, [chapterConfig]);
-
   // FR-116: Handle focus on mount when navigating from another page
   useEffect(() => {
     if (
@@ -472,20 +452,12 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     const currentDict = (config.glingDictionary || []).join('\n');
     const dictChanged = currentDict !== glingDictionary;
 
-    // FR-76: Check chapter config changes
-    const chapterChanged =
-      chapterConfig?.config &&
-      ((chapterConfig.config.includeTitleSlides ?? false) !== includeTitleSlides ||
-        chapterConfig.config.slideDuration !== slideDuration ||
-        chapterConfig.config.resolution !== resolution ||
-        chapterConfig.config.autoGenerate !== autoGenerate);
-
 
     // FR-116/FR-73: Check common names changes (full objects with filters)
     const commonNamesChanged =
       JSON.stringify(config.commonNames || []) !== JSON.stringify(commonNames);
 
-    return pathsChanged || relayChanged || storagePathsChanged || dictChanged || chapterChanged || commonNamesChanged;
+    return pathsChanged || relayChanged || storagePathsChanged || dictChanged || commonNamesChanged;
   }, [
     config,
     watchDirectory,
@@ -498,11 +470,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     holdingPath,
     publishedPath,
     glingDictionary,
-    chapterConfig,
-    includeTitleSlides,
-    slideDuration,
-    resolution,
-    autoGenerate,
     commonNames,
   ]);
 
@@ -581,14 +548,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         publishedPath: publishedSanitized.sanitized || undefined,
       });
 
-      // FR-76: Save chapter recording defaults
-      await updateChapterConfig.mutateAsync({
-        includeTitleSlides,
-        slideDuration,
-        resolution,
-        autoGenerate,
-      });
-
       // FR-4: Refetch suggested naming when project directory changes
       refetchSuggestedNaming();
       toast.success('Configuration saved');
@@ -606,7 +565,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     }
   };
 
-  if (isLoading || chapterConfigLoading) {
+  if (isLoading) {
     return <LoadingSpinner message="Loading configuration..." />;
   }
 
@@ -1127,84 +1086,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
 
         {/* Advanced Tab */}
         {activeTab === 'advanced' && (<>
-
-          <h3 className="text-sm font-medium text-warm-secondary mb-3">Chapter Recording Defaults</h3>
-
-          {/* Include Title Slides */}
-          <div className="mb-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={includeTitleSlides}
-                onChange={(e) => setIncludeTitleSlides(e.target.checked)}
-                className="w-4 h-4 text-purple-500 rounded"
-              />
-              <span className="text-sm text-warm-secondary">
-                Include purple title slides between segments
-              </span>
-            </label>
-          </div>
-
-          {/* Slide Duration - only show when slides enabled */}
-          {includeTitleSlides && (
-            <div className="mb-3 ml-6">
-              <label className="block text-sm text-warm-secondary mb-1">Slide Duration</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  value={slideDuration}
-                  onChange={(e) => setSlideDuration(parseFloat(e.target.value) || 1.0)}
-                  min={0.5}
-                  max={5}
-                  step={0.5}
-                  className="w-20 px-2 py-1 text-sm border border-warm-strong rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <span className="text-sm text-warm-muted">seconds</span>
-              </div>
-            </div>
-          )}
-
-          {/* Resolution */}
-          <div className="mb-3">
-            <label className="block text-sm text-warm-secondary mb-1">Default Resolution</label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="resolution"
-                  value="720p"
-                  checked={resolution === '720p'}
-                  onChange={() => setResolution('720p')}
-                  className="text-blue-500"
-                />
-                <span className="text-sm">720p</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="resolution"
-                  value="1080p"
-                  checked={resolution === '1080p'}
-                  onChange={() => setResolution('1080p')}
-                  className="text-blue-500"
-                />
-                <span className="text-sm">1080p</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Auto-generate */}
-          <div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={autoGenerate}
-                onChange={(e) => setAutoGenerate(e.target.checked)}
-                className="w-4 h-4 text-blue-500 rounded"
-              />
-              <span className="text-sm text-warm-secondary">Auto-generate when creating new chapter</span>
-            </label>
-          </div>
 
         {/* FR-90: File Watchers (Shadow Recordings section removed 2026-09-04 — FR-83 deprecated) */}
         <div className="border-t border-warm pt-3 mt-1">
