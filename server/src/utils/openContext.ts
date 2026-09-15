@@ -104,7 +104,7 @@ export function createContextController(deps: ContextDeps) {
 
   // The video travels with the project it was given for; a different project drops it.
   let carriedVideo: { projectDir: string; video: string } | null = null;
-  // A refusal is shown until the context it refused against changes (C3: say why, never stale).
+  // A refused LAUNCH is shown until the context it refused against changes (C3: say why, never stale).
   let lastRefusal: { refusal: ContextRefusal; snapshot: string } | null = null;
 
   const snapshot = (config: Config) => `${config.projectsRootDirectory ?? ''}|${config.activeProject ?? ''}`;
@@ -236,7 +236,9 @@ export function createContextController(deps: ContextDeps) {
 
     const resolution = await resolve(args);
     if (resolution.kind === 'refused') {
-      lastRefusal = { refusal: resolution.refusal, snapshot: snapshot(deps.getConfig()) };
+      // F9: only a launch refusal is kept for GET /api/context (and the UI strip). A door-3 caller already has its
+      // 4xx + reason; surfacing it in the window David is recording with would be noise from someone else's call.
+      if (source === 'launch') lastRefusal = { refusal: resolution.refusal, snapshot: snapshot(deps.getConfig()) };
       log(`[context] ${source} context refused: ${resolution.refusal.reason}`);
       return resolution;
     }

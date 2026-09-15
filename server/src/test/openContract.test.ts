@@ -327,10 +327,17 @@ describe('open contract — edges', () => {
     expect((await getContext(app)).context?.video).toBeUndefined();
   });
 
-  it('a refusal stops showing once the context moves on', async () => {
-    const { app } = await buildApp({ projectsRootDirectory: rootX, activeProject: 'b02-plain' });
-    await request(app).post('/api/context').send({ brand: 'x', project: 'z99-nothing' });
-    expect((await getContext(app)).refused).toBeDefined();
+  it('F9 · only a refused launch is shown; a door-3 caller keeps its refusal, and it clears once the context moves on', async () => {
+    const { app, controller } = await buildApp({ projectsRootDirectory: rootX, activeProject: 'b02-plain' });
+
+    // Door 3: the caller already has its 404 + reason — nothing pops into the running UI.
+    const api = await request(app).post('/api/context').send({ brand: 'x', project: 'z99-nothing' });
+    expectStatus(api, 404);
+    expect((await getContext(app)).refused).toBeUndefined();
+
+    // Door 2: nobody else saw the launch fail, so GET /api/context (and the strip) says why.
+    await controller.applyLaunch(['--brand', 'x', '--project', 'z99-nothing'], {});
+    expect((await getContext(app)).refused).toMatchObject({ code: 'project-not-found' });
 
     await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen' });
     expect((await getContext(app)).refused).toBeUndefined();
