@@ -39,14 +39,29 @@ function derivedHolding(key: string): string {
   return `/Volumes/T7/youtube-HOLDING/${key}`;
 }
 
-async function readBrandsFile(): Promise<Record<string, BrandsFileEntry>> {
+async function readBrandsFile(brandsPath = BRANDS_JSON): Promise<Record<string, BrandsFileEntry>> {
   try {
-    const raw = await fs.readJson(BRANDS_JSON);
+    const raw = await fs.readJson(brandsPath);
     return raw?.brands && typeof raw.brands === 'object' ? raw.brands : {};
   } catch (err) {
-    console.warn(`[brands] Could not read ${BRANDS_JSON}:`, err);
+    console.warn(`[brands] Could not read ${brandsPath}:`, err);
     return {};
   }
+}
+
+/**
+ * The T7 paths that move WITH a brand root (same values a brand switch writes):
+ * ssd_backup from brands.json when present, otherwise the derived convention.
+ */
+export async function brandStoragePaths(
+  key: string,
+  brandsPath = BRANDS_JSON
+): Promise<{ publishedPath: string; holdingPath: string }> {
+  const entry = (await readBrandsFile(brandsPath))[key];
+  return {
+    publishedPath: entry?.locations?.ssd_backup || derivedPublished(key),
+    holdingPath: derivedHolding(key),
+  };
 }
 
 /**

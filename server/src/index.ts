@@ -29,6 +29,8 @@ import { createHoldRoutes } from './routes/hold.js'; // B064: archive-offload ho
 import { createStorageRoutes } from './routes/storage.js'; // storage-panel WU1: per-project Hold + Archive verbs
 import { createMicCheckRoutes } from './routes/miccheck.js'; // MicCheck: live monitoring session API
 import { createBrandsRouter } from './routes/brands.js'; // Brand dropdown: list + switch
+import { createContextRouter } from './routes/context.js'; // W3 open contract: door 3
+import { createContextController } from './utils/openContext.js'; // W3 open contract: doors 2 + 3
 import { migrateSafeFolder, needsMigration } from './utils/safeMigration.js';
 import { loadConfig, saveConfig } from './config/configManager.js';
 import { WatcherManager } from './WatcherManager.js';
@@ -47,6 +49,8 @@ dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const PORT = env.PORT;
 const CONFIG_FILE = path.join(__dirname, '..', 'config.json');
+// W3: remembers which launch (FLIVIDEO_LAUNCH_ID) already set the context, so restarts keep later picks
+const LAUNCH_STAMP_FILE = path.join(__dirname, '..', '.launch-context.json');
 
 // Attempt to kill any process using our port (handles orphaned processes after crash)
 function cleanupPort(port: number | string): void {
@@ -334,6 +338,21 @@ app.use('/api/miccheck', micCheckRoutes);
 // Brand switching — reads ~/.config/appydave/brands.json + on-disk v-* roots
 app.use('/api/brands', createBrandsRouter(() => currentConfig, updateConfig, io));
 
+// W3 open contract — launch args (door 2) and POST /api/context (door 3) share one applyContext
+const contextController = createContextController({
+  getConfig: () => currentConfig,
+  updateConfig,
+  emit: (event, data) => {
+    if (event === 'context:changed') {
+      if (data) io.emit('context:changed', data);
+    } else {
+      io.emit(event);
+    }
+  },
+  launchStampPath: LAUNCH_STAMP_FILE,
+});
+app.use('/api/context', createContextRouter(contextController));
+
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);
 
@@ -353,6 +372,14 @@ io.on('connection', (socket) => {
 
 // Export for use in routes
 export { io, pendingFiles };
+
+// W3 door 2: --brand/--project/--video or FLIVIDEO_* env. Never an error: a refusal or a missing
+// argument leaves the config as it was and the app on its picker (GET /api/context says why).
+try {
+  await contextController.applyLaunch(process.argv.slice(2), process.env);
+} catch (err) {
+  console.error('[context] launch context failed; starting on the picker:', err);
+}
 
 // FR-111: Run safe folder migration on startup (async, non-blocking)
 (async () => {

@@ -35,6 +35,8 @@ temp/
 
 # User-specific config (copy from config.template.json)
 server/config.json
+# W3: last applied launch id (machine-local)
+server/.launch-context.json
 
 # Auto Claude data directory
 .auto-claude/
