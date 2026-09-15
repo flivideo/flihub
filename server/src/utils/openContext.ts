@@ -65,6 +65,24 @@ type Resolution =
   | { kind: 'resolved'; brand: Brand; root: string; project: string | null }
   | { kind: 'refused'; status: 400 | 404 | 409 | 503; refusal: ContextRefusal };
 
+/**
+ * W3 review F5: FliHub hand-rolls the resolution chain (it must accept plain folders and carry an unchecked video, which
+ * `resolveOpenContext` refuses), so its refusal codes are its own. This table is how a caller that switches on the
+ * library's `OpenContextResult` maps them. `null` = no library kind: FliHub reads brands.json itself.
+ */
+export const LIBRARY_REFUSAL: Record<
+  ContextRefusal['code'],
+  { kind: string; result?: string } | null
+> = {
+  'video-invalid': { kind: 'video-invalid' },
+  'brands-unreadable': null,
+  'unknown-brand': { kind: 'unknown-brand' },
+  'no-brand-root': { kind: 'no-brand-root' },
+  'project-not-found': { kind: 'project-refused', result: 'not-found' },
+  'project-ambiguous': { kind: 'project-refused', result: 'ambiguous' },
+  'brand-root-unreadable': { kind: 'project-refused', result: 'unscanned' },
+};
+
 /** A whole project code (`a01`); a prefix is never a match (R31). */
 const CODE = /^[a-z]\d{2}$/;
 

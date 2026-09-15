@@ -11,7 +11,8 @@ import path from 'path';
 import { createContextRouter } from '../routes/context.js';
 import { createSystemRoutes } from '../routes/system.js';
 import { createBrandsRouter } from '../routes/brands.js';
-import { createContextController, LAUNCH_ID_ENV, type ContextDeps } from '../utils/openContext.js';
+import { OpenContextResult, ProjectRefusal } from '@flivideo/core';
+import { createContextController, LAUNCH_ID_ENV, LIBRARY_REFUSAL, type ContextDeps } from '../utils/openContext.js';
 import type { Config, OpenContextState } from '../../../shared/types.js';
 
 const XMEN_ID = '3f1c2a4e-8b7d-4c6e-9a1f-2b3c4d5e6f70';
@@ -277,6 +278,20 @@ describe('open contract — edges', () => {
 
     config.activeProject = 'a01-demo'; // the project pick
     expect((await getContext(app)).context).toMatchObject({ brand: 'x', root: rewritten, project: 'a01-demo' });
+  });
+
+  it('F5 · every FliHub refusal code maps to a real @flivideo/core result kind', () => {
+    const kinds = OpenContextResult.options.map((o) => o.shape.kind.value as string);
+    const projectKinds = ProjectRefusal.options.map((o) => o.shape.kind.value as string);
+    for (const [code, mapped] of Object.entries(LIBRARY_REFUSAL)) {
+      if (mapped === null) continue;
+      expect(kinds, code).toContain(mapped.kind);
+      if (mapped.kind === 'project-refused') expect(projectKinds, code).toContain(mapped.result);
+    }
+    expect(Object.keys(LIBRARY_REFUSAL).sort()).toEqual([
+      'brand-root-unreadable', 'brands-unreadable', 'no-brand-root', 'project-ambiguous',
+      'project-not-found', 'unknown-brand', 'video-invalid',
+    ]);
   });
 
   it('carries a valid video with its project and refuses a malformed one', async () => {

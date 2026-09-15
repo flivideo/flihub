@@ -48,6 +48,19 @@ on the server (`server/src/utils/openContext.ts`).
 - ⚠️ **Callers: check `refused` before `context`.** A refused launch leaves the *previous* project open, so `context`
   can name a resolved project the launcher did not ask for. Clearing it would wipe a persisted pick on a typo, so it
   is kept on purpose (W3 review F3, option a).
+- **Refusal codes vs `@flivideo/core`** (W3 review F5 — FliHub resolves by hand because it accepts plain folders and does
+  not check the video folder exists; the table is `LIBRARY_REFUSAL` in `server/src/utils/openContext.ts`, pinned by a test):
+
+  | FliHub `refused.code` | HTTP | library `OpenContextResult` |
+  | --- | --- | --- |
+  | `video-invalid` | 400 | `video-invalid` |
+  | `brands-unreadable` | 503 | — (FliHub reads `brands.json` itself; the library takes the brand list) |
+  | `unknown-brand` | 404 | `unknown-brand` |
+  | `no-brand-root` | 404 | `no-brand-root` |
+  | `project-not-found` | 404 | `project-refused` → `not-found` |
+  | `project-ambiguous` | 409 | `project-refused` → `ambiguous` (FliHub also counts plain folders sharing a code) |
+  | `brand-root-unreadable` | 503 | `project-refused` → `unscanned` |
+
 - **Restarts**: the scripts stamp each launch with `FLIVIDEO_LAUNCH_ID`; a nodemon or `overmind restart server` under
   the same launch does not re-apply it (remembered in `server/.launch-context.json`), so a later pick survives.
 
