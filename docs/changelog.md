@@ -27,6 +27,15 @@ an amber strip. Chapter previews (FR-58) deprecated per roadmap §1.2e: `/api/ch
 generation code are gone; legacy `recordings/-chapters/` still lists and plays.
 Contract tests: `server/src/test/openContract.test.ts`. → README "Open at a brand and project".
 
+**Deferred — transcripts folder (roadmap §1.2d, brief §2D "only if cheap"): skipped.** New transcripts still go to
+`recording-transcripts/`; `transcripts/` is not read. Not cheap because the path has one source,
+`shared/paths.ts:48`, but `.transcripts` is used on 36 non-test lines in `server/src`, and six sites hard-code the
+literal: `server/src/routes/projects.ts:254`, `server/src/routes/transcriptions.ts:56` (also a write path, with writes
+at `:121`/`:204`), `server/src/utils/projectStats.ts:113`, `server/src/utils/poemWuiUtils.ts:83`,
+`server/src/utils/scanning.ts:105`, `server/src/scripts/scanProjects.ts:477`; plus the NFR-85 watcher
+(`server/src/WatcherManager.ts:192`) and transcript moves on rename (`server/src/utils/renameRecording.ts`). Making
+every read site accept both names would touch all of them. No files were moved.
+
 ---
 
 ## FR-161 — B-roll lane (2026-09-04)
