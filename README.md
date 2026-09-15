@@ -45,6 +45,9 @@ on the server (`server/src/utils/openContext.ts`).
   root is accepted as `membership: "folder"` with `projectId: null`.
 - **Refusal** (unknown brand, no such folder, ambiguous code) never falls back to the last project: the config stays
   as it was, the server logs one `[context] … refused:` line, and `GET /api/context` carries `refused: { code, reason, candidates? }`.
+- ⚠️ **Callers: check `refused` before `context`.** A refused launch leaves the *previous* project open, so `context`
+  can name a resolved project the launcher did not ask for. Clearing it would wipe a persisted pick on a typo, so it
+  is kept on purpose (W3 review F3, option a).
 - **Restarts**: the scripts stamp each launch with `FLIVIDEO_LAUNCH_ID`; a nodemon or `overmind restart server` under
   the same launch does not re-apply it (remembered in `server/.launch-context.json`), so a later pick survives.
 
