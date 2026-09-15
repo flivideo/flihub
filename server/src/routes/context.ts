@@ -7,7 +7,7 @@
  */
 import { Router, Request, Response } from 'express';
 import type { ContextController } from '../utils/openContext.js';
-import { ContextBodySchema } from './contextSchemas.js';
+import { ContextBodySchema } from '../../../shared/contextSchemas.js';
 
 const FIELDS = ['brand', 'project', 'video'] as const;
 

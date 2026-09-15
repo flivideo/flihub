@@ -1,6 +1,7 @@
 /**
- * W3 open contract — the door-3 API shapes as zod (review F6). shared/types.ts re-exports the inferred types, so the
- * client and server compile against the same definitions the route validates with.
+ * W3 open contract — the door-3 API shapes as zod (review F6). Lives in shared/ (review R2: shared never imports from
+ * server/), which declares zod + @flivideo/core itself. shared/types.ts re-exports the inferred types; the server route
+ * validates with the schemas; the client imports types only, so nothing reaches its bundle.
  */
 import { z } from 'zod';
 import { VideoFolderName } from '@flivideo/core';

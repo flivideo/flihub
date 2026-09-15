@@ -49,7 +49,7 @@ on the server (`server/src/utils/openContext.ts`).
   can name a resolved project the launcher did not ask for. Clearing it would wipe a persisted pick on a typo, so it
   is kept on purpose (W3 review F3, option a).
 - **Refusal codes — the shared Fli vocabulary** (Swagger decision 4: every Fli app answers with these, so FliStudio
-  switches on one set; `REFUSAL_CODES` in `server/src/routes/contextSchemas.ts`, pinned by a test):
+  switches on one set; `REFUSAL_CODES` in `shared/contextSchemas.ts`, pinned by a test):
 
   | `code` | HTTP (FliHub) | When |
   | --- | --- | --- |

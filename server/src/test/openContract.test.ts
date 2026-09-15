@@ -11,7 +11,7 @@ import path from 'path';
 import { createContextRouter } from '../routes/context.js';
 import { createSystemRoutes } from '../routes/system.js';
 import { createBrandsRouter } from '../routes/brands.js';
-import { ContextRefusalSchema, HubContextSchema, OpenContextStateSchema, REFUSAL_CODES } from '../routes/contextSchemas.js';
+import { ContextRefusalSchema, HubContextSchema, OpenContextStateSchema, REFUSAL_CODES } from '../../../shared/contextSchemas.js';
 import { createContextController, LAUNCH_ID_ENV, type ContextDeps } from '../utils/openContext.js';
 import type { Config, OpenContextState } from '../../../shared/types.js';
 

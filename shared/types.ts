@@ -699,8 +699,8 @@ export type {
   HubContext,
   ContextRefusal,
   OpenContextState,
-} from '../server/src/routes/contextSchemas.js';
-import type { OpenContextState } from '../server/src/routes/contextSchemas.js';
+} from './contextSchemas.js';
+import type { OpenContextState } from './contextSchemas.js';
 
 export interface ClientToServerEvents {
   // Currently no client-to-server events needed
