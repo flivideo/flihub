@@ -25,6 +25,7 @@ export function useUpdateConfig() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.config });
+      queryClient.invalidateQueries({ queryKey: ['open-context'] }); // W3: a pick can clear a refusal
     },
   });
 }

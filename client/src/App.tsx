@@ -43,6 +43,8 @@ import { RecentlyNamedStrip } from './components/RecentlyNamedStrip';
 import { useOpenFolder } from './hooks/useOpenFolder';
 import ApiExplorer from './components/ApiExplorer';
 import DeveloperDrawer from './components/DeveloperDrawer';
+import { ContextRefusedBanner } from './components/ContextRefusedBanner';
+import { useOpenContext, useContextSocket } from './hooks/useOpenContextApi';
 import type { FileInfo } from '../../shared/types';
 
 type ViewTab =
@@ -215,6 +217,11 @@ function App() {
   useRelaySocket();  // B046: relay change notifications
   // FR-127: Real-time updates for developer tools (invalidates cache on socket event)
   useDeveloperSocket();
+  // W3 open contract: refresh when a door re-points the app; show a refused launch/API context (C3)
+  useContextSocket();
+  const { data: openContext } = useOpenContext();
+  const [dismissedRefusal, setDismissedRefusal] = useState<string | null>(null);
+  const refused = openContext?.refused;
   // NFR-6: Track project directory changes
   const previousProjectDir = useRef<string | undefined>(undefined);
 
@@ -749,6 +756,10 @@ function App() {
           </nav>
         </div>
       </header>
+
+      {refused && dismissedRefusal !== refused.reason && (
+        <ContextRefusedBanner refused={refused} onDismiss={() => setDismissedRefusal(refused.reason)} />
+      )}
 
       <main className={activeTab === 'projects' ? 'flex-1 flex flex-col overflow-hidden' : 'max-w-4xl mx-auto px-4 py-6'}>
         {/* Incoming Tab */}
