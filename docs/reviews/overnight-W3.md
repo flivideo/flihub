@@ -527,3 +527,14 @@ registry bad   503 {…"code":"brands-unreadable"…}
 - **The F1 fix was not exercised on Roamy's estate**, where members and shared codes might exist.
 
 APPYNET: done — second pass FINDINGS, 0 blocking, 2 minor (F1–F4, F6–F10 fixed; F5 vocabulary not adopted → R1)
+
+---
+
+## Swagger's gate ruling (2026-09-15 23:48)
+
+**W3 gate: PASSED** on `c21eb09`. Reproduced by Swagger on a clean tree (`server/dist` removed): shared 81, client 326,
+server 702 tests green; 16 contract tests green; typecheck 0; eslint 52 problems, identical to the pre-W3 baseline
+(ruled bar: no new lint problems, thresholds unchanged — debt ticketed NFR-172). R1 verified: zero occurrences of the
+old codes outside tests; R2 verified: `shared/` imports nothing from `server/`. Runtime checks at `87ce441`:
+`scripts/app.sh` env-only launch set the context; an API refusal from another caller did not appear in the UI state;
+door-3 switch worked; David's `server/config.json` restored byte-for-byte; app stopped. F3 kept by ruling (option a).
