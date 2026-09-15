@@ -16,6 +16,7 @@
     "app:open": "bash scripts/app.sh open",
     "app:logs": "bash scripts/app.sh logs",
     "build": "npm run build -w server && npm run build -w client",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
