@@ -88,6 +88,17 @@ FliCut taking first/second/final, they lose their purpose *together*. A rebuild 
 one of them forward should do so knowing the other two fell — not by accident. (Clustering
 them for removal is David's call; the relationship is the fact.)
 
+**Added 2026-09-22 — FliHub's `b-roll/` lane (FR-161) joins the cluster.** David has
+deprecated it. The lane files *chapter-less raw takes* into `<project>/b-roll/`, which is a
+meaning from before the current model. David now uses "B-roll" for *finished* material that
+goes into a video, and FliHub's folder clashes with that. The code still runs and has not been
+removed. It covers `ProjectPaths.broll` (`shared/paths.ts`), the chapter-less promotion branch
+in `POST /api/rename` (`server/src/routes/index.ts`), `routes/video.ts`, `b-roll` in
+`HEAVY_SUBFOLDERS` (`server/src/utils/storageTree.ts:23`), `BRollPage.tsx`, `useBrollApi.ts`
+and the B-roll tab. One live folder exists: `d02-cutty-audio-cleanup/b-roll/`.
+Hold/restore must keep carrying it after the lane goes, just as legacy shadow folders still
+travel.
+
 ## Known-stale external surfaces (outside this repo)
 
 - flihub skill (`~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md`): stage list
