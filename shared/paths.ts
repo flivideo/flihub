@@ -10,26 +10,25 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * Project folder layout (David's ruling 2026-09-22).
+ * Project folder layout (David's ruling 2026-09-22), owned by @flivideo/core (D14).
  * - `hub`: FliHub's folders live under `<project>/hub/`: `hub/recordings/` + `hub/transcripts/`.
  * - `legacy`: top-level `recordings/` + `recording-transcripts/`. Every project that exists today.
- * Nothing is migrated. Only FliHub and FliStudio know this layout. Swap to the @flivideo/core
- * helper (v0.2.0) when it lands. Detection, in order:
+ * Nothing is migrated. The layout table and folder name come from fli-core.
+ *
+ * Detection mirrors fli-core's `projectLayout`, which is async. `getProjectPaths` is sync with
+ * about 100 callers, so this is a sync copy of the same four steps. `projectLayout.test.ts` runs
+ * both on every fixture, so a drift fails the tests. Delete this copy if fli-core ships a sync
+ * variant. The rule:
  *   1. no `hub/` directory                       → legacy
  *   2. `hub/recordings/` exists                  → hub (wins even if `recordings/` also exists)
  *   3. top-level `recordings/` exists            → legacy — a STRAY `hub/` never hides real
  *      recordings (that would read as an empty project, silently)
  *   4. otherwise (empty `hub/`, or held hub project whose recordings are on T7) → hub
  */
-export type ProjectLayout = 'hub' | 'legacy';
+import { HUB_FOLDER, LAYOUT_DIRS, type ProjectLayout } from '@flivideo/core';
 
-export const HUB_DIR = 'hub';
-
-/** Folder names relative to the project root, per layout. */
-export const LAYOUT_DIRS: Record<ProjectLayout, { recordings: string; transcripts: string }> = {
-  hub: { recordings: 'hub/recordings', transcripts: 'hub/transcripts' },
-  legacy: { recordings: 'recordings', transcripts: 'recording-transcripts' },
-};
+export { HUB_FOLDER, LAYOUT_DIRS };
+export type { ProjectLayout };
 
 function isDirectory(p: string): boolean {
   try {
@@ -40,7 +39,7 @@ function isDirectory(p: string): boolean {
 }
 
 export function detectProjectLayout(projectDirectory: string): ProjectLayout {
-  if (!isDirectory(path.join(projectDirectory, HUB_DIR))) return 'legacy';
+  if (!isDirectory(path.join(projectDirectory, HUB_FOLDER))) return 'legacy';
   if (isDirectory(path.join(projectDirectory, LAYOUT_DIRS.hub.recordings))) return 'hub';
   if (isDirectory(path.join(projectDirectory, LAYOUT_DIRS.legacy.recordings))) return 'legacy';
   return 'hub';
@@ -56,7 +55,7 @@ export function projectDirFromRecordingPath(videoPath: string): string | null {
   if (path.basename(dir).startsWith('-')) dir = path.dirname(dir); // -safe, -chapters
   if (path.basename(dir) !== 'recordings') return null;
   const parent = path.dirname(dir);
-  const projectDir = path.basename(parent) === HUB_DIR ? path.dirname(parent) : parent;
+  const projectDir = path.basename(parent) === HUB_FOLDER ? path.dirname(parent) : parent;
   return projectDir;
 }
 

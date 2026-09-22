@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
-    "@flivideo/core": "github:flivideo/fli-core#v0.1.0",
+    "@flivideo/core": "github:flivideo/fli-core#v0.2.2",
     "adm-zip": "^0.5.16",
     "chokidar": "^3.6.0",
     "cors": "^2.8.5",

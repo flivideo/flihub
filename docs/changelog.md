@@ -25,8 +25,10 @@ derive the project from `indexOf('recordings')` (on a hub project that gave `<pr
 use `projectDirFromRecordingPath`. T7 hold carries `hub/recordings` only (`HEAVY_SUBFOLDERS`), and
 `hub/transcripts` stays local; the storage tree splits `hub/`. Relay keeps `recordings` on the relay
 side and maps only the local side. Deleted the stale `shared/paths.js` and `.d.ts`, which vitest was
-loading instead of the source. Existing project data untouched. Swap to the `@flivideo/core` v0.2.0
-helper when it lands. Tests: `shared/projectLayout.test.ts`, `server/src/test/hubLayout.test.ts`,
+loading instead of the source. Existing project data untouched. **Same day:** `@flivideo/core` pinned to
+v0.2.2. `LAYOUT_DIRS`, `HUB_FOLDER` and `ProjectLayout` come from fli-core. The sync
+`detectProjectLayout` stays local because fli-core's `projectLayout` is async, and a parity test
+checks the two against each other. Tests: `shared/projectLayout.test.ts`, `server/src/test/hubLayout.test.ts`,
 and the hub block in `storageRoutes.test.ts`.
 
 ## W3 — Open contract: launch args + `POST /api/context`; chapter previews deprecated (2026-09-15)

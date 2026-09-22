@@ -52,15 +52,15 @@ describe('disk size reads the layout', () => {
     const d = await calculateProjectDiskSize(tmp, null);
     expect(d.rec).toBe(1000);
     expect(d.other).toBe(50);
-    expect(d.detail.other).toEqual({ hub: 50 });
-    expect(d.detail.recTopFiles.map((f) => f.name)).toEqual(['01-1-intro.mov']);
+    expect(d.detail?.other).toEqual({ hub: 50 });
+    expect(d.detail?.recTopFiles.map((f) => f.name)).toEqual(['01-1-intro.mov']);
   });
 
   it('legacy project: rec = recordings/', async () => {
     write('recordings/01-1-intro.mov', 700);
     const d = await calculateProjectDiskSize(tmp, null);
     expect(d.rec).toBe(700);
-    expect(d.detail.other).toEqual({});
+    expect(d.detail?.other).toEqual({});
   });
 });
 

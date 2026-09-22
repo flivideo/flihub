@@ -2,7 +2,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { DiskSizeData, DiskThresholds, DiskThresholdLevel } from '../../../shared/types.js';
-import { getProjectPaths, HUB_DIR } from '../../../shared/paths.js';
+import { getProjectPaths, HUB_FOLDER } from '../../../shared/paths.js';
 
 /**
  * Recursively sum the total size (in bytes) of all files under dirPath.
@@ -137,10 +137,10 @@ export async function calculateProjectDiskSize(
   ]);
 
   // Hub layout: hub/ holds the recordings, already counted in `rec` — itemize only the rest of it.
-  if (projectPaths.layout === 'hub' && otherSubfolders[HUB_DIR] !== undefined) {
-    const hubRest = otherSubfolders[HUB_DIR] - rec;
-    if (hubRest > 0) otherSubfolders[HUB_DIR] = hubRest;
-    else delete otherSubfolders[HUB_DIR];
+  if (projectPaths.layout === 'hub' && otherSubfolders[HUB_FOLDER] !== undefined) {
+    const hubRest = otherSubfolders[HUB_FOLDER] - rec;
+    if (hubRest > 0) otherSubfolders[HUB_FOLDER] = hubRest;
+    else delete otherSubfolders[HUB_FOLDER];
   }
 
   const other = Math.max(0, totalProjectDir - rec - trash);

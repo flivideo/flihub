@@ -4,6 +4,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { projectLayout, projectLayoutPaths } from '@flivideo/core';
 import { detectProjectLayout, getProjectPaths, projectDirFromRecordingPath } from './paths';
 
 let tmp: string;
@@ -110,5 +111,41 @@ describe('projectDirFromRecordingPath', () => {
   it('returns null outside a recordings folder — the caller never guesses', () => {
     expect(projectDirFromRecordingPath(`${proj}/b-roll/clip.mov`)).toBeNull();
     expect(projectDirFromRecordingPath('/tmp/watch/raw.mov')).toBeNull();
+  });
+});
+
+// Parity: FliHub's sync detector must agree with @flivideo/core's async projectLayout (D14) on
+// every fixture shape. If this fails, FliHub and FliStudio disagree about the same folder.
+describe('parity with @flivideo/core projectLayout / projectLayoutPaths', () => {
+  const shapes: Record<string, () => void> = {
+    'empty folder': () => {},
+    'legacy recordings/': () => mk('recordings'),
+    'hub/recordings': () => mk('hub', 'recordings'),
+    'hub/recordings + recordings/': () => {
+      mk('hub', 'recordings');
+      mk('recordings');
+    },
+    'stray hub/ + recordings/': () => {
+      mk('recordings');
+      mk('hub');
+    },
+    'hub/transcripts only (held)': () => mk('hub', 'transcripts'),
+    'empty hub/': () => mk('hub'),
+    'file named hub': () => fs.writeFileSync(path.join(tmp, 'hub'), 'x'),
+  };
+
+  for (const [name, build] of Object.entries(shapes)) {
+    it(name, async () => {
+      build();
+      const core = await projectLayoutPaths(tmp);
+      expect(await projectLayout(tmp)).toBe(detectProjectLayout(tmp));
+      const mine = getProjectPaths(tmp);
+      expect({ layout: mine.layout, recordings: mine.recordings, transcripts: mine.transcripts }).toEqual(core);
+    });
+  }
+
+  it('a missing folder: both say legacy', async () => {
+    const missing = path.join(tmp, 'nope');
+    expect(await projectLayout(missing)).toBe(detectProjectLayout(missing));
   });
 });
