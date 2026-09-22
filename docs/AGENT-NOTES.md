@@ -32,7 +32,7 @@ Open the declaring file:
 - **Two project layouts (2026-09-22).** `hub` (`hub/recordings/`, `hub/transcripts/`) and legacy
   (`recordings/`, `recording-transcripts/`) are read forever and never migrated. Always get these
   folders from `getProjectPaths(projectDir)` (`shared/paths.ts`); never join `'recordings'` yourself.
-  New projects are still created legacy until rebuild step 4. The relay side keeps `recordings`.
+  New projects are still created legacy until rebuild step 4.
 - `shared/apiRegistry.ts` (the API Explorer) lists 34 endpoints; the routers define about 170. To
   find a route, grep `router\.(get|post|put|patch|delete)` in `server/src/routes/`, not the registry.
 
@@ -61,13 +61,10 @@ Open the declaring file:
 - **Two `:code` resolvers.** Legacy routes use `projectResolver.ts` (prefix match, first
   alphabetical, never ambiguous). `/api/context` uses fli-core (whole code, 409 when ambiguous).
   Don't assume a short code means the same thing on both.
-- **`machineRole` is `recorder` | `editor`.** The value `creator` in the CLAUDE.md machine table
-  matches neither branch in the code (`RelayTool`, `SyncTool`).
-- **`POST /api/sync/push` commits and pushes with `git add -A`.** With no body it targets the whole
-  brand root. `app-code` is this checkout, including your uncommitted work. Never call it while
-  probing.
-- **Probing the API can move real data.** `hold`, `archive`, `batch-offload`, `DELETE /:code/local`,
-  `relay/push|collect|clear` and `sync/push|pull` all act on `/Users/davidcruwys/dev/video-projects/`
+- **`machineRole` is `recorder` | `editor`, and nothing reads it any more.** Its only consumers
+  (RelayTool, SyncTool) were removed on 2026-09-22. It is still saved and shown in Config.
+- **Probing the API can move real data.** `hold`, `archive`, `batch-offload` and `DELETE /:code/local`
+  all act on `/Users/davidcruwys/dev/video-projects/`
   and the T7. Probe route behaviour in-process instead: mount the routers on a throwaway Express app
   with a fake config and use supertest.
 - **Promotion always writes `.mov`** (`buildRecordingFilename`), even though the watcher accepts
@@ -86,9 +83,9 @@ Open the declaring file:
   `REFUSAL_CODES`; never add an app-local code (Swagger decision 4).
 - **Stage auto-detect stops at `recording` on purpose.** Later stages are human overrides in global
   config. Don't infer stages from `final/` or edit folders.
-- **Relay edit lanes, the FR-126 manifest (`setEditManifest` has no callers) and shadows are one
-  deprecation cluster** (Jan-era). Shadows are gone. Don't extend the other two without David's
-  ruling.
+- **Relay, the FR-126 manifest (`setEditManifest` has no callers) and shadows are one deprecation
+  cluster** (Jan-era). Shadows and relay are gone, and so is git sync (2026-09-22). Don't extend the
+  FR-126 manifest without David's ruling.
 
 ## Scope limits
 

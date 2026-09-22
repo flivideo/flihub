@@ -99,6 +99,16 @@ and the B-roll tab. One live folder exists: `d02-cutty-audio-cleanup/b-roll/`.
 Hold/restore must keep carrying it after the lane goes, just as legacy shadow folders still
 travel.
 
+**REMOVED 2026-09-22 (`19ddd05`) — relay collaboration.** It was the Jan round-trip lane of this
+cluster, and David had it removed before the rebuild because it was causing grief. Removed: the
+`/api/relay/*` routes, `deriveSyncStatus`, RelayTool and the relay kanban, the header relay badge,
+the relay watcher, the `relayDirectory`/`relayEnabled` config, and the relay guards on hold,
+archive and project delete. Relay folders on disk were not touched.
+
+**REMOVED 2026-09-22 (`19ddd05`) — git sync (Sync Hub).** It was one of the three uncoordinated
+sync mechanisms, and its `git add -A` push was a standing hazard. Removed: the `/api/sync/*`
+routes, SyncTool, and the "Code" and "Project N files changed" header badges.
+
 ## Known-stale external surfaces (outside this repo)
 
 - flihub skill (`~/dev/ad/appydave-plugins/flivideo/skills/flihub/SKILL.md`): stage list
