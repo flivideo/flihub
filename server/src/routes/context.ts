@@ -26,7 +26,7 @@ export function createContextRouter(controller: ContextController): Router {
     if (!parsed.success) {
       const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);
       if (parsed.error.issues.every((i) => i.path[0] === 'video')) {
-        const reason = `Video "${String(body.video)}" is not a <NN>-<name> folder name.`;
+        const reason = `Video "${String(body.video)}" is not a kebab-case video name.`;
         return res.status(400).json({ error: reason, code: 'video-invalid', reason });
       }
       return res.status(400).json({ error: 'Invalid body', issues });

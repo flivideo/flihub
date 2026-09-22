@@ -1,7 +1,7 @@
 #!/bin/bash
 # Project: FliHub
 #   ./start.sh                                             — open on the last brand/project
-#   ./start.sh --brand <key> --project <folder> [--video <NN-name>]
+#   ./start.sh --brand <key> --project <folder> [--video <name>]
 #                                                          — open pointed at that project (W3 open contract)
 cd "$(dirname "$0")"
 
@@ -16,7 +16,7 @@ while [ $# -gt 0 ]; do
       name="${1%%=*}"; name="${name#--}"; value="${1#*=}"; shift ;;
     *)
       echo "Unknown argument: $1"
-      echo "usage: ./start.sh [--brand <key> --project <folder> [--video <NN-name>]]"
+      echo "usage: ./start.sh [--brand <key> --project <folder> [--video <name>]]"
       exit 2 ;;
   esac
   export "FLIVIDEO_$(echo "$name" | tr '[:lower:]' '[:upper:]')=$value"

@@ -100,7 +100,7 @@ export function createContextController(deps: ContextDeps) {
     if (args.video !== undefined && parseVideoFolder(args.video) === null) {
       return refuse(400, {
         code: 'video-invalid',
-        reason: `Video "${args.video}" is not a <NN>-<name> folder name.`,
+        reason: `Video "${args.video}" is not a kebab-case video name.`,
       });
     }
     const brandKey = args.brand as string;

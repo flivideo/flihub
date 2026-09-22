@@ -67,7 +67,7 @@ on the server (`server/src/utils/openContext.ts`).
 | Door       | How                                                                                                                                                                                          | Missing argument                                                                                                    |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | 1 · Picker | Brand switcher + project list in the UI                                                                                                                                                      | —                                                                                                                   |
-| 2 · Launch | `./start.sh --brand appydave --project b85-demo [--video 01-intro]` · `scripts/app.sh start --brand … --project …` · or `FLIVIDEO_BRAND` / `FLIVIDEO_PROJECT` / `FLIVIDEO_VIDEO` (argv wins) | Starts as it would have, on the picker. Only `--brand` switches the brand and leaves the project list as the picker |
+| 2 · Launch | `./start.sh --brand appydave --project b85-demo [--video intro]` · `scripts/app.sh start --brand … --project …` · or `FLIVIDEO_BRAND` / `FLIVIDEO_PROJECT` / `FLIVIDEO_VIDEO` (argv wins) | Starts as it would have, on the picker. Only `--brand` switches the brand and leaves the project list as the picker |
 | 3 · API    | `POST /api/context {"brand","project","video?"}` → `200 {context}` · `400 {missing}` · `404` unknown brand/project · `409 {candidates}` ambiguous · `503` registry or brand root unreadable  | `400` naming the field                                                                                              |
 
 `GET /api/context` returns `{ context, missing, refused? }`, derived from the live config (so a pick in the UI shows too).
@@ -95,7 +95,7 @@ on the server (`server/src/utils/openContext.ts`).
   | `project-not-found`   | 404           | no folder, member id or code matches                                                                                                 |
   | `project-ambiguous`   | 409           | a code matches two or more projects (members and plain folders) — `candidates` lists them                                            |
   | `not-a-project`       | —             | **never emitted by FliHub**: plain folders are accepted as `membership: "folder"`                                                    |
-  | `video-invalid`       | 400           | `video` is not `<NN>-<name>`                                                                                                         |
+  | `video-invalid`       | 400           | `video` is not a kebab-case name (D15, no number)                                                                                     |
   | `video-not-found`     | —             | **never emitted by FliHub**: the video is carried, not checked against `videos/`                                                     |
 
   A body of the wrong shape (e.g. `"brand": 5`) is a malformed request, not a refusal: 400 `{ error, issues }` with no `code`.

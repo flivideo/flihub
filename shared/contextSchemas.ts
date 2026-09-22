@@ -22,7 +22,7 @@ export const HubContextSchema = z.strictObject({
   projectDir: NonEmpty, // absolute project folder
   projectId: z.string().nullable(), // fli.studio.json id, or null when the folder is not a member yet
   membership: z.enum(['member', 'folder']), // member = valid fli.studio.json; folder = plain FliHub folder
-  video: VideoFolderName.optional(), // <NN>-<name>, carried not validated beyond its shape
+  video: VideoFolderName.optional(), // kebab video name (D15), carried not validated beyond its shape
 });
 export type HubContext = z.infer<typeof HubContextSchema>;
 

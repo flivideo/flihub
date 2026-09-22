@@ -55,7 +55,7 @@ beforeEach(() => {
   // Brand x: one fli.studio.json member and one plain FliHub folder.
   member(rootX, 'a01-xmen', XMEN_ID, 'x');
   fs.mkdirSync(path.join(rootX, 'b02-plain', 'recordings'), { recursive: true });
-  fs.mkdirSync(path.join(rootX, 'a01-xmen', 'videos', '01-intro'), { recursive: true });
+  fs.mkdirSync(path.join(rootX, 'a01-xmen', 'videos', 'intro'), { recursive: true });
   // Brand y: two members sharing a code — an ambiguous reference.
   member(rootY, 'a01-alpha', '11111111-1111-4111-8111-111111111111', 'y');
   member(rootY, 'a01-beta', '22222222-2222-4222-8222-222222222222', 'y');
@@ -306,7 +306,7 @@ describe('open contract — edges', () => {
       [{ brand: 'gone', project: 'a01' }, 503, 'no-brand-root'],
       [{ brand: 'x', project: 'z99-nothing' }, 404, 'project-not-found'],
       [{ brand: 'y', project: 'a01' }, 409, 'project-ambiguous'],
-      [{ brand: 'x', project: 'a01-xmen', video: 'intro' }, 400, 'video-invalid'],
+      [{ brand: 'x', project: 'a01-xmen', video: 'Intro_Take' }, 400, 'video-invalid'], // D15: not kebab
     ];
     for (const [body, status, code] of cases) {
       const res = await request(app).post('/api/context').send(body);
@@ -330,7 +330,7 @@ describe('open contract — edges', () => {
     expect(notString.body.issues[0]).toContain('brand');
     expect(config.activeProject).toBe('');
 
-    const ok = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen', video: '01-intro' });
+    const ok = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen', video: 'intro' });
     expectStatus(ok, 200);
     expect(HubContextSchema.parse(ok.body.context)).toEqual(ok.body.context);
   });
@@ -338,11 +338,11 @@ describe('open contract — edges', () => {
   it('carries a valid video with its project and refuses a malformed one', async () => {
     const { app, config } = await buildApp();
 
-    const ok = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen', video: '01-intro' });
+    const ok = await request(app).post('/api/context').send({ brand: 'x', project: 'a01-xmen', video: 'intro' });
     expectStatus(ok, 200);
-    expect(ok.body.context.video).toBe('01-intro');
+    expect(ok.body.context.video).toBe('intro'); // D15: a named video, no number
 
-    const bad = await request(app).post('/api/context').send({ brand: 'x', project: 'b02-plain', video: 'intro' });
+    const bad = await request(app).post('/api/context').send({ brand: 'x', project: 'b02-plain', video: 'Intro Take' });
     expectStatus(bad, 400);
     expect(bad.body.code).toBe('video-invalid');
     expect(config.activeProject).toBe('a01-xmen');

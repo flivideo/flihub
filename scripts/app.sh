@@ -230,7 +230,7 @@ cmd_logs_tail() {
 VERB="${1:-start}"
 [ $# -gt 0 ] && shift
 case "$VERB" in
-  start|restart) parse_open_args "$@" || { echo "usage: scripts/app.sh {start|restart} [--brand <key> --project <folder> [--video <NN-name>]]"; exit 2; } ;;
+  start|restart) parse_open_args "$@" || { echo "usage: scripts/app.sh {start|restart} [--brand <key> --project <folder> [--video <name>]]"; exit 2; } ;;
 esac
 
 case "$VERB" in
@@ -241,5 +241,5 @@ case "$VERB" in
   open)    cmd_open ;;
   logs)    ls "$LOGDIR"/*.log >/dev/null 2>&1 && tail -f "$LOGDIR"/*.log || echo "No logs in $LOGDIR — has it been started?" ;;
   tail)    cmd_logs_tail ;;
-  *) echo "usage: scripts/app.sh {start|stop|restart|status|open|logs|tail} (start/restart also take --brand <key> --project <folder> [--video <NN-name>])"; exit 2 ;;
+  *) echo "usage: scripts/app.sh {start|stop|restart|status|open|logs|tail} (start/restart also take --brand <key> --project <folder> [--video <name>])"; exit 2 ;;
 esac
