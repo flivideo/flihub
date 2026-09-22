@@ -23,6 +23,7 @@ import type {
   ProjectStage,
   TranscriptSyncStatus,
 } from '../../../shared/types.js';
+import { getProjectPaths } from '../../../shared/paths.js';
 
 /**
  * FR-80: Migrate legacy stage values to new stage model
@@ -109,8 +110,9 @@ export async function getProjectStatsRaw(
   config: Config,
   options: GetProjectStatsOptions = {}
 ): Promise<ProjectStatsRaw> {
-  const recordingsDir = path.join(projectPath, 'recordings');
-  const transcriptsDir = path.join(projectPath, 'recording-transcripts');
+  const projectPaths = getProjectPaths(projectPath);
+  const recordingsDir = projectPaths.recordings;
+  const transcriptsDir = projectPaths.transcripts;
   const imagesDir = path.join(projectPath, 'assets', 'images');
   const thumbsDir = path.join(projectPath, 'assets', 'thumbs');
 

@@ -2,6 +2,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { DiskSizeData, DiskThresholds, DiskThresholdLevel } from '../../../shared/types.js';
+import { getProjectPaths, HUB_DIR } from '../../../shared/paths.js';
 
 /**
  * Recursively sum the total size (in bytes) of all files under dirPath.
@@ -122,17 +123,25 @@ export async function calculateProjectDiskSize(
   projectDir: string,
   relayProjectDir: string | null
 ): Promise<DiskSizeData> {
+  const projectPaths = getProjectPaths(projectDir);
   const [rec, trash, rRec, r1st, r2nd, totalProjectDir, trashFiles, recTopFiles, otherSubfolders] = await Promise.all([
-    getDirSize(path.join(projectDir, 'recordings')),
+    getDirSize(projectPaths.recordings),
     getDirSize(path.join(projectDir, '-trash')),
     relayProjectDir ? getDirSize(path.join(relayProjectDir, 'recordings')) : Promise.resolve(0),
     relayProjectDir ? getDirSize(path.join(relayProjectDir, 'edit-1st')) : Promise.resolve(0),
     relayProjectDir ? getDirSize(path.join(relayProjectDir, 'edit-2nd')) : Promise.resolve(0),
     getDirSize(projectDir),
     getFileList(path.join(projectDir, '-trash')),
-    getFileList(path.join(projectDir, 'recordings')).then(files => files.slice(0, 5)),
+    getFileList(projectPaths.recordings).then(files => files.slice(0, 5)),
     getSubfolderSizes(projectDir, ['recordings', '-trash']), // legacy recording-shadows/ folders now itemize under 'other'
   ]);
+
+  // Hub layout: hub/ holds the recordings, already counted in `rec` — itemize only the rest of it.
+  if (projectPaths.layout === 'hub' && otherSubfolders[HUB_DIR] !== undefined) {
+    const hubRest = otherSubfolders[HUB_DIR] - rec;
+    if (hubRest > 0) otherSubfolders[HUB_DIR] = hubRest;
+    else delete otherSubfolders[HUB_DIR];
+  }
 
   const other = Math.max(0, totalProjectDir - rec - trash);
   const total = rec + trash + other + rRec + r1st + r2nd;

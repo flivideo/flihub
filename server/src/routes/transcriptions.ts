@@ -11,7 +11,7 @@ import type {
   TranscriptionStatus,
   Config,
 } from '../../../shared/types.js';
-import { getProjectPaths } from '../../../shared/paths.js';
+import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/paths.js';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { appendTelemetryEntry } from '../utils/telemetry.js';
@@ -49,11 +49,9 @@ export function createTranscriptionRoutes(
   // Derive transcripts directory from video path (cross-project safe)
   // This ensures we check/save in the correct project folder, not the active one
   function getTranscriptsDirFromVideoPath(videoPath: string): string {
-    const pathParts = videoPath.split(path.sep);
-    const recordingsIndex = pathParts.indexOf('recordings');
-    if (recordingsIndex > 0) {
-      const projectDir = pathParts.slice(0, recordingsIndex).join(path.sep);
-      return path.join(projectDir, 'recording-transcripts');
+    const projectDir = projectDirFromRecordingPath(videoPath);
+    if (projectDir) {
+      return getProjectPaths(projectDir).transcripts;
     }
     // Fallback to current config if path structure unexpected
     return getTranscriptsDir();
@@ -228,9 +226,8 @@ export function createTranscriptionRoutes(
         const completedPath = activeJob!.videoPath;
 
         // Extract project name from path (e.g., /path/to/v-appydave/b85-clauding-01/recordings/file.mov)
-        const pathParts = completedPath.split('/');
-        const recordingsIndex = pathParts.indexOf('recordings');
-        const project = recordingsIndex > 0 ? pathParts[recordingsIndex - 1] : 'unknown';
+        const completedProjectDir = projectDirFromRecordingPath(completedPath);
+        const project = completedProjectDir ? path.basename(completedProjectDir) : 'unknown';
 
         // FR-99: Log telemetry (file uses .jsonl extension to avoid triggering nodemon)
         getVideoDuration(completedPath)

@@ -400,7 +400,8 @@ export function createRoutes(
     try {
       const projectsRoot = expandPath(config.projectsRootDirectory!);
       const projectPath = path.join(projectsRoot, code);
-      const recordingsPath = path.join(projectPath, 'recordings');
+      // New projects stay LEGACY until the rebuild's step 4 (David, 2026-09-22): never create hub/ here.
+      const recordingsPath = getProjectPaths(projectPath, 'legacy').recordings;
 
       // Check if project already exists
       if (await fs.pathExists(projectPath)) {

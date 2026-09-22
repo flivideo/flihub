@@ -11,6 +11,7 @@
 import path from 'path';
 import type { TranscriptSyncStatus } from '../../../shared/types.js';
 import { readDirSafe, statSafe } from './filesystem.js';
+import { getProjectPaths } from '../../../shared/paths.js';
 
 /**
  * Count .mov files in a directory
@@ -102,10 +103,10 @@ export async function getProjectTimestamps(projectPath: string): Promise<Project
   // Find most recent file across all subdirs
   // FR-111: Removed recordings/-safe (no more -safe folder)
   let latestTime = 0;
-  const subdirs = ['recordings', 'recording-transcripts', 'assets/images', 'assets/thumbs'];
+  const projectPaths = getProjectPaths(projectPath);
+  const dirs = [projectPaths.recordings, projectPaths.transcripts, projectPaths.images, projectPaths.thumbs];
 
-  for (const subdir of subdirs) {
-    const dir = path.join(projectPath, subdir);
+  for (const dir of dirs) {
     const files = await readDirSafe(dir);
     for (const file of files) {
       const fileStat = await statSafe(path.join(dir, file));
@@ -167,7 +168,7 @@ export async function getProjectIndicators(projectPath: string): Promise<Project
   const inboxDir = path.join(projectPath, 'inbox');
   const imagesDir = path.join(projectPath, 'assets', 'images');
   const promptsDir = path.join(projectPath, 'assets', 'prompts');
-  const chaptersDir = path.join(projectPath, 'recordings', '-chapters');
+  const chaptersDir = getProjectPaths(projectPath).chapters;
 
   // Check inbox - count all entries (files and subdirectories)
   const inboxFiles = await readDirSafe(inboxDir);

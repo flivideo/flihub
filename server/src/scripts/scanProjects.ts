@@ -17,6 +17,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { parseRecordingFilename, NAMING_RULES } from '../../../shared/naming.js';
+import { getProjectPaths } from '../../../shared/paths.js';
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -103,7 +104,7 @@ async function getProjects(rootPath: string): Promise<string[]> {
  * Get all recording files in a project
  */
 async function getRecordings(projectPath: string): Promise<string[]> {
-  const recordingsPath = path.join(projectPath, 'recordings');
+  const recordingsPath = getProjectPaths(projectPath).recordings;
   try {
     const entries = await fs.readdir(recordingsPath);
     return entries
@@ -474,7 +475,7 @@ async function checkDerivatives(
 ): Promise<Discrepancy[]> {
   const discrepancies: Discrepancy[] = [];
 
-  const transcriptsPath = path.join(projectPath, 'recording-transcripts');
+  const transcriptsPath = getProjectPaths(projectPath).transcripts;
 
   // Get existing transcripts
   let transcripts: string[] = [];
@@ -538,7 +539,7 @@ async function checkState(projectCode: string, projectPath: string): Promise<Dis
 
   // Check for -safe folder (Decision 7)
   if (DECISIONS.safeFolderDeprecated) {
-    const safePath = path.join(projectPath, 'recordings', '-safe');
+    const safePath = getProjectPaths(projectPath).safe;
     try {
       const exists = await fs.pathExists(safePath);
       if (exists) {

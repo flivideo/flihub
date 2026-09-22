@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { readProjectState } from '../utils/projectState.js';
+import { getProjectPaths } from '../../../shared/paths.js';
 
 export function createEditRoutes(getConfig: () => Config) {
   const router = express.Router();
@@ -25,7 +26,7 @@ export function createEditRoutes(getConfig: () => Config) {
       const name = parts.slice(1).join('-');
 
       // Get recordings
-      const recordingsPath = path.join(expandPath(config.projectDirectory), 'recordings');
+      const recordingsPath = getProjectPaths(expandPath(config.projectDirectory)).recordings;
       let recordings: { name: string; size: number }[] = [];
       let recordingsTotal = 0;
 

@@ -7,6 +7,25 @@ what you learned → what to do about it.
 
 ---
 
+## 2026-09-22
+
+- **[hub-layout] Vitest runs the STALE `shared/*.js`, while the running server (tsx) runs the `.ts`
+  source.** Server code imports `../../../shared/paths.js`. tsx maps that to `paths.ts`, but when a
+  real `paths.js` sits beside it, vite/vitest loads the `.js`. Probe: the server suite saw only
+  `getProjectPaths` and `migrateTargetToProject`, and none of the new exports. So any server test that
+  touches shared code tests February's build, not the source, and a green run proves nothing about a
+  change to `shared/`. A new test threw `detectProjectLayout is not a function`, which is how it
+  surfaced. The existing `shared/paths.test.ts` (`import './paths'`) had the same blind spot. Fixed for
+  `paths` by deleting the tracked `paths.js` and `paths.d.ts`. `types.js`, `naming.js` and
+  `constants.js` are still stale and still shadow their `.ts` in tests. Rule: when you change a
+  `shared/X.ts`, delete `shared/X.js` if it exists, or check with a probe test which file vitest loaded.
+
+- **[hub-layout] A layout marker must never hide real data.** The first rule, "`hub/` exists → hub",
+  would make a legacy project with a stray empty `hub/` read `hub/recordings`, which is empty. The
+  project would show zero recordings with no error (the filesystem-is-DB silence class). Detection
+  now needs `hub/recordings` to exist, or no top-level `recordings/`. Rule: when you detect which of two
+  layouts applies, never let an empty marker win over populated data.
+
 ## 2026-09-15
 
 - **[W3] `npm test -w server` runs every test TWICE when a stale `server/dist/` exists, and the

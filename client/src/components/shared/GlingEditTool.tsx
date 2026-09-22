@@ -9,6 +9,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 import {
   useConfig,
   fetchApi,
@@ -24,6 +25,12 @@ import { API_URL } from '../../config';
 
 export function GlingEditTool() {
   const { data: config } = useConfig();
+  // The recordings folder depends on the project layout (hub/recordings or recordings) — ask the server.
+  const { data: recordingsFolder } = useQuery({
+    queryKey: ['recordings-folder-path', config?.projectDirectory],
+    queryFn: () => fetchApi<{ success: boolean; path?: string }>('/api/manage/recordings-folder-path'),
+    enabled: Boolean(config?.projectDirectory),
+  });
   const { data: editPrepData } = useEditPrep();
   const createFolders = useCreateEditFolders();
   const createFolder = useCreateEditFolder();
@@ -206,7 +213,7 @@ export function GlingEditTool() {
           <div className="text-sm text-warm-secondary">
             <span className="font-medium">Recordings Folder:</span>
             <div className="font-mono text-xs text-warm-muted mt-1 break-all">
-              {config?.projectDirectory ? `${config.projectDirectory}/recordings/` : 'No project selected'}
+              {config?.projectDirectory ? `${recordingsFolder?.path ?? `${config.projectDirectory}/recordings`}/` : 'No project selected'}
             </div>
           </div>
           <div className="flex items-center gap-3">

@@ -6,6 +6,7 @@ import { promisify } from 'util';
 import fs from 'fs-extra';
 import type { Config, RelaySubfolder, RelayProjectInfo, RelayProjectSyncInfo, RelayActivityEvent, RelayFileInfo, RelayDivergenceInfo, RelayLocalSubfolderInfo, RelaySyncStatus } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
+import { getProjectPaths } from '../../../shared/paths.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -21,6 +22,15 @@ const RSYNC_EXCLUDES = [
 
 export function rsyncExcludeArgs(): string[] {
   return RSYNC_EXCLUDES.flatMap(pattern => ['--exclude', pattern]);
+}
+
+/**
+ * The LOCAL folder for a relay lane. The relay side keeps the lane name ('recordings');
+ * locally, recordings follow the project layout (hub/recordings on a hub project).
+ * Relay is in the deprecation cluster — this maps the layout, it does not extend relay.
+ */
+export function localRelayDir(projectDir: string, subfolder: string): string {
+  return subfolder === 'recordings' ? getProjectPaths(projectDir).recordings : path.join(projectDir, subfolder);
 }
 
 interface RelayPaths {
@@ -169,7 +179,7 @@ export function createRelayRoutes(getConfig: () => Config) {
           try { projectExists = (await fs.stat(localDir)).isDirectory(); } catch { /* noop */ }
 
           const localResults = await Promise.all(
-            subfolderNames.map(sub => countFiles(path.join(localDir, sub)))
+            subfolderNames.map(sub => countFiles(localRelayDir(localDir, sub)))
           );
           const localSubfolders: Record<string, RelayLocalSubfolderInfo> = {};
           const syncStatus: Record<string, RelaySyncStatus> = {};
@@ -227,7 +237,7 @@ export function createRelayRoutes(getConfig: () => Config) {
 
       const source = (req.query.source as string) || 'project';
       const baseDir = source === 'relay' ? paths.relayProjectDir : paths.projectDir;
-      const targetDir = path.join(baseDir, subfolder);
+      const targetDir = source === 'relay' ? path.join(baseDir, subfolder) : localRelayDir(baseDir, subfolder);
 
       // B047: Use listFiles helper for base listing, then enrich with chapter/modified
       const baseFiles = await listFiles(targetDir);
@@ -271,7 +281,7 @@ export function createRelayRoutes(getConfig: () => Config) {
       const subfolders: RelayDivergenceInfo[] = [];
 
       for (const subfolder of RELAY_SUBFOLDERS) {
-        const localDir = path.join(paths.projectDir, subfolder);
+        const localDir = localRelayDir(paths.projectDir, subfolder);
         const relayDir = path.join(paths.relayProjectDir, subfolder);
 
         const localFiles = await listFiles(localDir);
@@ -329,7 +339,7 @@ export function createRelayRoutes(getConfig: () => Config) {
       }
 
       const { projectDir, relayProjectDir } = paths;
-      const sourceDir = path.join(projectDir, subfolder) + '/';
+      const sourceDir = localRelayDir(projectDir, subfolder) + '/';
       const destDir = path.join(relayProjectDir, subfolder) + '/';
 
       const { stdout } = await execFileAsync('rsync', [
@@ -358,7 +368,7 @@ export function createRelayRoutes(getConfig: () => Config) {
       }
 
       const { projectDir, relayProjectDir } = paths;
-      const sourceDir = path.join(projectDir, subfolder) + '/';
+      const sourceDir = localRelayDir(projectDir, subfolder) + '/';
       const destDir = path.join(relayProjectDir, subfolder) + '/';
 
       await fs.ensureDir(destDir);
@@ -410,7 +420,7 @@ export function createRelayRoutes(getConfig: () => Config) {
       }
 
       const sourceDir = path.join(relayProjectDir, subfolder) + '/';
-      const destDir = path.join(projectDir, subfolder) + '/';
+      const destDir = localRelayDir(projectDir, subfolder) + '/';
 
       await fs.ensureDir(destDir);
 
@@ -472,7 +482,7 @@ export function createRelayRoutes(getConfig: () => Config) {
       const foldersCreated: string[] = [];
 
       for (const folder of RELAY_SUBFOLDERS) {
-        const folderDir = path.join(projectDir, folder);
+        const folderDir = localRelayDir(projectDir, folder);
         const exists = await fs.pathExists(folderDir);
         if (!exists) {
           await fs.mkdir(folderDir, { recursive: true });
@@ -590,7 +600,7 @@ export function createRelayRoutes(getConfig: () => Config) {
 
       // Guard: only allow clear when synced (relay count === local count)
       const relayDir = path.join(relayProjectDir, subfolder);
-      const localDir = path.join(projectDir, subfolder);
+      const localDir = localRelayDir(projectDir, subfolder);
       const relayCounts = await countFiles(relayDir);
       const localCounts = await countFiles(localDir);
       const syncStatus = deriveSyncStatus(relayCounts.fileCount, localCounts.fileCount, localCounts.exists);

@@ -491,6 +491,7 @@ export interface TranscriptSyncResponse {
   matched: string[]; // Filenames that match (recording with transcript)
   missingTranscripts: string[]; // Recordings without transcript
   orphanedTranscripts: string[]; // Transcripts without recording
+  recordingsDir?: string; // Absolute recordings folder for this project's layout (hub/recordings or recordings)
 }
 
 export interface ProjectStats {

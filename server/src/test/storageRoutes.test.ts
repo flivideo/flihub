@@ -250,7 +250,68 @@ describe('storage-panel WU1', () => {
     });
 
     it('HEAVY_SUBFOLDERS is the documented allowlist', () => {
-      expect([...HEAVY_SUBFOLDERS]).toEqual(['recordings', 'recording-shadows', 'final', 'b-roll']);
+      expect([...HEAVY_SUBFOLDERS]).toEqual(['recordings', 'hub/recordings', 'recording-shadows', 'final', 'b-roll']);
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // Hub layout (2026-09-22): hub/recordings is heavy, hub/transcripts is never held
+  // ---------------------------------------------------------------------
+  describe('hub layout', () => {
+    function makeHubProject(code: string) {
+      const base = nodePath.join(projectsRoot, code);
+      nodeFs.mkdirSync(nodePath.join(base, 'hub', 'recordings'), { recursive: true });
+      nodeFs.writeFileSync(nodePath.join(base, 'hub', 'recordings', '01-1-intro.mov'), Buffer.alloc(4096, 1));
+      nodeFs.mkdirSync(nodePath.join(base, 'hub', 'transcripts'), { recursive: true });
+      nodeFs.writeFileSync(nodePath.join(base, 'hub', 'transcripts', '01-1-intro.txt'), Buffer.alloc(100, 1));
+      nodeFs.mkdirSync(nodePath.join(base, 'assets'), { recursive: true });
+      nodeFs.writeFileSync(nodePath.join(base, 'assets', 'img.png'), Buffer.alloc(64, 1));
+      return base;
+    }
+
+    it('splits hub/ in the tree: hub/recordings heavy, hub/transcripts light', async () => {
+      const localDir = makeHubProject('h1');
+      const tree = await getStorageTree('h1', { projectsRoot, holdingRoot, publishedRoot, relayRoot: null });
+      const byName = Object.fromEntries(tree.nodes.map((n) => [n.name, n]));
+      expect(byName['hub/recordings'].classification).toBe('heavy');
+      expect(byName['hub/transcripts'].classification).toBe('light');
+      expect(byName['hub']).toBeUndefined();
+      expect(tree.sizes.heavyTotal).toBe(4096);
+      expect(tree.sizes.lightTotal).toBe(164);
+      expect(byName['hub/recordings'].path).toBe(nodePath.join(localDir, 'hub', 'recordings'));
+    });
+
+    it('hold moves hub/recordings to T7 and leaves hub/transcripts local', async () => {
+      const localDir = makeHubProject('h1');
+      const app = createApp();
+      const res = await request(app).post('/api/projects/h1/hold').send({});
+      expect(res.status).toBe(200);
+      expect((res.body as StorageMutationResponse).newState).toBe('held');
+      expect(nodeFs.existsSync(nodePath.join(localDir, 'hub', 'recordings'))).toBe(false);
+      expect(nodeFs.existsSync(nodePath.join(localDir, 'hub', 'transcripts', '01-1-intro.txt'))).toBe(true);
+      expect(nodeFs.existsSync(nodePath.join(holdingRoot, 'h1', 'hub', 'recordings', '01-1-intro.mov'))).toBe(true);
+      expect(nodeFs.existsSync(nodePath.join(holdingRoot, 'h1', 'hub', 'transcripts'))).toBe(false);
+    });
+
+    it('restore-held puts hub/recordings back under hub/', async () => {
+      const localDir = makeHubProject('h1');
+      const app = createApp();
+      await request(app).post('/api/projects/h1/hold').send({});
+      const res = await request(app).post('/api/projects/h1/restore-held').send({});
+      expect(res.status).toBe(200);
+      expect((res.body as StorageMutationResponse).newState).toBe('active');
+      expect(nodeFs.existsSync(nodePath.join(localDir, 'hub', 'recordings', '01-1-intro.mov'))).toBe(true);
+      expect(nodeFs.existsSync(nodePath.join(localDir, 'recordings'))).toBe(false);
+    });
+
+    it('a legacy project with a stray empty hub/ holds its top-level recordings/', async () => {
+      const localDir = makeActiveProject('l1');
+      nodeFs.mkdirSync(nodePath.join(localDir, 'hub'), { recursive: true });
+      const app = createApp();
+      const res = await request(app).post('/api/projects/l1/hold').send({});
+      expect(res.status).toBe(200);
+      expect(nodeFs.existsSync(nodePath.join(holdingRoot, 'l1', 'recordings', 'a.mov'))).toBe(true);
+      expect(nodeFs.existsSync(nodePath.join(localDir, 'recordings'))).toBe(false);
     });
   });
 
@@ -547,6 +608,10 @@ describe('storage-panel WU1', () => {
         return emitter as unknown as import('child_process').ChildProcess;
       }) as typeof cp.spawn);
 
+      // The legacy fixture has no hub/recordings — check the heavy folders it actually has.
+      const presentHeavy = HEAVY_SUBFOLDERS.filter((sub) => nodeFs.existsSync(nodePath.join(localDir, sub)));
+      expect(presentHeavy.length).toBe(4);
+
       const app = createApp();
       const res = await request(app).post('/api/projects/a1/hold').send({});
       spawnSpy.mockRestore();
@@ -555,7 +620,7 @@ describe('storage-panel WU1', () => {
       expect(res.body.success).toBe(false);
       expect(res.body.error).toMatch(/verification failed/i);
       // CRITICAL: every heavy subfolder must still exist on local
-      for (const sub of HEAVY_SUBFOLDERS) {
+      for (const sub of presentHeavy) {
         expect(nodeFs.existsSync(nodePath.join(localDir, sub))).toBe(true);
       }
       // First subfolder got rsynced successfully — the error message should

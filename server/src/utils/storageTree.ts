@@ -20,7 +20,9 @@ import type {
 // `recordings/-chapters/` is nested within `recordings/` and rides along in
 // the rsync — the directory walk treats it as a regular child of recordings.
 // ---------------------------------------------------------------------------
-export const HEAVY_SUBFOLDERS = ['recordings', 'recording-shadows', 'final', 'b-roll'] as const; // FR-161: b-roll travels on hold/offload
+export const HEAVY_SUBFOLDERS = ['recordings', 'hub/recordings', 'recording-shadows', 'final', 'b-roll'] as const; // FR-161: b-roll travels on hold/offload
+// 'hub/recordings' is the hub layout (2026-09-22). Only the recordings travel; 'hub/transcripts'
+// stays local, as legacy 'recording-transcripts/' always has. Nested entries are relative paths.
 // 'recording-shadows' stays ONLY so legacy folders (FR-83, deprecated 2026-09-04) still travel
 // on hold/offload instead of being stranded. No code creates or reads shadows any more.
 export type HeavySubfolder = typeof HEAVY_SUBFOLDERS[number];
@@ -28,6 +30,11 @@ export type HeavySubfolder = typeof HEAVY_SUBFOLDERS[number];
 export function isHeavySubfolder(name: string): boolean {
   return (HEAVY_SUBFOLDERS as readonly string[]).includes(name);
 }
+
+/** Top-level folders that CONTAIN a nested heavy subfolder (e.g. 'hub'); the tree splits them. */
+const HEAVY_CONTAINERS: ReadonlySet<string> = new Set(
+  HEAVY_SUBFOLDERS.filter((s) => s.includes('/')).map((s) => s.split('/')[0]),
+);
 
 // ---------------------------------------------------------------------------
 // Async predicates — never throw.
@@ -176,6 +183,23 @@ async function buildLocationTree(
   }
   for (const e of entries) {
     if (e.name === '.DS_Store' || e.name.startsWith('._')) continue;
+    if (e.isDirectory() && HEAVY_CONTAINERS.has(e.name)) {
+      // Split a container (hub/) into one node per child, so hub/recordings counts as heavy
+      // and hub/transcripts as light. Node names are relative paths ('hub/recordings').
+      let children: import('fs').Dirent[] = [];
+      try {
+        children = await fs.readdir(path.join(dir, e.name), { withFileTypes: true });
+      } catch {
+        // unreadable container — contributes nothing
+      }
+      for (const c of children) {
+        if (c.name === '.DS_Store' || c.name.startsWith('._')) continue;
+        const rel = `${e.name}/${c.name}`;
+        const node = await buildTopLevelNode(dir, rel, location, isHeavySubfolder(rel) ? 'heavy' : 'light');
+        if (node) out.push(node);
+      }
+      continue;
+    }
     const classification: StorageClassification = isHeavySubfolder(e.name) ? 'heavy' : 'light';
     const node = await buildTopLevelNode(dir, e.name, location, classification);
     if (node) out.push(node);

@@ -80,7 +80,7 @@ export async function findAllSrts(projectDir: string): Promise<{
   const scanDirs = [
     path.join(projectDir, 's3-staging', 'post'),
     path.join(projectDir, 'final'),
-    path.join(projectDir, 'recording-transcripts'),
+    getProjectPaths(projectDir).transcripts,
   ];
   for (const dir of scanDirs) {
     try {

@@ -310,6 +310,7 @@ describe('renameRecording', () => {
   function makePaths() {
     return {
       project: '/fake/project',
+      layout: 'legacy' as const,
       recordings: '/fake/project/recordings',
       safe: '/fake/project/recordings/-safe',
       chapters: '/fake/project/recordings/-chapters',
@@ -481,6 +482,7 @@ describe('renameDerivableFiles', () => {
   function makePaths() {
     return {
       project: '/fake/project',
+      layout: 'legacy' as const,
       recordings: '/fake/project/recordings',
       safe: '/fake/project/recordings/-safe',
       chapters: '/fake/project/recordings/-chapters',
@@ -586,6 +588,7 @@ describe('deleteChapterVideo', () => {
   function makePaths() {
     return {
       project: '/fake/project',
+      layout: 'legacy' as const,
       recordings: '/fake/project/recordings',
       safe: '/fake/project/recordings/-safe',
       chapters: '/fake/project/recordings/-chapters',

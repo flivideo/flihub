@@ -26,8 +26,13 @@ Open the declaring file:
   them and writes none of them. Cite them there; don't restate them.
 - **Do not read `shared/*.js` or `shared/*.d.ts`.** They are tracked but stale build output from
   Feb and Sep 2026. `types.js` still lists `review` and lacks `shelved`/`remix`. tsx resolves
-  `../shared/types.js` imports to the `.ts` source (checked 2026-09-22), so they only mislead
-  readers, not the running server.
+  `../shared/types.js` imports to the `.ts` source, so the running server is fine. **Vitest does
+  not**: it loads the stale `.js` (probed 2026-09-22), so tests of shared code can run old code.
+  `paths.js` is deleted; `types`, `naming` and `constants` still shadow their `.ts` in tests.
+- **Two project layouts (2026-09-22).** `hub` (`hub/recordings/`, `hub/transcripts/`) and legacy
+  (`recordings/`, `recording-transcripts/`) are read forever and never migrated. Always get these
+  folders from `getProjectPaths(projectDir)` (`shared/paths.ts`); never join `'recordings'` yourself.
+  New projects are still created legacy until rebuild step 4. The relay side keeps `recordings`.
 - `shared/apiRegistry.ts` (the API Explorer) lists 34 endpoints; the routers define about 170. To
   find a route, grep `router\.(get|post|put|patch|delete)` in `server/src/routes/`, not the registry.
 

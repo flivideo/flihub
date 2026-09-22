@@ -14,6 +14,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import type { Config } from '../../../shared/types.js';
+import { getProjectPaths } from '../../../shared/paths.js';
 
 // MIME types for video and subtitle files
 const MEDIA_MIME_TYPES: Record<string, string> = {
@@ -85,13 +86,18 @@ export function createVideoRoutes(getConfig: () => Config): Router {
 
       // Map folder aliases to actual paths
       // Note: -chapters is inside recordings/ folder
-      let actualFolder: string;
+      // Local recordings follow the project layout (hub/recordings); the relay keeps 'recordings'.
+      const projectBase = path.join(baseDir, projectCode);
+      const recordingsBase = source === 'relay' ? path.join(projectBase, 'recordings') : getProjectPaths(projectBase).recordings;
+      let folderDir: string;
       if (folder === '-chapters') {
-        actualFolder = 'recordings/-chapters';
+        folderDir = path.join(recordingsBase, '-chapters');
+      } else if (folder === 'recordings') {
+        folderDir = recordingsBase;
       } else {
-        actualFolder = folder;
+        folderDir = path.join(projectBase, folder);
       }
-      const videoPath = path.join(baseDir, projectCode, actualFolder, filename);
+      const videoPath = path.join(folderDir, filename);
 
       // Verify file exists
       if (!(await fs.pathExists(videoPath))) {
@@ -172,7 +178,7 @@ export function createVideoRoutes(getConfig: () => Config): Router {
     try {
       const config = getConfig();
       const projectDir = expandPath(config.projectDirectory);
-      const recordingsDir = path.join(projectDir, 'recordings');
+      const recordingsDir = getProjectPaths(projectDir).recordings;
       const videoPath = path.join(recordingsDir, filename);
 
       // Verify file exists

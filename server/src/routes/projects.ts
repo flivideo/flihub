@@ -250,8 +250,7 @@ export function createProjectRoutes(
       return;
     }
 
-    const recordingsDir = path.join(projectPath, 'recordings');
-    const transcriptsDir = path.join(projectPath, 'recording-transcripts');
+    const { recordings: recordingsDir, transcripts: transcriptsDir } = getProjectPaths(projectPath);
 
     // FR-111: Only scan recordings/ (no more -safe folder)
     const files = await readDirSafe(recordingsDir);
@@ -277,6 +276,7 @@ export function createProjectRoutes(
       matched,
       missingTranscripts,
       orphanedTranscripts,
+      recordingsDir,
     };
 
     res.json(response);

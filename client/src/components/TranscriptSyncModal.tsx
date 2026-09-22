@@ -20,9 +20,10 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
 
   // Queue a single recording for transcription
   const handleTranscribe = async (filename: string) => {
-    // Build the full path to the recording
-    // Try recordings/ first, then recordings/-safe/
-    const videoPath = `${projectPath}/recordings/${filename}.mov`;
+    // Build the full path to the recording. The server reports the recordings folder for this
+    // project's layout (hub/recordings on a hub project). Try it first, then its -safe/.
+    const recordingsDir = data?.recordingsDir ?? `${projectPath}/recordings`;
+    const videoPath = `${recordingsDir}/${filename}.mov`;
 
     setProcessingFiles((prev) => new Set(prev).add(filename));
     try {
@@ -33,7 +34,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
     } catch (_error) {
       // Try the safe folder
       try {
-        const safePath = `${projectPath}/recordings/-safe/${filename}.mov`;
+        const safePath = `${recordingsDir}/-safe/${filename}.mov`;
         await queueTranscription.mutateAsync(safePath);
         toast.success(`Queued: ${filename}`);
         refetch();

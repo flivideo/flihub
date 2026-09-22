@@ -14,6 +14,21 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## Hub layout — read `hub/recordings` + `hub/transcripts` (2026-09-22)
+
+David ruled that FliHub's own folders move under `<project>/hub/` for new projects. This is the
+"now" half: FliHub **reads** both layouts, and nothing creates `hub/` yet (rebuild step 4).
+`shared/paths.ts` detects the layout per project folder (`detectProjectLayout`, stray-`hub/` safe)
+and `getProjectPaths` returns the right folders. About 20 server sites and 2 client sites that
+joined `'recordings'` / `'recording-transcripts'` by hand now go through it. Transcriptions no longer
+derive the project from `indexOf('recordings')` (on a hub project that gave `<project>/hub`); they
+use `projectDirFromRecordingPath`. T7 hold carries `hub/recordings` only (`HEAVY_SUBFOLDERS`), and
+`hub/transcripts` stays local; the storage tree splits `hub/`. Relay keeps `recordings` on the relay
+side and maps only the local side. Deleted the stale `shared/paths.js` and `.d.ts`, which vitest was
+loading instead of the source. Existing project data untouched. Swap to the `@flivideo/core` v0.2.0
+helper when it lands. Tests: `shared/projectLayout.test.ts`, `server/src/test/hubLayout.test.ts`,
+and the hub block in `storageRoutes.test.ts`.
+
 ## W3 — Open contract: launch args + `POST /api/context`; chapter previews deprecated (2026-09-15)
 
 FliHub meets the FliVideo open contract (`flistudio/docs/open-contract.md` §3). Door 2:
