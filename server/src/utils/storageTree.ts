@@ -222,7 +222,6 @@ export interface GetStorageTreeOpts {
   projectsRoot: string;
   holdingRoot: string | null;
   publishedRoot: string | null;
-  relayRoot: string | null;
 }
 
 /**
@@ -242,7 +241,7 @@ export async function getStorageTree(
   projectCode: string,
   opts: GetStorageTreeOpts,
 ): Promise<StorageTreeResponse> {
-  const { projectsRoot, holdingRoot, publishedRoot, relayRoot } = opts;
+  const { projectsRoot, holdingRoot, publishedRoot } = opts;
 
   const localDir = path.join(projectsRoot, projectCode);
   const holdingDir = holdingRoot ? path.join(holdingRoot, projectCode) : null;
@@ -265,16 +264,6 @@ export async function getStorageTree(
     ssdMounted = await checkSsdMounted(publishedRoot);
   }
 
-  // Relay bytes
-  let relayBytes = 0;
-  if (relayRoot) {
-    const relayProjectDir = path.join(relayRoot, projectCode);
-    for (const sub of ['recordings', 'edit-1st', 'edit-2nd']) {
-      const s = await getDirStats(path.join(relayProjectDir, sub));
-      relayBytes += s.totalBytes;
-    }
-  }
-  const relayBlocked = relayBytes > 0;
 
   // Derive state
   let state: StorageState;
@@ -357,8 +346,6 @@ export async function getStorageTree(
       holding: holdingDir,
       published: publishedDir,
     },
-    relayBlocked,
-    relayBytes,
     ssdMounted,
     ...(degraded ? { degraded: true, error } : {}),
   };

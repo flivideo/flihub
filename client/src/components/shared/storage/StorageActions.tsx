@@ -12,7 +12,6 @@
 // Disabled reasons (rendered as inline tooltip text) cover:
 //   - T7 not mounted
 //   - storage tree reports `degraded`
-//   - relay is non-empty (blocks Hold + Archive only)
 import { useState, useRef, useEffect } from 'react';
 import type { StorageState } from '../../../../../shared/types';
 import { formatBytes } from '../../../utils/formatBytes';
@@ -25,8 +24,6 @@ export interface StorageActionsProps {
   ssdMounted: boolean;
   degraded: boolean;
   degradedReason?: string;
-  relayBlocked: boolean;
-  relayBytes: number;
   pendingAction: null | 'hold' | 'restore' | 'archive' | 'held-archive';
   onHold: () => void;
   onRestore: () => void;
@@ -41,15 +38,9 @@ function disabledReason(opts: {
   ssdMounted: boolean;
   degraded: boolean;
   degradedReason?: string;
-  relayBlocked: boolean;
-  relayBytes: number;
-  blockedByRelay: boolean; // only true for Hold + Archive
 }): string | null {
   if (!opts.ssdMounted) return 'T7 SSD not mounted';
   if (opts.degraded) return opts.degradedReason || 'Storage is in a degraded state';
-  if (opts.blockedByRelay && opts.relayBlocked) {
-    return `Clear Relay first (${formatBytes(opts.relayBytes)})`;
-  }
   return null;
 }
 
@@ -94,17 +85,11 @@ export function StorageActions(props: StorageActionsProps) {
     ssdMounted: props.ssdMounted,
     degraded: props.degraded,
     degradedReason: props.degradedReason,
-    relayBlocked: props.relayBlocked,
-    relayBytes: props.relayBytes,
-    blockedByRelay: true,
   });
   const archiveReason = disabledReason({
     ssdMounted: props.ssdMounted,
     degraded: props.degraded,
     degradedReason: props.degradedReason,
-    relayBlocked: props.relayBlocked,
-    relayBytes: props.relayBytes,
-    blockedByRelay: true,
   });
 
   return (

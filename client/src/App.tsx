@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Toaster, toast } from 'sonner';
-import { useSocket, useRecordingsSocket, useDeveloperSocket, useRelaySocket } from './hooks/useSocket';
+import { useSocket, useRecordingsSocket, useDeveloperSocket } from './hooks/useSocket';
 import {
   useConfig,
   useSuggestedNaming,
@@ -35,7 +35,7 @@ import { ManagePanel } from './components/ManagePanel';
 // B045: PoemWuiPage moved into ManagePanel as AWB tool
 import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
-import { OpenFolderButton, SyncIndicator, RelayIndicator, SsdIndicator } from './components/shared';
+import { OpenFolderButton, SsdIndicator } from './components/shared';
 import { HeaderDropdown } from './components/HeaderDropdown';
 import { BrandSwitcher } from './components/BrandSwitcher';
 import { BRollPage } from './components/BRollPage';
@@ -135,7 +135,7 @@ function App() {
   const [configFocusSection, setConfigFocusSection] = useState<ConfigFocusSection>(null);
   // FR-127: Developer drawer state
   const [isDevDrawerOpen, setIsDevDrawerOpen] = useState(false);
-  // B044: Manage tool navigation (for SyncIndicator click-through)
+  // B044: Manage tool navigation (for header indicator click-through)
   const [manageTool, setManageTool] = useState<string | null>(null);
   // P2 (review): guard against interleaved deep-link switches. If a switch is
   // already in flight, a second caller awaits the same promise rather than
@@ -214,7 +214,6 @@ function App() {
   const setProjectTitle = useSetProjectTitle(); // FR-157
   // FR-115: Real-time updates for recordings (invalidates cache on socket event)
   useRecordingsSocket();
-  useRelaySocket();  // B046: relay change notifications
   // FR-127: Real-time updates for developer tools (invalidates cache on socket event)
   useDeveloperSocket();
   // W3 open contract: refresh when a door re-points the app; show a refused launch/API context (C3)
@@ -563,16 +562,8 @@ function App() {
                 </>
               )}
             </div>
-            {/* B044: Persistent sync indicators */}
+            {/* B064: Persistent T7 indicator */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              <SyncIndicator onNavigateToSync={() => {
-                changeTab('export');
-                setManageTool('sync');
-              }} />
-              <RelayIndicator onNavigateToRelay={() => {
-                changeTab('export');
-                setManageTool('relay');
-              }} />
               <SsdIndicator onNavigateToStorage={() => {
                 // WU3: T7 pill now opens Storage panel for the active project.
                 navigateToManage('storage');

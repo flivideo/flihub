@@ -10,9 +10,6 @@ export const DEFAULT_DISK_THRESHOLDS: DiskThresholds = {
     trash:   { faint: '0',      amber: '300MB',  red: '1GB'   },
     rec:     { faint: '2GB',    amber: '5GB',    red: '10GB'  },
     other:   { faint: '500MB',  amber: '1GB',    red: null    },
-    rRec:    { faint: '1GB',    amber: '3GB',    red: '6GB'   },
-    r1st:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
-    r2nd:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
     total:   { faint: '3GB',    amber: '8GB',    red: '15GB'  },
   }
 };
@@ -91,8 +88,6 @@ export function loadConfig(configPath: string): Config {
         };
         if (saved.projectPriorities) toSave.projectPriorities = saved.projectPriorities;
         if (saved.projectStages) toSave.projectStages = saved.projectStages;
-        if (saved.relayDirectory) toSave.relayDirectory = saved.relayDirectory;
-        if (saved.relayEnabled !== undefined) toSave.relayEnabled = saved.relayEnabled;
         if (saved.machineRole) toSave.machineRole = saved.machineRole;
         if (saved.holdingPath) toSave.holdingPath = saved.holdingPath; // B064
         if (saved.publishedPath) toSave.publishedPath = saved.publishedPath; // storage-panel
@@ -151,9 +146,6 @@ export function saveConfig(configPath: string, config: Config): void {
     if (config.brandConfigPath) {
       toSave.brandConfigPath = config.brandConfigPath;
     }
-    // B038: relay collaboration — use !== undefined so relayEnabled: false is saveable
-    if (config.relayDirectory !== undefined) toSave.relayDirectory = config.relayDirectory;
-    if (config.relayEnabled !== undefined) toSave.relayEnabled = config.relayEnabled;
     // B039: machine role
     if (config.machineRole !== undefined) toSave.machineRole = config.machineRole;
     // B064: archive-offload — holding SSD path (optional, machine-specific)

@@ -3,168 +3,6 @@
 // B039: machine role — determines which UI capabilities are visible
 export type MachineRole = 'recorder' | 'editor';
 
-// Relay subfolder types for push/collect/preview operations
-export type RelaySubfolder = 'recordings' | 'edit-1st' | 'edit-2nd';
-
-// Relay change event for real-time socket notifications
-export interface RelayChangeEvent {
-  projectCode: string;
-  subfolder: RelaySubfolder;
-  action: 'add' | 'unlink';
-  filename: string;
-  timestamp: string; // ISO date
-}
-
-// Relay folder browser types
-export interface RelaySubfolderInfo {
-  fileCount: number;
-  totalSize: number;
-}
-
-export interface RelayProjectInfo {
-  projectCode: string;
-  subfolders: {
-    recordings: RelaySubfolderInfo;
-    'edit-1st': RelaySubfolderInfo;
-    'edit-2nd': RelaySubfolderInfo;
-  };
-}
-
-// enhanced-browse: Local subfolder file counts for sync status comparison
-export interface RelayLocalSubfolderInfo {
-  fileCount: number;
-}
-
-// enhanced-browse: Sync status per subfolder — derived from comparing relay vs local file counts
-export type RelaySyncStatus = 'synced' | 'ahead' | 'behind' | 'diverged' | 'local-only' | 'relay-only';
-
-// enhanced-browse: Extended project info with local file counts and sync status (returned when ?detailed=true)
-export interface RelayProjectSyncInfo extends RelayProjectInfo {
-  localSubfolders: {
-    recordings: RelayLocalSubfolderInfo;
-    'edit-1st': RelayLocalSubfolderInfo;
-    'edit-2nd': RelayLocalSubfolderInfo;
-  };
-  syncStatus: {
-    recordings: RelaySyncStatus;
-    'edit-1st': RelaySyncStatus;
-    'edit-2nd': RelaySyncStatus;
-  };
-  // FR-147: Whether the project directory exists locally in projectsRootDirectory
-  projectExists: boolean;
-}
-
-export interface RelayBrowseResult {
-  projects: RelayProjectInfo[];
-  relayDirectory: string;
-}
-
-// B043: Relay API response types
-export interface RelayStatusResponse {
-  success: boolean;
-  configured: boolean;
-  enabled: boolean;
-  relayDirectory?: string | null;
-}
-
-export interface RelayBrowseResponse {
-  success: boolean;
-  projects: RelayProjectInfo[];
-  relayDirectory: string;
-}
-
-export interface RelayPreviewResponse {
-  success: boolean;
-  diff: { new: string[]; updated: string[]; deleted: string[] };
-  subfolder: string;
-  error?: string;
-}
-
-export interface RelayPushResponse {
-  success: boolean;
-  output?: string;
-  subfolder?: string;
-  error?: string;
-}
-
-export interface RelayCollectResponse {
-  success: boolean;
-  output?: string;
-  subfolder?: string;
-  error?: string;
-  // FR-147: returned when collect is blocked because project doesn't exist locally
-  missingProject?: string;
-}
-
-export interface RelayVersionsResponse {
-  success: boolean;
-  versions?: { filename: string; size: number; modified: string }[];
-  error?: string;
-}
-
-export interface RelayPromoteResponse {
-  success: boolean;
-  promoted?: string;
-  error?: string;
-}
-
-export interface RelayClearResponse {
-  success: boolean;
-  deleted?: number;
-  subfolder?: string;
-  error?: string;
-}
-
-// Promote-to-final: version file in edit-2nd/
-export interface EditVersion {
-  filename: string;
-  size: number;
-  modified: string; // ISO date string
-}
-
-// Relay per-file detail for file drawers
-export interface RelayFileInfo {
-  filename: string;
-  size: number;
-  modified: string; // ISO date
-  chapter: string;  // extracted from filename, e.g. "01" from "01-1-intro.mov"
-}
-
-export interface RelayFilesResponse {
-  success: boolean;
-  files?: RelayFileInfo[];
-  subfolder?: RelaySubfolder;
-  error?: string;
-}
-
-// Canonical sync direction type — used by relay divergence and UI components
-export type SyncDirection = 'synced' | 'outgoing' | 'incoming' | 'both';
-
-// B047: Divergence detection — compare local vs relay per subfolder
-export interface RelayDivergenceInfo {
-  subfolder: RelaySubfolder;
-  local: { fileCount: number; totalSize: number; files: string[] };
-  relay: { fileCount: number; totalSize: number; files: string[] };
-  localOnly: string[];    // files in local but not in relay (outgoing)
-  relayOnly: string[];    // files in relay but not in local (incoming)
-  direction: SyncDirection; // overall sync direction
-  folderExists: boolean;  // whether the local folder exists
-}
-
-export interface RelayDivergenceResponse {
-  success: boolean;
-  projectCode?: string;
-  subfolders?: RelayDivergenceInfo[];
-  error?: string;
-}
-
-// B050: Enhanced browse response for kanban badges
-export interface RelayEnhancedBrowseResponse {
-  success: boolean;
-  projects: RelayProjectSyncInfo[];
-  relayDirectory: string;
-}
-
 export interface FileInfo {
   path: string;
   filename: string;
@@ -207,9 +45,6 @@ export interface Config {
   glingDictionary?: string[]; // FR-102: Custom dictionary words for Gling transcription
   poemWuiUrl?: string; // FR-144: AWB server URL (default: http://localhost:5041)
   brandConfigPath?: string; // FR-144: Path to brand-config.json for YouTube Launch Optimizer
-  // B038: relay collaboration
-  relayDirectory?: string; // ~/Relay/FliHub-appydave — machine-specific, gitignored
-  relayEnabled?: boolean; // Feature gate — false/undefined until configured
   machineRole?: MachineRole; // B039: Machine role — recorder shows archive/promote/cleanup, editor hides them
   diskThresholds?: DiskThresholds;  // B062: Pain thresholds for disk observability columns
   holdingPath?: string;             // B064: External holding drive path (e.g. /Volumes/T7/youtube-HOLDING/appydave)
@@ -224,9 +59,6 @@ export interface DiskSizeData {
   rec: number;        // bytes — recordings/ folder
   trash: number;      // bytes — -trash/ folder
   other: number;      // bytes — everything else in project dir
-  rRec: number;       // bytes — relay/{project}/recordings/
-  r1st: number;       // bytes — relay/{project}/edit-1st/
-  r2nd: number;       // bytes — relay/{project}/edit-2nd/
   total: number;      // bytes — sum of all above
   calculatedAt: string; // ISO timestamp
   // B064: Hold/offload tracking fields
@@ -254,9 +86,6 @@ export interface DiskThresholds {
     trash:   DiskThresholdConfig;
     rec:     DiskThresholdConfig;
     other:   DiskThresholdConfig;
-    rRec:    DiskThresholdConfig;
-    r1st:    DiskThresholdConfig;
-    r2nd:    DiskThresholdConfig;
     total:   DiskThresholdConfig;
   };
 }
@@ -281,8 +110,6 @@ export interface HoldStatus {
   location: HoldLocation;
   holdingPath?: string;          // Full path in youtube-HOLDING if copy exists
   heldAt?: string;               // ISO timestamp of last rsync to HOLDING
-  relayBlocked: boolean;         // true if relay has files — hard block on offload
-  relayBytes: number;            // rRec + r1st + r2nd bytes (0 if no relay)
   ssdMounted: boolean;           // Is /Volumes/T7 (or holdingPath parent) accessible?
   verification?: HoldVerification; // Only populated when location === 'both'
 }
@@ -350,8 +177,6 @@ export interface StorageTreeResponse {
   nodes: StorageTreeNode[];
   sizes: StorageTreeSizes;
   paths: StorageTreePaths;
-  relayBlocked: boolean;
-  relayBytes: number;
   ssdMounted: boolean;
   degraded?: boolean;
   error?: string;
@@ -671,8 +496,6 @@ export interface ServerToClientEvents {
   'recordings:changed': () => void; // Recording renamed/moved/deleted
   'projects:changed': () => void; // Project folder changed
   'inbox:changed': () => void; // FR-59: Inbox file added/removed
-  // B038: relay collaboration
-  'relay:changed': (data: RelayChangeEvent) => void;
   'transcripts:changed': () => void; // NFR-85: Transcript added/removed/changed
   // MicCheck: live monitoring session events
   'miccheck:started': (data: { sessionId: string }) => void;
@@ -1243,7 +1066,6 @@ export type FolderKey =
   | 's3Post'
   | 'inbox'
   | 'chapters'
-  | 'relay'
   | 'edit-1st'
   | 'edit-2nd'
   | 'edit-final';
@@ -1301,24 +1123,6 @@ export interface RestoreEditFolderResponse {
   error?: string;
 }
 
-// Relay activity event for activity feed
-export interface RelayActivityEvent {
-  id: string;           // unique id (timestamp + random)
-  projectCode: string;
-  subfolder: RelaySubfolder;
-  action: 'push' | 'collect' | 'promote' | 'clear' | 'file-detected';
-  description: string;  // "You pushed 15 recordings (338 MB)"
-  timestamp: string;    // ISO date
-  fileCount?: number;
-  totalSize?: number;
-}
-
-export interface RelayActivityResponse {
-  success: boolean;
-  events?: RelayActivityEvent[];
-  error?: string;
-}
-
 // B047: Recording Editor — split chapter types
 export interface SplitChapterRequest {
   chapter: string;          // source chapter, e.g. "04"
@@ -1332,66 +1136,6 @@ export interface SplitChapterResponse {
   filesMoved: number;
   cascadedChapters: number;
   undoMapping: Array<{ oldFilename: string; newFilename: string }>;
-  error?: string;
-}
-
-// B044: Sync Hub — git sync status types
-export type SyncState = 'clean' | 'dirty' | 'behind' | 'ahead' | 'diverged' | 'conflict' | 'unknown';
-
-export interface SyncChannelStatus {
-  channel: string;
-  state: SyncState;
-  localHash: string;
-  remoteHash: string;
-  dirtyCount: number;
-  behindCount: number;
-  aheadCount: number;
-  lastFetch: string; // ISO date
-  dirtyFiles?: string[];
-  error?: string;
-}
-
-export interface SyncStatusResponse {
-  success: boolean;
-  appCode?: SyncChannelStatus;
-  videoProject?: SyncChannelStatus;
-  error?: string;
-}
-
-// B044: Sync Hub — push/pull/resolve action types
-
-export interface SyncPushResponse {
-  success: boolean;
-  commitHash?: string;
-  commitMessage?: string;
-  filesCommitted?: number;
-  output?: string;
-  error?: string;
-}
-
-export interface SyncConflictFile {
-  path: string;
-  status: 'both-modified' | 'deleted-by-them' | 'deleted-by-us' | 'added-by-both';
-}
-
-export interface SyncPullResponse {
-  success: boolean;
-  output?: string;
-  behindCount?: number;
-  conflicts?: SyncConflictFile[];
-  restartInstructions?: string;
-  error?: string;
-}
-
-export interface SyncResolveRequest {
-  channel: 'app-code' | 'video-project';
-  file: string;
-  resolution: 'keep-mine' | 'keep-theirs';
-}
-
-export interface SyncResolveResponse {
-  success: boolean;
-  remainingConflicts?: number;
   error?: string;
 }
 

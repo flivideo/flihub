@@ -26,8 +26,6 @@ export * from './useProjectsApi.js';
 export * from './useTranscriptionsApi.js';
 export * from './useDeveloperApi.js';
 export * from './useSystemApi.js';
-export * from './useRelayApi.js';
-export * from './useSyncApi.js';
 export * from './useEditingApi.js';
 export * from './useProjectDiskApi.js';
 export * from './useHoldApi.js';

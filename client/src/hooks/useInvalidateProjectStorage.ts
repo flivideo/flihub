@@ -16,7 +16,6 @@ export function useInvalidateProjectStorage() {
     qc.invalidateQueries({ queryKey: QUERY_KEYS.archiveInventory });
     qc.invalidateQueries({ queryKey: QUERY_KEYS.holdStatus(projectCode) });
     qc.invalidateQueries({ queryKey: QUERY_KEYS.projectDisk(projectCode) });
-    qc.invalidateQueries({ queryKey: QUERY_KEYS.relayBrowse });
     // WU5: also bump the activity feed so the latest entry appears immediately.
     // P4: use factory to keep prefix consistent with QUERY_KEYS.storageActivity.
     qc.invalidateQueries({ queryKey: QUERY_KEYS.storageActivityBase(projectCode) });

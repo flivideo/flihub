@@ -94,8 +94,6 @@ function buildTree(state: StorageState, overrides: Partial<StorageTreeResponse> 
       holding: '/tmp/holding/proj',
       published: '/tmp/published/proj',
     },
-    relayBlocked: false,
-    relayBytes: 0,
     ssdMounted: true,
   };
   return { ...base, ...overrides };
@@ -242,16 +240,6 @@ describe('StoragePanel — hold mutation flow', () => {
 // -----------------------------------------------------------------------------
 
 describe('StoragePanel — disabled states', () => {
-  it('disables Hold + Archive when relay is non-empty, surfacing reason text', () => {
-    mockTreeReturn(
-      buildTree('active', { relayBlocked: true, relayBytes: 5_000_000 }),
-    );
-    renderPanel();
-    expect(screen.getByTestId('action-hold')).toBeDisabled();
-    expect(screen.getByTestId('action-archive')).toBeDisabled();
-    expect(screen.getByTestId('action-hold-reason').textContent).toMatch(/Clear Relay/);
-  });
-
   it('disables Hold when SSD not mounted', () => {
     mockTreeReturn(buildTree('active', { ssdMounted: false }));
     renderPanel();

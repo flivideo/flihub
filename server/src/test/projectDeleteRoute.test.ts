@@ -123,36 +123,6 @@ describe('FR-152: DELETE /api/projects/:code', () => {
     expect(mockRemove).not.toHaveBeenCalled();
   });
 
-  it('FR-152: returns 400 when relay directory has files', async () => {
-    const { app } = createApp({
-      relayEnabled: true,
-      relayDirectory: '/tmp/relay',
-    });
-
-    // Project dir exists
-    mockPathExists.mockImplementation(async (p: string) => {
-      // project dir: /tmp/projects/b72-test-project -> exists
-      // relay dir:   /tmp/relay/b72-test-project -> exists
-      // relay subdir: /tmp/relay/b72-test-project/recordings -> exists
-      return true;
-    });
-
-    // Relay recordings folder has files
-    mockReaddir.mockImplementation(async (p: string) => {
-      if (p.includes('recordings')) return ['file1.mov', 'file2.mov'];
-      return [];
-    });
-
-    const res = await request(app)
-      .delete('/api/projects/b72-test-project')
-      .send({ confirmationCode: 'b72-test-project' });
-
-    expect(res.status).toBe(400);
-    expect(res.body.success).toBe(false);
-    expect(res.body.error).toMatch(/relay/i);
-    expect(mockRemove).not.toHaveBeenCalled();
-  });
-
   it('FR-152: returns 404 when project directory does not exist', async () => {
     const { app } = createApp();
 
@@ -167,10 +137,10 @@ describe('FR-152: DELETE /api/projects/:code', () => {
     expect(mockRemove).not.toHaveBeenCalled();
   });
 
-  it('FR-152: deletes project directory when code matches and relay is clear', async () => {
+  it('FR-152: deletes project directory when code matches', async () => {
     const { app } = createApp();
 
-    // No relay configured — only project dir check
+    // Only the project dir check
     mockPathExists.mockResolvedValue(true);
     mockRemove.mockResolvedValue(undefined);
 

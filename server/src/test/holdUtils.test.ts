@@ -512,11 +512,9 @@ describe('getHoldStatus', () => {
   it('B064: returns local-only when only local exists', async () => {
     const { projectDir, holdingRoot } = await createProjectFixture(tmpRoot);
 
-    const status = await getHoldStatus('b72-test-project', projectDir, null, holdingRoot);
+    const status = await getHoldStatus('b72-test-project', projectDir, holdingRoot);
 
     expect(status.location).toBe('local-only');
-    expect(status.relayBlocked).toBe(false);
-    expect(status.relayBytes).toBe(0);
   });
 
   it('B064: returns holding-only when only holding exists', async () => {
@@ -526,7 +524,7 @@ describe('getHoldStatus', () => {
     // Remove local dir after mirroring
     await fs.rm(projectDir, { recursive: true });
 
-    const status = await getHoldStatus('b72-test-project', projectDir, null, holdingRoot);
+    const status = await getHoldStatus('b72-test-project', projectDir, holdingRoot);
 
     expect(status.location).toBe('holding-only');
     expect(status.holdingPath).toBe(holdingDir);
@@ -536,7 +534,7 @@ describe('getHoldStatus', () => {
     const { projectDir, holdingRoot } = await createProjectFixture(tmpRoot);
     await mirrorToHolding(projectDir, holdingRoot);
 
-    const status = await getHoldStatus('b72-test-project', projectDir, null, holdingRoot);
+    const status = await getHoldStatus('b72-test-project', projectDir, holdingRoot);
 
     expect(status.location).toBe('both');
     // Auto-verify should have run
@@ -548,31 +546,17 @@ describe('getHoldStatus', () => {
     const holdingRoot = path.join(tmpRoot, 'holding');
     const missingProjectDir = path.join(projectsRoot, 'b99-nonexistent');
 
-    const status = await getHoldStatus('b99-nonexistent', missingProjectDir, null, holdingRoot);
+    const status = await getHoldStatus('b99-nonexistent', missingProjectDir, holdingRoot);
 
     expect(status.location).toBe('unknown');
     expect(status.holdingPath).toBeUndefined();
-  });
-
-  it('B064: returns relayBlocked:true when relay dir has files', async () => {
-    const { projectDir, holdingRoot } = await createProjectFixture(tmpRoot);
-    const relayDir = path.join(tmpRoot, 'relay', 'b72-test-project');
-
-    // Create a relay recordings folder with a file to simulate blocking
-    await fs.mkdir(path.join(relayDir, 'recordings'), { recursive: true });
-    await fs.writeFile(path.join(relayDir, 'recordings', 'pending.mov'), 'pending video');
-
-    const status = await getHoldStatus('b72-test-project', projectDir, relayDir, holdingRoot);
-
-    expect(status.relayBlocked).toBe(true);
-    expect(status.relayBytes).toBeGreaterThan(0);
   });
 
   it('B064: both state verification.match is true when files match', async () => {
     const { projectDir, holdingRoot } = await createProjectFixture(tmpRoot);
     await mirrorToHolding(projectDir, holdingRoot);
 
-    const status = await getHoldStatus('b72-test-project', projectDir, null, holdingRoot);
+    const status = await getHoldStatus('b72-test-project', projectDir, holdingRoot);
 
     expect(status.location).toBe('both');
     expect(status.verification).toBeDefined();

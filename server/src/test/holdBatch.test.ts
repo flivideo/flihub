@@ -124,8 +124,6 @@ describe('POST /batch-offload', () => {
     // Default happy-path mocks
     mockGetHoldStatus.mockResolvedValue({
       location: 'local-only',
-      relayBlocked: false,
-      relayBytes: 0,
       ssdMounted: true,
     });
     mockHoldProject.mockResolvedValue({

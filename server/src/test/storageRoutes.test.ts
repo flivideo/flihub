@@ -153,12 +153,6 @@ describe('storage-panel WU1', () => {
     return pub;
   }
 
-  function makeRelayNonEmpty(relayRoot: string, code: string) {
-    const p = nodePath.join(relayRoot, code, 'recordings');
-    nodeFs.mkdirSync(p, { recursive: true });
-    nodeFs.writeFileSync(nodePath.join(p, 'r.mov'), Buffer.alloc(128, 1));
-  }
-
   function createApp(overrides: Partial<Config> = {}): express.Express & { __logPath: string } {
     const config: Config = {
       watchDirectory: '/tmp/watch',
@@ -193,7 +187,6 @@ describe('storage-panel WU1', () => {
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot: null,
       });
       expect(tree.state).toBe('active');
       const names = tree.nodes.map((n) => n.name).sort();
@@ -215,7 +208,6 @@ describe('storage-panel WU1', () => {
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot: null,
       });
       expect(tree.state).toBe('held');
       expect(tree.sizes.heldTotal).toBeGreaterThan(0);
@@ -227,7 +219,6 @@ describe('storage-panel WU1', () => {
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot: null,
       });
       expect(tree.state).toBe('archived');
       expect(tree.sizes.archivedTotal).toBeGreaterThan(0);
@@ -243,7 +234,6 @@ describe('storage-panel WU1', () => {
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot: null,
       });
       expect(tree.degraded).toBe(true);
       expect(tree.error).toBeTruthy();
@@ -271,7 +261,7 @@ describe('storage-panel WU1', () => {
 
     it('splits hub/ in the tree: hub/recordings heavy, hub/transcripts light', async () => {
       const localDir = makeHubProject('h1');
-      const tree = await getStorageTree('h1', { projectsRoot, holdingRoot, publishedRoot, relayRoot: null });
+      const tree = await getStorageTree('h1', { projectsRoot, holdingRoot, publishedRoot });
       const byName = Object.fromEntries(tree.nodes.map((n) => [n.name, n]));
       expect(byName['hub/recordings'].classification).toBe('heavy');
       expect(byName['hub/transcripts'].classification).toBe('light');
@@ -365,17 +355,6 @@ describe('storage-panel WU1', () => {
       expect(nodeFs.existsSync(nodePath.join(holdingRoot, 'a1', 'recordings', 'a.mov'))).toBe(true);
     });
 
-    it('refuses when relay is non-empty', async () => {
-      makeActiveProject('a1');
-      const relayRoot = nodePath.join(tmpRoot, 'relay');
-      makeRelayNonEmpty(relayRoot, 'a1');
-      const app = createApp({ relayEnabled: true, relayDirectory: relayRoot });
-      const res = await request(app).post('/api/projects/a1/hold').send({});
-      expect(res.status).toBe(400);
-      expect(res.body.success).toBe(false);
-      expect(res.body.error).toMatch(/relay/i);
-    });
-
     it('refuses when T7 is not mounted', async () => {
       makeActiveProject('a1');
       // Point holdingPath at a path whose volume parent does not exist
@@ -451,16 +430,6 @@ describe('storage-panel WU1', () => {
       expect(nodeFs.existsSync(localDir)).toBe(false);
       expect(nodeFs.existsSync(nodePath.join(publishedRoot, 'a1', 'recordings', 'a.mov'))).toBe(true);
       expect(nodeFs.existsSync(nodePath.join(publishedRoot, 'a1', 'assets', 'img.png'))).toBe(true);
-    });
-
-    it('refuses when relay is non-empty', async () => {
-      makeActiveProject('a1');
-      const relayRoot = nodePath.join(tmpRoot, 'relay');
-      makeRelayNonEmpty(relayRoot, 'a1');
-      const app = createApp({ relayEnabled: true, relayDirectory: relayRoot });
-      const res = await request(app).post('/api/projects/a1/archive').send({});
-      expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/relay/i);
     });
 
     it('refuses when T7 is not mounted', async () => {
@@ -823,18 +792,6 @@ describe('storage-panel WU1', () => {
       expect(nodeFs.existsSync(nodePath.join(publishedRoot, 'a1', 'assets', 'img.png'))).toBe(true);
     });
 
-    it('refuses when relay is non-empty — nothing destructive', async () => {
-      makeHeldProject('a1');
-      const relayRoot = nodePath.join(tmpRoot, 'relay');
-      makeRelayNonEmpty(relayRoot, 'a1');
-      const app = createApp({ relayEnabled: true, relayDirectory: relayRoot });
-      const res = await request(app).post('/api/projects/a1/held-archive').send({});
-      expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/relay/i);
-      // HOLDING still intact
-      expect(nodeFs.existsSync(nodePath.join(holdingRoot, 'a1', 'recordings', 'a.mov'))).toBe(true);
-    });
-
     it('refuses when T7 (HOLDING) is not mounted', async () => {
       makeHeldProject('a1');
       const app = createApp({ holdingPath: '/this/does/not/exist/youtube-HOLDING/appydave' });
@@ -974,17 +931,6 @@ describe('storage-panel WU1', () => {
   });
 
   describe('P5 (review): refused mutations do NOT append activity entries', () => {
-    it('hold relay-blocked: no log entry', async () => {
-      makeActiveProject('a1');
-      const relayRoot = nodePath.join(tmpRoot, 'relay');
-      makeRelayNonEmpty(relayRoot, 'a1');
-      const app = createApp({ relayEnabled: true, relayDirectory: relayRoot });
-      const res = await request(app).post('/api/projects/a1/hold').send({});
-      expect(res.status).toBe(400);
-      const entries = await readStorageActivity({ logPath: app.__logPath });
-      expect(entries.length).toBe(0);
-    });
-
     it('archive degraded: no log entry', async () => {
       // Both local + published → degraded.
       makeActiveProject('a1');

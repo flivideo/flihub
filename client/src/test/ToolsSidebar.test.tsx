@@ -19,9 +19,7 @@ describe('ToolsSidebar', () => {
     renderSidebar();
     expect(screen.getByText('Regen')).toBeInTheDocument();
     expect(screen.getByText('Gling / Edit')).toBeInTheDocument();
-    expect(screen.getByText('Relay')).toBeInTheDocument();
     expect(screen.getByText('AWB')).toBeInTheDocument();
-    expect(screen.getByText('Sync')).toBeInTheDocument();
     // WU3: Storage heading + Storage tool button both exist — use getAllByText
     expect(screen.getAllByText('Storage').length).toBeGreaterThan(0);
     // WU3: SSD Status entry has been replaced by Storage.
@@ -54,9 +52,7 @@ describe('ToolsSidebar', () => {
     const tools: { label: string; tool: ActiveTool }[] = [
       { label: 'Regen', tool: 'regen' },
       { label: 'Gling / Edit', tool: 'gling-edit' },
-      { label: 'Relay', tool: 'relay' },
       { label: 'AWB', tool: 'awb' },
-      { label: 'Sync', tool: 'sync' },
     ];
 
     tools.forEach(({ label, tool }) => {
@@ -77,11 +73,6 @@ describe('ToolsSidebar', () => {
     it('renders Edit heading', () => {
       renderSidebar();
       expect(screen.getByText('Edit')).toBeInTheDocument();
-    });
-
-    it('renders Collaborate heading', () => {
-      renderSidebar();
-      expect(screen.getByText('Collaborate')).toBeInTheDocument();
     });
 
     it('renders Storage heading', () => {

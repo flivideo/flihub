@@ -12,7 +12,6 @@ import {
 } from '../hooks/useApi';
 import { useProjectsSocket, useTranscriptsSocket } from '../hooks/useSocket';
 import { useDelayedHover } from '../hooks/useDelayedHover';
-import { useEnhancedRelayBrowse } from '../hooks/useRelayApi';
 import { useDiskScanAll } from '../hooks/useProjectDiskApi';
 import { useHoldStatus } from '../hooks/useHoldApi'; // B064
 import { LoadingSpinner, ErrorMessage } from './shared';
@@ -28,10 +27,6 @@ import type {
   ProjectPriority,
   ProjectStage,
   ProjectStageOverride,
-  RelayProjectInfo,
-  RelayProjectSyncInfo,
-  RelaySyncStatus,
-  RelaySubfolder,
   DiskSizeData,
   DiskThresholds,
   HoldLocation, // B064
@@ -58,45 +53,6 @@ const PRIORITY_DISPLAY: Record<ProjectPriority, { icon: string; iconClass: strin
 // Simple toggle: normal ↔ pinned
 function getNextPriority(current: ProjectPriority): ProjectPriority {
   return current === 'pinned' ? 'normal' : 'pinned';
-}
-
-// B050: Kanban mini-badge config for relay sync status
-const SYNC_BADGE_CONFIG: Record<RelaySyncStatus, { bg: string; text: string; icon: (count: number) => string } | null> = {
-  synced: { bg: 'bg-green-100', text: 'text-green-700', icon: () => '\u2713' },
-  ahead: { bg: 'bg-blue-100', text: 'text-blue-700', icon: (n) => `\u2191${n}` },
-  behind: { bg: 'bg-amber-100', text: 'text-amber-700', icon: (n) => `\u2193${n}` },
-  diverged: { bg: 'bg-amber-100', text: 'text-amber-700', icon: () => '\u2195' },
-  'local-only': { bg: 'bg-green-100', text: 'text-green-700', icon: () => '\u2713' },
-  'relay-only': { bg: 'bg-amber-100', text: 'text-amber-700', icon: (n) => `↓${n}` },
-};
-
-const SUBFOLDER_LABELS: Record<RelaySubfolder, string> = {
-  recordings: 'REC',
-  'edit-1st': '1st',
-  'edit-2nd': '2nd',
-};
-
-// Build tooltip description for a subfolder
-function subfolderTooltipLine(
-  label: string,
-  localCount: number,
-  relayCount: number,
-  status: RelaySyncStatus
-): string {
-  if (localCount === 0 && relayCount === 0) return `${label}: \u2014 (no files)`;
-  const localPart = `${localCount} local`;
-  const relayPart = `${relayCount} relay`;
-  let statusText: string;
-  switch (status) {
-    case 'synced': statusText = 'synced'; break;
-    case 'ahead': statusText = `${localCount - relayCount} outgoing`; break;
-    case 'behind': statusText = `${relayCount - localCount} incoming`; break;
-    case 'diverged': statusText = 'diverged'; break;
-    case 'local-only': statusText = 'local only'; break;
-    case 'relay-only': statusText = `${relayCount} to collect`; break;
-    default: statusText = String(status);
-  }
-  return `${label}: ${localPart}, ${relayPart} \u2014 ${statusText}`;
 }
 
 // B064: Hold badge config — maps HoldLocation to display properties
@@ -159,141 +115,6 @@ function HoldBadge({
         <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
           {tooltip}
-        </div>
-      )}
-    </span>
-  );
-}
-
-// B050: Relay kanban mini-badges — shows sync status per subfolder
-function RelayIndicator({ relayProject }: { relayProject?: RelayProjectInfo }) {
-  const { isHovered, handleMouseEnter, handleMouseLeave } = useDelayedHover(0, 150);
-
-  if (!relayProject) return null;
-
-  // Check if we have enhanced sync info (RelayProjectSyncInfo)
-  const hasSyncInfo = 'syncStatus' in relayProject && 'localSubfolders' in relayProject;
-
-  // Fallback: old dot behavior when no detailed info
-  if (!hasSyncInfo) {
-    const rec = relayProject.subfolders.recordings;
-    const edit1 = relayProject.subfolders['edit-1st'];
-    const edit2 = relayProject.subfolders['edit-2nd'];
-
-    const hasAny = rec.fileCount > 0 || edit1.fileCount > 0 || edit2.fileCount > 0;
-    if (!hasAny) return null;
-
-    const parts: string[] = [];
-    if (rec.fileCount > 0) parts.push(`${rec.fileCount} recording${rec.fileCount !== 1 ? 's' : ''}`);
-    if (edit1.fileCount > 0) parts.push(`${edit1.fileCount} first edit`);
-    if (edit2.fileCount > 0) parts.push(`${edit2.fileCount} final`);
-
-    return (
-      <span
-        className="inline-flex items-center gap-0.5 cursor-help relative"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        {rec.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-blue-500" />}
-        {edit1.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500" />}
-        {edit2.fileCount > 0 && <span className="w-2 h-2 rounded-full bg-emerald-500" />}
-        {isHovered && (
-          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-            <div className="font-medium">Relay</div>
-            {parts.map((p) => (
-              <div key={p} className="text-gray-300">{p}</div>
-            ))}
-          </div>
-        )}
-      </span>
-    );
-  }
-
-  // Enhanced: kanban mini-badges with sync status
-  const syncProject = relayProject as RelayProjectSyncInfo;
-
-  // FR-147: If project doesn't exist locally, show a blocked indicator
-  if ('projectExists' in syncProject && syncProject.projectExists === false) {
-    const totalFiles = Object.values(syncProject.subfolders).reduce((s, v) => s + v.fileCount, 0);
-    if (totalFiles === 0) return null;
-    return (
-      <span
-        className="inline-flex items-center gap-0.5 cursor-help relative"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700">
-          &#9888; {totalFiles}
-        </span>
-        {isHovered && (
-          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1.5 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-            <div className="font-medium mb-1 text-amber-300">Project not synced locally</div>
-            <div className="text-gray-300">{totalFiles} files waiting in relay</div>
-            <div className="text-gray-400">Sync Video Project to unblock</div>
-          </div>
-        )}
-      </span>
-    );
-  }
-
-  const subfolders: RelaySubfolder[] = ['recordings', 'edit-1st', 'edit-2nd'];
-
-  // Build badges — only show subfolders that have files on either side
-  const badges: { label: string; status: RelaySyncStatus; localCount: number; relayCount: number }[] = [];
-  for (const sf of subfolders) {
-    const relayInfo = syncProject.subfolders[sf];
-    const localInfo = syncProject.localSubfolders[sf];
-    const status = syncProject.syncStatus[sf];
-    const hasFiles = relayInfo.fileCount > 0 || localInfo.fileCount > 0;
-    if (hasFiles) {
-      badges.push({
-        label: SUBFOLDER_LABELS[sf],
-        status,
-        localCount: localInfo.fileCount,
-        relayCount: relayInfo.fileCount,
-      });
-    }
-  }
-
-  if (badges.length === 0) return null;
-
-  // Tooltip lines
-  const tooltipLines = subfolders.map((sf) => {
-    const relayInfo = syncProject.subfolders[sf];
-    const localInfo = syncProject.localSubfolders[sf];
-    const status = syncProject.syncStatus[sf];
-    const label = sf === 'recordings' ? 'Recordings' : sf === 'edit-1st' ? '1st Edit' : '2nd Edit';
-    return subfolderTooltipLine(label, localInfo.fileCount, relayInfo.fileCount, status);
-  });
-
-  return (
-    <span
-      className="inline-flex items-center gap-0.5 cursor-help relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {badges.map((badge) => {
-        const config = SYNC_BADGE_CONFIG[badge.status];
-        if (!config) return null;
-        const diff = Math.abs(badge.localCount - badge.relayCount);
-        return (
-          <span
-            key={badge.label}
-            className={`text-xs px-1.5 py-0.5 rounded font-medium ${config.bg} ${config.text}`}
-          >
-            {badge.label} {config.icon(diff)}
-          </span>
-        );
-      })}
-      {isHovered && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1.5 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap">
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900" />
-          <div className="font-medium mb-1">Relay Sync Status</div>
-          {tooltipLines.map((line) => (
-            <div key={line} className="text-gray-300">{line}</div>
-          ))}
         </div>
       )}
     </span>
@@ -481,9 +302,6 @@ const DEFAULT_DISK_THRESHOLDS: DiskThresholds = {
     trash:   { faint: '0',      amber: '300MB',  red: '1GB'   },
     rec:     { faint: '2GB',    amber: '5GB',    red: '10GB'  },
     other:   { faint: '500MB',  amber: '1GB',    red: null    },
-    rRec:    { faint: '1GB',    amber: '3GB',    red: '6GB'   },
-    r1st:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
-    r2nd:    { faint: '500MB',  amber: '2GB',    red: '4GB'   },
     total:   { faint: '3GB',    amber: '8GB',    red: '15GB'  },
   }
 };
@@ -530,20 +348,6 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
   const createProject = useCreateProject();
   const updatePriority = useUpdateProjectPriority();
   const updateStage = useUpdateProjectStage();
-  const { data: relayBrowseData } = useEnhancedRelayBrowse();
-
-  // Build a lookup map for relay projects by project code
-  // Uses RelayProjectInfo as base type — may be RelayProjectSyncInfo when detailed=true
-  const relayByCode = useMemo(() => {
-    const map = new Map<string, RelayProjectInfo>();
-    if (relayBrowseData?.projects) {
-      for (const p of relayBrowseData.projects) {
-        map.set(p.projectCode, p);
-      }
-    }
-    return map;
-  }, [relayBrowseData?.projects]);
-
   // NFR-5: Subscribe to real-time project changes via socket
   useProjectsSocket();
   // NFR-85: Subscribe to transcript changes (updates transcript % in table)
@@ -646,7 +450,7 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
 
   // B065: Disk column totals — sum over filtered projects that have loaded disk data
   const diskTotals = useMemo(() => {
-    let rec = 0, trash = 0, other = 0, rRec = 0, r1st = 0, r2nd = 0, total = 0, count = 0;
+    let rec = 0, trash = 0, other = 0, total = 0, count = 0;
     for (const p of filteredProjects) {
       const pd = diskData[p.code];
       if (!pd) continue;
@@ -654,12 +458,9 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
       rec     += pd.rec     ?? 0;
       trash   += pd.trash   ?? 0;
       other   += pd.other   ?? 0;
-      rRec    += pd.rRec    ?? 0;
-      r1st    += pd.r1st    ?? 0;
-      r2nd    += pd.r2nd    ?? 0;
       total   += pd.total   ?? 0;
     }
-    return { rec, trash, other, rRec, r1st, r2nd, total, count };
+    return { rec, trash, other, total, count };
   }, [filteredProjects, diskData]);
 
   // FR-148: Stage toggle handler — resets preset to 'all' when toggling stages
@@ -757,7 +558,7 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '48px' }}>Files</th>
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '80px' }}>Trans%</th>
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '48px' }}>Final</th>
-                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '64px' }}>Relay</th> {/* B064: widened to fit hold badge */}
+                  <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-center" style={{ width: '64px' }}>T7</th> {/* B064: hold badge */}
                   <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right" style={{ width: '80px' }}>Modified</th>
                   {/* B062: Disk columns — only when disk toggle is on */}
                   {diskColumnsEnabled && (
@@ -765,9 +566,6 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                       <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right border-l border-warm-strong">REC</th>
                       <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">TRASH</th>
                       <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">OTHER</th>
-                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">R-REC</th>
-                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">R-1ST</th>
-                      <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">R-2ND</th>
                       <th className="py-1.5 px-2 font-bold text-[10px] uppercase tracking-wide text-warm-muted text-right">TOTAL</th>
                     </>
                   )}
@@ -787,9 +585,6 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                     <td className="py-1 px-2 text-right border-l border-warm-strong">{formatBytes(diskTotals.rec)}</td>
                     <td className="py-1 px-2 text-right">{diskTotals.trash > 0 ? formatBytes(diskTotals.trash) : '—'}</td>
                     <td className="py-1 px-2 text-right">{diskTotals.other > 0 ? formatBytes(diskTotals.other) : '—'}</td>
-                    <td className="py-1 px-2 text-right">{diskTotals.rRec > 0 ? formatBytes(diskTotals.rRec) : '—'}</td>
-                    <td className="py-1 px-2 text-right">{diskTotals.r1st > 0 ? formatBytes(diskTotals.r1st) : '—'}</td>
-                    <td className="py-1 px-2 text-right">{diskTotals.r2nd > 0 ? formatBytes(diskTotals.r2nd) : '—'}</td>
                     <td className="py-1 px-2 text-right text-warm-secondary">{formatBytes(diskTotals.total)}</td>
                   </tr>
                 )}
@@ -885,10 +680,9 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                         )}
                       </td>
 
-                      {/* FR-148: Relay indicators + B064: Hold badge */}
+                      {/* B064: Hold badge */}
                       <td className="px-2 text-center" style={{ width: '64px' }}>
                         <span className="inline-flex items-center gap-0.5">
-                          <RelayIndicator relayProject={relayByCode.get(project.code)} />
                           <HoldBadge code={project.code} onNavigateToStorage={onNavigateToStorage} /> {/* B064 + WU4 */}
                         </span>
                       </td>
@@ -924,9 +718,6 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                             {diskCell(pd?.rec,     'rec', 'border-l border-warm-strong')}
                             {diskCell(pd?.trash,   'trash')}
                             {diskCell(pd?.other,   'other')}
-                            {diskCell(pd?.rRec,    'rRec')}
-                            {diskCell(pd?.r1st,    'r1st')}
-                            {diskCell(pd?.r2nd,    'r2nd')}
                             {diskCell(pd?.total,   'total')}
                           </>
                         );
@@ -939,7 +730,7 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
               {diskColumnsEnabled && diskTotals.count > 0 && (
                 <tfoot>
                   <tr className="border-t-2 border-warm-strong bg-surface-muted text-[10px] font-bold text-warm-muted">
-                    {/* 9 non-disk columns: star, code, name, stage, files, trans%, final, relay, modified */}
+                    {/* 9 non-disk columns: star, code, name, stage, files, trans%, final, t7, modified */}
                     <td className="py-1.5 px-2" />
                     <td className="py-1.5 px-2" />
                     <td className="py-1.5 px-2 text-warm-secondary">TOTAL ({diskTotals.count})</td>
@@ -949,13 +740,10 @@ export function ProjectsPanel(props: ProjectsPanelProps) {
                     <td className="py-1.5 px-2" />
                     <td className="py-1.5 px-2" />
                     <td className="py-1.5 px-2" />
-                    {/* 8 disk columns */}
+                    {/* 4 disk columns */}
                     <td className="py-1.5 px-2 text-right border-l border-warm-strong">{formatBytes(diskTotals.rec)}</td>
                     <td className="py-1.5 px-2 text-right">{diskTotals.trash > 0 ? formatBytes(diskTotals.trash) : '—'}</td>
                     <td className="py-1.5 px-2 text-right">{diskTotals.other > 0 ? formatBytes(diskTotals.other) : '—'}</td>
-                    <td className="py-1.5 px-2 text-right">{diskTotals.rRec > 0 ? formatBytes(diskTotals.rRec) : '—'}</td>
-                    <td className="py-1.5 px-2 text-right">{diskTotals.r1st > 0 ? formatBytes(diskTotals.r1st) : '—'}</td>
-                    <td className="py-1.5 px-2 text-right">{diskTotals.r2nd > 0 ? formatBytes(diskTotals.r2nd) : '—'}</td>
                     <td className="py-1.5 px-2 text-right text-warm-secondary">{formatBytes(diskTotals.total)}</td>
                   </tr>
                 </tfoot>

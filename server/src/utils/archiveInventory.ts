@@ -82,7 +82,6 @@ export async function listArchiveCandidates(
 export interface BuildArchiveRowOpts {
   projectsRoot: string;
   holdingRoot: string | null;
-  relayRoot: string | null;
 }
 
 /**
@@ -94,15 +93,14 @@ export interface BuildArchiveRowOpts {
  *   Patch 3 — state derived from bytes only via deriveArchiveState.
  *   Patch 4 — per-project failures surface as degraded rows with error, and
  *             are console.warn'd rather than silently swallowed.
- *   Patch 5 — localBytes = project tree minus relay subtrees, clamped to >= 0.
+ *   Patch 5 — localBytes = project tree bytes, clamped to >= 0.
  */
 export async function buildArchiveRow(
   projectCode: string,
   opts: BuildArchiveRowOpts,
 ): Promise<ArchiveRow> {
-  const { projectsRoot, holdingRoot, relayRoot } = opts;
+  const { projectsRoot, holdingRoot } = opts;
   const projectPath = path.join(projectsRoot, projectCode);
-  const relayDir = relayRoot ? path.join(relayRoot, projectCode) : null;
   const holdingPath = holdingRoot ? path.join(holdingRoot, projectCode) : null;
 
   try {
@@ -111,22 +109,17 @@ export async function buildArchiveRow(
     // getDirStats is intentional — it already returns {0,0} on failure,
     // so no error signal is lost.
     const [diskData, holdStatus, heldDirStats] = await Promise.all([
-      calculateProjectDiskSize(projectPath, relayDir),
+      calculateProjectDiskSize(projectPath),
       holdingRoot
-        ? getHoldStatus(projectCode, projectPath, relayDir, holdingRoot)
+        ? getHoldStatus(projectCode, projectPath, holdingRoot)
         : Promise.resolve(null),
       holdingPath
         ? getDirStats(holdingPath)
         : Promise.resolve({ fileCount: 0, totalBytes: 0 }),
     ]);
 
-    // Patch 5: calculateProjectDiskSize rolls relay subtrees (rRec/r1st/r2nd)
-    // into `total`. Strip them so localBytes = bytes inside the project folder
-    // only. Clamp because a misconfigured relayDirectory overlapping the
-    // project tree could go negative.
-    const localBytes = diskData
-      ? Math.max(0, diskData.total - diskData.rRec - diskData.r1st - diskData.r2nd)
-      : 0;
+    // Patch 5: localBytes = bytes inside the project folder.
+    const localBytes = diskData ? Math.max(0, diskData.total) : 0;
     const heldBytes = heldDirStats.totalBytes;
 
     // Patch 3: state derivation strictly from bytes.

@@ -51,16 +51,6 @@ export const QUERY_KEYS = {
   developerProjectState: ['developer', 'project-state'] as const,
   developerConfig: ['developer', 'config'] as const,
   developerTelemetry: ['developer', 'telemetry'] as const,
-  // Relay collaboration
-  relayBrowse: ['relay-browse'] as const,
-  relayEnhancedBrowse: ['relay-enhanced-browse'] as const,
-  relayStatus: ['relay-status'] as const,
-  relayVersions: ['relay-versions'] as const,
-  relayFiles: (subfolder: string) => ['relay-files', subfolder] as const,
-  relayActivity: ['relay-activity'] as const,
-  relayDivergence: ['relay-divergence'] as const,
-  // B044: Sync Hub
-  syncStatus: ['sync-status'] as const,
   // B062: Disk space observability
   projectDisk: (code: string) => ['project-disk', code] as const,
   // B064: Archive-offload hold status

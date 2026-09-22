@@ -296,9 +296,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const [projectsRootDirectory, setProjectsRootDirectory] = useState('');
   const [activeProject, setActiveProject] = useState('');
   const [imageSourceDirectory, setImageSourceDirectory] = useState('');
-  // B038/B039: Relay collaboration settings
-  const [relayDirectory, setRelayDirectory] = useState('');
-  const [relayEnabled, setRelayEnabled] = useState(false);
+  // B039: Machine role
   const [machineRole, setMachineRole] = useState<MachineRole>('recorder');
   const [holdingPath, setHoldingPath] = useState('');
   const [publishedPath, setPublishedPath] = useState('');
@@ -315,7 +313,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const [watchDirExists, setWatchDirExists] = useState<PathExistsStatus>('unknown');
   const [rootDirExists, setRootDirExists] = useState<PathExistsStatus>('unknown');
   const [imageDirExists, setImageDirExists] = useState<PathExistsStatus>('unknown');
-  const [relayDirExists, setRelayDirExists] = useState<PathExistsStatus>('unknown');
   const [holdingPathExists, setHoldingPathExists] = useState<PathExistsStatus>('unknown');
   const [publishedPathExists, setPublishedPathExists] = useState<PathExistsStatus>('unknown');
 
@@ -361,10 +358,7 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       setActiveProject(config.activeProject || '');
       setImageSourceDirectory(imagePath);
 
-      // B038/B039: Initialize relay settings
-      const relayPath = collapsePath(config.relayDirectory || '');
-      setRelayDirectory(relayPath);
-      setRelayEnabled(config.relayEnabled || false);
+      // B039: Initialize machine role
       setMachineRole(config.machineRole || 'recorder');
 
       const holdingPathInit = collapsePath(config.holdingPath || '');
@@ -383,7 +377,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       checkPathExists(watchPath, setWatchDirExists);
       checkPathExists(rootPath, setRootDirExists);
       checkPathExists(imagePath, setImageDirExists);
-      if (relayPath) checkPathExists(relayPath, setRelayDirExists);
       if (holdingPathInit) checkPathExists(holdingPathInit, setHoldingPathExists);
       if (publishedPathInit) checkPathExists(publishedPathInit, setPublishedPathExists);
     }
@@ -438,11 +431,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       (config.activeProject || '') !== activeProject ||
       collapsePath(config.imageSourceDirectory) !== imageSourceDirectory;
 
-    // B038/B039: Check relay config changes
-    const relayChanged =
-      collapsePath(config.relayDirectory || '') !== relayDirectory ||
-      (config.relayEnabled || false) !== relayEnabled ||
-      (config.machineRole || 'recorder') !== machineRole;
+    // B039: Check machine role changes
+    const roleChanged = (config.machineRole || 'recorder') !== machineRole;
 
     const storagePathsChanged =
       collapsePath(config.holdingPath || '') !== holdingPath ||
@@ -457,15 +447,13 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     const commonNamesChanged =
       JSON.stringify(config.commonNames || []) !== JSON.stringify(commonNames);
 
-    return pathsChanged || relayChanged || storagePathsChanged || dictChanged || commonNamesChanged;
+    return pathsChanged || roleChanged || storagePathsChanged || dictChanged || commonNamesChanged;
   }, [
     config,
     watchDirectory,
     projectsRootDirectory,
     activeProject,
     imageSourceDirectory,
-    relayDirectory,
-    relayEnabled,
     machineRole,
     holdingPath,
     publishedPath,
@@ -478,10 +466,9 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const watchError = validatePath(watchDirectory);
   const rootError = validatePath(projectsRootDirectory);
   const imageSourceError = validatePath(imageSourceDirectory);
-  const relayError = relayDirectory.trim() ? validatePath(relayDirectory) : null;
   const holdingError = holdingPath.trim() ? validatePath(holdingPath) : null;
   const publishedError = publishedPath.trim() ? validatePath(publishedPath) : null;
-  const hasErrors = !!(watchError || rootError || imageSourceError || relayError || holdingError || publishedError);
+  const hasErrors = !!(watchError || rootError || imageSourceError || holdingError || publishedError);
 
   const handleSave = async () => {
     if (hasErrors) {
@@ -525,10 +512,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
       // FR-89 Part 5: Send split project directory fields
       // FR-102: Include Gling dictionary
       // FR-116: Include common names
-      // B038: Sanitize relay directory
-      const relaySanitized = sanitizePath(relayDirectory);
-      if (relaySanitized.sanitized !== relayDirectory) setRelayDirectory(relaySanitized.sanitized);
-
       const holdingSanitized = sanitizePath(holdingPath);
       if (holdingSanitized.sanitized !== holdingPath) setHoldingPath(holdingSanitized.sanitized);
       const publishedSanitized = sanitizePath(publishedPath);
@@ -541,8 +524,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         imageSourceDirectory: imageSanitized.sanitized,
         glingDictionary: dictWords,
         commonNames: updatedCommonNames,
-        relayDirectory: relaySanitized.sanitized || undefined,
-        relayEnabled,
         machineRole,
         holdingPath: holdingSanitized.sanitized || undefined,
         publishedPath: publishedSanitized.sanitized || undefined,
@@ -578,9 +559,6 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
     : { mismatch: false, message: '', suggestedPath: null };
   const imageMismatch = envData
     ? detectPathMismatch(imageSourceDirectory, envData.pathFormat)
-    : { mismatch: false, message: '', suggestedPath: null };
-  const relayMismatch = envData && relayDirectory.trim()
-    ? detectPathMismatch(relayDirectory, envData.pathFormat)
     : { mismatch: false, message: '', suggestedPath: null };
 
   const tabs: { key: ConfigTab; label: string; badge?: string }[] = [
@@ -810,58 +788,8 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
         {activeTab === 'collaboration' && (<>
 
 
-          <div className="mb-3">
-            <label className="block text-sm text-warm-secondary mb-1">Relay Directory</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={relayDirectory}
-                onChange={(e) => {
-                  setRelayDirectory(e.target.value);
-                  setRelayDirExists('unknown');
-                }}
-                onBlur={() => relayDirectory.trim() && checkPathExists(relayDirectory, setRelayDirExists)}
-                className={`flex-1 px-3 py-2 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  relayError ? 'border-red-300 bg-red-50' : 'border-warm-strong'
-                }`}
-                placeholder="~/relay/flihub-appydave"
-              />
-              <OpenFolderButton folder="relay" />
-            </div>
-            {relayError ? (
-              <p className="text-xs text-red-500 mt-1">{relayError}</p>
-            ) : relayMismatch.mismatch ? (
-              <PathMismatchWarning
-                message={relayMismatch.message}
-                suggestedPath={relayMismatch.suggestedPath}
-                onUseSuggested={() =>
-                  relayMismatch.suggestedPath && setRelayDirectory(relayMismatch.suggestedPath)
-                }
-              />
-            ) : relayDirectory.trim() ? (
-              <PathExistsIndicator
-                status={relayDirExists}
-                description="SyncThing relay folder shared with collaborators"
-              />
-            ) : (
-              <p className="text-xs text-warm-muted mt-1">
-                Path to the SyncThing relay folder (leave empty to disable)
-              </p>
-            )}
-          </div>
-
           <div className="flex items-center gap-8">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={relayEnabled}
-                onChange={(e) => setRelayEnabled(e.target.checked)}
-                className="w-4 h-4 text-blue-500 rounded"
-              />
-              <span className="text-sm text-warm-secondary">Relay Enabled</span>
-            </label>
-
-            <label className={`flex items-center gap-2 ${relayEnabled ? '' : 'opacity-40 pointer-events-none'}`}>
+            <label className="flex items-center gap-2">
               <span className="text-sm text-warm-secondary">Machine Role</span>
               <select
                 value={machineRole}

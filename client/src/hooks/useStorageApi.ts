@@ -3,7 +3,7 @@
 // Backs GET /api/projects/:code/storage-tree + the four mutation endpoints
 // (POST hold / restore-held / archive / unarchive). Every mutation calls the
 // shared `useInvalidateProjectStorage` helper on success so related caches
-// (storage-tree, archive-inventory, hold-status, project-disk, relay-browse)
+// (storage-tree, archive-inventory, hold-status, project-disk)
 // all re-fetch — this is the DVR-BH-001 lesson; don't skip it.
 //
 // Response envelope (P5 from WU1): mutations return a flat

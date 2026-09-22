@@ -23,8 +23,6 @@ import { createManageRoutes } from './routes/manage.js';
 import { createPoemWuiRoutes } from './routes/poem-wui.js';
 import { createStateRoutes } from './routes/state.js';
 import { createDeveloperRoutes } from './routes/developer.js';
-import { createRelayRoutes } from './routes/relay.js';
-import { createSyncRoutes } from './routes/sync.js';
 import { createHoldRoutes } from './routes/hold.js'; // B064: archive-offload hold routes
 import { createStorageRoutes } from './routes/storage.js'; // storage-panel WU1: per-project Hold + Archive verbs
 import { createMicCheckRoutes } from './routes/miccheck.js'; // MicCheck: live monitoring session API
@@ -190,9 +188,7 @@ function updateConfig(newConfig: Partial<Config>): Config {
   // FR-116: Handle common names
   if (newConfig.commonNames !== undefined) currentConfig.commonNames = newConfig.commonNames;
 
-  // B039: Handle relay + machine role fields
-  if (newConfig.relayEnabled !== undefined) currentConfig.relayEnabled = newConfig.relayEnabled;
-  if (newConfig.relayDirectory !== undefined) currentConfig.relayDirectory = newConfig.relayDirectory;
+  // B039: Handle machine role field
   if (newConfig.machineRole !== undefined) currentConfig.machineRole = newConfig.machineRole;
 
   // FR-163: merge per-root project-code high-water marks (callers guarantee never-decrease)
@@ -306,14 +302,6 @@ app.use('/api', stateRoutes);
 // FR-127: Setup developer tools routes
 const developerRoutes = createDeveloperRoutes(currentConfig);
 app.use('/api/developer', developerRoutes);
-
-// B038: Setup relay collaboration routes
-const relayRoutes = createRelayRoutes(() => currentConfig);
-app.use('/api/relay', relayRoutes);
-
-// B044: Setup sync hub routes
-const syncRoutes = createSyncRoutes(() => currentConfig);
-app.use('/api/sync', syncRoutes);
 
 // B064: Setup hold/offload routes — archive projects to/from T7 SSD
 const holdRoutes = createHoldRoutes(() => currentConfig);

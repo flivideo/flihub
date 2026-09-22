@@ -1,4 +1,4 @@
-// B064: Header SSD status pill — shows T7 mount state alongside Relay/Sync indicators
+// B064: Header SSD status pill — shows T7 mount state
 // WU3: Click now opens the Storage panel for the active project.
 import { useSsdStatus } from '../../hooks/useHoldApi';
 

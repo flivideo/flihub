@@ -6,7 +6,6 @@ import os from 'os';
 import path from 'path';
 import { getProjectStatsRaw } from '../utils/projectStats.js';
 import { calculateProjectDiskSize } from '../utils/diskUtils.js';
-import { localRelayDir } from '../routes/relay.js';
 import type { Config } from '../../../shared/types.js';
 
 let tmp: string;
@@ -49,7 +48,7 @@ describe('disk size reads the layout', () => {
   it('hub project: rec = hub/recordings, and hub/ is itemized without double-counting it', async () => {
     write('hub/recordings/01-1-intro.mov', 1000);
     write('hub/transcripts/01-1-intro.txt', 50);
-    const d = await calculateProjectDiskSize(tmp, null);
+    const d = await calculateProjectDiskSize(tmp);
     expect(d.rec).toBe(1000);
     expect(d.other).toBe(50);
     expect(d.detail?.other).toEqual({ hub: 50 });
@@ -58,20 +57,8 @@ describe('disk size reads the layout', () => {
 
   it('legacy project: rec = recordings/', async () => {
     write('recordings/01-1-intro.mov', 700);
-    const d = await calculateProjectDiskSize(tmp, null);
+    const d = await calculateProjectDiskSize(tmp);
     expect(d.rec).toBe(700);
     expect(d.detail?.other).toEqual({});
-  });
-});
-
-describe('relay maps only the local side', () => {
-  it('hub project: local recordings lane is hub/recordings; edit lanes unchanged', () => {
-    fs.mkdirSync(path.join(tmp, 'hub', 'recordings'), { recursive: true });
-    expect(localRelayDir(tmp, 'recordings')).toBe(path.join(tmp, 'hub', 'recordings'));
-    expect(localRelayDir(tmp, 'edit-1st')).toBe(path.join(tmp, 'edit-1st'));
-  });
-
-  it('legacy project: local recordings lane is recordings/', () => {
-    expect(localRelayDir(tmp, 'recordings')).toBe(path.join(tmp, 'recordings'));
   });
 });

@@ -27,12 +27,6 @@ function resolveProjectDir(config: Config, code: string): string {
   return path.join(projectsRoot, code);
 }
 
-// B064: Resolve relay directory for a project (null if relay not configured)
-function resolveRelayDir(config: Config, code: string): string | null {
-  if (!config.relayEnabled || !config.relayDirectory) return null;
-  return path.join(expandPath(config.relayDirectory), code);
-}
-
 export function createHoldRoutes(getConfig: () => Config): Router {
   const router = Router();
 
@@ -50,7 +44,7 @@ export function createHoldRoutes(getConfig: () => Config): Router {
   });
 
   // B064: GET /api/projects/:code/hold/status
-  // Returns current hold status: location, SSD mount, relay bytes
+  // Returns current hold status: location, SSD mount
   router.get('/:code/hold/status', async (req: Request, res: Response) => {
     const code = queryString(req.params.code);
     // B064: Validate project code — no path separators or parent traversal
@@ -71,15 +65,14 @@ export function createHoldRoutes(getConfig: () => Config): Router {
     if (!holdingRoot) {
       res.json({
         success: true,
-        data: { location: 'unknown', relayBlocked: false, relayBytes: 0, ssdMounted: false },
+        data: { location: 'unknown', ssdMounted: false },
       });
       return;
     }
 
     try {
       const projectDir = resolveProjectDir(config, code);
-      const relayDir = resolveRelayDir(config, code);
-      const status = await getHoldStatus(code, projectDir, relayDir, holdingRoot);
+      const status = await getHoldStatus(code, projectDir, holdingRoot);
       res.json({ success: true, data: status });
     } catch (error) {
       console.error(`[B064] hold/status error for ${code}:`, error);
@@ -112,19 +105,10 @@ export function createHoldRoutes(getConfig: () => Config): Router {
 
     const holdingRoot = expandPath(config.holdingPath);
     const projectDir = resolveProjectDir(config, code);
-    const relayDir = resolveRelayDir(config, code);
 
     try {
-      // B064: Get status to check relay + SSD guards
-      const status = await getHoldStatus(code, projectDir, relayDir, holdingRoot);
-
-      if (status.relayBlocked) {
-        res.status(400).json({
-          success: false,
-          error: `Relay is not empty — ${status.relayBytes} bytes in relay folders. Clear relay before offloading.`,
-        });
-        return;
-      }
+      // B064: Get status to check the SSD guard
+      const status = await getHoldStatus(code, projectDir, holdingRoot);
 
       if (!status.ssdMounted) {
         res.status(400).json({ success: false, error: 'Holding SSD is not mounted' });
@@ -443,14 +427,12 @@ export function createHoldRoutes(getConfig: () => Config): Router {
 
     const projectsRoot = expandPath(config.projectsRootDirectory);
     const holdingRoot = config.holdingPath ? expandPath(config.holdingPath) : null;
-    const relayRoot =
-      config.relayEnabled && config.relayDirectory ? expandPath(config.relayDirectory) : null;
 
     try {
       const codes = await listArchiveCandidates(projectsRoot, holdingRoot);
       const rows: ArchiveRow[] = await Promise.all(
         codes.map((code) =>
-          buildArchiveRow(code, { projectsRoot, holdingRoot, relayRoot }),
+          buildArchiveRow(code, { projectsRoot, holdingRoot }),
         ),
       );
       const response: ArchiveInventoryResponse = { rows };
@@ -499,9 +481,7 @@ export function createHoldRoutes(getConfig: () => Config): Router {
   ): Promise<{ state: ReturnType<typeof deriveArchiveState>; localBytes: number; heldBytes: number }> {
     const projectsRoot = expandPath(config.projectsRootDirectory!);
     const holdingRoot = config.holdingPath ? expandPath(config.holdingPath) : null;
-    const relayRoot =
-      config.relayEnabled && config.relayDirectory ? expandPath(config.relayDirectory) : null;
-    const row = await buildArchiveRow(code, { projectsRoot, holdingRoot, relayRoot });
+    const row = await buildArchiveRow(code, { projectsRoot, holdingRoot });
     return { state: row.state, localBytes: row.localBytes, heldBytes: row.heldBytes };
   }
 
@@ -545,16 +525,7 @@ export function createHoldRoutes(getConfig: () => Config): Router {
         }
 
         const projectDir = resolveProjectDir(config, code);
-        const relayDir = resolveRelayDir(config, code);
-        const status = await getHoldStatus(code, projectDir, relayDir, holdingRoot);
-        if (status.relayBlocked) {
-          results.push({
-            projectCode: code,
-            ok: false,
-            error: `relay not empty (${status.relayBytes} bytes)`,
-          });
-          continue;
-        }
+        const status = await getHoldStatus(code, projectDir, holdingRoot);
         if (!status.ssdMounted) {
           results.push({ projectCode: code, ok: false, error: 'holding SSD not mounted' });
           continue;

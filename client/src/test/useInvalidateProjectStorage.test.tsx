@@ -12,7 +12,7 @@ import { QUERY_KEYS } from '../constants/queryKeys';
 import type { ReactNode } from 'react';
 
 describe('useInvalidateProjectStorage', () => {
-  it('invalidates exactly the 6 known caches (storageTree, archiveInventory, holdStatus, projectDisk, relayBrowse, storageActivityBase)', () => {
+  it('invalidates exactly the 5 known caches (storageTree, archiveInventory, holdStatus, projectDisk, storageActivityBase)', () => {
     const qc = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -31,10 +31,9 @@ describe('useInvalidateProjectStorage', () => {
     expect(calledKeys).toContainEqual(QUERY_KEYS.archiveInventory);
     expect(calledKeys).toContainEqual(QUERY_KEYS.holdStatus('test-code'));
     expect(calledKeys).toContainEqual(QUERY_KEYS.projectDisk('test-code'));
-    expect(calledKeys).toContainEqual(QUERY_KEYS.relayBrowse);
     expect(calledKeys).toContainEqual(QUERY_KEYS.storageActivityBase('test-code'));
 
     // Pin the total so a silent drop fails loudly.
-    expect(spy).toHaveBeenCalledTimes(6);
+    expect(spy).toHaveBeenCalledTimes(5);
   });
 });

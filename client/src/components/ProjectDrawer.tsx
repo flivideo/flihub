@@ -379,44 +379,6 @@ export function ProjectDrawer({ project, onClose }: ProjectDrawerProps) {
                 </div>
               )}
 
-              {/* B062 Wave 2: Relay rows — folder-open disabled (relay path not available in drawer) */}
-              {/* TODO: Pass relay base path as prop or derive from config to enable Finder open for relay rows */}
-              <div className="flex items-center justify-between py-0.5 text-[12px]">
-                <span className="text-warm-muted">Relay: Recordings</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-warm-secondary tabular-nums">{formatBytes(diskData.rRec)}</span>
-                  <button
-                    disabled
-                    className="text-[10px] text-warm-faint opacity-40 flex-shrink-0 cursor-not-allowed"
-                    title="Relay path not available"
-                  >📂</button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-0.5 text-[12px]">
-                <span className="text-warm-muted">Relay: 1st Edit</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-warm-secondary tabular-nums">{formatBytes(diskData.r1st)}</span>
-                  <button
-                    disabled
-                    className="text-[10px] text-warm-faint opacity-40 flex-shrink-0 cursor-not-allowed"
-                    title="Relay path not available"
-                  >📂</button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-0.5 text-[12px]">
-                <span className="text-warm-muted">Relay: 2nd Edit</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-warm-secondary tabular-nums">{formatBytes(diskData.r2nd)}</span>
-                  <button
-                    disabled
-                    className="text-[10px] text-warm-faint opacity-40 flex-shrink-0 cursor-not-allowed"
-                    title="Relay path not available"
-                  >📂</button>
-                </div>
-              </div>
-
               {/* B062 Wave 2: Trash row with delete button */}
               <div className="flex items-center justify-between py-0.5 text-[12px]">
                 <span className="text-warm-muted">Trash</span>

@@ -204,22 +204,4 @@ describe('POST /:code/hold', () => {
     expect(res.body.error).toBe('Invalid project code');
   });
 
-  it('B064: returns 400 when relay is blocked', async () => {
-    const { app } = createApp();
-
-    mockGetHoldStatus.mockResolvedValue({
-      location: 'local-only',
-      relayBlocked: true,
-      relayBytes: 12345,
-      ssdMounted: true,
-    });
-
-    const res = await request(app)
-      .post('/api/projects/b72-test-project/hold')
-      .send({});
-
-    expect(res.status).toBe(400);
-    expect(res.body.success).toBe(false);
-    expect(res.body.error).toContain('Relay is not empty');
-  });
 });

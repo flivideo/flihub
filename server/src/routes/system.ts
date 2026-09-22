@@ -309,7 +309,6 @@ export function createSystemRoutes(getConfig: () => Config, watcherManager?: Wat
       'edit-1st': path.join(projectPath, 'edit-1st'),
       'edit-2nd': path.join(projectPath, 'edit-2nd'),
       'edit-final': path.join(projectPath, 'edit-final'),
-      relay: expandPath(config.relayDirectory || '~/relay/flihub-appydave'),
     };
 
     const folderPath = folderMap[folder];
@@ -538,8 +537,6 @@ export function createSystemRoutes(getConfig: () => Config, watcherManager?: Wat
     const watchers = watcherManager.getWatcherInfo();
     res.json({ watchers });
   });
-
-  // B044: git-sync removed — replaced by POST /api/sync/pull with channel='video-project'
 
   return router;
 }

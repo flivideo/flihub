@@ -12,7 +12,7 @@
 //
 // All four mutations route through `useStorageApi`, which calls
 // `useInvalidateProjectStorage()` on success so storage-tree + archive-
-// inventory + hold-status + project-disk + relay-browse all re-fetch.
+// inventory + hold-status + project-disk all re-fetch.
 // (DVR-BH-001 — don't skip invalidation.)
 //
 // Held → Archive shortcut is a CLIENT-side chain: the backend refuses an
@@ -173,8 +173,6 @@ export function StoragePanel({ projectCode }: StoragePanelProps) {
         ssdMounted={tree.ssdMounted}
         degraded={Boolean(tree.degraded)}
         degradedReason={tree.error}
-        relayBlocked={tree.relayBlocked}
-        relayBytes={tree.relayBytes}
         pendingAction={pendingAction}
         onHold={handleHold}
         onRestore={handleRestore}
@@ -243,11 +241,6 @@ export function StoragePanel({ projectCode }: StoragePanelProps) {
             className={`w-1.5 h-1.5 rounded-full ${tree.ssdMounted ? 'bg-green-600' : 'bg-warm-muted'}`}
           />
           {tree.ssdMounted ? 'T7 connected' : 'T7 not connected'}
-          {tree.relayBlocked && (
-            <span className="ml-2 text-amber-700">
-              · Relay has {formatBytes(tree.relayBytes)}
-            </span>
-          )}
         </span>
       </div>
     </div>

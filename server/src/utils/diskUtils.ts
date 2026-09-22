@@ -117,19 +117,13 @@ async function getSubfolderSizes(dirPath: string, exclude: string[]): Promise<Re
 }
 
 /**
- * Calculate the disk size breakdown for a project directory and optional relay project directory.
+ * Calculate the disk size breakdown for a project directory.
  */
-export async function calculateProjectDiskSize(
-  projectDir: string,
-  relayProjectDir: string | null
-): Promise<DiskSizeData> {
+export async function calculateProjectDiskSize(projectDir: string): Promise<DiskSizeData> {
   const projectPaths = getProjectPaths(projectDir);
-  const [rec, trash, rRec, r1st, r2nd, totalProjectDir, trashFiles, recTopFiles, otherSubfolders] = await Promise.all([
+  const [rec, trash, totalProjectDir, trashFiles, recTopFiles, otherSubfolders] = await Promise.all([
     getDirSize(projectPaths.recordings),
     getDirSize(path.join(projectDir, '-trash')),
-    relayProjectDir ? getDirSize(path.join(relayProjectDir, 'recordings')) : Promise.resolve(0),
-    relayProjectDir ? getDirSize(path.join(relayProjectDir, 'edit-1st')) : Promise.resolve(0),
-    relayProjectDir ? getDirSize(path.join(relayProjectDir, 'edit-2nd')) : Promise.resolve(0),
     getDirSize(projectDir),
     getFileList(path.join(projectDir, '-trash')),
     getFileList(projectPaths.recordings).then(files => files.slice(0, 5)),
@@ -144,15 +138,12 @@ export async function calculateProjectDiskSize(
   }
 
   const other = Math.max(0, totalProjectDir - rec - trash);
-  const total = rec + trash + other + rRec + r1st + r2nd;
+  const total = rec + trash + other;
 
   return {
     rec,
     trash,
     other,
-    rRec,
-    r1st,
-    r2nd,
     total,
     calculatedAt: new Date().toISOString(),
     detail: {

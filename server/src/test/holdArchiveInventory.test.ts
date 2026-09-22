@@ -185,30 +185,6 @@ describe('GET /api/projects/archive-inventory', () => {
     expect(row.heldBytes).toBe(8192);
   });
 
-  it('Patch 8: subtracts relay subtrees from localBytes', async () => {
-    // Project recordings = 2048 bytes
-    const code = 'proj-with-relay';
-    makeProjectRecording(code, 2048);
-
-    // Set up a relay root and populate the project's relay recordings subtree
-    const relayRoot = nodePath.join(tmpRoot, 'relay');
-    const relayProjectDir = nodePath.join(relayRoot, code, 'recordings');
-    nodeFs.mkdirSync(relayProjectDir, { recursive: true });
-    const relayBytes = 512;
-    nodeFs.writeFileSync(nodePath.join(relayProjectDir, 'r.mov'), Buffer.alloc(relayBytes, 1));
-
-    const app = createApp({ relayEnabled: true, relayDirectory: relayRoot });
-    const res = await request(app).get('/api/projects/archive-inventory');
-    expect(res.status).toBe(200);
-    const body: ArchiveInventoryResponse = res.body;
-    const row = body.rows.find((r) => r.projectCode === code)!;
-    expect(row).toBeDefined();
-    // localBytes should reflect the project-tree-only bytes, with rRec stripped.
-    // Project tree has 2048 in recordings; relay rRec=512 is rolled into
-    // calculateProjectDiskSize.total then subtracted — so localBytes === 2048.
-    expect(row.localBytes).toBe(2048);
-  });
-
   it('Patch 8: partial failure — degraded row isolated, other rows healthy', async () => {
     makeProjectRecording('proj-healthy', 1024);
     makeProjectRecording('proj-broken', 2048);

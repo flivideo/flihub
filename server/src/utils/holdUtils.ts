@@ -6,7 +6,6 @@ import type { HoldVerification, HoldStatus, HoldOperationResult } from '../../..
 
 // ---------------------------------------------------------------------------
 // WU3: Rsync exclude patterns — junk folders that should never be held/restored.
-// Mirrors the pattern in relay.ts (RSYNC_EXCLUDES / rsyncExcludeArgs).
 // ---------------------------------------------------------------------------
 export const HOLD_EXCLUDES = ['-trash/', 's3-staging/', '.DS_Store', '._*'];
 
@@ -246,12 +245,11 @@ export async function verifyDirsMatch(
 // ---------------------------------------------------------------------------
 // B064: 3. getHoldStatus
 // Full status check for a project: SSD mount, local/holding existence,
-// relay bytes, and (when location === 'both') verification.
+// and (when location === 'both') verification.
 // ---------------------------------------------------------------------------
 export async function getHoldStatus(
   projectCode: string,
   projectDir: string,
-  relayDir: string | null,
   holdingRoot: string,
 ): Promise<HoldStatus> {
   // B064: Holding path is flat inside brand folder — no range subfolder
@@ -266,20 +264,6 @@ export async function getHoldStatus(
 
   const localExists = localAccessErr === null;
   const holdingExists = holdingAccessErr === null;
-
-  // B064: Compute relay bytes from relay subfolders if relay is configured
-  let relayBytes = 0;
-  if (relayDir) {
-    const [rRec, r1st, r2nd] = await Promise.all([
-      getDirStats(path.join(relayDir, 'recordings')).then(s => s.totalBytes),
-      getDirStats(path.join(relayDir, 'edit-1st')).then(s => s.totalBytes),
-      getDirStats(path.join(relayDir, 'edit-2nd')).then(s => s.totalBytes),
-    ]);
-    relayBytes = rRec + r1st + r2nd;
-  }
-
-  // B064: relayBlocked if relay has any files at all
-  const relayBlocked = relayBytes > 0;
 
   // B064: Determine location state
   let location: HoldStatus['location'];
@@ -296,8 +280,6 @@ export async function getHoldStatus(
   const status: HoldStatus = {
     location,
     holdingPath: holdingExists ? holdingPath : undefined,
-    relayBlocked,
-    relayBytes,
     ssdMounted,
   };
 

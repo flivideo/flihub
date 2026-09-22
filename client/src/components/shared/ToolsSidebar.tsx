@@ -57,27 +57,6 @@ export function ToolsSidebar({
         </div>
       </div>
 
-      {/* Collaborate group */}
-      <div>
-        <div className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-3 px-2">
-          Collaborate
-        </div>
-        <div className="flex flex-col gap-1">
-          <ToolButton
-            label="Relay"
-            active={activeTool === 'relay'}
-            onClick={() => onToolClick('relay')}
-            tooltip="Push recordings to relay folder / collect edits back"
-          />
-          <ToolButton
-            label="Sync"
-            active={activeTool === 'sync'}
-            onClick={() => onToolClick('sync')}
-            tooltip="Git sync for app code and video project"
-          />
-        </div>
-      </div>
-
       {/* Storage group */}
       <div>
         <div className="text-xs font-semibold text-warm-muted uppercase tracking-wider mb-3 px-2">

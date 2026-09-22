@@ -547,17 +547,11 @@ export function createProjectRoutes(
         )
         .map((e) => e.name);
 
-      const relayRoot =
-        config.relayEnabled && config.relayDirectory
-          ? expandPath(config.relayDirectory)
-          : null;
-
       await Promise.all(
         codes.map(async (code) => {
           const projectDir = path.join(projectsRoot, code);
-          const relayProjectDir = relayRoot ? path.join(relayRoot, code) : null;
           try {
-            const result = await calculateProjectDiskSize(projectDir, relayProjectDir);
+            const result = await calculateProjectDiskSize(projectDir);
             diskSizeCache.set(code, result);
           } catch (err) {
             console.error(`[B062] scan-all: failed to calculate disk size for ${code}:`, err);
@@ -591,14 +585,9 @@ export function createProjectRoutes(
 
     const projectsRoot = expandPath(config.projectsRootDirectory);
     const projectDir = path.join(projectsRoot, code);
-    const relayRoot =
-      config.relayEnabled && config.relayDirectory
-        ? expandPath(config.relayDirectory)
-        : null;
-    const relayProjectDir = relayRoot ? path.join(relayRoot, code) : null;
 
     try {
-      const result = await calculateProjectDiskSize(projectDir, relayProjectDir);
+      const result = await calculateProjectDiskSize(projectDir);
       diskSizeCache.set(code, result);
       res.json({ success: true, data: result, fromCache: false });
     } catch (error) {
@@ -639,7 +628,6 @@ export function createProjectRoutes(
 
   // FR-152: DELETE /api/projects/:code — Permanently delete a project's local directory
   // Guard 1: confirmationCode must match project code exactly
-  // Guard 2: relay directory must be empty or non-existent
   router.delete('/:code', async (req: Request, res: Response) => {
     const code = queryString(req.params.code);
     const { confirmationCode } = req.body as { confirmationCode?: string };
@@ -682,31 +670,6 @@ export function createProjectRoutes(
     if (!(await fs.pathExists(projectDir))) {
       res.status(404).json({ success: false, error: `Project not found: ${code}` });
       return;
-    }
-
-    // FR-152: Guard 2 — relay directory must be empty or non-existent
-    if (config.relayEnabled && config.relayDirectory) {
-      const relayProjectDir = path.join(expandPath(config.relayDirectory), code);
-      const relayExists = await fs.pathExists(relayProjectDir);
-      if (relayExists) {
-        // Check relay subfolders for files
-        const relaySubdirs = ['recordings', 'edit-1st', 'edit-2nd'];
-        let relayFileCount = 0;
-        for (const sub of relaySubdirs) {
-          const subDir = path.join(relayProjectDir, sub);
-          if (await fs.pathExists(subDir)) {
-            const entries = await fs.readdir(subDir);
-            relayFileCount += entries.length;
-          }
-        }
-        if (relayFileCount > 0) {
-          res.status(400).json({
-            success: false,
-            error: `Relay directory has ${relayFileCount} file(s) — clear relay before deleting project`,
-          });
-          return;
-        }
-      }
     }
 
     try {

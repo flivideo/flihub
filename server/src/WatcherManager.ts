@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import type { FSWatcher } from 'chokidar';
 import type { Server } from 'socket.io';
-import type { ServerToClientEvents, ClientToServerEvents, Config, RelaySubfolder } from '../../shared/types.js';
+import type { ServerToClientEvents, ClientToServerEvents, Config } from '../../shared/types.js';
 import { expandPath } from './utils/pathUtils.js';
 import { getProjectPaths } from '../../shared/paths.js';
 
@@ -219,75 +219,6 @@ export class WatcherManager {
   }
 
   /**
-   * B038: relay collaboration — Start relay watcher for incoming collaborator recordings
-   * Uses awaitWriteFinish to handle large video files safely
-   */
-  startRelayWatcher(relayDir: string): void {
-    if (!relayDir) return;
-
-    const expandedRelay = expandPath(relayDir);
-    // Stop existing watcher if any
-    this.stopWatcher('relay');
-
-    console.log(`Setting up relay watcher for: ${expandedRelay}`);
-
-    const watcher = chokidar.watch(expandedRelay, {
-      persistent: true,
-      ignoreInitial: true,
-      depth: 3, // Catch files in subdirectories like b17/recordings/
-      ignored: /(^|[/\\])\../,
-      awaitWriteFinish: { stabilityThreshold: 2000, pollInterval: 500 },
-    });
-
-    const emitChange = (filePath: string, action: 'add' | 'unlink') => {
-      const existingTimeout = this.debounceTimeouts.get('relay');
-      if (existingTimeout) clearTimeout(existingTimeout);
-
-      const timeout = setTimeout(() => {
-        try {
-          // Parse: /relay-dir/projectCode/subfolder/filename
-          const relative = path.relative(expandedRelay, filePath);
-          const parts = relative.split(path.sep);
-          if (parts.length < 3) return; // Not deep enough to be a relay file
-
-          const projectCode = parts[0];
-          const subfolder = parts[1] as RelaySubfolder;
-          const filename = parts.slice(2).join(path.sep);
-
-          if (!['recordings', 'edit-1st', 'edit-2nd'].includes(subfolder)) return;
-
-          console.log(`relay:changed — ${action} ${projectCode}/${subfolder}/${filename}`);
-          this.io.emit('relay:changed', {
-            projectCode,
-            subfolder,
-            action,
-            filename,
-            timestamp: new Date().toISOString(),
-          });
-        } catch (err) {
-          console.error('Error emitting relay event:', err);
-        }
-      }, 1000);
-
-      this.debounceTimeouts.set('relay', timeout);
-    };
-
-    for (const event of ['add', 'unlink'] as const) {
-      watcher.on(event, (filePath: string) => emitChange(filePath, event));
-    }
-
-    watcher.on('error', (error: Error) => {
-      console.log('relay watcher note:', error.message);
-    });
-
-    watcher.on('ready', () => {
-      console.log('relay watcher ready');
-    });
-
-    this.watchers.set('relay', watcher);
-  }
-
-  /**
    * Update watchers based on config changes
    */
   updateFromConfig(oldConfig: Config | null, newConfig: Config): void {
@@ -305,18 +236,6 @@ export class WatcherManager {
     if (!oldConfig || oldConfig.imageSourceDirectory !== newConfig.imageSourceDirectory) {
       this.startIncomingImagesWatcher(newConfig.imageSourceDirectory);
     }
-
-    // B038: relay collaboration — restart relay watcher if relay directory changed
-    // Note: relay is machine-global, not per-project — do NOT restart on projectDirectory changes
-    if (!oldConfig ||
-        oldConfig.relayDirectory !== newConfig.relayDirectory ||
-        oldConfig.relayEnabled !== newConfig.relayEnabled) {
-      if (newConfig.relayEnabled && newConfig.relayDirectory) {
-        this.startRelayWatcher(newConfig.relayDirectory);
-      } else {
-        this.stopWatcher('relay');
-      }
-    }
   }
 
   /**
@@ -331,10 +250,6 @@ export class WatcherManager {
     this.startInboxWatcher(config.projectDirectory); // FR-59
     this.startTranscriptsWatcher(config.projectDirectory); // NFR-85
     this.startThumbsWatcher(config.projectDirectory); // NFR-85
-    // B038: relay collaboration — only start if relay is configured and enabled
-    if (config.relayEnabled && config.relayDirectory) {
-      this.startRelayWatcher(config.relayDirectory);
-    }
   }
 
   /**

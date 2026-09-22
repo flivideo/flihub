@@ -22,8 +22,6 @@ import {
   ToolsSidebar,
   ConfirmationModal,
   GlingEditTool,
-  RelayTool,
-  SyncTool,
 } from './shared';
 // WU3: per-active-project Storage panel (WU2 deliverable).
 import { StoragePanel } from './shared/StoragePanel';
@@ -82,13 +80,11 @@ export function groupByChapter(recordings: RecordingFile[]): ChapterGroup[] {
 const toolHeadings: Record<string, string> = {
   regen: 'Recordings',
   'gling-edit': 'Gling / Edit Prep',
-  relay: 'Relay Collaboration',
-  sync: 'Sync',
   awb: 'AWB',
   storage: 'Storage',
 };
 
-export type ActiveTool = 'regen' | 'gling-edit' | 'relay' | 'awb' | 'sync' | 'storage';
+export type ActiveTool = 'regen' | 'gling-edit' | 'awb' | 'storage';
 
 export interface ManagePanelProps {
   initialTool?: string | null;
@@ -107,7 +103,7 @@ export function ManagePanel({
   // B041: Tool-oriented design — each tool owns center content, default to regen
   const [activeTool, setActiveTool] = useState<ActiveTool>('regen');
 
-  // B044: Allow parent to navigate to a specific tool (e.g. from SyncIndicator).
+  // B044: Allow parent to navigate to a specific tool (e.g. from the T7 indicator).
   useEffect(() => {
     if (initialTool) {
       setActiveTool(initialTool as ActiveTool);
@@ -311,12 +307,10 @@ export function ManagePanel({
     <div className="relative">
       {/* B041: Center Content — tool-specific views */}
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* B041: Contextual heading per tool — relay has its own project-scoped heading */}
-        {activeTool !== 'relay' && activeTool !== 'sync' && (
-          <h2 className="text-lg font-medium text-warm-secondary mb-4">
-            {toolHeadings[activeTool]}
-          </h2>
-        )}
+        {/* B041: Contextual heading per tool */}
+        <h2 className="text-lg font-medium text-warm-secondary mb-4">
+          {toolHeadings[activeTool]}
+        </h2>
 
         {needsFileList ? (
           <>
@@ -482,8 +476,6 @@ export function ManagePanel({
         ) : (
           <>
             {/* B041: Standalone tools — full-width, no file list */}
-            {activeTool === 'relay' && <RelayTool />}
-            {activeTool === 'sync' && <SyncTool />}
             {activeTool === 'gling-edit' && <GlingEditTool />}
             {activeTool === 'awb' && <PoemWuiPage />}
             {activeTool === 'storage' && (

@@ -9,7 +9,6 @@
 //
 // All mutations:
 //   - Re-derive state from disk before acting (never trust client-supplied state).
-//   - Respect relay-blocked guard (Hold + Archive only).
 //   - Pass holdExcludeArgs() to every rsync call.
 //   - Write flat: `<brand>/<code>/` — never with range buckets.
 //   - Never touch youtube-FAILS.
@@ -67,29 +66,13 @@ function resolveRoots(config: Config): {
   projectsRoot: string | null;
   holdingRoot: string | null;
   publishedRoot: string | null;
-  relayRoot: string | null;
 } {
   const projectsRoot = config.projectsRootDirectory
     ? expandPath(config.projectsRootDirectory)
     : null;
   const holdingRoot = config.holdingPath ? expandPath(config.holdingPath) : null;
   const publishedRoot = config.publishedPath ? expandPath(config.publishedPath) : null;
-  const relayRoot =
-    config.relayEnabled && config.relayDirectory
-      ? expandPath(config.relayDirectory)
-      : null;
-  return { projectsRoot, holdingRoot, publishedRoot, relayRoot };
-}
-
-async function relayBytesFor(relayRoot: string | null, code: string): Promise<number> {
-  if (!relayRoot) return 0;
-  const base = path.join(relayRoot, code);
-  let total = 0;
-  for (const sub of ['recordings', 'edit-1st', 'edit-2nd']) {
-    const s = await getDirStats(path.join(base, sub));
-    total += s.totalBytes;
-  }
-  return total;
+  return { projectsRoot, holdingRoot, publishedRoot };
 }
 
 async function pathExists(p: string): Promise<boolean> {
@@ -149,7 +132,7 @@ export function createStorageRoutes(
       return;
     }
     const config = getConfig();
-    const { projectsRoot, holdingRoot, publishedRoot, relayRoot } = resolveRoots(config);
+    const { projectsRoot, holdingRoot, publishedRoot } = resolveRoots(config);
     if (!projectsRoot) {
       res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
       return;
@@ -160,7 +143,6 @@ export function createStorageRoutes(
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot,
       });
       res.json(tree);
     } catch (error) {
@@ -189,7 +171,7 @@ export function createStorageRoutes(
       return;
     }
     const config = getConfig();
-    const { projectsRoot, holdingRoot, publishedRoot, relayRoot } = resolveRoots(config);
+    const { projectsRoot, holdingRoot, publishedRoot } = resolveRoots(config);
 
     if (!projectsRoot) {
       res.status(400).json(errResponse('projectsRootDirectory not configured'));
@@ -216,7 +198,6 @@ export function createStorageRoutes(
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot,
       });
 
       // P8: refuse when storage is degraded
@@ -238,17 +219,6 @@ export function createStorageRoutes(
       // P9: refuse when there is nothing heavy to hold
       if (tree.sizes.heavyTotal === 0) {
         res.status(400).json(errResponse('No heavy content to hold', tree.state));
-        return;
-      }
-
-      const relayBytes = await relayBytesFor(relayRoot, code);
-      if (relayBytes > 0) {
-        res.status(400).json(
-          errResponse(
-            `Relay is not empty (${relayBytes} bytes). Clear the Relay tool before holding.`,
-            tree.state,
-          ),
-        );
         return;
       }
 
@@ -323,7 +293,7 @@ export function createStorageRoutes(
       return;
     }
     const config = getConfig();
-    const { projectsRoot, holdingRoot, publishedRoot, relayRoot } = resolveRoots(config);
+    const { projectsRoot, holdingRoot, publishedRoot } = resolveRoots(config);
 
     if (!projectsRoot) {
       res.status(400).json(errResponse('projectsRootDirectory not configured'));
@@ -347,7 +317,6 @@ export function createStorageRoutes(
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot,
       });
 
       // P8: refuse when storage is degraded
@@ -396,7 +365,7 @@ export function createStorageRoutes(
   // -------------------------------------------------------------------------
   // POST /:code/archive
   // Copy WHOLE local folder → PUBLISHED/<brand>/<code>/ (flat, no buckets),
-  // verify, then delete local folder entirely. Relay-blocked guard applies.
+  // verify, then delete local folder entirely.
   //
   // P1: refuse when PUBLISHED destination already has real content.
   // P4: verify by fileCount AND totalBytes (reusing verifyDirsMatch).
@@ -408,7 +377,7 @@ export function createStorageRoutes(
       return;
     }
     const config = getConfig();
-    const { projectsRoot, holdingRoot, publishedRoot, relayRoot } = resolveRoots(config);
+    const { projectsRoot, holdingRoot, publishedRoot } = resolveRoots(config);
 
     if (!projectsRoot) {
       res.status(400).json(errResponse('projectsRootDirectory not configured'));
@@ -432,7 +401,6 @@ export function createStorageRoutes(
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot,
       });
 
       // P8: refuse when storage is degraded
@@ -456,17 +424,6 @@ export function createStorageRoutes(
       if (tree.state !== 'active') {
         res.status(400).json(
           errResponse(`Cannot archive: project is in state '${tree.state}' (restore first)`, tree.state),
-        );
-        return;
-      }
-
-      const relayBytes = await relayBytesFor(relayRoot, code);
-      if (relayBytes > 0) {
-        res.status(400).json(
-          errResponse(
-            `Relay is not empty (${relayBytes} bytes). Clear the Relay tool before archiving.`,
-            tree.state,
-          ),
         );
         return;
       }
@@ -538,7 +495,7 @@ export function createStorageRoutes(
       return;
     }
     const config = getConfig();
-    const { projectsRoot, holdingRoot, publishedRoot, relayRoot } = resolveRoots(config);
+    const { projectsRoot, holdingRoot, publishedRoot } = resolveRoots(config);
 
     if (!projectsRoot) {
       res.status(400).json(errResponse('projectsRootDirectory not configured'));
@@ -562,7 +519,6 @@ export function createStorageRoutes(
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot,
       });
 
       // P8: refuse when storage is degraded
@@ -628,7 +584,7 @@ export function createStorageRoutes(
       return;
     }
     const config = getConfig();
-    const { projectsRoot, holdingRoot, publishedRoot, relayRoot } = resolveRoots(config);
+    const { projectsRoot, holdingRoot, publishedRoot } = resolveRoots(config);
 
     if (!projectsRoot) {
       res.status(400).json(errResponse('projectsRootDirectory not configured'));
@@ -663,7 +619,6 @@ export function createStorageRoutes(
         projectsRoot,
         holdingRoot,
         publishedRoot,
-        relayRoot,
       });
 
       if (tree.degraded) {
@@ -679,17 +634,6 @@ export function createStorageRoutes(
       if (tree.state !== 'held') {
         res.status(400).json(
           errResponse(`Cannot held-archive: project is in state '${tree.state}'`, tree.state),
-        );
-        return;
-      }
-
-      const relayBytes = await relayBytesFor(relayRoot, code);
-      if (relayBytes > 0) {
-        res.status(400).json(
-          errResponse(
-            `Relay is not empty (${relayBytes} bytes). Clear the Relay tool before archiving.`,
-            tree.state,
-          ),
         );
         return;
       }

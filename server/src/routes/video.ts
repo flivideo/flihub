@@ -66,29 +66,17 @@ export function createVideoRoutes(getConfig: () => Config): Router {
 
     try {
       const config = getConfig();
-      const source = queryString(req.query.source as string || '');
-
-      // Resolve base directory: relay or project
-      let baseDir: string;
-      if (source === 'relay') {
-        if (!config.relayDirectory) {
-          res.status(400).json({ success: false, error: 'relayDirectory not configured' });
-          return;
-        }
-        baseDir = expandPath(config.relayDirectory);
-      } else {
-        if (!config.projectsRootDirectory) {
-          res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
-          return;
-        }
-        baseDir = expandPath(config.projectsRootDirectory);
+      if (!config.projectsRootDirectory) {
+        res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+        return;
       }
+      const baseDir = expandPath(config.projectsRootDirectory);
 
       // Map folder aliases to actual paths
       // Note: -chapters is inside recordings/ folder
-      // Local recordings follow the project layout (hub/recordings); the relay keeps 'recordings'.
+      // Recordings follow the project layout (hub/recordings or recordings).
       const projectBase = path.join(baseDir, projectCode);
-      const recordingsBase = source === 'relay' ? path.join(projectBase, 'recordings') : getProjectPaths(projectBase).recordings;
+      const recordingsBase = getProjectPaths(projectBase).recordings;
       let folderDir: string;
       if (folder === '-chapters') {
         folderDir = path.join(recordingsBase, '-chapters');
