@@ -28,7 +28,8 @@ side and maps only the local side. Deleted the stale `shared/paths.js` and `.d.t
 loading instead of the source. Existing project data untouched. **Same day:** `@flivideo/core` pinned to
 v0.2.2. `LAYOUT_DIRS`, `HUB_FOLDER` and `ProjectLayout` come from fli-core. The sync
 `detectProjectLayout` stays local because fli-core's `projectLayout` is async, and a parity test
-checks the two against each other. Tests: `shared/projectLayout.test.ts`, `server/src/test/hubLayout.test.ts`,
+checks the two against each other. **Then v0.2.3:** fli-core added `projectLayoutSync`, so FliHub
+deleted its copy and `getProjectPaths` delegates to it. Tests: `shared/projectLayout.test.ts`, `server/src/test/hubLayout.test.ts`,
 and the hub block in `storageRoutes.test.ts`.
 
 ## W3 — Open contract: launch args + `POST /api/context`; chapter previews deprecated (2026-09-15)
