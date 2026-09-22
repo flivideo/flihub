@@ -35,6 +35,8 @@ sources:
 regenerate: "Run /system-context in the repo root"
 ---
 
+> ⚠️ **Superseded 2026-09-22** by [docs/SYSTEM.md](docs/SYSTEM.md) (humans) + [docs/AGENT-NOTES.md](docs/AGENT-NOTES.md) (agents). Kept as the April snapshot; several claims below no longer match the code.
+
 # FliHub — System Context
 
 ## Purpose

@@ -6,9 +6,10 @@
     "config": ["server/config.template.json", "*.config.*", "eslint.config.js"],
     "routes": ["server/src/routes/**/*.ts"],
     "components": ["client/src/components/**/*.tsx"],
-    "tests": ["**/*.test.*", "**/*.spec.*"],
+    "tests": ["**/*.test.*"],
     "styles": ["**/*.css"],
-    "context": ["CLAUDE.md", "CONTEXT.md"],
+    "context": ["CLAUDE.md", "docs/AGENT-NOTES.md"],
+    "narrative": ["docs/SYSTEM.md"],
     "planning": ["docs/prd/**/*.md", "docs/planning/**/*.md"]
   },
   "aliases": {

@@ -23,7 +23,9 @@ David. A rebuild or archaeology session starts THERE. Companions:
 `docs/architecture/project-codes.md`, `docs/architecture/edit-folders.md`,
 `docs/deprecation/shadow-recordings-inventory.md`.
 
-**System context**: See [CONTEXT.md](CONTEXT.md) for purpose, core abstractions, key workflows, design decisions, non-obvious constraints, expert mental model, scope limits, and failure modes.
+**System context**: [docs/SYSTEM.md](docs/SYSTEM.md) is the human comprehension narrative (supersedes `CONTEXT.md`). Agent notes are imported below:
+
+@docs/AGENT-NOTES.md
 
 ## Project Overview
 

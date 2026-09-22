@@ -14,7 +14,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with this repo
 
 ---
 
-**System context**: See [CONTEXT.md](CONTEXT.md) for purpose, core abstractions, key workflows, design decisions, non-obvious constraints, expert mental model, scope limits, and failure modes.
+**System context**: Read [docs/AGENT-NOTES.md](docs/AGENT-NOTES.md) (pitfalls, schema sources, tooling) before working here. [docs/SYSTEM.md](docs/SYSTEM.md) is the full narrative and supersedes `CONTEXT.md`.
 
 ## Project Overview
 
