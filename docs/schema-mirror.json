@@ -1,4 +1,954 @@
 {
+  "census": {
+    "declared": 397,
+    "files": {
+      "client/src/App.tsx": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ApiExplorer.tsx": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/AssetsPage.tsx": {
+        "declared": 5,
+        "gaps": 0,
+        "mirrored": 5,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ChapterContextPanel.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ChapterHelpPanel.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ChapterPanel.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ClipboardPasteModal.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ConfigPanel.tsx": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ConnectionIndicator.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ContextRefusedBanner.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/DeveloperDrawer.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/DiscardModal.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/FileCard.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/HeaderDropdown.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/HoldDeleteModal.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ImagePreviewOverlay.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/InboxPage.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/IncomingVideoModal.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ManagePanel.tsx": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/MicCheckSnapshot.tsx": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/NamingControls.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/NewProjectForm.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ProjectDeleteModal.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ProjectDrawer.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ProjectListToolbar.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ProjectStatsPopup.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ProjectsPanel.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/RecentlyNamedStrip.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/RecordingVideoModal.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/RecordingsView.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/ThumbsPage.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/TranscriptModal.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/TranscriptSyncModal.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/TranscriptSyncPanel.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/TranscriptionProgressBar.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/VideoTranscriptModal.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/WatchPage.tsx": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/BatchToolbar.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/ConfirmationModal.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/DictionaryQuickAdd.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/EditableFileRow.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/ErrorMessage.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/FileViewerModal.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/InlineTitle.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/LoadingSpinner.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/OpenFolderButton.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/PageContainer.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/PageHeader.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/PlayPauseButton.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/PreviewPanel.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/SelectionBadge.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/ShipsSelector.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/SizeToggle.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/SlideOutDrawer.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/SpeedControl.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/SplitMarker.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/StoragePanel.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/ToolsSidebar.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/UndoToast.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/VideoControlsBar.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/VideoPlayerModal.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/storage/StorageActions.tsx": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/storage/StorageActivityFeed.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/storage/StorageStateHeader.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/components/shared/storage/StorageTree.tsx": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/config.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "client/src/constants/queryKeys.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "client/src/constants/stages.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 2,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useAssetApi.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useBestTake.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useBrandsApi.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useBrollApi.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useConfigApi.ts": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useEditApi.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useMicAnalyser.ts": {
+        "declared": 8,
+        "gaps": 0,
+        "mirrored": 8,
+        "not_read": 0,
+        "not_schema_bearing": 4
+      },
+      "client/src/hooks/useOpenContextApi.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useOpenFolder.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/usePoemWuiApi.ts": {
+        "declared": 5,
+        "gaps": 0,
+        "mirrored": 5,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useProjectsApi.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useRecordingsApi.ts": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useShiftHover.ts": {
+        "declared": 6,
+        "gaps": 0,
+        "mirrored": 5,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useStorageApi.ts": {
+        "declared": 5,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 5,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useThumbsApi.ts": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useVideoAspect.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "client/src/hooks/useVideoPlayback.ts": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 1,
+        "not_schema_bearing": 2
+      },
+      "client/src/utils/fileActions.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/utils/formatting.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 1
+      },
+      "client/src/utils/micGrading.ts": {
+        "declared": 6,
+        "gaps": 0,
+        "mirrored": 5,
+        "not_read": 1,
+        "not_schema_bearing": 1
+      },
+      "client/src/utils/micTrajectory.ts": {
+        "declared": 6,
+        "gaps": 0,
+        "mirrored": 5,
+        "not_read": 1,
+        "not_schema_bearing": 5
+      },
+      "client/src/utils/micZones.ts": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/utils/projectFilters.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "client/src/utils/projectName.ts": {
+        "declared": 0,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 0,
+        "not_schema_bearing": 2
+      },
+      "client/src/utils/srt.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/WatcherManager.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "server/src/config/configManager.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "server/src/config/env.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 2,
+        "not_schema_bearing": 0
+      },
+      "server/src/config/logger.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 2,
+        "not_schema_bearing": 0
+      },
+      "server/src/middleware/errorHandler.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "server/src/routes/chapters.ts": {
+        "declared": 0,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 0,
+        "not_schema_bearing": 1
+      },
+      "server/src/routes/index.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/routes/miccheck.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "server/src/routes/query/recordings.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/routes/thumbs.ts": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/scripts/scanProjects.ts": {
+        "declared": 5,
+        "gaps": 0,
+        "mirrored": 5,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/archiveInventory.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/aspectCheck.ts": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/brands.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/chapterExtraction.ts": {
+        "declared": 4,
+        "gaps": 0,
+        "mirrored": 4,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/chapterRecording.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/diskUtils.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/finalMedia.ts": {
+        "declared": 5,
+        "gaps": 0,
+        "mirrored": 5,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/formatters.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/holdUtils.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/micCheckStore.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 1
+      },
+      "server/src/utils/nextProjectCode.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/openContext.ts": {
+        "declared": 5,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 2,
+        "not_schema_bearing": 1
+      },
+      "server/src/utils/poemWuiUtils.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/projectStats.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/recordingArtifacts.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/reporters.ts": {
+        "declared": 7,
+        "gaps": 0,
+        "mirrored": 7,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/responses.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/s3Utils.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/safeDelete.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/safeMigration.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/scanning.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 2,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/storageActivityLog.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/storageTree.ts": {
+        "declared": 3,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "server/src/utils/telemetry.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "shared/apiRegistry.ts": {
+        "declared": 6,
+        "gaps": 0,
+        "mirrored": 5,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "shared/constants.ts": {
+        "declared": 2,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 2,
+        "not_schema_bearing": 0
+      },
+      "shared/contextSchemas.ts": {
+        "declared": 11,
+        "gaps": 2,
+        "mirrored": 8,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
+      "shared/naming.ts": {
+        "declared": 5,
+        "gaps": 0,
+        "mirrored": 3,
+        "not_read": 2,
+        "not_schema_bearing": 0
+      },
+      "shared/paths.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
+      "shared/types.ts": {
+        "declared": 130,
+        "gaps": 0,
+        "mirrored": 126,
+        "not_read": 4,
+        "not_schema_bearing": 0
+      }
+    },
+    "gaps": 2,
+    "mirrored": 352,
+    "not_read": 43,
+    "not_schema_bearing": 18,
+    "not_schema_bearing_by_family": {
+      "literal constant": 18
+    }
+  },
   "closed_sets": [
     {
       "anchor": {
@@ -262,7 +1212,7 @@
       "authority": "inline membership test `[...].includes(stored)` - no declaring symbol",
       "finding": "REFACTOR: the set for `stored` is inlined at client/src/components/AssetsPage.tsx:214. Name it once (z.enum / literal union) so it has one authority.",
       "grade": "derived",
-      "id": "client/src/components/AssetsPage.stored (membership)",
+      "id": "client/src/components/AssetsPage.stored (membership) #2",
       "members": [
         {
           "anchor": {
@@ -900,36 +1850,11 @@
     },
     {
       "anchor": {
-        "file": "client/src/components/shared/BatchToolbar.tsx",
-        "line": 100
-      },
-      "authority": "if/else-if chain on `e.key` - its type is not a literal union, no enum, no z.enum",
-      "finding": "REFACTOR: `e.key` is a closed set enforced only by control flow at client/src/components/shared/BatchToolbar.tsx:100. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
-      "grade": "derived",
-      "id": "client/src/components/shared/BatchToolbar.e.key (branching)",
-      "members": [
-        {
-          "anchor": {
-            "file": "client/src/components/shared/BatchToolbar.tsx",
-            "line": 100
-          },
-          "value": "Enter"
-        },
-        {
-          "anchor": {
-            "file": "client/src/components/shared/BatchToolbar.tsx",
-            "line": 105
-          },
-          "value": "Escape"
-        }
-      ]
-    },
-    {
-      "anchor": {
         "file": "client/src/components/shared/ConfirmationModal.tsx",
         "line": 26
       },
       "authority": "literal union type of `variant` - a single declaring symbol",
+      "doc": "Confirm button color variant",
       "grade": "declared",
       "id": "client/src/components/shared/ConfirmationModal.ConfirmationModalProps.variant",
       "members": [
@@ -953,32 +1878,6 @@
             "line": 26
           },
           "value": "warning"
-        }
-      ]
-    },
-    {
-      "anchor": {
-        "file": "client/src/components/shared/EditableFileRow.tsx",
-        "line": 124
-      },
-      "authority": "if/else-if chain on `e.key` - its type is not a literal union, no enum, no z.enum",
-      "finding": "REFACTOR: `e.key` is a closed set enforced only by control flow at client/src/components/shared/EditableFileRow.tsx:124. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
-      "grade": "derived",
-      "id": "client/src/components/shared/EditableFileRow.e.key (branching)",
-      "members": [
-        {
-          "anchor": {
-            "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 124
-          },
-          "value": "Enter"
-        },
-        {
-          "anchor": {
-            "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 127
-          },
-          "value": "Escape"
         }
       ]
     },
@@ -1191,6 +2090,7 @@
         "line": 61
       },
       "authority": "literal union type alias `MicMode` - a single declaring symbol",
+      "doc": "DECLARED by the operator, never inferred (spec \u00a73.0). ROOM characterises the background",
       "grade": "declared",
       "id": "client/src/hooks/useMicAnalyser.MicMode",
       "members": [
@@ -1216,6 +2116,7 @@
         "line": 99
       },
       "authority": "literal union type alias `ProbeVerdict` - a single declaring symbol",
+      "doc": "Gate 3 \u2014 the system-processing probe.",
       "grade": "declared",
       "id": "client/src/hooks/useMicAnalyser.ProbeVerdict",
       "members": [
@@ -1337,6 +2238,7 @@
         "line": 52
       },
       "authority": "literal union type alias `TimeFormatStyle` - a single declaring symbol",
+      "doc": "FR-41: Time format styles",
       "grade": "declared",
       "id": "client/src/utils/formatting.TimeFormatStyle",
       "members": [
@@ -1613,32 +2515,6 @@
     },
     {
       "anchor": {
-        "file": "server/src/routes/projects.ts",
-        "line": 441
-      },
-      "authority": "if/else-if chain on `parts.length` - its type is not a literal union, no enum, no z.enum",
-      "finding": "REFACTOR: `parts.length` is a closed set enforced only by control flow at server/src/routes/projects.ts:441. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
-      "grade": "derived",
-      "id": "server/src/routes/projects.parts.length (branching)",
-      "members": [
-        {
-          "anchor": {
-            "file": "server/src/routes/projects.ts",
-            "line": 441
-          },
-          "value": 2
-        },
-        {
-          "anchor": {
-            "file": "server/src/routes/projects.ts",
-            "line": 443
-          },
-          "value": 3
-        }
-      ]
-    },
-    {
-      "anchor": {
         "file": "server/src/routes/thumbs.ts",
         "line": 11
       },
@@ -1763,7 +2639,7 @@
       "authority": "inline membership test `[...].includes(ext)` - no declaring symbol",
       "finding": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:242. Name it once (z.enum / literal union) so it has one authority.",
       "grade": "derived",
-      "id": "server/src/routes/video.ext (membership)",
+      "id": "server/src/routes/video.ext (membership) #2",
       "members": [
         {
           "anchor": {
@@ -2006,32 +2882,6 @@
             "line": 16
           },
           "value": "root"
-        }
-      ]
-    },
-    {
-      "anchor": {
-        "file": "server/src/utils/llmVerification.ts",
-        "line": 99
-      },
-      "authority": "if/else-if chain on `parts.length` - its type is not a literal union, no enum, no z.enum",
-      "finding": "REFACTOR: `parts.length` is a closed set enforced only by control flow at server/src/utils/llmVerification.ts:99. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
-      "grade": "derived",
-      "id": "server/src/utils/llmVerification.parts.length (branching)",
-      "members": [
-        {
-          "anchor": {
-            "file": "server/src/utils/llmVerification.ts",
-            "line": 99
-          },
-          "value": 2
-        },
-        {
-          "anchor": {
-            "file": "server/src/utils/llmVerification.ts",
-            "line": 101
-          },
-          "value": 3
         }
       ]
     },
@@ -2313,6 +3163,7 @@
         "line": 6
       },
       "authority": "literal union type alias `HttpMethod` - a single declaring symbol",
+      "doc": "API Registry",
       "grade": "declared",
       "id": "shared/apiRegistry.HttpMethod",
       "members": [
@@ -2634,6 +3485,7 @@
         "line": 21
       },
       "authority": "literal union type of `status` - a single declaring symbol",
+      "doc": "ok \u00b7 mismatch (shout) \u00b7 skipped (project has no aspect set) \u00b7 unknown (could not probe)",
       "grade": "declared",
       "id": "shared/types.AspectCheck.status",
       "members": [
@@ -3420,6 +4272,7 @@
         "line": 1034
       },
       "authority": "literal union type alias `ProjectShips` - a single declaring symbol",
+      "doc": "FR-168: RENDER GRAIN \u2014 does this project ship ONE video, or one video per chapter?",
       "grade": "declared",
       "id": "shared/types.ProjectShips",
       "members": [
@@ -3693,6 +4546,7 @@
         "line": 1193
       },
       "authority": "literal union type alias `MicCheckMode` - a single declaring symbol",
+      "doc": "One rolling sample, posted ~1 Hz. The worklet emits ~23 Hz; posting at that rate",
       "grade": "declared",
       "id": "shared/types.MicCheckMode",
       "members": [
@@ -3819,7 +4673,7 @@
       },
       "kind": "refactor_required",
       "message": "REFACTOR: the set for `stored` is inlined at client/src/components/AssetsPage.tsx:214. Name it once (z.enum / literal union) so it has one authority.",
-      "target": "client/src/components/AssetsPage.stored (membership)"
+      "target": "client/src/components/AssetsPage.stored (membership) #2"
     },
     {
       "anchor": {
@@ -3851,24 +4705,6 @@
     },
     {
       "anchor": {
-        "file": "client/src/components/shared/BatchToolbar.tsx",
-        "line": 100
-      },
-      "kind": "refactor_required",
-      "message": "REFACTOR: `e.key` is a closed set enforced only by control flow at client/src/components/shared/BatchToolbar.tsx:100. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
-      "target": "client/src/components/shared/BatchToolbar.e.key (branching)"
-    },
-    {
-      "anchor": {
-        "file": "client/src/components/shared/EditableFileRow.tsx",
-        "line": 124
-      },
-      "kind": "refactor_required",
-      "message": "REFACTOR: `e.key` is a closed set enforced only by control flow at client/src/components/shared/EditableFileRow.tsx:124. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
-      "target": "client/src/components/shared/EditableFileRow.e.key (branching)"
-    },
-    {
-      "anchor": {
         "file": "client/src/utils/projectFilters.ts",
         "line": 39
       },
@@ -3893,15 +4729,6 @@
       "kind": "refactor_required",
       "message": "REFACTOR: the set for `priority` is inlined at server/src/routes/projects.ts:148. Name it once (z.enum / literal union) so it has one authority.",
       "target": "server/src/routes/projects.priority (membership)"
-    },
-    {
-      "anchor": {
-        "file": "server/src/routes/projects.ts",
-        "line": 441
-      },
-      "kind": "refactor_required",
-      "message": "REFACTOR: `parts.length` is a closed set enforced only by control flow at server/src/routes/projects.ts:441. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
-      "target": "server/src/routes/projects.parts.length (branching)"
     },
     {
       "anchor": {
@@ -3946,7 +4773,7 @@
       },
       "kind": "refactor_required",
       "message": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:242. Name it once (z.enum / literal union) so it has one authority.",
-      "target": "server/src/routes/video.ext (membership)"
+      "target": "server/src/routes/video.ext (membership) #2"
     },
     {
       "anchor": {
@@ -3956,23 +4783,76 @@
       "kind": "refactor_required",
       "message": "REFACTOR: the set for `word.toLowerCase()` is inlined at server/src/utils/chapterExtraction.ts:208. Name it once (z.enum / literal union) so it has one authority.",
       "target": "server/src/utils/chapterExtraction.word.toLowerCase() (membership)"
+    }
+  ],
+  "generated": "2026-09-23T08:06:25+00:00",
+  "ignored_derived": [
+    {
+      "anchor": {
+        "file": "client/src/components/shared/BatchToolbar.tsx",
+        "line": 100
+      },
+      "subject": "client/src/components/shared/BatchToolbar.e.key (branching)",
+      "values": [
+        "Enter",
+        "Escape"
+      ],
+      "why": "the subject is a property declared by TypeScript's lib or a package"
+    },
+    {
+      "anchor": {
+        "file": "client/src/components/shared/EditableFileRow.tsx",
+        "line": 124
+      },
+      "subject": "client/src/components/shared/EditableFileRow.e.key (branching)",
+      "values": [
+        "Enter",
+        "Escape"
+      ],
+      "why": "the subject is a property declared by TypeScript's lib or a package"
+    },
+    {
+      "anchor": {
+        "file": "server/src/routes/projects.ts",
+        "line": 441
+      },
+      "subject": "server/src/routes/projects.parts.length (branching)",
+      "values": [
+        2,
+        3
+      ],
+      "why": "the subject is a property declared by TypeScript's lib or a package"
     },
     {
       "anchor": {
         "file": "server/src/utils/llmVerification.ts",
         "line": 99
       },
-      "kind": "refactor_required",
-      "message": "REFACTOR: `parts.length` is a closed set enforced only by control flow at server/src/utils/llmVerification.ts:99. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
-      "target": "server/src/utils/llmVerification.parts.length (branching)"
+      "subject": "server/src/utils/llmVerification.parts.length (branching)",
+      "values": [
+        2,
+        3
+      ],
+      "why": "the subject is a property declared by TypeScript's lib or a package"
     }
   ],
-  "generated": "2026-09-23T04:13:51+00:00",
   "mirror_version": 1,
+  "never_read": [
+    "classes - a class's fields are never mirrored (the census lists each one)",
+    "generic, mapped and conditional type aliases",
+    "template-literal types, and unions that contain one",
+    "aliases of another type or value (`X = Y`), and utility-type aliases (`Pick<>`, `Omit<>`, `Record<>`)",
+    "`keyof typeof X` / indexed-access types, unless X itself is read as a closed set",
+    "results of `.pick` / `.omit` / `.partial` / `.required` (listed as gaps where met)",
+    "zod schemas built inside function bodies, other than a function that returns one zod expression",
+    "the parameterised result of a schema helper or factory call (listed as gaps where met)",
+    "constants that are not exported (the census does not count them)",
+    "`*.d.ts` files and build output (`dist/`, `build/`, `out/`) - excluded by default",
+    "regex-encoded sets, JSON Schema files, and the data actually on disk"
+  ],
   "parser": "typescript 5.9.3 (resolved from the target)",
   "scope": {
     "exclude": [
-      "shared/*.d.ts",
       "*.test.ts",
       "*.test.tsx",
       "*.spec.ts",
@@ -3984,7 +4864,11 @@
       "*/__tests__/*",
       "*/e2e/*",
       "*/__mocks__/*",
-      "*/fixtures/*"
+      "*/fixtures/*",
+      "*.d.ts",
+      "*/dist/*",
+      "*/build/*",
+      "*/out/*"
     ],
     "include": [
       "*.ts",
@@ -4369,7 +5253,7 @@
           },
           "default": null,
           "name": "onPreviewEnter",
-          "type": "(image: { url: string; filename: string; size: number; timestamp: string }, e: React.MouseEvent) => void \u2192 React (node_modules/@types/react/index.d.ts), MouseEvent (node_modules/@types/react/index.d.ts)"
+          "type": "(image: { url: string; filename: string; size: number; timestamp: string }, e: React.MouseEvent) => void \u2192 React (@types/react), MouseEvent (@types/react)"
         },
         {
           "anchor": {
@@ -4378,7 +5262,7 @@
           },
           "default": null,
           "name": "onPreviewMove",
-          "type": "(e: React.MouseEvent) => void \u2192 React (node_modules/@types/react/index.d.ts), MouseEvent (node_modules/@types/react/index.d.ts)"
+          "type": "(e: React.MouseEvent) => void \u2192 React (@types/react), MouseEvent (@types/react)"
         },
         {
           "anchor": {
@@ -4504,7 +5388,7 @@
           },
           "default": null,
           "name": "children",
-          "type": "React.ReactNode \u2192 React (node_modules/@types/react/index.d.ts), ReactNode (node_modules/@types/react/index.d.ts)"
+          "type": "React.ReactNode \u2192 React (@types/react), ReactNode (@types/react)"
         }
       ],
       "grade": "declared",
@@ -5750,7 +6634,7 @@
           },
           "default": null,
           "name": "activeStages",
-          "type": "Set<string> \u2192 Set (node_modules/typescript/lib/lib.es2015.collection.d.ts)"
+          "type": "Set<string>"
         },
         {
           "anchor": {
@@ -6916,7 +7800,7 @@
           },
           "default": null,
           "name": "onAddGlobal",
-          "type": "(word: string) => Promise<void> \u2192 Promise (node_modules/typescript/lib/lib.es2015.promise.d.ts)"
+          "type": "(word: string) => Promise<void>"
         },
         {
           "anchor": {
@@ -6925,7 +7809,7 @@
           },
           "default": null,
           "name": "onAddProject",
-          "type": "(word: string) => Promise<void> \u2192 Promise (node_modules/typescript/lib/lib.es2015.promise.d.ts)"
+          "type": "(word: string) => Promise<void>"
         }
       ],
       "grade": "declared",
@@ -7210,7 +8094,7 @@
           },
           "default": null,
           "name": "error",
-          "type": "Error | null \u2192 Error (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Error | null"
         },
         {
           "anchor": {
@@ -7297,7 +8181,7 @@
           },
           "default": null,
           "name": "onSave",
-          "type": "(value: string) => Promise<unknown> | unknown \u2192 Promise (node_modules/typescript/lib/lib.es2015.promise.d.ts)"
+          "type": "(value: string) => Promise<unknown> | unknown"
         },
         {
           "anchor": {
@@ -7706,7 +8590,7 @@
           },
           "default": null,
           "name": "labels",
-          "type": "?: Partial<Record<T, string>> \u2192 Partial (node_modules/typescript/lib/lib.es5.d.ts), Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "?: Partial<Record<T, string>>"
         }
       ],
       "grade": "declared",
@@ -8178,7 +9062,7 @@
           },
           "default": null,
           "name": "infoSlot",
-          "type": "?: React.ReactNode \u2192 React (node_modules/@types/react/index.d.ts), ReactNode (node_modules/@types/react/index.d.ts)"
+          "type": "?: React.ReactNode \u2192 React (@types/react), ReactNode (@types/react)"
         },
         {
           "anchor": {
@@ -8992,7 +9876,7 @@
           },
           "default": null,
           "name": "playlists",
-          "type": "?: Record<string, string> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "?: Record<string, string>"
         },
         {
           "anchor": {
@@ -9001,7 +9885,7 @@
           },
           "default": null,
           "name": "_meta",
-          "type": "?: Record<string, string> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "?: Record<string, string>"
         }
       ],
       "grade": "declared",
@@ -9531,7 +10415,7 @@
           "default": null,
           "doc": "What we demanded. `exact` means Chrome throws rather than silently ignoring.",
           "name": "asked",
-          "type": "Record<string, unknown> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Record<string, unknown>"
         },
         {
           "anchor": {
@@ -9541,7 +10425,7 @@
           "default": null,
           "doc": "What the track actually reports \u2014 Chrome's view of Chrome's own chain.",
           "name": "got",
-          "type": "MediaTrackSettings \u2192 MediaTrackSettings (node_modules/typescript/lib/lib.dom.d.ts)"
+          "type": "MediaTrackSettings"
         },
         {
           "anchor": {
@@ -9551,7 +10435,7 @@
           "default": null,
           "doc": "What the device says it can do.",
           "name": "capable",
-          "type": "MediaTrackCapabilities | null \u2192 MediaTrackCapabilities (node_modules/typescript/lib/lib.dom.d.ts)"
+          "type": "MediaTrackCapabilities | null"
         },
         {
           "anchor": {
@@ -9561,7 +10445,7 @@
           "default": null,
           "doc": "What this browser build understands as a constraint at all.",
           "name": "supported",
-          "type": "MediaTrackSupportedConstraints \u2192 MediaTrackSupportedConstraints (node_modules/typescript/lib/lib.dom.d.ts)"
+          "type": "MediaTrackSupportedConstraints"
         }
       ],
       "grade": "declared",
@@ -10624,7 +11508,7 @@
           },
           "default": null,
           "name": "handleMouseEnter",
-          "type": "(image: LegacyImageData, e: React.MouseEvent) => void \u2192 client/src/hooks/useShiftHover.LegacyImageData, React (node_modules/@types/react/index.d.ts), MouseEvent (node_modules/@types/react/index.d.ts)"
+          "type": "(image: LegacyImageData, e: React.MouseEvent) => void \u2192 client/src/hooks/useShiftHover.LegacyImageData, React (@types/react), MouseEvent (@types/react)"
         },
         {
           "anchor": {
@@ -10633,7 +11517,7 @@
           },
           "default": null,
           "name": "handlePreviewEnter",
-          "type": "(content: PreviewContent, e: React.MouseEvent) => void \u2192 client/src/hooks/useShiftHover.PreviewContent, React (node_modules/@types/react/index.d.ts), MouseEvent (node_modules/@types/react/index.d.ts)"
+          "type": "(content: PreviewContent, e: React.MouseEvent) => void \u2192 client/src/hooks/useShiftHover.PreviewContent, React (@types/react), MouseEvent (@types/react)"
         },
         {
           "anchor": {
@@ -10642,7 +11526,7 @@
           },
           "default": null,
           "name": "handleMouseMove",
-          "type": "(e: React.MouseEvent) => void \u2192 React (node_modules/@types/react/index.d.ts), MouseEvent (node_modules/@types/react/index.d.ts)"
+          "type": "(e: React.MouseEvent) => void \u2192 React (@types/react), MouseEvent (@types/react)"
         },
         {
           "anchor": {
@@ -10857,7 +11741,7 @@
           "default": null,
           "doc": "Call from the <video> onLoadedMetadata handler",
           "name": "readAspect",
-          "type": "(el: HTMLVideoElement | null) => void \u2192 HTMLVideoElement (node_modules/typescript/lib/lib.dom.d.ts)"
+          "type": "(el: HTMLVideoElement | null) => void"
         },
         {
           "anchor": {
@@ -10926,7 +11810,7 @@
           },
           "default": null,
           "name": "videoRef",
-          "type": "React.RefObject<HTMLVideoElement | null> \u2192 React (node_modules/@types/react/index.d.ts), RefObject (node_modules/@types/react/index.d.ts), HTMLVideoElement (node_modules/typescript/lib/lib.dom.d.ts)"
+          "type": "React.RefObject<HTMLVideoElement | null> \u2192 React (@types/react), RefObject (@types/react)"
         },
         {
           "anchor": {
@@ -11584,7 +12468,7 @@
           },
           "default": null,
           "name": "activeStages",
-          "type": "Set<string> \u2192 Set (node_modules/typescript/lib/lib.es2015.collection.d.ts)"
+          "type": "Set<string>"
         },
         {
           "anchor": {
@@ -11773,7 +12657,7 @@
           },
           "default": null,
           "name": "ignored",
-          "type": "?: RegExp \u2192 RegExp (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "?: RegExp"
         },
         {
           "anchor": {
@@ -12287,7 +13171,7 @@
           },
           "default": null,
           "name": "byType",
-          "type": "Record<DiscrepancyType, number> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts), server/src/scripts/scanProjects.DiscrepancyType"
+          "type": "Record<DiscrepancyType, number> \u2192 server/src/scripts/scanProjects.DiscrepancyType"
         },
         {
           "anchor": {
@@ -12296,7 +13180,7 @@
           },
           "default": null,
           "name": "bySeverity",
-          "type": "Record<DiscrepancySeverity, number> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts), server/src/scripts/scanProjects.DiscrepancySeverity"
+          "type": "Record<DiscrepancySeverity, number> \u2192 server/src/scripts/scanProjects.DiscrepancySeverity"
         }
       ],
       "grade": "declared",
@@ -12386,7 +13270,7 @@
           },
           "default": null,
           "name": "probeFrame",
-          "type": "(file: string) => Promise<Size | null> \u2192 Promise (node_modules/typescript/lib/lib.es2015.promise.d.ts), server/src/utils/aspectCheck.Size"
+          "type": "(file: string) => Promise<Size | null> \u2192 server/src/utils/aspectCheck.Size"
         },
         {
           "anchor": {
@@ -12395,7 +13279,7 @@
           },
           "default": null,
           "name": "detectPicture",
-          "type": "(file: string, durationSec?: number) => Promise<Size | null> \u2192 Promise (node_modules/typescript/lib/lib.es2015.promise.d.ts), server/src/utils/aspectCheck.Size"
+          "type": "(file: string, durationSec?: number) => Promise<Size | null> \u2192 server/src/utils/aspectCheck.Size"
         },
         {
           "anchor": {
@@ -12404,7 +13288,7 @@
           },
           "default": null,
           "name": "now",
-          "type": "() => Date \u2192 Date (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "() => Date"
         }
       ],
       "grade": "declared",
@@ -13391,7 +14275,7 @@
           },
           "default": null,
           "name": "updateConfig",
-          "type": "(patch: Partial<Config>) => Config \u2192 Partial (node_modules/typescript/lib/lib.es5.d.ts), shared/types.Config"
+          "type": "(patch: Partial<Config>) => Config \u2192 shared/types.Config"
         },
         {
           "anchor": {
@@ -14816,7 +15700,7 @@
           },
           "default": null,
           "name": "toPrep",
-          "type": "Array<{ from: string; to: string }> \u2192 Array (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Array<{ from: string; to: string }>"
         },
         {
           "anchor": {
@@ -14825,7 +15709,7 @@
           },
           "default": null,
           "name": "toPost",
-          "type": "Array<{ from: string; to: string }> \u2192 Array (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Array<{ from: string; to: string }>"
         },
         {
           "anchor": {
@@ -14834,7 +15718,7 @@
           },
           "default": null,
           "name": "conflicts",
-          "type": "Array<{ file: string; reason: string }> \u2192 Array (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Array<{ file: string; reason: string }>"
         }
       ],
       "grade": "declared",
@@ -14909,7 +15793,7 @@
           },
           "default": null,
           "name": "deleted",
-          "type": "Array<{ name: string; size: number }> \u2192 Array (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Array<{ name: string; size: number }>"
         },
         {
           "anchor": {
@@ -16285,7 +17169,7 @@
           },
           "default": null,
           "name": "projectPriorities",
-          "type": "?: Record<string, 'pinned'> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "?: Record<string, 'pinned'>"
         },
         {
           "anchor": {
@@ -16294,7 +17178,7 @@
           },
           "default": null,
           "name": "projectStageOverrides",
-          "type": "?: Record<string, ProjectStage> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts), shared/types.ProjectStage"
+          "type": "?: Record<string, ProjectStage> \u2192 shared/types.ProjectStage"
         },
         {
           "anchor": {
@@ -16303,7 +17187,7 @@
           },
           "default": null,
           "name": "projectCodeHighWater",
-          "type": "?: Record<string, string> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "?: Record<string, string>"
         },
         {
           "anchor": {
@@ -16498,7 +17382,7 @@
           },
           "default": null,
           "name": "detail",
-          "type": "?: { other: Record<string, number>; // subfolder name \u2192 bytes (e.g. { \"final\": 38000000, \"assets\": 1000000 }) recTopFiles: Array<{ name: strin\u2026 \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts), Array (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "?: { other: Record<string, number>; // subfolder name \u2192 bytes (e.g. { \"final\": 38000000, \"assets\": 1000000 }) recTopFiles: Array<{ name: strin\u2026"
         }
       ],
       "grade": "declared",
@@ -16521,7 +17405,7 @@
           },
           "default": null,
           "name": "other",
-          "type": "Record<string, number> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Record<string, number>"
         },
         {
           "anchor": {
@@ -16530,7 +17414,7 @@
           },
           "default": null,
           "name": "recTopFiles",
-          "type": "Array<{ name: string; size: number }> \u2192 Array (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Array<{ name: string; size: number }>"
         },
         {
           "anchor": {
@@ -16539,7 +17423,7 @@
           },
           "default": null,
           "name": "trashFiles",
-          "type": "Array<{ name: string; size: number }> \u2192 Array (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Array<{ name: string; size: number }>"
         }
       ],
       "grade": "declared",
@@ -21830,7 +22714,7 @@
           },
           "default": null,
           "name": "chapters",
-          "type": "Array<{ chapter: string; label: string; segmentCount: number; totalDuration: number; }> \u2192 Array (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Array<{ chapter: string; label: string; segmentCount: number; totalDuration: number; }>"
         },
         {
           "anchor": {
@@ -22057,7 +22941,7 @@
           },
           "default": null,
           "name": "recordings",
-          "type": "Record<string, RecordingState> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts), shared/types.RecordingState"
+          "type": "Record<string, RecordingState> \u2192 shared/types.RecordingState"
         },
         {
           "anchor": {
@@ -22075,7 +22959,7 @@
           },
           "default": null,
           "name": "chapters",
-          "type": "?: Record<string, ChapterState> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts), shared/types.ChapterState"
+          "type": "?: Record<string, ChapterState> \u2192 shared/types.ChapterState"
         },
         {
           "anchor": {
@@ -22168,7 +23052,7 @@
           },
           "default": null,
           "name": "recordings",
-          "type": "Record<string, RecordingState> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts), shared/types.RecordingState"
+          "type": "Record<string, RecordingState> \u2192 shared/types.RecordingState"
         }
       ],
       "grade": "declared",
@@ -22723,7 +23607,7 @@
           },
           "default": null,
           "name": "undoMapping",
-          "type": "Array<{ oldFilename: string; newFilename: string }> \u2192 Array (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Array<{ oldFilename: string; newFilename: string }>"
         },
         {
           "anchor": {
@@ -22941,7 +23825,7 @@
           },
           "default": null,
           "name": "asked",
-          "type": "Record<string, unknown> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Record<string, unknown>"
         },
         {
           "anchor": {
@@ -22950,7 +23834,7 @@
           },
           "default": null,
           "name": "got",
-          "type": "Record<string, unknown> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Record<string, unknown>"
         },
         {
           "anchor": {
@@ -22959,7 +23843,7 @@
           },
           "default": null,
           "name": "capable",
-          "type": "Record<string, unknown> | null \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Record<string, unknown> | null"
         },
         {
           "anchor": {
@@ -22968,7 +23852,7 @@
           },
           "default": null,
           "name": "supported",
-          "type": "Record<string, unknown> \u2192 Record (node_modules/typescript/lib/lib.es5.d.ts)"
+          "type": "Record<string, unknown>"
         }
       ],
       "grade": "declared",
@@ -23493,11 +24377,406 @@
     }
   ],
   "target": {
-    "commit": "2fddba7504a7de7eb58f07bdeccb8b49fbd44c99",
-    "root": "/Users/davidcruwys/dev/ad/flivideo/flihub",
+    "commit": "95bfe6e91147a2bec85facde718017e36de5a869",
+    "root": "..",
     "stack": "typescript"
   },
   "unresolved": [
+    {
+      "looked_at": [
+        "client/src/vite-env.d.ts",
+        "server/src/types/string-comparisons.d.ts"
+      ],
+      "reason": "`*.d.ts` is excluded so build output cannot shadow its source; these have no sibling source, so their declarations are NOT on this page. Re-run with --no-default-excludes (and your own --exclude list) to include them.",
+      "subject": "2 hand-written declaration file(s) excluded by default"
+    },
+    {
+      "census": true,
+      "family": "union of named or mixed types",
+      "looked_at": [
+        "client/src/App.tsx:84"
+      ],
+      "reason": "declared but not read: union of named or mixed types. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/App.ConfigFocusSection` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "utility-type alias (`Pick` / `Omit` / `Record` / generic instance)",
+      "looked_at": [
+        "client/src/components/MicCheckSnapshot.tsx:34"
+      ],
+      "reason": "declared but not read: utility-type alias (`Pick` / `Omit` / `Record` / generic instance). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/components/MicCheckSnapshot.Analyser` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "client/src/components/shared/ShipsSelector.tsx:17"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/components/shared/ShipsSelector.SHIPS_LABEL` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "const built by a call (helper or non-zod call)",
+      "looked_at": [
+        "client/src/config.ts:14"
+      ],
+      "reason": "declared but not read: const built by a call (helper or non-zod call). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/config.API_URL` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "client/src/constants/queryKeys.ts:5"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/constants/queryKeys.QUERY_KEYS` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "client/src/constants/stages.ts:4"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/constants/stages.STAGE_DISPLAY` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "client/src/constants/stages.ts:73"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/constants/stages.STAGE_ORDER` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "client/src/hooks/useBrollApi.ts:12"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useBrollApi.BROLL_QUERY_KEY` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "client/src/hooks/useOpenContextApi.ts:8"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useOpenContextApi.OPEN_CONTEXT_KEY` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "union of named or mixed types",
+      "looked_at": [
+        "client/src/hooks/useShiftHover.ts:25"
+      ],
+      "reason": "declared but not read: union of named or mixed types. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useShiftHover.LegacyImageData` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "const built by a call (helper or non-zod call)",
+      "looked_at": [
+        "client/src/hooks/useStorageApi.ts:79"
+      ],
+      "reason": "declared but not read: const built by a call (helper or non-zod call). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useStorageApi.useArchiveProject` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "const built by a call (helper or non-zod call)",
+      "looked_at": [
+        "client/src/hooks/useStorageApi.ts:83"
+      ],
+      "reason": "declared but not read: const built by a call (helper or non-zod call). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useStorageApi.useHeldArchiveProject` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "const built by a call (helper or non-zod call)",
+      "looked_at": [
+        "client/src/hooks/useStorageApi.ts:77"
+      ],
+      "reason": "declared but not read: const built by a call (helper or non-zod call). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useStorageApi.useHoldProject` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "const built by a call (helper or non-zod call)",
+      "looked_at": [
+        "client/src/hooks/useStorageApi.ts:78"
+      ],
+      "reason": "declared but not read: const built by a call (helper or non-zod call). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useStorageApi.useRestoreHeld` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "const built by a call (helper or non-zod call)",
+      "looked_at": [
+        "client/src/hooks/useStorageApi.ts:80"
+      ],
+      "reason": "declared but not read: const built by a call (helper or non-zod call). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useStorageApi.useUnarchiveProject` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "constant (other form)",
+      "looked_at": [
+        "client/src/hooks/useVideoAspect.ts:12"
+      ],
+      "reason": "declared but not read: constant (other form). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useVideoAspect.DEFAULT_ASPECT` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "client/src/hooks/useVideoPlayback.ts:10"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useVideoPlayback.SPEED_PRESETS` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "client/src/utils/micGrading.ts:38"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/utils/micGrading.SHORT_TERM_GREEN` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "class",
+      "looked_at": [
+        "client/src/utils/micTrajectory.ts:69"
+      ],
+      "reason": "declared but not read: class. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/utils/micTrajectory.TrajectoryTracker` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "class",
+      "looked_at": [
+        "server/src/WatcherManager.ts:29"
+      ],
+      "reason": "declared but not read: class. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/WatcherManager.WatcherManager` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "server/src/config/configManager.ts:7"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/config/configManager.DEFAULT_DISK_THRESHOLDS` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "derived type (`keyof typeof`, indexed access, `typeof`)",
+      "looked_at": [
+        "server/src/config/env.ts:33"
+      ],
+      "reason": "declared but not read: derived type (`keyof typeof`, indexed access, `typeof`). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/config/env.Env` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "server/src/config/env.ts:25"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/config/env.env` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "server/src/config/logger.ts:20"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/config/logger.log` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "const built by a call (helper or non-zod call)",
+      "looked_at": [
+        "server/src/config/logger.ts:5"
+      ],
+      "reason": "declared but not read: const built by a call (helper or non-zod call). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/config/logger.logger` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "class",
+      "looked_at": [
+        "server/src/middleware/errorHandler.ts:15"
+      ],
+      "reason": "declared but not read: class. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/middleware/errorHandler.AppError` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "utility-type alias (`Pick` / `Omit` / `Record` / generic instance)",
+      "looked_at": [
+        "server/src/routes/miccheck.ts:32"
+      ],
+      "reason": "declared but not read: utility-type alias (`Pick` / `Omit` / `Record` / generic instance). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/routes/miccheck.IO` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "generic type alias",
+      "looked_at": [
+        "server/src/utils/aspectCheck.ts:14"
+      ],
+      "reason": "declared but not read: generic type alias. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/utils/aspectCheck.Same` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "server/src/utils/formatters.ts:151"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/utils/formatters.STATUS` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "server/src/utils/holdUtils.ts:10"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/utils/holdUtils.HOLD_EXCLUDES` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "utility-type alias (`Pick` / `Omit` / `Record` / generic instance)",
+      "looked_at": [
+        "server/src/utils/openContext.ts:281"
+      ],
+      "reason": "declared but not read: utility-type alias (`Pick` / `Omit` / `Record` / generic instance). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/utils/openContext.ContextController` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "union of named or mixed types",
+      "looked_at": [
+        "server/src/utils/openContext.ts:62"
+      ],
+      "reason": "declared but not read: union of named or mixed types. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/utils/openContext.LaunchResult` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "const built by a call (helper or non-zod call)",
+      "looked_at": [
+        "server/src/utils/poemWuiUtils.ts:10"
+      ],
+      "reason": "declared but not read: const built by a call (helper or non-zod call). The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`server/src/utils/poemWuiUtils.BUNDLED_BRAND_CONFIG` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "shared/apiRegistry.ts:38"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/apiRegistry.API_ENDPOINTS` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "shared/constants.ts:6"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/constants.FILE_SIZE` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "shared/constants.ts:14"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/constants.WATCHER` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "shared/contextSchemas.ts:36"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/contextSchemas.REFUSAL_CODES` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "shared/naming.ts:16"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/naming.NAMING_RULES` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "shared/naming.ts:55"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/naming.PATTERNS` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "shared/types.ts:309"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/types.DEFAULT_PROJECT_STAGES` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "shared/types.ts:270"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/types.DEFAULT_TAGS` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "union of named or mixed types",
+      "looked_at": [
+        "shared/types.ts:305"
+      ],
+      "reason": "declared but not read: union of named or mixed types. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/types.ProjectStageOverride` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "object constant",
+      "looked_at": [
+        "shared/types.ts:322"
+      ],
+      "reason": "declared but not read: object constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`shared/types.STAGE_LABELS` - declared but not read"
+    },
     {
       "looked_at": [
         "z.object({ brand: NonEmpty, project: NonEmpty, video: VideoFolderName }).partial() (shared/contextSchemas.ts:15)"
@@ -23505,5 +24784,10 @@
       "reason": "shape computed by `.partial(...)` - a transform of another schema, not expanded",
       "subject": "shared/contextSchemas.ContextBodySchema"
     }
-  ]
+  ],
+  "zod_detection": {
+    "call-shape": 0,
+    "import": 2,
+    "re-export": 0
+  }
 }

@@ -5,161 +5,86 @@ named, transcribed recordings in the right video project.**
 
 ![FliHub Incoming tab — naming template, chapter list and the pending-files queue](.screenshots/01-incoming.png)
 
-Stop recording and the take appears in **Incoming**. Pick a chapter and a name, and FliHub moves it
-into the project's recordings folder as `07-3-epic1-story4.mov` and queues a local MLX Whisper transcript. The other
-tabs (Recordings, Transcripts, Assets, Thumbs, Projects, Manage) work on those promoted files.
+Stop recording and the take appears in **Incoming**. If it doesn't match the project's declared
+aspect, for example a portrait feed boxed inside a landscape canvas, FliHub says so loudly, so you
+can re-record straight away. Pick a chapter and a name, and FliHub moves the take into the project's
+recordings folder as `07-3-epic1-story4.mov` and queues a local MLX Whisper transcript. The other
+tabs (Recordings, Watch, Transcripts, Assets, Thumbs, Projects, Manage) work on those promoted files.
+The header always shows the project's trash (count and size), and you can empty it at any time.
 
-It is a local, single-creator tool in the FliVideo family. It runs on David's Macs, reads the shared
-brand registry through [`@flivideo/core`](https://github.com/flivideo/fli-core), and can be pointed at a project by FliStudio
-through the open contract below.
+FliHub is the capture end of the FliVideo suite. It reads brands and projects through
+[`@flivideo/core`](https://github.com/flivideo/fli-core), and FliStudio can open it on a project.
+The edit happens downstream, in FliCut.
 
-> [!NOTE]
-> **Status: active, mid-rebuild.** A rewrite campaign (B475) is under way. Start with
-> [docs/rebuild-2026/README.md](docs/rebuild-2026/README.md). The April `docs/prd/flihub-v2-*` /
-> Baku specs are superseded.
-
-## Features
-
-- **Take queue → promote.** Watches `watchDirectory` for `*.mov` / `*.mp4`, holds takes until you
-  pick one, then renames it `{chapter}-{sequence}-{name}-{TAGS}.mov` into the active project.
-  B-roll takes still go to `b-roll/` with no chapter, but this lane is deprecated.
-- **Local transcription.** MLX Whisper on Apple Silicon writes `.txt`, `.srt` and `.json` per
-  recording into the project's transcripts folder, streamed live to the UI. The JSON has segments
-  only, not word timings. Transcription is moving to a shared FliTools service.
-- **Projects at a glance.** A filterable project table with stage, pin, transcript coverage and a
-  detail drawer. It covers every project under the brand root, and a brand switcher moves between
-  roots.
-- **Storage lanes.** Hold heavy folders to the T7, archive whole projects to PUBLISHED, and restore
-  them. The copy is verified before anything is deleted locally.
-- **Trash you can always see.** The header shows the active project's `-trash/` (count and size) on
-  every tab. Click it, confirm, and the trash is emptied.
-- **Assets and thumbnails.** Image assets (`05-3-2a-label.png`), prompts and YouTube thumbnails per
-  project.
-- **Read API for tools and agents.** `/api/query/*` returns project, recording and transcript data
-  as JSON or `?format=text`.
-
-## Get started
-
-**Requirements:** macOS · Node ≥ 20 · npm · [Overmind](https://github.com/DarthSim/overmind) (tmux)
-· ffprobe · `mlx_whisper` for transcription. Access to the private `flivideo/fli-core` repo over SSH
-(it is a `github:` dependency).
+## Run
 
 ```bash
 npm install
 cp server/config.template.json server/config.json   # first run only: set watchDirectory + projectsRootDirectory
-overmind start -D                                    # detached: server :5101, UI :5100
+overmind start -D                                    # detached
 open http://localhost:5100
 ```
 
-> [!WARNING]
-> Check first whether FliHub is already running (`overmind ps`, or `lsof -i :5101`). If it is, use
-> `overmind restart server|client` instead of starting it again. The server kills whatever holds its
-> port on startup, and `npm run dev` binds the same ports, so a second launch takes down the
-> supervised one. The full launch and recovery runbook is in [CLAUDE.md](CLAUDE.md) → _Dev Server
-> Management_.
+**Needs:** macOS · Node ≥ 20 · npm · [Overmind](https://github.com/DarthSim/overmind) (tmux) · ffmpeg
+and ffprobe · `mlx_whisper` for transcription · SSH access to GitHub, because the lockfile fetches
+`@flivideo/core` over git+ssh · **Ports:** UI :5100 · API :5101
 
-Change settings in the **Config** panel rather than editing `server/config.json` while the server is
+> [!WARNING]
+> Check whether FliHub is already running first (`overmind ps`, or `lsof -i :5101`). The server kills
+> whatever holds its port on startup, so a second launch takes down the running one. Launch modes and
+> recovery are in [CLAUDE.md](CLAUDE.md) → _Dev Server Management_.
+
+Change settings in the **Config** panel rather than in `server/config.json` while the server is
 running. The server keeps config in memory and rewrites the file on every change.
 
-## Open at a brand and project (open contract)
+## Open it on a project
 
-FliHub follows the FliVideo open contract (`flistudio/docs/open-contract.md` §3): the same context —
-`brand`, `project`, optional `video` — can be set three ways, and all three run one `applyContext`
-on the server (`server/src/utils/openContext.ts`).
-
-| Door       | How                                                                                                                                                                                          | Missing argument                                                                                                    |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 1 · Picker | Brand switcher + project list in the UI                                                                                                                                                      | —                                                                                                                   |
-| 2 · Launch | `./start.sh --brand appydave --project b85-demo [--video intro]` · `scripts/app.sh start --brand … --project …` · or `FLIVIDEO_BRAND` / `FLIVIDEO_PROJECT` / `FLIVIDEO_VIDEO` (argv wins) | Starts as it would have, on the picker. Only `--brand` switches the brand and leaves the project list as the picker |
-| 3 · API    | `POST /api/context {"brand","project","video?"}` → `200 {context}` · `400 {missing}` · `404` unknown brand/project · `409 {candidates}` ambiguous · `503` registry or brand root unreadable  | `400` naming the field                                                                                              |
-
-`GET /api/context` returns `{ context, missing, refused? }`, derived from the live config (so a pick in the UI shows too).
-`scripts/app.sh start --brand … --project …` on an app that is already running switches it through door 3.
-
-- **Resolution** goes through `@flivideo/core`: `brands.json` → brand root on this machine (home prefix rewritten,
-  `~/.fli/machine.json` override) → project by folder name, `fli.studio.json` id, or whole code.
-- **Membership**: a folder with a valid `fli.studio.json` is `membership: "member"` with its `projectId`. Most FliHub
-  projects have no `fli.studio.json` yet (adoption is FliStudio's job), so any other existing folder in the brand
-  root is accepted as `membership: "folder"` with `projectId: null`.
-- **Refusal** (unknown brand, no such folder, ambiguous code) never falls back to the last project: the config stays
-  as it was, the server logs one `[context] … refused:` line, and `GET /api/context` carries `refused: { code, reason, candidates? }`.
-- ⚠️ **Callers: check `refused` before `context`.** A refused launch leaves the _previous_ project open, so `context`
-  can name a resolved project the launcher did not ask for. Clearing it would wipe a persisted pick on a typo, so it
-  is kept on purpose (W3 review F3, option a).
-- **Refusal codes — the shared Fli vocabulary** (Swagger decision 4: every Fli app answers with these, so FliStudio
-  switches on one set; `REFUSAL_CODES` in `shared/contextSchemas.ts`, pinned by a test):
-
-  | `code`                | HTTP (FliHub) | When                                                                                                                                 |
-  | --------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-  | `missing`             | 400           | door 3 without `brand` or `project` — body also carries `missing: [...]`                                                             |
-  | `unknown-brand`       | 404           | brand key not in `brands.json`                                                                                                       |
-  | `no-brand-root`       | 404 / 503     | 404: no `video_projects` root on this machine · 503: the root is configured but cannot be read (unmounted) — `reason` names the path |
-  | `registry-unreadable` | 503           | `brands.json` absent or not valid                                                                                                    |
-  | `project-not-found`   | 404           | no folder, member id or code matches                                                                                                 |
-  | `project-ambiguous`   | 409           | a code matches two or more projects (members and plain folders) — `candidates` lists them                                            |
-  | `not-a-project`       | —             | **never emitted by FliHub**: plain folders are accepted as `membership: "folder"`                                                    |
-  | `video-invalid`       | 400           | `video` is not a kebab-case name (D15, no number)                                                                                     |
-  | `video-not-found`     | —             | **never emitted by FliHub**: the video is carried, not checked against `videos/`                                                     |
-
-  A body of the wrong shape (e.g. `"brand": 5`) is a malformed request, not a refusal: 400 `{ error, issues }` with no `code`.
-
-- **Restarts**: the scripts stamp each launch with `FLIVIDEO_LAUNCH_ID`; a nodemon or `overmind restart server` under
-  the same launch does not re-apply it (remembered in `server/.launch-context.json`), so a later pick survives.
-
-## Project folder layout
-
-Each project is one folder under the brand root (`projectsRootDirectory`). Its name is its identity;
-see [project codes](docs/architecture/project-codes.md).
-
-Two layouts are read. **New projects** use `hub/`. **Existing projects** keep the legacy top-level
-folders and are never migrated by FliHub. The rule lives in `@flivideo/core` (`projectLayoutSync`):
-`hub/recordings/` means hub, a top-level `recordings/` or transcripts folder means legacy, and
-anything else (a new, empty project) means hub.
-
-```
-<project>/
-├── hub/                     # NEW projects (FliHub's own folders)
-│   ├── recordings/          # promoted takes: {NN}-{seq}-{name}-{TAGS}.mov  (+ -safe/, -chapters/)
-│   └── transcripts/         # .txt · .srt · .json per recording
-├── recordings/              # LEGACY projects: promoted takes (+ -safe/, legacy -chapters/)
-├── recording-transcripts/   # LEGACY projects: transcripts
-├── -trash/                  # trashed takes and artifacts — always visible in the header, emptiable
-├── b-roll/                  # chapter-less takes (deprecated lane)
-├── assets/{images,thumbs}/  # image assets, prompts, YouTube thumbnails
-├── inbox/                   # incoming notes, datasets, presentation assets
-├── final/                   # the finished cut FliHub reads (see edit folders)
-├── s3-staging/              # files shared with an editor (excluded from hold/offload)
-└── .flihub-state.json       # per-recording flags + project titles, chapters, dictionary
-```
-
-What `final/`, `edit-1st/` and `edit-2nd/` mean in practice: [docs/architecture/edit-folders.md](docs/architecture/edit-folders.md).
-
-## Documentation
-
-| Read                                                                        | For                                                                              |
-| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| [docs/SYSTEM.md](docs/SYSTEM.md)                                            | How FliHub works: abstractions, workflows, design decisions, failure modes       |
-| [docs/AGENT-NOTES.md](docs/AGENT-NOTES.md)                                  | Pitfalls and tooling for anyone (or any agent) changing the code                 |
-| [docs/schema-mirror.md](docs/schema-mirror.md)                              | Every type, zod schema and closed set, generated from the code with `file:line`  |
-| [docs/rebuild-2026/](docs/rebuild-2026/README.md)                           | The rebuild: North Star, roadmap, requirements archaeology                       |
-| [docs/architecture/](docs/architecture/)                                    | API reference, socket protocol, naming rules, patterns                           |
-| [docs/guides/](docs/guides/)                                                | Troubleshooting, cross-platform and WSL setup, release process                   |
-| [docs/backlog.md](docs/backlog.md) · [docs/changelog.md](docs/changelog.md) | Requirements (FR/NFR) and what shipped                                           |
-| [CLAUDE.md](CLAUDE.md)                                                      | Operating rules, launch modes, machine inventory                                 |
-
-## Development
+FliHub follows the suite's open contract. You point it at a **brand** and a **project**, and
+optionally a **video** (a kebab name), through any of three doors: the picker in the UI, launch
+arguments, or the API. All three run the same `applyContext` on the server.
 
 ```bash
-npm test             # shared, client, server (vitest)
-npm run typecheck    # server + client
-npm run lint
-(cd server && npx vitest run --exclude 'dist/**')   # one-shot server run; a stale dist/ doubles the count
+./start.sh --brand appydave --project b85-demo --video intro      # or FLIVIDEO_BRAND / _PROJECT / _VIDEO
+curl -X POST localhost:5101/api/context -H 'content-type: application/json' \
+  -d '{"brand":"appydave","project":"b85-demo"}'                  # GET /api/context reads it back
 ```
 
-`npm test` locally is the real gate. CI can't install the private `fli-core` dependency yet, so it
-fails before reaching the tests. Known lint and coverage debt is ticketed as NFR-172 in
-[docs/backlog.md](docs/backlog.md).
+The shared rules and refusal codes live in fli-core's mirror
+([`~/dev/ad/flivideo/fli-core/docs/schema-mirror.md`](https://github.com/flivideo/fli-core/blob/main/docs/schema-mirror.md));
+FliHub's copy is `ContextRefusalSchema` in [docs/schema-mirror.md](docs/schema-mirror.md). How FliHub
+differs:
 
-## License
+- It never sends `not-a-project`. A plain folder with no `fli.studio.json` is accepted as
+  `membership: "folder"`.
+- It never sends `video-not-found`. The video is carried along, not checked against `videos/`.
+- **A refused launch keeps the previous project open**, so check `refused` before trusting
+  `context`. This is on purpose: clearing it would wipe a saved pick because of a typo.
 
-Private repository — AppyDave. No license is granted.
+## Docs
+
+| Read | For |
+|---|---|
+| [docs/SYSTEM.md](docs/SYSTEM.md) | How FliHub works: abstractions (incl. the hub/legacy project layout), workflows, decisions, failure modes |
+| [docs/AGENT-NOTES.md](docs/AGENT-NOTES.md) | What an agent working here must know that the code cannot tell it |
+| [docs/schema-mirror.md](docs/schema-mirror.md) | Every type, schema and closed set, generated from the code with `file:line` |
+| [docs/rebuild-2026/](docs/rebuild-2026/README.md) | The rebuild: North Star, roadmap, requirements archaeology |
+| [docs/kdd/](docs/kdd/) | Learnings and patterns earned in this repo |
+| [docs/backlog.md](docs/backlog.md) · [docs/changelog.md](docs/changelog.md) | Requirements (FR/NFR) and what shipped |
+| [CLAUDE.md](CLAUDE.md) | Operating rules, launch modes, machine inventory |
+
+Test with `npm test` locally. CI can't fetch `@flivideo/core` (it has no SSH key), so a red CI badge
+says nothing about a change. The one-shot server run is in AGENT-NOTES.
+
+## Suite
+
+Part of the FliVideo suite, mapped at [../README.md](../README.md). Shared contract:
+[`@flivideo/core`](https://github.com/flivideo/fli-core). Siblings: FliStudio · FliCut · FliCast ·
+Teletubby.
+
+## Status
+
+**Active, mid-rebuild (B475).** True at `95bfe6e` (2026-09-23). The rebuild is happening in place, as
+a series of cuts and contract adoptions: relay and git sync have been removed, and transcription is
+moving to a shared FliTools service. Start with [docs/rebuild-2026/README.md](docs/rebuild-2026/README.md).
+
+Public repo `flivideo/flihub`. There is no licence file.

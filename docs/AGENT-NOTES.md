@@ -3,7 +3,7 @@ generated: 2026-09-23
 generator: system-context
 audience: agent
 status: snapshot
-commit: ae2d9b1
+commit: 95bfe6e
 ---
 
 # FliHub — Agent Notes
@@ -34,8 +34,8 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
 - `npm test -w server` starts vitest in watch mode and exits 1. For a one-shot run use
   `npx vitest run --exclude 'dist/**'` in `server/`. The exclude matters: a stale `server/dist/`
   doubles the count.
-- CI is red on every push, because `npm ci` can't fetch the private `github:flivideo/fli-core` over
-  SSH. A red CI badge says nothing about your change; local tests are the only gate.
+- CI is red on every push. `npm ci` fetches `flivideo/fli-core` over git+ssh (the lockfile form of
+  the `github:` dependency), and CI has no SSH key. The repo is public, so privacy isn't the cause. A red CI badge says nothing about your change; local tests are the only gate.
 - After bumping the fli-core pin, run
   `npm install @flivideo/core@github:flivideo/fli-core#vX -w server -w shared`, then check that
   `package-lock.json` resolves to the tag's commit. A plain `npm install` kept the old lock entry

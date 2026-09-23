@@ -3,7 +3,7 @@ generated: 2026-09-23
 generator: system-context
 audience: human
 status: snapshot
-commit: ae2d9b1
+commit: 95bfe6e
 supersedes: CONTEXT.md (2026-04-08, same generator — left in place with a pointer)
 sources:
   - CLAUDE.md
@@ -97,8 +97,9 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
 
 - **The recording is its filename, in a folder chosen by the project's layout.** Promotion
   (`POST /api/rename`, `server/src/routes/index.ts`) moves the file into the project's recordings
-  folder as `{chapter}-{sequence}-{name}-{TAGS}.mov`. The grammar is `NAMING_RULES`
-  (`shared/naming.ts`; see the mirror): strict when creating a file, lenient when parsing one.
+  folder as `{chapter}-{sequence}-{name}-{TAGS}.mov`. The grammar is `NAMING_RULES` in
+  `shared/naming.ts`: strict when creating a file, lenient when parsing one. Open the file for it.
+  The mirror lists it as declared but not read, because the extractor skips object constants.
   Chapters, sequences and tags are derived from filenames wherever they are read. Per-recording
   flags (safe, parked, annotation) and per-project metadata (YouTube title, chapter titles, `ships`,
   dictionary) live in the project's `.flihub-state.json` (type `ProjectState`).
@@ -148,6 +149,9 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
 1. David stops recording with the foot pedal. Ecamm writes the file into `watchDirectory`.
 2. chokidar (`server/src/watcher.ts`, `*.{mov,mp4}`, with `awaitWriteFinish`) waits for the write to
    finish, probes the duration with ffprobe, and emits `file:new`. The take appears in **Incoming**.
+   A background probe then compares the take with the active project's declared `aspect`
+   (`server/src/utils/aspectCheck.ts`). A mismatch raises a loud warning, and after promotion the
+   recording row keeps the warning until David dismisses it. The probe never blocks anything.
 3. David picks a chapter and a name (NamingControls suggests the next sequence) and promotes the take.
    The server `ensureDir`s the layout's recordings folder, moves the file there (or to `b-roll/` for
    a chapter-less take, FR-161, which is deprecated), and records the rename in an in-memory undo list.
@@ -347,7 +351,8 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
   that has a T7 copy to prevent this.
 
 - **CI always fails.** Every push to `main` goes red within about 25 seconds. `npm ci` can't clone
-  the private `github:flivideo/fli-core` over SSH. Local tests are the only gate.
+  `flivideo/fli-core` over git+ssh (the lockfile form of the `github:` dependency) and CI has no
+  SSH key. The repo itself is public. Local tests are the only gate.
 
 - **Test counts double.** The server reports about twice the real number of tests. A stale,
   gitignored `server/dist/` is collected by vitest; run with `--exclude 'dist/**'`.
