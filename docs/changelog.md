@@ -32,6 +32,15 @@ checks the two against each other. **Then v0.2.3:** fli-core added `projectLayou
 deleted its copy and `getProjectPaths` delegates to it. Tests: `shared/projectLayout.test.ts`, `server/src/test/hubLayout.test.ts`,
 and the hub block in `storageRoutes.test.ts`.
 
+## Step 4 — New Project starts in the hub layout (2026-09-23)
+
+`POST /api/projects` now creates only the project folder, with no `recordings/`. Under fli-core
+v0.5.0 (option A) a folder with no recordings is the hub layout. `POST /api/rename` already runs
+`ensureDir`, so the first promoted take lands in `hub/recordings/`, and its transcript goes to
+`hub/transcripts/`. chokidar 3.6 was probed: it picks up `hub/recordings/` when that folder is
+created after the watcher started. Existing projects are untouched and stay legacy. Test:
+`server/src/test/newProjectHub.test.ts`.
+
 ## W3 — Open contract: launch args + `POST /api/context`; chapter previews deprecated (2026-09-15)
 
 FliHub meets the FliVideo open contract (`flistudio/docs/open-contract.md` §3). Door 2:

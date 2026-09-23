@@ -396,8 +396,6 @@ export function createRoutes(
     try {
       const projectsRoot = expandPath(config.projectsRootDirectory!);
       const projectPath = path.join(projectsRoot, code);
-      // New projects stay LEGACY until the rebuild's step 4 (David, 2026-09-22): never create hub/ here.
-      const recordingsPath = getProjectPaths(projectPath, 'legacy').recordings;
 
       // Check if project already exists
       if (await fs.pathExists(projectPath)) {
@@ -408,8 +406,10 @@ export function createRoutes(
         return;
       }
 
-      // Create project folder and recordings subdirectory
-      await fs.ensureDir(recordingsPath);
+      // Step 4 (ruling 1, 2026-09-22; option A, 2026-09-23): create ONLY the project folder.
+      // With no recordings anywhere, fli-core's projectLayoutSync reads it as the hub layout, so
+      // the first promoted take lands in hub/recordings/ (POST /rename ensures the folder).
+      await fs.ensureDir(projectPath);
 
       // FR-168: persist the render grain ONLY when it is the non-default. Choosing
       // 'per-project' writes nothing, so an ordinary new project still consists of exactly

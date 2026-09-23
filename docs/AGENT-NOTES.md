@@ -33,8 +33,8 @@ Open the declaring file:
   (`recordings/`, `recording-transcripts/`) are read forever and never migrated. Always get these
   folders from `getProjectPaths(projectDir)` (`shared/paths.ts`); never join `'recordings'` yourself.
   Detection is fli-core `projectLayoutSync` (option A, 2026-09-23): no recordings or transcripts
-  anywhere means hub, and so does a missing folder. FliHub's `POST /api/projects` still creates a
-  top-level `recordings/`, so a project made in FliHub starts legacy until rebuild step 4.
+  anywhere means hub, and so does a missing folder. `POST /api/projects` creates only the project
+  folder (step 4, 2026-09-23), so a new project is hub and its first take lands in `hub/recordings/`.
 - `shared/apiRegistry.ts` (the API Explorer) lists 34 endpoints; the routers define about 170. To
   find a route, grep `router\.(get|post|put|patch|delete)` in `server/src/routes/`, not the registry.
 
