@@ -184,6 +184,41 @@ describe('promote → warning on the recording → dismiss (real router)', () =>
     expect((await readProjectState(project)).recordings['01-1-intro.mov']).toBeUndefined();
   });
 
+  it('race: a take promoted before its ingest probe finished is still checked, on the promoted file', async () => {
+    // Fail-first (2026-09-23): an agent that renamed within the cropdetect window got no check and no warning.
+    const bad: AspectCheck = { status: 'mismatch', expected: '9:16', message: 'expected 9:16 portrait · got 1920×1080', checkedAt: 't' };
+    const probed: string[] = [];
+    const slowProbe = async (file: string) => {
+      probed.push(file);
+      await new Promise((r) => setTimeout(r, 50));
+      return bad;
+    };
+    const config = { watchDirectory: path.join(tmp, 'ecamm'), projectDirectory: project, fileExtensions: ['.mov'], availableTags: [], commonNames: [], imageSourceDirectory: tmp } as unknown as Config;
+    const raceApp = express();
+    raceApp.use(express.json());
+    raceApp.use('/api', createRoutes(pending, config, (c) => Object.assign(config, c), undefined, undefined, undefined, undefined, slowProbe));
+
+    const res = await request(raceApp)
+      .post('/api/rename')
+      .send({ originalPath: land('raw.mov' /* no aspectCheck yet */), chapter: '01', sequence: '1', name: 'intro', tags: [] });
+    expect(res.status).toBe(200);
+    expect(res.body.aspect).toBe('pending'); // says the check is still running, never silently skipped
+
+    let warning: AspectCheck | undefined;
+    for (let i = 0; i < 40 && !warning; i++) {
+      await new Promise((r) => setTimeout(r, 25));
+      warning = getActiveAspectWarning(await readProjectState(project), '01-1-intro.mov');
+    }
+    expect(warning).toEqual(bad);
+    expect(probed).toEqual([path.join(project, 'recordings', '01-1-intro.mov')]);
+  });
+
+  it('a take whose probe already landed reports its status and is not probed again', async () => {
+    const ok: AspectCheck = { status: 'ok', expected: '9:16', message: 'Matches', checkedAt: 't' };
+    const res = await request(app).post('/api/rename').send({ originalPath: land('raw.mov', ok), chapter: '01', sequence: '1', name: 'intro', tags: [] });
+    expect(res.body.aspect).toBe('ok');
+  });
+
   it('dismiss rejects a bad body', async () => {
     expect((await request(app).post('/api/recordings/aspect-dismiss').send({ files: [] })).status).toBe(400);
   });

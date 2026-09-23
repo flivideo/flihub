@@ -264,6 +264,8 @@ export interface RenameResponse {
   oldPath: string;
   newPath: string;
   error?: string;
+  /** Aspect check for a promoted recording: its result, or 'pending' when it still runs on the promoted file */
+  aspect?: AspectCheck['status'] | 'pending';
 }
 
 // Default tags (used when config doesn't specify any)

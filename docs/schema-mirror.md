@@ -3,7 +3,7 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `8983fd3fe57a` · **generated** 2026-09-23T10:09:29+00:00
+- **commit** `143191e26101` · **generated** 2026-09-23T10:29:50+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
@@ -107,7 +107,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/WatcherManager.ts` — `WatcherConfig` :19
 - `server/src/config/env.ts` — `envSchema` :5
 - `server/src/routes/assets.ts` — `IMAGE_EXTENSIONS` (set) :30
-- `server/src/routes/index.ts` — `RecentRename` :49
+- `server/src/routes/index.ts` — `RecentRename` :51
 - `server/src/routes/projects.ts` — `priority (membership)` (set) :148
 - `server/src/routes/query/recordings.ts` — `UnifiedRecording` :20
 - `server/src/routes/thumbs.ts` — `IMAGE_EXTENSIONS` (set) :11 · `ThumbInfo` :57 · `ZipInfo` :65 · `ZipImagePreview` :73
@@ -140,7 +140,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `shared/contextSchemas.ts` — `NonEmpty` :9 · `OpenContextArgSchema` (set) :11 · `HubContextSchema` :18 · `ContextRefusalSchema` :48 · `OpenContextStateSchema` :55
 - `shared/naming.ts` — `ParsedRecording` :127 · `ParsedImageAsset` :133 · `ParseOptions` :148
 - `shared/paths.ts` — `ProjectPaths` :38
-- `shared/types.ts` — `MachineRole` (set) :4 · `FileInfo` :6 · `ProjectAspectValue` (set) :18 · `AspectCheck` :19 · `ChapterFilter` :33 · `CommonName` :39 · `Config` :46 · `DiskSizeData` :76 · `TrashSummaryResponse` :95 · `DiskThresholdConfig` :105 · `DiskThresholds` :112 · `DiskThresholdLevel` (set) :123 · `HoldLocation` (set) :126 · `HoldVerification` :129 · `HoldStatus` :138 · `ArchiveState` (set) :151 · `ArchiveRow` :153 · `ArchiveInventoryResponse` :168 · `StorageState` (set) :177 · `StorageClassification` (set) :178 · `StorageLocation` (set) :179 · `StorageTreeNode` :181 · `StorageTreeSizes` :190 · `StorageTreePaths` :198 · `StorageTreeResponse` :204 · `StorageMutationResponse` :220 · `StorageActivityAction` (set) :229 · `StorageActivityEntry` :231 · `StorageActivityResponse` :238 · `HoldOperationResult` :245 · `RenameRequest` :253 · `RenameResponse` :262 · `SuggestedNaming` :273 · `ProjectInfo` :281 · `ProjectPriority` (set) :289 · `ProjectStage` (set) :292 · `TranscriptSyncStatus` :336 · `TranscriptSyncResponse` :343 · `ProjectStats` :351 · `RecordingFile` :400 · `ImageInfo` :418 · `ImageAsset` :429 · `AssignImageRequest` :443 · `AssignImageResponse` :453 · `NextImageOrderResponse` :461 · `PromptAsset` :469 · `SavePromptRequest` :485 · `SavePromptResponse` :495 · `LoadPromptResponse` :505 · `ServerToClientEvents` :516 · `ClientToServerEvents` :560 · `TranscriptionStatus` (set) :565 · `TranscriptionJob` :568 · `TranscriptionsResponse` :583 · `TranscriptionStatusResponse` :590 · `TranscriptContentResponse` :597 · `FileContentResponse` :603 · `FinalMediaLocation` (set) :612 · `FinalVideoInfo` :614 · `FinalSrtInfo` :622 · `AdditionalSegment` :629 · `FinalMediaResponse` :635 · `ChapterMatchStatus` (set) :643 · `ChapterMatchCandidate` :646 · `ChapterMatch` :654 · `ChaptersResponse` :669 · `ChapterVerifyRequest` :685 · `ChapterVerifyResponse` :700 · `ChapterOverride` :715 · `SetChapterOverrideRequest` :726 · `SetChapterOverrideResponse` :735 · `ChapterRecordingConfig` :742 · `ChapterRecordingRequest` :750 · `ChapterRecordingResponse` :757 · `ChapterGenerationProgress` :765 · `QueryProjectSummary` :777 · `QueryProjectDetail` :801 · `QueryRecording` :831 · `QueryTranscript` :847 · `QueryChapter` :858 · `QueryImage` :870 · `SafeResponse` :885 · `RestoreResponse` :894 · `ParkResponse` :903 · `UnparkResponse` :912 · `RenameChapterResponse` :921 · `QueueAllResponse` :928 · `RecentRename` :940 · `InboxFile` :949 · `InboxSubfolder` :956 · `InboxResponse` :964 · `ChapterRecordingStatusResponse` :973 · `EnvironmentResponse` :985 · `RecordingState` :1002 · `ChapterState` :1011 · `ProjectShips` (set) :1034 · `ProjectState` :1037 · `ProjectStateResponse` :1048 · `UpdateProjectStateRequest` :1055 · `EditManifestFile` :1064 · `EditFolderManifest` :1072 · `EditManifest` :1078 · `FolderKey` (set) :1085 · `EditFolderKey` (set) :1106 · `ManifestFileStatus` :1109 · `ManifestStatus` (set) :1117 · `ManifestStatusDetail` :1119 · `ManifestStatusResponse` :1130 · `CleanEditFolderResponse` :1138 · `RestoreEditFolderResponse` :1149 · `SplitChapterRequest` :1159 · `SplitChapterResponse` :1164 · `UndoRenameResponse` :1175 · `MicCheckMode` (set) :1193 · `MicCheckTick` :1195 · `MicCheckEventKind` (set) :1223 · `MicCheckEvent` :1238 · `MicCheckConstraints` :1247 · `MicCheckProbeVerdict` (set) :1254 · `MicCheckProbe` :1256 · `MicCheckNotMeasured` :1269 · `MicCheckDevice` :1274 · `MicCheckSummary` :1281 · `MicCheckSession` :1295 · `MicCheckSessionListEntry` :1314 · `MicCheckLiveResponse` :1335
+- `shared/types.ts` — `MachineRole` (set) :4 · `FileInfo` :6 · `ProjectAspectValue` (set) :18 · `AspectCheck` :19 · `ChapterFilter` :33 · `CommonName` :39 · `Config` :46 · `DiskSizeData` :76 · `TrashSummaryResponse` :95 · `DiskThresholdConfig` :105 · `DiskThresholds` :112 · `DiskThresholdLevel` (set) :123 · `HoldLocation` (set) :126 · `HoldVerification` :129 · `HoldStatus` :138 · `ArchiveState` (set) :151 · `ArchiveRow` :153 · `ArchiveInventoryResponse` :168 · `StorageState` (set) :177 · `StorageClassification` (set) :178 · `StorageLocation` (set) :179 · `StorageTreeNode` :181 · `StorageTreeSizes` :190 · `StorageTreePaths` :198 · `StorageTreeResponse` :204 · `StorageMutationResponse` :220 · `StorageActivityAction` (set) :229 · `StorageActivityEntry` :231 · `StorageActivityResponse` :238 · `HoldOperationResult` :245 · `RenameRequest` :253 · `RenameResponse` :262 · `SuggestedNaming` :275 · `ProjectInfo` :283 · `ProjectPriority` (set) :291 · `ProjectStage` (set) :294 · `TranscriptSyncStatus` :338 · `TranscriptSyncResponse` :345 · `ProjectStats` :353 · `RecordingFile` :402 · `ImageInfo` :420 · `ImageAsset` :431 · `AssignImageRequest` :445 · `AssignImageResponse` :455 · `NextImageOrderResponse` :463 · `PromptAsset` :471 · `SavePromptRequest` :487 · `SavePromptResponse` :497 · `LoadPromptResponse` :507 · `ServerToClientEvents` :518 · `ClientToServerEvents` :562 · `TranscriptionStatus` (set) :567 · `TranscriptionJob` :570 · `TranscriptionsResponse` :585 · `TranscriptionStatusResponse` :592 · `TranscriptContentResponse` :599 · `FileContentResponse` :605 · `FinalMediaLocation` (set) :614 · `FinalVideoInfo` :616 · `FinalSrtInfo` :624 · `AdditionalSegment` :631 · `FinalMediaResponse` :637 · `ChapterMatchStatus` (set) :645 · `ChapterMatchCandidate` :648 · `ChapterMatch` :656 · `ChaptersResponse` :671 · `ChapterVerifyRequest` :687 · `ChapterVerifyResponse` :702 · `ChapterOverride` :717 · `SetChapterOverrideRequest` :728 · `SetChapterOverrideResponse` :737 · `ChapterRecordingConfig` :744 · `ChapterRecordingRequest` :752 · `ChapterRecordingResponse` :759 · `ChapterGenerationProgress` :767 · `QueryProjectSummary` :779 · `QueryProjectDetail` :803 · `QueryRecording` :833 · `QueryTranscript` :849 · `QueryChapter` :860 · `QueryImage` :872 · `SafeResponse` :887 · `RestoreResponse` :896 · `ParkResponse` :905 · `UnparkResponse` :914 · `RenameChapterResponse` :923 · `QueueAllResponse` :930 · `RecentRename` :942 · `InboxFile` :951 · `InboxSubfolder` :958 · `InboxResponse` :966 · `ChapterRecordingStatusResponse` :975 · `EnvironmentResponse` :987 · `RecordingState` :1004 · `ChapterState` :1013 · `ProjectShips` (set) :1036 · `ProjectState` :1039 · `ProjectStateResponse` :1050 · `UpdateProjectStateRequest` :1057 · `EditManifestFile` :1066 · `EditFolderManifest` :1074 · `EditManifest` :1080 · `FolderKey` (set) :1087 · `EditFolderKey` (set) :1108 · `ManifestFileStatus` :1111 · `ManifestStatus` (set) :1119 · `ManifestStatusDetail` :1121 · `ManifestStatusResponse` :1132 · `CleanEditFolderResponse` :1140 · `RestoreEditFolderResponse` :1151 · `SplitChapterRequest` :1161 · `SplitChapterResponse` :1166 · `UndoRenameResponse` :1177 · `MicCheckMode` (set) :1195 · `MicCheckTick` :1197 · `MicCheckEventKind` (set) :1225 · `MicCheckEvent` :1240 · `MicCheckConstraints` :1249 · `MicCheckProbeVerdict` (set) :1256 · `MicCheckProbe` :1258 · `MicCheckNotMeasured` :1271 · `MicCheckDevice` :1276 · `MicCheckSummary` :1283 · `MicCheckSession` :1297 · `MicCheckSessionListEntry` :1316 · `MicCheckLiveResponse` :1337
 
 ## Never read by this extractor
 
@@ -888,152 +888,152 @@ ok · mismatch (shout) · skipped (project has no aspect set) · unknown (could 
 | `recordings` | `shared/types.ts:254` |
 | `b-roll` | `shared/types.ts:254` |
 
-### `shared/types.ProjectPriority` — `shared/types.ts:289`
+### `shared/types.ProjectPriority` — `shared/types.ts:291`
 
 *literal union type alias `ProjectPriority` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `pinned` | `shared/types.ts:289` |
-| `normal` | `shared/types.ts:289` |
+| `pinned` | `shared/types.ts:291` |
+| `normal` | `shared/types.ts:291` |
 
-### `shared/types.ProjectStage` — `shared/types.ts:292-302`
+### `shared/types.ProjectStage` — `shared/types.ts:294-304`
 
 *literal union type alias `ProjectStage` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `planning` | `shared/types.ts:293` |
-| `recording` | `shared/types.ts:294` |
-| `first-edit` | `shared/types.ts:295` |
-| `second-edit` | `shared/types.ts:296` |
-| `review` | `shared/types.ts:297` |
-| `ready-to-publish` | `shared/types.ts:298` |
-| `published` | `shared/types.ts:299` |
-| `archived` | `shared/types.ts:300` |
-| `shelved` | `shared/types.ts:301` |
-| `remix` | `shared/types.ts:302` |
+| `planning` | `shared/types.ts:295` |
+| `recording` | `shared/types.ts:296` |
+| `first-edit` | `shared/types.ts:297` |
+| `second-edit` | `shared/types.ts:298` |
+| `review` | `shared/types.ts:299` |
+| `ready-to-publish` | `shared/types.ts:300` |
+| `published` | `shared/types.ts:301` |
+| `archived` | `shared/types.ts:302` |
+| `shelved` | `shared/types.ts:303` |
+| `remix` | `shared/types.ts:304` |
 
-### `shared/types.TranscriptionStatus` — `shared/types.ts:565`
+### `shared/types.TranscriptionStatus` — `shared/types.ts:567`
 
 *literal union type alias `TranscriptionStatus` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `none` | `shared/types.ts:565` |
-| `queued` | `shared/types.ts:565` |
-| `transcribing` | `shared/types.ts:565` |
-| `complete` | `shared/types.ts:565` |
-| `error` | `shared/types.ts:565` |
+| `none` | `shared/types.ts:567` |
+| `queued` | `shared/types.ts:567` |
+| `transcribing` | `shared/types.ts:567` |
+| `complete` | `shared/types.ts:567` |
+| `error` | `shared/types.ts:567` |
 
-### `shared/types.FinalMediaLocation` — `shared/types.ts:612`
+### `shared/types.FinalMediaLocation` — `shared/types.ts:614`
 
 *literal union type alias `FinalMediaLocation` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `final` | `shared/types.ts:612` |
-| `s3-staging` | `shared/types.ts:612` |
-| `root` | `shared/types.ts:612` |
+| `final` | `shared/types.ts:614` |
+| `s3-staging` | `shared/types.ts:614` |
+| `root` | `shared/types.ts:614` |
 
-### `shared/types.ChapterMatchStatus` — `shared/types.ts:643`
+### `shared/types.ChapterMatchStatus` — `shared/types.ts:645`
 
 *literal union type alias `ChapterMatchStatus` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `matched` | `shared/types.ts:643` |
-| `low_confidence` | `shared/types.ts:643` |
-| `not_found` | `shared/types.ts:643` |
+| `matched` | `shared/types.ts:645` |
+| `low_confidence` | `shared/types.ts:645` |
+| `not_found` | `shared/types.ts:645` |
 
-### `shared/types.ChapterMatchCandidate.matchMethod` — `shared/types.ts:651`
+### `shared/types.ChapterMatchCandidate.matchMethod` — `shared/types.ts:653`
 
 *literal union type of `matchMethod` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `phrase` | `shared/types.ts:651` |
-| `partial` | `shared/types.ts:651` |
-| `keyword` | `shared/types.ts:651` |
+| `phrase` | `shared/types.ts:653` |
+| `partial` | `shared/types.ts:653` |
+| `keyword` | `shared/types.ts:653` |
 
-### `shared/types.ChapterVerifyResponse.recommendation.action` — `shared/types.ts:705`
-
-*literal union type of `action` - a single declaring symbol*
-
-| value | declared at |
-|---|---|
-| `use_current` | `shared/types.ts:705` |
-| `use_alternative` | `shared/types.ts:705` |
-| `manual_timestamp` | `shared/types.ts:705` |
-| `skip` | `shared/types.ts:705` |
-
-### `shared/types.ChapterOverride.action` — `shared/types.ts:718`
+### `shared/types.ChapterVerifyResponse.recommendation.action` — `shared/types.ts:707`
 
 *literal union type of `action` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `override` | `shared/types.ts:718` |
-| `skip` | `shared/types.ts:718` |
+| `use_current` | `shared/types.ts:707` |
+| `use_alternative` | `shared/types.ts:707` |
+| `manual_timestamp` | `shared/types.ts:707` |
+| `skip` | `shared/types.ts:707` |
 
-### `shared/types.SetChapterOverrideRequest.action` — `shared/types.ts:729`
+### `shared/types.ChapterOverride.action` — `shared/types.ts:720`
 
 *literal union type of `action` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `override` | `shared/types.ts:729` |
-| `skip` | `shared/types.ts:729` |
+| `override` | `shared/types.ts:720` |
+| `skip` | `shared/types.ts:720` |
 
-### `shared/types.ChapterRecordingConfig.resolution` — `shared/types.ts:744`
+### `shared/types.SetChapterOverrideRequest.action` — `shared/types.ts:731`
+
+*literal union type of `action` - a single declaring symbol*
+
+| value | declared at |
+|---|---|
+| `override` | `shared/types.ts:731` |
+| `skip` | `shared/types.ts:731` |
+
+### `shared/types.ChapterRecordingConfig.resolution` — `shared/types.ts:746`
 
 *literal union type of `resolution` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `720p` | `shared/types.ts:744` |
-| `1080p` | `shared/types.ts:744` |
+| `720p` | `shared/types.ts:746` |
+| `1080p` | `shared/types.ts:746` |
 
-### `shared/types.ChapterGenerationProgress.status` — `shared/types.ts:767`
+### `shared/types.ChapterGenerationProgress.status` — `shared/types.ts:769`
 
 *literal union type of `status` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `pending` | `shared/types.ts:767` |
-| `generating` | `shared/types.ts:767` |
-| `complete` | `shared/types.ts:767` |
-| `error` | `shared/types.ts:767` |
+| `pending` | `shared/types.ts:769` |
+| `generating` | `shared/types.ts:769` |
+| `complete` | `shared/types.ts:769` |
+| `error` | `shared/types.ts:769` |
 
-### `shared/types.QueueAllResponse.scope` — `shared/types.ts:930`
+### `shared/types.QueueAllResponse.scope` — `shared/types.ts:932`
 
 *literal union type of `scope` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `project` | `shared/types.ts:930` |
-| `chapter` | `shared/types.ts:930` |
+| `project` | `shared/types.ts:932` |
+| `chapter` | `shared/types.ts:932` |
 
-### `shared/types.EnvironmentResponse.platform` — `shared/types.ts:986`
+### `shared/types.EnvironmentResponse.platform` — `shared/types.ts:988`
 
 *literal union type of `platform` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `win32` | `shared/types.ts:986` |
-| `linux` | `shared/types.ts:986` |
-| `darwin` | `shared/types.ts:986` |
+| `win32` | `shared/types.ts:988` |
+| `linux` | `shared/types.ts:988` |
+| `darwin` | `shared/types.ts:988` |
 
-### `shared/types.EnvironmentResponse.pathFormat` — `shared/types.ts:988`
+### `shared/types.EnvironmentResponse.pathFormat` — `shared/types.ts:990`
 
 *literal union type of `pathFormat` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `windows` | `shared/types.ts:988` |
-| `linux` | `shared/types.ts:988` |
+| `windows` | `shared/types.ts:990` |
+| `linux` | `shared/types.ts:990` |
 
-### `shared/types.ProjectShips` — `shared/types.ts:1034`
+### `shared/types.ProjectShips` — `shared/types.ts:1036`
 
 FR-168: RENDER GRAIN — does this project ship ONE video, or one video per chapter?
 
@@ -1041,67 +1041,67 @@ FR-168: RENDER GRAIN — does this project ship ONE video, or one video per chap
 
 | value | declared at |
 |---|---|
-| `per-project` | `shared/types.ts:1034` |
-| `per-chapter` | `shared/types.ts:1034` |
+| `per-project` | `shared/types.ts:1036` |
+| `per-chapter` | `shared/types.ts:1036` |
 
-### `shared/types.FolderKey` — `shared/types.ts:1085-1103`
+### `shared/types.FolderKey` — `shared/types.ts:1087-1105`
 
 *literal union type alias `FolderKey` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `ecamm` | `shared/types.ts:1086` |
-| `downloads` | `shared/types.ts:1087` |
-| `recordings` | `shared/types.ts:1088` |
-| `safe` | `shared/types.ts:1089` |
-| `trash` | `shared/types.ts:1090` |
-| `images` | `shared/types.ts:1091` |
-| `thumbs` | `shared/types.ts:1092` |
-| `transcripts` | `shared/types.ts:1093` |
-| `project` | `shared/types.ts:1094` |
-| `final` | `shared/types.ts:1095` |
-| `s3Staging` | `shared/types.ts:1096` |
-| `s3Prep` | `shared/types.ts:1097` |
-| `s3Post` | `shared/types.ts:1098` |
-| `inbox` | `shared/types.ts:1099` |
-| `chapters` | `shared/types.ts:1100` |
-| `edit-1st` | `shared/types.ts:1101` |
-| `edit-2nd` | `shared/types.ts:1102` |
-| `edit-final` | `shared/types.ts:1103` |
+| `ecamm` | `shared/types.ts:1088` |
+| `downloads` | `shared/types.ts:1089` |
+| `recordings` | `shared/types.ts:1090` |
+| `safe` | `shared/types.ts:1091` |
+| `trash` | `shared/types.ts:1092` |
+| `images` | `shared/types.ts:1093` |
+| `thumbs` | `shared/types.ts:1094` |
+| `transcripts` | `shared/types.ts:1095` |
+| `project` | `shared/types.ts:1096` |
+| `final` | `shared/types.ts:1097` |
+| `s3Staging` | `shared/types.ts:1098` |
+| `s3Prep` | `shared/types.ts:1099` |
+| `s3Post` | `shared/types.ts:1100` |
+| `inbox` | `shared/types.ts:1101` |
+| `chapters` | `shared/types.ts:1102` |
+| `edit-1st` | `shared/types.ts:1103` |
+| `edit-2nd` | `shared/types.ts:1104` |
+| `edit-final` | `shared/types.ts:1105` |
 
-### `shared/types.EditFolderKey` — `shared/types.ts:1106`
+### `shared/types.EditFolderKey` — `shared/types.ts:1108`
 
 *literal union type alias `EditFolderKey` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `edit-1st` | `shared/types.ts:1106` |
-| `edit-2nd` | `shared/types.ts:1106` |
-| `edit-final` | `shared/types.ts:1106` |
+| `edit-1st` | `shared/types.ts:1108` |
+| `edit-2nd` | `shared/types.ts:1108` |
+| `edit-final` | `shared/types.ts:1108` |
 
-### `shared/types.ManifestFileStatus.status` — `shared/types.ts:1111`
+### `shared/types.ManifestFileStatus.status` — `shared/types.ts:1113`
 
 *literal union type of `status` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `present` | `shared/types.ts:1111` |
-| `missing` | `shared/types.ts:1111` |
-| `changed` | `shared/types.ts:1111` |
+| `present` | `shared/types.ts:1113` |
+| `missing` | `shared/types.ts:1113` |
+| `changed` | `shared/types.ts:1113` |
 
-### `shared/types.ManifestStatus` — `shared/types.ts:1117`
+### `shared/types.ManifestStatus` — `shared/types.ts:1119`
 
 *literal union type alias `ManifestStatus` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `present` | `shared/types.ts:1117` |
-| `cleaned` | `shared/types.ts:1117` |
-| `changed` | `shared/types.ts:1117` |
-| `missing` | `shared/types.ts:1117` |
-| `no-manifest` | `shared/types.ts:1117` |
+| `present` | `shared/types.ts:1119` |
+| `cleaned` | `shared/types.ts:1119` |
+| `changed` | `shared/types.ts:1119` |
+| `missing` | `shared/types.ts:1119` |
+| `no-manifest` | `shared/types.ts:1119` |
 
-### `shared/types.MicCheckMode` — `shared/types.ts:1193`
+### `shared/types.MicCheckMode` — `shared/types.ts:1195`
 
 One rolling sample, posted ~1 Hz. The worklet emits ~23 Hz; posting at that rate
 
@@ -1109,30 +1109,30 @@ One rolling sample, posted ~1 Hz. The worklet emits ~23 Hz; posting at that rate
 
 | value | declared at |
 |---|---|
-| `room` | `shared/types.ts:1193` |
-| `speaking` | `shared/types.ts:1193` |
+| `room` | `shared/types.ts:1195` |
+| `speaking` | `shared/types.ts:1195` |
 
-### `shared/types.MicCheckEventKind` — `shared/types.ts:1223-1228`
+### `shared/types.MicCheckEventKind` — `shared/types.ts:1225-1230`
 
 *literal union type alias `MicCheckEventKind` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `level-step` | `shared/types.ts:1224` |
-| `clip` | `shared/types.ts:1225` |
-| `near-clip-run` | `shared/types.ts:1226` |
-| `level-instability` | `shared/types.ts:1227` |
-| `room-contaminated` | `shared/types.ts:1228` |
+| `level-step` | `shared/types.ts:1226` |
+| `clip` | `shared/types.ts:1227` |
+| `near-clip-run` | `shared/types.ts:1228` |
+| `level-instability` | `shared/types.ts:1229` |
+| `room-contaminated` | `shared/types.ts:1230` |
 
-### `shared/types.MicCheckProbeVerdict` — `shared/types.ts:1254`
+### `shared/types.MicCheckProbeVerdict` — `shared/types.ts:1256`
 
 *literal union type alias `MicCheckProbeVerdict` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `clean` | `shared/types.ts:1254` |
-| `suspicious` | `shared/types.ts:1254` |
-| `inconclusive` | `shared/types.ts:1254` |
+| `clean` | `shared/types.ts:1256` |
+| `suspicious` | `shared/types.ts:1256` |
+| `inconclusive` | `shared/types.ts:1256` |
 
 ## Closed sets — derived (no declaring symbol)
 
@@ -2722,16 +2722,16 @@ WatcherManager centralizes all file system watchers.
 | `YLO_BEARER_TOKEN` | `z.string().optional()` | — | `server/src/config/env.ts:11` |
 | `YLO_INBOX_URL` | `z.string().url().optional()` | — | `server/src/config/env.ts:12` |
 
-### `server/src/routes/index.RecentRename` — interface — `server/src/routes/index.ts:49-56`
+### `server/src/routes/index.RecentRename` — interface — `server/src/routes/index.ts:51-58`
 
 | field | type | default | at |
 |---|---|---|---|
-| `id` | `string` | — | `server/src/routes/index.ts:50` |
-| `originalPath` | `string` | — | `server/src/routes/index.ts:51` |
-| `originalName` | `string` | — | `server/src/routes/index.ts:52` |
-| `newPath` | `string` | — | `server/src/routes/index.ts:53` |
-| `newName` | `string` | — | `server/src/routes/index.ts:54` |
-| `timestamp` | `number` | — | `server/src/routes/index.ts:55` |
+| `id` | `string` | — | `server/src/routes/index.ts:52` |
+| `originalPath` | `string` | — | `server/src/routes/index.ts:53` |
+| `originalName` | `string` | — | `server/src/routes/index.ts:54` |
+| `newPath` | `string` | — | `server/src/routes/index.ts:55` |
+| `newName` | `string` | — | `server/src/routes/index.ts:56` |
+| `timestamp` | `number` | — | `server/src/routes/index.ts:57` |
 
 ### `server/src/routes/query/recordings.UnifiedRecording` — interface — `server/src/routes/query/recordings.ts:20-21`
 
@@ -3683,987 +3683,988 @@ Options for parsing functions
 | `name` | `string` | — | `shared/types.ts:258` |
 | `tags` | `string[]` | — | `shared/types.ts:259` |
 
-### `shared/types.RenameResponse` — interface — `shared/types.ts:262-267`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:263` |
-| `oldPath` | `string` | — | `shared/types.ts:264` |
-| `newPath` | `string` | — | `shared/types.ts:265` |
-| `error` | `?: string` | — | `shared/types.ts:266` |
-
-### `shared/types.SuggestedNaming` — interface — `shared/types.ts:273-278`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `string` | — | `shared/types.ts:274` |
-| `sequence` | `string` | — | `shared/types.ts:275` |
-| `name` | `string` | — | `shared/types.ts:276` |
-| `existingFiles` | `string[]` | — | `shared/types.ts:277` |
-
-### `shared/types.ProjectInfo` — interface — `shared/types.ts:281-286`
-
-| field | type | default | at |
-|---|---|---|---|
-| `code` | `string` | — | `shared/types.ts:282` |
-| `path` | `string` | — | `shared/types.ts:283` |
-| `fileCount` | `number` | — | `shared/types.ts:284` |
-| `lastModified` | `string` | — | `shared/types.ts:285` |
-
-### `shared/types.TranscriptSyncStatus` — interface — `shared/types.ts:336-340`
-
-| field | type | default | at |
-|---|---|---|---|
-| `matched` | `number` | — | `shared/types.ts:337` |
-| `missingTranscripts` | `string[]` | — | `shared/types.ts:338` |
-| `orphanedTranscripts` | `string[]` | — | `shared/types.ts:339` |
-
-### `shared/types.TranscriptSyncResponse` — interface — `shared/types.ts:343-349`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:344` |
-| `matched` | `string[]` | — | `shared/types.ts:345` |
-| `missingTranscripts` | `string[]` | — | `shared/types.ts:346` |
-| `orphanedTranscripts` | `string[]` | — | `shared/types.ts:347` |
-| `recordingsDir` | `?: string` | — | `shared/types.ts:348` |
-
-### `shared/types.ProjectStats` — interface — `shared/types.ts:351-397`
-
-| field | type | default | at |
-|---|---|---|---|
-| `code` | `string` | — | `shared/types.ts:352` |
-| `path` | `string` | — | `shared/types.ts:353` |
-| `priority` | `ProjectPriority → shared/types.ProjectPriority` | — | `shared/types.ts:356` |
-| `totalFiles` | `number` | — | `shared/types.ts:359` |
-| `chapterCount` | `number` | — | `shared/types.ts:362` |
-| `transcriptCount` | `number` | — | `shared/types.ts:365` |
-| `transcriptPercent` | `number` | — | `shared/types.ts:366` |
-| `transcriptSync` | `{ matched: number; missingCount: number; orphanedCount: number; }` | — | `shared/types.ts:367` |
-| `stage` | `ProjectStage → shared/types.ProjectStage` | — | `shared/types.ts:374` |
-| `createdAt` | `string \| null` | — | `shared/types.ts:377` |
-| `lastModified` | `string \| null` | — | `shared/types.ts:378` |
-| `totalDuration` | `number \| null` | — | `shared/types.ts:379` |
-| `imageCount` | `number` | — | `shared/types.ts:380` |
-| `thumbCount` | `number` | — | `shared/types.ts:381` |
-| `hasInbox` | `boolean` | — | `shared/types.ts:384` |
-| `hasAssets` | `boolean` | — | `shared/types.ts:385` |
-| `hasChapters` | `boolean` | — | `shared/types.ts:386` |
-| `ships` | `ProjectShips → shared/types.ProjectShips` | — | `shared/types.ts:390` |
-| `shipsDeclared` | `boolean` | — | `shared/types.ts:391` |
-| `inboxCount` | `number` | — | `shared/types.ts:392` |
-| `chapterVideoCount` | `number` | — | `shared/types.ts:393` |
-| `hasFinal` | `boolean` | — | `shared/types.ts:396` |
-
-### `shared/types.ProjectStats.transcriptSync` — type — `shared/types.ts:367-371`
-
-| field | type | default | at |
-|---|---|---|---|
-| `matched` | `number` | — | `shared/types.ts:368` |
-| `missingCount` | `number` | — | `shared/types.ts:369` |
-| `orphanedCount` | `number` | — | `shared/types.ts:370` |
-
-### `shared/types.RecordingFile` — interface — `shared/types.ts:400-415`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:401` |
-| `path` | `string` | — | `shared/types.ts:402` |
-| `size` | `number` | — | `shared/types.ts:403` |
-| `timestamp` | `string` | — | `shared/types.ts:404` |
-| `duration` | `?: number` | — | `shared/types.ts:405` |
-| `chapter` | `string` | — | `shared/types.ts:406` |
-| `sequence` | `string` | — | `shared/types.ts:407` |
-| `name` | `string` | — | `shared/types.ts:408` |
-| `tags` | `string[]` | — | `shared/types.ts:409` |
-| `folder` | `'recordings'` | — | `shared/types.ts:410` |
-| `isSafe` | `boolean` | — | `shared/types.ts:411` |
-| `isParked` | `boolean` | — | `shared/types.ts:412` |
-| `annotation` | `?: string` | — | `shared/types.ts:413` |
-| `aspectWarning` | `?: AspectCheck → shared/types.AspectCheck` | — | `shared/types.ts:414` |
-
-### `shared/types.ImageInfo` — interface — `shared/types.ts:418-426`
-
-| field | type | default | at |
-|---|---|---|---|
-| `path` | `string` | — | `shared/types.ts:419` |
-| `filename` | `string` | — | `shared/types.ts:420` |
-| `size` | `number` | — | `shared/types.ts:421` |
-| `timestamp` | `string` | — | `shared/types.ts:422` |
-| `hash` | `string` | — | `shared/types.ts:423` |
-| `isDuplicate` | `?: boolean` | — | `shared/types.ts:424` |
-| `duplicateOf` | `?: string` | — | `shared/types.ts:425` |
-
-### `shared/types.ImageAsset` — interface — `shared/types.ts:429-440`
-
-| field | type | default | at |
-|---|---|---|---|
-| `path` | `string` | — | `shared/types.ts:430` |
-| `filename` | `string` | — | `shared/types.ts:431` |
-| `size` | `number` | — | `shared/types.ts:432` |
-| `timestamp` | `string` | — | `shared/types.ts:433` |
-| `chapter` | `string` | — | `shared/types.ts:434` |
-| `sequence` | `string` | — | `shared/types.ts:435` |
-| `imageOrder` | `string` | — | `shared/types.ts:436` |
-| `variant` | `string \| null` | — | `shared/types.ts:437` |
-| `label` | `string` | — | `shared/types.ts:438` |
-| `type` | `?: 'image'` | — | `shared/types.ts:439` |
-
-### `shared/types.AssignImageRequest` — interface — `shared/types.ts:443-450`
-
-| field | type | default | at |
-|---|---|---|---|
-| `sourcePath` | `string` | — | `shared/types.ts:444` |
-| `chapter` | `string` | — | `shared/types.ts:445` |
-| `sequence` | `string` | — | `shared/types.ts:446` |
-| `imageOrder` | `string` | — | `shared/types.ts:447` |
-| `variant` | `string \| null` | — | `shared/types.ts:448` |
-| `label` | `string` | — | `shared/types.ts:449` |
-
-### `shared/types.AssignImageResponse` — interface — `shared/types.ts:453-458`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:454` |
-| `oldPath` | `string` | — | `shared/types.ts:455` |
-| `newPath` | `string` | — | `shared/types.ts:456` |
-| `error` | `?: string` | — | `shared/types.ts:457` |
-
-### `shared/types.NextImageOrderResponse` — interface — `shared/types.ts:461-466`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `string` | — | `shared/types.ts:462` |
-| `sequence` | `string` | — | `shared/types.ts:463` |
-| `nextImageOrder` | `string` | — | `shared/types.ts:464` |
-| `existingCount` | `number` | — | `shared/types.ts:465` |
-
-### `shared/types.PromptAsset` — interface — `shared/types.ts:469-482`
-
-| field | type | default | at |
-|---|---|---|---|
-| `path` | `string` | — | `shared/types.ts:470` |
-| `filename` | `string` | — | `shared/types.ts:471` |
-| `size` | `number` | — | `shared/types.ts:472` |
-| `timestamp` | `string` | — | `shared/types.ts:473` |
-| `chapter` | `string` | — | `shared/types.ts:474` |
-| `sequence` | `string` | — | `shared/types.ts:475` |
-| `imageOrder` | `string` | — | `shared/types.ts:476` |
-| `variant` | `string \| null` | — | `shared/types.ts:477` |
-| `label` | `string` | — | `shared/types.ts:478` |
-| `type` | `'prompt'` | — | `shared/types.ts:479` |
-| `content` | `?: string` | — | `shared/types.ts:480` |
-| `contentPreview` | `?: string` | — | `shared/types.ts:481` |
-
-### `shared/types.SavePromptRequest` — interface — `shared/types.ts:485-492`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `string` | — | `shared/types.ts:486` |
-| `sequence` | `string` | — | `shared/types.ts:487` |
-| `imageOrder` | `string` | — | `shared/types.ts:488` |
-| `variant` | `string \| null` | — | `shared/types.ts:489` |
-| `label` | `string` | — | `shared/types.ts:490` |
-| `content` | `string` | — | `shared/types.ts:491` |
-
-### `shared/types.SavePromptResponse` — interface — `shared/types.ts:495-502`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:496` |
-| `path` | `string` | — | `shared/types.ts:497` |
-| `filename` | `string` | — | `shared/types.ts:498` |
-| `created` | `boolean` | — | `shared/types.ts:499` |
-| `deleted` | `?: boolean` | — | `shared/types.ts:500` |
-| `error` | `?: string` | — | `shared/types.ts:501` |
-
-### `shared/types.LoadPromptResponse` — interface — `shared/types.ts:505-513`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:506` |
-| `content` | `string` | — | `shared/types.ts:507` |
-| `chapter` | `string` | — | `shared/types.ts:508` |
-| `sequence` | `string` | — | `shared/types.ts:509` |
-| `imageOrder` | `string` | — | `shared/types.ts:510` |
-| `variant` | `string \| null` | — | `shared/types.ts:511` |
-| `label` | `string` | — | `shared/types.ts:512` |
-
-### `shared/types.ServerToClientEvents` — interface — `shared/types.ts:516-548`
-
-| field | type | default | at |
-|---|---|---|---|
-| `file:new` | `(file: FileInfo) => void → shared/types.FileInfo` | — | `shared/types.ts:517` |
-| `file:deleted` | `(data: { path: string }) => void` | — | `shared/types.ts:518` |
-| `file:aspect` | `(data: { path: string; aspectCheck: AspectCheck }) => void → shared/types.AspectCheck` | — | `shared/types.ts:519` |
-| `file:renamed` | `(data: { oldPath: string; newPath: string }) => void` | — | `shared/types.ts:520` |
-| `file:error` | `(data: { path: string; error: string }) => void` | — | `shared/types.ts:521` |
-| `thumbs:changed` | `() => void` | — | `shared/types.ts:523` |
-| `thumbs:zip-added` | `() => void` | — | `shared/types.ts:524` |
-| `assets:incoming-changed` | `() => void` | — | `shared/types.ts:525` |
-| `assets:assigned-changed` | `() => void` | — | `shared/types.ts:526` |
-| `recordings:changed` | `() => void` | — | `shared/types.ts:527` |
-| `projects:changed` | `() => void` | — | `shared/types.ts:528` |
-| `inbox:changed` | `() => void` | — | `shared/types.ts:529` |
-| `transcripts:changed` | `() => void` | — | `shared/types.ts:530` |
-| `miccheck:started` | `(data: { sessionId: string }) => void` | — | `shared/types.ts:532` |
-| `miccheck:tick` | `(data: { sessionId: string; tick: MicCheckTick }) => void → shared/types.MicCheckTick` | — | `shared/types.ts:533` |
-| `miccheck:finished` | `(data: { sessionId: string }) => void` | — | `shared/types.ts:534` |
-| `transcription:queued` | `(job: { jobId: string; videoPath: string; position: number }) => void` | — | `shared/types.ts:536` |
-| `transcription:started` | `(job: { jobId: string; videoPath: string }) => void` | — | `shared/types.ts:537` |
-| `transcription:progress` | `(data: { jobId: string; text: string }) => void` | — | `shared/types.ts:538` |
-| `transcription:complete` | `(job: { jobId: string; videoPath: string; transcriptPath: string; }) => void` | — | `shared/types.ts:539` |
-| `transcription:error` | `(job: { jobId: string; videoPath: string; error: string }) => void` | — | `shared/types.ts:544` |
-| `context:changed` | `(data: OpenContextState) => void → shared/contextSchemas.OpenContextState` | — | `shared/types.ts:547` |
-
-### `shared/types.ClientToServerEvents` — interface — `shared/types.ts:560-562`
-
-*No annotated fields found — this shape declares its fields elsewhere.*
-
-### `shared/types.TranscriptionJob` — interface — `shared/types.ts:568-580`
-
-| field | type | default | at |
-|---|---|---|---|
-| `jobId` | `string` | — | `shared/types.ts:569` |
-| `videoPath` | `string` | — | `shared/types.ts:570` |
-| `videoFilename` | `string` | — | `shared/types.ts:571` |
-| `status` | `TranscriptionStatus → shared/types.TranscriptionStatus` | — | `shared/types.ts:572` |
-| `duration` | `?: number` | — | `shared/types.ts:573` |
-| `size` | `?: number` | — | `shared/types.ts:574` |
-| `queuedAt` | `?: string` | — | `shared/types.ts:575` |
-| `startedAt` | `?: string` | — | `shared/types.ts:576` |
-| `completedAt` | `?: string` | — | `shared/types.ts:577` |
-| `error` | `?: string` | — | `shared/types.ts:578` |
-| `streamedText` | `?: string` | — | `shared/types.ts:579` |
-
-### `shared/types.TranscriptionsResponse` — interface — `shared/types.ts:583-587`
-
-| field | type | default | at |
-|---|---|---|---|
-| `active` | `TranscriptionJob \| null → shared/types.TranscriptionJob` | — | `shared/types.ts:584` |
-| `queue` | `TranscriptionJob[] → shared/types.TranscriptionJob` | — | `shared/types.ts:585` |
-| `recent` | `TranscriptionJob[] → shared/types.TranscriptionJob` | — | `shared/types.ts:586` |
-
-### `shared/types.TranscriptionStatusResponse` — interface — `shared/types.ts:590-594`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:591` |
-| `status` | `TranscriptionStatus → shared/types.TranscriptionStatus` | — | `shared/types.ts:592` |
-| `transcriptPath` | `?: string` | — | `shared/types.ts:593` |
-
-### `shared/types.TranscriptContentResponse` — interface — `shared/types.ts:597-600`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:598` |
-| `content` | `string` | — | `shared/types.ts:599` |
-
-### `shared/types.FileContentResponse` — interface — `shared/types.ts:603-609`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:604` |
-| `filename` | `string` | — | `shared/types.ts:605` |
-| `content` | `string` | — | `shared/types.ts:606` |
-| `mimeType` | `string` | — | `shared/types.ts:607` |
-| `error` | `?: string` | — | `shared/types.ts:608` |
-
-### `shared/types.FinalVideoInfo` — interface — `shared/types.ts:614-620`
-
-| field | type | default | at |
-|---|---|---|---|
-| `path` | `string` | — | `shared/types.ts:615` |
-| `filename` | `string` | — | `shared/types.ts:616` |
-| `size` | `number` | — | `shared/types.ts:617` |
-| `version` | `?: number` | — | `shared/types.ts:618` |
-| `location` | `FinalMediaLocation → shared/types.FinalMediaLocation` | — | `shared/types.ts:619` |
-
-### `shared/types.FinalSrtInfo` — interface — `shared/types.ts:622-627`
-
-| field | type | default | at |
-|---|---|---|---|
-| `path` | `string` | — | `shared/types.ts:623` |
-| `filename` | `string` | — | `shared/types.ts:624` |
-| `size` | `number` | — | `shared/types.ts:625` |
-| `location` | `FinalMediaLocation → shared/types.FinalMediaLocation` | — | `shared/types.ts:626` |
-
-### `shared/types.AdditionalSegment` — interface — `shared/types.ts:629-633`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:630` |
-| `size` | `number` | — | `shared/types.ts:631` |
-| `hasSrt` | `boolean` | — | `shared/types.ts:632` |
-
-### `shared/types.FinalMediaResponse` — interface — `shared/types.ts:635-640`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:636` |
-| `video` | `?: FinalVideoInfo → shared/types.FinalVideoInfo` | — | `shared/types.ts:637` |
-| `srt` | `?: FinalSrtInfo → shared/types.FinalSrtInfo` | — | `shared/types.ts:638` |
-| `additionalSegments` | `?: AdditionalSegment[] → shared/types.AdditionalSegment` | — | `shared/types.ts:639` |
-
-### `shared/types.ChapterMatchCandidate` — interface — `shared/types.ts:646-652`
-
-| field | type | default | at |
-|---|---|---|---|
-| `timestamp` | `string` | — | `shared/types.ts:647` |
-| `timestampSeconds` | `number` | — | `shared/types.ts:648` |
-| `confidence` | `number` | — | `shared/types.ts:649` |
-| `matchedText` | `string` | — | `shared/types.ts:650` |
-| `matchMethod` | `'phrase' \| 'partial' \| 'keyword'` | — | `shared/types.ts:651` |
-
-### `shared/types.ChapterMatch` — interface — `shared/types.ts:654-667`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `number` | — | `shared/types.ts:655` |
-| `name` | `string` | — | `shared/types.ts:656` |
-| `displayName` | `string` | — | `shared/types.ts:657` |
-| `timestamp` | `?: string` | — | `shared/types.ts:658` |
-| `timestampSeconds` | `?: number` | — | `shared/types.ts:659` |
-| `confidence` | `number` | — | `shared/types.ts:660` |
-| `status` | `ChapterMatchStatus → shared/types.ChapterMatchStatus` | — | `shared/types.ts:661` |
-| `matchedText` | `?: string` | — | `shared/types.ts:663` |
-| `transcriptSnippet` | `?: string` | — | `shared/types.ts:664` |
-| `alternatives` | `?: ChapterMatchCandidate[] → shared/types.ChapterMatchCandidate` | — | `shared/types.ts:665` |
-| `matchReason` | `?: string` | — | `shared/types.ts:666` |
-
-### `shared/types.ChaptersResponse` — interface — `shared/types.ts:669-680`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:670` |
-| `chapters` | `ChapterMatch[] → shared/types.ChapterMatch` | — | `shared/types.ts:671` |
-| `formatted` | `string` | — | `shared/types.ts:672` |
-| `error` | `?: string` | — | `shared/types.ts:673` |
-| `stats` | `?: { elapsedMs: number; // Time taken in milliseconds srtSegments: number; // Number of SRT segments parsed chaptersFound: number; // Chapters…` | — | `shared/types.ts:674` |
-
-### `shared/types.ChaptersResponse.stats` — type — `shared/types.ts:674-679`
-
-| field | type | default | at |
-|---|---|---|---|
-| `elapsedMs` | `number` | — | `shared/types.ts:675` |
-| `srtSegments` | `number` | — | `shared/types.ts:676` |
-| `chaptersFound` | `number` | — | `shared/types.ts:677` |
-| `chaptersTotal` | `number` | — | `shared/types.ts:678` |
-
-### `shared/types.ChapterVerifyRequest` — interface — `shared/types.ts:685-697`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `number` | — | `shared/types.ts:686` |
-| `name` | `string` | — | `shared/types.ts:687` |
-| `transcriptSnippet` | `string` | — | `shared/types.ts:688` |
-| `currentMatch` | `?: { // Current algorithmic match (if any) timestamp: string; confidence: number; matchedText: string; }` | — | `shared/types.ts:689` |
-| `alternatives` | `?: ChapterMatchCandidate[] → shared/types.ChapterMatchCandidate` | — | `shared/types.ts:695` |
-| `userHint` | `?: string` | — | `shared/types.ts:696` |
-
-### `shared/types.ChapterVerifyRequest.currentMatch` — type — `shared/types.ts:689-694`
-
-| field | type | default | at |
-|---|---|---|---|
-| `timestamp` | `string` | — | `shared/types.ts:691` |
-| `confidence` | `number` | — | `shared/types.ts:692` |
-| `matchedText` | `string` | — | `shared/types.ts:693` |
-
-### `shared/types.ChapterVerifyResponse` — interface — `shared/types.ts:700-712`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:701` |
-| `chapter` | `number` | — | `shared/types.ts:702` |
-| `name` | `string` | — | `shared/types.ts:703` |
-| `recommendation` | `{ action: 'use_current' \| 'use_alternative' \| 'manual_timestamp' \| 'skip'; timestamp?: string; // Recommended timestamp timestampSeconds?: …` | — | `shared/types.ts:704` |
-| `error` | `?: string` | — | `shared/types.ts:711` |
-
-### `shared/types.ChapterVerifyResponse.recommendation` — type — `shared/types.ts:704-710`
-
-| field | type | default | at |
-|---|---|---|---|
-| `action` | `'use_current' \| 'use_alternative' \| 'manual_timestamp' \| 'skip'` | — | `shared/types.ts:705` |
-| `timestamp` | `?: string` | — | `shared/types.ts:706` |
-| `timestampSeconds` | `?: number` | — | `shared/types.ts:707` |
-| `confidence` | `number` | — | `shared/types.ts:708` |
-| `reasoning` | `string` | — | `shared/types.ts:709` |
-
-### `shared/types.ChapterOverride` — interface — `shared/types.ts:715-723`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `number` | — | `shared/types.ts:716` |
-| `name` | `string` | — | `shared/types.ts:717` |
-| `action` | `'override' \| 'skip'` | — | `shared/types.ts:718` |
-| `timestamp` | `?: string` | — | `shared/types.ts:719` |
-| `timestampSeconds` | `?: number` | — | `shared/types.ts:720` |
-| `reason` | `?: string` | — | `shared/types.ts:721` |
-| `createdAt` | `string` | — | `shared/types.ts:722` |
-
-### `shared/types.SetChapterOverrideRequest` — interface — `shared/types.ts:726-732`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `number` | — | `shared/types.ts:727` |
-| `name` | `string` | — | `shared/types.ts:728` |
-| `action` | `'override' \| 'skip'` | — | `shared/types.ts:729` |
-| `timestamp` | `?: string` | — | `shared/types.ts:730` |
-| `reason` | `?: string` | — | `shared/types.ts:731` |
-
-### `shared/types.SetChapterOverrideResponse` — interface — `shared/types.ts:735-739`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:736` |
-| `override` | `ChapterOverride → shared/types.ChapterOverride` | — | `shared/types.ts:737` |
-| `error` | `?: string` | — | `shared/types.ts:738` |
-
-### `shared/types.ChapterRecordingConfig` — interface — `shared/types.ts:742-747`
-
-| field | type | default | at |
-|---|---|---|---|
-| `slideDuration` | `number` | — | `shared/types.ts:743` |
-| `resolution` | `'720p' \| '1080p'` | — | `shared/types.ts:744` |
-| `autoGenerate` | `boolean` | — | `shared/types.ts:745` |
-| `includeTitleSlides` | `?: boolean` | — | `shared/types.ts:746` |
-
-### `shared/types.ChapterRecordingRequest` — interface — `shared/types.ts:750-754`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `?: string` | — | `shared/types.ts:751` |
-| `slideDuration` | `?: number` | — | `shared/types.ts:752` |
-| `resolution` | `?: string` | — | `shared/types.ts:753` |
-
-### `shared/types.ChapterRecordingResponse` — interface — `shared/types.ts:757-762`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:758` |
-| `generated` | `string[]` | — | `shared/types.ts:759` |
-| `errors` | `?: string[]` | — | `shared/types.ts:760` |
-| `error` | `?: string` | — | `shared/types.ts:761` |
-
-### `shared/types.ChapterGenerationProgress` — interface — `shared/types.ts:765-770`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `string` | — | `shared/types.ts:766` |
-| `status` | `'pending' \| 'generating' \| 'complete' \| 'error'` | — | `shared/types.ts:767` |
-| `outputFile` | `?: string` | — | `shared/types.ts:768` |
-| `error` | `?: string` | — | `shared/types.ts:769` |
-
-### `shared/types.QueryProjectSummary` — interface — `shared/types.ts:777-798`
-
-| field | type | default | at |
-|---|---|---|---|
-| `code` | `string` | — | `shared/types.ts:778` |
-| `brand` | `string` | — | `shared/types.ts:779` |
-| `path` | `string` | — | `shared/types.ts:780` |
-| `stage` | `ProjectStage → shared/types.ProjectStage` | — | `shared/types.ts:781` |
-| `priority` | `ProjectPriority → shared/types.ProjectPriority` | — | `shared/types.ts:782` |
-| `stats` | `{ recordings: number; chapters: number; transcriptPercent: number; images: number; thumbs: number; }` | — | `shared/types.ts:783` |
-| `lastModified` | `string \| null` | — | `shared/types.ts:790` |
-| `hasInbox` | `boolean` | — | `shared/types.ts:792` |
-| `hasAssets` | `boolean` | — | `shared/types.ts:793` |
-| `hasChapters` | `boolean` | — | `shared/types.ts:794` |
-| `ships` | `ProjectShips → shared/types.ProjectShips` | — | `shared/types.ts:796` |
-| `shipsDeclared` | `boolean` | — | `shared/types.ts:797` |
-
-### `shared/types.QueryProjectSummary.stats` — type — `shared/types.ts:783-789`
-
-| field | type | default | at |
-|---|---|---|---|
-| `recordings` | `number` | — | `shared/types.ts:784` |
-| `chapters` | `number` | — | `shared/types.ts:785` |
-| `transcriptPercent` | `number` | — | `shared/types.ts:786` |
-| `images` | `number` | — | `shared/types.ts:787` |
-| `thumbs` | `number` | — | `shared/types.ts:788` |
-
-### `shared/types.QueryProjectDetail` — interface — `shared/types.ts:801-828`
-
-| field | type | default | at |
-|---|---|---|---|
-| `code` | `string` | — | `shared/types.ts:802` |
-| `path` | `string` | — | `shared/types.ts:803` |
-| `title` | `?: string` | — | `shared/types.ts:804` |
-| `ships` | `?: ProjectShips → shared/types.ProjectShips` | — | `shared/types.ts:805` |
-| `shipsDeclared` | `?: boolean` | — | `shared/types.ts:806` |
-| `stage` | `ProjectStage → shared/types.ProjectStage` | — | `shared/types.ts:807` |
-| `priority` | `ProjectPriority → shared/types.ProjectPriority` | — | `shared/types.ts:808` |
-| `stats` | `{ recordings: number; chapters: number; transcripts: { matched: number; missing: number; orphaned: number; }; images: number; thumbs: numbe…` | — | `shared/types.ts:810` |
-| `finalMedia` | `{ video?: { filename: string; size: number }; srt?: { filename: string }; } \| null` | — | `shared/types.ts:822` |
-| `createdAt` | `string \| null` | — | `shared/types.ts:826` |
-| `lastModified` | `string \| null` | — | `shared/types.ts:827` |
-
-### `shared/types.QueryProjectDetail.stats` — type — `shared/types.ts:810-821`
-
-| field | type | default | at |
-|---|---|---|---|
-| `recordings` | `number` | — | `shared/types.ts:811` |
-| `chapters` | `number` | — | `shared/types.ts:812` |
-| `transcripts` | `{ matched: number; missing: number; orphaned: number; }` | — | `shared/types.ts:813` |
-| `images` | `number` | — | `shared/types.ts:818` |
-| `thumbs` | `number` | — | `shared/types.ts:819` |
-| `totalDuration` | `number \| null` | — | `shared/types.ts:820` |
-
-### `shared/types.QueryProjectDetail.stats.transcripts` — type — `shared/types.ts:813-817`
-
-| field | type | default | at |
-|---|---|---|---|
-| `matched` | `number` | — | `shared/types.ts:814` |
-| `missing` | `number` | — | `shared/types.ts:815` |
-| `orphaned` | `number` | — | `shared/types.ts:816` |
-
-### `shared/types.QueryRecording` — interface — `shared/types.ts:831-844`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:832` |
-| `chapter` | `string` | — | `shared/types.ts:833` |
-| `sequence` | `string` | — | `shared/types.ts:834` |
-| `name` | `string` | — | `shared/types.ts:835` |
-| `tags` | `string[]` | — | `shared/types.ts:836` |
-| `folder` | `'recordings'` | — | `shared/types.ts:837` |
-| `isSafe` | `boolean` | — | `shared/types.ts:838` |
-| `isParked` | `boolean` | — | `shared/types.ts:839` |
-| `annotation` | `?: string` | — | `shared/types.ts:840` |
-| `size` | `number` | — | `shared/types.ts:841` |
-| `duration` | `number \| null` | — | `shared/types.ts:842` |
-| `hasTranscript` | `boolean` | — | `shared/types.ts:843` |
-
-### `shared/types.QueryTranscript` — interface — `shared/types.ts:847-855`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:848` |
-| `chapter` | `string` | — | `shared/types.ts:849` |
-| `sequence` | `string` | — | `shared/types.ts:850` |
-| `name` | `string` | — | `shared/types.ts:851` |
-| `size` | `number` | — | `shared/types.ts:852` |
-| `preview` | `?: string` | — | `shared/types.ts:853` |
-| `content` | `?: string` | — | `shared/types.ts:854` |
-
-### `shared/types.QueryChapter` — interface — `shared/types.ts:858-867`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `number` | — | `shared/types.ts:859` |
-| `name` | `string` | — | `shared/types.ts:860` |
-| `displayName` | `string` | — | `shared/types.ts:861` |
-| `title` | `?: string` | — | `shared/types.ts:862` |
-| `timestamp` | `string \| null` | — | `shared/types.ts:863` |
-| `timestampSeconds` | `number \| null` | — | `shared/types.ts:864` |
-| `recordingCount` | `number` | — | `shared/types.ts:865` |
-| `hasTranscript` | `boolean` | — | `shared/types.ts:866` |
-
-### `shared/types.QueryImage` — interface — `shared/types.ts:870-878`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:871` |
-| `chapter` | `string` | — | `shared/types.ts:872` |
-| `sequence` | `string` | — | `shared/types.ts:873` |
-| `imageOrder` | `string` | — | `shared/types.ts:874` |
-| `variant` | `string \| null` | — | `shared/types.ts:875` |
-| `label` | `string` | — | `shared/types.ts:876` |
-| `size` | `number` | — | `shared/types.ts:877` |
-
-### `shared/types.SafeResponse` — interface — `shared/types.ts:885-891`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:886` |
-| `moved` | `?: string[]` | — | `shared/types.ts:887` |
-| `count` | `?: number` | — | `shared/types.ts:888` |
-| `errors` | `?: string[]` | — | `shared/types.ts:889` |
-| `error` | `?: string` | — | `shared/types.ts:890` |
-
-### `shared/types.RestoreResponse` — interface — `shared/types.ts:894-900`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:895` |
-| `restored` | `?: string[]` | — | `shared/types.ts:896` |
-| `count` | `?: number` | — | `shared/types.ts:897` |
-| `errors` | `?: string[]` | — | `shared/types.ts:898` |
-| `error` | `?: string` | — | `shared/types.ts:899` |
-
-### `shared/types.ParkResponse` — interface — `shared/types.ts:903-909`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:904` |
-| `parked` | `?: string[]` | — | `shared/types.ts:905` |
-| `count` | `?: number` | — | `shared/types.ts:906` |
-| `errors` | `?: string[]` | — | `shared/types.ts:907` |
-| `error` | `?: string` | — | `shared/types.ts:908` |
-
-### `shared/types.UnparkResponse` — interface — `shared/types.ts:912-918`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:913` |
-| `unparked` | `?: string[]` | — | `shared/types.ts:914` |
-| `count` | `?: number` | — | `shared/types.ts:915` |
-| `errors` | `?: string[]` | — | `shared/types.ts:916` |
-| `error` | `?: string` | — | `shared/types.ts:917` |
-
-### `shared/types.RenameChapterResponse` — interface — `shared/types.ts:921-925`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:922` |
-| `renamedFiles` | `string[]` | — | `shared/types.ts:923` |
-| `error` | `?: string` | — | `shared/types.ts:924` |
-
-### `shared/types.QueueAllResponse` — interface — `shared/types.ts:928-937`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:929` |
-| `scope` | `'project' \| 'chapter'` | — | `shared/types.ts:930` |
-| `chapter` | `string \| null` | — | `shared/types.ts:931` |
-| `queued` | `string[]` | — | `shared/types.ts:932` |
-| `skipped` | `string[]` | — | `shared/types.ts:933` |
-| `queuedCount` | `number` | — | `shared/types.ts:934` |
-| `skippedCount` | `number` | — | `shared/types.ts:935` |
-| `error` | `?: string` | — | `shared/types.ts:936` |
-
-### `shared/types.RecentRename` — interface — `shared/types.ts:940-946`
-
-| field | type | default | at |
-|---|---|---|---|
-| `id` | `string` | — | `shared/types.ts:941` |
-| `originalName` | `string` | — | `shared/types.ts:942` |
-| `newName` | `string` | — | `shared/types.ts:943` |
-| `timestamp` | `number` | — | `shared/types.ts:944` |
-| `age` | `number` | — | `shared/types.ts:945` |
-
-### `shared/types.InboxFile` — interface — `shared/types.ts:949-953`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:950` |
-| `size` | `number` | — | `shared/types.ts:951` |
-| `modifiedAt` | `string` | — | `shared/types.ts:952` |
-
-### `shared/types.InboxSubfolder` — interface — `shared/types.ts:956-961`
-
-| field | type | default | at |
-|---|---|---|---|
-| `name` | `string` | — | `shared/types.ts:957` |
-| `path` | `string` | — | `shared/types.ts:958` |
-| `fileCount` | `number` | — | `shared/types.ts:959` |
-| `files` | `InboxFile[] → shared/types.InboxFile` | — | `shared/types.ts:960` |
-
-### `shared/types.InboxResponse` — interface — `shared/types.ts:964-970`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:965` |
-| `inbox` | `{ totalFiles: number; subfolders: InboxSubfolder[]; } → shared/types.InboxSubfolder` | — | `shared/types.ts:966` |
-
-### `shared/types.InboxResponse.inbox` — type — `shared/types.ts:966-969`
-
-| field | type | default | at |
-|---|---|---|---|
-| `totalFiles` | `number` | — | `shared/types.ts:967` |
-| `subfolders` | `InboxSubfolder[] → shared/types.InboxSubfolder` | — | `shared/types.ts:968` |
-
-### `shared/types.ChapterRecordingStatusResponse` — interface — `shared/types.ts:973-982`
-
-| field | type | default | at |
-|---|---|---|---|
-| `isGenerating` | `boolean` | — | `shared/types.ts:974` |
-| `chapters` | `Array<{ chapter: string; label: string; segmentCount: number; totalDuration: number; }>` | — | `shared/types.ts:975` |
-| `existing` | `string[]` | — | `shared/types.ts:981` |
-
-### `shared/types.EnvironmentResponse` — interface — `shared/types.ts:985-995`
-
-| field | type | default | at |
-|---|---|---|---|
-| `platform` | `'win32' \| 'linux' \| 'darwin'` | — | `shared/types.ts:986` |
-| `isWSL` | `boolean` | — | `shared/types.ts:987` |
-| `pathFormat` | `'windows' \| 'linux'` | — | `shared/types.ts:988` |
-| `guidance` | `{ nativeFiles: string; // e.g., '/home/jan/...' or 'C:\\...' windowsFiles: string; // e.g., '/mnt/c/...' or 'C:\\...' wslFiles: string; // …` | — | `shared/types.ts:989` |
-| `machineRole` | `MachineRole → shared/types.MachineRole` | — | `shared/types.ts:994` |
-
-### `shared/types.EnvironmentResponse.guidance` — type — `shared/types.ts:989-993`
-
-| field | type | default | at |
-|---|---|---|---|
-| `nativeFiles` | `string` | — | `shared/types.ts:990` |
-| `windowsFiles` | `string` | — | `shared/types.ts:991` |
-| `wslFiles` | `string` | — | `shared/types.ts:992` |
-
-### `shared/types.RecordingState` — interface — `shared/types.ts:1002-1008`
-
-| field | type | default | at |
-|---|---|---|---|
-| `safe` | `?: boolean` | — | `shared/types.ts:1003` |
-| `parked` | `?: boolean` | — | `shared/types.ts:1004` |
-| `annotation` | `?: string` | — | `shared/types.ts:1005` |
-| `stage` | `?: string` | — | `shared/types.ts:1006` |
-| `aspectWarning` | `?: AspectCheck & { dismissedAt?: string } → shared/types.AspectCheck` | — | `shared/types.ts:1007` |
-
-### `shared/types.ChapterState` — interface — `shared/types.ts:1011-1013`
-
-| field | type | default | at |
-|---|---|---|---|
-| `title` | `?: string` | — | `shared/types.ts:1012` |
-
-### `shared/types.ProjectState` — interface — `shared/types.ts:1037-1045`
-
-| field | type | default | at |
-|---|---|---|---|
-| `version` | `1` | — | `shared/types.ts:1038` |
-| `recordings` | `Record<string, RecordingState> → shared/types.RecordingState` | — | `shared/types.ts:1039` |
-| `title` | `?: string` | — | `shared/types.ts:1040` |
-| `chapters` | `?: Record<string, ChapterState> → shared/types.ChapterState` | — | `shared/types.ts:1041` |
-| `ships` | `?: ProjectShips → shared/types.ProjectShips` | — | `shared/types.ts:1042` |
-| `glingDictionary` | `?: string[]` | — | `shared/types.ts:1043` |
-| `editManifest` | `?: EditManifest → shared/types.EditManifest` | — | `shared/types.ts:1044` |
-
-### `shared/types.ProjectStateResponse` — interface — `shared/types.ts:1048-1052`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:1049` |
-| `state` | `ProjectState → shared/types.ProjectState` | — | `shared/types.ts:1050` |
-| `error` | `?: string` | — | `shared/types.ts:1051` |
-
-### `shared/types.UpdateProjectStateRequest` — interface — `shared/types.ts:1055-1057`
-
-| field | type | default | at |
-|---|---|---|---|
-| `recordings` | `Record<string, RecordingState> → shared/types.RecordingState` | — | `shared/types.ts:1056` |
-
-### `shared/types.EditManifestFile` — interface — `shared/types.ts:1064-1069`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:1065` |
-| `sourceHash` | `string` | — | `shared/types.ts:1066` |
-| `copiedAt` | `string` | — | `shared/types.ts:1067` |
-| `sourceSize` | `number` | — | `shared/types.ts:1068` |
-
-### `shared/types.EditFolderManifest` — interface — `shared/types.ts:1072-1075`
-
-| field | type | default | at |
-|---|---|---|---|
-| `lastCopied` | `string \| null` | — | `shared/types.ts:1073` |
-| `files` | `EditManifestFile[] → shared/types.EditManifestFile` | — | `shared/types.ts:1074` |
-
-### `shared/types.EditManifest` — interface — `shared/types.ts:1078-1082`
-
-| field | type | default | at |
-|---|---|---|---|
-| `edit-1st` | `EditFolderManifest → shared/types.EditFolderManifest` | — | `shared/types.ts:1079` |
-| `edit-2nd` | `EditFolderManifest → shared/types.EditFolderManifest` | — | `shared/types.ts:1080` |
-| `edit-final` | `EditFolderManifest → shared/types.EditFolderManifest` | — | `shared/types.ts:1081` |
-
-### `shared/types.ManifestFileStatus` — interface — `shared/types.ts:1109-1114`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `shared/types.ts:1110` |
-| `status` | `'present' \| 'missing' \| 'changed'` | — | `shared/types.ts:1111` |
-| `sourceSize` | `?: number` | — | `shared/types.ts:1112` |
-| `currentHash` | `?: string` | — | `shared/types.ts:1113` |
-
-### `shared/types.ManifestStatusDetail` — interface — `shared/types.ts:1119-1127`
-
-| field | type | default | at |
-|---|---|---|---|
-| `status` | `ManifestStatus → shared/types.ManifestStatus` | — | `shared/types.ts:1120` |
-| `manifestedFiles` | `number` | — | `shared/types.ts:1121` |
-| `presentFiles` | `number` | — | `shared/types.ts:1122` |
-| `missingFiles` | `number` | — | `shared/types.ts:1123` |
-| `changedFiles` | `number` | — | `shared/types.ts:1124` |
-| `totalSize` | `number` | — | `shared/types.ts:1125` |
-| `fileDetails` | `?: ManifestFileStatus[] → shared/types.ManifestFileStatus` | — | `shared/types.ts:1126` |
-
-### `shared/types.ManifestStatusResponse` — interface — `shared/types.ts:1130-1135`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:1131` |
-| `folder` | `EditFolderKey → shared/types.EditFolderKey` | — | `shared/types.ts:1132` |
-| `detail` | `ManifestStatusDetail → shared/types.ManifestStatusDetail` | — | `shared/types.ts:1133` |
-| `error` | `?: string` | — | `shared/types.ts:1134` |
-
-### `shared/types.CleanEditFolderResponse` — interface — `shared/types.ts:1138-1146`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:1139` |
-| `folder` | `EditFolderKey → shared/types.EditFolderKey` | — | `shared/types.ts:1140` |
-| `deleted` | `string[]` | — | `shared/types.ts:1141` |
-| `deletedCount` | `number` | — | `shared/types.ts:1142` |
-| `spaceSaved` | `number` | — | `shared/types.ts:1143` |
-| `preserved` | `string[]` | — | `shared/types.ts:1144` |
-| `error` | `?: string` | — | `shared/types.ts:1145` |
-
-### `shared/types.RestoreEditFolderResponse` — interface — `shared/types.ts:1149-1156`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:1150` |
-| `folder` | `EditFolderKey → shared/types.EditFolderKey` | — | `shared/types.ts:1151` |
-| `restored` | `string[]` | — | `shared/types.ts:1152` |
-| `restoredCount` | `number` | — | `shared/types.ts:1153` |
-| `warnings` | `?: string[]` | — | `shared/types.ts:1154` |
-| `error` | `?: string` | — | `shared/types.ts:1155` |
-
-### `shared/types.SplitChapterRequest` — interface — `shared/types.ts:1159-1162`
-
-| field | type | default | at |
-|---|---|---|---|
-| `chapter` | `string` | — | `shared/types.ts:1160` |
-| `splitAtSequence` | `number` | — | `shared/types.ts:1161` |
-
-### `shared/types.SplitChapterResponse` — interface — `shared/types.ts:1164-1172`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:1165` |
-| `sourceChapter` | `string` | — | `shared/types.ts:1166` |
-| `newChapter` | `string` | — | `shared/types.ts:1167` |
-| `filesMoved` | `number` | — | `shared/types.ts:1168` |
-| `cascadedChapters` | `number` | — | `shared/types.ts:1169` |
-| `undoMapping` | `Array<{ oldFilename: string; newFilename: string }>` | — | `shared/types.ts:1170` |
-| `error` | `?: string` | — | `shared/types.ts:1171` |
-
-### `shared/types.UndoRenameResponse` — interface — `shared/types.ts:1175-1179`
-
-| field | type | default | at |
-|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:1176` |
-| `filesReverted` | `number` | — | `shared/types.ts:1177` |
-| `error` | `?: string` | — | `shared/types.ts:1178` |
-
-### `shared/types.MicCheckTick` — interface — `shared/types.ts:1195-1221`
+### `shared/types.RenameResponse` — interface — `shared/types.ts:262-269`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `t` | `number` | — | `shared/types.ts:1197` | Milliseconds since session start. |
-| `mode` | `MicCheckMode → shared/types.MicCheckMode` | — | `shared/types.ts:1202` | DECLARED — which screen the operator pressed. Authoritative, never inferred. |
-| `shortTermLufs` | `number \| null` | — | `shared/types.ts:1203` |  |
-| `samplePeakDbfs` | `number \| null` | — | `shared/types.ts:1204` |  |
-| `clipCount` | `number` | — | `shared/types.ts:1205` |  |
-| `nearClipCount` | `number` | — | `shared/types.ts:1206` |  |
-| `windowFull` | `boolean` | — | `shared/types.ts:1208` | False until a full 3 s short-term window has been observed. |
-| `speechDetected` | `boolean` | — | `shared/types.ts:1220` | MEASURED — does THIS tick contain speech (level vs the floor)? |
+| `success` | `boolean` | — | `shared/types.ts:263` |  |
+| `oldPath` | `string` | — | `shared/types.ts:264` |  |
+| `newPath` | `string` | — | `shared/types.ts:265` |  |
+| `error` | `?: string` | — | `shared/types.ts:266` |  |
+| `aspect` | `?: AspectCheck['status'] \| 'pending' → shared/types.AspectCheck` | — | `shared/types.ts:268` | Aspect check for a promoted recording: its result, or 'pending' when it still runs on the promoted file |
 
-### `shared/types.MicCheckEvent` — interface — `shared/types.ts:1238-1244`
+### `shared/types.SuggestedNaming` — interface — `shared/types.ts:275-280`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `string` | — | `shared/types.ts:276` |
+| `sequence` | `string` | — | `shared/types.ts:277` |
+| `name` | `string` | — | `shared/types.ts:278` |
+| `existingFiles` | `string[]` | — | `shared/types.ts:279` |
+
+### `shared/types.ProjectInfo` — interface — `shared/types.ts:283-288`
+
+| field | type | default | at |
+|---|---|---|---|
+| `code` | `string` | — | `shared/types.ts:284` |
+| `path` | `string` | — | `shared/types.ts:285` |
+| `fileCount` | `number` | — | `shared/types.ts:286` |
+| `lastModified` | `string` | — | `shared/types.ts:287` |
+
+### `shared/types.TranscriptSyncStatus` — interface — `shared/types.ts:338-342`
+
+| field | type | default | at |
+|---|---|---|---|
+| `matched` | `number` | — | `shared/types.ts:339` |
+| `missingTranscripts` | `string[]` | — | `shared/types.ts:340` |
+| `orphanedTranscripts` | `string[]` | — | `shared/types.ts:341` |
+
+### `shared/types.TranscriptSyncResponse` — interface — `shared/types.ts:345-351`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:346` |
+| `matched` | `string[]` | — | `shared/types.ts:347` |
+| `missingTranscripts` | `string[]` | — | `shared/types.ts:348` |
+| `orphanedTranscripts` | `string[]` | — | `shared/types.ts:349` |
+| `recordingsDir` | `?: string` | — | `shared/types.ts:350` |
+
+### `shared/types.ProjectStats` — interface — `shared/types.ts:353-399`
+
+| field | type | default | at |
+|---|---|---|---|
+| `code` | `string` | — | `shared/types.ts:354` |
+| `path` | `string` | — | `shared/types.ts:355` |
+| `priority` | `ProjectPriority → shared/types.ProjectPriority` | — | `shared/types.ts:358` |
+| `totalFiles` | `number` | — | `shared/types.ts:361` |
+| `chapterCount` | `number` | — | `shared/types.ts:364` |
+| `transcriptCount` | `number` | — | `shared/types.ts:367` |
+| `transcriptPercent` | `number` | — | `shared/types.ts:368` |
+| `transcriptSync` | `{ matched: number; missingCount: number; orphanedCount: number; }` | — | `shared/types.ts:369` |
+| `stage` | `ProjectStage → shared/types.ProjectStage` | — | `shared/types.ts:376` |
+| `createdAt` | `string \| null` | — | `shared/types.ts:379` |
+| `lastModified` | `string \| null` | — | `shared/types.ts:380` |
+| `totalDuration` | `number \| null` | — | `shared/types.ts:381` |
+| `imageCount` | `number` | — | `shared/types.ts:382` |
+| `thumbCount` | `number` | — | `shared/types.ts:383` |
+| `hasInbox` | `boolean` | — | `shared/types.ts:386` |
+| `hasAssets` | `boolean` | — | `shared/types.ts:387` |
+| `hasChapters` | `boolean` | — | `shared/types.ts:388` |
+| `ships` | `ProjectShips → shared/types.ProjectShips` | — | `shared/types.ts:392` |
+| `shipsDeclared` | `boolean` | — | `shared/types.ts:393` |
+| `inboxCount` | `number` | — | `shared/types.ts:394` |
+| `chapterVideoCount` | `number` | — | `shared/types.ts:395` |
+| `hasFinal` | `boolean` | — | `shared/types.ts:398` |
+
+### `shared/types.ProjectStats.transcriptSync` — type — `shared/types.ts:369-373`
+
+| field | type | default | at |
+|---|---|---|---|
+| `matched` | `number` | — | `shared/types.ts:370` |
+| `missingCount` | `number` | — | `shared/types.ts:371` |
+| `orphanedCount` | `number` | — | `shared/types.ts:372` |
+
+### `shared/types.RecordingFile` — interface — `shared/types.ts:402-417`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:403` |
+| `path` | `string` | — | `shared/types.ts:404` |
+| `size` | `number` | — | `shared/types.ts:405` |
+| `timestamp` | `string` | — | `shared/types.ts:406` |
+| `duration` | `?: number` | — | `shared/types.ts:407` |
+| `chapter` | `string` | — | `shared/types.ts:408` |
+| `sequence` | `string` | — | `shared/types.ts:409` |
+| `name` | `string` | — | `shared/types.ts:410` |
+| `tags` | `string[]` | — | `shared/types.ts:411` |
+| `folder` | `'recordings'` | — | `shared/types.ts:412` |
+| `isSafe` | `boolean` | — | `shared/types.ts:413` |
+| `isParked` | `boolean` | — | `shared/types.ts:414` |
+| `annotation` | `?: string` | — | `shared/types.ts:415` |
+| `aspectWarning` | `?: AspectCheck → shared/types.AspectCheck` | — | `shared/types.ts:416` |
+
+### `shared/types.ImageInfo` — interface — `shared/types.ts:420-428`
+
+| field | type | default | at |
+|---|---|---|---|
+| `path` | `string` | — | `shared/types.ts:421` |
+| `filename` | `string` | — | `shared/types.ts:422` |
+| `size` | `number` | — | `shared/types.ts:423` |
+| `timestamp` | `string` | — | `shared/types.ts:424` |
+| `hash` | `string` | — | `shared/types.ts:425` |
+| `isDuplicate` | `?: boolean` | — | `shared/types.ts:426` |
+| `duplicateOf` | `?: string` | — | `shared/types.ts:427` |
+
+### `shared/types.ImageAsset` — interface — `shared/types.ts:431-442`
+
+| field | type | default | at |
+|---|---|---|---|
+| `path` | `string` | — | `shared/types.ts:432` |
+| `filename` | `string` | — | `shared/types.ts:433` |
+| `size` | `number` | — | `shared/types.ts:434` |
+| `timestamp` | `string` | — | `shared/types.ts:435` |
+| `chapter` | `string` | — | `shared/types.ts:436` |
+| `sequence` | `string` | — | `shared/types.ts:437` |
+| `imageOrder` | `string` | — | `shared/types.ts:438` |
+| `variant` | `string \| null` | — | `shared/types.ts:439` |
+| `label` | `string` | — | `shared/types.ts:440` |
+| `type` | `?: 'image'` | — | `shared/types.ts:441` |
+
+### `shared/types.AssignImageRequest` — interface — `shared/types.ts:445-452`
+
+| field | type | default | at |
+|---|---|---|---|
+| `sourcePath` | `string` | — | `shared/types.ts:446` |
+| `chapter` | `string` | — | `shared/types.ts:447` |
+| `sequence` | `string` | — | `shared/types.ts:448` |
+| `imageOrder` | `string` | — | `shared/types.ts:449` |
+| `variant` | `string \| null` | — | `shared/types.ts:450` |
+| `label` | `string` | — | `shared/types.ts:451` |
+
+### `shared/types.AssignImageResponse` — interface — `shared/types.ts:455-460`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:456` |
+| `oldPath` | `string` | — | `shared/types.ts:457` |
+| `newPath` | `string` | — | `shared/types.ts:458` |
+| `error` | `?: string` | — | `shared/types.ts:459` |
+
+### `shared/types.NextImageOrderResponse` — interface — `shared/types.ts:463-468`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `string` | — | `shared/types.ts:464` |
+| `sequence` | `string` | — | `shared/types.ts:465` |
+| `nextImageOrder` | `string` | — | `shared/types.ts:466` |
+| `existingCount` | `number` | — | `shared/types.ts:467` |
+
+### `shared/types.PromptAsset` — interface — `shared/types.ts:471-484`
+
+| field | type | default | at |
+|---|---|---|---|
+| `path` | `string` | — | `shared/types.ts:472` |
+| `filename` | `string` | — | `shared/types.ts:473` |
+| `size` | `number` | — | `shared/types.ts:474` |
+| `timestamp` | `string` | — | `shared/types.ts:475` |
+| `chapter` | `string` | — | `shared/types.ts:476` |
+| `sequence` | `string` | — | `shared/types.ts:477` |
+| `imageOrder` | `string` | — | `shared/types.ts:478` |
+| `variant` | `string \| null` | — | `shared/types.ts:479` |
+| `label` | `string` | — | `shared/types.ts:480` |
+| `type` | `'prompt'` | — | `shared/types.ts:481` |
+| `content` | `?: string` | — | `shared/types.ts:482` |
+| `contentPreview` | `?: string` | — | `shared/types.ts:483` |
+
+### `shared/types.SavePromptRequest` — interface — `shared/types.ts:487-494`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `string` | — | `shared/types.ts:488` |
+| `sequence` | `string` | — | `shared/types.ts:489` |
+| `imageOrder` | `string` | — | `shared/types.ts:490` |
+| `variant` | `string \| null` | — | `shared/types.ts:491` |
+| `label` | `string` | — | `shared/types.ts:492` |
+| `content` | `string` | — | `shared/types.ts:493` |
+
+### `shared/types.SavePromptResponse` — interface — `shared/types.ts:497-504`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:498` |
+| `path` | `string` | — | `shared/types.ts:499` |
+| `filename` | `string` | — | `shared/types.ts:500` |
+| `created` | `boolean` | — | `shared/types.ts:501` |
+| `deleted` | `?: boolean` | — | `shared/types.ts:502` |
+| `error` | `?: string` | — | `shared/types.ts:503` |
+
+### `shared/types.LoadPromptResponse` — interface — `shared/types.ts:507-515`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:508` |
+| `content` | `string` | — | `shared/types.ts:509` |
+| `chapter` | `string` | — | `shared/types.ts:510` |
+| `sequence` | `string` | — | `shared/types.ts:511` |
+| `imageOrder` | `string` | — | `shared/types.ts:512` |
+| `variant` | `string \| null` | — | `shared/types.ts:513` |
+| `label` | `string` | — | `shared/types.ts:514` |
+
+### `shared/types.ServerToClientEvents` — interface — `shared/types.ts:518-550`
+
+| field | type | default | at |
+|---|---|---|---|
+| `file:new` | `(file: FileInfo) => void → shared/types.FileInfo` | — | `shared/types.ts:519` |
+| `file:deleted` | `(data: { path: string }) => void` | — | `shared/types.ts:520` |
+| `file:aspect` | `(data: { path: string; aspectCheck: AspectCheck }) => void → shared/types.AspectCheck` | — | `shared/types.ts:521` |
+| `file:renamed` | `(data: { oldPath: string; newPath: string }) => void` | — | `shared/types.ts:522` |
+| `file:error` | `(data: { path: string; error: string }) => void` | — | `shared/types.ts:523` |
+| `thumbs:changed` | `() => void` | — | `shared/types.ts:525` |
+| `thumbs:zip-added` | `() => void` | — | `shared/types.ts:526` |
+| `assets:incoming-changed` | `() => void` | — | `shared/types.ts:527` |
+| `assets:assigned-changed` | `() => void` | — | `shared/types.ts:528` |
+| `recordings:changed` | `() => void` | — | `shared/types.ts:529` |
+| `projects:changed` | `() => void` | — | `shared/types.ts:530` |
+| `inbox:changed` | `() => void` | — | `shared/types.ts:531` |
+| `transcripts:changed` | `() => void` | — | `shared/types.ts:532` |
+| `miccheck:started` | `(data: { sessionId: string }) => void` | — | `shared/types.ts:534` |
+| `miccheck:tick` | `(data: { sessionId: string; tick: MicCheckTick }) => void → shared/types.MicCheckTick` | — | `shared/types.ts:535` |
+| `miccheck:finished` | `(data: { sessionId: string }) => void` | — | `shared/types.ts:536` |
+| `transcription:queued` | `(job: { jobId: string; videoPath: string; position: number }) => void` | — | `shared/types.ts:538` |
+| `transcription:started` | `(job: { jobId: string; videoPath: string }) => void` | — | `shared/types.ts:539` |
+| `transcription:progress` | `(data: { jobId: string; text: string }) => void` | — | `shared/types.ts:540` |
+| `transcription:complete` | `(job: { jobId: string; videoPath: string; transcriptPath: string; }) => void` | — | `shared/types.ts:541` |
+| `transcription:error` | `(job: { jobId: string; videoPath: string; error: string }) => void` | — | `shared/types.ts:546` |
+| `context:changed` | `(data: OpenContextState) => void → shared/contextSchemas.OpenContextState` | — | `shared/types.ts:549` |
+
+### `shared/types.ClientToServerEvents` — interface — `shared/types.ts:562-564`
+
+*No annotated fields found — this shape declares its fields elsewhere.*
+
+### `shared/types.TranscriptionJob` — interface — `shared/types.ts:570-582`
+
+| field | type | default | at |
+|---|---|---|---|
+| `jobId` | `string` | — | `shared/types.ts:571` |
+| `videoPath` | `string` | — | `shared/types.ts:572` |
+| `videoFilename` | `string` | — | `shared/types.ts:573` |
+| `status` | `TranscriptionStatus → shared/types.TranscriptionStatus` | — | `shared/types.ts:574` |
+| `duration` | `?: number` | — | `shared/types.ts:575` |
+| `size` | `?: number` | — | `shared/types.ts:576` |
+| `queuedAt` | `?: string` | — | `shared/types.ts:577` |
+| `startedAt` | `?: string` | — | `shared/types.ts:578` |
+| `completedAt` | `?: string` | — | `shared/types.ts:579` |
+| `error` | `?: string` | — | `shared/types.ts:580` |
+| `streamedText` | `?: string` | — | `shared/types.ts:581` |
+
+### `shared/types.TranscriptionsResponse` — interface — `shared/types.ts:585-589`
+
+| field | type | default | at |
+|---|---|---|---|
+| `active` | `TranscriptionJob \| null → shared/types.TranscriptionJob` | — | `shared/types.ts:586` |
+| `queue` | `TranscriptionJob[] → shared/types.TranscriptionJob` | — | `shared/types.ts:587` |
+| `recent` | `TranscriptionJob[] → shared/types.TranscriptionJob` | — | `shared/types.ts:588` |
+
+### `shared/types.TranscriptionStatusResponse` — interface — `shared/types.ts:592-596`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:593` |
+| `status` | `TranscriptionStatus → shared/types.TranscriptionStatus` | — | `shared/types.ts:594` |
+| `transcriptPath` | `?: string` | — | `shared/types.ts:595` |
+
+### `shared/types.TranscriptContentResponse` — interface — `shared/types.ts:599-602`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:600` |
+| `content` | `string` | — | `shared/types.ts:601` |
+
+### `shared/types.FileContentResponse` — interface — `shared/types.ts:605-611`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:606` |
+| `filename` | `string` | — | `shared/types.ts:607` |
+| `content` | `string` | — | `shared/types.ts:608` |
+| `mimeType` | `string` | — | `shared/types.ts:609` |
+| `error` | `?: string` | — | `shared/types.ts:610` |
+
+### `shared/types.FinalVideoInfo` — interface — `shared/types.ts:616-622`
+
+| field | type | default | at |
+|---|---|---|---|
+| `path` | `string` | — | `shared/types.ts:617` |
+| `filename` | `string` | — | `shared/types.ts:618` |
+| `size` | `number` | — | `shared/types.ts:619` |
+| `version` | `?: number` | — | `shared/types.ts:620` |
+| `location` | `FinalMediaLocation → shared/types.FinalMediaLocation` | — | `shared/types.ts:621` |
+
+### `shared/types.FinalSrtInfo` — interface — `shared/types.ts:624-629`
+
+| field | type | default | at |
+|---|---|---|---|
+| `path` | `string` | — | `shared/types.ts:625` |
+| `filename` | `string` | — | `shared/types.ts:626` |
+| `size` | `number` | — | `shared/types.ts:627` |
+| `location` | `FinalMediaLocation → shared/types.FinalMediaLocation` | — | `shared/types.ts:628` |
+
+### `shared/types.AdditionalSegment` — interface — `shared/types.ts:631-635`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:632` |
+| `size` | `number` | — | `shared/types.ts:633` |
+| `hasSrt` | `boolean` | — | `shared/types.ts:634` |
+
+### `shared/types.FinalMediaResponse` — interface — `shared/types.ts:637-642`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:638` |
+| `video` | `?: FinalVideoInfo → shared/types.FinalVideoInfo` | — | `shared/types.ts:639` |
+| `srt` | `?: FinalSrtInfo → shared/types.FinalSrtInfo` | — | `shared/types.ts:640` |
+| `additionalSegments` | `?: AdditionalSegment[] → shared/types.AdditionalSegment` | — | `shared/types.ts:641` |
+
+### `shared/types.ChapterMatchCandidate` — interface — `shared/types.ts:648-654`
+
+| field | type | default | at |
+|---|---|---|---|
+| `timestamp` | `string` | — | `shared/types.ts:649` |
+| `timestampSeconds` | `number` | — | `shared/types.ts:650` |
+| `confidence` | `number` | — | `shared/types.ts:651` |
+| `matchedText` | `string` | — | `shared/types.ts:652` |
+| `matchMethod` | `'phrase' \| 'partial' \| 'keyword'` | — | `shared/types.ts:653` |
+
+### `shared/types.ChapterMatch` — interface — `shared/types.ts:656-669`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `number` | — | `shared/types.ts:657` |
+| `name` | `string` | — | `shared/types.ts:658` |
+| `displayName` | `string` | — | `shared/types.ts:659` |
+| `timestamp` | `?: string` | — | `shared/types.ts:660` |
+| `timestampSeconds` | `?: number` | — | `shared/types.ts:661` |
+| `confidence` | `number` | — | `shared/types.ts:662` |
+| `status` | `ChapterMatchStatus → shared/types.ChapterMatchStatus` | — | `shared/types.ts:663` |
+| `matchedText` | `?: string` | — | `shared/types.ts:665` |
+| `transcriptSnippet` | `?: string` | — | `shared/types.ts:666` |
+| `alternatives` | `?: ChapterMatchCandidate[] → shared/types.ChapterMatchCandidate` | — | `shared/types.ts:667` |
+| `matchReason` | `?: string` | — | `shared/types.ts:668` |
+
+### `shared/types.ChaptersResponse` — interface — `shared/types.ts:671-682`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:672` |
+| `chapters` | `ChapterMatch[] → shared/types.ChapterMatch` | — | `shared/types.ts:673` |
+| `formatted` | `string` | — | `shared/types.ts:674` |
+| `error` | `?: string` | — | `shared/types.ts:675` |
+| `stats` | `?: { elapsedMs: number; // Time taken in milliseconds srtSegments: number; // Number of SRT segments parsed chaptersFound: number; // Chapters…` | — | `shared/types.ts:676` |
+
+### `shared/types.ChaptersResponse.stats` — type — `shared/types.ts:676-681`
+
+| field | type | default | at |
+|---|---|---|---|
+| `elapsedMs` | `number` | — | `shared/types.ts:677` |
+| `srtSegments` | `number` | — | `shared/types.ts:678` |
+| `chaptersFound` | `number` | — | `shared/types.ts:679` |
+| `chaptersTotal` | `number` | — | `shared/types.ts:680` |
+
+### `shared/types.ChapterVerifyRequest` — interface — `shared/types.ts:687-699`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `number` | — | `shared/types.ts:688` |
+| `name` | `string` | — | `shared/types.ts:689` |
+| `transcriptSnippet` | `string` | — | `shared/types.ts:690` |
+| `currentMatch` | `?: { // Current algorithmic match (if any) timestamp: string; confidence: number; matchedText: string; }` | — | `shared/types.ts:691` |
+| `alternatives` | `?: ChapterMatchCandidate[] → shared/types.ChapterMatchCandidate` | — | `shared/types.ts:697` |
+| `userHint` | `?: string` | — | `shared/types.ts:698` |
+
+### `shared/types.ChapterVerifyRequest.currentMatch` — type — `shared/types.ts:691-696`
+
+| field | type | default | at |
+|---|---|---|---|
+| `timestamp` | `string` | — | `shared/types.ts:693` |
+| `confidence` | `number` | — | `shared/types.ts:694` |
+| `matchedText` | `string` | — | `shared/types.ts:695` |
+
+### `shared/types.ChapterVerifyResponse` — interface — `shared/types.ts:702-714`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:703` |
+| `chapter` | `number` | — | `shared/types.ts:704` |
+| `name` | `string` | — | `shared/types.ts:705` |
+| `recommendation` | `{ action: 'use_current' \| 'use_alternative' \| 'manual_timestamp' \| 'skip'; timestamp?: string; // Recommended timestamp timestampSeconds?: …` | — | `shared/types.ts:706` |
+| `error` | `?: string` | — | `shared/types.ts:713` |
+
+### `shared/types.ChapterVerifyResponse.recommendation` — type — `shared/types.ts:706-712`
+
+| field | type | default | at |
+|---|---|---|---|
+| `action` | `'use_current' \| 'use_alternative' \| 'manual_timestamp' \| 'skip'` | — | `shared/types.ts:707` |
+| `timestamp` | `?: string` | — | `shared/types.ts:708` |
+| `timestampSeconds` | `?: number` | — | `shared/types.ts:709` |
+| `confidence` | `number` | — | `shared/types.ts:710` |
+| `reasoning` | `string` | — | `shared/types.ts:711` |
+
+### `shared/types.ChapterOverride` — interface — `shared/types.ts:717-725`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `number` | — | `shared/types.ts:718` |
+| `name` | `string` | — | `shared/types.ts:719` |
+| `action` | `'override' \| 'skip'` | — | `shared/types.ts:720` |
+| `timestamp` | `?: string` | — | `shared/types.ts:721` |
+| `timestampSeconds` | `?: number` | — | `shared/types.ts:722` |
+| `reason` | `?: string` | — | `shared/types.ts:723` |
+| `createdAt` | `string` | — | `shared/types.ts:724` |
+
+### `shared/types.SetChapterOverrideRequest` — interface — `shared/types.ts:728-734`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `number` | — | `shared/types.ts:729` |
+| `name` | `string` | — | `shared/types.ts:730` |
+| `action` | `'override' \| 'skip'` | — | `shared/types.ts:731` |
+| `timestamp` | `?: string` | — | `shared/types.ts:732` |
+| `reason` | `?: string` | — | `shared/types.ts:733` |
+
+### `shared/types.SetChapterOverrideResponse` — interface — `shared/types.ts:737-741`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:738` |
+| `override` | `ChapterOverride → shared/types.ChapterOverride` | — | `shared/types.ts:739` |
+| `error` | `?: string` | — | `shared/types.ts:740` |
+
+### `shared/types.ChapterRecordingConfig` — interface — `shared/types.ts:744-749`
+
+| field | type | default | at |
+|---|---|---|---|
+| `slideDuration` | `number` | — | `shared/types.ts:745` |
+| `resolution` | `'720p' \| '1080p'` | — | `shared/types.ts:746` |
+| `autoGenerate` | `boolean` | — | `shared/types.ts:747` |
+| `includeTitleSlides` | `?: boolean` | — | `shared/types.ts:748` |
+
+### `shared/types.ChapterRecordingRequest` — interface — `shared/types.ts:752-756`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `?: string` | — | `shared/types.ts:753` |
+| `slideDuration` | `?: number` | — | `shared/types.ts:754` |
+| `resolution` | `?: string` | — | `shared/types.ts:755` |
+
+### `shared/types.ChapterRecordingResponse` — interface — `shared/types.ts:759-764`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:760` |
+| `generated` | `string[]` | — | `shared/types.ts:761` |
+| `errors` | `?: string[]` | — | `shared/types.ts:762` |
+| `error` | `?: string` | — | `shared/types.ts:763` |
+
+### `shared/types.ChapterGenerationProgress` — interface — `shared/types.ts:767-772`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `string` | — | `shared/types.ts:768` |
+| `status` | `'pending' \| 'generating' \| 'complete' \| 'error'` | — | `shared/types.ts:769` |
+| `outputFile` | `?: string` | — | `shared/types.ts:770` |
+| `error` | `?: string` | — | `shared/types.ts:771` |
+
+### `shared/types.QueryProjectSummary` — interface — `shared/types.ts:779-800`
+
+| field | type | default | at |
+|---|---|---|---|
+| `code` | `string` | — | `shared/types.ts:780` |
+| `brand` | `string` | — | `shared/types.ts:781` |
+| `path` | `string` | — | `shared/types.ts:782` |
+| `stage` | `ProjectStage → shared/types.ProjectStage` | — | `shared/types.ts:783` |
+| `priority` | `ProjectPriority → shared/types.ProjectPriority` | — | `shared/types.ts:784` |
+| `stats` | `{ recordings: number; chapters: number; transcriptPercent: number; images: number; thumbs: number; }` | — | `shared/types.ts:785` |
+| `lastModified` | `string \| null` | — | `shared/types.ts:792` |
+| `hasInbox` | `boolean` | — | `shared/types.ts:794` |
+| `hasAssets` | `boolean` | — | `shared/types.ts:795` |
+| `hasChapters` | `boolean` | — | `shared/types.ts:796` |
+| `ships` | `ProjectShips → shared/types.ProjectShips` | — | `shared/types.ts:798` |
+| `shipsDeclared` | `boolean` | — | `shared/types.ts:799` |
+
+### `shared/types.QueryProjectSummary.stats` — type — `shared/types.ts:785-791`
+
+| field | type | default | at |
+|---|---|---|---|
+| `recordings` | `number` | — | `shared/types.ts:786` |
+| `chapters` | `number` | — | `shared/types.ts:787` |
+| `transcriptPercent` | `number` | — | `shared/types.ts:788` |
+| `images` | `number` | — | `shared/types.ts:789` |
+| `thumbs` | `number` | — | `shared/types.ts:790` |
+
+### `shared/types.QueryProjectDetail` — interface — `shared/types.ts:803-830`
+
+| field | type | default | at |
+|---|---|---|---|
+| `code` | `string` | — | `shared/types.ts:804` |
+| `path` | `string` | — | `shared/types.ts:805` |
+| `title` | `?: string` | — | `shared/types.ts:806` |
+| `ships` | `?: ProjectShips → shared/types.ProjectShips` | — | `shared/types.ts:807` |
+| `shipsDeclared` | `?: boolean` | — | `shared/types.ts:808` |
+| `stage` | `ProjectStage → shared/types.ProjectStage` | — | `shared/types.ts:809` |
+| `priority` | `ProjectPriority → shared/types.ProjectPriority` | — | `shared/types.ts:810` |
+| `stats` | `{ recordings: number; chapters: number; transcripts: { matched: number; missing: number; orphaned: number; }; images: number; thumbs: numbe…` | — | `shared/types.ts:812` |
+| `finalMedia` | `{ video?: { filename: string; size: number }; srt?: { filename: string }; } \| null` | — | `shared/types.ts:824` |
+| `createdAt` | `string \| null` | — | `shared/types.ts:828` |
+| `lastModified` | `string \| null` | — | `shared/types.ts:829` |
+
+### `shared/types.QueryProjectDetail.stats` — type — `shared/types.ts:812-823`
+
+| field | type | default | at |
+|---|---|---|---|
+| `recordings` | `number` | — | `shared/types.ts:813` |
+| `chapters` | `number` | — | `shared/types.ts:814` |
+| `transcripts` | `{ matched: number; missing: number; orphaned: number; }` | — | `shared/types.ts:815` |
+| `images` | `number` | — | `shared/types.ts:820` |
+| `thumbs` | `number` | — | `shared/types.ts:821` |
+| `totalDuration` | `number \| null` | — | `shared/types.ts:822` |
+
+### `shared/types.QueryProjectDetail.stats.transcripts` — type — `shared/types.ts:815-819`
+
+| field | type | default | at |
+|---|---|---|---|
+| `matched` | `number` | — | `shared/types.ts:816` |
+| `missing` | `number` | — | `shared/types.ts:817` |
+| `orphaned` | `number` | — | `shared/types.ts:818` |
+
+### `shared/types.QueryRecording` — interface — `shared/types.ts:833-846`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:834` |
+| `chapter` | `string` | — | `shared/types.ts:835` |
+| `sequence` | `string` | — | `shared/types.ts:836` |
+| `name` | `string` | — | `shared/types.ts:837` |
+| `tags` | `string[]` | — | `shared/types.ts:838` |
+| `folder` | `'recordings'` | — | `shared/types.ts:839` |
+| `isSafe` | `boolean` | — | `shared/types.ts:840` |
+| `isParked` | `boolean` | — | `shared/types.ts:841` |
+| `annotation` | `?: string` | — | `shared/types.ts:842` |
+| `size` | `number` | — | `shared/types.ts:843` |
+| `duration` | `number \| null` | — | `shared/types.ts:844` |
+| `hasTranscript` | `boolean` | — | `shared/types.ts:845` |
+
+### `shared/types.QueryTranscript` — interface — `shared/types.ts:849-857`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:850` |
+| `chapter` | `string` | — | `shared/types.ts:851` |
+| `sequence` | `string` | — | `shared/types.ts:852` |
+| `name` | `string` | — | `shared/types.ts:853` |
+| `size` | `number` | — | `shared/types.ts:854` |
+| `preview` | `?: string` | — | `shared/types.ts:855` |
+| `content` | `?: string` | — | `shared/types.ts:856` |
+
+### `shared/types.QueryChapter` — interface — `shared/types.ts:860-869`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `number` | — | `shared/types.ts:861` |
+| `name` | `string` | — | `shared/types.ts:862` |
+| `displayName` | `string` | — | `shared/types.ts:863` |
+| `title` | `?: string` | — | `shared/types.ts:864` |
+| `timestamp` | `string \| null` | — | `shared/types.ts:865` |
+| `timestampSeconds` | `number \| null` | — | `shared/types.ts:866` |
+| `recordingCount` | `number` | — | `shared/types.ts:867` |
+| `hasTranscript` | `boolean` | — | `shared/types.ts:868` |
+
+### `shared/types.QueryImage` — interface — `shared/types.ts:872-880`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:873` |
+| `chapter` | `string` | — | `shared/types.ts:874` |
+| `sequence` | `string` | — | `shared/types.ts:875` |
+| `imageOrder` | `string` | — | `shared/types.ts:876` |
+| `variant` | `string \| null` | — | `shared/types.ts:877` |
+| `label` | `string` | — | `shared/types.ts:878` |
+| `size` | `number` | — | `shared/types.ts:879` |
+
+### `shared/types.SafeResponse` — interface — `shared/types.ts:887-893`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:888` |
+| `moved` | `?: string[]` | — | `shared/types.ts:889` |
+| `count` | `?: number` | — | `shared/types.ts:890` |
+| `errors` | `?: string[]` | — | `shared/types.ts:891` |
+| `error` | `?: string` | — | `shared/types.ts:892` |
+
+### `shared/types.RestoreResponse` — interface — `shared/types.ts:896-902`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:897` |
+| `restored` | `?: string[]` | — | `shared/types.ts:898` |
+| `count` | `?: number` | — | `shared/types.ts:899` |
+| `errors` | `?: string[]` | — | `shared/types.ts:900` |
+| `error` | `?: string` | — | `shared/types.ts:901` |
+
+### `shared/types.ParkResponse` — interface — `shared/types.ts:905-911`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:906` |
+| `parked` | `?: string[]` | — | `shared/types.ts:907` |
+| `count` | `?: number` | — | `shared/types.ts:908` |
+| `errors` | `?: string[]` | — | `shared/types.ts:909` |
+| `error` | `?: string` | — | `shared/types.ts:910` |
+
+### `shared/types.UnparkResponse` — interface — `shared/types.ts:914-920`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:915` |
+| `unparked` | `?: string[]` | — | `shared/types.ts:916` |
+| `count` | `?: number` | — | `shared/types.ts:917` |
+| `errors` | `?: string[]` | — | `shared/types.ts:918` |
+| `error` | `?: string` | — | `shared/types.ts:919` |
+
+### `shared/types.RenameChapterResponse` — interface — `shared/types.ts:923-927`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:924` |
+| `renamedFiles` | `string[]` | — | `shared/types.ts:925` |
+| `error` | `?: string` | — | `shared/types.ts:926` |
+
+### `shared/types.QueueAllResponse` — interface — `shared/types.ts:930-939`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:931` |
+| `scope` | `'project' \| 'chapter'` | — | `shared/types.ts:932` |
+| `chapter` | `string \| null` | — | `shared/types.ts:933` |
+| `queued` | `string[]` | — | `shared/types.ts:934` |
+| `skipped` | `string[]` | — | `shared/types.ts:935` |
+| `queuedCount` | `number` | — | `shared/types.ts:936` |
+| `skippedCount` | `number` | — | `shared/types.ts:937` |
+| `error` | `?: string` | — | `shared/types.ts:938` |
+
+### `shared/types.RecentRename` — interface — `shared/types.ts:942-948`
+
+| field | type | default | at |
+|---|---|---|---|
+| `id` | `string` | — | `shared/types.ts:943` |
+| `originalName` | `string` | — | `shared/types.ts:944` |
+| `newName` | `string` | — | `shared/types.ts:945` |
+| `timestamp` | `number` | — | `shared/types.ts:946` |
+| `age` | `number` | — | `shared/types.ts:947` |
+
+### `shared/types.InboxFile` — interface — `shared/types.ts:951-955`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:952` |
+| `size` | `number` | — | `shared/types.ts:953` |
+| `modifiedAt` | `string` | — | `shared/types.ts:954` |
+
+### `shared/types.InboxSubfolder` — interface — `shared/types.ts:958-963`
+
+| field | type | default | at |
+|---|---|---|---|
+| `name` | `string` | — | `shared/types.ts:959` |
+| `path` | `string` | — | `shared/types.ts:960` |
+| `fileCount` | `number` | — | `shared/types.ts:961` |
+| `files` | `InboxFile[] → shared/types.InboxFile` | — | `shared/types.ts:962` |
+
+### `shared/types.InboxResponse` — interface — `shared/types.ts:966-972`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:967` |
+| `inbox` | `{ totalFiles: number; subfolders: InboxSubfolder[]; } → shared/types.InboxSubfolder` | — | `shared/types.ts:968` |
+
+### `shared/types.InboxResponse.inbox` — type — `shared/types.ts:968-971`
+
+| field | type | default | at |
+|---|---|---|---|
+| `totalFiles` | `number` | — | `shared/types.ts:969` |
+| `subfolders` | `InboxSubfolder[] → shared/types.InboxSubfolder` | — | `shared/types.ts:970` |
+
+### `shared/types.ChapterRecordingStatusResponse` — interface — `shared/types.ts:975-984`
+
+| field | type | default | at |
+|---|---|---|---|
+| `isGenerating` | `boolean` | — | `shared/types.ts:976` |
+| `chapters` | `Array<{ chapter: string; label: string; segmentCount: number; totalDuration: number; }>` | — | `shared/types.ts:977` |
+| `existing` | `string[]` | — | `shared/types.ts:983` |
+
+### `shared/types.EnvironmentResponse` — interface — `shared/types.ts:987-997`
+
+| field | type | default | at |
+|---|---|---|---|
+| `platform` | `'win32' \| 'linux' \| 'darwin'` | — | `shared/types.ts:988` |
+| `isWSL` | `boolean` | — | `shared/types.ts:989` |
+| `pathFormat` | `'windows' \| 'linux'` | — | `shared/types.ts:990` |
+| `guidance` | `{ nativeFiles: string; // e.g., '/home/jan/...' or 'C:\\...' windowsFiles: string; // e.g., '/mnt/c/...' or 'C:\\...' wslFiles: string; // …` | — | `shared/types.ts:991` |
+| `machineRole` | `MachineRole → shared/types.MachineRole` | — | `shared/types.ts:996` |
+
+### `shared/types.EnvironmentResponse.guidance` — type — `shared/types.ts:991-995`
+
+| field | type | default | at |
+|---|---|---|---|
+| `nativeFiles` | `string` | — | `shared/types.ts:992` |
+| `windowsFiles` | `string` | — | `shared/types.ts:993` |
+| `wslFiles` | `string` | — | `shared/types.ts:994` |
+
+### `shared/types.RecordingState` — interface — `shared/types.ts:1004-1010`
+
+| field | type | default | at |
+|---|---|---|---|
+| `safe` | `?: boolean` | — | `shared/types.ts:1005` |
+| `parked` | `?: boolean` | — | `shared/types.ts:1006` |
+| `annotation` | `?: string` | — | `shared/types.ts:1007` |
+| `stage` | `?: string` | — | `shared/types.ts:1008` |
+| `aspectWarning` | `?: AspectCheck & { dismissedAt?: string } → shared/types.AspectCheck` | — | `shared/types.ts:1009` |
+
+### `shared/types.ChapterState` — interface — `shared/types.ts:1013-1015`
+
+| field | type | default | at |
+|---|---|---|---|
+| `title` | `?: string` | — | `shared/types.ts:1014` |
+
+### `shared/types.ProjectState` — interface — `shared/types.ts:1039-1047`
+
+| field | type | default | at |
+|---|---|---|---|
+| `version` | `1` | — | `shared/types.ts:1040` |
+| `recordings` | `Record<string, RecordingState> → shared/types.RecordingState` | — | `shared/types.ts:1041` |
+| `title` | `?: string` | — | `shared/types.ts:1042` |
+| `chapters` | `?: Record<string, ChapterState> → shared/types.ChapterState` | — | `shared/types.ts:1043` |
+| `ships` | `?: ProjectShips → shared/types.ProjectShips` | — | `shared/types.ts:1044` |
+| `glingDictionary` | `?: string[]` | — | `shared/types.ts:1045` |
+| `editManifest` | `?: EditManifest → shared/types.EditManifest` | — | `shared/types.ts:1046` |
+
+### `shared/types.ProjectStateResponse` — interface — `shared/types.ts:1050-1054`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:1051` |
+| `state` | `ProjectState → shared/types.ProjectState` | — | `shared/types.ts:1052` |
+| `error` | `?: string` | — | `shared/types.ts:1053` |
+
+### `shared/types.UpdateProjectStateRequest` — interface — `shared/types.ts:1057-1059`
+
+| field | type | default | at |
+|---|---|---|---|
+| `recordings` | `Record<string, RecordingState> → shared/types.RecordingState` | — | `shared/types.ts:1058` |
+
+### `shared/types.EditManifestFile` — interface — `shared/types.ts:1066-1071`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:1067` |
+| `sourceHash` | `string` | — | `shared/types.ts:1068` |
+| `copiedAt` | `string` | — | `shared/types.ts:1069` |
+| `sourceSize` | `number` | — | `shared/types.ts:1070` |
+
+### `shared/types.EditFolderManifest` — interface — `shared/types.ts:1074-1077`
+
+| field | type | default | at |
+|---|---|---|---|
+| `lastCopied` | `string \| null` | — | `shared/types.ts:1075` |
+| `files` | `EditManifestFile[] → shared/types.EditManifestFile` | — | `shared/types.ts:1076` |
+
+### `shared/types.EditManifest` — interface — `shared/types.ts:1080-1084`
+
+| field | type | default | at |
+|---|---|---|---|
+| `edit-1st` | `EditFolderManifest → shared/types.EditFolderManifest` | — | `shared/types.ts:1081` |
+| `edit-2nd` | `EditFolderManifest → shared/types.EditFolderManifest` | — | `shared/types.ts:1082` |
+| `edit-final` | `EditFolderManifest → shared/types.EditFolderManifest` | — | `shared/types.ts:1083` |
+
+### `shared/types.ManifestFileStatus` — interface — `shared/types.ts:1111-1116`
+
+| field | type | default | at |
+|---|---|---|---|
+| `filename` | `string` | — | `shared/types.ts:1112` |
+| `status` | `'present' \| 'missing' \| 'changed'` | — | `shared/types.ts:1113` |
+| `sourceSize` | `?: number` | — | `shared/types.ts:1114` |
+| `currentHash` | `?: string` | — | `shared/types.ts:1115` |
+
+### `shared/types.ManifestStatusDetail` — interface — `shared/types.ts:1121-1129`
+
+| field | type | default | at |
+|---|---|---|---|
+| `status` | `ManifestStatus → shared/types.ManifestStatus` | — | `shared/types.ts:1122` |
+| `manifestedFiles` | `number` | — | `shared/types.ts:1123` |
+| `presentFiles` | `number` | — | `shared/types.ts:1124` |
+| `missingFiles` | `number` | — | `shared/types.ts:1125` |
+| `changedFiles` | `number` | — | `shared/types.ts:1126` |
+| `totalSize` | `number` | — | `shared/types.ts:1127` |
+| `fileDetails` | `?: ManifestFileStatus[] → shared/types.ManifestFileStatus` | — | `shared/types.ts:1128` |
+
+### `shared/types.ManifestStatusResponse` — interface — `shared/types.ts:1132-1137`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:1133` |
+| `folder` | `EditFolderKey → shared/types.EditFolderKey` | — | `shared/types.ts:1134` |
+| `detail` | `ManifestStatusDetail → shared/types.ManifestStatusDetail` | — | `shared/types.ts:1135` |
+| `error` | `?: string` | — | `shared/types.ts:1136` |
+
+### `shared/types.CleanEditFolderResponse` — interface — `shared/types.ts:1140-1148`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:1141` |
+| `folder` | `EditFolderKey → shared/types.EditFolderKey` | — | `shared/types.ts:1142` |
+| `deleted` | `string[]` | — | `shared/types.ts:1143` |
+| `deletedCount` | `number` | — | `shared/types.ts:1144` |
+| `spaceSaved` | `number` | — | `shared/types.ts:1145` |
+| `preserved` | `string[]` | — | `shared/types.ts:1146` |
+| `error` | `?: string` | — | `shared/types.ts:1147` |
+
+### `shared/types.RestoreEditFolderResponse` — interface — `shared/types.ts:1151-1158`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:1152` |
+| `folder` | `EditFolderKey → shared/types.EditFolderKey` | — | `shared/types.ts:1153` |
+| `restored` | `string[]` | — | `shared/types.ts:1154` |
+| `restoredCount` | `number` | — | `shared/types.ts:1155` |
+| `warnings` | `?: string[]` | — | `shared/types.ts:1156` |
+| `error` | `?: string` | — | `shared/types.ts:1157` |
+
+### `shared/types.SplitChapterRequest` — interface — `shared/types.ts:1161-1164`
+
+| field | type | default | at |
+|---|---|---|---|
+| `chapter` | `string` | — | `shared/types.ts:1162` |
+| `splitAtSequence` | `number` | — | `shared/types.ts:1163` |
+
+### `shared/types.SplitChapterResponse` — interface — `shared/types.ts:1166-1174`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:1167` |
+| `sourceChapter` | `string` | — | `shared/types.ts:1168` |
+| `newChapter` | `string` | — | `shared/types.ts:1169` |
+| `filesMoved` | `number` | — | `shared/types.ts:1170` |
+| `cascadedChapters` | `number` | — | `shared/types.ts:1171` |
+| `undoMapping` | `Array<{ oldFilename: string; newFilename: string }>` | — | `shared/types.ts:1172` |
+| `error` | `?: string` | — | `shared/types.ts:1173` |
+
+### `shared/types.UndoRenameResponse` — interface — `shared/types.ts:1177-1181`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `shared/types.ts:1178` |
+| `filesReverted` | `number` | — | `shared/types.ts:1179` |
+| `error` | `?: string` | — | `shared/types.ts:1180` |
+
+### `shared/types.MicCheckTick` — interface — `shared/types.ts:1197-1223`
+
+| field | type | default | at | note |
+|---|---|---|---|---|
+| `t` | `number` | — | `shared/types.ts:1199` | Milliseconds since session start. |
+| `mode` | `MicCheckMode → shared/types.MicCheckMode` | — | `shared/types.ts:1204` | DECLARED — which screen the operator pressed. Authoritative, never inferred. |
+| `shortTermLufs` | `number \| null` | — | `shared/types.ts:1205` |  |
+| `samplePeakDbfs` | `number \| null` | — | `shared/types.ts:1206` |  |
+| `clipCount` | `number` | — | `shared/types.ts:1207` |  |
+| `nearClipCount` | `number` | — | `shared/types.ts:1208` |  |
+| `windowFull` | `boolean` | — | `shared/types.ts:1210` | False until a full 3 s short-term window has been observed. |
+| `speechDetected` | `boolean` | — | `shared/types.ts:1222` | MEASURED — does THIS tick contain speech (level vs the floor)? |
+
+### `shared/types.MicCheckEvent` — interface — `shared/types.ts:1240-1246`
 
 A timestamped observation. Persisted because it CANNOT be re-derived later: a level
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `t` | `number` | — | `shared/types.ts:1239` |  |
-| `kind` | `MicCheckEventKind → shared/types.MicCheckEventKind` | — | `shared/types.ts:1240` |  |
-| `label` | `string` | — | `shared/types.ts:1242` | Phrased as an observation, never an attributed cause. |
-| `deltaDb` | `?: number` | — | `shared/types.ts:1243` |  |
+| `t` | `number` | — | `shared/types.ts:1241` |  |
+| `kind` | `MicCheckEventKind → shared/types.MicCheckEventKind` | — | `shared/types.ts:1242` |  |
+| `label` | `string` | — | `shared/types.ts:1244` | Phrased as an observation, never an attributed cause. |
+| `deltaDb` | `?: number` | — | `shared/types.ts:1245` |  |
 
-### `shared/types.MicCheckConstraints` — interface — `shared/types.ts:1247-1252`
+### `shared/types.MicCheckConstraints` — interface — `shared/types.ts:1249-1254`
 
 The four-way constraint report: what we asked for vs what we actually got.
 
 | field | type | default | at |
 |---|---|---|---|
-| `asked` | `Record<string, unknown>` | — | `shared/types.ts:1248` |
-| `got` | `Record<string, unknown>` | — | `shared/types.ts:1249` |
-| `capable` | `Record<string, unknown> \| null` | — | `shared/types.ts:1250` |
-| `supported` | `Record<string, unknown>` | — | `shared/types.ts:1251` |
+| `asked` | `Record<string, unknown>` | — | `shared/types.ts:1250` |
+| `got` | `Record<string, unknown>` | — | `shared/types.ts:1251` |
+| `capable` | `Record<string, unknown> \| null` | — | `shared/types.ts:1252` |
+| `supported` | `Record<string, unknown>` | — | `shared/types.ts:1253` |
 
-### `shared/types.MicCheckProbe` — interface — `shared/types.ts:1256-1262`
+### `shared/types.MicCheckProbe` — interface — `shared/types.ts:1258-1264`
 
 | field | type | default | at |
 |---|---|---|---|
-| `verdict` | `MicCheckProbeVerdict → shared/types.MicCheckProbeVerdict` | — | `shared/types.ts:1257` |
-| `findings` | `string[]` | — | `shared/types.ts:1258` |
-| `capturedLevelDbfs` | `number` | — | `shared/types.ts:1259` |
-| `levelDriftDb` | `number` | — | `shared/types.ts:1260` |
-| `deepestNotchDb` | `number` | — | `shared/types.ts:1261` |
+| `verdict` | `MicCheckProbeVerdict → shared/types.MicCheckProbeVerdict` | — | `shared/types.ts:1259` |
+| `findings` | `string[]` | — | `shared/types.ts:1260` |
+| `capturedLevelDbfs` | `number` | — | `shared/types.ts:1261` |
+| `levelDriftDb` | `number` | — | `shared/types.ts:1262` |
+| `deepestNotchDb` | `number` | — | `shared/types.ts:1263` |
 
-### `shared/types.MicCheckNotMeasured` — interface — `shared/types.ts:1269-1272`
+### `shared/types.MicCheckNotMeasured` — interface — `shared/types.ts:1271-1274`
 
 Every metric NOT measured, and why. This is the grey-never-becomes-green rule
 
 | field | type | default | at |
 |---|---|---|---|
-| `metric` | `string` | — | `shared/types.ts:1270` |
-| `reason` | `string` | — | `shared/types.ts:1271` |
+| `metric` | `string` | — | `shared/types.ts:1272` |
+| `reason` | `string` | — | `shared/types.ts:1273` |
 
-### `shared/types.MicCheckDevice` — interface — `shared/types.ts:1274-1279`
+### `shared/types.MicCheckDevice` — interface — `shared/types.ts:1276-1281`
 
 | field | type | default | at |
 |---|---|---|---|
-| `label` | `string` | — | `shared/types.ts:1275` |
-| `sampleRate` | `number \| null` | — | `shared/types.ts:1276` |
-| `channelCount` | `number \| null` | — | `shared/types.ts:1277` |
-| `sampleSize` | `number \| null` | — | `shared/types.ts:1278` |
+| `label` | `string` | — | `shared/types.ts:1277` |
+| `sampleRate` | `number \| null` | — | `shared/types.ts:1278` |
+| `channelCount` | `number \| null` | — | `shared/types.ts:1279` |
+| `sampleSize` | `number \| null` | — | `shared/types.ts:1280` |
 
-### `shared/types.MicCheckSummary` — interface — `shared/types.ts:1281-1293`
-
-| field | type | default | at | note |
-|---|---|---|---|---|
-| `durationMs` | `number` | — | `shared/types.ts:1282` |  |
-| `tickCount` | `number` | — | `shared/types.ts:1283` |  |
-| `measurableTickCount` | `number` | — | `shared/types.ts:1285` | Ticks where the window was full AND speech was present — the only gradeable ones. |
-| `shortTermLufs` | `{ min: number; max: number; mean: number } \| null` | — | `shared/types.ts:1287` | Null when no tick was ever measurable. Never silently 0. |
-| `driftLu` | `number \| null` | — | `shared/types.ts:1289` | Widest observed spread in LUFS. Large => the level drifted rather than held. |
-| `sessionPeakDbfs` | `number \| null` | — | `shared/types.ts:1290` |  |
-| `clipCount` | `number` | — | `shared/types.ts:1291` |  |
-| `nearClipCount` | `number` | — | `shared/types.ts:1292` |  |
-
-### `shared/types.MicCheckSession` — interface — `shared/types.ts:1295-1311`
+### `shared/types.MicCheckSummary` — interface — `shared/types.ts:1283-1295`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `sessionId` | `string` | — | `shared/types.ts:1296` |  |
-| `startedAt` | `string` | — | `shared/types.ts:1297` |  |
-| `finishedAt` | `string \| null` | — | `shared/types.ts:1298` |  |
-| `projectCode` | `string \| null` | — | `shared/types.ts:1300` | Active project at session start, if any. Lets a report attach to a take later. |
-| `workletVersion` | `string \| null` | — | `shared/types.ts:1301` |  |
-| `device` | `MicCheckDevice → shared/types.MicCheckDevice` | — | `shared/types.ts:1302` |  |
-| `constraints` | `MicCheckConstraints \| null → shared/types.MicCheckConstraints` | — | `shared/types.ts:1303` |  |
-| `probe` | `MicCheckProbe \| null → shared/types.MicCheckProbe` | — | `shared/types.ts:1304` |  |
-| `summary` | `MicCheckSummary \| null → shared/types.MicCheckSummary` | — | `shared/types.ts:1305` |  |
-| `series` | `MicCheckTick[] → shared/types.MicCheckTick` | — | `shared/types.ts:1306` |  |
-| `events` | `MicCheckEvent[] → shared/types.MicCheckEvent` | — | `shared/types.ts:1307` |  |
-| `roomReferenceLufs` | `number \| null` | — | `shared/types.ts:1309` | Noise floor captured during ROOM mode, in LUFS. Null when never captured. |
-| `not_measured` | `MicCheckNotMeasured[] → shared/types.MicCheckNotMeasured` | — | `shared/types.ts:1310` |  |
+| `durationMs` | `number` | — | `shared/types.ts:1284` |  |
+| `tickCount` | `number` | — | `shared/types.ts:1285` |  |
+| `measurableTickCount` | `number` | — | `shared/types.ts:1287` | Ticks where the window was full AND speech was present — the only gradeable ones. |
+| `shortTermLufs` | `{ min: number; max: number; mean: number } \| null` | — | `shared/types.ts:1289` | Null when no tick was ever measurable. Never silently 0. |
+| `driftLu` | `number \| null` | — | `shared/types.ts:1291` | Widest observed spread in LUFS. Large => the level drifted rather than held. |
+| `sessionPeakDbfs` | `number \| null` | — | `shared/types.ts:1292` |  |
+| `clipCount` | `number` | — | `shared/types.ts:1293` |  |
+| `nearClipCount` | `number` | — | `shared/types.ts:1294` |  |
 
-### `shared/types.MicCheckSessionListEntry` — interface — `shared/types.ts:1314-1322`
+### `shared/types.MicCheckSession` — interface — `shared/types.ts:1297-1313`
+
+| field | type | default | at | note |
+|---|---|---|---|---|
+| `sessionId` | `string` | — | `shared/types.ts:1298` |  |
+| `startedAt` | `string` | — | `shared/types.ts:1299` |  |
+| `finishedAt` | `string \| null` | — | `shared/types.ts:1300` |  |
+| `projectCode` | `string \| null` | — | `shared/types.ts:1302` | Active project at session start, if any. Lets a report attach to a take later. |
+| `workletVersion` | `string \| null` | — | `shared/types.ts:1303` |  |
+| `device` | `MicCheckDevice → shared/types.MicCheckDevice` | — | `shared/types.ts:1304` |  |
+| `constraints` | `MicCheckConstraints \| null → shared/types.MicCheckConstraints` | — | `shared/types.ts:1305` |  |
+| `probe` | `MicCheckProbe \| null → shared/types.MicCheckProbe` | — | `shared/types.ts:1306` |  |
+| `summary` | `MicCheckSummary \| null → shared/types.MicCheckSummary` | — | `shared/types.ts:1307` |  |
+| `series` | `MicCheckTick[] → shared/types.MicCheckTick` | — | `shared/types.ts:1308` |  |
+| `events` | `MicCheckEvent[] → shared/types.MicCheckEvent` | — | `shared/types.ts:1309` |  |
+| `roomReferenceLufs` | `number \| null` | — | `shared/types.ts:1311` | Noise floor captured during ROOM mode, in LUFS. Null when never captured. |
+| `not_measured` | `MicCheckNotMeasured[] → shared/types.MicCheckNotMeasured` | — | `shared/types.ts:1312` |  |
+
+### `shared/types.MicCheckSessionListEntry` — interface — `shared/types.ts:1316-1324`
 
 Listing entry — the summary fields, without the series.
 
 | field | type | default | at |
 |---|---|---|---|
-| `sessionId` | `string` | — | `shared/types.ts:1315` |
-| `startedAt` | `string` | — | `shared/types.ts:1316` |
-| `finishedAt` | `string \| null` | — | `shared/types.ts:1317` |
-| `projectCode` | `string \| null` | — | `shared/types.ts:1318` |
-| `deviceLabel` | `string` | — | `shared/types.ts:1319` |
-| `summary` | `MicCheckSummary \| null → shared/types.MicCheckSummary` | — | `shared/types.ts:1320` |
-| `probeVerdict` | `MicCheckProbeVerdict \| null → shared/types.MicCheckProbeVerdict` | — | `shared/types.ts:1321` |
+| `sessionId` | `string` | — | `shared/types.ts:1317` |
+| `startedAt` | `string` | — | `shared/types.ts:1318` |
+| `finishedAt` | `string \| null` | — | `shared/types.ts:1319` |
+| `projectCode` | `string \| null` | — | `shared/types.ts:1320` |
+| `deviceLabel` | `string` | — | `shared/types.ts:1321` |
+| `summary` | `MicCheckSummary \| null → shared/types.MicCheckSummary` | — | `shared/types.ts:1322` |
+| `probeVerdict` | `MicCheckProbeVerdict \| null → shared/types.MicCheckProbeVerdict` | — | `shared/types.ts:1323` |
 
-### `shared/types.MicCheckLiveResponse` — interface — `shared/types.ts:1335-1343`
+### `shared/types.MicCheckLiveResponse` — interface — `shared/types.ts:1337-1345`
 
 GET /api/query/miccheck/live
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `success` | `boolean` | — | `shared/types.ts:1336` |  |
-| `active` | `boolean` | — | `shared/types.ts:1337` |  |
-| `measurable` | `boolean` | — | `shared/types.ts:1338` |  |
-| `reason` | `string \| null` | — | `shared/types.ts:1340` | Always populated when active=false or measurable=false. |
-| `session` | `MicCheckSession \| null → shared/types.MicCheckSession` | — | `shared/types.ts:1341` |  |
-| `latest` | `MicCheckTick \| null → shared/types.MicCheckTick` | — | `shared/types.ts:1342` |  |
+| `success` | `boolean` | — | `shared/types.ts:1338` |  |
+| `active` | `boolean` | — | `shared/types.ts:1339` |  |
+| `measurable` | `boolean` | — | `shared/types.ts:1340` |  |
+| `reason` | `string \| null` | — | `shared/types.ts:1342` | Always populated when active=false or measurable=false. |
+| `session` | `MicCheckSession \| null → shared/types.MicCheckSession` | — | `shared/types.ts:1343` |  |
+| `latest` | `MicCheckTick \| null → shared/types.MicCheckTick` | — | `shared/types.ts:1344` |  |
 
 ## Cannot be mirrored
 
@@ -4680,10 +4681,10 @@ The census found these top-level declarations and the extractor did not mirror t
 
 | family | count | declarations |
 |---|---|---|
-| object constant | 12 | `client/src/components/shared/ShipsSelector.SHIPS_LABEL` `client/src/components/shared/ShipsSelector.tsx:17`<br>`client/src/constants/queryKeys.QUERY_KEYS` `client/src/constants/queryKeys.ts:5`<br>`client/src/constants/stages.STAGE_DISPLAY` `client/src/constants/stages.ts:4`<br>`server/src/config/configManager.DEFAULT_DISK_THRESHOLDS` `server/src/config/configManager.ts:7`<br>`server/src/config/env.env` `server/src/config/env.ts:25`<br>`server/src/config/logger.log` `server/src/config/logger.ts:20`<br>`server/src/utils/formatters.STATUS` `server/src/utils/formatters.ts:151`<br>`shared/constants.FILE_SIZE` `shared/constants.ts:6`<br>`shared/constants.WATCHER` `shared/constants.ts:14`<br>`shared/naming.NAMING_RULES` `shared/naming.ts:16`<br>`shared/naming.PATTERNS` `shared/naming.ts:55`<br>`shared/types.STAGE_LABELS` `shared/types.ts:322` |
-| array constant | 10 | `client/src/constants/stages.STAGE_ORDER` `client/src/constants/stages.ts:73`<br>`client/src/hooks/useBrollApi.BROLL_QUERY_KEY` `client/src/hooks/useBrollApi.ts:12`<br>`client/src/hooks/useOpenContextApi.OPEN_CONTEXT_KEY` `client/src/hooks/useOpenContextApi.ts:8`<br>`client/src/hooks/useVideoPlayback.SPEED_PRESETS` `client/src/hooks/useVideoPlayback.ts:10`<br>`client/src/utils/micGrading.SHORT_TERM_GREEN` `client/src/utils/micGrading.ts:38`<br>`server/src/utils/holdUtils.HOLD_EXCLUDES` `server/src/utils/holdUtils.ts:10`<br>`shared/apiRegistry.API_ENDPOINTS` `shared/apiRegistry.ts:38`<br>`shared/contextSchemas.REFUSAL_CODES` `shared/contextSchemas.ts:36`<br>`shared/types.DEFAULT_PROJECT_STAGES` `shared/types.ts:309`<br>`shared/types.DEFAULT_TAGS` `shared/types.ts:270` |
+| object constant | 12 | `client/src/components/shared/ShipsSelector.SHIPS_LABEL` `client/src/components/shared/ShipsSelector.tsx:17`<br>`client/src/constants/queryKeys.QUERY_KEYS` `client/src/constants/queryKeys.ts:5`<br>`client/src/constants/stages.STAGE_DISPLAY` `client/src/constants/stages.ts:4`<br>`server/src/config/configManager.DEFAULT_DISK_THRESHOLDS` `server/src/config/configManager.ts:7`<br>`server/src/config/env.env` `server/src/config/env.ts:25`<br>`server/src/config/logger.log` `server/src/config/logger.ts:20`<br>`server/src/utils/formatters.STATUS` `server/src/utils/formatters.ts:151`<br>`shared/constants.FILE_SIZE` `shared/constants.ts:6`<br>`shared/constants.WATCHER` `shared/constants.ts:14`<br>`shared/naming.NAMING_RULES` `shared/naming.ts:16`<br>`shared/naming.PATTERNS` `shared/naming.ts:55`<br>`shared/types.STAGE_LABELS` `shared/types.ts:324` |
+| array constant | 10 | `client/src/constants/stages.STAGE_ORDER` `client/src/constants/stages.ts:73`<br>`client/src/hooks/useBrollApi.BROLL_QUERY_KEY` `client/src/hooks/useBrollApi.ts:12`<br>`client/src/hooks/useOpenContextApi.OPEN_CONTEXT_KEY` `client/src/hooks/useOpenContextApi.ts:8`<br>`client/src/hooks/useVideoPlayback.SPEED_PRESETS` `client/src/hooks/useVideoPlayback.ts:10`<br>`client/src/utils/micGrading.SHORT_TERM_GREEN` `client/src/utils/micGrading.ts:38`<br>`server/src/utils/holdUtils.HOLD_EXCLUDES` `server/src/utils/holdUtils.ts:10`<br>`shared/apiRegistry.API_ENDPOINTS` `shared/apiRegistry.ts:38`<br>`shared/contextSchemas.REFUSAL_CODES` `shared/contextSchemas.ts:36`<br>`shared/types.DEFAULT_PROJECT_STAGES` `shared/types.ts:311`<br>`shared/types.DEFAULT_TAGS` `shared/types.ts:272` |
 | const built by a call (helper or non-zod call) | 8 | `client/src/config.API_URL` `client/src/config.ts:14`<br>`client/src/hooks/useStorageApi.useArchiveProject` `client/src/hooks/useStorageApi.ts:79`<br>`client/src/hooks/useStorageApi.useHeldArchiveProject` `client/src/hooks/useStorageApi.ts:83`<br>`client/src/hooks/useStorageApi.useHoldProject` `client/src/hooks/useStorageApi.ts:77`<br>`client/src/hooks/useStorageApi.useRestoreHeld` `client/src/hooks/useStorageApi.ts:78`<br>`client/src/hooks/useStorageApi.useUnarchiveProject` `client/src/hooks/useStorageApi.ts:80`<br>`server/src/config/logger.logger` `server/src/config/logger.ts:5`<br>`server/src/utils/poemWuiUtils.BUNDLED_BRAND_CONFIG` `server/src/utils/poemWuiUtils.ts:10` |
-| union of named or mixed types | 4 | `client/src/App.ConfigFocusSection` `client/src/App.tsx:84`<br>`client/src/hooks/useShiftHover.LegacyImageData` `client/src/hooks/useShiftHover.ts:25`<br>`server/src/utils/openContext.LaunchResult` `server/src/utils/openContext.ts:62`<br>`shared/types.ProjectStageOverride` `shared/types.ts:305` |
+| union of named or mixed types | 4 | `client/src/App.ConfigFocusSection` `client/src/App.tsx:84`<br>`client/src/hooks/useShiftHover.LegacyImageData` `client/src/hooks/useShiftHover.ts:25`<br>`server/src/utils/openContext.LaunchResult` `server/src/utils/openContext.ts:62`<br>`shared/types.ProjectStageOverride` `shared/types.ts:307` |
 | class | 3 | `client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15` |
 | utility-type alias (`Pick` / `Omit` / `Record` / generic instance) | 3 | `client/src/components/MicCheckSnapshot.Analyser` `client/src/components/MicCheckSnapshot.tsx:34`<br>`server/src/routes/miccheck.IO` `server/src/routes/miccheck.ts:32`<br>`server/src/utils/openContext.ContextController` `server/src/utils/openContext.ts:281` |
 | constant (other form) | 1 | `client/src/hooks/useVideoAspect.DEFAULT_ASPECT` `client/src/hooks/useVideoAspect.ts:12` |

@@ -9,10 +9,12 @@ import type {
   SuggestedNaming,
   RecordingFile,
   TranscriptionJob,
+  AspectCheck,
 } from '../../../shared/types.js';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
+import { checkTakeAspect, enqueueAspectCheck } from '../utils/aspectCheck.js';
 import { computeNextCode, parseSeriesCode, compareSeriesCodes, codeToString } from '../utils/nextProjectCode.js';
 import {
   readProjectState,
@@ -83,7 +85,8 @@ export function createRoutes(
   io?: import('socket.io').Server<
     import('../../../shared/types.js').ClientToServerEvents,
     import('../../../shared/types.js').ServerToClientEvents
-  > // Socket.IO for real-time updates
+  >, // Socket.IO for real-time updates
+  checkAspect: typeof checkTakeAspect = checkTakeAspect, // injectable for tests
 ): Router {
   const router = Router();
 
@@ -252,7 +255,8 @@ export function createRoutes(
 
       // Move and rename file
       // Aspect check result from ingest (if the probe finished before promotion)
-      const landedAspect = pendingFiles.get(originalPath)?.aspectCheck;
+      const pendingInfo = pendingFiles.get(originalPath);
+      const landedAspect = pendingInfo?.aspectCheck;
 
       await fs.move(originalPath, newPath);
 
@@ -261,12 +265,29 @@ export function createRoutes(
 
       // Aspect warning (David, 2026-09-23): a mismatched take keeps its warning on the recording
       // row until dismissed. Recording only (b-roll is outside the flow). Never fails the promote.
-      if (!isBroll && landedAspect?.status === 'mismatch') {
+      // Promoted before the ingest probe finished (an agent renames within the cropdetect window):
+      // check the promoted file instead, in the background, so the take is never silently unchecked.
+      const projectDir = config.projectDirectory;
+      const recordWarning = async (check: AspectCheck) => {
+        if (check.status !== 'mismatch') return;
         try {
-          const state = await readProjectState(config.projectDirectory);
-          await writeProjectState(config.projectDirectory, setAspectWarning(state, newFilename, landedAspect));
+          const state = await readProjectState(projectDir);
+          await writeProjectState(projectDir, setAspectWarning(state, newFilename, check));
+          io?.emit('recordings:changed');
         } catch (err) {
           console.error(`[aspect] could not record warning for ${newFilename}:`, err);
+        }
+      };
+      let aspect: RenameResponse['aspect'];
+      if (!isBroll) {
+        if (landedAspect) {
+          aspect = landedAspect.status;
+          await recordWarning(landedAspect);
+        } else {
+          aspect = 'pending';
+          enqueueAspectCheck(() => checkAspect(newPath, projectDir, pendingInfo?.duration))
+            .then(recordWarning)
+            .catch((err) => console.error(`[aspect] late check failed for ${newFilename}:`, err));
         }
       }
 
@@ -298,6 +319,7 @@ export function createRoutes(
         success: true,
         oldPath: originalPath,
         newPath,
+        aspect,
       } as RenameResponse);
     } catch (error) {
       console.error('Rename error:', error);

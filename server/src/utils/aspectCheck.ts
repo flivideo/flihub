@@ -166,3 +166,14 @@ export async function checkTakeAspect(
   const picture = await deps.detectPicture(file, durationSec);
   return { ...classifyAspect(expected, frame, picture), checkedAt };
 }
+
+/**
+ * One probe at a time (ffprobe + cropdetect), whoever asks: ingest and late promotion share the chain.
+ * A failed job never breaks the chain for the next one.
+ */
+let aspectChain: Promise<unknown> = Promise.resolve();
+export function enqueueAspectCheck<T>(job: () => Promise<T>): Promise<T> {
+  const run = aspectChain.then(job);
+  aspectChain = run.catch(() => undefined);
+  return run;
+}

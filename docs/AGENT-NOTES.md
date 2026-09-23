@@ -17,12 +17,8 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
   type, zod schema and closed set, each with a `file:line`. Cite it and don't retype shapes.
   After a schema change, run the verify step. Exit 1 means regenerate. (Commands are in
   `docs/agent-comprehension-docs.md` in the flivideo suite repo, github.com/flivideo/flivideo.)
-- The mirror excludes `shared/*.d.ts` on purpose, because those are stale build output. Keep passing
-  `--exclude 'shared/*.d.ts'` when regenerating, or the dead Feb shapes come back.
-- The mirror JSON records an absolute repo root, which is where `verify_mirror.py` and
-  `render_mirror.py` look by default. If you regenerate in a worktree, render and verify there
-  first, then set `target.root` back to `/Users/davidcruwys/dev/ad/flivideo/flihub`. From any other
-  checkout, run verify with `--root .`.
+- The mirror records its root as `..` relative to the JSON, so verify works from any checkout. Never hand-edit
+  the JSON or the `.md`; regenerate.
 - The mirror has one gap: `ContextBodySchema` is built with `.partial()`, so it isn't expanded.
 - `brands.json`, `~/.fli/machine.json`, `fli.studio.json`, the layout rule, video naming and
   `TRASH_FOLDER` are owned by `@flivideo/core` (github.com/flivideo/fli-core). FliHub reads them and writes none of
@@ -40,9 +36,9 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
   `npm install @flivideo/core@github:flivideo/fli-core#vX -w server -w shared`, then check that
   `package-lock.json` resolves to the tag's commit. A plain `npm install` kept the old lock entry
   (observed twice, 2026-09-22).
-- **Vitest loads stale `shared/*.js`** where it exists. tsx loads the `.ts`, so the running server is
-  fine. `types.js`, `naming.js` and `constants.js` still shadow their `.ts` in tests. Deleting them is
-  waiting on David. When you change one of those shared files, prove which file the test loaded.
+- **Never commit tsc output next to a `.ts` source.** Vite loads `vite.config.js` before the `.ts`, and
+  vitest loads `shared/*.js` before the `.ts`. Both did, and both bit us (Vite stayed on 0.0.0.0). They
+  were removed on 2026-09-23 and are now gitignored; `client/tsconfig.node.json` emits to `node_modules/.tmp`.
 - The lint baseline has known errors (NFR-172). The bar is "no new lint problems", not a clean lint.
 - **Don't edit the main checkout while David's FliHub is running.** nodemon recycles the server on any
   `server/src` change, and Vite HMR pushes client edits into his open tab. Work in a git worktree,

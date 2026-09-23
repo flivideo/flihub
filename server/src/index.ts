@@ -9,7 +9,7 @@ import { execSync } from 'child_process';
 import { env } from './config/env.js';
 import { log } from './config/logger.js';
 import { createWatcher } from './watcher.js';
-import { checkTakeAspect } from './utils/aspectCheck.js';
+import { checkTakeAspect, enqueueAspectCheck } from './utils/aspectCheck.js';
 import { isLoopbackOrigin, listenLoopback, refuseForeignOrigin } from './utils/loopback.js';
 import { expandPath } from './utils/pathUtils.js';
 import { createRoutes } from './routes/index.js';
@@ -136,9 +136,8 @@ function onNewFile(file: FileInfo) {
 // declared aspect (fli.studio.json) — the project it is about to be promoted into. Runs in the
 // background, one probe at a time, so the take appears in Incoming without waiting for ffmpeg.
 // Never blocks, renames or moves anything; the result rides on the pending file + 'file:aspect'.
-let aspectChain: Promise<void> = Promise.resolve();
 function queueAspectCheck(file: FileInfo) {
-  aspectChain = aspectChain.then(async () => {
+  enqueueAspectCheck(async () => {
     if (!pendingFiles.has(file.path)) return; // promoted or discarded before its turn
     const projectDir = currentConfig.projectDirectory ? expandPath(currentConfig.projectDirectory) : '';
     const aspectCheck = await checkTakeAspect(file.path, projectDir, file.duration);
