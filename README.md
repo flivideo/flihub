@@ -77,7 +77,7 @@ says nothing about a change. The one-shot server run is in AGENT-NOTES.
 
 ## Suite
 
-Part of the FliVideo suite, mapped at [../README.md](../README.md). Shared contract:
+Part of the FliVideo suite, mapped at [flivideo/flivideo](https://github.com/flivideo/flivideo#readme). Shared contract:
 [`@flivideo/core`](https://github.com/flivideo/fli-core). Siblings: FliStudio · FliCut · FliCast ·
 Teletubby.
 
@@ -87,4 +87,4 @@ Teletubby.
 a series of cuts and contract adoptions: relay and git sync have been removed, and transcription is
 moving to a shared FliTools service. Start with [docs/rebuild-2026/README.md](docs/rebuild-2026/README.md).
 
-Public repo `flivideo/flihub`. There is no licence file.
+Public repo `flivideo/flihub` · [MIT](LICENSE) · David Cruwys

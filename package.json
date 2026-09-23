@@ -1,6 +1,7 @@
 {
   "name": "flihub",
   "private": true,
+  "license": "MIT",
   "workspaces": [
     "client",
     "server",

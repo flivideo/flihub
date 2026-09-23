@@ -16,7 +16,7 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
 - [`docs/schema-mirror.md`](schema-mirror.md) (+ `.json`) is generated from the code. It covers every
   type, zod schema and closed set, each with a `file:line`. Cite it and don't retype shapes.
   After a schema change, run the verify step. Exit 1 means regenerate. (Commands are in
-  `../docs/agent-comprehension-docs.md`.)
+  `docs/agent-comprehension-docs.md` in the flivideo suite repo, github.com/flivideo/flivideo.)
 - The mirror excludes `shared/*.d.ts` on purpose, because those are stale build output. Keep passing
   `--exclude 'shared/*.d.ts'` when regenerating, or the dead Feb shapes come back.
 - The mirror JSON records an absolute repo root, which is where `verify_mirror.py` and
@@ -25,7 +25,7 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
   checkout, run verify with `--root .`.
 - The mirror has one gap: `ContextBodySchema` is built with `.partial()`, so it isn't expanded.
 - `brands.json`, `~/.fli/machine.json`, `fli.studio.json`, the layout rule, video naming and
-  `TRASH_FOLDER` are owned by `@flivideo/core` (`../fli-core`). FliHub reads them and writes none of
+  `TRASH_FOLDER` are owned by `@flivideo/core` (github.com/flivideo/fli-core). FliHub reads them and writes none of
   them. Cite fli-core; don't restate it.
 
 ## Tooling

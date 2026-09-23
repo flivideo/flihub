@@ -64,9 +64,7 @@ sources:
   - docs/rebuild-2026/NORTH-STAR.md
   - docs/rebuild-2026/requirements-archaeology-2026-09.md
   - docs/prd/fr-169-word-level-timestamps.md
-  - ../fli-core/src/classify.ts
-  - ../docs/agent-comprehension-docs.md
-regenerate: 'Run /dev-team:system-context in the repo root (per ../docs/agent-comprehension-docs.md)'
+regenerate: 'Run /dev-team:system-context in the repo root (per docs/agent-comprehension-docs.md in github.com/flivideo/flivideo)'
 ---
 
 # FliHub — System Context
@@ -132,7 +130,8 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
   `~/.config/appydave/brands.json`. The root it points to on this machine is resolved by
   `@flivideo/core` (`resolveBrandRoot`, with the `~/.fli/machine.json` override). FliHub **reads**
   `brands.json`, `~/.fli/machine.json` and a project's `fli.studio.json`, and writes none of them. For
-  their shape, see fli-core (`../fli-core/`) and the open contract (`../flistudio/docs/open-contract.md`).
+  their shape, see [fli-core](https://github.com/flivideo/fli-core) (the layout rule is `src/classify.ts`)
+  and the open contract in FliStudio (`docs/open-contract.md`, github.com/flivideo/flistudio).
 
 - **Storage lanes** are where a project's bytes can be: local disk, T7 HOLDING (heavy subfolders
   evacuated, with the shell left local) and T7 PUBLISHED (the whole folder archived). The verbs are
