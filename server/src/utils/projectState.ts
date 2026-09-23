@@ -11,7 +11,7 @@
  */
 
 import fs from 'fs-extra';
-import type { ProjectShips, ProjectState, RecordingState } from '../../../shared/types.js';
+import type { AspectCheck, ProjectShips, ProjectState, RecordingState } from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from './pathUtils.js';
 
@@ -141,7 +141,8 @@ export function setRecordingSafe(
     !recordingState.safe &&
     !recordingState.parked &&
     !recordingState.stage &&
-    !recordingState.annotation
+    !recordingState.annotation &&
+    !recordingState.aspectWarning // keep an aspect warning (dismissed or not) — it is history
   ) {
     delete newState.recordings[filename];
   }
@@ -236,7 +237,8 @@ export function setRecordingParked(
     !recordingState.safe &&
     !recordingState.parked &&
     !recordingState.stage &&
-    !recordingState.annotation
+    !recordingState.annotation &&
+    !recordingState.aspectWarning // keep an aspect warning (dismissed or not) — it is history
   ) {
     delete newState.recordings[filename];
   }
@@ -386,4 +388,41 @@ export function setProjectShips(state: ProjectState, ships: ProjectShips): Proje
   if (ships === 'per-chapter') next.ships = 'per-chapter';
   else delete next.ships;
   return next;
+}
+
+// ============================================
+// Aspect warning (David, 2026-09-23): a take that did not match the project's declared aspect
+// keeps its warning on the recording until David dismisses it. Dismissing keeps the record
+// (dismissedAt) so the history of what was wrong is not lost.
+// ============================================
+
+export function setAspectWarning(state: ProjectState, filename: string, check: AspectCheck): ProjectState {
+  return {
+    ...state,
+    recordings: {
+      ...state.recordings,
+      [filename]: { ...state.recordings[filename], aspectWarning: { ...check } },
+    },
+  };
+}
+
+export function dismissAspectWarning(state: ProjectState, filename: string, now: Date = new Date()): ProjectState {
+  const entry = state.recordings[filename];
+  if (!entry?.aspectWarning || entry.aspectWarning.dismissedAt) return state;
+  return {
+    ...state,
+    recordings: {
+      ...state.recordings,
+      [filename]: { ...entry, aspectWarning: { ...entry.aspectWarning, dismissedAt: now.toISOString() } },
+    },
+  };
+}
+
+/** The warning to show on the row: present and not yet dismissed. */
+export function getActiveAspectWarning(state: ProjectState, filename: string): AspectCheck | undefined {
+  const warning = state.recordings[filename]?.aspectWarning;
+  if (!warning || warning.dismissedAt) return undefined;
+  const active: AspectCheck & { dismissedAt?: string } = { ...warning };
+  delete active.dismissedAt;
+  return active;
 }

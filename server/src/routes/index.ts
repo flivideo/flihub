@@ -26,6 +26,9 @@ import {
   isRecordingParked,
   getRecordingAnnotation,
   getChapterTitles,
+  setAspectWarning,
+  dismissAspectWarning,
+  getActiveAspectWarning,
 } from '../utils/projectState.js';
 import { renameRecording } from '../utils/renameRecording.js'; // FR-130: Simplified rename logic
 import {
@@ -248,10 +251,24 @@ export function createRoutes(
       await fs.ensureDir(targetDir);
 
       // Move and rename file
+      // Aspect check result from ingest (if the probe finished before promotion)
+      const landedAspect = pendingFiles.get(originalPath)?.aspectCheck;
+
       await fs.move(originalPath, newPath);
 
       // Remove from pending files
       pendingFiles.delete(originalPath);
+
+      // Aspect warning (David, 2026-09-23): a mismatched take keeps its warning on the recording
+      // row until dismissed. Recording only (b-roll is outside the flow). Never fails the promote.
+      if (!isBroll && landedAspect?.status === 'mismatch') {
+        try {
+          const state = await readProjectState(config.projectDirectory);
+          await writeProjectState(config.projectDirectory, setAspectWarning(state, newFilename, landedAspect));
+        } catch (err) {
+          console.error(`[aspect] could not record warning for ${newFilename}:`, err);
+        }
+      }
 
       // FR-50: Track rename for undo functionality
       cleanExpiredRenames(); // Clean up old entries first
@@ -579,6 +596,7 @@ export function createRoutes(
                 isSafe, // FR-111: From state file
                 isParked, // FR-120: From state file
                 annotation, // FR-123: From state file
+                aspectWarning: getActiveAspectWarning(state, entry.name), // undismissed aspect mismatch
               } satisfies RecordingFile,
             };
           })
@@ -860,6 +878,36 @@ export function createRoutes(
         success: false,
         error: error instanceof Error ? error.message : 'Failed to restore files from safe',
       });
+    }
+  });
+
+  // Aspect warning: POST /api/recordings/aspect-dismiss { files: string[] } — hide the warning on
+  // these recordings (kept in state with dismissedAt). Reports which files had nothing to dismiss.
+  router.post('/recordings/aspect-dismiss', async (req: Request, res: Response) => {
+    const { files } = req.body as { files?: unknown };
+    if (!Array.isArray(files) || files.length === 0 || !files.every((f) => typeof f === 'string')) {
+      res.status(400).json({ success: false, error: 'files (non-empty string array) is required' });
+      return;
+    }
+    try {
+      let state = await readProjectState(config.projectDirectory);
+      const dismissed: string[] = [];
+      const notFlagged: string[] = [];
+      for (const filename of files as string[]) {
+        if (getActiveAspectWarning(state, filename)) {
+          state = dismissAspectWarning(state, filename);
+          dismissed.push(filename);
+        } else {
+          notFlagged.push(filename);
+        }
+      }
+      if (dismissed.length > 0) {
+        await writeProjectState(config.projectDirectory, state);
+        if (io) io.emit('recordings:changed');
+      }
+      res.json({ success: true, dismissed, notFlagged });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Failed to dismiss' });
     }
   });
 

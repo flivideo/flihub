@@ -67,6 +67,18 @@ export function useSocket() {
       toast.info(`File removed (deleted from disk)`);
     });
 
+    // Aspect check (2026-09-23): the probe finishes after the take appears. A mismatch shouts on
+    // every tab (long toast) as well as in Incoming, so David can re-record immediately.
+    socket.on('file:aspect', ({ path, aspectCheck }) => {
+      setFiles((prev) => prev.map((f) => (f.path === path ? { ...f, aspectCheck } : f)));
+      if (aspectCheck.status === 'mismatch') {
+        toast.error(`Wrong aspect: ${path.split('/').pop()}`, {
+          description: aspectCheck.message,
+          duration: 30_000,
+        });
+      }
+    });
+
     socket.on('file:error', ({ path, error }) => {
       toast.error(`Error with ${path.split('/').pop()}: ${error}`);
     });
@@ -77,6 +89,7 @@ export function useSocket() {
       socket.off('file:new');
       socket.off('file:renamed');
       socket.off('file:deleted');
+      socket.off('file:aspect');
       socket.off('file:error');
       socket.io.off('reconnect_attempt');
     };

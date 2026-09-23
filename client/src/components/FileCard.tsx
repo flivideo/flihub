@@ -126,8 +126,15 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
         ? 'bg-yellow-50 rounded-lg border-2 border-yellow-400 p-4 shadow-sm'
         : 'bg-surface rounded-lg border border-warm p-4 shadow-sm';
 
+  const aspectMismatch = file.aspectCheck?.status === 'mismatch';
+
   return (
-    <div className={cardClasses}>
+    <div className={`${cardClasses} ${aspectMismatch ? 'ring-2 ring-red-500' : ''}`}>
+      {aspectMismatch && (
+        <p data-testid="filecard-aspect-warning" className="mb-2 rounded bg-red-100 px-2 py-1 text-sm font-semibold text-red-800">
+          ⚠ Wrong aspect — {file.aspectCheck!.message}
+        </p>
+      )}
       {/* Original filename and metadata */}
       <div className="mb-3">
         <div className="flex items-center justify-between">

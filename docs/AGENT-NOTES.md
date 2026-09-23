@@ -19,6 +19,10 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
   `../docs/agent-comprehension-docs.md`.)
 - The mirror excludes `shared/*.d.ts` on purpose, because those are stale build output. Keep passing
   `--exclude 'shared/*.d.ts'` when regenerating, or the dead Feb shapes come back.
+- The mirror JSON records an absolute repo root, which is where `verify_mirror.py` and
+  `render_mirror.py` look by default. If you regenerate in a worktree, render and verify there
+  first, then set `target.root` back to `/Users/davidcruwys/dev/ad/flivideo/flihub`. From any other
+  checkout, run verify with `--root .`.
 - The mirror has one gap: `ContextBodySchema` is built with `.partial()`, so it isn't expanded.
 - `brands.json`, `~/.fli/machine.json`, `fli.studio.json`, the layout rule, video naming and
   `TRASH_FOLDER` are owned by `@flivideo/core` (`../fli-core`). FliHub reads them and writes none of
@@ -57,7 +61,10 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
   - `toSave` in `saveConfig` in `server/src/config/configManager.ts`.
 
   `whisperBinary`, `whisperModel`, `whisperLanguage` and `diskThresholds` are already dropped this
-  way. A new `ProjectState` field needs the same treatment in `writeProjectState()`.
+  way. A new `ProjectState` field needs the same treatment in `writeProjectState()`. A new
+  `RecordingState` field also has to be added to the "is this entry empty?" check in
+  `setRecordingSafe` and `setRecordingParked`. Otherwise un-parking a take deletes the whole entry,
+  new field included. `aspectWarning` hit this on 2026-09-23.
 - **Mount order decides which router owns a route.** `projects.ts`, `hold.ts` and `storage.ts` all
   mount on `/api/projects`. A duplicate path is silently answered by the first router mounted:
   `POST /:code/hold` in `storage.ts` is dead code. Per-router tests can't see this, so test through

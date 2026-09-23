@@ -40,7 +40,7 @@ import {
   formatChapterTitle,
   formatTimestamp,
 } from '../utils/formatting';
-import { LoadingSpinner, ErrorMessage } from './shared';
+import { LoadingSpinner, ErrorMessage, AspectWarningChip } from './shared';
 import { ConfirmationModal } from './shared/ConfirmationModal'; // FR-156
 import { API_URL } from '../config';
 import { NoRecordingsState } from './shared/NoRecordingsState';
@@ -1528,11 +1528,16 @@ export function RecordingsView() {
                     onUnpark={handleUnpark}
                     onDelete={handleDelete}
                     transcriptionBadge={
-                      <TranscriptionBadge
-                        filename={file.filename}
-                        filePath={file.path}
-                        onViewTranscript={setViewingTranscript}
-                      />
+                      <>
+                        {file.aspectWarning && (
+                          <AspectWarningChip filename={file.filename} warning={file.aspectWarning} />
+                        )}
+                        <TranscriptionBadge
+                          filename={file.filename}
+                          filePath={file.path}
+                          onViewTranscript={setViewingTranscript}
+                        />
+                      </>
                     }
                     pendingChange={pendingChanges.get(file.filename)}
                     formatDuration={formatDuration}

@@ -302,3 +302,18 @@ export function useSetChapterTitle() {
     },
   });
 }
+
+// Aspect warning: hide the warning on these recordings (kept in state with dismissedAt)
+export function useDismissAspectWarning() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (files: string[]) =>
+      fetchApi<{ success: boolean; dismissed?: string[]; notFlagged?: string[]; error?: string }>(
+        '/api/recordings/aspect-dismiss',
+        { method: 'POST', body: JSON.stringify({ files }) }
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });
+    },
+  });
+}

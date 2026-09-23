@@ -35,7 +35,7 @@ import { ManagePanel } from './components/ManagePanel';
 // B045: PoemWuiPage moved into ManagePanel as AWB tool
 import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
-import { OpenFolderButton, SsdIndicator, TrashIndicator } from './components/shared';
+import { OpenFolderButton, SsdIndicator, TrashIndicator, AspectWarningBanner } from './components/shared';
 import { HeaderDropdown } from './components/HeaderDropdown';
 import { BrandSwitcher } from './components/BrandSwitcher';
 import { BRollPage } from './components/BRollPage';
@@ -784,6 +784,8 @@ function App() {
                   </button>
                 )}
               </div>
+
+              <AspectWarningBanner files={files} />
 
               {files.length === 0 ? (
                 <div className="text-center py-12 bg-surface rounded-lg border border-warm">

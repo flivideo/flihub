@@ -9,6 +9,24 @@ export interface FileInfo {
   timestamp: string;
   size: number; // File size in bytes
   duration?: number; // Video duration in seconds (if available)
+  aspectCheck?: AspectCheck; // Filled in after the take lands (probe runs in the background)
+}
+
+// Aspect check (David, 2026-09-23): does a take match the aspect the project was set up for?
+// `expected` values mirror @flivideo/core ProjectAspect (a compile-time check in
+// server/src/utils/aspectCheck.ts fails if they drift). Never blocks or moves a file.
+export type ProjectAspectValue = '16:9' | '9:16' | '1:1';
+export interface AspectCheck {
+  /** ok · mismatch (shout) · skipped (project has no aspect set) · unknown (could not probe) */
+  status: 'ok' | 'mismatch' | 'skipped' | 'unknown';
+  expected?: ProjectAspectValue;
+  /** The file's display size (rotation applied). */
+  frame?: { width: number; height: number };
+  /** The real picture inside any black bars (ffmpeg cropdetect); null when it could not be read. */
+  picture?: { width: number; height: number } | null;
+  /** Human sentence: what was expected, what arrived, and the fix. */
+  message: string;
+  checkedAt: string;
 }
 
 // FR-73: Chapter filter for common names
@@ -393,6 +411,7 @@ export interface RecordingFile {
   isSafe: boolean; // FR-111: True if hidden from active view (from state file)
   isParked: boolean; // FR-120: True if parked (excluded from this edit)
   annotation?: string; // FR-123: Optional note explaining why parked
+  aspectWarning?: AspectCheck; // Undismissed aspect mismatch from ingest (state file)
 }
 
 // FR-17: Image info for incoming images from Downloads
@@ -497,6 +516,7 @@ export interface LoadPromptResponse {
 export interface ServerToClientEvents {
   'file:new': (file: FileInfo) => void;
   'file:deleted': (data: { path: string }) => void; // FR-4: file deleted from disk
+  'file:aspect': (data: { path: string; aspectCheck: AspectCheck }) => void; // aspect probe finished
   'file:renamed': (data: { oldPath: string; newPath: string }) => void;
   'file:error': (data: { path: string; error: string }) => void;
   // NFR-5: Real-time updates
@@ -984,6 +1004,7 @@ export interface RecordingState {
   parked?: boolean; // FR-120: True = excluded from this edit (good content, not for this video)
   annotation?: string; // FR-123: Optional note explaining why parked (e.g., "Too technical for YouTube")
   stage?: string; // Future: per-recording stage (recording, first-edit, review, etc.)
+  aspectWarning?: AspectCheck & { dismissedAt?: string }; // Set on promotion of a mismatched take
 }
 
 // FR-157: Per-chapter persisted state (chapters are otherwise derived from filenames)

@@ -9,6 +9,8 @@ import { execSync } from 'child_process';
 import { env } from './config/env.js';
 import { log } from './config/logger.js';
 import { createWatcher } from './watcher.js';
+import { checkTakeAspect } from './utils/aspectCheck.js';
+import { expandPath } from './utils/pathUtils.js';
 import { createRoutes } from './routes/index.js';
 import { createAssetRoutes } from './routes/assets.js';
 import { createThumbRoutes } from './routes/thumbs.js';
@@ -124,6 +126,27 @@ function onNewFile(file: FileInfo) {
   console.log('New file detected:', file.filename);
   pendingFiles.set(file.path, file);
   io.emit('file:new', file);
+  queueAspectCheck(file);
+}
+
+// Aspect check (David, 2026-09-23): after a take lands, compare it with the ACTIVE project's
+// declared aspect (fli.studio.json) — the project it is about to be promoted into. Runs in the
+// background, one probe at a time, so the take appears in Incoming without waiting for ffmpeg.
+// Never blocks, renames or moves anything; the result rides on the pending file + 'file:aspect'.
+let aspectChain: Promise<void> = Promise.resolve();
+function queueAspectCheck(file: FileInfo) {
+  aspectChain = aspectChain.then(async () => {
+    if (!pendingFiles.has(file.path)) return; // promoted or discarded before its turn
+    const projectDir = currentConfig.projectDirectory ? expandPath(currentConfig.projectDirectory) : '';
+    const aspectCheck = await checkTakeAspect(file.path, projectDir, file.duration);
+    const pending = pendingFiles.get(file.path);
+    if (!pending) return;
+    pendingFiles.set(file.path, { ...pending, aspectCheck });
+    io.emit('file:aspect', { path: file.path, aspectCheck });
+    if (aspectCheck.status === 'mismatch') {
+      console.warn(`[aspect] ${file.filename}: ${aspectCheck.message}`);
+    }
+  }).catch((err) => console.error('[aspect] check failed:', err));
 }
 
 // FR-4: Function to handle file deletion from disk

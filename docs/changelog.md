@@ -32,6 +32,20 @@ checks the two against each other. **Then v0.2.3:** fli-core added `projectLayou
 deleted its copy and `getProjectPaths` delegates to it. Tests: `shared/projectLayout.test.ts`, `server/src/test/hubLayout.test.ts`,
 and the hub block in `storageRoutes.test.ts`.
 
+## Aspect mismatch warning at ingest (2026-09-23)
+
+David: "a big warning … on anything that doesn't match the way the project was set up". When a take
+lands, a background probe compares it with the active project's `fli.studio.json` `aspect` (read
+through fli-core). It checks the frame size (ffprobe, rotation-aware) AND the real picture inside
+any black bars (ffmpeg cropdetect at three points). A mismatch raises a 30-second toast on every tab
+and a red `role=alert` banner in Incoming. The take's card also carries the message, for example
+"expected 9:16 portrait · got 1920×1080 with a 608×1080 picture (68% black) — set Ecamm to a
+1080×1920 canvas". On promotion the warning is saved on the recording in `.flihub-state.json`, and
+the row shows it until it is dismissed (`POST /api/recordings/aspect-dismiss`, which keeps
+`dismissedAt`). A project with no aspect set is skipped and says so; the 16:9 default is never
+assumed. Nothing is blocked or moved. Tests: `aspectCheck.test.ts` (includes a real-ffmpeg synthetic
+pillarboxed take) and `AspectWarning.test.tsx`.
+
 ## Trash is always visible and emptiable (2026-09-23)
 
 David's rule: a project's `-trash/` is allowed only if it is ALWAYS visible (count + size) and can

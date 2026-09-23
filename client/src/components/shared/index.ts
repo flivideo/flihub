@@ -18,6 +18,7 @@ export { UndoToast } from './UndoToast';
 export type { UndoToastProps } from './UndoToast';
 export { SsdIndicator } from './SsdIndicator';
 export { TrashIndicator } from './TrashIndicator';
+export { AspectWarningBanner, AspectWarningChip } from './AspectWarning';
 export { StoragePanel } from './StoragePanel';
 export type { StoragePanelProps } from './StoragePanel';
 export { EditableFileRow } from './EditableFileRow';
