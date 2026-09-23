@@ -6,6 +6,6 @@ export default defineConfig({
     server: {
         port: 5100,
         strictPort: true,
-        host: true, // Bind to 0.0.0.0 — accessible via Tailscale from other machines
+        host: '127.0.0.1', // Loopback only, like the API. Stale tsc output: Vite loads this .js before vite.config.ts
     },
 });
