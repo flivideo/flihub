@@ -1,7 +1,7 @@
 // B062: Disk space observability hooks
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import type { DiskSizeData } from '../../../shared/types';
+import type { DiskSizeData, TrashSummaryResponse } from '../../../shared/types';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { fetchApi } from './useApi';
 
@@ -29,6 +29,19 @@ export function useDiskScanAll() {
   });
 }
 
+// Trash visibility: live count + size of a project's -trash/ (always-on header indicator).
+// Refetched after every trash action (see invalidations) and every 15s as a backstop for
+// writers FliHub does not see (Finder, another app).
+export function useTrashSummary(code: string | null) {
+  return useQuery({
+    queryKey: QUERY_KEYS.trashSummary(code ?? ''),
+    queryFn: () => fetchApi<TrashSummaryResponse>(`/api/projects/${encodeURIComponent(code!)}/trash`),
+    enabled: Boolean(code),
+    refetchInterval: 15_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
 // B062 Wave 2: Delete trash contents for a project
 export function useDeleteTrash(code: string | null) {
   const queryClient = useQueryClient();
@@ -42,6 +55,7 @@ export function useDeleteTrash(code: string | null) {
       if (data.success) {
         // Clear disk cache so drawer refetches fresh data
         queryClient.removeQueries({ queryKey: QUERY_KEYS.projectDisk(code ?? '') });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.trashSummary(code ?? '') });
         toast.success(`Deleted ${data.deleted.length} files from trash`);
       } else {
         toast.error(data.error ?? 'Failed to delete trash');

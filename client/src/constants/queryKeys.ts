@@ -53,6 +53,9 @@ export const QUERY_KEYS = {
   developerTelemetry: ['developer', 'telemetry'] as const,
   // B062: Disk space observability
   projectDisk: (code: string) => ['project-disk', code] as const,
+  // Trash visibility: always-on header indicator (prefix invalidates every project's summary)
+  trashSummaryBase: ['trash-summary'] as const,
+  trashSummary: (code: string) => ['trash-summary', code] as const,
   // B064: Archive-offload hold status
   holdStatus: (code: string) => ['hold-status', code] as const,
   // WU1: Archive tool unified inventory

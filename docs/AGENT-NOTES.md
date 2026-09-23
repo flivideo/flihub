@@ -22,7 +22,7 @@ Open the declaring file:
 - `shared/naming.ts` → `NAMING_RULES` :16 is the filename and project-name grammar.
 - `server/src/config/env.ts` is the zod schema for environment variables.
 - `brands.json`, `~/.fli/machine.json` and `fli.studio.json` are shaped by `@flivideo/core`
-  (`../fli-core/src`, pinned `#v0.5.0`) and `../flistudio/docs/open-contract.md`. FliHub reads
+  (`../fli-core/src`, pinned `#v0.6.0`) and `../flistudio/docs/open-contract.md`. FliHub reads
   them and writes none of them. Cite them there; don't restate them.
 - **Do not read `shared/*.js` or `shared/*.d.ts`.** They are tracked but stale build output from
   Feb and Sep 2026. `types.js` still lists `review` and lacks `shelved`/`remix`. tsx resolves

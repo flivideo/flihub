@@ -35,7 +35,7 @@ import { ManagePanel } from './components/ManagePanel';
 // B045: PoemWuiPage moved into ManagePanel as AWB tool
 import { ChapterContextPanel } from './components/ChapterContextPanel';
 import { ConnectionIndicator } from './components/ConnectionIndicator';
-import { OpenFolderButton, SsdIndicator } from './components/shared';
+import { OpenFolderButton, SsdIndicator, TrashIndicator } from './components/shared';
 import { HeaderDropdown } from './components/HeaderDropdown';
 import { BrandSwitcher } from './components/BrandSwitcher';
 import { BRollPage } from './components/BRollPage';
@@ -562,8 +562,9 @@ function App() {
                 </>
               )}
             </div>
-            {/* B064: Persistent T7 indicator */}
+            {/* B064: Persistent T7 indicator + always-visible trash (2026-09-23) */}
             <div className="flex items-center gap-3 flex-shrink-0">
+              <TrashIndicator projectCode={currentProjectCode} />
               <SsdIndicator onNavigateToStorage={() => {
                 // WU3: T7 pill now opens Storage panel for the active project.
                 navigateToManage('storage');

@@ -17,6 +17,7 @@ export type { SplitMarkerProps } from './SplitMarker';
 export { UndoToast } from './UndoToast';
 export type { UndoToastProps } from './UndoToast';
 export { SsdIndicator } from './SsdIndicator';
+export { TrashIndicator } from './TrashIndicator';
 export { StoragePanel } from './StoragePanel';
 export type { StoragePanelProps } from './StoragePanel';
 export { EditableFileRow } from './EditableFileRow';

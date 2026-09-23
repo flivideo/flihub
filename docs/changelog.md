@@ -32,6 +32,18 @@ checks the two against each other. **Then v0.2.3:** fli-core added `projectLayou
 deleted its copy and `getProjectPaths` delegates to it. Tests: `shared/projectLayout.test.ts`, `server/src/test/hubLayout.test.ts`,
 and the hub block in `storageRoutes.test.ts`.
 
+## Trash is always visible and emptiable (2026-09-23)
+
+David's rule: a project's `-trash/` is allowed only if it is ALWAYS visible (count + size) and can
+be emptied any time. A header pill next to T7 (`TrashIndicator`) shows the active project's trash
+on every tab, including "Trash 0" and "Trash ?" when it can't be read. Click it, confirm, and it
+empties through the existing `DELETE /api/projects/:code/trash` (safeDelete). A new
+`GET /api/projects/:code/trash` reads `-trash/` on every call. It counts exactly what the delete
+removes (top-level files) and reports any files in subfolders separately (`nestedCount`); no
+current writer creates subfolders. The pill refreshes after every trash action, on window focus
+and every 15s. `@flivideo/core` is pinned to v0.6.0 (`TRASH_FOLDER`). `recording-shadows/` is
+untouched. Tests: `trashVisibility.test.ts`, `TrashIndicator.test.tsx`.
+
 ## Step 4 — New Project starts in the hub layout (2026-09-23)
 
 `POST /api/projects` now creates only the project folder, with no `recordings/`. Under fli-core

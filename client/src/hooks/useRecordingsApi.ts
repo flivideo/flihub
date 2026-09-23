@@ -49,12 +49,16 @@ export function useRename() {
 
 // FR-5: Trash file mutation (moves to -trash/ directory)
 export function useTrashFile() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (path: string) =>
       fetchApi<{ success: boolean; trashPath?: string; error?: string }>('/api/trash', {
         method: 'POST',
         body: JSON.stringify({ path }),
       }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.trashSummaryBase });
+    },
   });
 }
 
@@ -110,6 +114,7 @@ export function useTrashRecordings() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.trashSummaryBase });
     },
   });
 }

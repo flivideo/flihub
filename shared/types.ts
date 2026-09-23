@@ -72,6 +72,17 @@ export interface DiskSizeData {
   }
 }
 
+// Trash visibility (2026-09-23): GET /api/projects/:code/trash — read fresh, never cached.
+// fileCount/totalBytes are the top-level files DELETE removes; nestedCount is what it would NOT.
+export interface TrashSummaryResponse {
+  success: boolean;
+  exists?: boolean;
+  fileCount?: number;
+  totalBytes?: number;
+  nestedCount?: number;
+  error?: string;
+}
+
 // B062: Per-column threshold config
 export interface DiskThresholdConfig {
   faint: string | null;  // e.g. "300MB", "2GB", "0" — null = no threshold

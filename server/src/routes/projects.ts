@@ -19,6 +19,8 @@ import { getProjectStatsRaw } from '../utils/projectStats.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { readDirSafe } from '../utils/filesystem.js';
 import { calculateProjectDiskSize } from '../utils/diskUtils.js';
+import { getDirStats } from '../utils/holdUtils.js';
+import { TRASH_FOLDER } from '@flivideo/core';
 import type {
   Config,
   ProjectStats,
@@ -596,6 +598,53 @@ export function createProjectRoutes(
     }
   });
 
+  // Trash visibility (David, 2026-09-23: -trash/ is allowed only if it is ALWAYS visible and
+  // emptiable any time). GET /api/projects/:code/trash — read -trash/ fresh on every call (no
+  // disk cache), so the always-on header indicator never shows a stale count.
+  // fileCount/totalBytes = top-level files, which is exactly what DELETE below removes.
+  // nestedCount = files inside subfolders, which DELETE does NOT remove — reported, never hidden.
+  router.get('/:code/trash', async (req: Request, res: Response) => {
+    const code = queryString(req.params.code);
+    if (!code || /[/\\]/.test(code) || code.includes('..')) {
+      res.status(400).json({ success: false, error: 'Invalid project code' });
+      return;
+    }
+    const config = getConfig();
+    if (!config.projectsRootDirectory) {
+      res.json({ success: false, error: 'projectsRootDirectory not configured' });
+      return;
+    }
+    const trashDir = path.join(expandPath(config.projectsRootDirectory), code, TRASH_FOLDER);
+    try {
+      let entries: import('fs').Dirent[] = [];
+      let exists = true;
+      try {
+        entries = await fs.readdir(trashDir, { withFileTypes: true });
+      } catch {
+        exists = false;
+      }
+      let fileCount = 0;
+      let totalBytes = 0;
+      let nestedCount = 0;
+      for (const e of entries) {
+        const full = path.join(trashDir, e.name);
+        if (e.isFile()) {
+          try {
+            totalBytes += (await fs.stat(full)).size;
+            fileCount++;
+          } catch {
+            // removed between readdir and stat
+          }
+        } else if (e.isDirectory()) {
+          nestedCount += (await getDirStats(full)).fileCount;
+        }
+      }
+      res.json({ success: true, exists, fileCount, totalBytes, nestedCount });
+    } catch (error) {
+      res.status(500).json({ success: false, error: String(error) });
+    }
+  });
+
   // B062 Wave 2: Delete trash folder contents for a project
   router.delete('/:code/trash', async (req: Request, res: Response) => {
     try {
@@ -609,11 +658,11 @@ export function createProjectRoutes(
 
       const projectsRoot = expandPath(config.projectsRootDirectory);
       const projectDir = path.join(projectsRoot, code);
-      const trashDir = path.join(projectDir, '-trash');
+      const trashDir = path.join(projectDir, TRASH_FOLDER);
 
       const result = await safeDelete(trashDir, {
         rootDir: projectsRoot,
-        allowedSuffix: '-trash',
+        allowedSuffix: TRASH_FOLDER,
         description: 'project trash folder',
       });
 

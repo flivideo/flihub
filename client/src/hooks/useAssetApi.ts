@@ -170,6 +170,8 @@ export function useDeleteAssignedImage() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectImages });
       // Invalidate all next-order queries
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.nextImageOrderPrefix });
+      // The image moved to -trash/ — keep the header trash indicator honest
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.trashSummaryBase });
     },
   });
 }
