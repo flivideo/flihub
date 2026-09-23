@@ -1,8 +1,8 @@
 /**
  * NFR-12: Centralized client configuration
  *
- * API_URL derives from the current browser hostname so FliHub works
- * both on localhost and when accessed via Tailscale from other machines.
+ * API_URL uses the page's own hostname (localhost or 127.0.0.1), so API calls stay same-host.
+ * Both the UI and the API bind loopback only; other machines can't reach FliHub.
  */
 
 function getApiUrl(): string {
