@@ -6,7 +6,7 @@ named, transcribed recordings in the right video project.**
 ![FliHub Incoming tab — naming template, chapter list and the pending-files queue](.screenshots/01-incoming.png)
 
 Stop recording and the take appears in **Incoming**. Pick a chapter and a name, and FliHub moves it
-into `recordings/` as `07-3-epic1-story4.mov` and queues a local MLX Whisper transcript. The other
+into the project's recordings folder as `07-3-epic1-story4.mov` and queues a local MLX Whisper transcript. The other
 tabs (Recordings, Transcripts, Assets, Thumbs, Projects, Manage) work on those promoted files.
 
 It is a local, single-creator tool in the FliVideo family. It runs on David's Macs, reads the shared
@@ -21,15 +21,18 @@ through the open contract below.
 ## Features
 
 - **Take queue → promote.** Watches `watchDirectory` for `*.mov` / `*.mp4`, holds takes until you
-  pick one, then renames it `{chapter}-{sequence}-{name}-{TAGS}.mov` into the active project. B-roll
-  takes go to `b-roll/` with no chapter.
-- **Local transcription.** MLX Whisper on Apple Silicon writes `.txt`, `.srt` and `.json` beside
-  every recording, streamed live to the UI.
+  pick one, then renames it `{chapter}-{sequence}-{name}-{TAGS}.mov` into the active project.
+  B-roll takes still go to `b-roll/` with no chapter, but this lane is deprecated.
+- **Local transcription.** MLX Whisper on Apple Silicon writes `.txt`, `.srt` and `.json` per
+  recording into the project's transcripts folder, streamed live to the UI. The JSON has segments
+  only, not word timings. Transcription is moving to a shared FliTools service.
 - **Projects at a glance.** A filterable project table with stage, pin, transcript coverage and a
   detail drawer. It covers every project under the brand root, and a brand switcher moves between
   roots.
 - **Storage lanes.** Hold heavy folders to the T7, archive whole projects to PUBLISHED, and restore
   them. The copy is verified before anything is deleted locally.
+- **Trash you can always see.** The header shows the active project's `-trash/` (count and size) on
+  every tab. Click it, confirm, and the trash is emptied.
 - **Assets and thumbnails.** Image assets (`05-3-2a-label.png`), prompts and YouTube thumbnails per
   project.
 - **Read API for tools and agents.** `/api/query/*` returns project, recording and transcript data
@@ -108,13 +111,20 @@ on the server (`server/src/utils/openContext.ts`).
 Each project is one folder under the brand root (`projectsRootDirectory`). Its name is its identity;
 see [project codes](docs/architecture/project-codes.md).
 
+Two layouts are read. **New projects** use `hub/`. **Existing projects** keep the legacy top-level
+folders and are never migrated by FliHub. The rule lives in `@flivideo/core` (`projectLayoutSync`):
+`hub/recordings/` means hub, a top-level `recordings/` or transcripts folder means legacy, and
+anything else (a new, empty project) means hub.
+
 ```
 <project>/
-├── recordings/              # promoted takes: {NN}-{seq}-{name}-{TAGS}.mov
-│   ├── -safe/               # protected recordings
-│   └── -chapters/           # legacy chapter previews (no longer generated)
-├── recording-transcripts/   # .txt · .srt · .json per recording
-├── b-roll/                  # chapter-less takes
+├── hub/                     # NEW projects (FliHub's own folders)
+│   ├── recordings/          # promoted takes: {NN}-{seq}-{name}-{TAGS}.mov  (+ -safe/, -chapters/)
+│   └── transcripts/         # .txt · .srt · .json per recording
+├── recordings/              # LEGACY projects: promoted takes (+ -safe/, legacy -chapters/)
+├── recording-transcripts/   # LEGACY projects: transcripts
+├── -trash/                  # trashed takes and artifacts — always visible in the header, emptiable
+├── b-roll/                  # chapter-less takes (deprecated lane)
 ├── assets/{images,thumbs}/  # image assets, prompts, YouTube thumbnails
 ├── inbox/                   # incoming notes, datasets, presentation assets
 ├── final/                   # the finished cut FliHub reads (see edit folders)
@@ -129,10 +139,11 @@ What `final/`, `edit-1st/` and `edit-2nd/` mean in practice: [docs/architecture/
 | Read                                                                        | For                                                                              |
 | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | [docs/SYSTEM.md](docs/SYSTEM.md)                                            | How FliHub works: abstractions, workflows, design decisions, failure modes       |
-| [docs/AGENT-NOTES.md](docs/AGENT-NOTES.md)                                  | Pitfalls, schema sources and tooling for anyone (or any agent) changing the code |
+| [docs/AGENT-NOTES.md](docs/AGENT-NOTES.md)                                  | Pitfalls and tooling for anyone (or any agent) changing the code                 |
+| [docs/schema-mirror.md](docs/schema-mirror.md)                              | Every type, zod schema and closed set, generated from the code with `file:line`  |
 | [docs/rebuild-2026/](docs/rebuild-2026/README.md)                           | The rebuild: North Star, roadmap, requirements archaeology                       |
 | [docs/architecture/](docs/architecture/)                                    | API reference, socket protocol, naming rules, patterns                           |
-| [docs/guides/](docs/guides/)                                                | Troubleshooting, cross-platform and collaborator setup                           |
+| [docs/guides/](docs/guides/)                                                | Troubleshooting, cross-platform and WSL setup, release process                   |
 | [docs/backlog.md](docs/backlog.md) · [docs/changelog.md](docs/changelog.md) | Requirements (FR/NFR) and what shipped                                           |
 | [CLAUDE.md](CLAUDE.md)                                                      | Operating rules, launch modes, machine inventory                                 |
 
@@ -142,6 +153,7 @@ What `final/`, `edit-1st/` and `edit-2nd/` mean in practice: [docs/architecture/
 npm test             # shared, client, server (vitest)
 npm run typecheck    # server + client
 npm run lint
+(cd server && npx vitest run --exclude 'dist/**')   # one-shot server run; a stale dist/ doubles the count
 ```
 
 `npm test` locally is the real gate. CI can't install the private `fli-core` dependency yet, so it
