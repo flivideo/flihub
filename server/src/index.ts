@@ -10,6 +10,7 @@ import { env } from './config/env.js';
 import { log } from './config/logger.js';
 import { createWatcher } from './watcher.js';
 import { checkTakeAspect } from './utils/aspectCheck.js';
+import { isLoopbackOrigin, listenLoopback, refuseForeignOrigin } from './utils/loopback.js';
 import { expandPath } from './utils/pathUtils.js';
 import { createRoutes } from './routes/index.js';
 import { createAssetRoutes } from './routes/assets.js';
@@ -84,16 +85,18 @@ cleanupPort(PORT);
 const app = express();
 const httpServer = createServer(app);
 
-// NFR-1: Dynamic CORS - allow any localhost origin in development
+// Loopback only: CORS allows loopback pages (any port), everything else is refused
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
-    origin: true, // Reflects requesting origin (safe for local dev)
+    origin: (origin, cb) => cb(null, isLoopbackOrigin(origin)),
     methods: ['GET', 'POST'],
   },
+  allowRequest: (req, cb) => cb(null, isLoopbackOrigin(req.headers.origin)),
 });
 
 // Middleware
-app.use(cors());
+app.use(refuseForeignOrigin);
+app.use(cors({ origin: (origin, cb) => cb(null, isLoopbackOrigin(origin)) }));
 app.use(express.json({ limit: '10mb' })); // FR-42: Increased limit for base64 clipboard images
 
 // In-memory store for pending files
@@ -411,9 +414,10 @@ startWatcher(currentConfig.watchDirectory);
 watcherManager.initAll(currentConfig);
 
 // Start server
-httpServer.listen(PORT, () => {
+listenLoopback(httpServer, PORT, () => {
   log.info('FliHub server started', {
     port: PORT,
+    host: '127.0.0.1 + ::1',
     nodeEnv: env.NODE_ENV,
     watchDirectory: currentConfig.watchDirectory,
     projectDirectory: currentConfig.projectDirectory,

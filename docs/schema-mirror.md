@@ -3,13 +3,13 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `95bfe6e91147` · **generated** 2026-09-23T08:06:25+00:00
+- **commit** `8983fd3fe57a` · **generated** 2026-09-23T10:09:29+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
 | shapes | declared sets | derived sets | gaps | declared but not read | findings |
 |---|---|---|---|---|---|
-| 334 | 87 | 15 | 2 | 43 | 15 |
+| 334 | 87 | 16 | 2 | 43 | 16 |
 
 > **Read the gaps, the census and the never-read list before trusting the shape.** Derived sets have no declaring symbol and will drift silently. Gaps are things this mirror could not reach — they are not absences in the code.
 
@@ -121,6 +121,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/utils/chapterRecording.ts` — `SegmentInfo` :14 · `ChapterSegments` :23
 - `server/src/utils/diskUtils.ts` — `NodeDirent` :39
 - `server/src/utils/finalMedia.ts` — `FinalMediaLocation` (set) :16 · `FinalVideoInfo` :19 · `FinalSrtInfo` :27 · `AdditionalSegment` :34 · `FinalMediaResponse` :40
+- `server/src/utils/loopback.ts` — `LOOPBACK_HOSTS` (set) :13
 - `server/src/utils/micCheckStore.ts` — `StartSessionInput` :57 · `FinishSessionInput` :264
 - `server/src/utils/nextProjectCode.ts` — `SeriesCode` :17 · `NextCodeResult` :67
 - `server/src/utils/openContext.ts` — `ContextDeps` :46 · `ApplyResult` :57 · `Resolution` :64
@@ -162,7 +163,7 @@ These constructs are outside what this extractor reads **on every run, in every 
 **397** top-level declarations counted = **352** mirrored + **2** listed as gaps + **43** declared but not read.
 
 Counted: every top-level interface, enum, class and type alias (exported or not) and every exported constant, in the files in scope.
-Not counted, as not schema-bearing: 18 literal constants.
+Not counted, as not schema-bearing: 1 function, 18 literal constants.
 
 | file | declared | mirrored | gaps | not read |
 |---|---|---|---|---|
@@ -1328,6 +1329,19 @@ Each set below was read out of the real authority — control flow, membership t
 | `ux` | `server/src/utils/chapterExtraction.ts:208` |
 
 > **REFACTOR: the set for `word.toLowerCase()` is inlined at server/src/utils/chapterExtraction.ts:208. Name it once (z.enum / literal union) so it has one authority.**
+
+### `server/src/utils/loopback.LOOPBACK_HOSTS` — `server/src/utils/loopback.ts:13`
+
+*module constant `LOOPBACK_HOSTS` used in a `.has()` test - one place to change, but no z.enum or literal union, so nothing checks a value against it*
+
+| value | read from |
+|---|---|
+| `localhost` | `server/src/utils/loopback.ts:13` |
+| `127.0.0.1` | `server/src/utils/loopback.ts:13` |
+| `[::1]` | `server/src/utils/loopback.ts:13` |
+| `::1` | `server/src/utils/loopback.ts:13` |
+
+> **REFACTOR (minor): `LOOPBACK_HOSTS` at server/src/utils/loopback.ts:13 names the set but does not type it. A z.enum or `as const` + `typeof LOOPBACK_HOSTS[number]` would make a wrong value a static error rather than a runtime miss.**
 
 > 4 comparison(s) against vocabularies this app does not own (DOM key names, HTTP headers, library internals) were **not** treated as closed sets and carry no refactor advice: `client/src/components/shared/BatchToolbar.e.key (branching)` (the subject is a property declared by TypeScript's lib or a package), `client/src/components/shared/EditableFileRow.e.key (branching)` (the subject is a property declared by TypeScript's lib or a package), `server/src/routes/projects.parts.length (branching)` (the subject is a property declared by TypeScript's lib or a package), `server/src/utils/llmVerification.parts.length (branching)` (the subject is a property declared by TypeScript's lib or a package).
 
@@ -4695,6 +4709,7 @@ These are refactors of the **application**, not of this mirror. Each one convert
 13. `server/src/routes/video.ts:161` — REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:161. Name it once (z.enum / literal union) so it has one authority.
 14. `server/src/routes/video.ts:242` — REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:242. Name it once (z.enum / literal union) so it has one authority.
 15. `server/src/utils/chapterExtraction.ts:208` — REFACTOR: the set for `word.toLowerCase()` is inlined at server/src/utils/chapterExtraction.ts:208. Name it once (z.enum / literal union) so it has one authority.
+16. `server/src/utils/loopback.ts:13` — REFACTOR (minor): `LOOPBACK_HOSTS` at server/src/utils/loopback.ts:13 names the set but does not type it. A z.enum or `as const` + `typeof LOOPBACK_HOSTS[number]` would make a wrong value a static error rather than a runtime miss.
 
 ---
 

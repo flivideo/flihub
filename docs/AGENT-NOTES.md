@@ -99,6 +99,9 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
 - **Trash must stay visible and emptiable** (David, 2026-09-23). The header pill shows a count even
   at 0, and "?" when the folder can't be read, never a silent 0. What it counts must equal what
   empty removes.
+- **The API is loopback-only** (`server/src/utils/loopback.ts`): 127.0.0.1 + ::1, and a 403 for any
+  non-loopback browser Origin. There's no token. Don't reopen it to Tailscale: nothing remote uses it.
+  The "via Tailscale" notes in `client/src/config.ts` and Vite's `host: true` are stale.
 - **Cut, don't hide.** Relay, git sync and shadows are gone. B-roll (FR-161) and the FR-126 manifest
   are deprecated but still in the code. Don't extend either without David's ruling, and don't touch
   `recording-shadows/` handling until he rules.

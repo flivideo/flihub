@@ -24,11 +24,10 @@ docs and the MIT licence only, so no restart is needed for them.
 - [x] `flihub-storage-panel` worktree and branch removed (0 unique commits)
 - [x] `299a048` read-only audit `/Users/davidcruwys/dev/ad/flivideo/flihub/docs/agent-drivable-audit.md`
       (5 HAVE · 9 PARTIAL · 8 MISSING · 2 N-A)
+- [x] API bound to 127.0.0.1 + ::1, and foreign browser origins get a 403 (David: "do whatever you think best"; the orchestrator
+      checked that nothing remote calls :5101). Needs `overmind restart server`, which the orchestrator decides
 
 ### Blocked on David
-- [ ] **Bind the API to 127.0.0.1?** `httpServer.listen(PORT)` at `server/src/index.ts:414` listens on
-      `*:5101` with no auth, and destructive routes are open. It's a one-line fix, but first confirm that
-      nothing reaches FliHub from another machine (Jan and Mary did, over Tailscale, in the relay era)
 - [ ] **Beauty & Joy a01 has no `aspect`** in its `fli.studio.json`, so the aspect warning stays silent
       there. FliStudio (not FliHub) should set `"aspect": "9:16"`
 - [ ] **Delete the stale `shared/types.js`, `naming.js`, `constants.js`** (vitest loads them instead of the `.ts`)
