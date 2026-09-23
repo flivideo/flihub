@@ -22,7 +22,7 @@ Open the declaring file:
 - `shared/naming.ts` → `NAMING_RULES` :16 is the filename and project-name grammar.
 - `server/src/config/env.ts` is the zod schema for environment variables.
 - `brands.json`, `~/.fli/machine.json` and `fli.studio.json` are shaped by `@flivideo/core`
-  (`../fli-core/src`, pinned `#v0.3.0`) and `../flistudio/docs/open-contract.md`. FliHub reads
+  (`../fli-core/src`, pinned `#v0.5.0`) and `../flistudio/docs/open-contract.md`. FliHub reads
   them and writes none of them. Cite them there; don't restate them.
 - **Do not read `shared/*.js` or `shared/*.d.ts`.** They are tracked but stale build output from
   Feb and Sep 2026. `types.js` still lists `review` and lacks `shelved`/`remix`. tsx resolves
@@ -32,7 +32,9 @@ Open the declaring file:
 - **Two project layouts (2026-09-22).** `hub` (`hub/recordings/`, `hub/transcripts/`) and legacy
   (`recordings/`, `recording-transcripts/`) are read forever and never migrated. Always get these
   folders from `getProjectPaths(projectDir)` (`shared/paths.ts`); never join `'recordings'` yourself.
-  New projects are still created legacy until rebuild step 4.
+  Detection is fli-core `projectLayoutSync` (option A, 2026-09-23): no recordings or transcripts
+  anywhere means hub, and so does a missing folder. FliHub's `POST /api/projects` still creates a
+  top-level `recordings/`, so a project made in FliHub starts legacy until rebuild step 4.
 - `shared/apiRegistry.ts` (the API Explorer) lists 34 endpoints; the routers define about 170. To
   find a route, grep `router\.(get|post|put|patch|delete)` in `server/src/routes/`, not the registry.
 

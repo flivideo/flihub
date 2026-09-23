@@ -25,12 +25,23 @@ describe('layout detection (fli-core projectLayoutSync)', () => {
     expect(projectLayoutSync(tmp)).toBe('legacy');
   });
 
-  it('legacy: an empty folder (every project created today)', () => {
+  // Option A (David, 2026-09-23; fli-core v0.5.0): a project with no recordings anywhere is NEW → hub.
+  it('hub: an empty folder (a new project, no recordings anywhere)', () => {
+    expect(projectLayoutSync(tmp)).toBe('hub');
+  });
+
+  it('hub: a missing folder never throws', () => {
+    expect(projectLayoutSync(path.join(tmp, 'nope'))).toBe('hub');
+  });
+
+  it('legacy: only recording-transcripts/ (media is not in git, so another machine may hold only transcripts)', () => {
+    mk('recording-transcripts');
     expect(projectLayoutSync(tmp)).toBe('legacy');
   });
 
-  it('legacy: a missing folder never throws', () => {
-    expect(projectLayoutSync(path.join(tmp, 'nope'))).toBe('legacy');
+  it('legacy: only a top-level transcripts/', () => {
+    mk('transcripts');
+    expect(projectLayoutSync(tmp)).toBe('legacy');
   });
 
   it('hub: hub/recordings/ exists', () => {
@@ -55,9 +66,15 @@ describe('layout detection (fli-core projectLayoutSync)', () => {
     expect(projectLayoutSync(tmp)).toBe('hub');
   });
 
-  it('legacy: a FILE named hub is not a layout marker', () => {
+  it('legacy: a FILE named hub is not a layout marker (top-level recordings/ decides)', () => {
     fs.writeFileSync(path.join(tmp, 'hub'), 'x');
+    mk('recordings');
     expect(projectLayoutSync(tmp)).toBe('legacy');
+  });
+
+  it('hub: a FILE named hub with nothing else is just an empty project', () => {
+    fs.writeFileSync(path.join(tmp, 'hub'), 'x');
+    expect(projectLayoutSync(tmp)).toBe('hub');
   });
 });
 
@@ -135,6 +152,8 @@ describe('parity: getProjectPaths vs @flivideo/core projectLayoutPaths', () => {
     'hub/transcripts only (held)': () => mk('hub', 'transcripts'),
     'empty hub/': () => mk('hub'),
     'file named hub': () => fs.writeFileSync(path.join(tmp, 'hub'), 'x'),
+    'legacy transcripts only': () => mk('recording-transcripts'),
+    'D7 transcripts/ only': () => mk('transcripts'),
   };
 
   for (const [name, build] of Object.entries(shapes)) {
@@ -146,7 +165,7 @@ describe('parity: getProjectPaths vs @flivideo/core projectLayoutPaths', () => {
     });
   }
 
-  it('a missing folder: both give the legacy paths', async () => {
+  it('a missing folder: both give the same (hub) paths', async () => {
     const missing = path.join(tmp, 'nope');
     const mine = getProjectPaths(missing);
     expect({ layout: mine.layout, recordings: mine.recordings, transcripts: mine.transcripts }).toEqual(

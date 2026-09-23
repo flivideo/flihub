@@ -12,8 +12,9 @@ import path from 'path';
  * Project folder layout (David's ruling 2026-09-22), owned by @flivideo/core (D14).
  * - `hub`: FliHub's folders live under `<project>/hub/`: `hub/recordings/` + `hub/transcripts/`.
  * - `legacy`: top-level `recordings/` + `recording-transcripts/`. Every project that exists today.
- * Nothing is migrated. Detection is fli-core's `projectLayoutSync`: a stray `hub/` never hides
- * top-level `recordings/`. FliHub keeps no copy of the rule.
+ * Nothing is migrated. Detection is fli-core's `projectLayoutSync` (v0.5.0, option A, David
+ * 2026-09-23): `hub/recordings/` → hub; any top-level `recordings/`, `recording-transcripts/` or
+ * `transcripts/` → legacy; anything else (new/empty/missing) → hub. FliHub keeps no copy of the rule.
  */
 import { HUB_FOLDER, LAYOUT_DIRS, projectLayoutSync, type ProjectLayout } from '@flivideo/core';
 

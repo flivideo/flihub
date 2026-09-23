@@ -3,8 +3,10 @@ import { getProjectPaths, migrateTargetToProject } from './paths';
 
 describe('paths utilities', () => {
   describe('getProjectPaths', () => {
+    // Legacy path-building. The folder doesn't exist, and a missing folder detects as `hub` since
+    // fli-core v0.5.0 (option A), so the layout is passed explicitly. Hub paths: projectLayout.test.ts.
     const base = '/home/user/projects/my-video';
-    const paths = getProjectPaths(base);
+    const paths = getProjectPaths(base, 'legacy');
 
     it('should return the project root as-is', () => {
       expect(paths.project).toBe(base);
@@ -96,7 +98,7 @@ describe('paths utilities', () => {
 
     it('should work with a deeply nested project directory', () => {
       const deep = '/a/b/c/d/my-project';
-      const p = getProjectPaths(deep);
+      const p = getProjectPaths(deep, 'legacy');
       expect(p.project).toBe(deep);
       expect(p.recordings).toBe(`${deep}/recordings`);
       expect(p.images).toBe(`${deep}/assets/images`);
