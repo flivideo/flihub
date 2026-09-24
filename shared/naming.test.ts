@@ -9,6 +9,7 @@ import {
   buildImageFilename,
   findNextSequence,
   calculateSuggestedNaming,
+  nextSequenceOnDisk,
 } from './naming';
 
 describe('naming utilities', () => {
@@ -468,5 +469,22 @@ describe('calculateSuggestedNaming', () => {
     expect(result.chapter).toBe('05');
     expect(result.sequence).toBe('2');
     expect(result.name).toBe('');
+  });
+});
+
+// 2026-09-25 (David, live on d01): after an Undo the freed number must come back — the next
+// sequence is computed from the files on disk in that chapter, not a counter that only goes up.
+describe('nextSequenceOnDisk', () => {
+  it('undo freed 01-2: with only 01-1 on disk, offers 2 again', () => {
+    expect(nextSequenceOnDisk(['01-1-intro-HOOK.mov'], '01')).toBe('2');
+  });
+  it('undo freed 01-1: an empty chapter offers 1', () => {
+    expect(nextSequenceOnDisk([], '01')).toBe('1');
+  });
+  it('does not refill a gap (sequence is take order): 01-1 + 01-3 → 4', () => {
+    expect(nextSequenceOnDisk(['01-1-a.mov', '01-3-b.mov'], '01')).toBe('4');
+  });
+  it('only counts the given chapter', () => {
+    expect(nextSequenceOnDisk(['02-1-x.mov', '02-2-y.mov', '01-1-z.mov'], '01')).toBe('2');
   });
 });

@@ -3,7 +3,7 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `43e194c6a5b5` · **generated** 2026-09-24T23:28:20+00:00
+- **commit** `f58866de5d00` · **generated** 2026-09-24T23:47:34+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
@@ -17,7 +17,7 @@
 
 Top-level entries by file, with the line each is declared on. Search the page for the name.
 
-- `client/src/App.tsx` — `ViewTab` (set) :50 · `NamingState` :95
+- `client/src/App.tsx` — `ViewTab` (set) :52 · `NamingState` :97
 - `client/src/components/ApiExplorer.tsx` — `ParamValues` :14 · `ApiResponse` :19 · `ApiExplorerProps` :27
 - `client/src/components/AssetsPage.tsx` — `VariantOption` (set) :29 · `PairedAsset` :32 · `ThumbnailSize` (set) :45 · `AssignmentState` :77 · `stored (membership)` (set) :206 · `stored (membership) #2` (set) :214 · `ImageCardProps` :1362
 - `client/src/components/ChapterContextPanel.tsx` — `ChapterContextPanelProps` :6 · `ChapterSummary` :10
@@ -92,7 +92,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `client/src/hooks/useOpenFolder.ts` — `OpenFolderOptions` :9
 - `client/src/hooks/usePoemWuiApi.ts` — `AwbJsonInfo` :6 · `FliHubChapter` :14 · `PoemWuiStatus` :20 · `SendResult` :36 · `YloResult` :70
 - `client/src/hooks/useProjectsApi.ts` — `NextCodeResponse` :286
-- `client/src/hooks/useRecordingsApi.ts` — `TrashArtifact` :66 · `TrashPreviewItem` :74 · `TrashRecordingsResponse` :80
+- `client/src/hooks/useRecordingsApi.ts` — `TrashArtifact` :67 · `TrashPreviewItem` :75 · `TrashRecordingsResponse` :81
 - `client/src/hooks/useShiftHover.ts` — `ImagePreview` :3 · `TextPreview` :11 · `PreviewContent` :17 · `PreviewState` :19 · `UseShiftHoverReturn` :32
 - `client/src/hooks/useThumbsApi.ts` — `ThumbInfo` :6 · `ZipInfo` :14 · `ZipImagePreview` :22
 - `client/src/hooks/useVideoAspect.ts` — `UseVideoAspectReturn` :14
@@ -107,7 +107,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/WatcherManager.ts` — `WatcherConfig` :19
 - `server/src/config/env.ts` — `envSchema` :5
 - `server/src/routes/assets.ts` — `IMAGE_EXTENSIONS` (set) :30
-- `server/src/routes/index.ts` — `RecentRename` :51
+- `server/src/routes/index.ts` — `RecentRename` :52
 - `server/src/routes/projects.ts` — `priority (membership)` (set) :148
 - `server/src/routes/query/recordings.ts` — `UnifiedRecording` :20
 - `server/src/routes/thumbs.ts` — `IMAGE_EXTENSIONS` (set) :11 · `ThumbInfo` :57 · `ZipInfo` :65 · `ZipImagePreview` :73
@@ -202,26 +202,26 @@ Not counted, as not schema-bearing: 1 function, 18 literal constants.
 
 One symbol states each set. Adding a member changes that symbol, so these cannot drift.
 
-### `client/src/App.ViewTab` — `client/src/App.tsx:50-64`
+### `client/src/App.ViewTab` — `client/src/App.tsx:52-66`
 
 *literal union type alias `ViewTab` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `incoming` | `client/src/App.tsx:51` |
-| `recordings` | `client/src/App.tsx:52` |
-| `watch` | `client/src/App.tsx:53` |
-| `transcriptions` | `client/src/App.tsx:54` |
-| `inbox` | `client/src/App.tsx:55` |
-| `assets` | `client/src/App.tsx:56` |
-| `thumbs` | `client/src/App.tsx:57` |
-| `export` | `client/src/App.tsx:58` |
-| `b-roll` | `client/src/App.tsx:59` |
-| `projects` | `client/src/App.tsx:60` |
-| `config` | `client/src/App.tsx:61` |
-| `mockups` | `client/src/App.tsx:62` |
-| `miccheck` | `client/src/App.tsx:63` |
-| `api-explorer` | `client/src/App.tsx:64` |
+| `incoming` | `client/src/App.tsx:53` |
+| `recordings` | `client/src/App.tsx:54` |
+| `watch` | `client/src/App.tsx:55` |
+| `transcriptions` | `client/src/App.tsx:56` |
+| `inbox` | `client/src/App.tsx:57` |
+| `assets` | `client/src/App.tsx:58` |
+| `thumbs` | `client/src/App.tsx:59` |
+| `export` | `client/src/App.tsx:60` |
+| `b-roll` | `client/src/App.tsx:61` |
+| `projects` | `client/src/App.tsx:62` |
+| `config` | `client/src/App.tsx:63` |
+| `mockups` | `client/src/App.tsx:64` |
+| `miccheck` | `client/src/App.tsx:65` |
+| `api-explorer` | `client/src/App.tsx:66` |
 
 ### `client/src/components/AssetsPage.VariantOption` — `client/src/components/AssetsPage.tsx:29`
 
@@ -498,14 +498,14 @@ Gate 3 — the system-processing probe.
 | `unreadable` | `client/src/hooks/useProjectsApi.ts:288` |
 | `exhausted` | `client/src/hooks/useProjectsApi.ts:288` |
 
-### `client/src/hooks/useRecordingsApi.TrashArtifact.kind` — `client/src/hooks/useRecordingsApi.ts:67`
+### `client/src/hooks/useRecordingsApi.TrashArtifact.kind` — `client/src/hooks/useRecordingsApi.ts:68`
 
 *literal union type of `kind` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `recording` | `client/src/hooks/useRecordingsApi.ts:67` |
-| `transcript` | `client/src/hooks/useRecordingsApi.ts:67` |
+| `recording` | `client/src/hooks/useRecordingsApi.ts:68` |
+| `transcript` | `client/src/hooks/useRecordingsApi.ts:68` |
 
 ### `client/src/hooks/useShiftHover.PreviewContent.type` — `client/src/hooks/useShiftHover.ts:17`
 
@@ -1347,15 +1347,15 @@ Each set below was read out of the real authority — control flow, membership t
 
 ## Shapes
 
-### `client/src/App.NamingState` — interface — `client/src/App.tsx:95-101`
+### `client/src/App.NamingState` — interface — `client/src/App.tsx:97-103`
 
 | field | type | default | at |
 |---|---|---|---|
-| `chapter` | `string` | — | `client/src/App.tsx:96` |
-| `sequence` | `string` | — | `client/src/App.tsx:97` |
-| `name` | `string` | — | `client/src/App.tsx:98` |
-| `tags` | `string[]` | — | `client/src/App.tsx:99` |
-| `customTag` | `string` | — | `client/src/App.tsx:100` |
+| `chapter` | `string` | — | `client/src/App.tsx:98` |
+| `sequence` | `string` | — | `client/src/App.tsx:99` |
+| `name` | `string` | — | `client/src/App.tsx:100` |
+| `tags` | `string[]` | — | `client/src/App.tsx:101` |
+| `customTag` | `string` | — | `client/src/App.tsx:102` |
 
 ### `client/src/components/ApiExplorer.ParamValues` — interface — `client/src/components/ApiExplorer.tsx:14-17`
 
@@ -2423,37 +2423,37 @@ B047: SplitMarker — amber dashed line between files showing chapter break poin
 | `root` | `string` | — | `client/src/hooks/useProjectsApi.ts:291` |
 | `reason` | `?: string` | — | `client/src/hooks/useProjectsApi.ts:292` |
 
-### `client/src/hooks/useRecordingsApi.TrashArtifact` — interface — `client/src/hooks/useRecordingsApi.ts:66-72`
+### `client/src/hooks/useRecordingsApi.TrashArtifact` — interface — `client/src/hooks/useRecordingsApi.ts:67-73`
 
 | field | type | default | at |
 |---|---|---|---|
-| `kind` | `'recording' \| 'transcript'` | — | `client/src/hooks/useRecordingsApi.ts:67` |
-| `label` | `string` | — | `client/src/hooks/useRecordingsApi.ts:68` |
-| `path` | `string` | — | `client/src/hooks/useRecordingsApi.ts:69` |
-| `filename` | `string` | — | `client/src/hooks/useRecordingsApi.ts:70` |
-| `size` | `number` | — | `client/src/hooks/useRecordingsApi.ts:71` |
+| `kind` | `'recording' \| 'transcript'` | — | `client/src/hooks/useRecordingsApi.ts:68` |
+| `label` | `string` | — | `client/src/hooks/useRecordingsApi.ts:69` |
+| `path` | `string` | — | `client/src/hooks/useRecordingsApi.ts:70` |
+| `filename` | `string` | — | `client/src/hooks/useRecordingsApi.ts:71` |
+| `size` | `number` | — | `client/src/hooks/useRecordingsApi.ts:72` |
 
-### `client/src/hooks/useRecordingsApi.TrashPreviewItem` — interface — `client/src/hooks/useRecordingsApi.ts:74-78`
-
-| field | type | default | at |
-|---|---|---|---|
-| `filename` | `string` | — | `client/src/hooks/useRecordingsApi.ts:75` |
-| `artifacts` | `TrashArtifact[] → client/src/hooks/useRecordingsApi.TrashArtifact` | — | `client/src/hooks/useRecordingsApi.ts:76` |
-| `totalBytes` | `number` | — | `client/src/hooks/useRecordingsApi.ts:77` |
-
-### `client/src/hooks/useRecordingsApi.TrashRecordingsResponse` — interface — `client/src/hooks/useRecordingsApi.ts:80-90`
+### `client/src/hooks/useRecordingsApi.TrashPreviewItem` — interface — `client/src/hooks/useRecordingsApi.ts:75-79`
 
 | field | type | default | at |
 |---|---|---|---|
-| `success` | `boolean` | — | `client/src/hooks/useRecordingsApi.ts:81` |
-| `dryRun` | `?: boolean` | — | `client/src/hooks/useRecordingsApi.ts:82` |
-| `items` | `?: TrashPreviewItem[] → client/src/hooks/useRecordingsApi.TrashPreviewItem` | — | `client/src/hooks/useRecordingsApi.ts:83` |
-| `trashed` | `?: string[]` | — | `client/src/hooks/useRecordingsApi.ts:84` |
-| `count` | `?: number` | — | `client/src/hooks/useRecordingsApi.ts:85` |
-| `artifactCount` | `?: number` | — | `client/src/hooks/useRecordingsApi.ts:86` |
-| `totalBytes` | `?: number` | — | `client/src/hooks/useRecordingsApi.ts:87` |
-| `errors` | `?: string[]` | — | `client/src/hooks/useRecordingsApi.ts:88` |
-| `error` | `?: string` | — | `client/src/hooks/useRecordingsApi.ts:89` |
+| `filename` | `string` | — | `client/src/hooks/useRecordingsApi.ts:76` |
+| `artifacts` | `TrashArtifact[] → client/src/hooks/useRecordingsApi.TrashArtifact` | — | `client/src/hooks/useRecordingsApi.ts:77` |
+| `totalBytes` | `number` | — | `client/src/hooks/useRecordingsApi.ts:78` |
+
+### `client/src/hooks/useRecordingsApi.TrashRecordingsResponse` — interface — `client/src/hooks/useRecordingsApi.ts:81-91`
+
+| field | type | default | at |
+|---|---|---|---|
+| `success` | `boolean` | — | `client/src/hooks/useRecordingsApi.ts:82` |
+| `dryRun` | `?: boolean` | — | `client/src/hooks/useRecordingsApi.ts:83` |
+| `items` | `?: TrashPreviewItem[] → client/src/hooks/useRecordingsApi.TrashPreviewItem` | — | `client/src/hooks/useRecordingsApi.ts:84` |
+| `trashed` | `?: string[]` | — | `client/src/hooks/useRecordingsApi.ts:85` |
+| `count` | `?: number` | — | `client/src/hooks/useRecordingsApi.ts:86` |
+| `artifactCount` | `?: number` | — | `client/src/hooks/useRecordingsApi.ts:87` |
+| `totalBytes` | `?: number` | — | `client/src/hooks/useRecordingsApi.ts:88` |
+| `errors` | `?: string[]` | — | `client/src/hooks/useRecordingsApi.ts:89` |
+| `error` | `?: string` | — | `client/src/hooks/useRecordingsApi.ts:90` |
 
 ### `client/src/hooks/useShiftHover.ImagePreview` — interface — `client/src/hooks/useShiftHover.ts:3-9`
 
@@ -2722,16 +2722,16 @@ WatcherManager centralizes all file system watchers.
 | `YLO_BEARER_TOKEN` | `z.string().optional()` | — | `server/src/config/env.ts:11` |
 | `YLO_INBOX_URL` | `z.string().url().optional()` | — | `server/src/config/env.ts:12` |
 
-### `server/src/routes/index.RecentRename` — interface — `server/src/routes/index.ts:51-58`
+### `server/src/routes/index.RecentRename` — interface — `server/src/routes/index.ts:52-59`
 
 | field | type | default | at |
 |---|---|---|---|
-| `id` | `string` | — | `server/src/routes/index.ts:52` |
-| `originalPath` | `string` | — | `server/src/routes/index.ts:53` |
-| `originalName` | `string` | — | `server/src/routes/index.ts:54` |
-| `newPath` | `string` | — | `server/src/routes/index.ts:55` |
-| `newName` | `string` | — | `server/src/routes/index.ts:56` |
-| `timestamp` | `number` | — | `server/src/routes/index.ts:57` |
+| `id` | `string` | — | `server/src/routes/index.ts:53` |
+| `originalPath` | `string` | — | `server/src/routes/index.ts:54` |
+| `originalName` | `string` | — | `server/src/routes/index.ts:55` |
+| `newPath` | `string` | — | `server/src/routes/index.ts:56` |
+| `newName` | `string` | — | `server/src/routes/index.ts:57` |
+| `timestamp` | `number` | — | `server/src/routes/index.ts:58` |
 
 ### `server/src/routes/query/recordings.UnifiedRecording` — interface — `server/src/routes/query/recordings.ts:20-21`
 
@@ -4685,7 +4685,7 @@ The census found these top-level declarations and the extractor did not mirror t
 | object constant | 12 | `client/src/components/shared/ShipsSelector.SHIPS_LABEL` `client/src/components/shared/ShipsSelector.tsx:17`<br>`client/src/constants/queryKeys.QUERY_KEYS` `client/src/constants/queryKeys.ts:5`<br>`client/src/constants/stages.STAGE_DISPLAY` `client/src/constants/stages.ts:4`<br>`server/src/config/configManager.DEFAULT_DISK_THRESHOLDS` `server/src/config/configManager.ts:7`<br>`server/src/config/env.env` `server/src/config/env.ts:25`<br>`server/src/config/logger.log` `server/src/config/logger.ts:20`<br>`server/src/utils/formatters.STATUS` `server/src/utils/formatters.ts:151`<br>`shared/constants.FILE_SIZE` `shared/constants.ts:6`<br>`shared/constants.WATCHER` `shared/constants.ts:14`<br>`shared/naming.NAMING_RULES` `shared/naming.ts:16`<br>`shared/naming.PATTERNS` `shared/naming.ts:55`<br>`shared/types.STAGE_LABELS` `shared/types.ts:324` |
 | array constant | 10 | `client/src/constants/stages.STAGE_ORDER` `client/src/constants/stages.ts:73`<br>`client/src/hooks/useBrollApi.BROLL_QUERY_KEY` `client/src/hooks/useBrollApi.ts:12`<br>`client/src/hooks/useOpenContextApi.OPEN_CONTEXT_KEY` `client/src/hooks/useOpenContextApi.ts:8`<br>`client/src/hooks/useVideoPlayback.SPEED_PRESETS` `client/src/hooks/useVideoPlayback.ts:10`<br>`client/src/utils/micGrading.SHORT_TERM_GREEN` `client/src/utils/micGrading.ts:38`<br>`server/src/utils/holdUtils.HOLD_EXCLUDES` `server/src/utils/holdUtils.ts:10`<br>`shared/apiRegistry.API_ENDPOINTS` `shared/apiRegistry.ts:38`<br>`shared/contextSchemas.REFUSAL_CODES` `shared/contextSchemas.ts:36`<br>`shared/types.DEFAULT_PROJECT_STAGES` `shared/types.ts:311`<br>`shared/types.DEFAULT_TAGS` `shared/types.ts:272` |
 | const built by a call (helper or non-zod call) | 8 | `client/src/config.API_URL` `client/src/config.ts:14`<br>`client/src/hooks/useStorageApi.useArchiveProject` `client/src/hooks/useStorageApi.ts:79`<br>`client/src/hooks/useStorageApi.useHeldArchiveProject` `client/src/hooks/useStorageApi.ts:83`<br>`client/src/hooks/useStorageApi.useHoldProject` `client/src/hooks/useStorageApi.ts:77`<br>`client/src/hooks/useStorageApi.useRestoreHeld` `client/src/hooks/useStorageApi.ts:78`<br>`client/src/hooks/useStorageApi.useUnarchiveProject` `client/src/hooks/useStorageApi.ts:80`<br>`server/src/config/logger.logger` `server/src/config/logger.ts:5`<br>`server/src/utils/poemWuiUtils.BUNDLED_BRAND_CONFIG` `server/src/utils/poemWuiUtils.ts:10` |
-| union of named or mixed types | 4 | `client/src/App.ConfigFocusSection` `client/src/App.tsx:84`<br>`client/src/hooks/useShiftHover.LegacyImageData` `client/src/hooks/useShiftHover.ts:25`<br>`server/src/utils/openContext.LaunchResult` `server/src/utils/openContext.ts:62`<br>`shared/types.ProjectStageOverride` `shared/types.ts:307` |
+| union of named or mixed types | 4 | `client/src/App.ConfigFocusSection` `client/src/App.tsx:86`<br>`client/src/hooks/useShiftHover.LegacyImageData` `client/src/hooks/useShiftHover.ts:25`<br>`server/src/utils/openContext.LaunchResult` `server/src/utils/openContext.ts:62`<br>`shared/types.ProjectStageOverride` `shared/types.ts:307` |
 | class | 3 | `client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15` |
 | utility-type alias (`Pick` / `Omit` / `Record` / generic instance) | 3 | `client/src/components/MicCheckSnapshot.Analyser` `client/src/components/MicCheckSnapshot.tsx:34`<br>`server/src/routes/miccheck.IO` `server/src/routes/miccheck.ts:32`<br>`server/src/utils/openContext.ContextController` `server/src/utils/openContext.ts:281` |
 | constant (other form) | 1 | `client/src/hooks/useVideoAspect.DEFAULT_ASPECT` `client/src/hooks/useVideoAspect.ts:12` |

@@ -10,10 +10,12 @@ import {
   useRefetchSuggestedNaming,
   useRecentRenames,
   useUndoRename,
+  useFetchRecordingsOnDisk,
   useRecordings,
   useSetProjectTitle,
 } from './hooks/useApi';
 import { useBestTake } from './hooks/useBestTake';
+import { nextSequenceOnDisk } from '../../shared/naming';
 import { discardFiles } from './utils/fileActions';
 import { collapsePath } from './utils/formatting';
 import { FileCard } from './components/FileCard';
@@ -203,6 +205,7 @@ function App() {
   // FR-50: Recent renames for undo functionality
   const { data: recentRenames, refetch: refetchRecentRenames } = useRecentRenames();
   const undoRenameMutation = useUndoRename();
+  const fetchRecordingsOnDisk = useFetchRecordingsOnDisk();
 
   // FR-69: Open project folder in Finder
   const { mutate: openFolder } = useOpenFolder();
@@ -226,6 +229,17 @@ function App() {
 
   // Shared naming state (FR-1: defaults to 01, 1, intro)
   const [namingState, setNamingState] = useState<NamingState>(DEFAULT_NAMING_STATE);
+
+  // 2026-09-25: the template's Seq always comes from disk after a rename or an Undo, so an
+  // undone take's number is offered again. Keeps whatever chapter the template is on.
+  const syncSequenceFromDisk = useCallback(async () => {
+    try {
+      const onDisk = await fetchRecordingsOnDisk();
+      setNamingState((prev) => ({ ...prev, sequence: nextSequenceOnDisk(onDisk, prev.chapter) }));
+    } catch (err) {
+      console.error('[naming] could not read the next sequence from disk:', err);
+    }
+  }, [fetchRecordingsOnDisk]);
   // FR-112: Track New Chapter clicks for glow detection
   const [newChapterClickCount, setNewChapterClickCount] = useState(0);
 
@@ -267,12 +281,7 @@ function App() {
   const handleRenamed = useCallback(
     (filePath: string) => {
       removeFile(filePath);
-      setNamingState((prev) => {
-        return {
-          ...prev,
-          sequence: String(parseInt(prev.sequence || '0', 10) + 1),
-        };
-      });
+      void syncSequenceFromDisk(); // the renamed take is on disk now → highest + 1
 
       // FR-16: Check if other files remain (files state hasn't updated yet, so subtract 1)
       const remainingCount = files.length - 1;
@@ -281,7 +290,7 @@ function App() {
         setShowDiscardModal(true);
       }
     },
-    [removeFile, files.length]
+    [removeFile, files.length, syncSequenceFromDisk]
   );
 
   // FR-16: Discard remaining files after rename (excludes just-renamed file)
@@ -350,6 +359,7 @@ function App() {
         if (result.success) {
           toast.success(`Undone: ${result.originalName}`);
           refetchRecentRenames();
+          void syncSequenceFromDisk(); // the undone take left disk → its number comes back
         } else {
           toast.error(result.error || 'Failed to undo rename');
         }
@@ -357,7 +367,7 @@ function App() {
         toast.error(err instanceof Error ? err.message : 'Failed to undo rename');
       }
     },
-    [undoRenameMutation, refetchRecentRenames]
+    [undoRenameMutation, refetchRecentRenames, syncSequenceFromDisk]
   );
 
   // FR-51: Copy project info for calendar

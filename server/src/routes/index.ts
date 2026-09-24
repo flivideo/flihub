@@ -41,6 +41,7 @@ import {
 import {
   NAMING_RULES,
   parseRecordingFilename,
+  extractTagsFromName,
   buildRecordingFilename,
   calculateSuggestedNaming as calculateSuggested,
   parseChapterNum,
@@ -551,28 +552,6 @@ export function createRoutes(
       // FR-111: Read project state for isSafe flags
       const state = await readProjectState(config.projectDirectory);
 
-      // Known tags that can appear at the end of filenames
-      const knownTags = new Set((config.availableTags || []).map((t) => t.toLowerCase()));
-      // Also check suggestTags from commonNames
-      for (const cn of config.commonNames || []) {
-        for (const tag of cn.suggestTags || []) {
-          knownTags.add(tag.toLowerCase());
-        }
-      }
-
-      // Helper to extract name and tags from parsed name
-      const extractNameAndTags = (parsedName: string): { name: string; tags: string[] } => {
-        const nameParts = parsedName.split('-');
-        const tags: string[] = [];
-        while (
-          nameParts.length > 1 &&
-          knownTags.has(nameParts[nameParts.length - 1].toLowerCase())
-        ) {
-          tags.unshift(nameParts.pop()!);
-        }
-        return { name: nameParts.join('-'), tags };
-      };
-
       const unifiedMap = new Map<string, RecordingFile>();
 
       // FR-111: Only scan main recordings folder (no -safe subfolder)
@@ -595,7 +574,11 @@ export function createRoutes(
             // FR-36: Get video duration
             const duration = await getVideoDuration(filePath);
 
-            const { name, tags } = extractNameAndTags(parsed.name);
+            // Tags come from the raw filename by the same uppercase rule the rename writes with:
+            // parsed.name has them stripped already, and a custom typed tag is in no config list.
+            const nameAndTags = baseName.split('-').slice(parsed.sequence ? 2 : 1).join('-');
+            const { tags } = extractTagsFromName(nameAndTags);
+            const name = parsed.name;
 
             // FR-111/FR-120/FR-123: Check state for isSafe, isParked, and annotation
             const isSafe = isRecordingSafe(state, entry.name);

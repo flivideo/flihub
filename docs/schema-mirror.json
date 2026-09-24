@@ -960,9 +960,9 @@
   "closed_sets": [
     {
       "anchor": {
-        "end_line": 64,
+        "end_line": 66,
         "file": "client/src/App.tsx",
-        "line": 50
+        "line": 52
       },
       "authority": "literal union type alias `ViewTab` - a single declaring symbol",
       "grade": "declared",
@@ -971,98 +971,98 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 51
+            "line": 53
           },
           "value": "incoming"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 52
+            "line": 54
           },
           "value": "recordings"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 53
+            "line": 55
           },
           "value": "watch"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 54
+            "line": 56
           },
           "value": "transcriptions"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 55
+            "line": 57
           },
           "value": "inbox"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 56
+            "line": 58
           },
           "value": "assets"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 57
+            "line": 59
           },
           "value": "thumbs"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 58
+            "line": 60
           },
           "value": "export"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 59
+            "line": 61
           },
           "value": "b-roll"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 60
+            "line": 62
           },
           "value": "projects"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 61
+            "line": 63
           },
           "value": "config"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 62
+            "line": 64
           },
           "value": "mockups"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 63
+            "line": 65
           },
           "value": "miccheck"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 64
+            "line": 66
           },
           "value": "api-explorer"
         }
@@ -2193,7 +2193,7 @@
     {
       "anchor": {
         "file": "client/src/hooks/useRecordingsApi.ts",
-        "line": 67
+        "line": 68
       },
       "authority": "literal union type of `kind` - a single declaring symbol",
       "grade": "declared",
@@ -2202,14 +2202,14 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 67
+            "line": 68
           },
           "value": "recording"
         },
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 67
+            "line": 68
           },
           "value": "transcript"
         }
@@ -4842,7 +4842,7 @@
       "target": "server/src/utils/loopback.LOOPBACK_HOSTS"
     }
   ],
-  "generated": "2026-09-24T23:28:20+00:00",
+  "generated": "2026-09-24T23:47:34+00:00",
   "ignored_derived": [
     {
       "anchor": {
@@ -4935,9 +4935,9 @@
   "structures": [
     {
       "anchor": {
-        "end_line": 101,
+        "end_line": 103,
         "file": "client/src/App.tsx",
-        "line": 95
+        "line": 97
       },
       "bases": [],
       "doc": null,
@@ -4946,7 +4946,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 96
+            "line": 98
           },
           "default": null,
           "name": "chapter",
@@ -4955,7 +4955,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 97
+            "line": 99
           },
           "default": null,
           "name": "sequence",
@@ -4964,7 +4964,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 98
+            "line": 100
           },
           "default": null,
           "name": "name",
@@ -4973,7 +4973,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 99
+            "line": 101
           },
           "default": null,
           "name": "tags",
@@ -4982,7 +4982,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 100
+            "line": 102
           },
           "default": null,
           "name": "customTag",
@@ -11136,9 +11136,9 @@
     },
     {
       "anchor": {
-        "end_line": 72,
+        "end_line": 73,
         "file": "client/src/hooks/useRecordingsApi.ts",
-        "line": 66
+        "line": 67
       },
       "bases": [],
       "doc": null,
@@ -11147,7 +11147,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 67
+            "line": 68
           },
           "default": null,
           "name": "kind",
@@ -11156,7 +11156,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 68
+            "line": 69
           },
           "default": null,
           "name": "label",
@@ -11165,7 +11165,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 69
+            "line": 70
           },
           "default": null,
           "name": "path",
@@ -11174,7 +11174,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 70
+            "line": 71
           },
           "default": null,
           "name": "filename",
@@ -11183,7 +11183,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 71
+            "line": 72
           },
           "default": null,
           "name": "size",
@@ -11196,9 +11196,9 @@
     },
     {
       "anchor": {
-        "end_line": 78,
+        "end_line": 79,
         "file": "client/src/hooks/useRecordingsApi.ts",
-        "line": 74
+        "line": 75
       },
       "bases": [],
       "doc": null,
@@ -11207,7 +11207,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 75
+            "line": 76
           },
           "default": null,
           "name": "filename",
@@ -11216,7 +11216,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 76
+            "line": 77
           },
           "default": null,
           "name": "artifacts",
@@ -11225,7 +11225,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 77
+            "line": 78
           },
           "default": null,
           "name": "totalBytes",
@@ -11238,9 +11238,9 @@
     },
     {
       "anchor": {
-        "end_line": 90,
+        "end_line": 91,
         "file": "client/src/hooks/useRecordingsApi.ts",
-        "line": 80
+        "line": 81
       },
       "bases": [],
       "doc": null,
@@ -11249,7 +11249,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 81
+            "line": 82
           },
           "default": null,
           "name": "success",
@@ -11258,7 +11258,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 82
+            "line": 83
           },
           "default": null,
           "name": "dryRun",
@@ -11267,7 +11267,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 83
+            "line": 84
           },
           "default": null,
           "name": "items",
@@ -11276,7 +11276,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 84
+            "line": 85
           },
           "default": null,
           "name": "trashed",
@@ -11285,7 +11285,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 85
+            "line": 86
           },
           "default": null,
           "name": "count",
@@ -11294,7 +11294,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 86
+            "line": 87
           },
           "default": null,
           "name": "artifactCount",
@@ -11303,7 +11303,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 87
+            "line": 88
           },
           "default": null,
           "name": "totalBytes",
@@ -11312,7 +11312,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 88
+            "line": 89
           },
           "default": null,
           "name": "errors",
@@ -11321,7 +11321,7 @@
         {
           "anchor": {
             "file": "client/src/hooks/useRecordingsApi.ts",
-            "line": 89
+            "line": 90
           },
           "default": null,
           "name": "error",
@@ -12792,9 +12792,9 @@
     },
     {
       "anchor": {
-        "end_line": 58,
+        "end_line": 59,
         "file": "server/src/routes/index.ts",
-        "line": 51
+        "line": 52
       },
       "bases": [],
       "doc": null,
@@ -12803,7 +12803,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 52
+            "line": 53
           },
           "default": null,
           "name": "id",
@@ -12812,7 +12812,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 53
+            "line": 54
           },
           "default": null,
           "name": "originalPath",
@@ -12821,7 +12821,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 54
+            "line": 55
           },
           "default": null,
           "name": "originalName",
@@ -12830,7 +12830,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 55
+            "line": 56
           },
           "default": null,
           "name": "newPath",
@@ -12839,7 +12839,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 56
+            "line": 57
           },
           "default": null,
           "name": "newName",
@@ -12848,7 +12848,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 57
+            "line": 58
           },
           "default": null,
           "name": "timestamp",
@@ -24453,7 +24453,7 @@
     }
   ],
   "target": {
-    "commit": "43e194c6a5b590744075459d2c38362637ad82d7",
+    "commit": "f58866de5d00d69376b53df88633bd1ed02a9d37",
     "root": "..",
     "stack": "typescript"
   },
@@ -24470,7 +24470,7 @@
       "census": true,
       "family": "union of named or mixed types",
       "looked_at": [
-        "client/src/App.tsx:84"
+        "client/src/App.tsx:86"
       ],
       "reason": "declared but not read: union of named or mixed types. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
       "subject": "`client/src/App.ConfigFocusSection` - declared but not read"

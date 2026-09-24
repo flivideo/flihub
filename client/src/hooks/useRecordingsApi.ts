@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   RenameRequest,
@@ -125,6 +126,20 @@ export function useSuggestedNaming() {
     queryKey: QUERY_KEYS.suggestedNaming,
     queryFn: () => fetchApi<SuggestedNaming>('/api/suggested-naming'),
   });
+}
+
+// The recordings ON DISK, fetched fresh (2026-09-25): after a rename or an Undo the cached list is
+// stale. The Naming Template takes its next Seq from this (nextSequenceOnDisk), never a counter.
+export function useFetchRecordingsOnDisk() {
+  const queryClient = useQueryClient();
+  return useCallback(async (): Promise<string[]> => {
+    const suggested = await queryClient.fetchQuery({
+      queryKey: QUERY_KEYS.suggestedNaming,
+      queryFn: () => fetchApi<SuggestedNaming>('/api/suggested-naming'),
+      staleTime: 0,
+    });
+    return suggested.existingFiles;
+  }, [queryClient]);
 }
 
 // FR-4: Refetch suggested naming (call after config changes)

@@ -468,6 +468,23 @@ export function findNextSequence(
 }
 
 /**
+ * Next sequence for a chapter from the files ON DISK: highest + 1 (2026-09-25, David). An Undo
+ * removes its file, so its number comes back. Gaps are not refilled: a sequence is a take's order
+ * in the chapter, and a refill would slot a new take between existing ones.
+ */
+export function nextSequenceOnDisk(filenames: string[], chapter: string): string {
+  const chapterNum = parseChapterNum(chapter);
+  let max = 0;
+  for (const f of filenames) {
+    const p = parseRecordingFilename(f);
+    if (p && p.sequence !== null && parseChapterNum(p.chapter) === chapterNum) {
+      max = Math.max(max, parseSequenceNum(p.sequence));
+    }
+  }
+  return String(max + 1);
+}
+
+/**
  * Find the max image order for a chapter-sequence, or 0 if none exist
  */
 export function findMaxImageOrder(
@@ -500,15 +517,12 @@ export function calculateSuggestedNaming(existingFiles: string[]): {
   const maxChapter = Math.max(...parsed.map((p) => parseChapterNum(p.chapter)));
   const filesInMaxChapter = parsed.filter((p) => parseChapterNum(p.chapter) === maxChapter);
 
-  // Find highest sequence in that chapter
-  const maxSeq = Math.max(...filesInMaxChapter.map((p) => parseSequenceNum(p.sequence || '0')));
-
   // Get name from last file for context
   const lastName = filesInMaxChapter[filesInMaxChapter.length - 1]?.name || '';
 
   return {
     chapter: formatChapter(maxChapter),
-    sequence: String(maxSeq + 1),
+    sequence: nextSequenceOnDisk(existingFiles, formatChapter(maxChapter)),
     name: lastName,
   };
 }
