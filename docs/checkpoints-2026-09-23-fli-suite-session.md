@@ -36,9 +36,11 @@ cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/ha
       Scratch `z99-uat-probe` deleted; d01 is active again
 - [x] `d42e01e` FR-172 ticket only (2026-09-24): Whisper prompt from fli-core v0.11.0 `readWords`; low, for the rebuild
 - [x] `112bb84` next-code also counts fli.studio.json codes and raises a stale high-water mark
+- [x] `6a9503e` /recordings keeps filename tags (was [] for every file); template Seq = highest on disk + 1 after rename/undo (gaps NOT refilled — flagged to orch)
 
 ### Waiting on orch's go (David is recording)
-- [ ] Pull `112bb84` in the main checkout (nodemon restarts 5101 only), then GET /api/projects/next-code once, then check that server/config.json shows v-appydave d05 (it still says d03). DO NOT pull before the go: pulling is the restart
+- [ ] Pull main in the main checkout (covers 112bb84 + 6a9503e; nodemon recycles 5101, Vite hot-reloads the tab, and the naming template resets). Then GET /api/projects/next-code once and check server/config.json shows v-appydave d05. Also check GET /api/recordings gives tags ["HOOK"] for d01 01-1. DO NOT pull before the go: pulling is the restart
+- [ ] With orch's go: move orphan d01 hub/transcripts/01-2-intro-HOOK.{txt,srt,json} to d01-flivideo-tour/-trash (Undo leaves transcripts behind; a future 01-2-intro-HOOK would silently reuse it)
 
 ### Blocked on David
 - [ ] Nothing. B&J a01 now has `aspect` 9:16 (v-beauty-and-joy `ccb25b8`), and the stale files are deleted
