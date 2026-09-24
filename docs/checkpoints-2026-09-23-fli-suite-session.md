@@ -2,12 +2,14 @@
 
 This session was a FliHub worker for the peer orchestrators (`d01-work`, later `flivideo-orch`, on
 the `uds:/tmp/cc-socks/88202.sock` and `59703` sockets), plus `flistudio`. Every job below is pushed
-to `origin/main`. The main checkout, `/Users/davidcruwys/dev/ad/flivideo/flihub`, is at `299a048`,
-clean, and was pulled and restarted with the orchestrator's go at `283935b`. Commits since then are
-docs and the MIT licence only, so no restart is needed for them.
+to `origin/main`. The main checkout, `/Users/davidcruwys/dev/ad/flivideo/flihub`, is at `376459f` plus
+this doc, and FliHub was restarted at `376459f` (server + client) after an idle check. It is live on
+loopback only.
 
 ## Current step
-**Idle, waiting on David.** Three decisions are open (below). Nothing is half-built.
+**Idle, waiting on flivideo-orch.** The d04 UAT preflight probe (REST-only take workflow) is reported and
+cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/handovers/deliver-2026-09-23-B587-B588-d04-uat.md`
+(§4 D3/D7). Standing ruling: no FliHub feature work, and don't adopt the agent layer. Nothing is half-built.
 
 ## Progress
 ### Done (commit → what)
@@ -24,13 +26,17 @@ docs and the MIT licence only, so no restart is needed for them.
 - [x] `flihub-storage-panel` worktree and branch removed (0 unique commits)
 - [x] `299a048` read-only audit `/Users/davidcruwys/dev/ad/flivideo/flihub/docs/agent-drivable-audit.md`
       (5 HAVE · 9 PARTIAL · 8 MISSING · 2 N-A)
-- [x] API bound to 127.0.0.1 + ::1, and foreign browser origins get a 403 (David: "do whatever you think best"; the orchestrator
-      checked that nothing remote calls :5101). Needs `overmind restart server`, which the orchestrator decides
+- [x] `ff05bae` API on 127.0.0.1 + ::1; a non-loopback browser Origin gets 403 `foreign-origin` (REST + socket.io)
+- [x] `34100d1` + `143191e` Vite on 127.0.0.1. A tracked stale `client/vite.config.js` shadowed the `.ts`
+- [x] `376459f` stale tsc output deleted (`shared/*.js|d.ts`, `client/vite.config.*`), gitignored, and
+      `client/tsconfig.node.json` now emits to `node_modules/.tmp`. Aspect race fixed: `/rename` checks the promoted
+      file if the ingest probe hadn't landed, and returns `aspect: 'pending' | <status>`
+- [x] d04 preflight probe (no code). Path: POST /api/context → cp to `/Users/davidcruwys/ecamm` → GET /api/files
+      (wait for `aspectCheck`) → POST /api/rename → poll GET /api/transcriptions/status/:filename to `complete`.
+      Scratch `z99-uat-probe` deleted; d01 is active again
 
 ### Blocked on David
-- [ ] **Beauty & Joy a01 has no `aspect`** in its `fli.studio.json`, so the aspect warning stays silent
-      there. FliStudio (not FliHub) should set `"aspect": "9:16"`
-- [ ] **Delete the stale `shared/types.js`, `naming.js`, `constants.js`** (vitest loads them instead of the `.ts`)
+- [ ] Nothing. B&J a01 now has `aspect` 9:16 (v-beauty-and-joy `ccb25b8`), and the stale files are deleted
 
 ### Pending (low priority, when the code is next touched)
 - [ ] Remove the legacy `recording-shadows` entry from `HEAVY_SUBFOLDERS`
@@ -64,3 +70,8 @@ docs and the MIT licence only, so no restart is needed for them.
   `..`; never hand-edit the mirror
 - **Trusting the orchestrator's predicted gate findings**: two didn't reproduce (SYSTEM.md anchors, dead
   sources). Report what the gate actually says
+- **Reading the plan's "GET /incoming" as the pending-takes route**: wrong. `/api/assets/incoming` is image
+  assets; pending takes are `GET /api/files`
+- **A hand-written scratch `fli.studio.json` with code `zz99`**: fli-core reads it as invalid (codes are one
+  letter plus two digits), so the aspect check says "no aspect set". Use a code like `z99`
+- **Fixing the Vite bind in `vite.config.ts` alone**: no effect while the tracked `vite.config.js` existed
