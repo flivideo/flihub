@@ -34,6 +34,7 @@ cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/ha
 - [x] d04 preflight probe (no code). Path: POST /api/context → cp to `/Users/davidcruwys/ecamm` → GET /api/files
       (wait for `aspectCheck`) → POST /api/rename → poll GET /api/transcriptions/status/:filename to `complete`.
       Scratch `z99-uat-probe` deleted; d01 is active again
+- [x] `d42e01e` FR-172 ticket only (2026-09-24): Whisper prompt from fli-core v0.11.0 `readWords`; low, for the rebuild
 
 ### Blocked on David
 - [ ] Nothing. B&J a01 now has `aspect` 9:16 (v-beauty-and-joy `ccb25b8`), and the stale files are deleted
