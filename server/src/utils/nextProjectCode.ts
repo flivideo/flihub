@@ -6,10 +6,14 @@
  * TWO levels — their own listing plus one level into each hand-made bucket (D2 seeding, §3).
  * Ordering is letter-then-number on the parsed pair, never lexical on folder names (D3).
  * x99 → (x+1)00; z99 has no successor and must decline visibly (D4).
+ *
+ * Live projects also count by their fli.studio.json "code" (fli-core readIdentity), so a folder
+ * mid-renumber — named without its new code yet — can't be handed out twice (2026-09-25).
  */
 import path from 'path';
 import fs from 'fs-extra';
 import type { Config } from '../../../shared/types.js';
+import { readIdentity } from '@flivideo/core';
 import { expandPath } from './pathUtils.js';
 
 const SERIES_PATTERN = /^([a-z])(\d{2})(-|$)/;
@@ -71,6 +75,7 @@ export interface NextCodeResult {
   root: string; // expanded root the answer applies to (AC 15: client resets on change)
   reason?: string; // human-readable, for the D6/D4 decline paths
   seeded?: boolean; // true when this call seeded the high-water mark
+  raisesMark?: boolean; // true when `highest` tops the stored mark — the caller persists it (includes seeding)
 }
 
 /**
@@ -119,6 +124,15 @@ export async function computeNextCode(config: Config): Promise<NextCodeResult> {
     if (m) candidates.push(m);
   };
   collect(rootDirs);
+
+  // fli.studio.json "code" of each live folder; absent or malformed files are skipped (readIdentity never throws)
+  for (const dir of rootDirs) {
+    const identity = await readIdentity(path.join(root, dir));
+    if (identity?.kind === 'valid') {
+      const c = parseSeriesCode(identity.value.code);
+      if (c) candidates.push(c);
+    }
+  }
 
   // Collect a directory's own listing AND one level into each subdirectory.
   // Both levels matter: projects can sit directly in archived/ or the published
@@ -172,5 +186,6 @@ export async function computeNextCode(config: Config): Promise<NextCodeResult> {
     highest: codeToString(highest),
     root,
     seeded: !storedMark && !!scanMax,
+    raisesMark: !storedMark || compareSeriesCodes(highest, storedMark) > 0,
   };
 }

@@ -120,4 +120,26 @@ describe('computeNextCode', () => {
     expect((await computeNextCode(cfg())).seeded).toBe(true);
     expect((await computeNextCode(cfg({ projectCodeHighWater: { [tmp]: 'd01' } }))).seeded).toBeFalsy();
   });
+
+  it('counts a fli.studio.json code even when the folder name carries none (renumber in flight)', async () => {
+    await fs.ensureDir(path.join(tmp, 'd04-live'));
+    await fs.ensureDir(path.join(tmp, 'flivideo-tour'));
+    await fs.writeJson(path.join(tmp, 'flivideo-tour', 'fli.studio.json'), {
+      schema: 1,
+      id: '6f1c2b1e-8a3d-4c5e-9f00-1a2b3c4d5e6f',
+      brand: 'appydave',
+      code: 'd05',
+      name: 'flivideo-tour',
+      createdAt: '2026-09-25T00:00:00.000Z',
+    });
+    const r = await computeNextCode(cfg());
+    expect(r).toMatchObject({ state: 'ok', next: 'd06', highest: 'd05' });
+  });
+  it('raisesMark when disk has passed the stored mark, not when the mark holds', async () => {
+    await fs.ensureDir(path.join(tmp, 'd04-live'));
+    const stale = await computeNextCode(cfg({ projectCodeHighWater: { [tmp]: 'd03' } }));
+    expect(stale).toMatchObject({ next: 'd05', highest: 'd04', raisesMark: true });
+    const held = await computeNextCode(cfg({ projectCodeHighWater: { [tmp]: 'd09' } }));
+    expect(held).toMatchObject({ next: 'd10', raisesMark: false });
+  });
 });

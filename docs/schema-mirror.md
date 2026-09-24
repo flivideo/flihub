@@ -3,7 +3,7 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `143191e26101` · **generated** 2026-09-23T10:29:50+00:00
+- **commit** `43e194c6a5b5` · **generated** 2026-09-24T23:28:20+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
@@ -123,7 +123,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/utils/finalMedia.ts` — `FinalMediaLocation` (set) :16 · `FinalVideoInfo` :19 · `FinalSrtInfo` :27 · `AdditionalSegment` :34 · `FinalMediaResponse` :40
 - `server/src/utils/loopback.ts` — `LOOPBACK_HOSTS` (set) :13
 - `server/src/utils/micCheckStore.ts` — `StartSessionInput` :57 · `FinishSessionInput` :264
-- `server/src/utils/nextProjectCode.ts` — `SeriesCode` :17 · `NextCodeResult` :67
+- `server/src/utils/nextProjectCode.ts` — `SeriesCode` :21 · `NextCodeResult` :71
 - `server/src/utils/openContext.ts` — `ContextDeps` :46 · `ApplyResult` :57 · `Resolution` :64
 - `server/src/utils/projectStats.ts` — `ProjectStatsRaw` :51 · `GetProjectStatsOptions` :99
 - `server/src/utils/recordingArtifacts.ts` — `ArtifactKind` (set) :14 · `RecordingArtifact` :16
@@ -620,16 +620,16 @@ FR-41: Time format styles
 | `s3-staging` | `server/src/utils/finalMedia.ts:16` |
 | `root` | `server/src/utils/finalMedia.ts:16` |
 
-### `server/src/utils/nextProjectCode.NextCodeResult.state` — `server/src/utils/nextProjectCode.ts:68`
+### `server/src/utils/nextProjectCode.NextCodeResult.state` — `server/src/utils/nextProjectCode.ts:72`
 
 *literal union type of `state` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `ok` | `server/src/utils/nextProjectCode.ts:68` |
-| `empty` | `server/src/utils/nextProjectCode.ts:68` |
-| `unreadable` | `server/src/utils/nextProjectCode.ts:68` |
-| `exhausted` | `server/src/utils/nextProjectCode.ts:68` |
+| `ok` | `server/src/utils/nextProjectCode.ts:72` |
+| `empty` | `server/src/utils/nextProjectCode.ts:72` |
+| `unreadable` | `server/src/utils/nextProjectCode.ts:72` |
+| `exhausted` | `server/src/utils/nextProjectCode.ts:72` |
 
 ### `server/src/utils/openContext.ApplyResult.kind` — `server/src/utils/openContext.ts:57-60`
 
@@ -2972,23 +2972,24 @@ WatcherManager centralizes all file system watchers.
 | `constraints` | `?: MicCheckSession['constraints'] → shared/types.MicCheckSession` | — | `server/src/utils/micCheckStore.ts:267` |  |
 | `notMeasured` | `?: MicCheckNotMeasured[] → shared/types.MicCheckNotMeasured` | — | `server/src/utils/micCheckStore.ts:269` | Extra caller-supplied not-measured entries, merged with the derived ones. |
 
-### `server/src/utils/nextProjectCode.SeriesCode` — interface — `server/src/utils/nextProjectCode.ts:17-20`
+### `server/src/utils/nextProjectCode.SeriesCode` — interface — `server/src/utils/nextProjectCode.ts:21-24`
 
 | field | type | default | at |
 |---|---|---|---|
-| `letter` | `string` | — | `server/src/utils/nextProjectCode.ts:18` |
-| `num` | `number` | — | `server/src/utils/nextProjectCode.ts:19` |
+| `letter` | `string` | — | `server/src/utils/nextProjectCode.ts:22` |
+| `num` | `number` | — | `server/src/utils/nextProjectCode.ts:23` |
 
-### `server/src/utils/nextProjectCode.NextCodeResult` — interface — `server/src/utils/nextProjectCode.ts:67-74`
+### `server/src/utils/nextProjectCode.NextCodeResult` — interface — `server/src/utils/nextProjectCode.ts:71-79`
 
 | field | type | default | at |
 |---|---|---|---|
-| `state` | `'ok' \| 'empty' \| 'unreadable' \| 'exhausted'` | — | `server/src/utils/nextProjectCode.ts:68` |
-| `next` | `string \| null` | — | `server/src/utils/nextProjectCode.ts:69` |
-| `highest` | `string \| null` | — | `server/src/utils/nextProjectCode.ts:70` |
-| `root` | `string` | — | `server/src/utils/nextProjectCode.ts:71` |
-| `reason` | `?: string` | — | `server/src/utils/nextProjectCode.ts:72` |
-| `seeded` | `?: boolean` | — | `server/src/utils/nextProjectCode.ts:73` |
+| `state` | `'ok' \| 'empty' \| 'unreadable' \| 'exhausted'` | — | `server/src/utils/nextProjectCode.ts:72` |
+| `next` | `string \| null` | — | `server/src/utils/nextProjectCode.ts:73` |
+| `highest` | `string \| null` | — | `server/src/utils/nextProjectCode.ts:74` |
+| `root` | `string` | — | `server/src/utils/nextProjectCode.ts:75` |
+| `reason` | `?: string` | — | `server/src/utils/nextProjectCode.ts:76` |
+| `seeded` | `?: boolean` | — | `server/src/utils/nextProjectCode.ts:77` |
+| `raisesMark` | `?: boolean` | — | `server/src/utils/nextProjectCode.ts:78` |
 
 ### `server/src/utils/openContext.ContextDeps` — interface — `server/src/utils/openContext.ts:46-55`
 

@@ -2936,7 +2936,7 @@
     {
       "anchor": {
         "file": "server/src/utils/nextProjectCode.ts",
-        "line": 68
+        "line": 72
       },
       "authority": "literal union type of `state` - a single declaring symbol",
       "grade": "declared",
@@ -2945,28 +2945,28 @@
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 68
+            "line": 72
           },
           "value": "ok"
         },
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 68
+            "line": 72
           },
           "value": "empty"
         },
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 68
+            "line": 72
           },
           "value": "unreadable"
         },
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 68
+            "line": 72
           },
           "value": "exhausted"
         }
@@ -4842,7 +4842,7 @@
       "target": "server/src/utils/loopback.LOOPBACK_HOSTS"
     }
   ],
-  "generated": "2026-09-23T10:29:50+00:00",
+  "generated": "2026-09-24T23:28:20+00:00",
   "ignored_derived": [
     {
       "anchor": {
@@ -14206,9 +14206,9 @@
     },
     {
       "anchor": {
-        "end_line": 20,
+        "end_line": 24,
         "file": "server/src/utils/nextProjectCode.ts",
-        "line": 17
+        "line": 21
       },
       "bases": [],
       "doc": null,
@@ -14217,7 +14217,7 @@
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 18
+            "line": 22
           },
           "default": null,
           "name": "letter",
@@ -14226,7 +14226,7 @@
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 19
+            "line": 23
           },
           "default": null,
           "name": "num",
@@ -14239,9 +14239,9 @@
     },
     {
       "anchor": {
-        "end_line": 74,
+        "end_line": 79,
         "file": "server/src/utils/nextProjectCode.ts",
-        "line": 67
+        "line": 71
       },
       "bases": [],
       "doc": null,
@@ -14250,7 +14250,7 @@
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 68
+            "line": 72
           },
           "default": null,
           "name": "state",
@@ -14259,7 +14259,7 @@
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 69
+            "line": 73
           },
           "default": null,
           "name": "next",
@@ -14268,7 +14268,7 @@
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 70
+            "line": 74
           },
           "default": null,
           "name": "highest",
@@ -14277,7 +14277,7 @@
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 71
+            "line": 75
           },
           "default": null,
           "name": "root",
@@ -14286,7 +14286,7 @@
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 72
+            "line": 76
           },
           "default": null,
           "name": "reason",
@@ -14295,10 +14295,19 @@
         {
           "anchor": {
             "file": "server/src/utils/nextProjectCode.ts",
-            "line": 73
+            "line": 77
           },
           "default": null,
           "name": "seeded",
+          "type": "?: boolean"
+        },
+        {
+          "anchor": {
+            "file": "server/src/utils/nextProjectCode.ts",
+            "line": 78
+          },
+          "default": null,
+          "name": "raisesMark",
           "type": "?: boolean"
         }
       ],
@@ -24444,7 +24453,7 @@
     }
   ],
   "target": {
-    "commit": "143191e261013cc3566b1b71fefb4cb1129db71e",
+    "commit": "43e194c6a5b590744075459d2c38362637ad82d7",
     "root": "..",
     "stack": "typescript"
   },

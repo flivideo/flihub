@@ -401,8 +401,8 @@ export function createRoutes(
   router.get('/projects/next-code', async (_req: Request, res: Response) => {
     try {
       const result = await computeNextCode(config);
-      // Seed the high-water mark on first computation for this root (D2)
-      if (result.seeded && result.highest) {
+      // Seed the high-water mark on first computation (D2), and raise it whenever disk has passed it
+      if (result.raisesMark && result.highest) {
         updateConfig({ projectCodeHighWater: { [result.root]: result.highest } });
       }
       res.json({ success: true, ...result });
