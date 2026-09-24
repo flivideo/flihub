@@ -11,6 +11,7 @@ import {
   formatChapter,
 } from '../../../shared/naming.js';
 import { renameRecording } from '../utils/renameRecording.js';
+import { isTranscriptFresh } from '../utils/transcriptFiles.js';
 import { CHAPTER_PREVIEWS_GONE } from './chapters.js';
 import { expandPath } from '../utils/pathUtils.js';
 import type {
@@ -257,7 +258,7 @@ export function createManageRoutes(
         const baseName = path.basename(filename, path.extname(filename));
         const transcriptPath = path.join(paths.transcripts, `${baseName}.txt`);
 
-        const hasTranscript = await fs.pathExists(transcriptPath);
+        const hasTranscript = isTranscriptFresh(transcriptPath, recordingPath); // never on name alone
 
         if (force || !hasTranscript) {
           // Queue transcription

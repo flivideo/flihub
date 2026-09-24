@@ -15,6 +15,7 @@ import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/pa
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { appendTelemetryEntry } from '../utils/telemetry.js';
+import { isTranscriptFresh } from '../utils/transcriptFiles.js';
 
 // In-memory state
 let queue: TranscriptionJob[] = [];
@@ -59,11 +60,12 @@ export function createTranscriptionRoutes(
 
   // Check if transcript exists for a video (for status checks)
   // FR-94: .txt is the primary format - only .txt counts as "complete"
+  // 2026-09-25: never on name alone — a transcript older than its recording belongs to an earlier take
   function getTranscriptPath(videoFilename: string): string | null {
-    const transcriptsDir = getTranscriptsDir();
+    const paths = getProjectPaths(expandPath(getConfig().projectDirectory));
     const baseName = path.basename(videoFilename, path.extname(videoFilename));
-    const txtPath = path.join(transcriptsDir, `${baseName}.txt`);
-    return fs.existsSync(txtPath) ? txtPath : null;
+    const txtPath = path.join(paths.transcripts, `${baseName}.txt`);
+    return isTranscriptFresh(txtPath, path.join(paths.recordings, `${baseName}.mov`)) ? txtPath : null;
   }
 
   // FR-92: Check if transcript file exists (for skip logic)
@@ -75,7 +77,9 @@ export function createTranscriptionRoutes(
       : getTranscriptsDir();
     const baseName = path.basename(videoFilename, path.extname(videoFilename));
     const txtPath = path.join(transcriptsDir, `${baseName}.txt`);
-    return fs.existsSync(txtPath);
+    // 2026-09-25: never on name alone — a stale transcript is re-made, not attached
+    const video = videoPath ?? path.join(getProjectPaths(expandPath(getConfig().projectDirectory)).recordings, videoFilename);
+    return isTranscriptFresh(txtPath, video);
   }
 
   // Get status for a specific video

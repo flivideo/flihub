@@ -3,7 +3,7 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `f58866de5d00` · **generated** 2026-09-24T23:47:34+00:00
+- **commit** `a01295cdd6c7` · **generated** 2026-09-24T23:51:50+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
@@ -107,11 +107,11 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/WatcherManager.ts` — `WatcherConfig` :19
 - `server/src/config/env.ts` — `envSchema` :5
 - `server/src/routes/assets.ts` — `IMAGE_EXTENSIONS` (set) :30
-- `server/src/routes/index.ts` — `RecentRename` :52
+- `server/src/routes/index.ts` — `RecentRename` :53
 - `server/src/routes/projects.ts` — `priority (membership)` (set) :148
 - `server/src/routes/query/recordings.ts` — `UnifiedRecording` :20
 - `server/src/routes/thumbs.ts` — `IMAGE_EXTENSIONS` (set) :11 · `ThumbInfo` :57 · `ZipInfo` :65 · `ZipImagePreview` :73
-- `server/src/routes/transcriptions.ts` — `scope (membership)` (set) :637
+- `server/src/routes/transcriptions.ts` — `scope (membership)` (set) :641
 - `server/src/routes/video.ts` — `folder (branching)` (set) :81 · `ext (membership)` (set) :161 · `ext (membership) #2` (set) :242
 - `server/src/scripts/scanProjects.ts` — `DiscrepancyType` (set) :30 · `DiscrepancySeverity` (set) :31 · `Discrepancy` :33 · `ProjectScanResult` :44 · `ScanSummary` :51
 - `server/src/utils/archiveInventory.ts` — `BuildArchiveRowOpts` :82
@@ -1269,16 +1269,16 @@ Each set below was read out of the real authority — control flow, membership t
 
 > **REFACTOR (minor): `IMAGE_EXTENSIONS` at server/src/routes/thumbs.ts:11 names the set but does not type it. A z.enum or `as const` + `typeof IMAGE_EXTENSIONS[number]` would make a wrong value a static error rather than a runtime miss.**
 
-### `server/src/routes/transcriptions.scope (membership)` — `server/src/routes/transcriptions.ts:637`
+### `server/src/routes/transcriptions.scope (membership)` — `server/src/routes/transcriptions.ts:641`
 
 *inline membership test `[...].includes(scope)` - no declaring symbol*
 
 | value | read from |
 |---|---|
-| `project` | `server/src/routes/transcriptions.ts:637` |
-| `chapter` | `server/src/routes/transcriptions.ts:637` |
+| `project` | `server/src/routes/transcriptions.ts:641` |
+| `chapter` | `server/src/routes/transcriptions.ts:641` |
 
-> **REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:637. Name it once (z.enum / literal union) so it has one authority.**
+> **REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:641. Name it once (z.enum / literal union) so it has one authority.**
 
 ### `server/src/routes/video.folder (branching)` — `server/src/routes/video.ts:81`
 
@@ -2722,16 +2722,16 @@ WatcherManager centralizes all file system watchers.
 | `YLO_BEARER_TOKEN` | `z.string().optional()` | — | `server/src/config/env.ts:11` |
 | `YLO_INBOX_URL` | `z.string().url().optional()` | — | `server/src/config/env.ts:12` |
 
-### `server/src/routes/index.RecentRename` — interface — `server/src/routes/index.ts:52-59`
+### `server/src/routes/index.RecentRename` — interface — `server/src/routes/index.ts:53-60`
 
 | field | type | default | at |
 |---|---|---|---|
-| `id` | `string` | — | `server/src/routes/index.ts:53` |
-| `originalPath` | `string` | — | `server/src/routes/index.ts:54` |
-| `originalName` | `string` | — | `server/src/routes/index.ts:55` |
-| `newPath` | `string` | — | `server/src/routes/index.ts:56` |
-| `newName` | `string` | — | `server/src/routes/index.ts:57` |
-| `timestamp` | `number` | — | `server/src/routes/index.ts:58` |
+| `id` | `string` | — | `server/src/routes/index.ts:54` |
+| `originalPath` | `string` | — | `server/src/routes/index.ts:55` |
+| `originalName` | `string` | — | `server/src/routes/index.ts:56` |
+| `newPath` | `string` | — | `server/src/routes/index.ts:57` |
+| `newName` | `string` | — | `server/src/routes/index.ts:58` |
+| `timestamp` | `number` | — | `server/src/routes/index.ts:59` |
 
 ### `server/src/routes/query/recordings.UnifiedRecording` — interface — `server/src/routes/query/recordings.ts:20-21`
 
@@ -4706,7 +4706,7 @@ These are refactors of the **application**, not of this mirror. Each one convert
 8. `server/src/routes/assets.ts:30` — REFACTOR (minor): `IMAGE_EXTENSIONS` at server/src/routes/assets.ts:30 names the set but does not type it. A z.enum or `as const` + `typeof IMAGE_EXTENSIONS[number]` would make a wrong value a static error rather than a runtime miss.
 9. `server/src/routes/projects.ts:148` — REFACTOR: the set for `priority` is inlined at server/src/routes/projects.ts:148. Name it once (z.enum / literal union) so it has one authority.
 10. `server/src/routes/thumbs.ts:11` — REFACTOR (minor): `IMAGE_EXTENSIONS` at server/src/routes/thumbs.ts:11 names the set but does not type it. A z.enum or `as const` + `typeof IMAGE_EXTENSIONS[number]` would make a wrong value a static error rather than a runtime miss.
-11. `server/src/routes/transcriptions.ts:637` — REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:637. Name it once (z.enum / literal union) so it has one authority.
+11. `server/src/routes/transcriptions.ts:641` — REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:641. Name it once (z.enum / literal union) so it has one authority.
 12. `server/src/routes/video.ts:81` — REFACTOR: `folder` is a closed set enforced only by control flow at server/src/routes/video.ts:81. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.
 13. `server/src/routes/video.ts:161` — REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:161. Name it once (z.enum / literal union) so it has one authority.
 14. `server/src/routes/video.ts:242` — REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:242. Name it once (z.enum / literal union) so it has one authority.

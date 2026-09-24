@@ -33,6 +33,7 @@ import {
   getActiveAspectWarning,
 } from '../utils/projectState.js';
 import { renameRecording } from '../utils/renameRecording.js'; // FR-130: Simplified rename logic
+import { trashTranscriptsFor } from '../utils/transcriptFiles.js';
 import {
   findRecordingArtifacts,
   moveArtifactToTrash,
@@ -735,10 +736,23 @@ export function createRoutes(
 
       console.log(`Undid rename: ${rename.newName} -> ${rename.originalName}`);
 
+      // 2026-09-25: the undone take's transcripts go to -trash, so the freed name carries nothing
+      // over to the next take. Never fails the undo — the file is already back.
+      let trashedTranscripts: string[] = [];
+      try {
+        trashedTranscripts = await trashTranscriptsFor(rename.newPath);
+        if (trashedTranscripts.length) {
+          console.log(`Undo trashed ${trashedTranscripts.length} transcript file(s) of ${rename.newName}`);
+        }
+      } catch (err) {
+        console.error(`[undo] could not trash transcripts of ${rename.newName}:`, err);
+      }
+
       res.json({
         success: true,
         originalPath: rename.originalPath,
         originalName: rename.originalName,
+        trashedTranscripts,
       });
     } catch (error) {
       console.error('Undo rename error:', error);

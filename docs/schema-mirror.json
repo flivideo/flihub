@@ -2564,24 +2564,24 @@
     {
       "anchor": {
         "file": "server/src/routes/transcriptions.ts",
-        "line": 637
+        "line": 641
       },
       "authority": "inline membership test `[...].includes(scope)` - no declaring symbol",
-      "finding": "REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:637. Name it once (z.enum / literal union) so it has one authority.",
+      "finding": "REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:641. Name it once (z.enum / literal union) so it has one authority.",
       "grade": "derived",
       "id": "server/src/routes/transcriptions.scope (membership)",
       "members": [
         {
           "anchor": {
             "file": "server/src/routes/transcriptions.ts",
-            "line": 637
+            "line": 641
           },
           "value": "project"
         },
         {
           "anchor": {
             "file": "server/src/routes/transcriptions.ts",
-            "line": 637
+            "line": 641
           },
           "value": "chapter"
         }
@@ -4790,10 +4790,10 @@
     {
       "anchor": {
         "file": "server/src/routes/transcriptions.ts",
-        "line": 637
+        "line": 641
       },
       "kind": "refactor_required",
-      "message": "REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:637. Name it once (z.enum / literal union) so it has one authority.",
+      "message": "REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:641. Name it once (z.enum / literal union) so it has one authority.",
       "target": "server/src/routes/transcriptions.scope (membership)"
     },
     {
@@ -4842,7 +4842,7 @@
       "target": "server/src/utils/loopback.LOOPBACK_HOSTS"
     }
   ],
-  "generated": "2026-09-24T23:47:34+00:00",
+  "generated": "2026-09-24T23:51:50+00:00",
   "ignored_derived": [
     {
       "anchor": {
@@ -12792,9 +12792,9 @@
     },
     {
       "anchor": {
-        "end_line": 59,
+        "end_line": 60,
         "file": "server/src/routes/index.ts",
-        "line": 52
+        "line": 53
       },
       "bases": [],
       "doc": null,
@@ -12803,7 +12803,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 53
+            "line": 54
           },
           "default": null,
           "name": "id",
@@ -12812,7 +12812,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 54
+            "line": 55
           },
           "default": null,
           "name": "originalPath",
@@ -12821,7 +12821,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 55
+            "line": 56
           },
           "default": null,
           "name": "originalName",
@@ -12830,7 +12830,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 56
+            "line": 57
           },
           "default": null,
           "name": "newPath",
@@ -12839,7 +12839,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 57
+            "line": 58
           },
           "default": null,
           "name": "newName",
@@ -12848,7 +12848,7 @@
         {
           "anchor": {
             "file": "server/src/routes/index.ts",
-            "line": 58
+            "line": 59
           },
           "default": null,
           "name": "timestamp",
@@ -24453,7 +24453,7 @@
     }
   ],
   "target": {
-    "commit": "f58866de5d00d69376b53df88633bd1ed02a9d37",
+    "commit": "a01295cdd6c7d37cd5d1a3a6b5628d7775183342",
     "root": "..",
     "stack": "typescript"
   },
