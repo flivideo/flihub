@@ -37,10 +37,10 @@ cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/ha
 - [x] `d42e01e` FR-172 ticket only (2026-09-24): Whisper prompt from fli-core v0.11.0 `readWords`; low, for the rebuild
 - [x] `112bb84` next-code also counts fli.studio.json codes and raises a stale high-water mark
 - [x] `6a9503e` /recordings keeps filename tags (was [] for every file); template Seq = highest on disk + 1 after rename/undo (gaps NOT refilled — flagged to orch)
+- [x] `35d9e17` a transcript attaches only if newer than its recording (isTranscriptFresh); Undo trashes the undone take's transcripts. d01 01-2 re-transcribed live (stale files in d01 -trash as *.stale-0639.*)
 
 ### Waiting on orch's go (David is recording)
-- [ ] Pull main in the main checkout (covers 112bb84 + 6a9503e; nodemon recycles 5101, Vite hot-reloads the tab, and the naming template resets). Then GET /api/projects/next-code once and check server/config.json shows v-appydave d05. Also check GET /api/recordings gives tags ["HOOK"] for d01 01-1. DO NOT pull before the go: pulling is the restart
-- [ ] With orch's go: move orphan d01 hub/transcripts/01-2-intro-HOOK.{txt,srt,json} to d01-flivideo-tour/-trash (Undo leaves transcripts behind; a future 01-2-intro-HOOK would silently reuse it)
+- [ ] Pull main in the main checkout (covers 112bb84 + 6a9503e + 35d9e17; nodemon recycles 5101, Vite hot-reloads the tab, and the naming template resets). Then GET /api/projects/next-code once and check server/config.json shows v-appydave d05. Also check GET /api/recordings gives tags ["HOOK"] for d01 01-1. DO NOT pull before the go: pulling is the restart
 
 ### Blocked on David
 - [ ] Nothing. B&J a01 now has `aspect` 9:16 (v-beauty-and-joy `ccb25b8`), and the stale files are deleted
@@ -65,6 +65,9 @@ cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/ha
   client 329.
 
 ## Ruled out this window
+- **Refilling sequence gaps (lowest unused)**: rejected, and orch agreed. A sequence is take order, so the rule is highest on disk + 1
+- **Hash-matching transcripts to recordings**: rejected for now. Hashing a multi-GB .mov on every status poll is too slow; mtime order is the guard
+- **`git pull` in the main checkout "just to look"**: that IS the restart. Always use `git fetch` plus a worktree
 - **FliHub-owned detection rule** (its own `detectProjectLayout`): replaced by fli-core, so the two apps
   can never disagree about a folder
 - **"hub/ exists → hub"**: a stray empty `hub/` would have hidden a legacy project's recordings
