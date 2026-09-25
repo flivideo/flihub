@@ -13,6 +13,7 @@
 
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import type { RecordingFile } from '../../../../shared/types';
+import { tagPillClass } from '../../utils/tagPills';
 import { validateChapter, validateLabel } from '../../../../shared/naming';
 
 export interface EditableFileRowProps {
@@ -256,13 +257,13 @@ export function EditableFileRow({
             </span>
           )}
 
-          {/* Tags as purple badges */}
+          {/* Tags as coloured pills (2026-09-25) */}
           {recording.tags.length > 0 && (
             <span className="flex items-center gap-1 ml-1">
               {recording.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-0.5 text-xs text-purple-700 bg-purple-100 px-1.5 py-0 rounded"
+                  className={tagPillClass(tag)}
                 >
                   {tag}
                   {!isDisabled && (
@@ -271,7 +272,7 @@ export function EditableFileRow({
                         e.stopPropagation();
                         onTagRemove(recording.filename, tag);
                       }}
-                      className="text-purple-400 hover:text-purple-700 ml-0.5"
+                      className="opacity-50 hover:opacity-100 ml-0.5"
                       title={`Remove tag ${tag}`}
                     >
                       &#215;

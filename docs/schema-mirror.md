@@ -3,7 +3,7 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `a01295cdd6c7` · **generated** 2026-09-24T23:51:50+00:00
+- **commit** `bb38379c40aa` · **generated** 2026-09-25T00:53:14+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
@@ -58,7 +58,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `client/src/components/shared/BatchToolbar.tsx` — `BatchToolbarProps` :12 · `PopoverType` (set) :26
 - `client/src/components/shared/ConfirmationModal.tsx` — `ConfirmationModalProps` :8
 - `client/src/components/shared/DictionaryQuickAdd.tsx` — `DictionaryQuickAddProps` :5
-- `client/src/components/shared/EditableFileRow.tsx` — `EditableFileRowProps` :18
+- `client/src/components/shared/EditableFileRow.tsx` — `EditableFileRowProps` :19
 - `client/src/components/shared/ErrorMessage.tsx` — `ErrorMessageProps` :1
 - `client/src/components/shared/FileViewerModal.tsx` — `FileViewerModalProps` :18
 - `client/src/components/shared/InlineTitle.tsx` — `InlineTitleProps` :5
@@ -1861,35 +1861,35 @@ Each set below was read out of the real authority — control flow, membership t
 | `onAddGlobal` | `(word: string) => Promise<void>` | — | `client/src/components/shared/DictionaryQuickAdd.tsx:9` |
 | `onAddProject` | `(word: string) => Promise<void>` | — | `client/src/components/shared/DictionaryQuickAdd.tsx:10` |
 
-### `client/src/components/shared/EditableFileRow.EditableFileRowProps` — interface — `client/src/components/shared/EditableFileRow.tsx:18-39`
+### `client/src/components/shared/EditableFileRow.EditableFileRowProps` — interface — `client/src/components/shared/EditableFileRow.tsx:19-40`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `recording` | `RecordingFile → shared/types.RecordingFile` | — | `client/src/components/shared/EditableFileRow.tsx:19` |  |
-| `isSelected` | `boolean` | — | `client/src/components/shared/EditableFileRow.tsx:20` |  |
-| `onToggleSelect` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:21` |  |
-| `onInlineRename` | `(filename: string, field: 'chapter' \| 'name', newValue: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:22` |  |
-| `onTagRemove` | `(filename: string, tag: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:23` |  |
-| `onPlay` | `(recording: RecordingFile) => void → shared/types.RecordingFile` | — | `client/src/components/shared/EditableFileRow.tsx:24` |  |
-| `onSplitHere` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:25` |  |
-| `onPark` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:26` |  |
-| `onSafe` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:27` |  |
-| `onRestore` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:28` |  |
-| `onUnpark` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:29` |  |
-| `onDelete` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:31` | FR-156: Trash the recording and its sibling artifacts (shows a confirmation first) |
-| `transcriptionBadge` | `?: ReactNode → ReactNode (react)` | — | `client/src/components/shared/EditableFileRow.tsx:33` | Rendered in the right-hand action area, typically a TranscriptionBadge component |
-| `pendingChange` | `?: { oldFilename: string; newFilename: string }` | — | `client/src/components/shared/EditableFileRow.tsx:34` |  |
-| `disabled` | `?: boolean` | — | `client/src/components/shared/EditableFileRow.tsx:35` |  |
-| `formatDuration` | `(duration?: number) => string` | — | `client/src/components/shared/EditableFileRow.tsx:36` |  |
-| `formatFileSize` | `(size: number) => string` | — | `client/src/components/shared/EditableFileRow.tsx:37` |  |
-| `formatTimestamp` | `(timestamp: string) => string` | — | `client/src/components/shared/EditableFileRow.tsx:38` |  |
+| `recording` | `RecordingFile → shared/types.RecordingFile` | — | `client/src/components/shared/EditableFileRow.tsx:20` |  |
+| `isSelected` | `boolean` | — | `client/src/components/shared/EditableFileRow.tsx:21` |  |
+| `onToggleSelect` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:22` |  |
+| `onInlineRename` | `(filename: string, field: 'chapter' \| 'name', newValue: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:23` |  |
+| `onTagRemove` | `(filename: string, tag: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:24` |  |
+| `onPlay` | `(recording: RecordingFile) => void → shared/types.RecordingFile` | — | `client/src/components/shared/EditableFileRow.tsx:25` |  |
+| `onSplitHere` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:26` |  |
+| `onPark` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:27` |  |
+| `onSafe` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:28` |  |
+| `onRestore` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:29` |  |
+| `onUnpark` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:30` |  |
+| `onDelete` | `(filename: string) => void` | — | `client/src/components/shared/EditableFileRow.tsx:32` | FR-156: Trash the recording and its sibling artifacts (shows a confirmation first) |
+| `transcriptionBadge` | `?: ReactNode → ReactNode (react)` | — | `client/src/components/shared/EditableFileRow.tsx:34` | Rendered in the right-hand action area, typically a TranscriptionBadge component |
+| `pendingChange` | `?: { oldFilename: string; newFilename: string }` | — | `client/src/components/shared/EditableFileRow.tsx:35` |  |
+| `disabled` | `?: boolean` | — | `client/src/components/shared/EditableFileRow.tsx:36` |  |
+| `formatDuration` | `(duration?: number) => string` | — | `client/src/components/shared/EditableFileRow.tsx:37` |  |
+| `formatFileSize` | `(size: number) => string` | — | `client/src/components/shared/EditableFileRow.tsx:38` |  |
+| `formatTimestamp` | `(timestamp: string) => string` | — | `client/src/components/shared/EditableFileRow.tsx:39` |  |
 
-### `client/src/components/shared/EditableFileRow.EditableFileRowProps.pendingChange` — type — `client/src/components/shared/EditableFileRow.tsx:34`
+### `client/src/components/shared/EditableFileRow.EditableFileRowProps.pendingChange` — type — `client/src/components/shared/EditableFileRow.tsx:35`
 
 | field | type | default | at |
 |---|---|---|---|
-| `oldFilename` | `string` | — | `client/src/components/shared/EditableFileRow.tsx:34` |
-| `newFilename` | `string` | — | `client/src/components/shared/EditableFileRow.tsx:34` |
+| `oldFilename` | `string` | — | `client/src/components/shared/EditableFileRow.tsx:35` |
+| `newFilename` | `string` | — | `client/src/components/shared/EditableFileRow.tsx:35` |
 
 ### `client/src/components/shared/ErrorMessage.ErrorMessageProps` — interface — `client/src/components/shared/ErrorMessage.tsx:1-3`
 

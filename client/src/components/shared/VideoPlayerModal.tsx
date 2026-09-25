@@ -10,7 +10,7 @@ import { useVideoAspect } from '../../hooks/useVideoAspect';
 import { VideoControlsBar } from './VideoControlsBar';
 import { formatDuration, formatFileSize } from '../../utils/formatting';
 import { TranscriptSyncPanel } from '../TranscriptSyncPanel';
-import { parseRecordingFilename } from '../../../../shared/naming';
+import { segmentNameOf } from '../../utils/naming';
 import { DictionaryQuickAdd, type DictionaryQuickAddProps } from './DictionaryQuickAdd'; // B070
 
 // B069: localStorage keys for modal-specific preferences (must NOT use flihub:watch:* prefix)
@@ -89,13 +89,8 @@ export function VideoPlayerModal({ title, videoUrl, onClose, duration, size, pro
   const [currentTime, setCurrentTime] = useState(0);
   const [transcriptCollapsed, setTranscriptCollapsed] = useState(false);
 
-  // Derive segmentName from recordingName
-  const segmentName = (() => {
-    if (!recordingName) return null;
-    const parsed = parseRecordingFilename(recordingName);
-    if (!parsed) return null;
-    return `${parsed.chapter}-${parsed.sequence}-${parsed.name}`;
-  })();
+  // Transcript key = full base name incl. tags (01-1-intro-HOOK), never rebuilt from parsed parts
+  const segmentName = segmentNameOf(recordingName);
 
   // FR-154: Re-measure on source change so prev/next between a landscape and a
   // portrait take doesn't inherit the previous shape

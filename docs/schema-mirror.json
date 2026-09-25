@@ -4842,7 +4842,7 @@
       "target": "server/src/utils/loopback.LOOPBACK_HOSTS"
     }
   ],
-  "generated": "2026-09-24T23:51:50+00:00",
+  "generated": "2026-09-25T00:53:14+00:00",
   "ignored_derived": [
     {
       "anchor": {
@@ -4859,7 +4859,7 @@
     {
       "anchor": {
         "file": "client/src/components/shared/EditableFileRow.tsx",
-        "line": 124
+        "line": 125
       },
       "subject": "client/src/components/shared/EditableFileRow.e.key (branching)",
       "values": [
@@ -7875,9 +7875,9 @@
     },
     {
       "anchor": {
-        "end_line": 39,
+        "end_line": 40,
         "file": "client/src/components/shared/EditableFileRow.tsx",
-        "line": 18
+        "line": 19
       },
       "bases": [],
       "doc": null,
@@ -7886,7 +7886,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 19
+            "line": 20
           },
           "default": null,
           "name": "recording",
@@ -7895,7 +7895,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 20
+            "line": 21
           },
           "default": null,
           "name": "isSelected",
@@ -7904,7 +7904,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 21
+            "line": 22
           },
           "default": null,
           "name": "onToggleSelect",
@@ -7913,7 +7913,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 22
+            "line": 23
           },
           "default": null,
           "name": "onInlineRename",
@@ -7922,7 +7922,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 23
+            "line": 24
           },
           "default": null,
           "name": "onTagRemove",
@@ -7931,7 +7931,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 24
+            "line": 25
           },
           "default": null,
           "name": "onPlay",
@@ -7940,7 +7940,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 25
+            "line": 26
           },
           "default": null,
           "name": "onSplitHere",
@@ -7949,7 +7949,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 26
+            "line": 27
           },
           "default": null,
           "name": "onPark",
@@ -7958,7 +7958,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 27
+            "line": 28
           },
           "default": null,
           "name": "onSafe",
@@ -7967,7 +7967,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 28
+            "line": 29
           },
           "default": null,
           "name": "onRestore",
@@ -7976,7 +7976,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 29
+            "line": 30
           },
           "default": null,
           "name": "onUnpark",
@@ -7985,7 +7985,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 31
+            "line": 32
           },
           "default": null,
           "doc": "FR-156: Trash the recording and its sibling artifacts (shows a confirmation first)",
@@ -7995,7 +7995,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 33
+            "line": 34
           },
           "default": null,
           "doc": "Rendered in the right-hand action area, typically a TranscriptionBadge component",
@@ -8005,7 +8005,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 34
+            "line": 35
           },
           "default": null,
           "name": "pendingChange",
@@ -8014,7 +8014,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 35
+            "line": 36
           },
           "default": null,
           "name": "disabled",
@@ -8023,7 +8023,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 36
+            "line": 37
           },
           "default": null,
           "name": "formatDuration",
@@ -8032,7 +8032,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 37
+            "line": 38
           },
           "default": null,
           "name": "formatFileSize",
@@ -8041,7 +8041,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 38
+            "line": 39
           },
           "default": null,
           "name": "formatTimestamp",
@@ -8055,7 +8055,7 @@
     {
       "anchor": {
         "file": "client/src/components/shared/EditableFileRow.tsx",
-        "line": 34
+        "line": 35
       },
       "bases": [],
       "doc": null,
@@ -8063,7 +8063,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 34
+            "line": 35
           },
           "default": null,
           "name": "oldFilename",
@@ -8072,7 +8072,7 @@
         {
           "anchor": {
             "file": "client/src/components/shared/EditableFileRow.tsx",
-            "line": 34
+            "line": 35
           },
           "default": null,
           "name": "newFilename",
@@ -24453,7 +24453,7 @@
     }
   ],
   "target": {
-    "commit": "a01295cdd6c7d37cd5d1a3a6b5628d7775183342",
+    "commit": "bb38379c40aa02d8901f60e4b581efb4bca38d4b",
     "root": "..",
     "stack": "typescript"
   },
