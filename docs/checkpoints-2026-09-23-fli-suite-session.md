@@ -38,9 +38,8 @@ cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/ha
 - [x] `112bb84` next-code also counts fli.studio.json codes and raises a stale high-water mark
 - [x] `6a9503e` /recordings keeps filename tags (was [] for every file); template Seq = highest on disk + 1 after rename/undo (gaps NOT refilled — flagged to orch)
 - [x] `35d9e17` a transcript attaches only if newer than its recording (isTranscriptFresh); Undo trashes the undone take's transcripts. d01 01-2 re-transcribed live (stale files in d01 -trash as *.stale-0639.*)
-
-### Waiting on orch's go (David is recording)
-- [ ] Pull main in the main checkout (covers 112bb84 + 6a9503e + 35d9e17; nodemon recycles 5101, Vite hot-reloads the tab, and the naming template resets). Then GET /api/projects/next-code once and check server/config.json shows v-appydave d05. Also check GET /api/recordings gives tags ["HOOK"] for d01 01-1. DO NOT pull before the go: pulling is the restart
+- [x] `b63c20c` player modal SRT lookup uses the full base name incl. tags; tags shown as coloured pills
+- [x] Restart 2026-09-25 (David's go, via orch): live at b63c20c. v-appydave mark is d05; d01 shows tags ["HOOK"]; SRT 200. Health is at /api/system/health (not /api/health)
 
 ### Blocked on David
 - [ ] Nothing. B&J a01 now has `aspect` 9:16 (v-beauty-and-joy `ccb25b8`), and the stale files are deleted
