@@ -48,7 +48,7 @@ cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/ha
 ### Pending (low priority, when the code is next touched)
 - [ ] Remove the legacy `recording-shadows` entry from `HEAVY_SUBFOLDERS`
       (`server/src/utils/storageTree.ts`) and the `diskUtils` note. David approved; the folders are already in `~/.Trash`
-- [ ] Switch FliHub's Whisper worker over to the FliTools service (B584) when the orchestrator says so.
+- [ ] B584 RULED by David (2026-09-27): FliTools is the single transcriber, and FliHub's mlx_whisper spawn (transcriptions.ts:127-171) is replaced by a FliTools call. Wait for flivideo-orch to route the brief. Branch work is fine; no restart without David's window
       Inventory already sent (Lane F)
 
 ## Before starting the next step
