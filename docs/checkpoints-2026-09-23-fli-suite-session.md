@@ -48,7 +48,8 @@ cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/ha
 ### Pending (low priority, when the code is next touched)
 - [ ] Remove the legacy `recording-shadows` entry from `HEAVY_SUBFOLDERS`
       (`server/src/utils/storageTree.ts`) and the `diskUtils` note. David approved; the folders are already in `~/.Trash`
-- [ ] B584 RULED by David (2026-09-27): FliTools is the single transcriber, and FliHub's mlx_whisper spawn (transcriptions.ts:127-171) is replaced by a FliTools call. Wait for flivideo-orch to route the brief. Branch work is fine; no restart without David's window
+- [ ] B584 BUILT on branch `b584-flitools-transcriber` @ `1faaa8d` (pushed, NOT merged). FliHub calls FliTools; old transcripts are trashed first; suspect shows as a red T⚠. Go-live order: (1) flitools goes live with feat/transcript-health; (2) with David's window, merge into main and pull (no npm install); (3) as the caller, re-transcribe d06 03-2-setup + 04-1-annotate via POST /api/transcriptions/queue {videoPath, force:true}, confirm suspect:false with clean tails, and report to orch
+- [ ] docs/SYSTEM.md is stale since 95bfe6e (check_context). Refresh the narrative when there's time; don't just bump its marker
       Inventory already sent (Lane F)
 
 ## Before starting the next step
