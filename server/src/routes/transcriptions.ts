@@ -15,14 +15,19 @@ import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { appendTelemetryEntry } from '../utils/telemetry.js';
 import { isTranscriptFresh, readTranscriptHealth } from '../utils/transcriptFiles.js';
-import { createFlitoolsClient, runFlitoolsJob, type FlitoolsClient, type RunOptions } from '../utils/flitoolsClient.js';
+import {
+  createFlitoolsClient,
+  runFlitoolsJob,
+  type FlitoolsClient,
+  type RunOptions,
+} from '../utils/flitoolsClient.js';
+import { transcriptionLanguageFor } from '../utils/transcriptionLanguage.js';
 
 // In-memory state
 let queue: TranscriptionJob[] = [];
 let activeJob: TranscriptionJob | null = null;
 let recentJobs: TranscriptionJob[] = []; // Keep last 5
 let aborting = false; // set on shutdown: stop polling FliTools
-
 
 function generateJobId(): string {
   return `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -67,7 +72,9 @@ export function createTranscriptionRoutes(
     const paths = getProjectPaths(expandPath(getConfig().projectDirectory));
     const baseName = path.basename(videoFilename, path.extname(videoFilename));
     const txtPath = path.join(paths.transcripts, `${baseName}.txt`);
-    return isTranscriptFresh(txtPath, path.join(paths.recordings, `${baseName}.mov`)) ? txtPath : null;
+    return isTranscriptFresh(txtPath, path.join(paths.recordings, `${baseName}.mov`))
+      ? txtPath
+      : null;
   }
 
   // FR-92: Check if transcript file exists (for skip logic)
@@ -80,7 +87,12 @@ export function createTranscriptionRoutes(
     const baseName = path.basename(videoFilename, path.extname(videoFilename));
     const txtPath = path.join(transcriptsDir, `${baseName}.txt`);
     // 2026-09-25: never on name alone — a stale transcript is re-made, not attached
-    const video = videoPath ?? path.join(getProjectPaths(expandPath(getConfig().projectDirectory)).recordings, videoFilename);
+    const video =
+      videoPath ??
+      path.join(
+        getProjectPaths(expandPath(getConfig().projectDirectory)).recordings,
+        videoFilename
+      );
     return isTranscriptFresh(txtPath, video);
   }
 
@@ -151,25 +163,33 @@ export function createTranscriptionRoutes(
     // only AT SAVE TIME, once a good transcript exists (never overwritten in place — orch ruling).
     // A failed job leaves the old transcript where it was; a FliTools-made file (e.g. FliCut's) is
     // refreshed, not binned.
-    runFlitoolsJob(flitools, videoPath, {
-      force: job.force,
-      forceSave: true,
-      ...runOptions,
-      isAborted: () => aborting || activeJob?.jobId !== currentJobId,
-      onProgress: (view) => {
-        const text = `[FliTools] ${view.phase ?? view.status}${view.pct !== undefined ? ` ${view.pct}%` : ''}\n`;
-        job.streamedText = text;
-        io.emit('transcription:progress', { jobId: currentJobId, text });
-      },
-    })
+    transcriptionLanguageFor(videoPath)
+      .then((language) =>
+        runFlitoolsJob(flitools, videoPath, {
+          force: job.force,
+          forceSave: true,
+          language,
+          ...runOptions,
+          isAborted: () => aborting || activeJob?.jobId !== currentJobId,
+          onProgress: (view) => {
+            const text = `[FliTools] ${view.phase ?? view.status}${view.pct !== undefined ? ` ${view.pct}%` : ''}\n`;
+            job.streamedText = text;
+            io.emit('transcription:progress', { jobId: currentJobId, text });
+          },
+        })
+      )
       .then((view) => {
         job.status = 'complete';
         job.completedAt = new Date().toISOString();
         job.health = view.health ?? view.result?.transcript?.health;
         const engine = view.result?.transcript?.engine;
-        const transcriptPath = view.result?.files?.txt ?? path.join(transcriptsDir, `${getBaseName(job.videoFilename)}.txt`);
+        const transcriptPath =
+          view.result?.files?.txt ??
+          path.join(transcriptsDir, `${getBaseName(job.videoFilename)}.txt`);
         if (view.result?.trashed?.length) {
-          console.log(`[transcription] FliTools moved ${view.result.trashed.length} old whisper file(s) of ${job.videoFilename} to -trash`);
+          console.log(
+            `[transcription] FliTools moved ${view.result.trashed.length} old whisper file(s) of ${job.videoFilename} to -trash`
+          );
         }
         console.log(
           `Transcription complete: ${job.videoFilename} (${engine?.name ?? 'flitools'}${view.result?.reused ? `, reused ${view.result.reused}` : ''})` +

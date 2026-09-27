@@ -43,7 +43,7 @@ export class FlitoolsError extends Error {
 
 export interface FlitoolsClient {
   baseUrl: string;
-  submit(path: string, opts?: { force?: boolean; forceSave?: boolean }): Promise<FlitoolsJobView>;
+  submit(path: string, opts?: { force?: boolean; forceSave?: boolean; language?: string }): Promise<FlitoolsJobView>;
   job(id: string): Promise<FlitoolsJobView>;
 }
 
@@ -86,8 +86,9 @@ export function createFlitoolsClient(
   return {
     baseUrl,
     async submit(path, o = {}) {
-      // language 'auto' explicitly: FliTools defaults to 'en' when it is omitted (orch, 2026-09-27)
-      const body: Record<string, unknown> = { path, wait: false, language: 'auto' };
+      // language always explicit (FliTools treats omitted as 'en'); the caller picks it from the
+      // project (transcriptionLanguageFor) — 'auto' only when the project declares several
+      const body: Record<string, unknown> = { path, wait: false, language: o.language ?? 'en' };
       if (o.force) body.force = true;
       if (o.forceSave) body.force_save = true;
       const { status, json } = await call('POST', '/api/transcribe', body);
@@ -108,6 +109,7 @@ export function createFlitoolsClient(
 export interface RunOptions {
   force?: boolean;
   forceSave?: boolean;
+  language?: string;
   pollMs?: number;
   onProgress?: (view: FlitoolsJobView) => void;
   isAborted?: () => boolean;
@@ -126,7 +128,7 @@ export async function runFlitoolsJob(
 ): Promise<FlitoolsJobView> {
   const sleep = o.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   const pollMs = o.pollMs ?? 2000;
-  let view = await client.submit(videoPath, { force: o.force, forceSave: o.forceSave });
+  let view = await client.submit(videoPath, { force: o.force, forceSave: o.forceSave, language: o.language });
   let resubmitted = false;
 
   while (view.status !== 'done') {
@@ -140,7 +142,7 @@ export async function runFlitoolsJob(
     } catch (err) {
       if (err instanceof FlitoolsError && err.failure === 'job-not-found' && !resubmitted) {
         resubmitted = true; // FliTools restarted and forgot its queue — submit again
-        view = await client.submit(videoPath, { force: o.force, forceSave: o.forceSave });
+        view = await client.submit(videoPath, { force: o.force, forceSave: o.forceSave, language: o.language });
         continue;
       }
       throw err;

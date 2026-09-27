@@ -101,7 +101,7 @@ describe('FliHub transcribes through FliTools', () => {
     const status = await waitForStatus(app, '03-2-setup.mov', 'complete');
     expect(status.health).toEqual({ suspect: true, reasons: ['repeated line x12'] });
     // FliHub moved nothing itself: the old files were still there when FliTools got the job
-    expect(submitted).toEqual([{ path: video, force: true, forceSave: true, oldFilesPresent: true }]);
+    expect(submitted).toEqual([{ path: video, force: true, forceSave: true, language: 'en', oldFilesPresent: true }]);
     expect(fs.readFileSync(path.join(paths.transcripts, '03-2-setup.txt'), 'utf8')).toBe('new words');
     const pre = path.join(project, '-trash', '2026-09-27-pre-flitools');
     expect(fs.readdirSync(pre).sort()).toEqual(['03-2-setup.json', '03-2-setup.srt', '03-2-setup.txt']);
