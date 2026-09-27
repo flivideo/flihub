@@ -1,6 +1,8 @@
 # FR-172 — Read the Suite Word Store for the Whisper Prompt
 
-**Status: Pending — ticket only (2026-09-24), not authorised to build.**
+**Status: Superseded by B584 (2026-09-27).** FliTools is the only transcriber and builds its prompt from the suite word store (flitools `2d3f803`); FliHub no longer sends `glingDictionary` to any engine.
+
+~~Status: Pending — ticket only (2026-09-24), not authorised to build.~~
 **Priority: LOW — for the rebuild.** FliHub is slated for rebuild (B475); do this there, or
 here only if the rebuild slips and the vocabulary gap starts costing transcripts.
 

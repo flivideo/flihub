@@ -1,9 +1,9 @@
 ---
-generated: 2026-09-23
+generated: 2026-09-27
 generator: system-context
 audience: agent
 status: snapshot
-commit: 95bfe6e
+commit: 442a78f
 ---
 
 # FliHub — Agent Notes
@@ -77,8 +77,8 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
   `.mp4`. Don't "fix" extensions in a downstream tool.
 - **Chapters are derived three ways**: client `NN-` grouping, the final-SRT query, and POEM WUI
   filenames. Grep all three before changing anything called "chapter".
-- **Transcript `.json` is segment-level.** No `words` key exists, because `--word-timestamps` is
-  never passed (FR-169). The comment in `transcriptions.ts` that says "word-level" is wrong.
+- **Two transcript `.json` shapes coexist.** Old FliHub whisper output is segment-level with no
+  `words`. FliTools writes `flitools.transcript/1` (words + `health`). Check `schema` before reading.
 
 ## Decisions worth knowing
 
@@ -107,7 +107,9 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
 - Does NOT write `fli.studio.json`, `brands.json` or any `fli.<app>…json` decision file.
 - Does NOT sync machines, generate chapter videos (410) or generate shadows.
 - Does NOT rename or move projects. A project's identity is its folder name.
-- Transcription is moving to a shared FliTools service (B584). Don't extend FliHub's Whisper worker.
+- Does NOT transcribe. FliTools (:7161) is the only transcriber (B584, David 2026-09-27). FliHub queues,
+  calls it (`utils/flitoolsClient.ts`), and shows `health.suspect`. `whisper*` config and
+  `glingDictionary` no longer reach any engine; words come from the suite word store in FliTools.
 
 ## Before you design a fix
 
