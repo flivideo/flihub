@@ -40,6 +40,7 @@ cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/ha
 - [x] `35d9e17` a transcript attaches only if newer than its recording (isTranscriptFresh); Undo trashes the undone take's transcripts. d01 01-2 re-transcribed live (stale files in d01 -trash as *.stale-0639.*)
 - [x] `b63c20c` player modal SRT lookup uses the full base name incl. tags; tags shown as coloured pills
 - [x] Restart 2026-09-25 (David's go, via orch): live at b63c20c. v-appydave mark is d05; d01 shows tags ["HOOK"]; SRT 200. Health is at /api/system/health (not /api/health)
+- [x] `c2fbde1` aspect: a ~16:9 inset picture (Ecamm screen-share + PIP, cropdetect box drifts ~1.8) is ok with a soft note, and only >20% off counts as wrong shape. Live 2026-09-27 (David's go); all three d06 Incoming takes re-probe ok
 
 ### Blocked on David
 - [ ] Nothing. B&J a01 now has `aspect` 9:16 (v-beauty-and-joy `ccb25b8`), and the stale files are deleted
