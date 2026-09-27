@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
+import { transcriptBadge } from '../utils/transcriptHealth';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -196,16 +197,14 @@ function TranscriptionBadge({
           T
         </span>
       );
-    case 'complete':
+    case 'complete': {
+      const badge = transcriptBadge(data.health); // B584: suspect shows as a warning
       return (
-        <button
-          onClick={() => onViewTranscript(filename)}
-          className="text-xs text-green-700 hover:text-green-800 px-1.5 py-0.5 bg-green-50 hover:bg-green-100 rounded font-medium transition-colors"
-          title="View transcript"
-        >
-          T
+        <button onClick={() => onViewTranscript(filename)} className={badge.className} title={badge.title}>
+          {badge.label}
         </button>
       );
+    }
     case 'error':
       return (
         <button

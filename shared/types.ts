@@ -542,6 +542,7 @@ export interface ServerToClientEvents {
     jobId: string;
     videoPath: string;
     transcriptPath: string;
+    health?: TranscriptHealth; // B584
   }) => void;
   'transcription:error': (job: { jobId: string; videoPath: string; error: string }) => void;
   // FR-58/FR-131 chapter-preview + regen-all events removed: previews deprecated (roadmap §1.2e)
@@ -579,6 +580,16 @@ export interface TranscriptionJob {
   completedAt?: string; // ISO timestamp
   error?: string; // Error message if failed
   streamedText?: string; // Accumulated text during transcription
+  force?: boolean; // B584: explicit redo — re-transcribe even when a fresh transcript exists
+  health?: TranscriptHealth; // B584: FliTools' verdict (suspect = still bad after its one retry)
+}
+
+// B584: FliTools transcript health. suspect:true means FliTools already retried once on the
+// other engine and it is still bad (loops, segments past the media end, …) — always surface it.
+export interface TranscriptHealth {
+  suspect: boolean;
+  reasons: string[];
+  retried?: boolean;
 }
 
 // FR-30: API response for transcription status
@@ -593,6 +604,7 @@ export interface TranscriptionStatusResponse {
   filename: string;
   status: TranscriptionStatus;
   transcriptPath?: string; // Path to .txt file if complete
+  health?: TranscriptHealth; // B584: from the FliTools .json; absent for old whisper output
 }
 
 // FR-30: Transcript content response

@@ -33,7 +33,7 @@ import type {
 export function createManageRoutes(
   getConfig: () => Config,
   io: Server<ClientToServerEvents, ServerToClientEvents>,
-  queueTranscription?: (videoPath: string) => void,
+  queueTranscription?: (videoPath: string, opts?: { force?: boolean }) => void,
   getActiveJob?: () => TranscriptionJob | null,
   getQueue?: () => TranscriptionJob[]
 ): Router {
@@ -262,7 +262,7 @@ export function createManageRoutes(
 
         if (force || !hasTranscript) {
           // Queue transcription
-          queueTranscription(recordingPath);
+          queueTranscription(recordingPath, { force }); // B584: force = redo even when fresh
           queued++;
           console.log(`[FR-131 Regen Transcripts] Queued: ${filename}`);
         }

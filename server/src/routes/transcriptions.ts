@@ -2,7 +2,6 @@
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
-import { spawn, ChildProcess } from 'child_process';
 import type { Server } from 'socket.io';
 import type {
   ServerToClientEvents,
@@ -15,13 +14,14 @@ import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/pa
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { appendTelemetryEntry } from '../utils/telemetry.js';
-import { isTranscriptFresh } from '../utils/transcriptFiles.js';
+import { isTranscriptFresh, trashTranscriptsFor, readTranscriptHealth } from '../utils/transcriptFiles.js';
+import { createFlitoolsClient, runFlitoolsJob, type FlitoolsClient, type RunOptions } from '../utils/flitoolsClient.js';
 
 // In-memory state
 let queue: TranscriptionJob[] = [];
 let activeJob: TranscriptionJob | null = null;
 let recentJobs: TranscriptionJob[] = []; // Keep last 5
-let activeProcess: ChildProcess | null = null;
+let aborting = false; // set on shutdown: stop polling FliTools
 
 
 function generateJobId(): string {
@@ -36,7 +36,9 @@ function getBaseName(filename: string): string {
 
 export function createTranscriptionRoutes(
   getConfig: () => Config,
-  io: Server<ClientToServerEvents, ServerToClientEvents>
+  io: Server<ClientToServerEvents, ServerToClientEvents>,
+  flitools: FlitoolsClient = createFlitoolsClient(), // B584: the suite's only transcriber
+  runOptions: Pick<RunOptions, 'pollMs' | 'sleep'> = {}
 ) {
   const router = Router();
 
@@ -87,14 +89,13 @@ export function createTranscriptionRoutes(
   function getStatusForVideo(videoFilename: string): TranscriptionStatus {
     const baseName = getBaseName(videoFilename);
 
+    // In-flight work wins over a transcript on disk: a forced redo (B584) is still running
+    // while the old files are there. Check if active / queued (compare base names).
+    if (activeJob && getBaseName(activeJob.videoFilename) === baseName) return 'transcribing';
+    if (queue.some((j) => getBaseName(j.videoFilename) === baseName)) return 'queued';
+
     // Check if complete
     if (getTranscriptPath(videoFilename)) return 'complete';
-
-    // Check if active (compare base names)
-    if (activeJob && getBaseName(activeJob.videoFilename) === baseName) return 'transcribing';
-
-    // Check if queued (compare base names)
-    if (queue.some((j) => getBaseName(j.videoFilename) === baseName)) return 'queued';
 
     // Check if failed recently (compare base names)
     const recent = recentJobs.find((j) => getBaseName(j.videoFilename) === baseName);
@@ -117,196 +118,110 @@ export function createTranscriptionRoutes(
       videoPath: activeJob.videoPath,
     });
 
+    const job = activeJob;
+    const currentJobId = job.jobId;
+    const videoPath = job.videoPath;
     // FR-109: Derive transcripts dir from video path, not current config
-    // This ensures transcripts go to the correct project even if user switches projects during queue
-    const transcriptsDir = getTranscriptsDirFromVideoPath(activeJob.videoPath);
-    fs.ensureDirSync(transcriptsDir);
-
-    // B036: Read Whisper settings from config; fall back to defaults if not set
-    const config = getConfig();
-    const whisperBinary = expandPath(config.whisperBinary || '~/.pyenv/shims/mlx_whisper');
-    const whisperModel = config.whisperModel || 'mlx-community/whisper-large-v3-turbo';
-    const whisperLanguage = config.whisperLanguage || 'en';
-    const whisperInitialPrompt = config.glingDictionary?.length
-      ? config.glingDictionary.join(', ')
-      : null;
-    const videoPath = activeJob.videoPath;
-
-    console.log(`Starting transcription: ${activeJob.videoFilename}`);
-    console.log(`Using Whisper: ${whisperBinary}`);
-    console.log(`[transcription] model: ${whisperModel}, language: ${whisperLanguage}`); // B036
-    console.log(`Output dir: ${transcriptsDir}`);
-    if (whisperInitialPrompt) {
-      console.log(`Initial prompt: ${whisperInitialPrompt}`);
-    }
+    const transcriptsDir = getTranscriptsDirFromVideoPath(videoPath);
 
     // FR-99: Capture timing data for telemetry
     const transcriptionStartTime = Date.now();
     const startTimestamp = new Date(transcriptionStartTime).toISOString();
     let videoFileSizeBytes = 0;
     try {
-      const stats = fs.statSync(videoPath);
-      videoFileSizeBytes = stats.size;
+      videoFileSizeBytes = fs.statSync(videoPath).size;
     } catch {
       // File size unavailable, continue without it
     }
 
-    // FR-74: Output TXT (plain text), SRT (timed subtitles), and JSON (word-level timestamps)
-    // FR-98: Use 'all' format then delete unwanted vtt/tsv files after completion
-    // (Whisper only accepts a single format argument, not multiple)
-    const whisperArgs = [
-      videoPath,
-      '--model',
-      whisperModel,
-      '--language',
-      whisperLanguage,
-      '--output-format',
-      'all',
-      '--output-dir',
-      transcriptsDir,
-    ];
-    if (whisperInitialPrompt) {
-      whisperArgs.push('--initial-prompt', whisperInitialPrompt);
-    }
-    activeProcess = spawn(whisperBinary, whisperArgs);
+    console.log(`Starting transcription: ${job.videoFilename} via FliTools ${flitools.baseUrl}`);
 
-    const currentJobId = activeJob.jobId;
+    const finish = () => {
+      // FR-94: Move to recent, deduping by base name first
+      const doneBaseName = getBaseName(job.videoFilename);
+      recentJobs = recentJobs.filter((j) => getBaseName(j.videoFilename) !== doneBaseName);
+      recentJobs.unshift(job);
+      recentJobs = recentJobs.slice(0, 5); // Keep last 5
+      if (activeJob?.jobId === currentJobId) activeJob = null;
+      processNextJob();
+    };
 
-    activeProcess.stdout?.on('data', (data) => {
-      const text = data.toString();
-      if (activeJob && activeJob.jobId === currentJobId) {
-        activeJob.streamedText = (activeJob.streamedText || '') + text;
-        io.emit('transcription:progress', { jobId: currentJobId, text });
-      }
-    });
-
-    activeProcess.stderr?.on('data', (data) => {
-      // Whisper outputs progress info to stderr
-      const text = data.toString();
-      console.log(`Whisper: ${text}`);
-      if (activeJob && activeJob.jobId === currentJobId) {
-        io.emit('transcription:progress', { jobId: currentJobId, text });
-      }
-    });
-
-    activeProcess.on('close', (code) => {
-      if (!activeJob || activeJob.jobId !== currentJobId) return;
-
-      activeJob.completedAt = new Date().toISOString();
-
-      if (code === 0) {
-        activeJob.status = 'complete';
-        const transcriptPath = getTranscriptPath(activeJob.videoFilename);
-        console.log(`Transcription complete: ${activeJob.videoFilename}`);
-
-        // FR-98: Delete unwanted vtt/tsv files (we only need txt, srt, json)
-        const baseName = activeJob.videoFilename.replace(/\.[^.]+$/, '');
-        const unwantedExtensions = ['.vtt', '.tsv'];
-        for (const ext of unwantedExtensions) {
-          const filePath = path.join(transcriptsDir, baseName + ext);
-          if (fs.existsSync(filePath)) {
-            try {
-              fs.unlinkSync(filePath);
-              console.log(`Deleted unwanted transcript file: ${baseName}${ext}`);
-            } catch (err) {
-              console.error(`Failed to delete ${filePath}:`, err);
-            }
-          }
-        }
+    // B584 (David, 2026-09-27): FliTools is the only transcriber. Whatever transcript this take
+    // already has (a stale one, or a forced redo) goes to the project's -trash first — never
+    // overwritten in place (orch ruling) — so FliTools writes into an empty slot.
+    trashTranscriptsFor(videoPath)
+      .then((trashed) => {
+        if (trashed.length) console.log(`[transcription] moved ${trashed.length} old transcript file(s) of ${job.videoFilename} to -trash`);
+        return runFlitoolsJob(flitools, videoPath, {
+          force: job.force,
+          ...runOptions,
+          isAborted: () => aborting || activeJob?.jobId !== currentJobId,
+          onProgress: (view) => {
+            const text = `[FliTools] ${view.phase ?? view.status}${view.pct !== undefined ? ` ${view.pct}%` : ''}\n`;
+            job.streamedText = text;
+            io.emit('transcription:progress', { jobId: currentJobId, text });
+          },
+        });
+      })
+      .then((view) => {
+        job.status = 'complete';
+        job.completedAt = new Date().toISOString();
+        job.health = view.health ?? view.result?.transcript?.health;
+        const engine = view.result?.transcript?.engine;
+        const transcriptPath = view.result?.files?.txt ?? path.join(transcriptsDir, `${getBaseName(job.videoFilename)}.txt`);
+        console.log(
+          `Transcription complete: ${job.videoFilename} (${engine?.name ?? 'flitools'}${view.result?.reused ? `, reused ${view.result.reused}` : ''})` +
+            (job.health?.suspect ? ` — SUSPECT: ${job.health.reasons.join('; ')}` : '')
+        );
 
         io.emit('transcription:complete', {
-          jobId: activeJob.jobId,
-          videoPath: activeJob.videoPath,
-          transcriptPath: transcriptPath || '',
+          jobId: currentJobId,
+          videoPath,
+          transcriptPath,
+          health: job.health,
         });
 
-        // FR-99: Log telemetry data
-        // IMPORTANT: Capture all job details NOW before async calls, because
-        // activeJob will change to the next job before the promise resolves
+        // FR-99: telemetry
         const transcriptionEndTime = Date.now();
-        const endTimestamp = new Date(transcriptionEndTime).toISOString();
         const transcriptionDurationSec = (transcriptionEndTime - transcriptionStartTime) / 1000;
-        const completedFilename = activeJob!.videoFilename;
-        const completedPath = activeJob!.videoPath;
-
-        // Extract project name from path (e.g., /path/to/v-appydave/b85-clauding-01/recordings/file.mov)
-        const completedProjectDir = projectDirFromRecordingPath(completedPath);
+        const completedProjectDir = projectDirFromRecordingPath(videoPath);
         const project = completedProjectDir ? path.basename(completedProjectDir) : 'unknown';
-
-        // FR-99: Log telemetry (file uses .jsonl extension to avoid triggering nodemon)
-        getVideoDuration(completedPath)
+        getVideoDuration(videoPath)
           .then((videoDuration) => {
             const duration = videoDuration ?? 0;
-            const ratio = duration > 0 ? transcriptionDurationSec / duration : 0;
             appendTelemetryEntry({
               startTimestamp,
-              endTimestamp,
+              endTimestamp: new Date(transcriptionEndTime).toISOString(),
               project,
-              filename: completedFilename,
-              path: completedPath,
+              filename: job.videoFilename,
+              path: videoPath,
               videoDurationSec: duration,
               transcriptionDurationSec,
-              ratio,
+              ratio: duration > 0 ? transcriptionDurationSec / duration : 0,
               fileSizeBytes: videoFileSizeBytes,
-              model: whisperModel,
+              model: engine ? `flitools:${engine.name ?? '?'}/${engine.model ?? '?'}` : 'flitools',
               success: true,
             });
           })
-          .catch((err) => {
-            console.error('Error getting video duration for telemetry:', err);
-          });
-      } else {
-        activeJob.status = 'error';
-        activeJob.error = `Whisper exited with code ${code}`;
-        console.error(`Transcription failed: ${activeJob.videoFilename} (code ${code})`);
-        io.emit('transcription:error', {
-          jobId: activeJob.jobId,
-          videoPath: activeJob.videoPath,
-          error: activeJob.error,
-        });
-      }
-
-      // FR-94: Move to recent, deduping by base name first
-      const completedBaseName = getBaseName(activeJob.videoFilename);
-      recentJobs = recentJobs.filter((j) => getBaseName(j.videoFilename) !== completedBaseName);
-      recentJobs.unshift(activeJob);
-      recentJobs = recentJobs.slice(0, 5); // Keep last 5
-
-      activeJob = null;
-      activeProcess = null;
-
-      // Process next
-      processNextJob();
-    });
-
-    activeProcess.on('error', (err) => {
-      console.error('Failed to start Whisper process:', err);
-      if (activeJob && activeJob.jobId === currentJobId) {
-        activeJob.status = 'error';
-        activeJob.error = `Failed to start Whisper: ${err.message}`;
-        activeJob.completedAt = new Date().toISOString();
-
-        io.emit('transcription:error', {
-          jobId: activeJob.jobId,
-          videoPath: activeJob.videoPath,
-          error: activeJob.error,
-        });
-
-        // FR-94: Move to recent, deduping by base name first
-        const errorBaseName = getBaseName(activeJob.videoFilename);
-        recentJobs = recentJobs.filter((j) => getBaseName(j.videoFilename) !== errorBaseName);
-        recentJobs.unshift(activeJob);
-        recentJobs = recentJobs.slice(0, 5);
-
-        activeJob = null;
-        activeProcess = null;
-        processNextJob();
-      }
-    });
+          .catch((err) => console.error('Error getting video duration for telemetry:', err));
+      })
+      .catch((err: unknown) => {
+        job.status = 'error';
+        job.completedAt = new Date().toISOString();
+        job.error = err instanceof Error ? err.message : String(err);
+        console.error(`Transcription failed: ${job.videoFilename} — ${job.error}`);
+        io.emit('transcription:error', { jobId: currentJobId, videoPath, error: job.error });
+      })
+      .finally(finish);
   }
 
   // Queue a transcription job (exported for use by rename route)
-  async function queueTranscription(videoPath: string): Promise<TranscriptionJob | null> {
+  // `force` (explicit redo: Regen Transcripts force, POST /queue {force}) re-transcribes even when a
+  // fresh transcript exists; the old files go to -trash first (processNextJob).
+  async function queueTranscription(
+    videoPath: string,
+    opts: { force?: boolean } = {}
+  ): Promise<TranscriptionJob | null> {
     const rawFilename = path.basename(videoPath);
     // FR-94: Normalize to base name for consistent comparison
     // This prevents duplicates when same recording is queued as .mov and .mp4
@@ -316,7 +231,7 @@ export function createTranscriptionRoutes(
 
     // FR-92: Skip if transcript already exists (only check .txt, not .srt)
     // BUGFIX: Pass videoPath to check in correct project folder
-    if (hasTranscriptFile(videoFilename, videoPath)) {
+    if (!opts.force && hasTranscriptFile(videoFilename, videoPath)) {
       console.log(`Transcript already exists for ${videoFilename} in ${videoPath}, skipping`);
       return null;
     }
@@ -364,6 +279,7 @@ export function createTranscriptionRoutes(
       duration,
       size,
       queuedAt: new Date().toISOString(),
+      ...(opts.force ? { force: true } : {}),
     };
 
     queue.push(job);
@@ -397,11 +313,16 @@ export function createTranscriptionRoutes(
     const filename = queryString(req.params.filename);
     const status = getStatusForVideo(filename);
     const transcriptPath = getTranscriptPath(filename);
+    // B584: FliTools' health verdict lives in the transcript .json, so it survives restarts
+    const health = transcriptPath
+      ? readTranscriptHealth(transcriptPath.replace(/\.txt$/, '.json'))
+      : null;
 
     res.json({
       filename,
       status,
       transcriptPath,
+      ...(health ? { health } : {}),
     });
   });
 
@@ -508,7 +429,7 @@ export function createTranscriptionRoutes(
 
   // POST /api/transcriptions/queue - Manually queue a transcription
   router.post('/queue', async (req: Request, res: Response) => {
-    const { videoPath } = req.body;
+    const { videoPath, force } = req.body as { videoPath?: string; force?: boolean };
 
     if (!videoPath) {
       res.status(400).json({ success: false, error: 'videoPath required' });
@@ -521,7 +442,7 @@ export function createTranscriptionRoutes(
       return;
     }
 
-    const job = await queueTranscription(expandedPath);
+    const job = await queueTranscription(expandedPath, { force: force === true });
     // FR-159: a null job means the request was SKIPPED — say why, so the UI can show it
     if (!job) {
       res.json({
@@ -815,19 +736,9 @@ export function createTranscriptionRoutes(
     }
   });
 
-  // Kill active transcription process (for graceful shutdown)
+  // Graceful shutdown: stop polling FliTools (B584 — its job runs on there; nothing to kill here)
   function killActiveProcess(): void {
-    if (activeProcess) {
-      console.log('Killing active Whisper process...');
-      activeProcess.kill('SIGTERM');
-      // Give it a moment, then force kill if needed
-      setTimeout(() => {
-        if (activeProcess) {
-          console.log('Force killing Whisper process...');
-          activeProcess.kill('SIGKILL');
-        }
-      }, 1000);
-    }
+    aborting = true;
     // Clear the queue so nothing restarts
     queue = [];
     activeJob = null;

@@ -50,3 +50,17 @@ export async function trashTranscriptsFor(recordingPath: string): Promise<string
   }
   return moved;
 }
+
+/**
+ * FliTools' health verdict for a transcript (B584): the .json is flitools.transcript/1 with a
+ * `health` block. null for FliHub's old whisper output or an unreadable file.
+ */
+export function readTranscriptHealth(jsonPath: string): { suspect: boolean; reasons: string[] } | null {
+  try {
+    const doc = fs.readJsonSync(jsonPath) as { schema?: string; health?: { suspect?: boolean; reasons?: string[] } };
+    if (doc?.schema !== 'flitools.transcript/1' || !doc.health) return null;
+    return { suspect: doc.health.suspect === true, reasons: doc.health.reasons ?? [] };
+  } catch {
+    return null;
+  }
+}
