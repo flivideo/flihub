@@ -3,7 +3,7 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `442a78fc710a` · **generated** 2026-09-27T05:19:17+00:00
+- **commit** `1faaa8de3453` · **generated** 2026-09-27T05:22:14+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
@@ -111,7 +111,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/routes/projects.ts` — `priority (membership)` (set) :148
 - `server/src/routes/query/recordings.ts` — `UnifiedRecording` :20
 - `server/src/routes/thumbs.ts` — `IMAGE_EXTENSIONS` (set) :11 · `ThumbInfo` :57 · `ZipInfo` :65 · `ZipImagePreview` :73
-- `server/src/routes/transcriptions.ts` — `scope (membership)` (set) :562
+- `server/src/routes/transcriptions.ts` — `scope (membership)` (set) :564
 - `server/src/routes/video.ts` — `folder (branching)` (set) :81 · `ext (membership)` (set) :161 · `ext (membership) #2` (set) :242
 - `server/src/scripts/scanProjects.ts` — `DiscrepancyType` (set) :30 · `DiscrepancySeverity` (set) :31 · `Discrepancy` :33 · `ProjectScanResult` :44 · `ScanSummary` :51
 - `server/src/utils/archiveInventory.ts` — `BuildArchiveRowOpts` :82
@@ -121,7 +121,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/utils/chapterRecording.ts` — `SegmentInfo` :14 · `ChapterSegments` :23
 - `server/src/utils/diskUtils.ts` — `NodeDirent` :39
 - `server/src/utils/finalMedia.ts` — `FinalMediaLocation` (set) :16 · `FinalVideoInfo` :19 · `FinalSrtInfo` :27 · `AdditionalSegment` :34 · `FinalMediaResponse` :40
-- `server/src/utils/flitoolsClient.ts` — `TranscriptHealth` :10 · `FlitoolsJobView` :16 · `FlitoolsFailure` (set) :31 · `FlitoolsClient` :43 · `RunOptions` :106
+- `server/src/utils/flitoolsClient.ts` — `TranscriptHealth` :10 · `FlitoolsJobView` :16 · `FlitoolsFailure` (set) :32 · `FlitoolsClient` :44 · `RunOptions` :108
 - `server/src/utils/loopback.ts` — `LOOPBACK_HOSTS` (set) :13
 - `server/src/utils/micCheckStore.ts` — `StartSessionInput` :57 · `FinishSessionInput` :264
 - `server/src/utils/nextProjectCode.ts` — `SeriesCode` :21 · `NextCodeResult` :71
@@ -642,17 +642,17 @@ FR-41: Time format styles
 | `cache` | `server/src/utils/flitoolsClient.ts:25` |
 | `beside` | `server/src/utils/flitoolsClient.ts:25` |
 
-### `server/src/utils/flitoolsClient.FlitoolsFailure` — `server/src/utils/flitoolsClient.ts:31`
+### `server/src/utils/flitoolsClient.FlitoolsFailure` — `server/src/utils/flitoolsClient.ts:32`
 
 *literal union type alias `FlitoolsFailure` - a single declaring symbol*
 
 | value | declared at |
 |---|---|
-| `unavailable` | `server/src/utils/flitoolsClient.ts:31` |
-| `refused` | `server/src/utils/flitoolsClient.ts:31` |
-| `job-not-found` | `server/src/utils/flitoolsClient.ts:31` |
-| `failed` | `server/src/utils/flitoolsClient.ts:31` |
-| `not-saved` | `server/src/utils/flitoolsClient.ts:31` |
+| `unavailable` | `server/src/utils/flitoolsClient.ts:32` |
+| `refused` | `server/src/utils/flitoolsClient.ts:32` |
+| `job-not-found` | `server/src/utils/flitoolsClient.ts:32` |
+| `failed` | `server/src/utils/flitoolsClient.ts:32` |
+| `not-saved` | `server/src/utils/flitoolsClient.ts:32` |
 
 ### `server/src/utils/nextProjectCode.NextCodeResult.state` — `server/src/utils/nextProjectCode.ts:72`
 
@@ -1303,16 +1303,16 @@ Each set below was read out of the real authority — control flow, membership t
 
 > **REFACTOR (minor): `IMAGE_EXTENSIONS` at server/src/routes/thumbs.ts:11 names the set but does not type it. A z.enum or `as const` + `typeof IMAGE_EXTENSIONS[number]` would make a wrong value a static error rather than a runtime miss.**
 
-### `server/src/routes/transcriptions.scope (membership)` — `server/src/routes/transcriptions.ts:562`
+### `server/src/routes/transcriptions.scope (membership)` — `server/src/routes/transcriptions.ts:564`
 
 *inline membership test `[...].includes(scope)` - no declaring symbol*
 
 | value | read from |
 |---|---|
-| `project` | `server/src/routes/transcriptions.ts:562` |
-| `chapter` | `server/src/routes/transcriptions.ts:562` |
+| `project` | `server/src/routes/transcriptions.ts:564` |
+| `chapter` | `server/src/routes/transcriptions.ts:564` |
 
-> **REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:562. Name it once (z.enum / literal union) so it has one authority.**
+> **REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:564. Name it once (z.enum / literal union) so it has one authority.**
 
 ### `server/src/routes/video.folder (branching)` — `server/src/routes/video.ts:81`
 
@@ -2998,7 +2998,7 @@ B584 (David, 2026-09-27): FliTools (:7161) is the suite's only transcriber; FliH
 | `reasons` | `string[]` | — | `server/src/utils/flitoolsClient.ts:12` |
 | `retried` | `?: boolean` | — | `server/src/utils/flitoolsClient.ts:13` |
 
-### `server/src/utils/flitoolsClient.FlitoolsJobView` — interface — `server/src/utils/flitoolsClient.ts:16-29`
+### `server/src/utils/flitoolsClient.FlitoolsJobView` — interface — `server/src/utils/flitoolsClient.ts:16-30`
 
 | field | type | default | at |
 |---|---|---|---|
@@ -3010,7 +3010,7 @@ B584 (David, 2026-09-27): FliTools (:7161) is the suite's only transcriber; FliH
 | `error` | `?: unknown` | — | `server/src/utils/flitoolsClient.ts:22` |
 | `result` | `?: { transcript?: { engine?: { name?: string; model?: string }; health?: TranscriptHealth }; reused?: null \| 'cache' \| 'beside'; files?: { jso… → server/src/utils/flitoolsClient.TranscriptHealth` | — | `server/src/utils/flitoolsClient.ts:23` |
 
-### `server/src/utils/flitoolsClient.FlitoolsJobView.result` — type — `server/src/utils/flitoolsClient.ts:23-28`
+### `server/src/utils/flitoolsClient.FlitoolsJobView.result` — type — `server/src/utils/flitoolsClient.ts:23-29`
 
 | field | type | default | at |
 |---|---|---|---|
@@ -3018,6 +3018,7 @@ B584 (David, 2026-09-27): FliTools (:7161) is the suite's only transcriber; FliH
 | `reused` | `?: null \| 'cache' \| 'beside'` | — | `server/src/utils/flitoolsClient.ts:25` |
 | `files` | `?: { json: string; srt: string; txt: string } \| null` | — | `server/src/utils/flitoolsClient.ts:26` |
 | `saveError` | `?: string` | — | `server/src/utils/flitoolsClient.ts:27` |
+| `trashed` | `?: string[]` | — | `server/src/utils/flitoolsClient.ts:28` |
 
 ### `server/src/utils/flitoolsClient.FlitoolsJobView.result.transcript` — type — `server/src/utils/flitoolsClient.ts:24`
 
@@ -3033,24 +3034,24 @@ B584 (David, 2026-09-27): FliTools (:7161) is the suite's only transcriber; FliH
 | `name` | `?: string` | — | `server/src/utils/flitoolsClient.ts:24` |
 | `model` | `?: string` | — | `server/src/utils/flitoolsClient.ts:24` |
 
-### `server/src/utils/flitoolsClient.FlitoolsClient` — interface — `server/src/utils/flitoolsClient.ts:43-47`
+### `server/src/utils/flitoolsClient.FlitoolsClient` — interface — `server/src/utils/flitoolsClient.ts:44-48`
 
 | field | type | default | at |
 |---|---|---|---|
-| `baseUrl` | `string` | — | `server/src/utils/flitoolsClient.ts:44` |
-| `submit` | `(path: string, opts?: { force?: boolean; forceSave?: boolean }): Promise<FlitoolsJobView>` | — | `server/src/utils/flitoolsClient.ts:45` |
-| `job` | `(id: string): Promise<FlitoolsJobView>` | — | `server/src/utils/flitoolsClient.ts:46` |
+| `baseUrl` | `string` | — | `server/src/utils/flitoolsClient.ts:45` |
+| `submit` | `(path: string, opts?: { force?: boolean; forceSave?: boolean }): Promise<FlitoolsJobView>` | — | `server/src/utils/flitoolsClient.ts:46` |
+| `job` | `(id: string): Promise<FlitoolsJobView>` | — | `server/src/utils/flitoolsClient.ts:47` |
 
-### `server/src/utils/flitoolsClient.RunOptions` — interface — `server/src/utils/flitoolsClient.ts:106-113`
+### `server/src/utils/flitoolsClient.RunOptions` — interface — `server/src/utils/flitoolsClient.ts:108-115`
 
 | field | type | default | at |
 |---|---|---|---|
-| `force` | `?: boolean` | — | `server/src/utils/flitoolsClient.ts:107` |
-| `forceSave` | `?: boolean` | — | `server/src/utils/flitoolsClient.ts:108` |
-| `pollMs` | `?: number` | — | `server/src/utils/flitoolsClient.ts:109` |
-| `onProgress` | `?: (view: FlitoolsJobView) => void → server/src/utils/flitoolsClient.FlitoolsJobView` | — | `server/src/utils/flitoolsClient.ts:110` |
-| `isAborted` | `?: () => boolean` | — | `server/src/utils/flitoolsClient.ts:111` |
-| `sleep` | `?: (ms: number) => Promise<void>` | — | `server/src/utils/flitoolsClient.ts:112` |
+| `force` | `?: boolean` | — | `server/src/utils/flitoolsClient.ts:109` |
+| `forceSave` | `?: boolean` | — | `server/src/utils/flitoolsClient.ts:110` |
+| `pollMs` | `?: number` | — | `server/src/utils/flitoolsClient.ts:111` |
+| `onProgress` | `?: (view: FlitoolsJobView) => void → server/src/utils/flitoolsClient.FlitoolsJobView` | — | `server/src/utils/flitoolsClient.ts:112` |
+| `isAborted` | `?: () => boolean` | — | `server/src/utils/flitoolsClient.ts:113` |
+| `sleep` | `?: (ms: number) => Promise<void>` | — | `server/src/utils/flitoolsClient.ts:114` |
 
 ### `server/src/utils/micCheckStore.StartSessionInput` — interface — `server/src/utils/micCheckStore.ts:57-62`
 
@@ -4794,7 +4795,7 @@ The census found these top-level declarations and the extractor did not mirror t
 | object constant | 12 | `client/src/components/shared/ShipsSelector.SHIPS_LABEL` `client/src/components/shared/ShipsSelector.tsx:17`<br>`client/src/constants/queryKeys.QUERY_KEYS` `client/src/constants/queryKeys.ts:5`<br>`client/src/constants/stages.STAGE_DISPLAY` `client/src/constants/stages.ts:4`<br>`server/src/config/configManager.DEFAULT_DISK_THRESHOLDS` `server/src/config/configManager.ts:7`<br>`server/src/config/env.env` `server/src/config/env.ts:25`<br>`server/src/config/logger.log` `server/src/config/logger.ts:20`<br>`server/src/utils/formatters.STATUS` `server/src/utils/formatters.ts:151`<br>`shared/constants.FILE_SIZE` `shared/constants.ts:6`<br>`shared/constants.WATCHER` `shared/constants.ts:14`<br>`shared/naming.NAMING_RULES` `shared/naming.ts:16`<br>`shared/naming.PATTERNS` `shared/naming.ts:55`<br>`shared/types.STAGE_LABELS` `shared/types.ts:324` |
 | array constant | 10 | `client/src/constants/stages.STAGE_ORDER` `client/src/constants/stages.ts:73`<br>`client/src/hooks/useBrollApi.BROLL_QUERY_KEY` `client/src/hooks/useBrollApi.ts:12`<br>`client/src/hooks/useOpenContextApi.OPEN_CONTEXT_KEY` `client/src/hooks/useOpenContextApi.ts:8`<br>`client/src/hooks/useVideoPlayback.SPEED_PRESETS` `client/src/hooks/useVideoPlayback.ts:10`<br>`client/src/utils/micGrading.SHORT_TERM_GREEN` `client/src/utils/micGrading.ts:38`<br>`server/src/utils/holdUtils.HOLD_EXCLUDES` `server/src/utils/holdUtils.ts:10`<br>`shared/apiRegistry.API_ENDPOINTS` `shared/apiRegistry.ts:38`<br>`shared/contextSchemas.REFUSAL_CODES` `shared/contextSchemas.ts:36`<br>`shared/types.DEFAULT_PROJECT_STAGES` `shared/types.ts:311`<br>`shared/types.DEFAULT_TAGS` `shared/types.ts:272` |
 | const built by a call (helper or non-zod call) | 8 | `client/src/config.API_URL` `client/src/config.ts:14`<br>`client/src/hooks/useStorageApi.useArchiveProject` `client/src/hooks/useStorageApi.ts:79`<br>`client/src/hooks/useStorageApi.useHeldArchiveProject` `client/src/hooks/useStorageApi.ts:83`<br>`client/src/hooks/useStorageApi.useHoldProject` `client/src/hooks/useStorageApi.ts:77`<br>`client/src/hooks/useStorageApi.useRestoreHeld` `client/src/hooks/useStorageApi.ts:78`<br>`client/src/hooks/useStorageApi.useUnarchiveProject` `client/src/hooks/useStorageApi.ts:80`<br>`server/src/config/logger.logger` `server/src/config/logger.ts:5`<br>`server/src/utils/poemWuiUtils.BUNDLED_BRAND_CONFIG` `server/src/utils/poemWuiUtils.ts:10` |
-| class | 4 | `client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15`<br>`server/src/utils/flitoolsClient.FlitoolsError` `server/src/utils/flitoolsClient.ts:33` |
+| class | 4 | `client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15`<br>`server/src/utils/flitoolsClient.FlitoolsError` `server/src/utils/flitoolsClient.ts:34` |
 | union of named or mixed types | 4 | `client/src/App.ConfigFocusSection` `client/src/App.tsx:86`<br>`client/src/hooks/useShiftHover.LegacyImageData` `client/src/hooks/useShiftHover.ts:25`<br>`server/src/utils/openContext.LaunchResult` `server/src/utils/openContext.ts:62`<br>`shared/types.ProjectStageOverride` `shared/types.ts:307` |
 | utility-type alias (`Pick` / `Omit` / `Record` / generic instance) | 3 | `client/src/components/MicCheckSnapshot.Analyser` `client/src/components/MicCheckSnapshot.tsx:34`<br>`server/src/routes/miccheck.IO` `server/src/routes/miccheck.ts:32`<br>`server/src/utils/openContext.ContextController` `server/src/utils/openContext.ts:281` |
 | constant (other form) | 1 | `client/src/hooks/useVideoAspect.DEFAULT_ASPECT` `client/src/hooks/useVideoAspect.ts:12` |
@@ -4815,7 +4816,7 @@ These are refactors of the **application**, not of this mirror. Each one convert
 8. `server/src/routes/assets.ts:30` — REFACTOR (minor): `IMAGE_EXTENSIONS` at server/src/routes/assets.ts:30 names the set but does not type it. A z.enum or `as const` + `typeof IMAGE_EXTENSIONS[number]` would make a wrong value a static error rather than a runtime miss.
 9. `server/src/routes/projects.ts:148` — REFACTOR: the set for `priority` is inlined at server/src/routes/projects.ts:148. Name it once (z.enum / literal union) so it has one authority.
 10. `server/src/routes/thumbs.ts:11` — REFACTOR (minor): `IMAGE_EXTENSIONS` at server/src/routes/thumbs.ts:11 names the set but does not type it. A z.enum or `as const` + `typeof IMAGE_EXTENSIONS[number]` would make a wrong value a static error rather than a runtime miss.
-11. `server/src/routes/transcriptions.ts:562` — REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:562. Name it once (z.enum / literal union) so it has one authority.
+11. `server/src/routes/transcriptions.ts:564` — REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:564. Name it once (z.enum / literal union) so it has one authority.
 12. `server/src/routes/video.ts:81` — REFACTOR: `folder` is a closed set enforced only by control flow at server/src/routes/video.ts:81. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.
 13. `server/src/routes/video.ts:161` — REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:161. Name it once (z.enum / literal union) so it has one authority.
 14. `server/src/routes/video.ts:242` — REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:242. Name it once (z.enum / literal union) so it has one authority.

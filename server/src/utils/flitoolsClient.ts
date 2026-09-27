@@ -23,8 +23,9 @@ export interface FlitoolsJobView {
   result?: {
     transcript?: { engine?: { name?: string; model?: string }; health?: TranscriptHealth };
     reused?: null | 'cache' | 'beside';
-    files?: { json: string; srt: string; txt: string } | null;
+    files?: { json: string; srt: string; txt: string } | null; // non-null only when all three are on disk
     saveError?: string;
+    trashed?: string[]; // force_save: FliHub's old whisper files moved to <project>/-trash/<date>-pre-flitools/
   };
 }
 
@@ -85,7 +86,8 @@ export function createFlitoolsClient(
   return {
     baseUrl,
     async submit(path, o = {}) {
-      const body: Record<string, unknown> = { path, wait: false };
+      // language 'auto' explicitly: FliTools defaults to 'en' when it is omitted (orch, 2026-09-27)
+      const body: Record<string, unknown> = { path, wait: false, language: 'auto' };
       if (o.force) body.force = true;
       if (o.forceSave) body.force_save = true;
       const { status, json } = await call('POST', '/api/transcribe', body);

@@ -47,7 +47,7 @@ describe('runFlitoolsJob', () => {
     const headers = submit.init?.headers as Record<string, string>;
     expect(headers['content-type']).toBe('application/json');
     expect(headers['x-fli-principal']).toBe('agent:flihub');
-    expect(JSON.parse(String(submit.init?.body))).toEqual({ path: '/p/hub/recordings/x.mov', wait: false });
+    expect(JSON.parse(String(submit.init?.body))).toEqual({ path: '/p/hub/recordings/x.mov', wait: false, language: 'auto' });
     expect(calls[1].url).toBe('http://ft/api/jobs/j1');
   });
 
@@ -56,7 +56,7 @@ describe('runFlitoolsJob', () => {
       () => ok({ id: 'j', status: 'done', result: { files: FILES } }),
     ]);
     await runFlitoolsJob(client, '/v.mov', { force: true, forceSave: true, sleep: noSleep });
-    expect(JSON.parse(String(calls[0].init?.body))).toEqual({ path: '/v.mov', wait: false, force: true, force_save: true });
+    expect(JSON.parse(String(calls[0].init?.body))).toEqual({ path: '/v.mov', wait: false, language: 'auto', force: true, force_save: true });
   });
 
   it('suspect comes through (FliTools already retried once — FliHub must surface it)', async () => {

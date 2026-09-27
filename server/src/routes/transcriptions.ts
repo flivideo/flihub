@@ -14,7 +14,7 @@ import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/pa
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { appendTelemetryEntry } from '../utils/telemetry.js';
-import { isTranscriptFresh, trashTranscriptsFor, readTranscriptHealth } from '../utils/transcriptFiles.js';
+import { isTranscriptFresh, readTranscriptHealth } from '../utils/transcriptFiles.js';
 import { createFlitoolsClient, runFlitoolsJob, type FlitoolsClient, type RunOptions } from '../utils/flitoolsClient.js';
 
 // In-memory state
@@ -146,29 +146,31 @@ export function createTranscriptionRoutes(
       processNextJob();
     };
 
-    // B584 (David, 2026-09-27): FliTools is the only transcriber. Whatever transcript this take
-    // already has (a stale one, or a forced redo) goes to the project's -trash first — never
-    // overwritten in place (orch ruling) — so FliTools writes into an empty slot.
-    trashTranscriptsFor(videoPath)
-      .then((trashed) => {
-        if (trashed.length) console.log(`[transcription] moved ${trashed.length} old transcript file(s) of ${job.videoFilename} to -trash`);
-        return runFlitoolsJob(flitools, videoPath, {
-          force: job.force,
-          ...runOptions,
-          isAborted: () => aborting || activeJob?.jobId !== currentJobId,
-          onProgress: (view) => {
-            const text = `[FliTools] ${view.phase ?? view.status}${view.pct !== undefined ? ` ${view.pct}%` : ''}\n`;
-            job.streamedText = text;
-            io.emit('transcription:progress', { jobId: currentJobId, text });
-          },
-        });
-      })
+    // B584 (David, 2026-09-27): FliTools is the only transcriber. force_save = FliHub's consent as
+    // owner of its old whisper output: FliTools moves it to <project>/-trash/<date>-pre-flitools/
+    // only AT SAVE TIME, once a good transcript exists (never overwritten in place — orch ruling).
+    // A failed job leaves the old transcript where it was; a FliTools-made file (e.g. FliCut's) is
+    // refreshed, not binned.
+    runFlitoolsJob(flitools, videoPath, {
+      force: job.force,
+      forceSave: true,
+      ...runOptions,
+      isAborted: () => aborting || activeJob?.jobId !== currentJobId,
+      onProgress: (view) => {
+        const text = `[FliTools] ${view.phase ?? view.status}${view.pct !== undefined ? ` ${view.pct}%` : ''}\n`;
+        job.streamedText = text;
+        io.emit('transcription:progress', { jobId: currentJobId, text });
+      },
+    })
       .then((view) => {
         job.status = 'complete';
         job.completedAt = new Date().toISOString();
         job.health = view.health ?? view.result?.transcript?.health;
         const engine = view.result?.transcript?.engine;
         const transcriptPath = view.result?.files?.txt ?? path.join(transcriptsDir, `${getBaseName(job.videoFilename)}.txt`);
+        if (view.result?.trashed?.length) {
+          console.log(`[transcription] FliTools moved ${view.result.trashed.length} old whisper file(s) of ${job.videoFilename} to -trash`);
+        }
         console.log(
           `Transcription complete: ${job.videoFilename} (${engine?.name ?? 'flitools'}${view.result?.reused ? `, reused ${view.result.reused}` : ''})` +
             (job.health?.suspect ? ` — SUSPECT: ${job.health.reasons.join('; ')}` : '')

@@ -1,6 +1,7 @@
 // B584 through FliHub's own queue: POST /api/transcriptions/queue → FliTools (faked) → status.
-// Old transcripts go to -trash before FliTools writes (orch ruling, never overwritten in place),
-// suspect health reaches the status route from the .json, and FliTools down is a loud error.
+// FliHub sends force_save and never touches old files itself: FliTools moves FliHub's old whisper
+// output to -trash/<date>-pre-flitools only once a good transcript is saved (orch ruling). A failed
+// job leaves the old transcript in place. suspect reaches the status route; FliTools down is loud.
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
@@ -26,26 +27,38 @@ beforeEach(() => {
 });
 afterEach(() => fs.rmSync(tmp, { recursive: true, force: true }));
 
-/** A FliTools that "transcribes" by writing flitools.transcript/1 files, like the real one. */
-function fakeFlitools(health: { suspect: boolean; reasons: string[] }) {
-  const submitted: { path: string; force?: boolean; forceSave?: boolean }[] = [];
+/** A FliTools that "transcribes" like the real one: force_save moves FliHub's old whisper files
+ *  (json without schema) to -trash/<date>-pre-flitools at save time, then writes .txt last. */
+function fakeFlitools(health: { suspect: boolean; reasons: string[] }, opts: { fail?: boolean } = {}) {
+  const submitted: { path: string; force?: boolean; forceSave?: boolean; oldFilesPresent: boolean }[] = [];
   const client: FlitoolsClient = {
     baseUrl: 'http://fake-flitools',
     async submit(videoPath, o = {}) {
-      submitted.push({ path: videoPath, ...o });
-      // the slot must be empty: FliHub moved the old files out first
       const base = path.basename(videoPath, path.extname(videoPath));
       const files = { json: path.join(paths.transcripts, `${base}.json`), srt: path.join(paths.transcripts, `${base}.srt`), txt: path.join(paths.transcripts, `${base}.txt`) };
-      if (fs.existsSync(files.json)) throw new Error('slot not empty — old files were not moved to -trash');
+      submitted.push({ path: videoPath, ...o, oldFilesPresent: fs.existsSync(files.txt) });
+      if (opts.fail) return { id: 'j1', status: 'failed', error: { failureMode: 'engine-error', message: 'groq quota and mlx failed' } } as FlitoolsJobView;
+      const trashed: string[] = [];
+      if (fs.existsSync(files.json)) {
+        let schema: string | undefined;
+        try { schema = JSON.parse(fs.readFileSync(files.json, 'utf8')).schema; } catch { schema = undefined; }
+        if (schema !== 'flitools.transcript/1') {
+          if (!o.forceSave) return { id: 'j1', status: 'done', result: { files: null, saveError: `owned by another app: ${files.json}` } } as FlitoolsJobView;
+          const dir = path.join(project, '-trash', '2026-09-27-pre-flitools');
+          fs.mkdirSync(dir, { recursive: true });
+          for (const f of Object.values(files)) {
+            if (fs.existsSync(f)) { const to = path.join(dir, path.basename(f)); fs.renameSync(f, to); trashed.push(to); }
+          }
+        }
+      }
       fs.mkdirSync(paths.transcripts, { recursive: true });
       fs.writeFileSync(files.json, JSON.stringify({ schema: 'flitools.transcript/1', text: 'new words', segments: [], words: [], health }));
       fs.writeFileSync(files.srt, '1\n00:00:00,000 --> 00:00:01,000\nnew words\n');
       fs.writeFileSync(files.txt, 'new words'); // .txt last
-      const view: FlitoolsJobView = { id: 'j1', status: 'done', pct: 100, health, result: { reused: null, files, transcript: { engine: { name: 'groq', model: 'whisper-large-v3' } } } };
-      return view;
+      return { id: 'j1', status: 'done', pct: 100, health, result: { reused: null, files, trashed, transcript: { engine: { name: 'groq', model: 'whisper-large-v3' } } } } as FlitoolsJobView;
     },
     async job() {
-      throw new Error('not polled — submit answered done');
+      throw new Error('not polled — submit answered');
     },
   };
   return { client, submitted };
@@ -70,7 +83,7 @@ async function waitForStatus(app: express.Express, filename: string, want: strin
 }
 
 describe('FliHub transcribes through FliTools', () => {
-  it('forced redo: old whisper files go to -trash, FliTools writes fresh ones, suspect reaches status', async () => {
+  it('forced redo: force_save, FliHub leaves old files for FliTools to move at save time; suspect reaches status', async () => {
     const video = path.join(paths.recordings, '03-2-setup.mov');
     fs.writeFileSync(video, 'take');
     const t = new Date(Date.now() - 600_000);
@@ -87,10 +100,12 @@ describe('FliHub transcribes through FliTools', () => {
 
     const status = await waitForStatus(app, '03-2-setup.mov', 'complete');
     expect(status.health).toEqual({ suspect: true, reasons: ['repeated line x12'] });
-    expect(submitted).toEqual([{ path: video, force: true, forceSave: undefined }]);
+    // FliHub moved nothing itself: the old files were still there when FliTools got the job
+    expect(submitted).toEqual([{ path: video, force: true, forceSave: true, oldFilesPresent: true }]);
     expect(fs.readFileSync(path.join(paths.transcripts, '03-2-setup.txt'), 'utf8')).toBe('new words');
-    expect(fs.readdirSync(paths.trash).sort()).toEqual(['03-2-setup.json', '03-2-setup.srt', '03-2-setup.txt']);
-    expect(fs.readFileSync(path.join(paths.trash, '03-2-setup.txt'), 'utf8')).toContain('old whisper');
+    const pre = path.join(project, '-trash', '2026-09-27-pre-flitools');
+    expect(fs.readdirSync(pre).sort()).toEqual(['03-2-setup.json', '03-2-setup.srt', '03-2-setup.txt']);
+    expect(fs.readFileSync(path.join(pre, '03-2-setup.txt'), 'utf8')).toContain('old whisper');
   });
 
   it('a fresh transcript without force is still skipped (FR-159 reason), and FliTools is not called', async () => {
@@ -104,6 +119,43 @@ describe('FliHub transcribes through FliTools', () => {
     const res = await request(appWith(client)).post('/api/transcriptions/queue').send({ videoPath: video });
     expect(res.body).toMatchObject({ success: true, job: null, skipped: true });
     expect(submitted).toEqual([]);
+  });
+
+  it('a failed FliTools job leaves the old transcript exactly where it was', async () => {
+    const video = path.join(paths.recordings, '04-1-annotate.mov');
+    fs.writeFileSync(video, 'take');
+    const t = new Date(Date.now() - 600_000);
+    fs.utimesSync(video, t, t);
+    fs.mkdirSync(paths.transcripts, { recursive: true });
+    for (const ext of ['txt', 'srt', 'json']) fs.writeFileSync(path.join(paths.transcripts, `04-1-annotate.${ext}`), 'old but real');
+
+    const { client } = fakeFlitools({ suspect: false, reasons: [] }, { fail: true });
+    const app = appWith(client);
+    await request(app).post('/api/transcriptions/queue').send({ videoPath: video, force: true });
+    await waitForStatus(app, '04-1-annotate.mov', 'complete'); // job gone; old transcript still counts
+    const list = (await request(app).get('/api/transcriptions')).body;
+    expect(list.recent[0]).toMatchObject({ status: 'error' });
+    expect(list.recent[0].error).toContain('engine-error');
+    for (const ext of ['txt', 'srt', 'json']) {
+      expect(fs.readFileSync(path.join(paths.transcripts, `04-1-annotate.${ext}`), 'utf8')).toBe('old but real');
+    }
+    expect(fs.existsSync(path.join(project, '-trash'))).toBe(false);
+  });
+
+  it('a fresh FliTools-made transcript (e.g. FliCut\'s) is refreshed in place, never binned', async () => {
+    const video = path.join(paths.recordings, '05-1-artefact.mov');
+    fs.writeFileSync(video, 'take');
+    const t = new Date(Date.now() - 600_000);
+    fs.utimesSync(video, t, t);
+    fs.mkdirSync(paths.transcripts, { recursive: true });
+    fs.writeFileSync(path.join(paths.transcripts, '05-1-artefact.json'), JSON.stringify({ schema: 'flitools.transcript/1', text: 'fliCut made this' }));
+    fs.writeFileSync(path.join(paths.transcripts, '05-1-artefact.txt'), 'fliCut made this');
+    const { client } = fakeFlitools({ suspect: false, reasons: [] });
+    const app = appWith(client);
+    await request(app).post('/api/transcriptions/queue').send({ videoPath: video, force: true });
+    await waitForStatus(app, '05-1-artefact.mov', 'complete');
+    await new Promise((r) => setTimeout(r, 20));
+    expect(fs.existsSync(path.join(project, '-trash'))).toBe(false);
   });
 
   it('FliTools down → the job errors loudly with the reason, never a silent skip', async () => {
