@@ -3,7 +3,7 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `bb38379c40aa` · **generated** 2026-09-25T00:53:14+00:00
+- **commit** `313558bb70b2` · **generated** 2026-09-27T01:44:25+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
@@ -115,7 +115,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/routes/video.ts` — `folder (branching)` (set) :81 · `ext (membership)` (set) :161 · `ext (membership) #2` (set) :242
 - `server/src/scripts/scanProjects.ts` — `DiscrepancyType` (set) :30 · `DiscrepancySeverity` (set) :31 · `Discrepancy` :33 · `ProjectScanResult` :44 · `ScanSummary` :51
 - `server/src/utils/archiveInventory.ts` — `BuildArchiveRowOpts` :82
-- `server/src/utils/aspectCheck.ts` — `Size` :18 · `AspectCheckDeps` :128
+- `server/src/utils/aspectCheck.ts` — `Size` :18 · `AspectCheckDeps` :145
 - `server/src/utils/brands.ts` — `BrandInfo` :13 · `BrandsFileEntry` :23
 - `server/src/utils/chapterExtraction.ts` — `SrtSegment` :31 · `ChapterInfo` :40 · `MatchResult` :264 · `InternalChapterResult` :549
 - `server/src/utils/chapterRecording.ts` — `SegmentInfo` :14 · `ChapterSegments` :23
@@ -2814,13 +2814,13 @@ WatcherManager centralizes all file system watchers.
 | `width` | `number` | — | `server/src/utils/aspectCheck.ts:19` |
 | `height` | `number` | — | `server/src/utils/aspectCheck.ts:20` |
 
-### `server/src/utils/aspectCheck.AspectCheckDeps` — interface — `server/src/utils/aspectCheck.ts:128-132`
+### `server/src/utils/aspectCheck.AspectCheckDeps` — interface — `server/src/utils/aspectCheck.ts:145-149`
 
 | field | type | default | at |
 |---|---|---|---|
-| `probeFrame` | `(file: string) => Promise<Size \| null> → server/src/utils/aspectCheck.Size` | — | `server/src/utils/aspectCheck.ts:129` |
-| `detectPicture` | `(file: string, durationSec?: number) => Promise<Size \| null> → server/src/utils/aspectCheck.Size` | — | `server/src/utils/aspectCheck.ts:130` |
-| `now` | `() => Date` | — | `server/src/utils/aspectCheck.ts:131` |
+| `probeFrame` | `(file: string) => Promise<Size \| null> → server/src/utils/aspectCheck.Size` | — | `server/src/utils/aspectCheck.ts:146` |
+| `detectPicture` | `(file: string, durationSec?: number) => Promise<Size \| null> → server/src/utils/aspectCheck.Size` | — | `server/src/utils/aspectCheck.ts:147` |
+| `now` | `() => Date` | — | `server/src/utils/aspectCheck.ts:148` |
 
 ### `server/src/utils/brands.BrandInfo` — interface — `server/src/utils/brands.ts:13-21`
 

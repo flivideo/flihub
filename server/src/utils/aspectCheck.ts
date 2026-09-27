@@ -35,6 +35,14 @@ const CANVAS: Record<ProjectAspectValue, string> = {
 const RATIO_TOLERANCE = 0.03;
 /** A picture covering less than 90% of the frame is boxed (pillar/letterbox), not noise. */
 const BOXED_BELOW = 0.9;
+/**
+ * Inside a right-shaped canvas, a boxed picture is "the wrong shape" only when it is clearly a
+ * different shape (B&J's portrait feed in a landscape canvas is 68% off). An Ecamm screen-share
+ * inset with a margin stays ~16:9 and is a layout, not a fault (d06, 2026-09-27). cropdetect boxes
+ * the inset screen PLUS the webcam PIP, which can poke past the screen's edge, so the box's ratio
+ * drifts around 1.8 (1814×998 = 1.82, 1852×1006 = 1.84) — a 3% band split identical takes at random.
+ */
+const INSET_TOLERANCE = 0.2;
 
 const near = (a: number, b: number) => Math.abs(a - b) / b <= RATIO_TOLERANCE;
 const dims = (s: Size) => `${s.width}×${s.height}`;
@@ -99,13 +107,22 @@ export function classifyAspect(
   const frameOk = near(frame.width / frame.height, want);
   const coverage = picture ? (picture.width * picture.height) / (frame.width * frame.height) : 1;
   const boxed = picture !== null && coverage < BOXED_BELOW;
-  const pictureOk = boxed ? near(picture!.width / picture!.height, want) : frameOk;
+  const pictureRatio = boxed ? picture!.width / picture!.height : want;
+  const pictureOk = boxed ? near(pictureRatio, want) : frameOk;
+  const insetOk = boxed && Math.abs(pictureRatio - want) / want <= INSET_TOLERANCE;
   const base = { expected, frame, picture };
   const fix = `set Ecamm to a ${CANVAS[expected]} canvas`;
   const black = boxed ? ` (${Math.round((1 - coverage) * 100)}% black)` : '';
 
   if (frameOk && (!boxed || pictureOk)) {
     return { ...base, status: 'ok', message: `Matches ${LABEL[expected]} (${dims(frame)})` };
+  }
+  if (frameOk && insetOk) {
+    return {
+      ...base,
+      status: 'ok',
+      message: `Matches ${LABEL[expected]} (${dims(frame)}) · picture inset ${dims(picture!)} — a margin or layout (screen inset, PIP), fine`,
+    };
   }
   if (!frameOk && !boxed) {
     return { ...base, status: 'mismatch', message: `expected ${LABEL[expected]} · got ${dims(frame)} — ${fix}` };

@@ -52,6 +52,16 @@ describe('classifyAspect', () => {
     expect(r.message).toBe('expected 16:9 landscape · got 1080×1920 — set Ecamm to a 1920×1080 canvas');
   });
 
+  it('d06 screen-share inset (2026-09-27): a ~16:9 picture with a margin is ok, never "re-record"', () => {
+    // Ecamm screen-share layout: screen inset with a margin + webcam PIP. cropdetect boxes screen +
+    // PIP, so the ratio drifts: 1814×998 (1.82) passed, 1852×1006 (1.84, 10% black) was flagged.
+    const r = classifyAspect('16:9', { width: 1920, height: 1080 }, { width: 1852, height: 1006 });
+    expect(r.status).toBe('ok');
+    expect(r.message).not.toMatch(/wrong shape|re-record/);
+    expect(r.message).toContain('inset');
+    expect(classifyAspect('16:9', { width: 1920, height: 1080 }, { width: 1814, height: 998 }).status).toBe('ok');
+  });
+
   it('right canvas, wrong picture inside it (landscape project, portrait feed)', () => {
     const r = classifyAspect('16:9', { width: 1920, height: 1080 }, { width: 608, height: 1080 });
     expect(r.status).toBe('mismatch');
