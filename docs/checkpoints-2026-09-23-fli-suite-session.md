@@ -1,15 +1,16 @@
-# Checkpoint: FliHub in the Fli-suite campaign (2026-09-22 → 23)
+# Checkpoint: FliHub in the Fli-suite campaign (2026-09-22 → 27)
 
-This session was a FliHub worker for the peer orchestrators (`d01-work`, later `flivideo-orch`, on
-the `uds:/tmp/cc-socks/88202.sock` and `59703` sockets), plus `flistudio`. Every job below is pushed
-to `origin/main`. The main checkout, `/Users/davidcruwys/dev/ad/flivideo/flihub`, is at `376459f` plus
-this doc, and FliHub was restarted at `376459f` (server + client) after an idle check. It is live on
-loopback only.
+This session is a FliHub worker for the peer sessions `flivideo-orch` (now `uds:/tmp/cc-socks/62890.sock`),
+`flitools` (`62190`) and `d06-work` (`99527`). Every job below is pushed to `origin/main`. The main checkout
+`/Users/davidcruwys/dev/ad/flivideo/flihub` is live at `a1c3f85` (B584 merge) plus docs-only commits. It runs
+under Overmind, loopback only. Health: `/api/system/health`.
 
 ## Current step
-**Idle, waiting on flivideo-orch.** The d04 UAT preflight probe (REST-only take workflow) is reported and
-cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/handovers/deliver-2026-09-23-B587-B588-d04-uat.md`
-(§4 D3/D7). Standing ruling: no FliHub feature work, and don't adopt the agent layer. Nothing is half-built.
+**Idle, waiting on flivideo-orch.** B584 is live: FliHub transcribes through FliTools :7161. The d06 loops are
+re-transcribed clean. Nothing is half-built, and no branch or worktree is open. Standing rulings:
+- no FliHub feature work unless orch/David asks;
+- never pull, merge or restart the main checkout without David's window plus an idle check (pulling IS the restart);
+- build in a worktree off origin/main and push with `git push origin HEAD:main`.
 
 ## Progress
 ### Done (commit → what)
@@ -66,6 +67,8 @@ cleaned up. The orchestrator's plan is `/Users/davidcruwys/dev/ad/brains/docs/ha
   client 329.
 
 ## Ruled out this window
+- **language "auto" on every FliTools submit**: rejected (flitools flagged it, orch ruled option 1). Auto misreads short takes and health can't see it. Use the project's fli.studio.json `languages`
+- **d06-work's two-flag whisperArgs stop-gap**: never applied (cancelled); B584 removed whisperArgs
 - **FliHub trashing old transcripts before submitting to FliTools**: rejected (orch + flitools). A failed job left the take with no transcript, and it would bin FliCut's fresh FliTools files. Use force_save
 - **Refilling sequence gaps (lowest unused)**: rejected, and orch agreed. A sequence is take order, so the rule is highest on disk + 1
 - **Hash-matching transcripts to recordings**: rejected for now. Hashing a multi-GB .mov on every status poll is too slow; mtime order is the guard
