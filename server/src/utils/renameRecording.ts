@@ -4,6 +4,7 @@ import path from 'path';
 import type { ProjectPaths } from '../../../shared/paths.js';
 import type { ProjectState, TranscriptionJob } from '../../../shared/types.js';
 import { readProjectState, writeProjectState } from './projectState.js';
+import { ENGINE_COPIES_DIR, engineCopiesFor } from './transcriptFiles.js';
 
 /**
  * Check if a recording is currently being transcribed
@@ -96,6 +97,15 @@ export async function renameDerivableFiles(
         path.join(paths.transcripts, `${oldBase}${ext}`),
         path.join(paths.transcripts, `${newBase}${ext}`)
       )
+    )
+  );
+
+  // FliTools' per-engine copies: engines/<old>.<engine>.<ext> → engines/<new>.<engine>.<ext>
+  const enginesDir = path.join(paths.transcripts, ENGINE_COPIES_DIR);
+  const copies = await engineCopiesFor(paths.transcripts, oldBase);
+  await Promise.all(
+    copies.map((f) =>
+      safeRename(path.join(enginesDir, f), path.join(enginesDir, newBase + f.slice(oldBase.length)))
     )
   );
 

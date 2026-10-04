@@ -78,7 +78,10 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
 - **Chapters are derived three ways**: client `NN-` grouping, the final-SRT query, and POEM WUI
   filenames. Grep all three before changing anything called "chapter".
 - **Two transcript `.json` shapes coexist.** Old FliHub whisper output is segment-level with no
-  `words`. FliTools writes `flitools.transcript/1` (words + `health`). Check `schema` before reading.
+  `words`. FliTools writes `flitools.transcript/<n>` (words + `health`). Check `schema` before reading.
+- **`<transcripts>/engines/` holds FliTools' per-engine copies** (`<base>.<engine>.<ext>`). FliHub reads
+  only the plain `<base>.*` files, but anything that moves a take must carry them
+  (`engineCopiesFor` in `utils/transcriptFiles.ts`), or they stay behind under a freed name.
 
 ## Decisions worth knowing
 

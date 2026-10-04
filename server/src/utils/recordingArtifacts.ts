@@ -10,6 +10,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { getProjectPaths } from '../../../shared/paths.js';
+import { ENGINE_COPIES_DIR, engineCopiesFor } from './transcriptFiles.js';
 
 export type ArtifactKind = 'recording' | 'transcript';
 
@@ -53,6 +54,13 @@ export async function findRecordingArtifacts(
       label: `Transcript (${ext})`,
       path: path.join(paths.transcripts, `${base}${ext}`),
       filename: `${base}${ext}`,
+    })),
+    // FliTools' per-engine copies (engines/<base>.<engine>.<ext>) go with the take
+    ...(await engineCopiesFor(paths.transcripts, base)).map((f) => ({
+      kind: 'transcript' as const,
+      label: `Transcript copy (${f.slice(base.length + 1)})`,
+      path: path.join(paths.transcripts, ENGINE_COPIES_DIR, f),
+      filename: f,
     })),
   ];
 

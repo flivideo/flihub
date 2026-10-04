@@ -44,6 +44,11 @@ re-transcribed clean. Nothing is half-built, and no branch or worktree is open. 
 - [x] `c2fbde1` aspect: a ~16:9 inset picture (Ecamm screen-share + PIP, cropdetect box drifts ~1.8) is ok with a soft note, and only >20% off counts as wrong shape. Live 2026-09-27 (David's go); all three d06 Incoming takes re-probe ok
 - [x] `a1c3f85` B584 LIVE (David's go, 2026-09-27): FliHub transcribes through FliTools :7161 (pid 26286, 97602fc). force_save; the language comes from fli.studio.json; suspect shows as a red T⚠. d06 03-2-setup + 04-1-annotate re-done as the caller: both suspect:false with clean tails; the looped originals are in d06 -trash/2026-09-27-pre-flitools/
 
+- [x] `b06024f` transcript health reads any `flitools.transcript/<n>` schema (ready for transcript/2)
+- [x] engine copies (David's transcript naming ruling, 2026-10-04): undo, rename and trash-recording carry
+      `transcripts/engines/<base>.<engine>.*`; engines/ is never counted as a recording or orphan. Not restarted on
+      the M4 (David restarts it himself); orch pulls onto Roamy
+
 ### Blocked on David
 - [ ] Nothing. B&J a01 now has `aspect` 9:16 (v-beauty-and-joy `ccb25b8`), and the stale files are deleted
 
