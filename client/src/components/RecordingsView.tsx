@@ -41,7 +41,7 @@ import {
   formatChapterTitle,
   formatTimestamp,
 } from '../utils/formatting';
-import { LoadingSpinner, ErrorMessage, AspectWarningChip } from './shared';
+import { LoadingSpinner, ErrorMessage, AspectWarningChip, SoundHoleChip } from './shared';
 import { ConfirmationModal } from './shared/ConfirmationModal'; // FR-156
 import { API_URL } from '../config';
 import { NoRecordingsState } from './shared/NoRecordingsState';
@@ -1531,6 +1531,7 @@ export function RecordingsView() {
                         {file.aspectWarning && (
                           <AspectWarningChip filename={file.filename} warning={file.aspectWarning} />
                         )}
+                        <SoundHoleChip check={file.soundHoles} />
                         <TranscriptionBadge
                           filename={file.filename}
                           filePath={file.path}

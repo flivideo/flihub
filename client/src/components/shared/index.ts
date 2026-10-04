@@ -19,6 +19,7 @@ export type { UndoToastProps } from './UndoToast';
 export { SsdIndicator } from './SsdIndicator';
 export { TrashIndicator } from './TrashIndicator';
 export { AspectWarningBanner, AspectWarningChip } from './AspectWarning';
+export { SoundHoleChip, describeSoundHoles } from './SoundHoles';
 export { StoragePanel } from './StoragePanel';
 export type { StoragePanelProps } from './StoragePanel';
 export { EditableFileRow } from './EditableFileRow';

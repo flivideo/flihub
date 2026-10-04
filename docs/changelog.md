@@ -14,6 +14,22 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## Sound holes — flag digital-zero dropouts when a take lands (2026-10-04, D01 editing pass item 5)
+
+Several d01 takes had stretches inside speech where the audio drops to digital zero (−90…−110 dB,
+0.1–0.7 s, instant on/off) and chops words, e.g. `03-4-flistudio.mov` 12.30→12.97 s chops "we".
+The likely cause is Ecamm recording from `KrispAudioDeviceMic`. `server/src/utils/soundHoles.ts`
+streams the take's audio through ffmpeg (16 kHz mono, 10 ms RMS windows) and flags a hole when a
+run below −75 dB with a median of −90 dB or lower lasts 0.1–0.7 s, sits inside the take, and has
+speech (≥ −50 dB) within 30 ms of one edge. A zeroed pause with room tone on both sides chops no
+word and isn't flagged. The check runs at ingest (Incoming card line plus a 30 s toast via
+`file:sound-holes`), carries onto the recording at promotion (`RecordingState.soundHoles`), and is
+backfilled in the background for any listed recording that has no check, so existing projects get
+it too. The Recordings row shows a pink `🔇 N sound holes` chip; its tooltip lists each time. An
+unchecked take shows `♪ checking` and an unreadable one shows `♪ not checked`, so neither can pass
+for clean. The check only reports: FliHub has no audio cleanup step. Measured on d01: 9 of 20 Ecamm
+takes are flagged. The 13 DJI camera files flag 0, as expected if Krisp is the cause.
+
 ## Hub layout — read `hub/recordings` + `hub/transcripts` (2026-09-22)
 
 David ruled that FliHub's own folders move under `<project>/hub/` for new projects. This is the

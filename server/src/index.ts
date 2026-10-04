@@ -10,6 +10,7 @@ import { env } from './config/env.js';
 import { log } from './config/logger.js';
 import { createWatcher } from './watcher.js';
 import { checkTakeAspect, enqueueAspectCheck } from './utils/aspectCheck.js';
+import { checkTakeSoundHoles, enqueueSoundCheck } from './utils/soundHoles.js';
 import { isLoopbackOrigin, listenLoopback, refuseForeignOrigin } from './utils/loopback.js';
 import { expandPath } from './utils/pathUtils.js';
 import { createRoutes } from './routes/index.js';
@@ -130,6 +131,22 @@ function onNewFile(file: FileInfo) {
   pendingFiles.set(file.path, file);
   io.emit('file:new', file);
   queueAspectCheck(file);
+  queueSoundCheck(file);
+}
+
+// Sound holes (D01 editing pass, item 5): decode the landed take's audio and flag stretches where it
+// drops to digital zero mid-speech, so David knows before editing. Background, one at a time; the
+// result rides on the pending file + 'file:sound-holes', and on promotion into the state file.
+function queueSoundCheck(file: FileInfo) {
+  enqueueSoundCheck(async () => {
+    if (!pendingFiles.has(file.path)) return; // promoted or discarded first — the listing backfills it
+    const soundHoles = await checkTakeSoundHoles(file.path);
+    const pending = pendingFiles.get(file.path);
+    if (!pending) return;
+    pendingFiles.set(file.path, { ...pending, soundHoles });
+    io.emit('file:sound-holes', { path: file.path, soundHoles });
+    if (soundHoles.status !== 'ok') console.warn(`[sound-holes] ${file.filename}: ${soundHoles.message}`);
+  }).catch((err) => console.error('[sound-holes] check failed:', err));
 }
 
 // Aspect check (David, 2026-09-23): after a take lands, compare it with the ACTIVE project's

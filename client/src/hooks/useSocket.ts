@@ -79,6 +79,18 @@ export function useSocket() {
       }
     });
 
+    // Sound holes (D01 editing pass, item 5): the audio check finishes after the take appears.
+    // Holes chop words — re-record now rather than find it in the edit.
+    socket.on('file:sound-holes', ({ path, soundHoles }) => {
+      setFiles((prev) => prev.map((f) => (f.path === path ? { ...f, soundHoles } : f)));
+      if (soundHoles.status === 'holes') {
+        toast.warning(`Sound holes: ${path.split('/').pop()}`, {
+          description: soundHoles.message,
+          duration: 30_000,
+        });
+      }
+    });
+
     socket.on('file:error', ({ path, error }) => {
       toast.error(`Error with ${path.split('/').pop()}: ${error}`);
     });
@@ -90,6 +102,7 @@ export function useSocket() {
       socket.off('file:renamed');
       socket.off('file:deleted');
       socket.off('file:aspect');
+      socket.off('file:sound-holes');
       socket.off('file:error');
       socket.io.off('reconnect_attempt');
     };

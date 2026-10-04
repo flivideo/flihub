@@ -10,11 +10,13 @@ import type {
   RecordingFile,
   TranscriptionJob,
   AspectCheck,
+  SoundHoleCheck,
 } from '../../../shared/types.js';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { checkTakeAspect, enqueueAspectCheck } from '../utils/aspectCheck.js';
+import { checkTakeSoundHoles, enqueueSoundCheck } from '../utils/soundHoles.js';
 import { computeNextCode, parseSeriesCode, compareSeriesCodes, codeToString } from '../utils/nextProjectCode.js';
 import {
   readProjectState,
@@ -31,6 +33,7 @@ import {
   setAspectWarning,
   dismissAspectWarning,
   getActiveAspectWarning,
+  setSoundHoleCheck,
 } from '../utils/projectState.js';
 import { renameRecording } from '../utils/renameRecording.js'; // FR-130: Simplified rename logic
 import { trashTranscriptsFor } from '../utils/transcriptFiles.js';
@@ -89,8 +92,40 @@ export function createRoutes(
     import('../../../shared/types.js').ServerToClientEvents
   >, // Socket.IO for real-time updates
   checkAspect: typeof checkTakeAspect = checkTakeAspect, // injectable for tests
+  checkSound: typeof checkTakeSoundHoles = checkTakeSoundHoles, // injectable for tests
 ): Router {
   const router = Router();
+
+  // Sound holes (D01 editing pass, item 5): store a take's check on its recording. Never fails a caller.
+  const recordSoundHoles = async (projectDir: string, filename: string, check: SoundHoleCheck) => {
+    try {
+      const state = await readProjectState(projectDir);
+      await writeProjectState(projectDir, setSoundHoleCheck(state, filename, check));
+    } catch (err) {
+      console.error(`[sound-holes] could not record check for ${filename}:`, err);
+    }
+  };
+
+  // Backfill: a recording listed with no sound-hole check (an existing project, or a take promoted
+  // before its ingest check finished) is checked in the background, one decode at a time. The row
+  // shows "checking" meanwhile — never blank, so unchecked can't pass for clean. One refresh at the end.
+  const soundInFlight = new Set<string>();
+  const backfillSoundHoles = (projectDir: string, recordings: { filename: string; path: string }[]) => {
+    for (const rec of recordings) {
+      if (soundInFlight.has(rec.path)) continue;
+      soundInFlight.add(rec.path);
+      enqueueSoundCheck(async () => {
+        if (!(await fs.pathExists(rec.path))) return; // renamed or trashed while queued
+        const check = await checkSound(rec.path);
+        await recordSoundHoles(projectDir, rec.filename, check);
+      })
+        .catch((err) => console.error(`[sound-holes] backfill failed for ${rec.filename}:`, err))
+        .finally(() => {
+          soundInFlight.delete(rec.path);
+          if (soundInFlight.size === 0) io?.emit('recordings:changed');
+        });
+    }
+  };
 
   // GET /api/config - Get current configuration
   router.get('/config', (_req: Request, res: Response) => {
@@ -259,6 +294,7 @@ export function createRoutes(
       // Aspect check result from ingest (if the probe finished before promotion)
       const pendingInfo = pendingFiles.get(originalPath);
       const landedAspect = pendingInfo?.aspectCheck;
+      const landedSound = pendingInfo?.soundHoles;
 
       await fs.move(originalPath, newPath);
 
@@ -280,6 +316,9 @@ export function createRoutes(
           console.error(`[aspect] could not record warning for ${newFilename}:`, err);
         }
       };
+      // Sound holes: carry the ingest result onto the recording. Not finished yet → the listing backfills it.
+      if (!isBroll && landedSound) await recordSoundHoles(projectDir, newFilename, landedSound);
+
       let aspect: RenameResponse['aspect'];
       if (!isBroll) {
         if (landedAspect) {
@@ -603,6 +642,7 @@ export function createRoutes(
                 isParked, // FR-120: From state file
                 annotation, // FR-123: From state file
                 aspectWarning: getActiveAspectWarning(state, entry.name), // undismissed aspect mismatch
+                soundHoles: state.recordings[entry.name]?.soundHoles, // absent = not checked yet (backfilled below)
               } satisfies RecordingFile,
             };
           })
@@ -617,6 +657,7 @@ export function createRoutes(
 
       // Convert map to array
       const recordings = Array.from(unifiedMap.values());
+      backfillSoundHoles(config.projectDirectory, recordings.filter((r) => !r.soundHoles));
 
       // Sort by chapter (numeric), then sequence (numeric), then timestamp
       recordings.sort((a, b) => {

@@ -11,7 +11,7 @@
  */
 
 import fs from 'fs-extra';
-import type { AspectCheck, ProjectShips, ProjectState, RecordingState } from '../../../shared/types.js';
+import type { AspectCheck, ProjectShips, ProjectState, RecordingState, SoundHoleCheck } from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from './pathUtils.js';
 
@@ -142,7 +142,8 @@ export function setRecordingSafe(
     !recordingState.parked &&
     !recordingState.stage &&
     !recordingState.annotation &&
-    !recordingState.aspectWarning // keep an aspect warning (dismissed or not) — it is history
+    !recordingState.aspectWarning && // keep an aspect warning (dismissed or not) — it is history
+    !recordingState.soundHoles // keep the sound-hole check — dropping it would re-decode the take
   ) {
     delete newState.recordings[filename];
   }
@@ -238,7 +239,8 @@ export function setRecordingParked(
     !recordingState.parked &&
     !recordingState.stage &&
     !recordingState.annotation &&
-    !recordingState.aspectWarning // keep an aspect warning (dismissed or not) — it is history
+    !recordingState.aspectWarning && // keep an aspect warning (dismissed or not) — it is history
+    !recordingState.soundHoles // keep the sound-hole check — dropping it would re-decode the take
   ) {
     delete newState.recordings[filename];
   }
@@ -425,4 +427,19 @@ export function getActiveAspectWarning(state: ProjectState, filename: string): A
   const active: AspectCheck & { dismissedAt?: string } = { ...warning };
   delete active.dismissedAt;
   return active;
+}
+
+// ============================================
+// Sound holes (D01 editing pass, item 5): the take's sound-hole check, kept on the recording so the
+// row shows it before editing and the take is decoded once, not on every listing.
+// ============================================
+
+export function setSoundHoleCheck(state: ProjectState, filename: string, check: SoundHoleCheck): ProjectState {
+  return {
+    ...state,
+    recordings: {
+      ...state.recordings,
+      [filename]: { ...state.recordings[filename], soundHoles: { ...check } },
+    },
+  };
 }

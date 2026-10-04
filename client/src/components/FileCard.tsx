@@ -6,6 +6,7 @@ import type { NamingState } from '../App';
 import { formatFileSize, formatDuration, formatRelativeTime } from '../utils/formatting';
 import { buildPreviewFilename } from '../utils/naming';
 import { IncomingVideoModal } from './IncomingVideoModal';
+import { describeSoundHoles } from './shared/SoundHoles';
 
 interface FileCardProps {
   file: FileInfo;
@@ -127,12 +128,22 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
         : 'bg-surface rounded-lg border border-warm p-4 shadow-sm';
 
   const aspectMismatch = file.aspectCheck?.status === 'mismatch';
+  const soundHoles = file.soundHoles?.status === 'holes' ? file.soundHoles : null;
 
   return (
     <div className={`${cardClasses} ${aspectMismatch ? 'ring-2 ring-red-500' : ''}`}>
       {aspectMismatch && (
         <p data-testid="filecard-aspect-warning" className="mb-2 rounded bg-red-100 px-2 py-1 text-sm font-semibold text-red-800">
           ⚠ Wrong aspect — {file.aspectCheck!.message}
+        </p>
+      )}
+      {soundHoles && (
+        <p
+          data-testid="filecard-sound-holes"
+          className="mb-2 whitespace-pre-line rounded bg-fuchsia-100 px-2 py-1 text-sm font-semibold text-fuchsia-800"
+          title={describeSoundHoles(soundHoles)}
+        >
+          🔇 {soundHoles.message}
         </p>
       )}
       {/* Original filename and metadata */}

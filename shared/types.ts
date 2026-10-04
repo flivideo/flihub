@@ -10,6 +10,26 @@ export interface FileInfo {
   size: number; // File size in bytes
   duration?: number; // Video duration in seconds (if available)
   aspectCheck?: AspectCheck; // Filled in after the take lands (probe runs in the background)
+  soundHoles?: SoundHoleCheck; // Filled in after the take lands (audio decode runs in the background)
+}
+
+// Sound holes (D01 editing pass, item 5, 2026-10-04): stretches inside speech where the audio drops
+// to digital zero (−90…−105 dB, 0.1–0.7 s, instant on/off) and chops words. Likely the Krisp virtual
+// mic. Report only — FliHub never cleans or changes audio. Detector: server/src/utils/soundHoles.ts.
+export interface SoundHole {
+  start: number; // seconds into the take
+  end: number;
+  duration: number;
+  floorDb: number; // median level inside the hole
+  /** Which side of the hole is speech: it chops a word's end, a word's start, or both. */
+  cuts: 'word-end' | 'word-start' | 'both';
+}
+export interface SoundHoleCheck {
+  /** ok (checked, none) · holes (shout) · unknown (could not read the audio — NOT clean) */
+  status: 'ok' | 'holes' | 'unknown';
+  holes: SoundHole[];
+  message: string;
+  checkedAt: string;
 }
 
 // Aspect check (David, 2026-09-23): does a take match the aspect the project was set up for?
@@ -414,6 +434,7 @@ export interface RecordingFile {
   isParked: boolean; // FR-120: True if parked (excluded from this edit)
   annotation?: string; // FR-123: Optional note explaining why parked
   aspectWarning?: AspectCheck; // Undismissed aspect mismatch from ingest (state file)
+  soundHoles?: SoundHoleCheck; // Sound-hole check (state file); absent = not checked yet
 }
 
 // FR-17: Image info for incoming images from Downloads
@@ -519,6 +540,7 @@ export interface ServerToClientEvents {
   'file:new': (file: FileInfo) => void;
   'file:deleted': (data: { path: string }) => void; // FR-4: file deleted from disk
   'file:aspect': (data: { path: string; aspectCheck: AspectCheck }) => void; // aspect probe finished
+  'file:sound-holes': (data: { path: string; soundHoles: SoundHoleCheck }) => void; // sound-hole check finished
   'file:renamed': (data: { oldPath: string; newPath: string }) => void;
   'file:error': (data: { path: string; error: string }) => void;
   // NFR-5: Real-time updates
@@ -1019,6 +1041,7 @@ export interface RecordingState {
   annotation?: string; // FR-123: Optional note explaining why parked (e.g., "Too technical for YouTube")
   stage?: string; // Future: per-recording stage (recording, first-edit, review, etc.)
   aspectWarning?: AspectCheck & { dismissedAt?: string }; // Set on promotion of a mismatched take
+  soundHoles?: SoundHoleCheck; // Sound-hole check result (ingest, or backfilled on listing)
 }
 
 // FR-157: Per-chapter persisted state (chapters are otherwise derived from filenames)
