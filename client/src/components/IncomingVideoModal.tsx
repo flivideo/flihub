@@ -6,7 +6,12 @@
 
 import { API_URL } from '../config';
 import { VideoPlayerModal } from './shared/VideoPlayerModal';
-import { useConfig, useProjectDictionary, useAddGlobalDictionaryWord, useAddProjectDictionaryWord } from '../hooks/useApi'; // B070
+import {
+  useConfig,
+  useProjectDictionary,
+  useAddGlobalDictionaryWord,
+  useAddProjectDictionaryWord,
+} from '../hooks/useApi'; // B070
 import type { FileInfo } from '../../../shared/types';
 
 interface IncomingVideoModalProps {
@@ -34,7 +39,7 @@ export function IncomingVideoModal({ file, onClose }: IncomingVideoModalProps) {
       await addGlobalMutation.mutateAsync([...globalWords, word]);
     },
     onAddProject: async (word: string): Promise<void> => {
-      await addProjectMutation.mutateAsync([...projectWords, word]);
+      await addProjectMutation.mutateAsync(word);
     },
   };
 

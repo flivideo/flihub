@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
+import { readWords, vocabularyOf } from '@flivideo/core';
 import { readProjectState } from '../utils/projectState.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 
@@ -67,7 +68,11 @@ export function createEditRoutes(getConfig: () => Config) {
 
       // FR-118: Read project state for project-specific dictionary
       const projectState = await readProjectState(projectPath);
-      const projectDictionary = projectState.glingDictionary || [];
+      // Plus the names in the project's fli.words.json ("remember for this video") — project level only, never higher.
+      const projectWords = await readWords({ projectDir: projectPath });
+      const projectDictionary = [
+        ...new Set([...(projectState.glingDictionary || []), ...vocabularyOf(projectWords.words)]),
+      ];
       const globalDictionary = config.glingDictionary || [];
 
       // FR-118: Merge dictionaries - dedupe and sort alphabetically

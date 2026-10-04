@@ -974,6 +974,80 @@ export const API_ENDPOINTS: ApiEndpoint[] = [
       success: true,
     },
   },
+  {
+    id: 'get-project-words',
+    method: 'GET',
+    path: '/api/projects/:code/words',
+    group: 'State',
+    description:
+      "The project's fli.words.json (fli-core word store, project level only). words is null when the file is absent; issue names an unusable file.",
+    parameters: [
+      {
+        name: 'code',
+        type: 'path',
+        dataType: 'string',
+        required: true,
+        example: 'd01-flivideo-tour',
+      },
+    ],
+    exampleResponse: {
+      success: true,
+      file: '/…/d01-flivideo-tour/fli.words.json',
+      words: null,
+      issue: null,
+    },
+  },
+  {
+    id: 'add-project-word',
+    method: 'POST',
+    path: '/api/projects/:code/words',
+    group: 'State',
+    description:
+      "Remember a word for this video: add one entry (fli-core WordInput) to the project fli.words.json through fli-core's locked write. Who: x-fli-principal header, else human:ui.",
+    parameters: [
+      {
+        name: 'code',
+        type: 'path',
+        dataType: 'string',
+        required: true,
+        example: 'd01-flivideo-tour',
+      },
+      {
+        name: 'entry',
+        type: 'body',
+        dataType: 'object',
+        required: true,
+        description:
+          "{ kind: 'name', term, heardAs? } | { kind: 'rule', find, write } | { kind: 'filler', word, lang?, never? } | { kind: 'off', of, text }",
+      },
+    ],
+    exampleResponse: { success: true, file: '/…/d01-flivideo-tour/fli.words.json', words: {} },
+  },
+  {
+    id: 'remove-project-word',
+    method: 'DELETE',
+    path: '/api/projects/:code/words',
+    group: 'State',
+    description:
+      'Remove one entry (fli-core WordRef { kind, text }) from the project fli.words.json. 404 reason not-found when nothing matched.',
+    parameters: [
+      {
+        name: 'code',
+        type: 'path',
+        dataType: 'string',
+        required: true,
+        example: 'd01-flivideo-tour',
+      },
+      {
+        name: 'entry',
+        type: 'body',
+        dataType: 'object',
+        required: true,
+        description: '{ kind, text }',
+      },
+    ],
+    exampleResponse: { success: true, file: '/…/d01-flivideo-tour/fli.words.json', words: {} },
+  },
 ];
 
 /**

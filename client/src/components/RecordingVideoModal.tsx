@@ -5,7 +5,12 @@
  */
 
 import { API_URL } from '../config';
-import { useConfig, useProjectDictionary, useAddGlobalDictionaryWord, useAddProjectDictionaryWord } from '../hooks/useApi'; // B070
+import {
+  useConfig,
+  useProjectDictionary,
+  useAddGlobalDictionaryWord,
+  useAddProjectDictionaryWord,
+} from '../hooks/useApi'; // B070
 import { VideoPlayerModal } from './shared/VideoPlayerModal';
 
 interface RecordingVideoModalProps {
@@ -21,7 +26,15 @@ interface RecordingVideoModalProps {
   position?: { current: number; total: number };
 }
 
-export function RecordingVideoModal({ filename, duration, size, onClose, onPrevious, onNext, position }: RecordingVideoModalProps) {
+export function RecordingVideoModal({
+  filename,
+  duration,
+  size,
+  onClose,
+  onPrevious,
+  onNext,
+  position,
+}: RecordingVideoModalProps) {
   const { data: config } = useConfig();
   const projectCode = config?.activeProject ?? null; // B070: null when no active project
   const videoUrl = `${API_URL}/api/video/recordings/${encodeURIComponent(filename)}`;
@@ -41,7 +54,7 @@ export function RecordingVideoModal({ filename, duration, size, onClose, onPrevi
       await addGlobalMutation.mutateAsync([...globalWords, word]);
     },
     onAddProject: async (word: string): Promise<void> => {
-      await addProjectMutation.mutateAsync([...projectWords, word]);
+      await addProjectMutation.mutateAsync(word);
     },
   };
 

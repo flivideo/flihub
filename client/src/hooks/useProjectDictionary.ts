@@ -4,7 +4,8 @@ import { fetchApi } from './useApi';
 import { QUERY_KEYS } from '../constants/queryKeys';
 
 /**
- * B070: Fetch the project-specific Gling dictionary from state.
+ * B070: Fetch the project-specific dictionary: the legacy Gling list in `.flihub-state.json` plus the names in the
+ * project's `fli.words.json` ("remember for this video", fli-core v0.14.0). Project level only — never brand or global.
  * Disabled when projectCode is null (no active project).
  */
 export function useProjectDictionary(projectCode: string | null) {
@@ -12,10 +13,17 @@ export function useProjectDictionary(projectCode: string | null) {
     queryKey: ['project-dictionary', projectCode],
     enabled: projectCode !== null,
     queryFn: async () => {
-      const data = await fetchApi<{ state?: { glingDictionary?: string[] } }>(
-        `/api/projects/${projectCode}/state`
-      );
-      return (data.state?.glingDictionary ?? []) as string[];
+      const [state, words] = await Promise.all([
+        fetchApi<{ state?: { glingDictionary?: string[] } }>(`/api/projects/${projectCode}/state`),
+        fetchApi<{ words?: { names?: Array<{ term: string }> } | null }>(
+          `/api/projects/${projectCode}/words`
+        ),
+      ]);
+      const all = [
+        ...(state.state?.glingDictionary ?? []),
+        ...(words.words?.names ?? []).map((n) => n.term),
+      ];
+      return [...new Set(all)];
     },
   });
 }
@@ -41,19 +49,18 @@ export function useAddGlobalDictionaryWord() {
 }
 
 /**
- * B070: Add a word to the project-specific Gling dictionary.
- * PATCHes the full updated array to /api/projects/:code/state/dictionary.
- * Caller is responsible for passing existing words + new word.
+ * Remember a word for this video: adds it as a name to the project's `fli.words.json` through fli-core's one write
+ * path (the same rules as FliStudio's words.add, and it works with FliStudio down).
  */
 export function useAddProjectDictionaryWord(projectCode: string | null) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (words: string[]) => {
+    mutationFn: (word: string) => {
       if (!projectCode) throw new Error('No active project');
-      return fetchApi(`/api/projects/${projectCode}/state/dictionary`, {
-        method: 'PATCH',
-        body: JSON.stringify({ words }),
+      return fetchApi(`/api/projects/${projectCode}/words`, {
+        method: 'POST',
+        body: JSON.stringify({ entry: { kind: 'name', term: word } }),
       });
     },
     onSuccess: () => {

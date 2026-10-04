@@ -9,12 +9,24 @@
  * - POST /api/projects/:code/state - Update project state
  * - PUT /api/projects/:code/title - FR-157: Set project title ('' clears)
  * - PUT /api/projects/:code/chapters/:chapter/title - FR-157: Set chapter title ('' clears)
+ * - GET/POST/DELETE /api/projects/:code/words - the project's fli.words.json ("remember for this video")
  */
 
 import { Router, Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs-extra';
 import type { Server as SocketServer } from 'socket.io';
+import {
+  PRINCIPAL_HEADER,
+  PrincipalName,
+  WORDS_FILE,
+  WordInput,
+  WordRef,
+  readWordsFile,
+  rememberWord,
+  removeWordAt,
+  type ChangeWordsResult,
+} from '@flivideo/core';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import {
   readProjectState,
@@ -58,7 +70,9 @@ export function createStateRoutes(
       // Resolve project directory
       const config = getConfig();
       if (!config.projectsRootDirectory) {
-        return res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+        return res
+          .status(400)
+          .json({ success: false, error: 'projectsRootDirectory not configured' });
       }
       const projectsRoot = expandPath(config.projectsRootDirectory);
       const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
@@ -117,7 +131,9 @@ export function createStateRoutes(
       // Resolve project directory
       const config = getConfig();
       if (!config.projectsRootDirectory) {
-        return res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+        return res
+          .status(400)
+          .json({ success: false, error: 'projectsRootDirectory not configured' });
       }
       const projectsRoot = expandPath(config.projectsRootDirectory);
       const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
@@ -186,7 +202,9 @@ export function createStateRoutes(
       // Resolve project directory
       const config = getConfig();
       if (!config.projectsRootDirectory) {
-        return res.status(400).json({ success: false, error: 'projectsRootDirectory not configured' });
+        return res
+          .status(400)
+          .json({ success: false, error: 'projectsRootDirectory not configured' });
       }
       const projectsRoot = expandPath(config.projectsRootDirectory);
       const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
@@ -234,6 +252,88 @@ export function createStateRoutes(
     const entries = await fs.readdir(projectsRoot, { withFileTypes: true });
     const projectFolder = entries.find((e) => e.isDirectory() && e.name.startsWith(code));
     return projectFolder ? path.join(projectsRoot, projectFolder.name) : null;
+  }
+
+  /**
+   * The project's word list, `<project>/fli.words.json` (fli-core v0.14.0; David 2026-10-04: FliHub reads and writes
+   * project-level words only, never brand or global). Writes go through fli-core's one locked write path, the same
+   * code FliStudio's words.add uses, so it works with FliStudio down.
+   *
+   * GET    /api/projects/:code/words                → { success, file, words, issue }
+   * POST   /api/projects/:code/words { entry }      → { success, file, words }  (entry: fli-core WordInput)
+   * DELETE /api/projects/:code/words { entry }      → { success, file, words }  (entry: fli-core WordRef)
+   *
+   * Who: the x-fli-principal header when it names a principal, else human:ui.
+   */
+  router.get('/projects/:code/words', async (req: Request, res: Response) => {
+    const code = queryString(req.params.code);
+    try {
+      const projectDir = await resolveProjectDir(code);
+      if (!projectDir) {
+        return res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      }
+      const file = path.join(projectDir, WORDS_FILE);
+      const read = await readWordsFile(file);
+      res.json({
+        success: true,
+        file,
+        words: read?.kind === 'valid' ? read.value : null,
+        issue: read?.kind === 'invalid' ? `${read.reason}: ${read.message}` : null,
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: errorText(error) });
+    }
+  });
+
+  router.post('/projects/:code/words', async (req: Request, res: Response) => {
+    const entry = WordInput.safeParse((req.body as { entry?: unknown })?.entry);
+    if (!entry.success) {
+      return res.status(400).json({ success: false, error: 'Missing or invalid entry' });
+    }
+    await changeWords(req, res, (projectDir) =>
+      rememberWord('project', { projectDir }, entry.data, principalOf(req))
+    );
+  });
+
+  router.delete('/projects/:code/words', async (req: Request, res: Response) => {
+    const entry = WordRef.safeParse((req.body as { entry?: unknown })?.entry);
+    if (!entry.success) {
+      return res.status(400).json({ success: false, error: 'Missing or invalid entry' });
+    }
+    await changeWords(req, res, (projectDir) =>
+      removeWordAt(path.join(projectDir, WORDS_FILE), entry.data)
+    );
+  });
+
+  async function changeWords(
+    req: Request,
+    res: Response,
+    write: (projectDir: string) => Promise<ChangeWordsResult>
+  ) {
+    const code = queryString(req.params.code);
+    try {
+      const projectDir = await resolveProjectDir(code);
+      if (!projectDir) {
+        return res.status(404).json({ success: false, error: `Project not found: ${code}` });
+      }
+      const out = await write(projectDir);
+      if (out.kind === 'refused') {
+        const status = {
+          'invalid-input': 400,
+          'not-found': 404,
+          busy: 409,
+          'unusable-file': 409,
+          'io-error': 500,
+        };
+        return res
+          .status(status[out.reason])
+          .json({ success: false, reason: out.reason, error: out.message });
+      }
+      io.emit('recordings:changed');
+      res.json({ success: true, file: out.path, words: out.words });
+    } catch (error) {
+      res.status(500).json({ success: false, error: errorText(error) });
+    }
   }
 
   /**
@@ -320,7 +420,11 @@ export function createStateRoutes(
       const state = setChapterTitle(await readProjectState(projectDir), chapterKey, title);
       await writeProjectState(projectDir, state);
       io.emit('recordings:changed');
-      res.json({ success: true, chapter: chapterKey, title: state.chapters?.[chapterKey]?.title ?? null });
+      res.json({
+        success: true,
+        chapter: chapterKey,
+        title: state.chapters?.[chapterKey]?.title ?? null,
+      });
     } catch (error) {
       console.error(`[FR-157] Error setting chapter title for ${code}/${chapterKey}:`, error);
       res.status(500).json({
@@ -331,4 +435,13 @@ export function createStateRoutes(
   });
 
   return router;
+}
+
+function principalOf(req: Request): string {
+  const named = PrincipalName.safeParse(req.get(PRINCIPAL_HEADER));
+  return named.success ? named.data : 'human:ui';
+}
+
+function errorText(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
