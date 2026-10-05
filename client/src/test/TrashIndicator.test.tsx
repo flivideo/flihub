@@ -44,6 +44,19 @@ describe('TrashIndicator', () => {
     expect(mutate).not.toHaveBeenCalled();
   });
 
+  it('a trash held only in subfolders is counted and can be emptied (2026-10-05)', () => {
+    summary = { data: { success: true, exists: true, fileCount: 83, totalBytes: 2_000_000_000, nestedCount: 83 } };
+    render(<TrashIndicator projectCode="d09-demo" />);
+    const pill = screen.getByTestId('trash-indicator');
+    expect(pill.textContent).toMatch(/Trash 83 · /);
+    expect(pill.getAttribute('title')).toContain('83 of them in subfolders');
+    expect(pill.getAttribute('title')).not.toMatch(/not emptied/i);
+    fireEvent.click(pill);
+    expect(screen.getByText(/83 file\(s\) \(83 of them in subfolders\)/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Empty trash' }));
+    expect(mutate).toHaveBeenCalledTimes(1);
+  });
+
   it('an unreadable trash says so instead of showing 0', () => {
     summary = { isError: true };
     render(<TrashIndicator projectCode="d09-demo" />);

@@ -115,8 +115,10 @@ export interface DiskSizeData {
 export interface TrashSummaryResponse {
   success: boolean;
   exists?: boolean;
+  /** Every file in -trash/, subfolders included (what DELETE empties). */
   fileCount?: number;
   totalBytes?: number;
+  /** The part of fileCount inside subfolders. */
   nestedCount?: number;
   error?: string;
 }

@@ -1,7 +1,8 @@
 // Trash visibility (David, 2026-09-23): a project's -trash/ is allowed only if it is ALWAYS
 // visible (count + size) and emptiable any time. Header pill for the active project, next to
 // the T7 pill. It renders even at 0 so "no trash" and "not loaded" never look the same.
-// Emptying goes through DELETE /api/projects/:code/trash (safeDelete) after a confirm.
+// Emptying goes through DELETE /api/projects/:code/trash (safeDelete) after a confirm. Subfolders count and are emptied
+// too (David 2026-10-05), matching FliStudio's project.empty-trash.
 import { useState } from 'react';
 import { useTrashSummary, useDeleteTrash } from '../../hooks/useProjectDiskApi';
 import { formatBytes } from '../../utils/formatBytes';
@@ -21,11 +22,12 @@ export function TrashIndicator({ projectCode }: { projectCode: string }) {
   const canEmpty = !unknown && count > 0 && !deleteTrash.isPending;
 
   const label = unknown ? 'Trash ?' : count === 0 ? 'Trash 0' : `Trash ${count} · ${formatBytes(bytes)}`;
+  const inSubfolders = nested > 0 ? ` (${nested} of them in subfolders)` : '';
   const title = unknown
     ? `Could not read -trash/ for ${projectCode}${data?.error ? `: ${data.error}` : ''}`
     : count === 0
-      ? `-trash/ is empty for ${projectCode}${nested > 0 ? ` (${nested} file(s) in subfolders — not emptied from here)` : ''}`
-      : `${count} file(s), ${formatBytes(bytes)} in ${projectCode}/-trash/ — click to empty${nested > 0 ? ` (${nested} file(s) in subfolders are NOT emptied)` : ''}`;
+      ? `-trash/ is empty for ${projectCode}`
+      : `${count} file(s)${inSubfolders}, ${formatBytes(bytes)} in ${projectCode}/-trash/ — click to empty`;
 
   return (
     <>
@@ -44,8 +46,7 @@ export function TrashIndicator({ projectCode }: { projectCode: string }) {
       {confirming && (
         <ConfirmationModal
           title="Empty trash?"
-          message={`Permanently delete ${count} file(s) (${formatBytes(bytes)}) from ${projectCode}/-trash/. This cannot be undone.`}
-          warning={nested > 0 ? `${nested} file(s) inside subfolders of -trash/ are not removed by this.` : undefined}
+          message={`Permanently delete ${count} file(s)${inSubfolders} (${formatBytes(bytes)}) from ${projectCode}/-trash/. This cannot be undone.`}
           confirmText="Empty trash"
           variant="danger"
           onConfirm={() => {

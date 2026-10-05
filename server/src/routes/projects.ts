@@ -10,7 +10,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import type { Server as SocketServer } from 'socket.io';
 import { expandPath, queryString } from '../utils/pathUtils.js';
-import { safeDelete } from '../utils/safeDelete.js';
+import { filesUnder, safeDelete } from '../utils/safeDelete.js';
 import { resolveProjectCode } from '../utils/projectResolver.js';
 import { detectFinalMedia } from '../utils/finalMedia.js';
 import { extractChapters } from '../utils/chapterExtraction.js';
@@ -19,7 +19,6 @@ import { getProjectStatsRaw } from '../utils/projectStats.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { readDirSafe } from '../utils/filesystem.js';
 import { calculateProjectDiskSize } from '../utils/diskUtils.js';
-import { getDirStats } from '../utils/holdUtils.js';
 import { TRASH_FOLDER } from '@flivideo/core';
 import type {
   Config,
@@ -601,8 +600,8 @@ export function createProjectRoutes(
   // Trash visibility (David, 2026-09-23: -trash/ is allowed only if it is ALWAYS visible and
   // emptiable any time). GET /api/projects/:code/trash — read -trash/ fresh on every call (no
   // disk cache), so the always-on header indicator never shows a stale count.
-  // fileCount/totalBytes = top-level files, which is exactly what DELETE below removes.
-  // nestedCount = files inside subfolders, which DELETE does NOT remove — reported, never hidden.
+  // fileCount/totalBytes = every file in -trash/, subfolders included (links by their own size), which is exactly what
+  // DELETE below removes (David 2026-10-05, matching FliStudio). nestedCount = the part of fileCount inside subfolders.
   router.get('/:code/trash', async (req: Request, res: Response) => {
     const code = queryString(req.params.code);
     if (!code || /[/\\]/.test(code) || code.includes('..')) {
@@ -628,15 +627,18 @@ export function createProjectRoutes(
       let nestedCount = 0;
       for (const e of entries) {
         const full = path.join(trashDir, e.name);
-        if (e.isFile()) {
+        if (e.isDirectory()) {
+          const inside = await filesUnder(full, e.name);
+          nestedCount += inside.length;
+          fileCount += inside.length;
+          totalBytes += inside.reduce((n, f) => n + f.size, 0);
+        } else {
           try {
-            totalBytes += (await fs.stat(full)).size;
+            totalBytes += (await fs.lstat(full)).size;
             fileCount++;
           } catch {
-            // removed between readdir and stat
+            // removed between readdir and lstat
           }
-        } else if (e.isDirectory()) {
-          nestedCount += (await getDirStats(full)).fileCount;
         }
       }
       res.json({ success: true, exists, fileCount, totalBytes, nestedCount });
@@ -664,6 +666,7 @@ export function createProjectRoutes(
         rootDir: projectsRoot,
         allowedSuffix: TRASH_FOLDER,
         description: 'project trash folder',
+        includeSubfolders: true,
       });
 
       // Invalidate disk cache for this project so next drawer open recalculates
