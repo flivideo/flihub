@@ -20,6 +20,13 @@ vi.mock('fs-extra', () => ({
 // --- Mock fetch globally ---
 vi.stubGlobal('fetch', vi.fn());
 
+// The managed home (AppyDave's fli.brand.json) is off: these tests never reach the real brand registry.
+vi.mock('../utils/managedBrandConfig.js', () => ({
+  managedBrandConfigFile: vi.fn().mockResolvedValue(null),
+  readManagedPublish: vi.fn().mockResolvedValue(null),
+  writeManagedPublish: vi.fn(),
+}));
+
 // Imports must come AFTER vi.mock() declarations so hoisting works correctly
 import fsExtra from 'fs-extra';
 import { createPoemWuiRoutes } from '../routes/poem-wui.js';

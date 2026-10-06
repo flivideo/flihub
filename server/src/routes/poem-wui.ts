@@ -6,6 +6,7 @@ import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { findAllSrts, loadBrandConfig, buildFliHubChapters, firstWords, BUNDLED_BRAND_CONFIG } from '../utils/poemWuiUtils.js';
 import { env } from '../config/env.js';
+import { managedBrandConfigFile, readManagedPublish, writeManagedPublish } from '../utils/managedBrandConfig.js';
 
 export { firstWords };
 
@@ -256,6 +257,11 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
   router.get('/brand-config', async (req, res) => {
     try {
       const config = getConfig();
+      if (!config.brandConfigPath) {
+        const managed = await managedBrandConfigFile().catch(() => null);
+        const publish = managed ? await readManagedPublish(managed) : null;
+        if (managed && publish) return res.json({ success: true, data: publish, path: managed, managed: true });
+      }
       const candidates = config.brandConfigPath
         ? [config.brandConfigPath, BUNDLED_BRAND_CONFIG]
         : [BUNDLED_BRAND_CONFIG];
@@ -277,6 +283,14 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
   router.post('/brand-config', async (req, res) => {
     try {
       const config = getConfig();
+      if (!config.brandConfigPath) {
+        // The managed home wins: edits land in the brand's fli.brand.json `publish` block, other fields kept.
+        const managed = await managedBrandConfigFile().catch(() => null);
+        if (managed && (await readManagedPublish(managed))) {
+          await writeManagedPublish(managed, req.body);
+          return res.json({ success: true, path: managed, managed: true });
+        }
+      }
       const targetPath = config.brandConfigPath || BUNDLED_BRAND_CONFIG;
       await fs.writeFile(targetPath, JSON.stringify(req.body, null, 2), 'utf-8');
       res.json({ success: true, path: targetPath });

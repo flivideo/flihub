@@ -20,6 +20,13 @@ vi.mock('fs-extra', () => ({
 }));
 
 // Mock shared paths (required by poemWuiUtils imports)
+// The managed home (AppyDave's fli.brand.json) is off in these tests: they exercise the brandConfigPath / bundled path.
+vi.mock('../utils/managedBrandConfig.js', () => ({
+  managedBrandConfigFile: vi.fn().mockResolvedValue(null),
+  readManagedPublish: vi.fn().mockResolvedValue(null),
+  writeManagedPublish: vi.fn(),
+}));
+
 vi.mock('../../../shared/paths.js', () => ({
   getProjectPaths: vi.fn(() => ({ recordings: '', safe: '', transcripts: '' })),
 }));

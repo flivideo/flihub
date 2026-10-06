@@ -5,6 +5,7 @@ import { getProjectPaths } from '../../../shared/paths.js';
 import { readDirSafe } from './filesystem.js';
 import { readProjectState, getChapterTitle } from './projectState.js';
 import { stripSrt } from './srtUtils.js';
+import { managedBrandConfigFile, readManagedPublish } from './managedBrandConfig.js';
 
 // Bundled fallback brand config (committed to repo, works on any machine)
 export const BUNDLED_BRAND_CONFIG = path.resolve(
@@ -28,8 +29,23 @@ export function mapBrandConfig(raw: unknown): unknown {
   };
 }
 
-// Load brand config: try configured path first, then fall back to bundled file
+// Load brand config: an explicit brandConfigPath first, then the managed home (the `publish` block of AppyDave's
+// fli.brand.json), then the bundled file.
 export async function loadBrandConfig(configPath: string | undefined): Promise<{ data: unknown; found: boolean; path: string | null; error?: string }> {
+  if (!configPath) {
+    const managed = await managedBrandConfigFile().catch(() => null);
+    if (managed) {
+      try {
+        const publish = await readManagedPublish(managed);
+        if (publish) return { data: mapBrandConfig(publish), found: true, path: managed };
+      } catch (err) {
+        if (err instanceof SyntaxError) {
+          return { data: null, found: true, path: managed, error: `Brand settings file is corrupt (invalid JSON): ${err.message}` };
+        }
+        throw err;
+      }
+    }
+  }
   const candidates = configPath ? [configPath, BUNDLED_BRAND_CONFIG] : [BUNDLED_BRAND_CONFIG];
   for (const p of candidates) {
     try {
