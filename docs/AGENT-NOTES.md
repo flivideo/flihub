@@ -58,9 +58,14 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
 
   `whisperBinary`, `whisperModel`, `whisperLanguage` and `diskThresholds` are already dropped this
   way. A new `ProjectState` field needs the same treatment in `writeProjectState()`. A new
-  `RecordingState` field also has to be added to the "is this entry empty?" check in
-  `setRecordingSafe` and `setRecordingParked`. Otherwise un-parking a take deletes the whole entry,
+  `RecordingState` field also has to be added to `isEmptyRecordingState` in `projectState.ts`, the one
+  "is this entry empty?" list every setter uses. Otherwise un-parking a take deletes the whole entry,
   new field included. `aspectWarning` hit this on 2026-09-23.
+- **Change a segment number only through `POST /api/segments/op`** (`utils/segmentOps.ts`, CT-0107).
+  It refuses while a FliCut cut or the FliStudio cut draft names the take: they point at takes by
+  path, so a renumber makes them play the wrong take. It also journals each change for undo in
+  `.flihub-segment-journal.json`. The older paths (`/api/rename` Seq, `manage.ts` renumber) have
+  neither guard nor journal.
 - **Mount order decides which router owns a route.** `projects.ts`, `hold.ts` and `storage.ts` all
   mount on `/api/projects`. A duplicate path is silently answered by the first router mounted:
   `POST /:code/hold` in `storage.ts` is dead code. Per-router tests can't see this, so test through
