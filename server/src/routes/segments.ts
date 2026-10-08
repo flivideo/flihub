@@ -33,6 +33,7 @@ export function createSegmentRoutes(
   const deps = (): SegmentOpDeps => ({
     activeJob: getActiveJob ? getActiveJob() : null,
     queue: getQueue ? getQueue() : [],
+    // No watch folder → no inbox → no take may be sent in (the op fails closed on an undefined inbox).
     inboxDir: getConfig().watchDirectory ? expandPath(getConfig().watchDirectory) : undefined,
   });
   const view = (e: JournalEntry) => ({

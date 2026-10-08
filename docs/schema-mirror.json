@@ -3581,45 +3581,45 @@
     {
       "anchor": {
         "file": "server/src/utils/segmentOps.ts",
-        "line": 407
+        "line": 444
       },
       "authority": "inline membership test `[...].includes(op.mode)` - no declaring symbol",
-      "finding": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:407. Name it once (z.enum / literal union) so it has one authority.",
+      "finding": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:444. Name it once (z.enum / literal union) so it has one authority.",
       "grade": "derived",
       "id": "server/src/utils/segmentOps.op.mode (membership)",
       "members": [
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 407
+            "line": 444
           },
           "value": "replace"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 407
+            "line": 444
           },
           "value": "insert"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 407
+            "line": 444
           },
           "value": "reorder"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 407
+            "line": 444
           },
           "value": "delete"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 407
+            "line": 444
           },
           "value": "send"
         }
@@ -5376,14 +5376,14 @@
     {
       "anchor": {
         "file": "server/src/utils/segmentOps.ts",
-        "line": 407
+        "line": 444
       },
       "kind": "refactor_required",
-      "message": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:407. Name it once (z.enum / literal union) so it has one authority.",
+      "message": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:444. Name it once (z.enum / literal union) so it has one authority.",
       "target": "server/src/utils/segmentOps.op.mode (membership)"
     }
   ],
-  "generated": "2026-10-08T08:55:08+00:00",
+  "generated": "2026-10-08T09:03:54+00:00",
   "ignored_derived": [
     {
       "anchor": {
@@ -27115,7 +27115,7 @@
     }
   ],
   "target": {
-    "commit": "199c76965485a5072cbdddfabc7b9b67deabecb3",
+    "commit": "356b5b42f92f791e0545a61793199f7ac6d0202f",
     "root": "..",
     "stack": "typescript"
   },
@@ -27438,7 +27438,7 @@
       "census": true,
       "family": "class",
       "looked_at": [
-        "server/src/utils/segmentOps.ts:479"
+        "server/src/utils/segmentOps.ts:510"
       ],
       "reason": "declared but not read: class. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
       "subject": "`server/src/utils/segmentOps.SegmentOpFailed` - declared but not read"

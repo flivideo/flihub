@@ -3,7 +3,7 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `199c76965485` · **generated** 2026-10-08T08:55:08+00:00
+- **commit** `356b5b42f92f` · **generated** 2026-10-08T09:03:54+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
@@ -1475,19 +1475,19 @@ Each set below was read out of the real authority — control flow, membership t
 
 > **REFACTOR (minor): `LOOPBACK_HOSTS` at server/src/utils/loopback.ts:13 names the set but does not type it. A z.enum or `as const` + `typeof LOOPBACK_HOSTS[number]` would make a wrong value a static error rather than a runtime miss.**
 
-### `server/src/utils/segmentOps.op.mode (membership)` — `server/src/utils/segmentOps.ts:407`
+### `server/src/utils/segmentOps.op.mode (membership)` — `server/src/utils/segmentOps.ts:444`
 
 *inline membership test `[...].includes(op.mode)` - no declaring symbol*
 
 | value | read from |
 |---|---|
-| `replace` | `server/src/utils/segmentOps.ts:407` |
-| `insert` | `server/src/utils/segmentOps.ts:407` |
-| `reorder` | `server/src/utils/segmentOps.ts:407` |
-| `delete` | `server/src/utils/segmentOps.ts:407` |
-| `send` | `server/src/utils/segmentOps.ts:407` |
+| `replace` | `server/src/utils/segmentOps.ts:444` |
+| `insert` | `server/src/utils/segmentOps.ts:444` |
+| `reorder` | `server/src/utils/segmentOps.ts:444` |
+| `delete` | `server/src/utils/segmentOps.ts:444` |
+| `send` | `server/src/utils/segmentOps.ts:444` |
 
-> **REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:407. Name it once (z.enum / literal union) so it has one authority.**
+> **REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:444. Name it once (z.enum / literal union) so it has one authority.**
 
 > 4 comparison(s) against vocabularies this app does not own (DOM key names, HTTP headers, library internals) were **not** treated as closed sets and carry no refactor advice: `client/src/components/shared/BatchToolbar.e.key (branching)` (the subject is a property declared by TypeScript's lib or a package), `client/src/components/shared/EditableFileRow.e.key (branching)` (the subject is a property declared by TypeScript's lib or a package), `server/src/routes/projects.parts.length (branching)` (the subject is a property declared by TypeScript's lib or a package), `server/src/utils/llmVerification.parts.length (branching)` (the subject is a property declared by TypeScript's lib or a package).
 
@@ -5202,7 +5202,7 @@ The census found these top-level declarations and the extractor did not mirror t
 | object constant | 12 | `client/src/components/shared/ShipsSelector.SHIPS_LABEL` `client/src/components/shared/ShipsSelector.tsx:17`<br>`client/src/constants/queryKeys.QUERY_KEYS` `client/src/constants/queryKeys.ts:5`<br>`client/src/constants/stages.STAGE_DISPLAY` `client/src/constants/stages.ts:4`<br>`server/src/config/configManager.DEFAULT_DISK_THRESHOLDS` `server/src/config/configManager.ts:7`<br>`server/src/config/env.env` `server/src/config/env.ts:25`<br>`server/src/config/logger.log` `server/src/config/logger.ts:20`<br>`server/src/utils/formatters.STATUS` `server/src/utils/formatters.ts:151`<br>`shared/constants.FILE_SIZE` `shared/constants.ts:6`<br>`shared/constants.WATCHER` `shared/constants.ts:14`<br>`shared/naming.NAMING_RULES` `shared/naming.ts:16`<br>`shared/naming.PATTERNS` `shared/naming.ts:55`<br>`shared/types.STAGE_LABELS` `shared/types.ts:346` |
 | array constant | 10 | `client/src/constants/stages.STAGE_ORDER` `client/src/constants/stages.ts:73`<br>`client/src/hooks/useBrollApi.BROLL_QUERY_KEY` `client/src/hooks/useBrollApi.ts:12`<br>`client/src/hooks/useOpenContextApi.OPEN_CONTEXT_KEY` `client/src/hooks/useOpenContextApi.ts:8`<br>`client/src/hooks/useVideoPlayback.SPEED_PRESETS` `client/src/hooks/useVideoPlayback.ts:10`<br>`client/src/utils/micGrading.SHORT_TERM_GREEN` `client/src/utils/micGrading.ts:38`<br>`server/src/utils/holdUtils.HOLD_EXCLUDES` `server/src/utils/holdUtils.ts:10`<br>`shared/apiRegistry.API_ENDPOINTS` `shared/apiRegistry.ts:38`<br>`shared/contextSchemas.REFUSAL_CODES` `shared/contextSchemas.ts:36`<br>`shared/types.DEFAULT_PROJECT_STAGES` `shared/types.ts:333`<br>`shared/types.DEFAULT_TAGS` `shared/types.ts:294` |
 | const built by a call (helper or non-zod call) | 8 | `client/src/config.API_URL` `client/src/config.ts:14`<br>`client/src/hooks/useStorageApi.useArchiveProject` `client/src/hooks/useStorageApi.ts:79`<br>`client/src/hooks/useStorageApi.useHeldArchiveProject` `client/src/hooks/useStorageApi.ts:83`<br>`client/src/hooks/useStorageApi.useHoldProject` `client/src/hooks/useStorageApi.ts:77`<br>`client/src/hooks/useStorageApi.useRestoreHeld` `client/src/hooks/useStorageApi.ts:78`<br>`client/src/hooks/useStorageApi.useUnarchiveProject` `client/src/hooks/useStorageApi.ts:80`<br>`server/src/config/logger.logger` `server/src/config/logger.ts:5`<br>`server/src/utils/poemWuiUtils.BUNDLED_BRAND_CONFIG` `server/src/utils/poemWuiUtils.ts:11` |
-| class | 6 | `client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15`<br>`server/src/utils/flitoolsClient.FlitoolsError` `server/src/utils/flitoolsClient.ts:34`<br>`server/src/utils/segmentOps.SegmentOpFailed` `server/src/utils/segmentOps.ts:479`<br>`server/src/utils/segmentOps.SegmentOpRefused` `server/src/utils/segmentOps.ts:74` |
+| class | 6 | `client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15`<br>`server/src/utils/flitoolsClient.FlitoolsError` `server/src/utils/flitoolsClient.ts:34`<br>`server/src/utils/segmentOps.SegmentOpFailed` `server/src/utils/segmentOps.ts:510`<br>`server/src/utils/segmentOps.SegmentOpRefused` `server/src/utils/segmentOps.ts:74` |
 | union of named or mixed types | 4 | `client/src/App.ConfigFocusSection` `client/src/App.tsx:87`<br>`client/src/hooks/useShiftHover.LegacyImageData` `client/src/hooks/useShiftHover.ts:25`<br>`server/src/utils/openContext.LaunchResult` `server/src/utils/openContext.ts:62`<br>`shared/types.ProjectStageOverride` `shared/types.ts:329` |
 | utility-type alias (`Pick` / `Omit` / `Record` / generic instance) | 3 | `client/src/components/MicCheckSnapshot.Analyser` `client/src/components/MicCheckSnapshot.tsx:34`<br>`server/src/routes/miccheck.IO` `server/src/routes/miccheck.ts:32`<br>`server/src/utils/openContext.ContextController` `server/src/utils/openContext.ts:281` |
 | constant (other form) | 1 | `client/src/hooks/useVideoAspect.DEFAULT_ASPECT` `client/src/hooks/useVideoAspect.ts:12` |
@@ -5229,7 +5229,7 @@ These are refactors of the **application**, not of this mirror. Each one convert
 14. `server/src/routes/video.ts:242` — REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:242. Name it once (z.enum / literal union) so it has one authority.
 15. `server/src/utils/chapterExtraction.ts:208` — REFACTOR: the set for `word.toLowerCase()` is inlined at server/src/utils/chapterExtraction.ts:208. Name it once (z.enum / literal union) so it has one authority.
 16. `server/src/utils/loopback.ts:13` — REFACTOR (minor): `LOOPBACK_HOSTS` at server/src/utils/loopback.ts:13 names the set but does not type it. A z.enum or `as const` + `typeof LOOPBACK_HOSTS[number]` would make a wrong value a static error rather than a runtime miss.
-17. `server/src/utils/segmentOps.ts:407` — REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:407. Name it once (z.enum / literal union) so it has one authority.
+17. `server/src/utils/segmentOps.ts:444` — REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:444. Name it once (z.enum / literal union) so it has one authority.
 
 ---
 

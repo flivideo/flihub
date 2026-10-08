@@ -142,8 +142,8 @@ describe('Feature: undo leaves the project exactly as it found it, folders inclu
 });
 
 describe('Feature: a project with no state file is left without one (R9)', () => {
-  // Open finding (Tester CT-0107 r1): every renumber/delete writes `.flihub-state.json` even when it has nothing to say.
-  it.fails(
+  // Round-1 finding, fixed in round 2: the state file is written only when the change touches an entry in it.
+  it(
     'Scenario: given a project that never had a state file, when a reorder is undone, then the disk is identical to before (no new .flihub-state.json)',
     async () => {
       await take('06-1-a.mov');
@@ -197,8 +197,8 @@ describe('Feature: segment numbers with more than one digit (R3, R5)', () => {
 });
 
 describe('Feature: only a real take inside the inbox goes in, under a name that stays in recordings/ (R8)', () => {
-  // Open findings (Tester CT-0107 r1). Each passes today BECAUSE the defect exists; flip to `it` with the fix.
-  it.fails(
+  // Round-1 findings, fixed in round 2 (tags and sources validated; no inbox configured fails closed).
+  it(
     'Scenario: given tags containing path separators, when a take is sent in, then it is refused and nothing lands outside recordings/',
     async () => {
       await take('06-1-a.mov');
@@ -222,7 +222,7 @@ describe('Feature: only a real take inside the inbox goes in, under a name that 
     }
   );
 
-  it.fails(
+  it(
     'Scenario: given a source that is not a video, when it is sent in, then it is refused and stays in the inbox',
     async () => {
       await take('06-1-a.mov');
@@ -244,7 +244,7 @@ describe('Feature: only a real take inside the inbox goes in, under a name that 
     }
   );
 
-  it.fails(
+  it(
     'Scenario: given tags that are not a list, when sent, then it is refused as invalid input (409), not a 500',
     async () => {
       await take('06-1-a.mov');
@@ -263,7 +263,7 @@ describe('Feature: only a real take inside the inbox goes in, under a name that 
     }
   );
 
-  it.fails(
+  it(
     'Scenario: given no inbox is configured, when a take outside any inbox is sent in, then it is refused',
     async () => {
       await take('06-1-a.mov');
@@ -324,9 +324,9 @@ describe('Feature: only image assets keyed to the segment travel with it (R3, R5
 });
 
 describe('Feature: a file that cannot be put back is still on the record (R8, R9)', () => {
-  // Open finding (Tester CT-0107 r1): segmentOps.ts:715-717 forgets the journal entry on ANY step failure, even when
-  // the rollback itself failed and files are stranded in -trash/ — the one case where the record matters most.
-  it.fails(
+  // Round-1 finding, fixed in round 2: the journal entry is forgotten only when every file went back; stranded
+  // files in -trash/ keep their record — the one case where the record matters most.
+  it(
     'Scenario: given the disk fails mid-op and the rollback fails too, when the answer says files could not be put back, then the journal still lists the moves',
     async () => {
       await take('06-1-a.mov');

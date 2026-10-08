@@ -475,6 +475,8 @@ describe('Feature: a failure part-way never leaves a half-renumbered chapter (R8
     await take('06-1-a.mov');
     await take('06-2-b.mov');
     await take('06-3-c.mov');
+    // A moving take has a state entry, so the op must write state — and that write is made to fail.
+    await writeProjectState(project, { version: 1, recordings: { '06-2-b.mov': { safe: true } } });
     vi.doMock('../utils/projectState.js', async (importOriginal) => ({
       ...(await importOriginal<typeof import('../utils/projectState.js')>()),
       writeProjectState: async () => {

@@ -401,6 +401,43 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
   }
 }
 
+/** A tag as FliHub writes one: letters and digits only, at least one letter (`CTA`, `1ST`). */
+const TAG = /^(?=.*[A-Za-z])[A-Za-z0-9]+$/;
+/** What the inbox holds: a take is a video. */
+const VIDEO = /\.(mov|mp4)$/i;
+
+function checkSources(sources: unknown[]): Blocker[] {
+  const out: Blocker[] = [];
+  for (const src of sources) {
+    if (typeof src !== 'string' || !path.isAbsolute(src)) {
+      out.push({
+        kind: 'invalid',
+        detail: 'A source must be the absolute path of the take to send in.',
+      });
+    } else if (!VIDEO.test(src)) {
+      out.push({
+        kind: 'invalid',
+        file: src,
+        detail: `${path.basename(src)} is not a video take (.mov or .mp4).`,
+      });
+    }
+  }
+  return out;
+}
+
+function checkTags(tags: unknown): Blocker[] {
+  if (tags === undefined) return [];
+  if (!Array.isArray(tags) || !tags.every((t) => typeof t === 'string' && TAG.test(t))) {
+    return [
+      {
+        kind: 'invalid',
+        detail: 'tags must be a list of words of letters and digits, e.g. ["CTA"].',
+      },
+    ];
+  }
+  return [];
+}
+
 function checkInput(op: SegmentOpInput): Blocker[] {
   const out: Blocker[] = [];
   if (!op || typeof op !== 'object') return [{ kind: 'invalid', detail: 'No operation given.' }];
@@ -411,18 +448,18 @@ function checkInput(op: SegmentOpInput): Blocker[] {
     out.push({ kind: 'invalid', detail: 'chapter must be two digits, e.g. "06".' });
   }
   if (op.mode === 'send') {
-    const ok =
-      Array.isArray(op.sources) &&
-      op.sources.length > 0 &&
-      op.sources.every((src) => typeof src === 'string' && path.isAbsolute(src)) &&
-      new Set(op.sources).size === op.sources.length;
-    if (!ok) {
+    if (
+      !Array.isArray(op.sources) ||
+      op.sources.length === 0 ||
+      new Set(op.sources).size !== op.sources.length
+    ) {
       out.push({
         kind: 'invalid',
         detail: 'sources must be one or more different absolute paths of takes to send in.',
       });
+      return out;
     }
-    return out;
+    return [...out, ...checkSources(op.sources), ...checkTags(op.tags)];
   }
   const n = op.mode === 'insert' ? op.before : op.segment;
   if (!Number.isInteger(n) || n < 1)
@@ -430,14 +467,8 @@ function checkInput(op: SegmentOpInput): Blocker[] {
   if (op.mode === 'reorder' && op.direction !== 'up' && op.direction !== 'down') {
     out.push({ kind: 'invalid', detail: 'direction must be up or down.' });
   }
-  if (
-    (op.mode === 'replace' || op.mode === 'insert') &&
-    (typeof op.source !== 'string' || !path.isAbsolute(op.source))
-  ) {
-    out.push({
-      kind: 'invalid',
-      detail: 'source must be the absolute path of the take to send in.',
-    });
+  if (op.mode === 'replace' || op.mode === 'insert') {
+    out.push(...checkSources([op.source]), ...checkTags(op.tags));
   }
   return out;
 }
@@ -477,7 +508,11 @@ async function rollBack(done: Step[]): Promise<string[]> {
 
 /** Thrown when an operation stopped part-way; the message says whether everything went back. */
 export class SegmentOpFailed extends Error {
-  constructor(cause: unknown, stuck: string[]) {
+  constructor(
+    cause: unknown,
+    /** Files that could not be put back; empty when the rollback was complete. */
+    readonly stuck: string[]
+  ) {
     const why = cause instanceof Error ? cause.message : String(cause);
     super(
       stuck.length === 0
@@ -511,6 +546,23 @@ function serialized<T>(project: string, work: () => Promise<T>): Promise<T> {
   return next.finally(() => {
     if (running.get(key) === next) running.delete(key);
   });
+}
+
+/** True when the state holds an entry (or edit-manifest file) this change renames or drops. */
+function touchesState(
+  state: ProjectState,
+  renamed: Map<string, string>,
+  dropped: Set<string>
+): boolean {
+  const hit = (f: string) => renamed.has(f) || dropped.has(f);
+  if (Object.keys(state.recordings ?? {}).some(hit)) return true;
+  const m = state.editManifest;
+  return (
+    !!m &&
+    (['edit-1st', 'edit-2nd', 'edit-final'] as const).some((k) =>
+      m[k]?.files.some((f) => hit(f.filename))
+    )
+  );
 }
 
 /** Rename recording keys in one pass (a swap must not clobber), dropping trashed takes; answers what was dropped. */
@@ -603,17 +655,34 @@ async function apply(
   const { plan, blockers } = planOf(op, takes);
   if (!plan || blockers.length) throw new SegmentOpRefused(blockers);
 
+  if (plan.promote.length > 0 && !deps.inboxDir) {
+    blockers.push({
+      kind: 'invalid',
+      detail: 'No inbox (watch folder) is set, so no take can be sent in; set it in Config first.',
+    });
+  }
+  for (const { filename } of plan.promote) {
+    // Belt and braces: whatever went into the name, the take must land as a plain recording name.
+    if (path.basename(filename) !== filename || !RECORDING.test(filename)) {
+      blockers.push({
+        kind: 'invalid',
+        file: filename,
+        detail: `${filename} is not a recording name.`,
+      });
+    }
+  }
   for (const { source: src } of plan.promote) {
+    const inInbox = (dir: string) => {
+      const rel = path.relative(path.resolve(dir), path.resolve(src));
+      return rel !== '' && !rel.startsWith('..') && !path.isAbsolute(rel);
+    };
     if (!(await fs.stat(src).catch(() => null))?.isFile()) {
       blockers.push({
         kind: 'not-found',
         file: src,
         detail: `The take to send in is not there: ${src}.`,
       });
-    } else if (
-      deps.inboxDir &&
-      path.relative(path.resolve(deps.inboxDir), path.resolve(src)).startsWith('..')
-    ) {
+    } else if (deps.inboxDir && !inInbox(deps.inboxDir)) {
       blockers.push({
         kind: 'invalid',
         file: src,
@@ -713,15 +782,19 @@ async function apply(
   try {
     await runSteps(steps);
   } catch (error) {
-    await forget();
+    // Forget the entry only when every file went back; stranded files need the record to be found and undone.
+    if (!(error instanceof SegmentOpFailed && error.stuck.length > 0)) await forget();
     throw error;
   }
 
   try {
     // Only touch the state file when a take was renamed or trashed (a send changes no existing entry).
-    if (renamed.size > 0 || plan.trash.length > 0) {
-      const state = await readProjectState(projectDir);
-      const remapped = remapState(state, renamed, new Set(plan.trash.map((t) => t.filename)));
+    // Only touch the state file when it holds an entry this change renames or drops: a project without one
+    // (or whose entries are elsewhere) keeps its state file exactly as it was, or keeps having none.
+    const dropped = new Set(plan.trash.map((t) => t.filename));
+    const state = await readProjectState(projectDir);
+    if (touchesState(state, renamed, dropped)) {
+      const remapped = remapState(state, renamed, dropped);
       await writeProjectState(projectDir, remapped.state);
       entry.removed = remapped.removed;
     }
@@ -821,9 +894,10 @@ async function undo(projectDir: string, deps: SegmentOpDeps, id?: string): Promi
 
   await runSteps([...extra, ...reverse]);
 
-  if (entry.renamed.length > 0 || entry.removed.length > 0) {
-    const back = new Map(entry.renamed.map((r) => [r.to, r.from]));
-    const state = await readProjectState(projectDir);
+  const back = new Map(entry.renamed.map((r) => [r.to, r.from]));
+  const current = await readProjectState(projectDir);
+  if (entry.removed.length > 0 || touchesState(current, back, new Set())) {
+    const state = current;
     const restored = remapState(state, back, new Set()).state;
     // Put each dropped entry back in its old place, so the state file reads as it did.
     const rows = Object.entries(restored.recordings);
