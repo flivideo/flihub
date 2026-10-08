@@ -65,3 +65,10 @@ export function useSegmentOp() {
 export function useSegmentUndo() {
   return useSegmentMutation<{ id?: string }>('/api/segments/undo');
 }
+
+/** R7: mark or unmark a segment as a placeholder to re-record. */
+export function useSegmentPlaceholder() {
+  return useSegmentMutation<{ filename: string; placeholder: boolean }>(
+    '/api/segments/placeholder'
+  );
+}

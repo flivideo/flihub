@@ -21,7 +21,7 @@ import { randomBytes } from 'crypto';
 import { getProjectPaths, type ProjectPaths } from '../../../shared/paths.js';
 import { NAMING_RULES, sanitizeName } from '../../../shared/naming.js';
 import type { ProjectState, RecordingState, TranscriptionJob } from '../../../shared/types.js';
-import { readProjectState, writeProjectState } from './projectState.js';
+import { readProjectState, setRecordingPlaceholder, writeProjectState } from './projectState.js';
 import { checkTranscriptionQueue } from './renameRecording.js';
 import { ENGINE_COPIES_DIR, engineCopiesFor } from './transcriptFiles.js';
 
@@ -787,4 +787,30 @@ async function undo(projectDir: string, deps: SegmentOpDeps, id?: string): Promi
   entry.undoneAt = (deps.now?.() ?? new Date()).toISOString();
   await writeJournal(projectDir, journal);
   return entry;
+}
+
+/**
+ * R7: mark (or unmark) a segment as a placeholder to re-record. State only; the filename never changes. Shares the
+ * per-project lock, so it cannot interleave with an operation's state write.
+ */
+export function setPlaceholder(
+  projectDir: string,
+  filename: string,
+  placeholder: boolean
+): Promise<void> {
+  return serialized(projectDir, async () => {
+    const paths = getProjectPaths(projectDir);
+    if (path.basename(filename) !== filename || !RECORDING.test(filename)) {
+      throw new SegmentOpRefused([
+        { kind: 'invalid', file: filename, detail: `${filename} is not a recording name.` },
+      ]);
+    }
+    if (!(await fs.pathExists(path.join(paths.recordings, filename)))) {
+      throw new SegmentOpRefused([
+        { kind: 'not-found', file: filename, detail: `There is no recording ${filename}.` },
+      ]);
+    }
+    const state = await readProjectState(projectDir);
+    await writeProjectState(projectDir, setRecordingPlaceholder(state, filename, placeholder));
+  });
 }

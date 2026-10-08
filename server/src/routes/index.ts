@@ -643,6 +643,7 @@ export function createRoutes(
                 annotation, // FR-123: From state file
                 aspectWarning: getActiveAspectWarning(state, entry.name), // undismissed aspect mismatch
                 soundHoles: state.recordings[entry.name]?.soundHoles, // absent = not checked yet (backfilled below)
+                ...(state.recordings[entry.name]?.placeholder ? { isPlaceholder: true } : {}), // CT-0107 R7
               } satisfies RecordingFile,
             };
           })

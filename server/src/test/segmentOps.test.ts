@@ -6,7 +6,7 @@ import os from 'os';
 import path from 'path';
 import type { Config, TranscriptionJob } from '../../../shared/types.js';
 import { getProjectPaths, type ProjectPaths } from '../../../shared/paths.js';
-import { readProjectState, writeProjectState } from '../utils/projectState.js';
+import { readProjectState, setRecordingParked, writeProjectState } from '../utils/projectState.js';
 
 /**
  * CT-0107 — segment editing on a TEMP project (never a real one). Every assertion is on the disk, not the response:
@@ -518,5 +518,72 @@ describe('Feature: journal and undo that survive a restart (R9)', () => {
     expect(res.status).toBe(409);
     expect(res.body.blockers.some((b: { kind: string }) => b.kind === 'not-found')).toBe(true);
     expect(await disk()).toEqual(before);
+  });
+});
+
+describe('Feature: a placeholder flag on a segment (R7)', () => {
+  const mark = (app: express.Express, filename: string, placeholder: boolean) =>
+    request(app).post('/api/segments/placeholder').send({ filename, placeholder });
+
+  it('Scenario: given a segment, when it is marked and unmarked, then only the state file changes, never the name', async () => {
+    await take('06-1-a.mov');
+    const app = await appFor();
+    await mark(app, '06-1-a.mov', true).expect(200);
+    expect((await readProjectState(project)).recordings).toEqual({
+      '06-1-a.mov': { placeholder: true },
+    });
+    expect(await recordings()).toEqual(['06-1-a.mov']);
+    await mark(app, '06-1-a.mov', false).expect(200);
+    expect((await readProjectState(project)).recordings).toEqual({});
+  });
+
+  it('Scenario: given a placeholder segment, when it is replaced, then the flag is gone; when it is moved, the flag goes with it', async () => {
+    await take('06-1-a.mov');
+    await take('06-2-b.mov');
+    await write(path.join(inbox, 'take.mov'));
+    const app = await appFor();
+    await mark(app, '06-2-b.mov', true).expect(200);
+    await request(app)
+      .post('/api/segments/op')
+      .send({ mode: 'reorder', chapter: '06', segment: 2, direction: 'up' })
+      .expect(200);
+    expect((await readProjectState(project)).recordings).toEqual({
+      '06-1-b.mov': { placeholder: true },
+    });
+
+    await request(app)
+      .post('/api/segments/op')
+      .send({
+        mode: 'replace',
+        chapter: '06',
+        segment: 1,
+        source: path.join(inbox, 'take.mov'),
+        name: 'b-again',
+      })
+      .expect(200);
+    expect((await readProjectState(project)).recordings).toEqual({});
+    expect(await recordings()).toEqual(['06-1-b-again.mov', '06-2-a.mov']);
+  });
+
+  it('Scenario: given a placeholder segment that is also parked, when it is unparked, then the placeholder survives', () => {
+    const parked = setRecordingParked(
+      { version: 1, recordings: { 'x.mov': { placeholder: true } } },
+      'x.mov',
+      true
+    );
+    expect(setRecordingParked(parked, 'x.mov', false).recordings['x.mov']).toEqual({
+      placeholder: true,
+      parked: false,
+    });
+  });
+
+  it('Scenario: given a missing recording, a path or a bad body, when marked, then it is refused and nothing is written', async () => {
+    const app = await appFor();
+    expect((await mark(app, '06-9-none.mov', true)).body.blockers[0].kind).toBe('not-found');
+    expect((await mark(app, '../06-1-a.mov', true)).body.blockers[0].kind).toBe('invalid');
+    expect(
+      (await request(app).post('/api/segments/placeholder').send({ filename: 'x' })).status
+    ).toBe(400);
+    expect(await fs.pathExists(paths.stateFile)).toBe(false);
   });
 });

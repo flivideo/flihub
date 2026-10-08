@@ -437,6 +437,7 @@ export interface RecordingFile {
   annotation?: string; // FR-123: Optional note explaining why parked
   aspectWarning?: AspectCheck; // Undismissed aspect mismatch from ingest (state file)
   soundHoles?: SoundHoleCheck; // Sound-hole check (state file); absent = not checked yet
+  isPlaceholder?: boolean; // CT-0107 R7: marked to re-record (state file); absent = no
 }
 
 // FR-17: Image info for incoming images from Downloads
@@ -1044,6 +1045,7 @@ export interface RecordingState {
   stage?: string; // Future: per-recording stage (recording, first-edit, review, etc.)
   aspectWarning?: AspectCheck & { dismissedAt?: string }; // Set on promotion of a mismatched take
   soundHoles?: SoundHoleCheck; // Sound-hole check result (ingest, or backfilled on listing)
+  placeholder?: boolean; // CT-0107 R7: segment to re-record (cleared when it is replaced)
 }
 
 // FR-157: Per-chapter persisted state (chapters are otherwise derived from filenames)

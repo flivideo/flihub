@@ -14,6 +14,7 @@ import {
   SegmentOpRefused,
   applySegmentOp,
   readJournal,
+  setPlaceholder,
   undoSegmentOp,
   type JournalEntry,
   type SegmentOpDeps,
@@ -92,6 +93,29 @@ export function createSegmentRoutes(
       const entry = await undoSegmentOp(project(), deps(), req.body?.id);
       io?.emit('recordings:changed');
       res.json({ success: true, op: view(entry) });
+    } catch (error) {
+      fail(res, error);
+    }
+  });
+
+  /** POST /api/segments/placeholder — `{ filename, placeholder }`: R7, mark a segment to re-record (state only). */
+  router.post('/placeholder', async (req: Request, res: Response) => {
+    const { filename, placeholder } = (req.body ?? {}) as {
+      filename?: unknown;
+      placeholder?: unknown;
+    };
+    if (typeof filename !== 'string' || typeof placeholder !== 'boolean') {
+      res.status(400).json({
+        success: false,
+        refused: true,
+        reason: 'Send { filename, placeholder: true | false }.',
+      });
+      return;
+    }
+    try {
+      await setPlaceholder(project(), filename, placeholder);
+      io?.emit('recordings:changed');
+      res.json({ success: true, filename, placeholder });
     } catch (error) {
       fail(res, error);
     }

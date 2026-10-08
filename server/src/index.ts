@@ -146,8 +146,7 @@ function queueSoundCheck(file: FileInfo) {
     if (!pending) return;
     pendingFiles.set(file.path, { ...pending, soundHoles });
     io.emit('file:sound-holes', { path: file.path, soundHoles });
-    if (soundHoles.status !== 'ok')
-      console.warn(`[sound-holes] ${file.filename}: ${soundHoles.message}`);
+    if (soundHoles.status !== 'ok') console.warn(`[sound-holes] ${file.filename}: ${soundHoles.message}`);
   }).catch((err) => console.error('[sound-holes] check failed:', err));
 }
 
@@ -158,9 +157,7 @@ function queueSoundCheck(file: FileInfo) {
 function queueAspectCheck(file: FileInfo) {
   enqueueAspectCheck(async () => {
     if (!pendingFiles.has(file.path)) return; // promoted or discarded before its turn
-    const projectDir = currentConfig.projectDirectory
-      ? expandPath(currentConfig.projectDirectory)
-      : '';
+    const projectDir = currentConfig.projectDirectory ? expandPath(currentConfig.projectDirectory) : '';
     const aspectCheck = await checkTakeAspect(file.path, projectDir, file.duration);
     const pending = pendingFiles.get(file.path);
     if (!pending) return;
@@ -338,10 +335,7 @@ const manageRoutes = createManageRoutes(
 app.use('/api/manage', manageRoutes);
 
 // CT-0107: segment editing (replace / insert / reorder / delete-and-close-up), guarded and journalled
-app.use(
-  '/api/segments',
-  createSegmentRoutes(() => currentConfig, io, queueTranscription, getActiveJob, getQueue)
-);
+app.use('/api/segments', createSegmentRoutes(() => currentConfig, io, queueTranscription, getActiveJob, getQueue));
 
 // FR-144: Setup POEM WUI routes
 const poemWuiRoutes = createPoemWuiRoutes(() => currentConfig);
@@ -369,10 +363,7 @@ const micCheckRoutes = createMicCheckRoutes(() => currentConfig, io);
 app.use('/api/miccheck', micCheckRoutes);
 
 // Brand switching — reads ~/.config/appydave/brands.json + on-disk v-* roots
-app.use(
-  '/api/brands',
-  createBrandsRouter(() => currentConfig, updateConfig, io)
-);
+app.use('/api/brands', createBrandsRouter(() => currentConfig, updateConfig, io));
 
 // W3 open contract — launch args (door 2) and POST /api/context (door 3) share one applyContext
 const contextController = createContextController({
@@ -424,7 +415,9 @@ try {
       if (await needsMigration(currentConfig.projectDirectory)) {
         console.log('[FR-111] Starting safe folder migration...');
         const result = await migrateSafeFolder(currentConfig.projectDirectory);
-        console.log(`[FR-111] Migration complete: ${result.migrated} files`);
+        console.log(
+          `[FR-111] Migration complete: ${result.migrated} files`
+        );
         if (result.errors.length > 0) {
           console.warn('[FR-111] Migration warnings:', result.errors);
         }

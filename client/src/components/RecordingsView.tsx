@@ -42,6 +42,9 @@ import {
   formatTimestamp,
 } from '../utils/formatting';
 import { LoadingSpinner, ErrorMessage, AspectWarningChip, SoundHoleChip } from './shared';
+import { SegmentControls, reportSegmentResult } from './shared/SegmentControls';
+import { useSegmentUndo } from '../hooks/useSegmentsApi';
+import { segmentsInChapter } from '../utils/segmentLanding';
 import { ConfirmationModal } from './shared/ConfirmationModal'; // FR-156
 import { API_URL } from '../config';
 import { NoRecordingsState } from './shared/NoRecordingsState';
@@ -563,6 +566,7 @@ export function RecordingsView() {
   const unparkRecording = useUnparkRecording(); // FR-120
   const transcribeAll = useTranscribeAll();
   const renameMutation = useRenameRecording(); // B047: For inline single-file renames
+  const segmentUndo = useSegmentUndo(); // CT-0107 R9: undo the last segment change (journal on disk)
   // FR-92: Get count of files pending transcription
   const { data: pendingData } = usePendingTranscriptionCount();
   const pendingCount = pendingData?.pendingCount ?? 0;
@@ -1303,6 +1307,9 @@ export function RecordingsView() {
   const safeFiles = data.recordings.filter((r) => r.isSafe).length;
   const parkedFiles = data.recordings.filter((r) => r.isParked).length;
   const activeFiles = totalFiles - safeFiles - parkedFiles;
+  // CT-0107 R7: what is left to re-record, and each chapter's segment numbers on disk (for ▲ ▼ limits)
+  const toReRecord = data.recordings.filter((r) => r.isPlaceholder).length;
+  const allFilenames = data.recordings.map((r) => r.filename);
 
   return (
     <div>
@@ -1322,6 +1329,22 @@ export function RecordingsView() {
         {data?.totalRecordingsSize != null && data.totalRecordingsSize > 0 && (
           <span className="text-warm-muted">| {formatFileSize(data.totalRecordingsSize)}</span>
         )}
+        {toReRecord > 0 && (
+          <span data-testid="to-re-record-count" className="rounded bg-amber-100 px-1.5 font-semibold text-amber-800">
+            {toReRecord} to re-record
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={async () =>
+            reportSegmentResult(await segmentUndo.mutateAsync({}), 'Undid the last segment change')
+          }
+          disabled={segmentUndo.isPending}
+          title="Undo the last replace / insert / reorder / delete-and-close-up (kept on disk, survives a restart)"
+          className="ml-auto text-warm-muted hover:text-blue-600 disabled:opacity-50"
+        >
+          ↶ Undo segment change
+        </button>
       </div>
 
       {/* Row 2 — Filters */}
@@ -1532,6 +1555,10 @@ export function RecordingsView() {
                           <AspectWarningChip filename={file.filename} warning={file.aspectWarning} />
                         )}
                         <SoundHoleChip check={file.soundHoles} />
+                        <SegmentControls
+                          recording={file}
+                          chapterSegments={segmentsInChapter(allFilenames, file.chapter)}
+                        />
                         <TranscriptionBadge
                           filename={file.filename}
                           filePath={file.path}

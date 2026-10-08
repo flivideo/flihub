@@ -116,6 +116,44 @@ export function isRecordingSafe(state: ProjectState, filename: string): boolean 
 }
 
 /**
+ * True when an entry carries nothing worth keeping, so a setter may delete it. One list for every setter: a
+ * RecordingState field missing here is deleted with the entry when another flag clears (aspectWarning, 2026-09-23).
+ */
+export function isEmptyRecordingState(recordingState: RecordingState): boolean {
+  return (
+    !recordingState.safe &&
+    !recordingState.parked &&
+    !recordingState.stage &&
+    !recordingState.annotation &&
+    !recordingState.aspectWarning && // keep an aspect warning (dismissed or not) — it is history
+    !recordingState.soundHoles && // keep the sound-hole check — dropping it would re-decode the take
+    !recordingState.placeholder // CT-0107 R7: a segment marked to re-record
+  );
+}
+
+/**
+ * CT-0107 R7: mark a segment as a placeholder to re-record (state only — the filename never changes). It clears on
+ * its own when the segment is replaced, because the replaced take's entry goes with it to the trash.
+ */
+export function setRecordingPlaceholder(
+  state: ProjectState,
+  filename: string,
+  placeholder: boolean
+): ProjectState {
+  const newState: ProjectState = {
+    ...state,
+    recordings: {
+      ...state.recordings,
+      [filename]: { ...state.recordings[filename], placeholder: placeholder || undefined },
+    },
+  };
+  if (isEmptyRecordingState(newState.recordings[filename])) {
+    delete newState.recordings[filename];
+  }
+  return newState;
+}
+
+/**
  * Set the safe flag for a recording
  * Returns the updated state (does not persist to disk)
  */
@@ -136,15 +174,7 @@ export function setRecordingSafe(
   };
 
   // Remove entry if all flags are default/false and no annotation
-  const recordingState = newState.recordings[filename];
-  if (
-    !recordingState.safe &&
-    !recordingState.parked &&
-    !recordingState.stage &&
-    !recordingState.annotation &&
-    !recordingState.aspectWarning && // keep an aspect warning (dismissed or not) — it is history
-    !recordingState.soundHoles // keep the sound-hole check — dropping it would re-decode the take
-  ) {
+  if (isEmptyRecordingState(newState.recordings[filename])) {
     delete newState.recordings[filename];
   }
 
@@ -233,15 +263,7 @@ export function setRecordingParked(
   };
 
   // Remove entry if all flags are default/false and no annotation
-  const recordingState = newState.recordings[filename];
-  if (
-    !recordingState.safe &&
-    !recordingState.parked &&
-    !recordingState.stage &&
-    !recordingState.annotation &&
-    !recordingState.aspectWarning && // keep an aspect warning (dismissed or not) — it is history
-    !recordingState.soundHoles // keep the sound-hole check — dropping it would re-decode the take
-  ) {
+  if (isEmptyRecordingState(newState.recordings[filename])) {
     delete newState.recordings[filename];
   }
 
