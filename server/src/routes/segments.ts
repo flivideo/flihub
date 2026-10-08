@@ -13,6 +13,7 @@ import {
   SegmentOpFailed,
   SegmentOpRefused,
   applySegmentOp,
+  previewSegmentOp,
   readJournal,
   setPlaceholder,
   undoSegmentOp,
@@ -83,6 +84,19 @@ export function createSegmentRoutes(
       }
       io?.emit('recordings:changed');
       res.json({ success: true, op: view(entry) });
+    } catch (error) {
+      fail(res, error);
+    }
+  });
+
+  /**
+   * POST /api/segments/preview — the same body as /op: what it would trash and renumber, or the same refusal (409);
+   * nothing on disk changes. A confirmation shows this, so what it lists is what the op does.
+   */
+  router.post('/preview', async (req: Request, res: Response) => {
+    try {
+      const preview = await previewSegmentOp(project(), req.body as SegmentOpInput, deps());
+      res.json({ success: true, preview });
     } catch (error) {
       fail(res, error);
     }

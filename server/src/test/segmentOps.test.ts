@@ -251,6 +251,54 @@ describe('Feature: delete a segment and close up (R5)', () => {
   });
 });
 
+describe('Feature: preview a segment change before confirming it (D07-UAT-1)', () => {
+  it('Scenario: given four segments, when deleting 02-2 is previewed, then it lists what the delete trashes and renumbers, and the disk is untouched', async () => {
+    for (const f of ['02-1-a.mov', '02-2-b.mov', '02-3-c.mov', '02-4-d.mov']) await take(f);
+    const before = await disk();
+    const app = await appFor();
+
+    const res = await request(app)
+      .post('/api/segments/preview')
+      .send({ mode: 'delete', chapter: '02', segment: 2 })
+      .expect(200);
+
+    expect(await disk()).toEqual(before);
+    expect(await fs.pathExists(path.join(project, '.flihub-segment-journal.json'))).toBe(false);
+    expect(res.body.preview.renamed).toEqual([
+      { from: '02-3-c.mov', to: '02-2-c.mov' },
+      { from: '02-4-d.mov', to: '02-3-d.mov' },
+    ]);
+    expect(res.body.preview.summary).toBe('deleted 02-2-b.mov; 2 later segment(s) closed up');
+
+    // What the preview lists is exactly what the delete then moves to the trash.
+    await request(app)
+      .post('/api/segments/op')
+      .send({ mode: 'delete', chapter: '02', segment: 2 })
+      .expect(200);
+    const trashed = (await names(paths.trash)).map((f) =>
+      path.relative(project, path.join(paths.trash, f))
+    );
+    expect([...res.body.preview.trashed].map((f: string) => path.basename(f)).sort()).toEqual(
+      trashed.map((f) => path.basename(f)).sort()
+    );
+  });
+
+  it('Scenario: given a later segment is being transcribed, when the delete is previewed, then it refuses with the same reason the delete would and changes nothing', async () => {
+    for (const f of ['02-1-a.mov', '02-2-b.mov', '02-3-c.mov']) await take(f);
+    active = { videoFilename: '02-3-c.mov' } as TranscriptionJob;
+    const before = await disk();
+
+    const res = await request(await appFor())
+      .post('/api/segments/preview')
+      .send({ mode: 'delete', chapter: '02', segment: 2 })
+      .expect(409);
+
+    expect(res.body.refused).toBe(true);
+    expect(res.body.reason).toContain('02-3-c.mov is being transcribed');
+    expect(await disk()).toEqual(before);
+  });
+});
+
 describe('Feature: send several takes in (R6)', () => {
   it('Scenario: given two inbox takes picked in order, when sent, then they land as the next segments 06-3, 06-4 in that order, each queued', async () => {
     await take('06-1-a.mov');

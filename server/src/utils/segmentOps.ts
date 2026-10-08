@@ -642,11 +642,22 @@ export function applySegmentOp(
   return serialized(projectDir, () => apply(projectDir, op, deps));
 }
 
-async function apply(
+/** Everything an operation will do, planned and guarded, before a single file moves. */
+interface Prepared {
+  paths: ProjectPaths;
+  plan: Plan;
+  id: string;
+  trashSteps: Step[];
+  moving: Array<{ from: string; to: string; tmp: string }>;
+  promoteSteps: Step[];
+}
+
+/** Plan and guard one operation without touching the disk. Throws SegmentOpRefused when anything blocks it. */
+async function prepare(
   projectDir: string,
   op: SegmentOpInput,
   deps: SegmentOpDeps
-): Promise<JournalEntry> {
+): Promise<Prepared> {
   const invalid = checkInput(op);
   if (invalid.length) throw new SegmentOpRefused(invalid);
 
@@ -740,7 +751,49 @@ async function apply(
     }
   }
   if (blockers.length) throw new SegmentOpRefused(blockers);
+  return { paths, plan, id, trashSteps, moving, promoteSteps };
+}
 
+/** What an operation would do, for a confirmation that shows exactly that. */
+export interface SegmentOpPreview {
+  summary: string;
+  /** Files that would go to `-trash/`, relative to the project. */
+  trashed: string[];
+  /** Recording renames (old filename → new filename), in chapter order. */
+  renamed: Array<{ from: string; to: string }>;
+  /** Recordings that would land from the inbox. */
+  promoted: string[];
+}
+
+/**
+ * Plan and guard an operation exactly as applySegmentOp would, and answer what it would do; nothing on disk changes.
+ * Throws SegmentOpRefused for the same reasons the operation itself would refuse.
+ */
+export function previewSegmentOp(
+  projectDir: string,
+  op: SegmentOpInput,
+  deps: SegmentOpDeps
+): Promise<SegmentOpPreview> {
+  return serialized(projectDir, async () => {
+    const { paths, plan, trashSteps } = await prepare(projectDir, op, deps);
+    return {
+      summary: plan.summary,
+      trashed: trashSteps.map((s) => path.relative(paths.project, s.from)),
+      renamed: plan.moves.map((m) => ({
+        from: m.take.filename,
+        to: withSegment(m.take, m.segment),
+      })),
+      promoted: plan.promote.map((p) => p.filename),
+    };
+  });
+}
+
+async function apply(
+  projectDir: string,
+  op: SegmentOpInput,
+  deps: SegmentOpDeps
+): Promise<JournalEntry> {
+  const { paths, plan, id, trashSteps, moving, promoteSteps } = await prepare(projectDir, op, deps);
   const createdDirs: string[] = [];
   for (const dir of [paths.trash, paths.recordings]) {
     if (
