@@ -3,7 +3,7 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `c719ce64bd90` · **generated** 2026-10-08T08:54:00+00:00
+- **commit** `199c76965485` · **generated** 2026-10-08T08:55:08+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
@@ -138,7 +138,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/utils/safeDelete.ts` — `SafeDeleteRule` :8 · `SafeDeleteResult` :17
 - `server/src/utils/safeMigration.ts` — `MigrationResult` :16
 - `server/src/utils/scanning.ts` — `ProjectTimestamps` :86 · `ProjectIndicators` :156
-- `server/src/utils/segmentOps.ts` — `SegmentOpInput` :34 · `BlockerKind` (set) :56 · `Blocker` :65 · `Step` :81 · `JournalEntry` :86 · `Journal` :106 · `SegmentOpDeps` :111 · `Take` :119 · `Plan` :248
+- `server/src/utils/segmentOps.ts` — `SegmentOpInput` :34 · `BlockerKind` (set) :56 · `Blocker` :66 · `Step` :82 · `JournalEntry` :87 · `Journal` :107 · `SegmentOpDeps` :112 · `Take` :120 · `Plan` :249
 - `server/src/utils/soundHoles.ts` — `SoundHoleDeps` :153
 - `server/src/utils/storageActivityLog.ts` — `ReadStorageActivityOpts` :40
 - `server/src/utils/storageTree.ts` — `HEAVY_SUBFOLDERS` (set) :23 · `GetStorageTreeOpts` :221
@@ -783,7 +783,7 @@ FR-41: Time format styles
 | `up` | `server/src/utils/segmentOps.ts:51` |
 | `down` | `server/src/utils/segmentOps.ts:51` |
 
-### `server/src/utils/segmentOps.BlockerKind` — `server/src/utils/segmentOps.ts:56-63`
+### `server/src/utils/segmentOps.BlockerKind` — `server/src/utils/segmentOps.ts:56-64`
 
 *literal union type alias `BlockerKind` - a single declaring symbol*
 
@@ -795,7 +795,8 @@ FR-41: Time format styles
 | `transcribing` | `server/src/utils/segmentOps.ts:60` |
 | `referenced` | `server/src/utils/segmentOps.ts:61` |
 | `collision` | `server/src/utils/segmentOps.ts:62` |
-| `nothing-to-undo` | `server/src/utils/segmentOps.ts:63` |
+| `unreadable` | `server/src/utils/segmentOps.ts:63` |
+| `nothing-to-undo` | `server/src/utils/segmentOps.ts:64` |
 
 ### `server/src/utils/storageTree.HEAVY_SUBFOLDERS` — `server/src/utils/storageTree.ts:23`
 
@@ -1474,19 +1475,19 @@ Each set below was read out of the real authority — control flow, membership t
 
 > **REFACTOR (minor): `LOOPBACK_HOSTS` at server/src/utils/loopback.ts:13 names the set but does not type it. A z.enum or `as const` + `typeof LOOPBACK_HOSTS[number]` would make a wrong value a static error rather than a runtime miss.**
 
-### `server/src/utils/segmentOps.op.mode (membership)` — `server/src/utils/segmentOps.ts:406`
+### `server/src/utils/segmentOps.op.mode (membership)` — `server/src/utils/segmentOps.ts:407`
 
 *inline membership test `[...].includes(op.mode)` - no declaring symbol*
 
 | value | read from |
 |---|---|
-| `replace` | `server/src/utils/segmentOps.ts:406` |
-| `insert` | `server/src/utils/segmentOps.ts:406` |
-| `reorder` | `server/src/utils/segmentOps.ts:406` |
-| `delete` | `server/src/utils/segmentOps.ts:406` |
-| `send` | `server/src/utils/segmentOps.ts:406` |
+| `replace` | `server/src/utils/segmentOps.ts:407` |
+| `insert` | `server/src/utils/segmentOps.ts:407` |
+| `reorder` | `server/src/utils/segmentOps.ts:407` |
+| `delete` | `server/src/utils/segmentOps.ts:407` |
+| `send` | `server/src/utils/segmentOps.ts:407` |
 
-> **REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:406. Name it once (z.enum / literal union) so it has one authority.**
+> **REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:407. Name it once (z.enum / literal union) so it has one authority.**
 
 > 4 comparison(s) against vocabularies this app does not own (DOM key names, HTTP headers, library internals) were **not** treated as closed sets and carry no refactor advice: `client/src/components/shared/BatchToolbar.e.key (branching)` (the subject is a property declared by TypeScript's lib or a package), `client/src/components/shared/EditableFileRow.e.key (branching)` (the subject is a property declared by TypeScript's lib or a package), `server/src/routes/projects.parts.length (branching)` (the subject is a property declared by TypeScript's lib or a package), `server/src/utils/llmVerification.parts.length (branching)` (the subject is a property declared by TypeScript's lib or a package).
 
@@ -3689,72 +3690,72 @@ FR-80/FR-82: Project content indicators with counts
 | `name` | `string` | — | `server/src/utils/segmentOps.ts:54` |
 | `tags` | `?: string[]` | — | `server/src/utils/segmentOps.ts:54` |
 
-### `server/src/utils/segmentOps.Blocker` — interface — `server/src/utils/segmentOps.ts:65-70`
+### `server/src/utils/segmentOps.Blocker` — interface — `server/src/utils/segmentOps.ts:66-71`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `kind` | `BlockerKind → server/src/utils/segmentOps.BlockerKind` | — | `server/src/utils/segmentOps.ts:66` |  |
-| `file` | `?: string` | — | `server/src/utils/segmentOps.ts:68` | The take or file it is about, when there is one. |
-| `detail` | `string` | — | `server/src/utils/segmentOps.ts:69` |  |
+| `kind` | `BlockerKind → server/src/utils/segmentOps.BlockerKind` | — | `server/src/utils/segmentOps.ts:67` |  |
+| `file` | `?: string` | — | `server/src/utils/segmentOps.ts:69` | The take or file it is about, when there is one. |
+| `detail` | `string` | — | `server/src/utils/segmentOps.ts:70` |  |
 
-### `server/src/utils/segmentOps.Step` — interface — `server/src/utils/segmentOps.ts:81-84`
+### `server/src/utils/segmentOps.Step` — interface — `server/src/utils/segmentOps.ts:82-85`
 
 One file move, absolute paths, in the order it ran.
 
 | field | type | default | at |
 |---|---|---|---|
-| `from` | `string` | — | `server/src/utils/segmentOps.ts:82` |
-| `to` | `string` | — | `server/src/utils/segmentOps.ts:83` |
+| `from` | `string` | — | `server/src/utils/segmentOps.ts:83` |
+| `to` | `string` | — | `server/src/utils/segmentOps.ts:84` |
 
-### `server/src/utils/segmentOps.JournalEntry` — interface — `server/src/utils/segmentOps.ts:86-104`
+### `server/src/utils/segmentOps.JournalEntry` — interface — `server/src/utils/segmentOps.ts:87-105`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `id` | `string` | — | `server/src/utils/segmentOps.ts:87` |  |
-| `at` | `string` | — | `server/src/utils/segmentOps.ts:88` |  |
-| `op` | `SegmentOpInput → server/src/utils/segmentOps.SegmentOpInput` | — | `server/src/utils/segmentOps.ts:89` |  |
-| `summary` | `string` | — | `server/src/utils/segmentOps.ts:91` | One line a person can read: "replaced 06-1-old.mov with 06-1-new.mov". |
-| `steps` | `Step[] → server/src/utils/segmentOps.Step` | — | `server/src/utils/segmentOps.ts:92` |  |
-| `renamed` | `Array<{ from: string; to: string }>` | — | `server/src/utils/segmentOps.ts:94` | Recording renames applied to `.flihub-state.json` (old filename → new filename). |
-| `removed` | `Array<{ filename: string; entry: RecordingState; index: number }> → shared/types.RecordingState` | — | `server/src/utils/segmentOps.ts:96` | State entries dropped because their take went to the trash, with their place; undo puts them back there. |
-| `promoted` | `Array<{ source: string; filename: string }>` | — | `server/src/utils/segmentOps.ts:98` | The inbox takes promoted into the chapter, in order (undo sends each back to where it came from). |
-| `createdDirs` | `string[]` | — | `server/src/utils/segmentOps.ts:100` | Folders this op created; undo removes them again when empty. |
-| `pending` | `?: boolean` | — | `server/src/utils/segmentOps.ts:102` | Written before the first move and cleared once the state is updated: a crash in between still leaves the moves. |
-| `undoneAt` | `?: string` | — | `server/src/utils/segmentOps.ts:103` |  |
+| `id` | `string` | — | `server/src/utils/segmentOps.ts:88` |  |
+| `at` | `string` | — | `server/src/utils/segmentOps.ts:89` |  |
+| `op` | `SegmentOpInput → server/src/utils/segmentOps.SegmentOpInput` | — | `server/src/utils/segmentOps.ts:90` |  |
+| `summary` | `string` | — | `server/src/utils/segmentOps.ts:92` | One line a person can read: "replaced 06-1-old.mov with 06-1-new.mov". |
+| `steps` | `Step[] → server/src/utils/segmentOps.Step` | — | `server/src/utils/segmentOps.ts:93` |  |
+| `renamed` | `Array<{ from: string; to: string }>` | — | `server/src/utils/segmentOps.ts:95` | Recording renames applied to `.flihub-state.json` (old filename → new filename). |
+| `removed` | `Array<{ filename: string; entry: RecordingState; index: number }> → shared/types.RecordingState` | — | `server/src/utils/segmentOps.ts:97` | State entries dropped because their take went to the trash, with their place; undo puts them back there. |
+| `promoted` | `Array<{ source: string; filename: string }>` | — | `server/src/utils/segmentOps.ts:99` | The inbox takes promoted into the chapter, in order (undo sends each back to where it came from). |
+| `createdDirs` | `string[]` | — | `server/src/utils/segmentOps.ts:101` | Folders this op created; undo removes them again when empty. |
+| `pending` | `?: boolean` | — | `server/src/utils/segmentOps.ts:103` | Written before the first move and cleared once the state is updated: a crash in between still leaves the moves. |
+| `undoneAt` | `?: string` | — | `server/src/utils/segmentOps.ts:104` |  |
 
-### `server/src/utils/segmentOps.Journal` — interface — `server/src/utils/segmentOps.ts:106-109`
+### `server/src/utils/segmentOps.Journal` — interface — `server/src/utils/segmentOps.ts:107-110`
 
 | field | type | default | at |
 |---|---|---|---|
-| `version` | `1` | — | `server/src/utils/segmentOps.ts:107` |
-| `entries` | `JournalEntry[] → server/src/utils/segmentOps.JournalEntry` | — | `server/src/utils/segmentOps.ts:108` |
+| `version` | `1` | — | `server/src/utils/segmentOps.ts:108` |
+| `entries` | `JournalEntry[] → server/src/utils/segmentOps.JournalEntry` | — | `server/src/utils/segmentOps.ts:109` |
 
-### `server/src/utils/segmentOps.SegmentOpDeps` — interface — `server/src/utils/segmentOps.ts:111-117`
-
-| field | type | default | at | note |
-|---|---|---|---|---|
-| `activeJob` | `TranscriptionJob \| null → shared/types.TranscriptionJob` | — | `server/src/utils/segmentOps.ts:112` |  |
-| `queue` | `TranscriptionJob[] → shared/types.TranscriptionJob` | — | `server/src/utils/segmentOps.ts:113` |  |
-| `inboxDir` | `?: string` | — | `server/src/utils/segmentOps.ts:115` | Where takes are sent in from (the watch folder); a source outside it is refused. |
-| `now` | `?: () => Date` | — | `server/src/utils/segmentOps.ts:116` |  |
-
-### `server/src/utils/segmentOps.Take` — interface — `server/src/utils/segmentOps.ts:119-125`
+### `server/src/utils/segmentOps.SegmentOpDeps` — interface — `server/src/utils/segmentOps.ts:112-118`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `filename` | `string` | — | `server/src/utils/segmentOps.ts:120` |  |
-| `chapter` | `string` | — | `server/src/utils/segmentOps.ts:121` |  |
-| `segment` | `number` | — | `server/src/utils/segmentOps.ts:122` |  |
-| `rest` | `string` | — | `server/src/utils/segmentOps.ts:124` | Everything after `NN-S-`, extension included: `intro-CTA.mov`. |
+| `activeJob` | `TranscriptionJob \| null → shared/types.TranscriptionJob` | — | `server/src/utils/segmentOps.ts:113` |  |
+| `queue` | `TranscriptionJob[] → shared/types.TranscriptionJob` | — | `server/src/utils/segmentOps.ts:114` |  |
+| `inboxDir` | `?: string` | — | `server/src/utils/segmentOps.ts:116` | Where takes are sent in from (the watch folder); a source outside it is refused. |
+| `now` | `?: () => Date` | — | `server/src/utils/segmentOps.ts:117` |  |
 
-### `server/src/utils/segmentOps.Plan` — interface — `server/src/utils/segmentOps.ts:248-256`
+### `server/src/utils/segmentOps.Take` — interface — `server/src/utils/segmentOps.ts:120-126`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `summary` | `string` | — | `server/src/utils/segmentOps.ts:249` |  |
-| `trash` | `Take[] → server/src/utils/segmentOps.Take` | — | `server/src/utils/segmentOps.ts:251` | Takes whose files go to the trash. |
-| `moves` | `Array<{ take: Take; segment: number }> → server/src/utils/segmentOps.Take` | — | `server/src/utils/segmentOps.ts:253` | Takes that change segment number. |
-| `promote` | `Array<{ source: string; filename: string }>` | — | `server/src/utils/segmentOps.ts:255` | The inbox takes promoted into the chapter, in order. |
+| `filename` | `string` | — | `server/src/utils/segmentOps.ts:121` |  |
+| `chapter` | `string` | — | `server/src/utils/segmentOps.ts:122` |  |
+| `segment` | `number` | — | `server/src/utils/segmentOps.ts:123` |  |
+| `rest` | `string` | — | `server/src/utils/segmentOps.ts:125` | Everything after `NN-S-`, extension included: `intro-CTA.mov`. |
+
+### `server/src/utils/segmentOps.Plan` — interface — `server/src/utils/segmentOps.ts:249-257`
+
+| field | type | default | at | note |
+|---|---|---|---|---|
+| `summary` | `string` | — | `server/src/utils/segmentOps.ts:250` |  |
+| `trash` | `Take[] → server/src/utils/segmentOps.Take` | — | `server/src/utils/segmentOps.ts:252` | Takes whose files go to the trash. |
+| `moves` | `Array<{ take: Take; segment: number }> → server/src/utils/segmentOps.Take` | — | `server/src/utils/segmentOps.ts:254` | Takes that change segment number. |
+| `promote` | `Array<{ source: string; filename: string }>` | — | `server/src/utils/segmentOps.ts:256` | The inbox takes promoted into the chapter, in order. |
 
 ### `server/src/utils/soundHoles.SoundHoleDeps` — interface — `server/src/utils/soundHoles.ts:153-156`
 
@@ -5201,7 +5202,7 @@ The census found these top-level declarations and the extractor did not mirror t
 | object constant | 12 | `client/src/components/shared/ShipsSelector.SHIPS_LABEL` `client/src/components/shared/ShipsSelector.tsx:17`<br>`client/src/constants/queryKeys.QUERY_KEYS` `client/src/constants/queryKeys.ts:5`<br>`client/src/constants/stages.STAGE_DISPLAY` `client/src/constants/stages.ts:4`<br>`server/src/config/configManager.DEFAULT_DISK_THRESHOLDS` `server/src/config/configManager.ts:7`<br>`server/src/config/env.env` `server/src/config/env.ts:25`<br>`server/src/config/logger.log` `server/src/config/logger.ts:20`<br>`server/src/utils/formatters.STATUS` `server/src/utils/formatters.ts:151`<br>`shared/constants.FILE_SIZE` `shared/constants.ts:6`<br>`shared/constants.WATCHER` `shared/constants.ts:14`<br>`shared/naming.NAMING_RULES` `shared/naming.ts:16`<br>`shared/naming.PATTERNS` `shared/naming.ts:55`<br>`shared/types.STAGE_LABELS` `shared/types.ts:346` |
 | array constant | 10 | `client/src/constants/stages.STAGE_ORDER` `client/src/constants/stages.ts:73`<br>`client/src/hooks/useBrollApi.BROLL_QUERY_KEY` `client/src/hooks/useBrollApi.ts:12`<br>`client/src/hooks/useOpenContextApi.OPEN_CONTEXT_KEY` `client/src/hooks/useOpenContextApi.ts:8`<br>`client/src/hooks/useVideoPlayback.SPEED_PRESETS` `client/src/hooks/useVideoPlayback.ts:10`<br>`client/src/utils/micGrading.SHORT_TERM_GREEN` `client/src/utils/micGrading.ts:38`<br>`server/src/utils/holdUtils.HOLD_EXCLUDES` `server/src/utils/holdUtils.ts:10`<br>`shared/apiRegistry.API_ENDPOINTS` `shared/apiRegistry.ts:38`<br>`shared/contextSchemas.REFUSAL_CODES` `shared/contextSchemas.ts:36`<br>`shared/types.DEFAULT_PROJECT_STAGES` `shared/types.ts:333`<br>`shared/types.DEFAULT_TAGS` `shared/types.ts:294` |
 | const built by a call (helper or non-zod call) | 8 | `client/src/config.API_URL` `client/src/config.ts:14`<br>`client/src/hooks/useStorageApi.useArchiveProject` `client/src/hooks/useStorageApi.ts:79`<br>`client/src/hooks/useStorageApi.useHeldArchiveProject` `client/src/hooks/useStorageApi.ts:83`<br>`client/src/hooks/useStorageApi.useHoldProject` `client/src/hooks/useStorageApi.ts:77`<br>`client/src/hooks/useStorageApi.useRestoreHeld` `client/src/hooks/useStorageApi.ts:78`<br>`client/src/hooks/useStorageApi.useUnarchiveProject` `client/src/hooks/useStorageApi.ts:80`<br>`server/src/config/logger.logger` `server/src/config/logger.ts:5`<br>`server/src/utils/poemWuiUtils.BUNDLED_BRAND_CONFIG` `server/src/utils/poemWuiUtils.ts:11` |
-| class | 6 | `client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15`<br>`server/src/utils/flitoolsClient.FlitoolsError` `server/src/utils/flitoolsClient.ts:34`<br>`server/src/utils/segmentOps.SegmentOpFailed` `server/src/utils/segmentOps.ts:478`<br>`server/src/utils/segmentOps.SegmentOpRefused` `server/src/utils/segmentOps.ts:73` |
+| class | 6 | `client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15`<br>`server/src/utils/flitoolsClient.FlitoolsError` `server/src/utils/flitoolsClient.ts:34`<br>`server/src/utils/segmentOps.SegmentOpFailed` `server/src/utils/segmentOps.ts:479`<br>`server/src/utils/segmentOps.SegmentOpRefused` `server/src/utils/segmentOps.ts:74` |
 | union of named or mixed types | 4 | `client/src/App.ConfigFocusSection` `client/src/App.tsx:87`<br>`client/src/hooks/useShiftHover.LegacyImageData` `client/src/hooks/useShiftHover.ts:25`<br>`server/src/utils/openContext.LaunchResult` `server/src/utils/openContext.ts:62`<br>`shared/types.ProjectStageOverride` `shared/types.ts:329` |
 | utility-type alias (`Pick` / `Omit` / `Record` / generic instance) | 3 | `client/src/components/MicCheckSnapshot.Analyser` `client/src/components/MicCheckSnapshot.tsx:34`<br>`server/src/routes/miccheck.IO` `server/src/routes/miccheck.ts:32`<br>`server/src/utils/openContext.ContextController` `server/src/utils/openContext.ts:281` |
 | constant (other form) | 1 | `client/src/hooks/useVideoAspect.DEFAULT_ASPECT` `client/src/hooks/useVideoAspect.ts:12` |
@@ -5228,7 +5229,7 @@ These are refactors of the **application**, not of this mirror. Each one convert
 14. `server/src/routes/video.ts:242` — REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:242. Name it once (z.enum / literal union) so it has one authority.
 15. `server/src/utils/chapterExtraction.ts:208` — REFACTOR: the set for `word.toLowerCase()` is inlined at server/src/utils/chapterExtraction.ts:208. Name it once (z.enum / literal union) so it has one authority.
 16. `server/src/utils/loopback.ts:13` — REFACTOR (minor): `LOOPBACK_HOSTS` at server/src/utils/loopback.ts:13 names the set but does not type it. A z.enum or `as const` + `typeof LOOPBACK_HOSTS[number]` would make a wrong value a static error rather than a runtime miss.
-17. `server/src/utils/segmentOps.ts:406` — REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:406. Name it once (z.enum / literal union) so it has one authority.
+17. `server/src/utils/segmentOps.ts:407` — REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:407. Name it once (z.enum / literal union) so it has one authority.
 
 ---
 

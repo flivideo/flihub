@@ -60,6 +60,7 @@ export type BlockerKind =
   | 'transcribing'
   | 'referenced'
   | 'collision'
+  | 'unreadable'
   | 'nothing-to-undo';
 
 export interface Blocker {
@@ -546,6 +547,19 @@ async function guardTakes(
   deps: SegmentOpDeps
 ): Promise<Blocker[]> {
   const blockers: Blocker[] = [];
+  // readProjectState answers an EMPTY state for a file it cannot parse; writing that back would wipe every
+  // safe / parked / note flag in the project. Refuse instead.
+  if (await fs.pathExists(paths.stateFile)) {
+    try {
+      JSON.parse(await fs.readFile(paths.stateFile, 'utf8'));
+    } catch {
+      blockers.push({
+        kind: 'unreadable',
+        file: path.basename(paths.stateFile),
+        detail: `${path.basename(paths.stateFile)} cannot be read; fix it by hand first (changing segments would lose its flags).`,
+      });
+    }
+  }
   const cuts = await cutReferences(paths.project);
   for (const filename of filenames) {
     if (checkTranscriptionQueue(filename, deps.activeJob, deps.queue)) {

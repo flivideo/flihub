@@ -403,6 +403,19 @@ describe('Feature: one guarded operation (R8) — a refused op changes nothing o
     expect(await disk()).toEqual(before);
   });
 
+  it('Scenario: given an unreadable state file, when a segment would move, then it is refused rather than wiping every flag', async () => {
+    await take('06-1-a.mov');
+    await take('06-2-b.mov');
+    await write(paths.stateFile, '{ not json');
+    const before = await disk();
+    const res = await request(await appFor())
+      .post('/api/segments/op')
+      .send({ mode: 'reorder', chapter: '06', segment: 2, direction: 'up' });
+    expect(res.status).toBe(409);
+    expect(res.body.blockers).toEqual([expect.objectContaining({ kind: 'unreadable' })]);
+    expect(await disk()).toEqual(before);
+  });
+
   it('Scenario: given two recordings share a segment number, when that segment is touched, then it is refused as ambiguous', async () => {
     await take('06-1-a.mov');
     await write(path.join(paths.recordings, '06-1-dupe.mov'));
@@ -462,20 +475,26 @@ describe('Feature: a failure part-way never leaves a half-renumbered chapter (R8
     await take('06-1-a.mov');
     await take('06-2-b.mov');
     await take('06-3-c.mov');
-    await fs.ensureDir(paths.stateFile); // a folder where the state file should be: the write fails
+    vi.doMock('../utils/projectState.js', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('../utils/projectState.js')>()),
+      writeProjectState: async () => {
+        throw new Error('disk full');
+      },
+    }));
     const before = await disk();
 
-    const res = await request(await appFor())
-      .post('/api/segments/op')
-      .send({ mode: 'delete', chapter: '06', segment: 1 });
+    try {
+      const res = await request(await appFor())
+        .post('/api/segments/op')
+        .send({ mode: 'delete', chapter: '06', segment: 1 });
 
-    expect(res.status).toBe(500);
-    expect(res.body.reason).toContain('every file was put back');
-    // writeProjectState (FliHub's existing helper) leaves its own temp file when its rename fails; not this op's.
-    const after = await disk();
-    delete after['project/.flihub-state.json.tmp'];
-    expect(after).toEqual(before);
-    expect((await request(await appFor()).get('/api/segments/journal')).body.entries).toEqual([]);
+      expect(res.status).toBe(500);
+      expect(res.body.reason).toBe('Nothing was changed: disk full (every file was put back).');
+      expect(await disk()).toEqual(before);
+      expect((await request(await appFor()).get('/api/segments/journal')).body.entries).toEqual([]);
+    } finally {
+      vi.doUnmock('../utils/projectState.js');
+    }
   });
 
   it('Scenario: given two reorders sent at once, when both run, then they run one after the other and the chapter is consistent', async () => {
