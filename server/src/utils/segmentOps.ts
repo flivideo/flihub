@@ -2,8 +2,8 @@
  * CT-0107: one guarded operation for changing the shape of a chapter after segments are already in recordings
  * (validated requirement: flivideo docs/briefs/flihub-segment-editing-requirement-2026-10-07.md).
  *
- * A segment number is a POSITION in the filename (`06-2-<slug>.mov`). Replace, insert, reorder and delete-and-close-up
- * are modes of one operation (R2–R5) that:
+ * A segment number is a POSITION in the filename (`06-2-<slug>.mov`). Replace, insert, reorder, delete-and-close-up
+ * and send-several are modes of one operation (R2–R6) that:
  *   1. plans every file it will touch — the recording, its transcripts (5 exts), FliTools engine copies and the
  *      image assets keyed `NN-S-…` — before touching any;
  *   2. refuses the WHOLE operation with a plain reason when any affected take is being transcribed, is referenced by a
@@ -49,7 +49,9 @@ export type SegmentOpInput =
       tags?: string[];
     }
   | { mode: 'reorder'; chapter: string; segment: number; direction: 'up' | 'down' }
-  | { mode: 'delete'; chapter: string; segment: number };
+  | { mode: 'delete'; chapter: string; segment: number }
+  /** R6: several inbox takes land as the next consecutive segments, in the order given. */
+  | { mode: 'send'; chapter: string; sources: string[]; name: string; tags?: string[] };
 
 export type BlockerKind =
   | 'invalid'
@@ -92,8 +94,8 @@ export interface JournalEntry {
   renamed: Array<{ from: string; to: string }>;
   /** State entries dropped because their take went to the trash, with their place; undo puts them back there. */
   removed: Array<{ filename: string; entry: RecordingState; index: number }>;
-  /** The promoted take, if any (undo sends it back to where it came from). */
-  promoted: { source: string; filename: string } | null;
+  /** The inbox takes promoted into the chapter, in order (undo sends each back to where it came from). */
+  promoted: Array<{ source: string; filename: string }>;
   /** Folders this op created; undo removes them again when empty. */
   createdDirs: string[];
   /** Written before the first move and cleared once the state is updated: a crash in between still leaves the moves. */
@@ -249,8 +251,8 @@ interface Plan {
   trash: Take[];
   /** Takes that change segment number. */
   moves: Array<{ take: Take; segment: number }>;
-  /** The inbox take promoted into the chapter. */
-  promote: { source: string; filename: string } | null;
+  /** The inbox takes promoted into the chapter, in order. */
+  promote: Array<{ source: string; filename: string }>;
 }
 
 function validName(name: string | undefined): string | null {
@@ -304,7 +306,7 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
           summary: `replaced ${old.filename} with ${filename}`,
           trash: [old],
           moves: [],
-          promote: { source: op.source, filename },
+          promote: [{ source: op.source, filename }],
         },
         blockers,
       };
@@ -321,7 +323,7 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
           summary: `inserted ${filename}; ${shifted.length} later segment(s) moved up one`,
           trash: [],
           moves: shifted.map((t) => ({ take: t, segment: t.segment + 1 })),
-          promote: { source: op.source, filename },
+          promote: [{ source: op.source, filename }],
         },
         blockers,
       };
@@ -357,7 +359,25 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
             { take: moving, segment: otherSegment },
             { take: other, segment: op.segment },
           ],
-          promote: null,
+          promote: [],
+        },
+        blockers,
+      };
+    }
+    case 'send': {
+      const name = validName(op.name);
+      if (!name) return { blockers: [{ kind: 'invalid', detail: NAMING_RULES.name.errorMessage }] };
+      const next = takes.length ? Math.max(...takes.map((t) => t.segment)) + 1 : 1;
+      const promote = op.sources.map((source, i) => ({
+        source,
+        filename: promoted(next + i, name, tags(op.tags)),
+      }));
+      return {
+        plan: {
+          summary: `sent ${promote.length} take(s) in as ${promote.map((p) => p.filename).join(', ')}`,
+          trash: [],
+          moves: [],
+          promote,
         },
         blockers,
       };
@@ -372,7 +392,7 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
           summary: `deleted ${gone.filename}; ${later.length} later segment(s) closed up`,
           trash: [gone],
           moves: later.map((t) => ({ take: t, segment: t.segment - 1 })),
-          promote: null,
+          promote: [],
         },
         blockers,
       };
@@ -383,11 +403,25 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
 function checkInput(op: SegmentOpInput): Blocker[] {
   const out: Blocker[] = [];
   if (!op || typeof op !== 'object') return [{ kind: 'invalid', detail: 'No operation given.' }];
-  if (!['replace', 'insert', 'reorder', 'delete'].includes(op.mode)) {
-    return [{ kind: 'invalid', detail: 'mode must be replace, insert, reorder or delete.' }];
+  if (!['replace', 'insert', 'reorder', 'delete', 'send'].includes(op.mode)) {
+    return [{ kind: 'invalid', detail: 'mode must be replace, insert, reorder, delete or send.' }];
   }
   if (typeof op.chapter !== 'string' || !NAMING_RULES.chapter.pattern.test(op.chapter)) {
     out.push({ kind: 'invalid', detail: 'chapter must be two digits, e.g. "06".' });
+  }
+  if (op.mode === 'send') {
+    const ok =
+      Array.isArray(op.sources) &&
+      op.sources.length > 0 &&
+      op.sources.every((src) => typeof src === 'string' && path.isAbsolute(src)) &&
+      new Set(op.sources).size === op.sources.length;
+    if (!ok) {
+      out.push({
+        kind: 'invalid',
+        detail: 'sources must be one or more different absolute paths of takes to send in.',
+      });
+    }
+    return out;
   }
   const n = op.mode === 'insert' ? op.before : op.segment;
   if (!Number.isInteger(n) || n < 1)
@@ -555,8 +589,7 @@ async function apply(
   const { plan, blockers } = planOf(op, takes);
   if (!plan || blockers.length) throw new SegmentOpRefused(blockers);
 
-  if (plan.promote) {
-    const src = plan.promote.source;
+  for (const { source: src } of plan.promote) {
     if (!(await fs.stat(src).catch(() => null))?.isFile()) {
       blockers.push({
         kind: 'not-found',
@@ -607,13 +640,14 @@ async function apply(
       });
     }
   }
-  const promoteStep = plan.promote
-    ? { from: plan.promote.source, to: path.join(paths.recordings, plan.promote.filename) }
-    : null;
+  const promoteSteps: Step[] = plan.promote.map((p) => ({
+    from: p.source,
+    to: path.join(paths.recordings, p.filename),
+  }));
 
   // A destination is taken unless the file there is itself leaving in this op.
   const leaving = new Set([...trashSteps.map((s) => s.from), ...moving.map((m) => m.from)]);
-  for (const to of [...moving.map((m) => m.to), ...(promoteStep ? [promoteStep.to] : [])]) {
+  for (const to of [...moving.map((m) => m.to), ...promoteSteps.map((p) => p.to)]) {
     if ((await fs.pathExists(to)) && !leaving.has(to)) {
       blockers.push({
         kind: 'collision',
@@ -628,7 +662,7 @@ async function apply(
   for (const dir of [paths.trash, paths.recordings]) {
     if (
       !(await fs.pathExists(dir)) &&
-      (dir === paths.recordings ? promoteStep : trashSteps.length)
+      (dir === paths.recordings ? promoteSteps.length : trashSteps.length)
     ) {
       createdDirs.push(dir);
     }
@@ -638,7 +672,7 @@ async function apply(
     ...trashSteps,
     ...moving.map((m) => ({ from: m.from, to: m.tmp })),
     ...moving.map((m) => ({ from: m.tmp, to: m.to })),
-    ...(promoteStep ? [promoteStep] : []),
+    ...promoteSteps,
   ];
   const renamed = new Map(plan.moves.map((m) => [m.take.filename, withSegment(m.take, m.segment)]));
   const entry: JournalEntry = {
@@ -670,10 +704,13 @@ async function apply(
   }
 
   try {
-    const state = await readProjectState(projectDir);
-    const remapped = remapState(state, renamed, new Set(plan.trash.map((t) => t.filename)));
-    await writeProjectState(projectDir, remapped.state);
-    entry.removed = remapped.removed;
+    // Only touch the state file when a take was renamed or trashed (a send changes no existing entry).
+    if (renamed.size > 0 || plan.trash.length > 0) {
+      const state = await readProjectState(projectDir);
+      const remapped = remapState(state, renamed, new Set(plan.trash.map((t) => t.filename)));
+      await writeProjectState(projectDir, remapped.state);
+      entry.removed = remapped.removed;
+    }
   } catch (error) {
     // The files moved but their state could not follow: put the files back rather than leave them half-done.
     const stuck = await rollBack(steps);
@@ -718,21 +755,21 @@ async function undo(projectDir: string, deps: SegmentOpDeps, id?: string): Promi
   const reverse: Step[] = [...entry.steps].reverse().map((s) => ({ from: s.to, to: s.from }));
   const blockers = await guardTakes(
     paths,
-    [...entry.renamed.map((r) => r.to), ...(entry.promoted ? [entry.promoted.filename] : [])],
+    [...entry.renamed.map((r) => r.to), ...entry.promoted.map((p) => p.filename)],
     deps
   );
-  // Transcripts made for the promoted take since the op belong to a take that is leaving: trash them first.
+  // Transcripts made for a promoted take since the op belong to a take that is leaving: trash them first.
   const extra: Step[] = [];
-  if (entry.promoted) {
-    const take = RECORDING.exec(entry.promoted.filename);
+  const claimed = new Set<string>();
+  for (const promoted of entry.promoted) {
+    const take = RECORDING.exec(promoted.filename);
     if (take) {
       const t: Take = {
-        filename: entry.promoted.filename,
+        filename: promoted.filename,
         chapter: take[1],
         segment: Number(take[2]),
         rest: `${take[3]}.${take[4]}`,
       };
-      const claimed = new Set<string>();
       for (const file of await artifactsOf(paths, t)) {
         if (path.dirname(file) === paths.recordings || path.dirname(file) === paths.images)
           continue;
@@ -770,15 +807,17 @@ async function undo(projectDir: string, deps: SegmentOpDeps, id?: string): Promi
 
   await runSteps([...extra, ...reverse]);
 
-  const back = new Map(entry.renamed.map((r) => [r.to, r.from]));
-  const state = await readProjectState(projectDir);
-  const restored = remapState(state, back, new Set()).state;
-  // Put each dropped entry back in its old place, so the state file reads as it did.
-  const rows = Object.entries(restored.recordings);
-  for (const r of [...entry.removed].sort((a, b) => a.index - b.index)) {
-    rows.splice(Math.min(r.index, rows.length), 0, [r.filename, r.entry]);
+  if (entry.renamed.length > 0 || entry.removed.length > 0) {
+    const back = new Map(entry.renamed.map((r) => [r.to, r.from]));
+    const state = await readProjectState(projectDir);
+    const restored = remapState(state, back, new Set()).state;
+    // Put each dropped entry back in its old place, so the state file reads as it did.
+    const rows = Object.entries(restored.recordings);
+    for (const r of [...entry.removed].sort((a, b) => a.index - b.index)) {
+      rows.splice(Math.min(r.index, rows.length), 0, [r.filename, r.entry]);
+    }
+    await writeProjectState(projectDir, { ...restored, recordings: Object.fromEntries(rows) });
   }
-  await writeProjectState(projectDir, { ...restored, recordings: Object.fromEntries(rows) });
 
   for (const dir of [...entry.createdDirs].reverse()) {
     if ((await fs.readdir(dir).catch(() => ['?'])).length === 0) await fs.remove(dir);

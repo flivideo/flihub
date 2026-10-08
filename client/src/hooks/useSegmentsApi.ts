@@ -21,7 +21,8 @@ export type SegmentOpRequest =
       tags?: string[];
     }
   | { mode: 'reorder'; chapter: string; segment: number; direction: 'up' | 'down' }
-  | { mode: 'delete'; chapter: string; segment: number };
+  | { mode: 'delete'; chapter: string; segment: number }
+  | { mode: 'send'; chapter: string; sources: string[]; name: string; tags?: string[] };
 
 export interface SegmentOpResult {
   success: boolean;
@@ -30,7 +31,7 @@ export interface SegmentOpResult {
   /** Plain words: why it was refused or what failed. */
   reason?: string;
   blockers?: Array<{ kind: string; file?: string; detail: string }>;
-  op?: { id: string; summary: string; promoted: string | null };
+  op?: { id: string; summary: string; promoted: string[] };
 }
 
 /** A refusal (409) is an answer, not an exception: it carries the reason the UI must show. */

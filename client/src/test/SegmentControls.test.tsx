@@ -54,7 +54,7 @@ describe('Feature: move a segment up or down (R4)', () => {
   it('Scenario: given a middle segment, when up is pressed, then a reorder up is sent for that chapter and segment', async () => {
     op.mockResolvedValue({
       success: true,
-      op: { id: 's', summary: 'moved 06-2-b.mov up', promoted: null },
+      op: { id: 's', summary: 'moved 06-2-b.mov up', promoted: [] },
     });
     render(<SegmentControls recording={rec('06-2-b.mov')} chapterSegments={[1, 2, 3]} />);
     fireEvent.click(screen.getByLabelText('Move 06-2-b.mov up'));

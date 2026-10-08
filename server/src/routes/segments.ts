@@ -44,7 +44,7 @@ export function createSegmentRoutes(
     trashed: e.steps
       .filter((s) => path.basename(path.dirname(s.to)) === '-trash')
       .map((s) => ({ from: path.basename(s.from), trashPath: s.to })),
-    promoted: e.promoted?.filename ?? null,
+    promoted: e.promoted.map((p) => p.filename),
     undoneAt: e.undoneAt ?? null,
   });
   const fail = (res: Response, error: unknown) => {
@@ -69,14 +69,14 @@ export function createSegmentRoutes(
     });
   };
 
-  /** POST /api/segments/op — `{ mode, chapter, segment | before, source?, name?, tags?, direction? }`. */
+  /** POST /api/segments/op — `{ mode, chapter, segment | before, source? | sources?, name?, tags?, direction? }`. */
   router.post('/op', async (req: Request, res: Response) => {
     try {
       const entry = await applySegmentOp(project(), req.body as SegmentOpInput, deps());
-      if (entry.promoted && queueTranscription) {
-        const take = path.join(getProjectPaths(project()).recordings, entry.promoted.filename);
+      for (const promoted of queueTranscription ? entry.promoted : []) {
+        const take = path.join(getProjectPaths(project()).recordings, promoted.filename);
         // The op has landed; a queue failure must not turn it into an error, but it must leave a trail.
-        Promise.resolve(queueTranscription(take)).catch((e) =>
+        Promise.resolve(queueTranscription?.(take)).catch((e) =>
           console.error(`[segment-op] could not queue a transcript for ${take}:`, e)
         );
       }

@@ -19,6 +19,7 @@ import { nextSequenceOnDisk } from '../../shared/naming';
 import { discardFiles } from './utils/fileActions';
 import { collapsePath } from './utils/formatting';
 import { FileCard } from './components/FileCard';
+import { SendSeveralBar } from './components/SendSeveralBar';
 import { ConfigPanel } from './components/ConfigPanel';
 import { ProjectsPanel } from './components/ProjectsPanel';
 import { NamingControls } from './components/NamingControls';
@@ -129,6 +130,8 @@ function App() {
   }, []);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [renamedFilePath, setRenamedFilePath] = useState<string | null>(null);
+  // CT-0107 R6: inbox takes picked to send in as consecutive segments, in pick order
+  const [picked, setPicked] = useState<string[]>([]);
   // FR-43: Project switcher dropdown state
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const projectDropdownRef = useRef<HTMLDivElement>(null);
@@ -303,6 +306,21 @@ function App() {
     toast.info(`Moved ${result.successCount} file(s) to trash`);
     setRenamedFilePath(null);
   }, [files, renamedFilePath, trashMutation, removeFile]);
+
+  // CT-0107 R6: picked takes landed as segments → off the list; then offer to discard the rest (confirm first)
+  const handleSentSeveral = useCallback(
+    (paths: string[]) => {
+      paths.forEach(removeFile);
+      setPicked([]);
+      void syncSequenceFromDisk();
+      if (files.length - paths.length > 0) {
+        setRenamedFilePath(null);
+        setShowDiscardModal(true);
+      }
+    },
+    [removeFile, files.length, syncSequenceFromDisk]
+  );
+  const pickedLive = picked.filter((p) => files.some((f) => f.path === p));
 
   // Discard all files (for "Discard All" button)
   const handleDiscardAll = useCallback(async () => {
@@ -797,6 +815,15 @@ function App() {
 
               <AspectWarningBanner files={files} />
 
+              <SendSeveralBar
+                picked={pickedLive}
+                chapter={namingState.chapter}
+                name={namingState.name}
+                tags={namingState.customTag ? [...namingState.tags, namingState.customTag] : namingState.tags}
+                onSent={handleSentSeveral}
+                onClear={() => setPicked([])}
+              />
+
               {files.length === 0 ? (
                 <div className="text-center py-12 bg-surface rounded-lg border border-warm">
                   <p className="text-warm-muted">No pending files</p>
@@ -811,6 +838,12 @@ function App() {
                       namingState={namingState}
                       onRenamed={() => handleRenamed(file.path)}
                       onDiscarded={() => removeFile(file.path)}
+                      pickOrder={pickedLive.includes(file.path) ? pickedLive.indexOf(file.path) + 1 : null}
+                      onTogglePick={() =>
+                        setPicked((prev) =>
+                          prev.includes(file.path) ? prev.filter((p) => p !== file.path) : [...prev, file.path]
+                        )
+                      }
                       takeRank={
                         files.length > 1
                           ? file.path === bestTakePath

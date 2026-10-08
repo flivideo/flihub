@@ -16,9 +16,20 @@ interface FileCardProps {
   onRenamed: () => void;
   onDiscarded: () => void;
   takeRank?: 'best' | 'good' | null; // FR-8: Best take (green), good take (yellow), or neither
+  /** CT-0107 R6: this take's place in the "send several" pick order (1-based), or null when not picked. */
+  pickOrder?: number | null;
+  onTogglePick?: () => void;
 }
 
-export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }: FileCardProps) {
+export function FileCard({
+  file,
+  namingState,
+  onRenamed,
+  onDiscarded,
+  takeRank,
+  pickOrder = null,
+  onTogglePick,
+}: FileCardProps) {
   const { chapter, sequence, name, tags, customTag } = namingState;
 
   const renameMutation = useRename();
@@ -200,6 +211,17 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
       <div className="mb-3">
         <div className="flex items-center justify-between">
           <p className="text-sm text-warm-muted truncate" title={file.filename}>
+            {onTogglePick && (
+              <label className="mr-2 inline-flex items-center gap-1" title="Pick to send several takes in as consecutive segments">
+                <input
+                  type="checkbox"
+                  aria-label={`Pick ${file.filename}`}
+                  checked={pickOrder !== null}
+                  onChange={onTogglePick}
+                />
+                {pickOrder !== null && <span className="font-mono text-xs text-blue-600">#{pickOrder}</span>}
+              </label>
+            )}
             {file.filename}
           </p>
           <div className="flex items-center gap-2">

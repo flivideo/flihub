@@ -88,7 +88,7 @@ describe('Feature: the inbox card sends the take where it was asked to land', ()
   it('Scenario: given Lands as = replace 06-1, when Replace is pressed, then the segment op replaces 06-1 with this take', async () => {
     segmentOp.mockResolvedValue({
       success: true,
-      op: { id: 'seg_1', summary: 'replaced 06-1-hook.mov', promoted: '06-1-bridge.mov' },
+      op: { id: 'seg_1', summary: 'replaced 06-1-hook.mov', promoted: ['06-1-bridge.mov'] },
     });
     const onRenamed = vi.fn();
     render(

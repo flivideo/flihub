@@ -251,6 +251,82 @@ describe('Feature: delete a segment and close up (R5)', () => {
   });
 });
 
+describe('Feature: send several takes in (R6)', () => {
+  it('Scenario: given two inbox takes picked in order, when sent, then they land as the next segments 06-3, 06-4 in that order, each queued', async () => {
+    await take('06-1-a.mov');
+    await take('06-2-b.mov');
+    await write(path.join(inbox, 'second.mov'), 'PICKED FIRST');
+    await write(path.join(inbox, 'first.mov'), 'PICKED SECOND');
+    await write(path.join(inbox, 'bad.mov'), 'LEFT BEHIND');
+
+    const res = await request(await appFor())
+      .post('/api/segments/op')
+      .send({
+        mode: 'send',
+        chapter: '06',
+        sources: [path.join(inbox, 'second.mov'), path.join(inbox, 'first.mov')],
+        name: 'walkthrough',
+      })
+      .expect(200);
+
+    expect(res.body.op.promoted).toEqual(['06-3-walkthrough.mov', '06-4-walkthrough.mov']);
+    expect(await content(path.join(paths.recordings, '06-3-walkthrough.mov'))).toBe('PICKED FIRST');
+    expect(await content(path.join(paths.recordings, '06-4-walkthrough.mov'))).toBe(
+      'PICKED SECOND'
+    );
+    expect(await names(inbox)).toEqual(['bad.mov']);
+    expect(queued).toEqual([
+      path.join(paths.recordings, '06-3-walkthrough.mov'),
+      path.join(paths.recordings, '06-4-walkthrough.mov'),
+    ]);
+  });
+
+  it('Scenario: given an empty chapter, when two takes are sent, then they are 09-1 and 09-2; one undo sends both back to the inbox', async () => {
+    await write(path.join(inbox, 'a.mov'), 'A');
+    await write(path.join(inbox, 'b.mov'), 'B');
+    const before = await disk();
+    const app = await appFor();
+    await request(app)
+      .post('/api/segments/op')
+      .send({
+        mode: 'send',
+        chapter: '09',
+        sources: [path.join(inbox, 'a.mov'), path.join(inbox, 'b.mov')],
+        name: 'new',
+      })
+      .expect(200);
+    expect(await recordings()).toEqual(['09-1-new.mov', '09-2-new.mov']);
+    await request(app).post('/api/segments/undo').send({}).expect(200);
+    expect(await disk()).toEqual(before);
+  });
+
+  it('Scenario: given one of the picked takes is gone or listed twice, when sent, then the whole send is refused and nothing moves', async () => {
+    await write(path.join(inbox, 'a.mov'), 'A');
+    const before = await disk();
+    const app = await appFor();
+    const gone = await request(app)
+      .post('/api/segments/op')
+      .send({
+        mode: 'send',
+        chapter: '06',
+        sources: [path.join(inbox, 'a.mov'), path.join(inbox, 'gone.mov')],
+        name: 'x',
+      });
+    expect(gone.status).toBe(409);
+    expect(gone.body.blockers).toEqual([expect.objectContaining({ kind: 'not-found' })]);
+    const twice = await request(app)
+      .post('/api/segments/op')
+      .send({
+        mode: 'send',
+        chapter: '06',
+        sources: [path.join(inbox, 'a.mov'), path.join(inbox, 'a.mov')],
+        name: 'x',
+      });
+    expect(twice.body.blockers[0].kind).toBe('invalid');
+    expect(await disk()).toEqual(before);
+  });
+});
+
 describe('Feature: one guarded operation (R8) — a refused op changes nothing on disk', () => {
   it('Scenario: given 06-2 is referenced by a FliCut cut, when 06-1 is deleted (closing 06-2 up), then the whole op is refused, naming the cut', async () => {
     await take('06-1-a.mov');
