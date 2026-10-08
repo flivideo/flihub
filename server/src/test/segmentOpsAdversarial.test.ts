@@ -332,9 +332,9 @@ describe('Feature: a file that cannot be put back is still on the record (R8, R9
       await take('06-1-a.mov');
       await take('06-2-b.mov');
       vi.doMock('fs-extra', async (importOriginal) => {
-        const actual = await importOriginal<typeof import('fs-extra')>();
+        const actual = (await importOriginal()) as { default: typeof fs };
         let calls = 0;
-        const move = async (...args: Parameters<typeof actual.default.move>) => {
+        const move = async (...args: Parameters<typeof fs.move>) => {
           calls += 1;
           if (calls > 1) throw new Error('disk went away');
           return actual.default.move(...args);
@@ -364,8 +364,8 @@ describe('Feature: the journal is written before the first file moves (R9)', () 
     const seen: Array<{ pending?: boolean; steps: unknown[] } | undefined> = [];
     const journalFile = path.join(project, '.flihub-segment-journal.json');
     vi.doMock('fs-extra', async (importOriginal) => {
-      const actual = await importOriginal<typeof import('fs-extra')>();
-      const move = async (...args: Parameters<typeof actual.default.move>) => {
+      const actual = (await importOriginal()) as { default: typeof fs };
+      const move = async (...args: Parameters<typeof fs.move>) => {
         if (seen.length === 0) seen.push((await actual.default.readJson(journalFile)).entries[0]);
         return actual.default.move(...args);
       };
