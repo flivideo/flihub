@@ -27,9 +27,9 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
 ## Tooling
 
 - Use npm workspaces. `pnpm-lock.yaml` is stale.
-- `npm test -w server` starts vitest in watch mode and exits 1. For a one-shot run use
-  `npx vitest run --exclude 'dist/**'` in `server/`. The exclude matters: a stale `server/dist/`
-  doubles the count.
+- `npm test` (root, or `-w client` / `-w server`) is a one-shot `vitest run` that exits. For watch
+  mode use `npm run test:watch -w <workspace>`. `server/vitest.config.ts` excludes `dist/**`: a stale
+  `server/dist/` would otherwise double the count.
 - CI is red on every push. `npm ci` fetches `flivideo/fli-core` over git+ssh (the lockfile form of
   the `github:` dependency), and CI has no SSH key. The repo is public, so privacy isn't the cause. A red CI badge says nothing about your change; local tests are the only gate.
 - After bumping the fli-core pin, run
