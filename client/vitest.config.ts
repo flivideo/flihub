@@ -9,14 +9,14 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     testTimeout: 10000,
     hookTimeout: 10000,
-  },
-  coverage: {
-    provider: 'v8',
-    reporter: ['text', 'lcov'],
-    thresholds: {
-      lines: 28,
-      functions: 15,
-      branches: 25,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      thresholds: {
+        lines: 28,
+        functions: 15,
+        branches: 25,
+      },
     },
   },
 });

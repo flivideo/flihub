@@ -37,6 +37,7 @@ what you learned → what to do about it.
   imports. Measured W3: 61.26% → 64.34% lines with `--exclude 'dist/**'` on both sides. Do: compare
   coverage/test counts only with `dist/**` excluded; fixing the config nesting is a separate change
   (it may start failing CI-style runs), not something to slip into a feature.
+  *Status 2026-10-08: both fixed — dist/ by `include: ['src/**/*.test.ts']` (CT-0081), coverage nesting in server, client and shared (CT-0080); thresholds now fire.*
 
 ## 2026-09-06
 
