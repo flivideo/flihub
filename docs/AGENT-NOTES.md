@@ -26,7 +26,7 @@ Overmind, live-instrument and refusal rules are in `CLAUDE.md`; they are not rep
 
 ## Tooling
 
-- Use npm workspaces. `pnpm-lock.yaml` is stale.
+- Use npm workspaces; `package-lock.json` is the only lockfile.
 - `npm test` (root, or `-w client` / `-w server`) is a one-shot `vitest run` that exits. For watch
   mode use `npm run test:watch -w <workspace>`. `server/vitest.config.ts` collects only `src/**/*.test.ts`: a stale
   `server/dist/` would otherwise double the count.

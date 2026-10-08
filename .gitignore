@@ -54,3 +54,6 @@ shared/*.d.ts
 client/vite.config.js
 client/vite.config.d.ts
 *.tsbuildinfo
+
+# npm workspaces only — a pnpm lockfile must not creep back (CT-0091)
+pnpm-lock.yaml
