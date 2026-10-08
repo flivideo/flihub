@@ -356,3 +356,31 @@ describe('Feature: a file that cannot be put back is still on the record (R8, R9
     }
   );
 });
+
+describe('Feature: the journal is written before the first file moves (R9)', () => {
+  it('Scenario: given a reorder, when its first file is about to move, then the journal on disk already holds the op marked pending', async () => {
+    await take('06-1-a.mov');
+    await take('06-2-b.mov');
+    const seen: Array<{ pending?: boolean; steps: unknown[] } | undefined> = [];
+    const journalFile = path.join(project, '.flihub-segment-journal.json');
+    vi.doMock('fs-extra', async (importOriginal) => {
+      const actual = await importOriginal<typeof import('fs-extra')>();
+      const move = async (...args: Parameters<typeof actual.default.move>) => {
+        if (seen.length === 0) seen.push((await actual.default.readJson(journalFile)).entries[0]);
+        return actual.default.move(...args);
+      };
+      return { ...actual, default: { ...actual.default, move } };
+    });
+    try {
+      await request(await appFor())
+        .post('/api/segments/op')
+        .send({ mode: 'reorder', chapter: '06', segment: 2, direction: 'up' })
+        .expect(200);
+    } finally {
+      vi.doUnmock('fs-extra');
+    }
+    expect(seen[0]).toMatchObject({ pending: true });
+    expect(seen[0]?.steps.length).toBeGreaterThan(0);
+    expect((await fs.readJson(journalFile)).entries[0].pending).toBeUndefined();
+  });
+});
