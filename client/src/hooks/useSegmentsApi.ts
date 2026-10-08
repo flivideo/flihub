@@ -32,6 +32,17 @@ export interface SegmentOpResult {
   reason?: string;
   blockers?: Array<{ kind: string; file?: string; detail: string }>;
   op?: { id: string; summary: string; promoted: string[] };
+  /** /preview only: what the op would do. Nothing on disk has changed. */
+  preview?: SegmentOpPreview;
+}
+
+export interface SegmentOpPreview {
+  summary: string;
+  /** Files that would go to `-trash/`, relative to the project. */
+  trashed: string[];
+  /** Recording renames (old filename → new filename). */
+  renamed: Array<{ from: string; to: string }>;
+  promoted: string[];
 }
 
 /** A refusal (409) is an answer, not an exception: it carries the reason the UI must show. */
@@ -61,6 +72,13 @@ function useSegmentMutation<T>(endpoint: string) {
 
 export function useSegmentOp() {
   return useSegmentMutation<SegmentOpRequest>('/api/segments/op');
+}
+
+/** Same body as useSegmentOp: what it would trash and renumber, or the same refusal. Changes nothing. */
+export function useSegmentPreview() {
+  return useMutation({
+    mutationFn: (body: SegmentOpRequest) => post('/api/segments/preview', body),
+  });
 }
 
 export function useSegmentUndo() {

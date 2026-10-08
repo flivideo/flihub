@@ -14,6 +14,22 @@ Track what was implemented, fixed, or changed and when.
 
 ---
 
+## Delete closes up the chapter (2026-10-08, D07-UAT-1, CT-0107 R5)
+
+The Recordings **Delete** button still called the FR-156 trash path, so deleting 02-2 of 02-1..02-4
+left a gap (02-1, 02-3, 02-4), wrote no journal entry, and "Undo segment change" then reverted an
+older op. Delete now goes through the guarded segment op in mode `delete`: later segments close up,
+the change is journalled, and Undo reverts THIS delete. The confirmation is built from a new
+read-only `POST /api/segments/preview` (same plan and guards as `/op`, nothing moves), so it lists
+exactly what goes to `-trash/` and each `old → new` rename, and a refusal (a later take is
+transcribing or used by a cut) is shown before anything is confirmed. FR-156's plain trash stays only
+where there is nothing to close up: another take shares the segment number, or the name isn't a
+segment name; that dialog says nothing is renumbered and Undo won't bring it back. Flow lives in
+`client/src/components/shared/RecordingDelete.tsx`; UI test `client/src/test/recordingDelete.test.tsx`
+drives the real row, dialog and Undo button against the real segment router on a temp project.
+
+---
+
 ## Sound holes — flag digital-zero dropouts when a take lands (2026-10-04, D01 editing pass item 5)
 
 Several d01 takes had stretches inside speech where the audio drops to digital zero (−90…−110 dB,

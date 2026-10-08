@@ -12,9 +12,6 @@ import {
   usePendingTranscriptionCount,
   useRenameRecording,
   useSetChapterTitle,
-  usePreviewTrashRecordings,
-  useTrashRecordings,
-  type TrashPreviewItem,
 } from '../hooks/useApi';
 import { useRecordingsSocket } from '../hooks/useSocket';
 import { QUERY_KEYS } from '../constants/queryKeys';
@@ -42,10 +39,9 @@ import {
   formatTimestamp,
 } from '../utils/formatting';
 import { LoadingSpinner, ErrorMessage, AspectWarningChip, SoundHoleChip } from './shared';
-import { SegmentControls, reportSegmentResult } from './shared/SegmentControls';
-import { useSegmentUndo } from '../hooks/useSegmentsApi';
+import { SegmentControls } from './shared/SegmentControls';
+import { SegmentUndoButton, useRecordingDelete } from './shared/RecordingDelete';
 import { segmentsInChapter } from '../utils/segmentLanding';
-import { ConfirmationModal } from './shared/ConfirmationModal'; // FR-156
 import { API_URL } from '../config';
 import { NoRecordingsState } from './shared/NoRecordingsState';
 
@@ -566,7 +562,6 @@ export function RecordingsView() {
   const unparkRecording = useUnparkRecording(); // FR-120
   const transcribeAll = useTranscribeAll();
   const renameMutation = useRenameRecording(); // B047: For inline single-file renames
-  const segmentUndo = useSegmentUndo(); // CT-0107 R9: undo the last segment change (journal on disk)
   // FR-92: Get count of files pending transcription
   const { data: pendingData } = usePendingTranscriptionCount();
   const pendingCount = pendingData?.pendingCount ?? 0;
@@ -684,40 +679,8 @@ export function RecordingsView() {
   };
 
   // FR-120: Handle parking a file
-  // FR-156: Delete a recording — preview artifacts, confirm, then trash
-  const previewTrash = usePreviewTrashRecordings();
-  const trashRecordings = useTrashRecordings();
-  const [trashPreview, setTrashPreview] = useState<TrashPreviewItem[] | null>(null);
-
-  const handleDelete = (filename: string) => {
-    previewTrash.mutate([filename], {
-      onSuccess: (data) => {
-        if (!data.items || data.items.length === 0) {
-          toast.error(data.errors?.[0] || 'Nothing found on disk to delete');
-          return;
-        }
-        setTrashPreview(data.items);
-      },
-      onError: (err) => toast.error(err.message || 'Failed to inspect recording'),
-    });
-  };
-
-  const confirmTrash = () => {
-    const files = (trashPreview ?? []).map((i) => i.filename);
-    setTrashPreview(null);
-    trashRecordings.mutate(files, {
-      onSuccess: (data) => {
-        if (data.success) {
-          toast.success(
-            `Moved ${data.artifactCount} file${data.artifactCount === 1 ? '' : 's'} to -trash`
-          );
-        } else {
-          toast.error(data.errors?.[0] || data.error || 'Failed to delete');
-        }
-      },
-      onError: (err) => toast.error(err.message || 'Failed to delete'),
-    });
-  };
+  // D07-UAT-1: Delete closes up the chapter through the guarded segment op (FR-156 trash where nothing closes up)
+  const recordingDelete = useRecordingDelete();
 
   const handlePark = (filename: string) => {
     parkRecording.mutate(
@@ -1334,17 +1297,7 @@ export function RecordingsView() {
             {toReRecord} to re-record
           </span>
         )}
-        <button
-          type="button"
-          onClick={async () =>
-            reportSegmentResult(await segmentUndo.mutateAsync({}), 'Undid the last segment change')
-          }
-          disabled={segmentUndo.isPending}
-          title="Undo the last replace / insert / reorder / delete-and-close-up (kept on disk, survives a restart)"
-          className="ml-auto text-warm-muted hover:text-blue-600 disabled:opacity-50"
-        >
-          ↶ Undo segment change
-        </button>
+        <SegmentUndoButton />
       </div>
 
       {/* Row 2 — Filters */}
@@ -1548,7 +1501,7 @@ export function RecordingsView() {
                     onSafe={handleMoveToSafe}
                     onRestore={handleRestore}
                     onUnpark={handleUnpark}
-                    onDelete={handleDelete}
+                    onDelete={(filename) => recordingDelete.requestDelete(filename, allFilenames)}
                     transcriptionBadge={
                       <>
                         {file.aspectWarning && (
@@ -1622,36 +1575,8 @@ export function RecordingsView() {
         <TranscriptModal filename={viewingTranscript} onClose={() => setViewingTranscript(null)} />
       )}
 
-      {/* FR-156: Delete confirmation — lists exactly what the server found on disk */}
-      {trashPreview && (() => {
-        const artifacts = trashPreview.flatMap((i) => i.artifacts);
-        const totalBytes = trashPreview.reduce((sum, i) => sum + i.totalBytes, 0);
-        const extras = artifacts.filter((a) => a.kind !== 'recording').length;
-        return (
-          <ConfirmationModal
-            title={trashPreview.length === 1 ? 'Delete this recording?' : `Delete ${trashPreview.length} recordings?`}
-            message={
-              `${artifacts.length} file${artifacts.length === 1 ? '' : 's'} (${formatFileSize(totalBytes)}) will be moved to -trash/.` +
-              (extras > 0
-                ? `\n\nThat includes ${extras} linked file${extras === 1 ? '' : 's'} — the transcripts are deleted with the recording so nothing is orphaned.`
-                : '')
-            }
-            filesLabel="Will be moved to -trash/:"
-            files={artifacts.map((a) => `${a.label} — ${a.filename}`)}
-            maxFilesShown={8}
-            warning={
-              'These files leave the project immediately. They stay recoverable in -trash/ until you empty it from the Project drawer, which deletes them for good.' +
-              (artifacts.some((a) => a.kind === 'transcript')
-                ? '\nThis take has been transcribed — that transcript will need regenerating if you restore it.'
-                : '')
-            }
-            variant="danger"
-            confirmText="Move to -trash"
-            onConfirm={confirmTrash}
-            onCancel={() => setTrashPreview(null)}
-          />
-        );
-      })()}
+      {/* D07-UAT-1 / FR-156: Delete confirmation — lists exactly what the server will do */}
+      {recordingDelete.dialog}
 
       {/* FR-131: Rename Chapter Label Modal removed - use Manage panel */}
 
