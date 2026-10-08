@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useRename, useTrashFile } from '../hooks/useApi';
+import { useRecordings, useRename, useTrashFile } from '../hooks/useApi';
+import { useSegmentOp } from '../hooks/useSegmentsApi';
 import type { FileInfo, RenameRequest } from '../../../shared/types';
 import type { NamingState } from '../App';
 import { formatFileSize, formatDuration, formatRelativeTime } from '../utils/formatting';
 import { buildPreviewFilename } from '../utils/naming';
+import { describeLanding, landingOptions, parseLandsAs } from '../utils/segmentLanding';
 import { IncomingVideoModal } from './IncomingVideoModal';
 import { describeSoundHoles } from './shared/SoundHoles';
 
@@ -21,6 +23,18 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
 
   const renameMutation = useRename();
   const trashMutation = useTrashFile();
+  const segmentOp = useSegmentOp();
+
+  // CT-0107 R1: "Lands as" — next (today's behaviour), replace NN-S or insert before NN-S. The server numbers.
+  const { data: recordingsData } = useRecordings();
+  const options = landingOptions(
+    (recordingsData?.recordings ?? []).map((r) => r.filename),
+    chapter,
+    sequence
+  );
+  const [landing, setLanding] = useState('next');
+  const landingValue = options.some((o) => o.value === landing) ? landing : 'next';
+  const landsAs = parseLandsAs(landingValue);
 
   // FR-106: State for video preview modal
   const [showPreview, setShowPreview] = useState(false);
@@ -53,6 +67,39 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
 
     // FR-21: Include custom tag in the tags array for the API
     const allTags = customTag ? [...tags, customTag] : tags;
+
+    if (landsAs.mode !== 'next') {
+      const result = await segmentOp.mutateAsync(
+        landsAs.mode === 'replace'
+          ? {
+              mode: 'replace',
+              chapter,
+              segment: landsAs.segment,
+              source: file.path,
+              name,
+              tags: allTags,
+            }
+          : {
+              mode: 'insert',
+              chapter,
+              before: landsAs.segment,
+              source: file.path,
+              name,
+              tags: allTags,
+            }
+      );
+      if (result.success) {
+        toast.success(`Done: ${result.op?.summary ?? 'segment change landed'}`);
+        setLanding('next');
+        onRenamed();
+      } else {
+        // A refusal changes nothing; say which and why (FliHub: a refusal never looks like success).
+        toast.error(
+          result.refused ? `Not done — ${result.reason}` : result.reason || 'Segment change failed'
+        );
+      }
+      return;
+    }
 
     const request: RenameRequest = {
       originalPath: file.path,
@@ -117,7 +164,7 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
     }
   };
 
-  const isLoading = renameMutation.isPending || trashMutation.isPending;
+  const isLoading = renameMutation.isPending || trashMutation.isPending || segmentOp.isPending;
 
   // FR-8: Dynamic styling based on take rank (best = green, good = yellow)
   const cardClasses =
@@ -133,7 +180,10 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
   return (
     <div className={`${cardClasses} ${aspectMismatch ? 'ring-2 ring-red-500' : ''}`}>
       {aspectMismatch && (
-        <p data-testid="filecard-aspect-warning" className="mb-2 rounded bg-red-100 px-2 py-1 text-sm font-semibold text-red-800">
+        <p
+          data-testid="filecard-aspect-warning"
+          className="mb-2 rounded bg-red-100 px-2 py-1 text-sm font-semibold text-red-800"
+        >
           ⚠ Wrong aspect — {file.aspectCheck!.message}
         </p>
       )}
@@ -154,7 +204,9 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
           </p>
           <div className="flex items-center gap-2">
             {/* NFR-7: Duration badge */}
-            <span className="text-xs text-warm-secondary font-mono">{formatDuration(file.duration)}</span>
+            <span className="text-xs text-warm-secondary font-mono">
+              {formatDuration(file.duration)}
+            </span>
             {/* FR-8: File size badge */}
             <span
               className={`text-xs px-2 py-0.5 rounded font-medium ${
@@ -185,12 +237,34 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
 
       {/* Preview and actions */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-warm-secondary">
-          Will rename to:{' '}
-          <span className="font-mono text-blue-600">
-            {buildPreviewFilename(chapter, sequence, name, tags, customTag)}
+        <div className="flex items-center gap-2 text-sm text-warm-secondary">
+          <label
+            className="flex items-center gap-1"
+            title="Where this take lands in the chapter (CT-0107)"
+          >
+            Lands as
+            <select
+              data-testid="filecard-lands-as"
+              value={landingValue}
+              onChange={(e) => setLanding(e.target.value)}
+              disabled={isLoading}
+              className="rounded border border-warm bg-surface px-1 py-0.5 text-sm"
+            >
+              {options.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span data-testid="filecard-landing" className="font-mono text-blue-600">
+            {describeLanding(
+              landsAs,
+              chapter,
+              buildPreviewFilename(chapter, sequence, name, tags, customTag)
+            )}
           </span>
-        </p>
+        </div>
 
         <div className="flex gap-2">
           {/* FR-106: Preview button */}
@@ -222,7 +296,13 @@ export function FileCard({ file, namingState, onRenamed, onDiscarded, takeRank }
             disabled={isLoading || !chapter || !name}
             className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {renameMutation.isPending ? 'Renaming...' : 'Rename'}
+            {renameMutation.isPending || segmentOp.isPending
+              ? 'Renaming...'
+              : landsAs.mode === 'replace'
+                ? 'Replace'
+                : landsAs.mode === 'insert'
+                  ? 'Insert'
+                  : 'Rename'}
           </button>
         </div>
       </div>
