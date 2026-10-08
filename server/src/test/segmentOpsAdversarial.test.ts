@@ -143,21 +143,18 @@ describe('Feature: undo leaves the project exactly as it found it, folders inclu
 
 describe('Feature: a project with no state file is left without one (R9)', () => {
   // Round-1 finding, fixed in round 2: the state file is written only when the change touches an entry in it.
-  it(
-    'Scenario: given a project that never had a state file, when a reorder is undone, then the disk is identical to before (no new .flihub-state.json)',
-    async () => {
-      await take('06-1-a.mov');
-      await take('06-2-b.mov');
-      const before = await tree();
-      const app = await appFor();
-      await request(app)
-        .post('/api/segments/op')
-        .send({ mode: 'reorder', chapter: '06', segment: 2, direction: 'up' })
-        .expect(200);
-      await request(app).post('/api/segments/undo').send({}).expect(200);
-      expect(await tree()).toEqual(before);
-    }
-  );
+  it('Scenario: given a project that never had a state file, when a reorder is undone, then the disk is identical to before (no new .flihub-state.json)', async () => {
+    await take('06-1-a.mov');
+    await take('06-2-b.mov');
+    const before = await tree();
+    const app = await appFor();
+    await request(app)
+      .post('/api/segments/op')
+      .send({ mode: 'reorder', chapter: '06', segment: 2, direction: 'up' })
+      .expect(200);
+    await request(app).post('/api/segments/undo').send({}).expect(200);
+    expect(await tree()).toEqual(before);
+  });
 });
 
 describe('Feature: segment numbers with more than one digit (R3, R5)', () => {
@@ -198,89 +195,77 @@ describe('Feature: segment numbers with more than one digit (R3, R5)', () => {
 
 describe('Feature: only a real take inside the inbox goes in, under a name that stays in recordings/ (R8)', () => {
   // Round-1 findings, fixed in round 2 (tags and sources validated; no inbox configured fails closed).
-  it(
-    'Scenario: given tags containing path separators, when a take is sent in, then it is refused and nothing lands outside recordings/',
-    async () => {
-      await take('06-1-a.mov');
-      await write(path.join(inbox, 'take.mov'), 'NEW');
-      const before = await tree();
+  it('Scenario: given tags containing path separators, when a take is sent in, then it is refused and nothing lands outside recordings/', async () => {
+    await take('06-1-a.mov');
+    await write(path.join(inbox, 'take.mov'), 'NEW');
+    const before = await tree();
 
-      const res = await request(await appFor())
-        .post('/api/segments/op')
-        .send({
-          mode: 'replace',
-          chapter: '06',
-          segment: 1,
-          source: path.join(inbox, 'take.mov'),
-          name: 'x',
-          tags: ['/../../ESC'],
-        });
+    const res = await request(await appFor())
+      .post('/api/segments/op')
+      .send({
+        mode: 'replace',
+        chapter: '06',
+        segment: 1,
+        source: path.join(inbox, 'take.mov'),
+        name: 'x',
+        tags: ['/../../ESC'],
+      });
 
-      expect(res.status).toBe(409);
-      expect(await fs.pathExists(path.join(project, 'hub', 'ESC.mov'))).toBe(false);
-      expect(await tree()).toEqual(before);
-    }
-  );
+    expect(res.status).toBe(409);
+    expect(await fs.pathExists(path.join(project, 'hub', 'ESC.mov'))).toBe(false);
+    expect(await tree()).toEqual(before);
+  });
 
-  it(
-    'Scenario: given a source that is not a video, when it is sent in, then it is refused and stays in the inbox',
-    async () => {
-      await take('06-1-a.mov');
-      await write(path.join(inbox, 'notes.txt'), 'TEXT');
-      const before = await tree();
+  it('Scenario: given a source that is not a video, when it is sent in, then it is refused and stays in the inbox', async () => {
+    await take('06-1-a.mov');
+    await write(path.join(inbox, 'notes.txt'), 'TEXT');
+    const before = await tree();
 
-      const res = await request(await appFor())
-        .post('/api/segments/op')
-        .send({
-          mode: 'replace',
-          chapter: '06',
-          segment: 1,
-          source: path.join(inbox, 'notes.txt'),
-          name: 'x',
-        });
+    const res = await request(await appFor())
+      .post('/api/segments/op')
+      .send({
+        mode: 'replace',
+        chapter: '06',
+        segment: 1,
+        source: path.join(inbox, 'notes.txt'),
+        name: 'x',
+      });
 
-      expect(res.status).toBe(409);
-      expect(await tree()).toEqual(before);
-    }
-  );
+    expect(res.status).toBe(409);
+    expect(await tree()).toEqual(before);
+  });
 
-  it(
-    'Scenario: given tags that are not a list, when sent, then it is refused as invalid input (409), not a 500',
-    async () => {
-      await take('06-1-a.mov');
-      await write(path.join(inbox, 'take.mov'));
-      const res = await request(await appFor())
-        .post('/api/segments/op')
-        .send({
-          mode: 'replace',
-          chapter: '06',
-          segment: 1,
-          source: path.join(inbox, 'take.mov'),
-          name: 'x',
-          tags: 'CTA',
-        });
-      expect(res.status).toBe(409);
-    }
-  );
+  it('Scenario: given tags that are not a list, when sent, then it is refused as invalid input (409), not a 500', async () => {
+    await take('06-1-a.mov');
+    await write(path.join(inbox, 'take.mov'));
+    const res = await request(await appFor())
+      .post('/api/segments/op')
+      .send({
+        mode: 'replace',
+        chapter: '06',
+        segment: 1,
+        source: path.join(inbox, 'take.mov'),
+        name: 'x',
+        tags: 'CTA',
+      });
+    expect(res.status).toBe(409);
+  });
 
-  it(
-    'Scenario: given no inbox is configured, when a take outside any inbox is sent in, then it is refused',
-    async () => {
-      await take('06-1-a.mov');
-      await write(path.join(root, 'elsewhere', 'video.mov'), 'OTHER PROJECT TAKE');
-      const res = await request(await appFor(''))
-        .post('/api/segments/op')
-        .send({
-          mode: 'replace',
-          chapter: '06',
-          segment: 1,
-          source: path.join(root, 'elsewhere', 'video.mov'),
-          name: 'x',
-        });
-      expect(res.status).toBe(409);
-      expect(await fs.pathExists(path.join(root, 'elsewhere', 'video.mov'))).toBe(true);
-    }
-  );
+  it('Scenario: given no inbox is configured, when a take outside any inbox is sent in, then it is refused', async () => {
+    await take('06-1-a.mov');
+    await write(path.join(root, 'elsewhere', 'video.mov'), 'OTHER PROJECT TAKE');
+    const res = await request(await appFor(''))
+      .post('/api/segments/op')
+      .send({
+        mode: 'replace',
+        chapter: '06',
+        segment: 1,
+        source: path.join(root, 'elsewhere', 'video.mov'),
+        name: 'x',
+      });
+    expect(res.status).toBe(409);
+    expect(await fs.pathExists(path.join(root, 'elsewhere', 'video.mov'))).toBe(true);
+  });
 });
 
 describe('Feature: undo is guarded like the operation itself (R8, R9)', () => {
@@ -326,35 +311,32 @@ describe('Feature: only image assets keyed to the segment travel with it (R3, R5
 describe('Feature: a file that cannot be put back is still on the record (R8, R9)', () => {
   // Round-1 finding, fixed in round 2: the journal entry is forgotten only when every file went back; stranded
   // files in -trash/ keep their record — the one case where the record matters most.
-  it(
-    'Scenario: given the disk fails mid-op and the rollback fails too, when the answer says files could not be put back, then the journal still lists the moves',
-    async () => {
-      await take('06-1-a.mov');
-      await take('06-2-b.mov');
-      vi.doMock('fs-extra', async (importOriginal) => {
-        const actual = (await importOriginal()) as { default: typeof fs };
-        let calls = 0;
-        const move = async (...args: Parameters<typeof fs.move>) => {
-          calls += 1;
-          if (calls > 1) throw new Error('disk went away');
-          return actual.default.move(...args);
-        };
-        return { ...actual, default: { ...actual.default, move } };
-      });
-      try {
-        const res = await request(await appFor())
-          .post('/api/segments/op')
-          .send({ mode: 'delete', chapter: '06', segment: 1 });
-        expect(res.status).toBe(500);
-        expect(res.body.reason).toContain('could not be put back');
-        expect(await fs.pathExists(path.join(paths.trash, '06-1-a.mov'))).toBe(true);
-        const journal = await fs.readJson(path.join(project, '.flihub-segment-journal.json'));
-        expect(journal.entries).toHaveLength(1);
-      } finally {
-        vi.doUnmock('fs-extra');
-      }
+  it('Scenario: given the disk fails mid-op and the rollback fails too, when the answer says files could not be put back, then the journal still lists the moves', async () => {
+    await take('06-1-a.mov');
+    await take('06-2-b.mov');
+    vi.doMock('fs-extra', async (importOriginal) => {
+      const actual = (await importOriginal()) as { default: typeof fs };
+      let calls = 0;
+      const move = async (...args: Parameters<typeof fs.move>) => {
+        calls += 1;
+        if (calls > 1) throw new Error('disk went away');
+        return actual.default.move(...args);
+      };
+      return { ...actual, default: { ...actual.default, move } };
+    });
+    try {
+      const res = await request(await appFor())
+        .post('/api/segments/op')
+        .send({ mode: 'delete', chapter: '06', segment: 1 });
+      expect(res.status).toBe(500);
+      expect(res.body.reason).toContain('could not be put back');
+      expect(await fs.pathExists(path.join(paths.trash, '06-1-a.mov'))).toBe(true);
+      const journal = await fs.readJson(path.join(project, '.flihub-segment-journal.json'));
+      expect(journal.entries).toHaveLength(1);
+    } finally {
+      vi.doUnmock('fs-extra');
     }
-  );
+  });
 });
 
 describe('Feature: the journal is written before the first file moves (R9)', () => {
@@ -383,4 +365,95 @@ describe('Feature: the journal is written before the first file moves (R9)', () 
     expect(seen[0]?.steps.length).toBeGreaterThan(0);
     expect((await fs.readJson(journalFile)).entries[0].pending).toBeUndefined();
   });
+});
+
+describe('Feature: the state file follows a renumber only where it has something to follow (R9, round 2)', () => {
+  const fileEntry = (filename: string) => ({
+    filename,
+    sourceHash: 'h',
+    copiedAt: '2026-10-08T00:00:00.000Z',
+    sourceSize: 1,
+  });
+
+  it('Scenario: given only the edit manifest names 06-2 (no per-take flags), when 06-1 is deleted and then undone, then the manifest follows the rename and the disk ends identical', async () => {
+    await take('06-1-a.mov');
+    await take('06-2-b.mov');
+    const folder = (files: ReturnType<typeof fileEntry>[]) => ({ lastCopied: null, files });
+    await writeProjectState(project, {
+      version: 1,
+      recordings: {},
+      editManifest: {
+        'edit-1st': folder([fileEntry('06-2-b.mov')]),
+        'edit-2nd': folder([]),
+        'edit-final': folder([]),
+      },
+    });
+    const before = await tree();
+    const app = await appFor();
+
+    await request(app)
+      .post('/api/segments/op')
+      .send({ mode: 'delete', chapter: '06', segment: 1 })
+      .expect(200);
+    const during = await fs.readJson(paths.stateFile);
+    expect(
+      during.editManifest['edit-1st'].files.map((f: { filename: string }) => f.filename)
+    ).toEqual(['06-1-b.mov']);
+
+    await request(app).post('/api/segments/undo').send({}).expect(200);
+    expect(await tree()).toEqual(before);
+  });
+
+  it('Scenario: given a project with no state file, when a segment is deleted and undone, then no state file appears at any point', async () => {
+    await take('06-1-a.mov');
+    await take('06-2-b.mov');
+    const before = await tree();
+    const app = await appFor();
+    await request(app)
+      .post('/api/segments/op')
+      .send({ mode: 'delete', chapter: '06', segment: 1 })
+      .expect(200);
+    expect(await fs.pathExists(paths.stateFile)).toBe(false);
+    await request(app).post('/api/segments/undo').send({}).expect(200);
+    expect(await tree()).toEqual(before);
+  });
+});
+
+describe('Feature: a tag is a word of letters and digits with at least one letter (R8, round 2)', () => {
+  const send = async (tags: unknown) => {
+    await write(path.join(inbox, 'take.mov'), 'NEW');
+    return request(await appFor())
+      .post('/api/segments/op')
+      .send({
+        mode: 'replace',
+        chapter: '06',
+        segment: 1,
+        source: path.join(inbox, 'take.mov'),
+        name: 'x',
+        tags,
+      });
+  };
+
+  for (const bad of [['123'], ['A B'], ['..'], ['A-B'], ['A/B'], [''], [7], 'CTA', { 0: 'CTA' }]) {
+    it(`Scenario: given tags ${JSON.stringify(bad)}, when a take is sent in, then it is refused and nothing moves`, async () => {
+      await take('06-1-a.mov');
+      const before = await tree();
+      const res = await send(bad);
+      expect(res.status).toBe(409);
+      expect(res.body.blockers[0].kind).toBe('invalid');
+      const after = (await tree()).filter((l) => !l.startsWith('ecamm/'));
+      expect(after).toEqual(before.filter((l) => !l.startsWith('ecamm/')));
+      expect(await fs.pathExists(path.join(inbox, 'take.mov'))).toBe(true);
+    });
+  }
+
+  for (const good of [[], ['CTA'], ['1ST', 'cta']]) {
+    it(`Scenario: given tags ${JSON.stringify(good)}, when a take is sent in, then it lands with them upper-cased in the name`, async () => {
+      await take('06-1-a.mov');
+      const res = await send(good);
+      expect(res.status).toBe(200);
+      const expected = ['x', ...good.map((t) => t.toUpperCase())].join('-');
+      expect(await names(paths.recordings)).toEqual([`06-1-${expected}.mov`]);
+    });
+  }
 });
