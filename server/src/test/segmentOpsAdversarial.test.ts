@@ -282,3 +282,77 @@ describe('Feature: only a real take inside the inbox goes in, under a name that 
     }
   );
 });
+
+describe('Feature: undo is guarded like the operation itself (R8, R9)', () => {
+  it('Scenario: given a delete that closed 06-2 up to 06-1, when a FliCut cut then names 06-1, then undo is refused and the disk is unchanged', async () => {
+    await take('06-1-a.mov');
+    await take('06-2-b.mov');
+    const app = await appFor();
+    await request(app)
+      .post('/api/segments/op')
+      .send({ mode: 'delete', chapter: '06', segment: 1 })
+      .expect(200);
+    await write(
+      path.join(project, 'fli.cut.tour.json'),
+      JSON.stringify({ medias: [{ filePath: 'hub/recordings/06-1-b.mov' }] })
+    );
+    const before = await tree();
+
+    const res = await request(app).post('/api/segments/undo').send({});
+
+    expect(res.status).toBe(409);
+    expect(res.body.blockers).toEqual([
+      expect.objectContaining({ kind: 'referenced', file: '06-1-b.mov' }),
+    ]);
+    expect(await tree()).toEqual(before);
+  });
+});
+
+describe('Feature: only image assets keyed to the segment travel with it (R3, R5)', () => {
+  it('Scenario: given a hand-named image 06-1-notes.png beside the 06-1 asset, when 06-1 is deleted, then only the asset goes to the trash', async () => {
+    await take('06-1-a.mov');
+    await write(path.join(paths.images, '06-1-notes.png'), 'MINE');
+
+    await request(await appFor())
+      .post('/api/segments/op')
+      .send({ mode: 'delete', chapter: '06', segment: 1 })
+      .expect(200);
+
+    expect(await names(paths.images)).toEqual(['06-1-notes.png']);
+    expect(await names(paths.trash)).toEqual(['06-1-1a-a.png', '06-1-a.mov', '06-1-a.srt']);
+  });
+});
+
+describe('Feature: a file that cannot be put back is still on the record (R8, R9)', () => {
+  // Open finding (Tester CT-0107 r1): segmentOps.ts:715-717 forgets the journal entry on ANY step failure, even when
+  // the rollback itself failed and files are stranded in -trash/ — the one case where the record matters most.
+  it.fails(
+    'Scenario: given the disk fails mid-op and the rollback fails too, when the answer says files could not be put back, then the journal still lists the moves',
+    async () => {
+      await take('06-1-a.mov');
+      await take('06-2-b.mov');
+      vi.doMock('fs-extra', async (importOriginal) => {
+        const actual = await importOriginal<typeof import('fs-extra')>();
+        let calls = 0;
+        const move = async (...args: Parameters<typeof actual.default.move>) => {
+          calls += 1;
+          if (calls > 1) throw new Error('disk went away');
+          return actual.default.move(...args);
+        };
+        return { ...actual, default: { ...actual.default, move } };
+      });
+      try {
+        const res = await request(await appFor())
+          .post('/api/segments/op')
+          .send({ mode: 'delete', chapter: '06', segment: 1 });
+        expect(res.status).toBe(500);
+        expect(res.body.reason).toContain('could not be put back');
+        expect(await fs.pathExists(path.join(paths.trash, '06-1-a.mov'))).toBe(true);
+        const journal = await fs.readJson(path.join(project, '.flihub-segment-journal.json'));
+        expect(journal.entries).toHaveLength(1);
+      } finally {
+        vi.doUnmock('fs-extra');
+      }
+    }
+  );
+});
