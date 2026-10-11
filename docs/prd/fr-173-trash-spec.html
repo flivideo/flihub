@@ -1,0 +1,196 @@
+<title>FliHub Trash Restore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: a light AppyDave spec page. Before/after mock of FliHub's header Trash pill and a new trash list, then the spec. */
+:root {
+  color-scheme: light;
+  --brown: #342d2d; --gold: #ccba9d; --yellow: #ffde59; --amber: #c8841a;
+  --muted: #7a6e5e; --cream: #faf5ec; --surface: #f0ebe4; --linen: #e8e0d4;
+  --border: #d4cdc4; --chrome: #1a1515; --dark: #25201e; --blue: #2E91FC;
+  --red: #b5524a; --green: #4f7a3f;
+  --display: "Bebas Neue", Oswald, Impact, sans-serif;
+  --head: Oswald, "Arial Narrow", sans-serif;
+  --body: Roboto, system-ui, sans-serif;
+  --mono: "Roboto Mono", ui-monospace, monospace;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--cream); color: var(--brown); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 64px; display: grid; gap: 44px; }
+header.page { display: grid; gap: 12px; max-width: 72ch; }
+.logo-badge { display:inline-block; background: var(--brown); border-radius:6px; padding:4px 10px 2px; font-family: var(--display); letter-spacing:.04em; line-height:1.1; font-size: 22px; width: fit-content; }
+.logo-badge .a { color: var(--gold); } .logo-badge .d { color: var(--yellow); }
+.eyebrow { font-family: var(--head); text-transform: uppercase; letter-spacing: .12em; font-size: 13px; color: var(--amber); font-weight: 600; }
+h1 { font-family: var(--head); font-weight: 600; font-size: clamp(30px, 5vw, 44px); line-height: 1.1; margin: 0; text-transform: uppercase; text-wrap: balance; }
+h2 { font-family: var(--head); font-weight: 600; text-transform: uppercase; font-size: 26px; margin: 0; letter-spacing: .02em; text-wrap: balance; }
+h3 { font-family: var(--head); text-transform: uppercase; letter-spacing: .08em; font-size: 14px; color: var(--amber); margin: 0; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+header.page p { color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: var(--muted); }
+.facts b { color: var(--brown); font-weight: 500; }
+section { display: grid; gap: 16px; min-width: 0; }
+.lead { border-left: 3px solid var(--amber); padding: 2px 0 2px 12px; }
+code { font-family: var(--mono); font-size: 13px; background: var(--surface); padding: 1px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+
+/* story: three stuck steps */
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.step { display: grid; gap: 6px; border-top: 2px solid var(--amber); padding-top: 10px; }
+.step .n { font-family: var(--display); font-size: 34px; line-height: 1; color: var(--amber); }
+.step b { font-family: var(--head); font-weight: 500; font-size: 18px; }
+.step .now { color: var(--muted); font-size: 14px; }
+
+/* app mock */
+.ba { display: grid; gap: 28px; }
+.ba > div { display: grid; gap: 10px; min-width: 0; }
+.tag { font-family: var(--head); text-transform: uppercase; letter-spacing: .1em; font-size: 12px; font-weight: 600; color: var(--muted); }
+.tag.after { color: var(--amber); }
+.app { background: #fff; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; font-size: 13px; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 8px 12px; border-bottom: 1px solid var(--linen); background: #fcfaf6; }
+.bar .proj { font-weight: 600; }
+.bar .tabs { display: flex; gap: 10px; color: var(--muted); }
+.bar .tabs span.on { color: var(--brown); font-weight: 500; }
+.bar .spacer { flex: 1; }
+.pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-size: 11px; font-variant-numeric: tabular-nums; }
+.pill .btn { border-left: 1px solid var(--border); padding-left: 6px; color: var(--brown); }
+.pill .btn.dim { color: var(--muted); }
+.pill.open { outline: 2px solid var(--yellow); outline-offset: 2px; }
+.body { padding: 12px; color: var(--muted); }
+.callout { font-size: 13px; color: var(--muted); }
+
+.trash { padding: 12px; display: grid; gap: 10px; }
+.trash .head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; }
+.trash .head b { font-family: var(--head); font-weight: 500; font-size: 16px; color: var(--brown); }
+.trash .head span { color: var(--muted); }
+.trash .head .finder { margin-left: auto; border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; color: var(--brown); }
+.scroll { overflow-x: auto; }
+table.list { border-collapse: collapse; width: 100%; min-width: 560px; font-variant-numeric: tabular-nums; }
+table.list th { text-align: left; font-weight: 500; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; border-bottom: 1px solid var(--linen); }
+table.list td { padding: 6px 8px; border-bottom: 1px solid var(--linen); vertical-align: middle; }
+table.list .day td { background: var(--surface); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.play { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--brown); color: var(--cream); font-size: 9px; }
+.restore { border: 1px solid var(--brown); border-radius: 4px; padding: 2px 8px; background: var(--yellow); color: var(--brown); font-weight: 500; white-space: nowrap; }
+.restore.ghost { background: transparent; border-color: var(--border); color: var(--muted); }
+tr.hit td { background: #fffbe6; }
+.sub td { color: var(--muted); font-size: 12px; }
+.sub td:first-child { padding-left: 34px; }
+.msg { border-radius: 4px; padding: 8px 10px; font-size: 13px; }
+.msg.ok { background: #eef4ea; color: var(--green); }
+.msg.no { background: #f7ebe9; color: var(--red); }
+.caption { font-size: 14px; color: var(--muted); }
+
+.specgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 24px 32px; }
+.specgrid > div { display: grid; gap: 8px; min-width: 0; align-content: start; }
+table.spec { border-collapse: collapse; width: 100%; font-size: 15px; }
+table.spec th { text-align: left; vertical-align: top; font-weight: 500; color: var(--muted); padding: 7px 14px 7px 0; border-top: 1px solid var(--linen); width: 32%; }
+table.spec td { padding: 7px 0; border-top: 1px solid var(--linen); vertical-align: top; }
+ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.q { display: grid; gap: 4px; border-top: 1px solid var(--border); padding-top: 12px; }
+.q b { font-family: var(--head); font-weight: 500; font-size: 17px; }
+.rec::before { content: "My take: "; font-weight: 700; }
+.src { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+</style>
+
+<div class="wrap">
+  <header class="page">
+    <span class="logo-badge"><span class="a">Appy</span><span class="d">Dave</span></span>
+    <span class="eyebrow">Spec · FliHub · FR-173 · D08 job 4 · 11 Oct 2026</span>
+    <h1>A trash you can see into and restore from</h1>
+    <p>When you discard a take, FliHub moves it to the project's <code>-trash/</code> folder, so nothing is lost. But FliHub gives you no way to get it back. This morning on D07 you needed one take back and couldn't do it from the app.</p>
+    <div class="facts"><span>Sample: <b>D07 trash, real files, 11 Oct</b></span><span>Size: <b>~60–75 min for one coder</b></span><span>Status: <b>spec only, not built</b></span></div>
+  </header>
+
+  <section>
+    <h2>Where you got stuck</h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><b>Open the trash folder</b><span class="now">Today: the only "Open in Finder" is inside the Delete Trash dialog. You have to start deleting to find it.</span></div>
+      <div class="step"><span class="n">2</span><b>See what's in it</b><span class="now">Today: a count and a size. No list, so you can't tell 07.46.41 from 07.47.10.</span></div>
+      <div class="step"><span class="n">3</span><b>Put a take back</b><span class="now">Today: no restore anywhere. An agent moved the file to <code>~/ecamm</code> by hand.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What you'd see</h2>
+    <div class="ba">
+      <div>
+        <span class="tag">Before (today)</span>
+        <div class="app" aria-label="FliHub header today">
+          <div class="bar"><span class="proj">d07-buzz-coding-team</span><span class="tabs"><span class="on">Incoming</span><span>Recordings</span><span>Transcripts</span></span><span class="spacer"></span><span class="pill">Trash 36 · 243 MB</span></div>
+          <div class="body">Clicking the pill offers one thing: <b>Empty trash?</b></div>
+        </div>
+      </div>
+      <div>
+        <span class="tag after">After</span>
+        <div class="app" aria-label="FliHub with the trash list open">
+          <div class="bar"><span class="proj">d07-buzz-coding-team</span><span class="tabs"><span class="on">Incoming</span><span>Recordings</span><span>Transcripts</span></span><span class="spacer"></span><span class="pill open">Trash 36 · 243 MB <span class="btn">View</span><span class="btn">📂</span><span class="btn dim">Empty</span></span></div>
+          <div class="trash">
+            <div class="head"><b>Trash</b><span>20 takes · 16 transcript files · 243 MB</span><span class="finder">📂 Open in Finder</span></div>
+            <div class="scroll">
+              <table class="list">
+                <thead><tr><th></th><th>Recorded</th><th>Length</th><th>Size</th><th></th></tr></thead>
+                <tbody>
+                  <tr class="day"><td colspan="5">Today, 11 Oct</td></tr>
+                  <tr><td><span class="play">▶</span></td><td>09:26:29</td><td>0:20</td><td>7 MB</td><td><span class="restore">Restore to Incoming</span></td></tr>
+                  <tr><td><span class="play">▶</span></td><td>09:03:10</td><td>0:11</td><td>4 MB</td><td><span class="restore">Restore to Incoming</span></td></tr>
+                  <tr><td><span class="play">▶</span></td><td>07:59:47</td><td>1:02</td><td>23 MB</td><td><span class="restore">Restore to Incoming</span></td></tr>
+                  <tr class="hit"><td><span class="play">▶</span></td><td>07:47:10</td><td>…</td><td>…</td><td><span class="restore">Restore to Incoming</span></td></tr>
+                  <tr><td><span class="play">▶</span></td><td>07:46:41</td><td>0:18</td><td>8 MB</td><td><span class="restore">Restore to Incoming</span></td></tr>
+                  <tr class="day"><td colspan="5">Yesterday, 10 Oct</td></tr>
+                  <tr><td><span class="play">▶</span></td><td>08:07:11</td><td>…</td><td>…</td><td><span class="restore">Restore to Incoming</span></td></tr>
+                  <tr class="day"><td colspan="5">Transcripts with no recording here</td></tr>
+                  <tr class="sub"><td colspan="4">03-1-learn-buzz-with-nick-frith · 9 files (plain, crisper, groq × txt, srt, json)</td><td><span class="restore ghost">Restore to Transcripts</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="msg ok">Restored 07.47.10 to Incoming. Trash 35 · 235 MB.</div>
+            <div class="msg no">Not restored: "Ecamm Recording on 2026-10-11 at 07.47.10.mov" is already in Incoming. Nothing was moved.</div>
+          </div>
+        </div>
+        <p class="caption">Rows are the real D07 trash, newest first. 07.47.10 is the take you wanted this morning; it has since been put back by hand, so it's shown here only as the example. The two messages show success and a clash. Only one would show at a time.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The spec</h2>
+    <div class="specgrid">
+      <div>
+        <h3>What the job is</h3>
+        <table class="spec">
+          <tr><th>Pill</th><td>The header Trash pill gains <b>View</b> and <b>📂 Open in Finder</b>. <b>Empty</b> stays, still behind its confirm</td></tr>
+          <tr><th>Trash list</th><td>Trashed takes newest first, grouped by day: recorded time, length, size, ▶ preview</td></tr>
+          <tr><th>Transcripts</th><td>Shown under their recording. Transcripts whose recording isn't in the trash get their own group</td></tr>
+          <tr><th>Restore</th><td>One click moves the take to the watch folder (<code>watchDirectory</code>, today <code>~/ecamm</code>) under its original Ecamm name. It then appears in Incoming like any new take</td></tr>
+          <tr><th>Its transcripts</th><td>Brought back with it, or the message says plainly they were left behind</td></tr>
+          <tr><th>Clash</th><td>If the same name is already in Incoming, nothing moves and the message says why. Never overwrite</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Done-check (D08 form)</h3>
+        <table class="spec">
+          <tr><th>proof</th><td>Server test: restore moves the file out of <code>-trash/</code> into the watch folder, the trash count drops by one, a clash moves nothing. UI test: the list shows a trashed take with its time and length</td></tr>
+          <tr><th>test_audit</th><td><code>dev-team:audit-test-quality</code> on the new tests</td></tr>
+          <tr><th>before_after</th><td>The header pill today; the trash list open, then the take back in Incoming</td></tr>
+          <tr><th>duration</th><td>From the queue timestamps</td></tr>
+        </table>
+        <h3>Out of scope</h3>
+        <ul>
+          <li>Restoring a take straight into a chapter slot. It goes back to Incoming and lands the normal way.</li>
+          <li>FR-171 (Archive deletes <code>-trash/</code>). Related, separate ticket.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Two choices for David</h2>
+    <div class="q"><b>Where the list opens</b>
+      <p>A panel that drops from the pill, or its own Trash tab beside Incoming and Recordings.</p>
+      <p class="rec">A panel from the pill. Trash is something you visit rarely, and it stays out of the main tabs.</p></div>
+    <div class="q"><b>Orphan transcripts</b>
+      <p>The nine 03-1 transcript files have no recording in the trash. Restore them to Transcripts, or only show them.</p>
+      <p class="rec">Show them with a Restore button, as mocked. They're what you'd lose if segment 03-1 was discarded by mistake.</p></div>
+  </section>
+
+  <p class="src">Ticket: /Users/davidcruwys/dev/ad/flivideo/flihub/docs/prd/fr-173-trash-browse-and-restore.md · Today's pill: flihub/client/src/components/shared/TrashIndicator.tsx · Source file: /Users/davidcruwys/dev/ad/flivideo/flihub/docs/prd/fr-173-trash-spec.html</p>
+</div>
