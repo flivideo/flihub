@@ -11,6 +11,7 @@ import {
   formatChapter,
 } from '../../../shared/naming.js';
 import { renameRecording } from '../utils/renameRecording.js';
+import { planMovedSequences } from '../utils/chapterMove.js';
 import { isTranscriptFresh } from '../utils/transcriptFiles.js';
 import { CHAPTER_PREVIEWS_GONE } from './chapters.js';
 import { expandPath } from '../utils/pathUtils.js';
@@ -108,6 +109,25 @@ export function createManageRoutes(
       const activeJob = getActiveJob ? getActiveJob() : null;
       const queue = getQueue ? getQueue() : [];
 
+      // Takes moved into ANOTHER chapter append after what that chapter already holds (from 1 if
+      // it is empty), instead of keeping their old number (utils/chapterMove.ts).
+      let movedSequences = new Map<string, number>();
+      if (chapter && finalSequenceMode === 'preserve') {
+        const moving: Array<{ filename: string; chapter: string; sequence: number }> = [];
+        for (const f of files as string[]) {
+          const p = parseRecordingFilename(f);
+          if (p && p.sequence !== null) {
+            moving.push({ filename: f, chapter: p.chapter, sequence: parseInt(p.sequence, 10) });
+          }
+        }
+        const existing = (await fs.readdir(paths.recordings).catch(() => [] as string[]))
+          .filter((f) => !files.includes(f))
+          .map((f) => parseRecordingFilename(f))
+          .filter((p) => p && p.sequence !== null && parseInt(p.chapter, 10) === parseInt(chapter, 10))
+          .map((p) => parseInt(p!.sequence as string, 10));
+        movedSequences = planMovedSequences(moving, chapter, existing);
+      }
+
       const renamed: Array<{ old: string; new: string }> = [];
       const errors: Array<{ file: string; error: string }> = [];
 
@@ -134,7 +154,9 @@ export function createManageRoutes(
 
           // Determine new sequence
           let newSequence: string;
-          if (finalSequenceMode === 'preserve') {
+          if (movedSequences.has(oldFilename)) {
+            newSequence = String(movedSequences.get(oldFilename));
+          } else if (finalSequenceMode === 'preserve') {
             // Preserve original sequence
             newSequence = parsed.sequence || '1';
           } else {
