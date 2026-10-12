@@ -864,14 +864,12 @@ export function RecordingsView() {
       if (!recording) return;
 
       const newChapter = field === 'chapter' ? newValue : recording.chapter;
-      const newName = field === 'name' ? newValue : recording.name;
+      // Typed UPPERCASE parts are tags ("outro-RECAP" adds RECAP), added to the take's existing tags.
+      const typed = field === 'name' ? extractTagsFromName(newValue) : { name: recording.name, tags: [] };
+      const newName = typed.name;
+      const newTags = [...recording.tags, ...typed.tags.filter((t) => !recording.tags.includes(t))];
 
-      const newFilename = buildRecordingFilename(
-        newChapter,
-        recording.sequence,
-        newName,
-        recording.tags.length > 0 ? recording.tags : []
-      );
+      const newFilename = buildRecordingFilename(newChapter, recording.sequence, newName, newTags);
 
       if (newFilename === recording.filename) return; // no change
 
@@ -881,7 +879,7 @@ export function RecordingsView() {
           chapter: newChapter,
           sequence: recording.sequence,
           name: newName,
-          tags: recording.tags,
+          tags: newTags,
         },
         {
           onSuccess: () => toast.success(`Renamed to ${newFilename}`),

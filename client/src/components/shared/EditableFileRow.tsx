@@ -14,7 +14,7 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import type { RecordingFile } from '../../../../shared/types';
 import { tagPillClass } from '../../utils/tagPills';
-import { validateChapter, validateLabel } from '../../../../shared/naming';
+import { validateChapter, validateLabel, extractTagsFromName } from '../../../../shared/naming';
 
 export interface EditableFileRowProps {
   recording: RecordingFile;
@@ -103,7 +103,9 @@ export function EditableFileRow({
         return;
       }
     } else {
-      const err = validateLabel(trimmed);
+      // Tags ride on the end in UPPERCASE ("outro-RECAP"), same as at ingest; only the name part
+      // has to be kebab-case.
+      const err = validateLabel(extractTagsFromName(trimmed).name);
       if (err) {
         setEditError(err);
         return;
