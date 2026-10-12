@@ -57,3 +57,5 @@ client/vite.config.d.ts
 
 # npm workspaces only — a pnpm lockfile must not creep back (CT-0091)
 pnpm-lock.yaml
+# 2026-10-12: rename records + pass-2 watches (machine-local)
+server/.transcript-follow.json

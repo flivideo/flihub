@@ -17,17 +17,39 @@ import { appendTelemetryEntry } from '../utils/telemetry.js';
 import { isTranscriptFresh, readTranscriptHealth } from '../utils/transcriptFiles.js';
 import {
   createFlitoolsClient,
+  FlitoolsError,
   runFlitoolsJob,
   type FlitoolsClient,
+  type FlitoolsJobView,
   type RunOptions,
 } from '../utils/flitoolsClient.js';
 import { transcriptionLanguageFor } from '../utils/transcriptionLanguage.js';
+import {
+  currentPathOf,
+  getTakeRenames,
+  hasEditGradeTranscript,
+  onTakeRenamed,
+  relocateTranscripts,
+  setTakeRenames,
+  takeKey,
+  type TakeRename,
+} from '../utils/transcriptFollow.js';
 
-// In-memory state
-let queue: TranscriptionJob[] = [];
-let activeJob: TranscriptionJob | null = null;
-let recentJobs: TranscriptionJob[] = []; // Keep last 5
-let aborting = false; // set on shutdown: stop polling FliTools
+/** FliTools' background pass 2 for a take FliHub transcribed: watched so it lands under the take's current name. */
+interface Pass2Watch {
+  jobId: string; // FliTools edit-grade job
+  path: string; // the recording path FliHub submitted
+  since: number; // ms epoch of that submit — renames after it are followed
+  retried?: boolean; // FliHub already re-asked for pass 2 at the current name once
+}
+
+export interface FollowOptions {
+  /** Where the rename records and pass-2 watches survive a restart (null = memory only). */
+  stateFile?: string | null;
+  /** How often to ask FliTools about watched pass-2 jobs (0 = never on a timer; tests call checkPass2). */
+  pass2PollMs?: number;
+}
+
 
 function generateJobId(): string {
   return `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -43,9 +65,51 @@ export function createTranscriptionRoutes(
   getConfig: () => Config,
   io: Server<ClientToServerEvents, ServerToClientEvents>,
   flitools: FlitoolsClient = createFlitoolsClient(), // B584: the suite's only transcriber
-  runOptions: Pick<RunOptions, 'pollMs' | 'sleep'> = {}
+  runOptions: Pick<RunOptions, 'pollMs' | 'sleep'> = {},
+  followOptions: FollowOptions = {}
 ) {
   const router = Router();
+
+  // In-memory state (one per instance: production makes one; tests make their own)
+  let queue: TranscriptionJob[] = [];
+  let activeJob: TranscriptionJob | null = null;
+  let recentJobs: TranscriptionJob[] = []; // Keep last 5
+  let aborting = false; // set on shutdown: stop polling FliTools
+
+  // === The job follows the take (2026-10-12) — see utils/transcriptFollow.ts ===
+  const stateFile = followOptions.stateFile ?? null;
+  let pass2Watches: Pass2Watch[] = [];
+  if (stateFile) {
+    try {
+      const saved = fs.readJsonSync(stateFile) as { renames?: TakeRename[]; pass2?: Pass2Watch[] };
+      setTakeRenames(saved.renames ?? []);
+      pass2Watches = saved.pass2 ?? [];
+    } catch {
+      // first run, or unreadable: start empty
+    }
+  }
+  function saveFollowState(): void {
+    if (!stateFile) return;
+    try {
+      fs.writeJsonSync(stateFile, { renames: getTakeRenames(), pass2: pass2Watches }, { spaces: 2 });
+    } catch (err) {
+      console.error('[follow] could not save follow state:', err);
+    }
+  }
+
+  // A rename re-targets the queued job and the active one (display/status) to the new name. The
+  // active job's FliTools run keeps its submitted path; its result is mapped when it lands.
+  const stopFollowing = onTakeRenamed((r) => {
+    const retarget = (job: TranscriptionJob) => {
+      if (takeKey(job.videoPath) !== takeKey(r.from)) return;
+      job.videoPath = r.to;
+      job.videoFilename = `${getBaseName(r.to)}.mov`;
+      console.log(`[follow] ${job.status} job ${job.jobId} now follows ${path.basename(r.to)}`);
+    };
+    queue.forEach(retarget);
+    if (activeJob) retarget(activeJob);
+    saveFollowState();
+  });
 
   // Get transcripts directory path (for current active project)
   function getTranscriptsDir(): string {
@@ -132,7 +196,9 @@ export function createTranscriptionRoutes(
 
     const job = activeJob;
     const currentJobId = job.jobId;
-    const videoPath = job.videoPath;
+    const videoPath = job.videoPath; // what FliTools is given — results land under this name
+    const submittedAt = Date.now();
+    let requeuePath: string | null = null; // renamed mid-run and the run failed: redo at the new name
     // FR-109: Derive transcripts dir from video path, not current config
     const transcriptsDir = getTranscriptsDirFromVideoPath(videoPath);
 
@@ -155,6 +221,13 @@ export function createTranscriptionRoutes(
       recentJobs.unshift(job);
       recentJobs = recentJobs.slice(0, 5); // Keep last 5
       if (activeJob?.jobId === currentJobId) activeJob = null;
+      if (requeuePath) {
+        const again = requeuePath;
+        requeuePath = null;
+        void queueTranscription(again, { force: job.force }).catch((err) =>
+          console.error(`[follow] could not re-queue ${again}:`, err)
+        );
+      }
       processNextJob();
     };
 
@@ -178,14 +251,33 @@ export function createTranscriptionRoutes(
           },
         })
       )
-      .then((view) => {
+      .then(async (view) => {
+        // Renamed while this ran: what FliTools saved under the submitted name moves to the current
+        // one, and pass 2 is watched under the submitted path (currentPathOf maps it later).
+        const current = currentPathOf(videoPath, submittedAt);
+        const sha = view.result?.transcript?.source?.sha256 ?? null;
+        if (current !== path.resolve(videoPath)) {
+          await relocateTranscripts(videoPath, current, sha);
+          job.videoPath = current;
+          job.videoFilename = `${getBaseName(current)}.mov`;
+          // Another take may hold the old name now: let it get its own transcript back (cache hit)
+          if (await fs.pathExists(videoPath)) {
+            void queueTranscription(videoPath).catch(() => undefined);
+          }
+        }
+        const up = view.upgrade;
+        if (up?.jobId && (up.status === 'queued' || up.status === 'running')) {
+          watchPass2({ jobId: up.jobId, path: videoPath, since: submittedAt });
+        }
         job.status = 'complete';
         job.completedAt = new Date().toISOString();
         job.health = view.health ?? view.result?.transcript?.health;
         const engine = view.result?.transcript?.engine;
         const transcriptPath =
-          view.result?.files?.txt ??
-          path.join(transcriptsDir, `${getBaseName(job.videoFilename)}.txt`);
+          current !== path.resolve(videoPath)
+            ? path.join(getTranscriptsDirFromVideoPath(current), `${getBaseName(current)}.txt`)
+            : (view.result?.files?.txt ??
+              path.join(transcriptsDir, `${getBaseName(job.videoFilename)}.txt`));
         if (view.result?.trashed?.length) {
           console.log(
             `[transcription] FliTools moved ${view.result.trashed.length} old whisper file(s) of ${job.videoFilename} to -trash`
@@ -198,7 +290,7 @@ export function createTranscriptionRoutes(
 
         io.emit('transcription:complete', {
           jobId: currentJobId,
-          videoPath,
+          videoPath: job.videoPath,
           transcriptPath,
           health: job.health,
         });
@@ -233,9 +325,90 @@ export function createTranscriptionRoutes(
         job.error = err instanceof Error ? err.message : String(err);
         console.error(`Transcription failed: ${job.videoFilename} — ${job.error}`);
         io.emit('transcription:error', { jobId: currentJobId, videoPath, error: job.error });
+        // Renamed while this ran (FliTools may have lost the file under it): run it at the new name
+        const current = currentPathOf(videoPath, submittedAt);
+        if (current !== path.resolve(videoPath) && fs.existsSync(current)) {
+          console.log(`[follow] ${job.videoFilename} was renamed while transcribing — re-queued as ${path.basename(current)}`);
+          requeuePath = current;
+        }
       })
       .finally(finish);
   }
+
+  // === Pass 2 follows the take ===
+  function watchPass2(w: Pass2Watch): void {
+    if (pass2Watches.some((x) => x.jobId === w.jobId && x.path === w.path)) return;
+    pass2Watches.push(w);
+    saveFollowState();
+  }
+
+  let checking = false;
+  /**
+   * Ask FliTools about each watched pass-2 job. When one has finished for a take renamed since:
+   * move what it saved under the old name to the current one; and if the current name still has
+   * no edit-grade transcript (FliTools skips a pass 2 whose recording path is gone), ask for
+   * pass 2 again at the current path — once.
+   */
+  async function checkPass2(): Promise<void> {
+    if (checking || aborting) return;
+    checking = true;
+    try {
+      for (const w of [...pass2Watches]) {
+        let view: FlitoolsJobView | null = null;
+        let lost = false;
+        try {
+          view = await flitools.job(w.jobId);
+        } catch (err) {
+          if (err instanceof FlitoolsError && err.failure === 'job-not-found') lost = true;
+          else continue; // FliTools not answering: ask next round
+        }
+        if (view && (view.status === 'queued' || view.status === 'running')) continue;
+
+        pass2Watches = pass2Watches.filter((x) => x !== w);
+        const current = currentPathOf(w.path, w.since);
+        const renamed = current !== path.resolve(w.path);
+        const sha = view?.result?.transcript?.source?.sha256 ?? null;
+        if (renamed) {
+          const wroteOld =
+            view?.result?.files?.json &&
+            getBaseName(view.result.files.json) === getBaseName(w.path);
+          if (wroteOld) await relocateTranscripts(w.path, current, sha);
+          if (wroteOld && fs.existsSync(w.path)) void queueTranscription(w.path).catch(() => undefined);
+        }
+        const skipped = /changed or is gone/.test(view?.note ?? '');
+        if (
+          (renamed || skipped || lost) &&
+          !w.retried &&
+          fs.existsSync(current) &&
+          !(await hasEditGradeTranscript(current))
+        ) {
+          try {
+            const language = await transcriptionLanguageFor(current);
+            const again = await flitools.submit(current, { tier: 'edit', forceSave: true, language });
+            console.log(`[follow] pass 2 re-asked for ${path.basename(current)} (FliTools job ${again.id}, ${again.status})`);
+            if (again.status === 'queued' || again.status === 'running') {
+              // the same id = FliTools still has that job open (it forgot it across a restart): keep watching
+              pass2Watches.push({
+                jobId: again.id,
+                path: current,
+                since: Date.now(),
+                retried: again.id === w.jobId ? w.retried : true,
+              });
+            }
+          } catch (err) {
+            console.error(`[follow] could not re-ask pass 2 for ${current}:`, err);
+          }
+        }
+        saveFollowState();
+      }
+    } finally {
+      checking = false;
+    }
+  }
+
+  const pass2PollMs = followOptions.pass2PollMs ?? 0;
+  const pass2Timer = pass2PollMs > 0 ? setInterval(() => void checkPass2(), pass2PollMs) : null;
+  pass2Timer?.unref?.();
 
   // Queue a transcription job (exported for use by rename route)
   // `force` (explicit redo: Regen Transcripts force, POST /queue {force}) re-transcribes even when a
@@ -761,6 +934,8 @@ export function createTranscriptionRoutes(
   // Graceful shutdown: stop polling FliTools (B584 — its job runs on there; nothing to kill here)
   function killActiveProcess(): void {
     aborting = true;
+    if (pass2Timer) clearInterval(pass2Timer);
+    stopFollowing();
     // Clear the queue so nothing restarts
     queue = [];
     activeJob = null;
@@ -776,5 +951,13 @@ export function createTranscriptionRoutes(
   }
 
   // Export queueTranscription, killActiveProcess, and queue getters
-  return { router, queueTranscription, killActiveProcess, getActiveJob, getQueue };
+  return {
+    router,
+    queueTranscription,
+    killActiveProcess,
+    getActiveJob,
+    getQueue,
+    checkPass2,
+    getPass2Watches: () => [...pass2Watches],
+  };
 }

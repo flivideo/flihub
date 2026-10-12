@@ -268,7 +268,11 @@ const {
   killActiveProcess,
   getActiveJob,
   getQueue,
-} = createTranscriptionRoutes(() => currentConfig, io);
+} = createTranscriptionRoutes(() => currentConfig, io, undefined, {}, {
+  // 2026-10-12: renames + pass-2 watches survive a restart, so a late pass 2 still finds its take
+  stateFile: path.join(__dirname, '..', '.transcript-follow.json'),
+  pass2PollMs: 20_000,
+});
 app.use('/api/transcriptions', transcriptionRoutes);
 
 // Setup routes with config update callback and transcription queue function

@@ -5,6 +5,7 @@ import type { ProjectPaths } from '../../../shared/paths.js';
 import type { ProjectState, TranscriptionJob } from '../../../shared/types.js';
 import { readProjectState, writeProjectState } from './projectState.js';
 import { ENGINE_COPIES_DIR, engineCopiesFor } from './transcriptFiles.js';
+import { recordTakeRename } from './transcriptFollow.js';
 
 /**
  * Check if a recording is currently being transcribed
@@ -282,6 +283,9 @@ export async function regenerateDerivableFiles(
  * Rename recording using smart-rename pattern (B047)
  * Phase 1: Rename derivative files in-place (transcripts)
  * Phase 2: Rename core files (recording + state migration)
+ * Phase 3: Record the rename, so a transcription still in flight (queued, running, or FliTools'
+ *          pass 2) follows the take to its new name instead of landing under the old one
+ *          (2026-10-12, utils/transcriptFollow.ts). A take being transcribed is no longer blocked.
  */
 export async function renameRecording(
   oldFilename: string,
@@ -293,13 +297,8 @@ export async function renameRecording(
   console.log(`[B047] Starting rename: ${oldFilename} → ${newFilename}`);
 
   try {
-    // Check if file is being transcribed
     if (checkTranscriptionQueue(oldFilename, activeJob, queue)) {
-      console.log(`[B047] Rename blocked - file is being transcribed`);
-      return {
-        success: false,
-        error: 'Cannot rename while transcribing. Wait for completion or cancel transcription.',
-      };
+      console.log(`[B047] ${oldFilename} is being transcribed — the job follows the rename`);
     }
 
     // Phase 1: Rename derivative files in-place
@@ -309,6 +308,11 @@ export async function renameRecording(
     // Phase 2: Rename core files (recording + state migration)
     console.log(`[B047] Phase 2: Rename core files`);
     await renameCoreFiles(oldFilename, newFilename, paths);
+
+    recordTakeRename(
+      path.join(paths.recordings, oldFilename),
+      path.join(paths.recordings, newFilename)
+    );
 
     console.log(`[B047] Rename complete: ${newFilename}`);
     return { success: true };

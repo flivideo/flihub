@@ -339,39 +339,50 @@ describe('renameRecording', () => {
     };
   }
 
-  // ── 1. Abort when file is being transcribed ────────────────────────────────
+  // ── 1. A take being transcribed is renamed, and the job follows it (2026-10-12) ──
 
-  it('returns error without touching phases when active job matches the file', async () => {
-    const activeJob = makePipelineJob('01-1-intro.mov');
+  it('renames a take whose transcription is running, and records the rename for the job to follow', async () => {
+    const follow = await import('../utils/transcriptFollow.js');
+    follow.setTakeRenames([]);
+    const before = Date.now();
 
     const result = await renameRecording(
       '01-1-intro.mov',
       '01-1-introduction.mov',
       makePaths(),
-      activeJob,
+      makePipelineJob('01-1-intro.mov'),
       []
     );
 
-    expect(result.success).toBe(false);
-    expect(result.error).toMatch(/transcri/i);
-    // No phase started — fs.rename should not have been called
-    expect(fsMock.rename).not.toHaveBeenCalled();
+    expect(result.success).toBe(true);
+    expect(fsMock.rename).toHaveBeenCalled();
+    expect(follow.currentPathOf('/fake/project/recordings/01-1-intro.mov', before)).toBe(
+      '/fake/project/recordings/01-1-introduction.mov'
+    );
   });
 
-  it('returns error without touching phases when file is queued for transcription', async () => {
-    const queuedJob = makePipelineJob('02-1-setup.mov');
-
+  it('renames a queued take too (no "cannot rename while transcribing")', async () => {
     const result = await renameRecording(
       '02-1-setup.mov',
       '02-1-setup-v2.mov',
       makePaths(),
       null,
-      [queuedJob]
+      [makePipelineJob('02-1-setup.mov')]
     );
 
-    expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
-    expect(fsMock.rename).not.toHaveBeenCalled();
+    expect(result.success).toBe(true);
+    expect(result.error).toBeUndefined();
+  });
+
+  it('records nothing when the rename fails', async () => {
+    const follow = await import('../utils/transcriptFollow.js');
+    follow.setTakeRenames([]);
+    for (let i = 0; i < 5; i++) (fsMock.rename as ReturnType<typeof vi.fn>).mockResolvedValueOnce(undefined);
+    (fsMock.rename as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('EACCES'));
+
+    await renameRecording('03-1-a.mov', '03-1-b.mov', makePaths(), null, []);
+
+    expect(follow.getTakeRenames()).toHaveLength(0);
   });
 
   // ── 2. Smart-rename uses fs.rename for derivatives (not delete+regenerate) ─

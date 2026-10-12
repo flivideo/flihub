@@ -20,8 +20,18 @@ export interface FlitoolsJobView {
   phase?: string;
   health?: TranscriptHealth;
   error?: unknown;
+  /** On a fast job: FliTools' background edit-grade pass 2 for the same content. */
+  upgrade?: { jobId: string | null; status: 'queued' | 'running' | 'done' | 'failed' | 'none'; provider?: string; why?: string };
+  /** On an edit job: why it did not replace the transcript ("the recording changed or is gone…"). */
+  note?: string;
+  upgraded?: boolean;
   result?: {
-    transcript?: { engine?: { name?: string; model?: string }; health?: TranscriptHealth };
+    transcript?: {
+      engine?: { name?: string; model?: string };
+      health?: TranscriptHealth;
+      source?: { sha256?: string };
+      verbatim?: boolean;
+    };
     reused?: null | 'cache' | 'beside';
     files?: { json: string; srt: string; txt: string } | null; // non-null only when all three are on disk
     saveError?: string;
@@ -43,7 +53,10 @@ export class FlitoolsError extends Error {
 
 export interface FlitoolsClient {
   baseUrl: string;
-  submit(path: string, opts?: { force?: boolean; forceSave?: boolean; language?: string }): Promise<FlitoolsJobView>;
+  submit(
+    path: string,
+    opts?: { force?: boolean; forceSave?: boolean; language?: string; tier?: 'fast' | 'edit' | 'both' },
+  ): Promise<FlitoolsJobView>;
   job(id: string): Promise<FlitoolsJobView>;
 }
 
@@ -91,6 +104,7 @@ export function createFlitoolsClient(
       const body: Record<string, unknown> = { path, wait: false, language: o.language ?? 'en' };
       if (o.force) body.force = true;
       if (o.forceSave) body.force_save = true;
+      if (o.tier) body.tier = o.tier;
       const { status, json } = await call('POST', '/api/transcribe', body);
       if (json?.ok) return json.value;
       throw new FlitoolsError(`FliTools refused the job (${status}): ${describe(json?.ok === false ? json.error : json)}`, 'refused');
@@ -130,6 +144,9 @@ export async function runFlitoolsJob(
   const pollMs = o.pollMs ?? 2000;
   let view = await client.submit(videoPath, { force: o.force, forceSave: o.forceSave, language: o.language });
   let resubmitted = false;
+  // A reused answer comes back done at once, as the job WITHOUT its result (wait:false answers the
+  // job view): read the job for the result, or a good transcript reads as "did not save" (D08).
+  if (view.status === 'done' && !view.result) view = await client.job(view.id);
 
   while (view.status !== 'done') {
     if (view.status === 'failed') {

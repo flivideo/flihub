@@ -13,7 +13,7 @@ import type {
   SoundHoleCheck,
 } from '../../../shared/types.js';
 import { expandPath, queryString } from '../utils/pathUtils.js';
-import { getProjectPaths } from '../../../shared/paths.js';
+import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { checkTakeAspect, enqueueAspectCheck } from '../utils/aspectCheck.js';
 import { checkTakeSoundHoles, enqueueSoundCheck } from '../utils/soundHoles.js';
@@ -60,6 +60,8 @@ interface RecentRename {
   newPath: string;
   newName: string;
   timestamp: number;
+  /** An existing take renamed in place (not an ingest promote): undo renames it back, transcripts and all. */
+  takeRename?: boolean;
 }
 
 // FR-50: Store recent renames in memory (auto-expires after 10 minutes)
@@ -296,7 +298,25 @@ export function createRoutes(
       const landedAspect = pendingInfo?.aspectCheck;
       const landedSound = pendingInfo?.soundHoles;
 
-      await fs.move(originalPath, newPath);
+      // An existing take renamed in place (the recordings' inline name editor) is a take rename:
+      // transcripts, state and any transcription in flight go with it (2026-10-12, D08 06-1-recap →
+      // 06-1-outro left 06-1-recap.* behind and lost pass 2). A promote from the ingest folder is a move.
+      const isTakeRename =
+        !isBroll && path.resolve(path.dirname(originalPath)) === path.resolve(paths.recordings);
+      if (isTakeRename) {
+        const renamed = await renameRecording(path.basename(originalPath), newFilename, paths, null, []);
+        if (!renamed.success) {
+          res.status(500).json({
+            success: false,
+            oldPath: originalPath,
+            newPath,
+            error: renamed.error || 'Failed to rename recording',
+          } as RenameResponse);
+          return;
+        }
+      } else {
+        await fs.move(originalPath, newPath);
+      }
 
       // Remove from pending files
       pendingFiles.delete(originalPath);
@@ -341,6 +361,7 @@ export function createRoutes(
         newPath,
         newName: newFilename,
         timestamp: Date.now(),
+        ...(isTakeRename ? { takeRename: true } : {}),
       };
       recentRenames.push(renameEntry);
       // Keep only last MAX_RECENT_RENAMES entries
@@ -766,6 +787,28 @@ export function createRoutes(
         res.status(409).json({
           success: false,
           error: 'A file already exists at the original location',
+        });
+        return;
+      }
+
+      // A take renamed in place goes back the same way: transcripts, state and any transcription
+      // in flight follow it (2026-10-12). Nothing is trashed — it is the same take.
+      if (rename.takeRename) {
+        const paths = getProjectPaths(
+          projectDirFromRecordingPath(rename.newPath) ?? expandPath(config.projectDirectory)
+        );
+        const back = await renameRecording(rename.newName, rename.originalName, paths, null, []);
+        if (!back.success) {
+          res.status(500).json({ success: false, error: back.error || 'Failed to undo rename' });
+          return;
+        }
+        recentRenames.splice(renameIndex, 1);
+        console.log(`Undid rename: ${rename.newName} -> ${rename.originalName} (take)`);
+        res.json({
+          success: true,
+          originalPath: rename.originalPath,
+          originalName: rename.originalName,
+          trashedTranscripts: [],
         });
         return;
       }
