@@ -44,4 +44,4 @@ Trash protected the footage, but FliHub gave him no way to get it back.
 - FR-156 (delete moves to `-trash/`), FR-171 (Archive destroys `-trash/`). Restore makes trash's safety usable; FR-171 is the opposite risk.
 - Trash visibility rule (David, 2026-09-23, in `TrashIndicator.tsx`): trash must always be visible and emptiable. This adds: **and recoverable from the app**.
 
-**Spec artifact (2026-10-11):** https://claude.ai/artifact/9KXTro86zAhzes7hs9hkZm, source `/Users/davidcruwys/dev/ad/flivideo/flihub/docs/prd/fr-173-trash-spec.html`. Candidate D08 job 4.
+**Spec artifact (2026-10-11):** https://claude.ai/artifact/9KXTro86zAhzes7hs9hkZm, source `/Users/davidcruwys/dev/ad/flivideo/flihub/docs/prd/fr-173-trash-spec.html`. Candidate D09 job 4.
