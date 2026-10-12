@@ -14,7 +14,7 @@ import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/pa
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { appendTelemetryEntry } from '../utils/telemetry.js';
-import { isTranscriptFresh, readTranscriptHealth } from '../utils/transcriptFiles.js';
+import { isTranscriptFresh, readTranscriptInfo } from '../utils/transcriptFiles.js';
 import {
   createFlitoolsClient,
   FlitoolsError,
@@ -509,15 +509,24 @@ export function createTranscriptionRoutes(
     const status = getStatusForVideo(filename);
     const transcriptPath = getTranscriptPath(filename);
     // B584: FliTools' health verdict lives in the transcript .json, so it survives restarts
-    const health = transcriptPath
-      ? readTranscriptHealth(transcriptPath.replace(/\.txt$/, '.json'))
-      : null;
+    const info = transcriptPath ? readTranscriptInfo(transcriptPath.replace(/\.txt$/, '.json')) : null;
+    const health = info?.health ?? null;
+    // Redo transcript: a high-quality pass is pending while a pass-2 watch for this take was asked
+    // for after the transcript on disk was made (a stale watch is not "pending" once pass 2 lands).
+    const base = getBaseName(filename);
+    const made = info?.createdAt ? Date.parse(info.createdAt) : 0;
+    const pass2Pending =
+      info?.pass !== 2 && pass2Watches.some((w) => getBaseName(w.path) === base && w.since >= made - 60_000);
 
     res.json({
       filename,
       status,
       transcriptPath,
       ...(health ? { health } : {}),
+      ...(info?.pass ? { pass: info.pass } : {}),
+      ...(info?.engine ? { engine: info.engine } : {}),
+      ...(info?.createdAt ? { createdAt: info.createdAt } : {}),
+      ...(pass2Pending ? { pass2Pending: true } : {}),
     });
   });
 

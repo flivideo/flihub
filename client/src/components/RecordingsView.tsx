@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
-import { transcriptBadge } from '../utils/transcriptHealth';
+import { transcriptBadge, transcriptQuality, highQualityLanded } from '../utils/transcriptHealth';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -146,10 +146,38 @@ function TranscriptionBadge({
       return res.json();
     },
     refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      // Only poll when transcription is in progress; stop when complete or absent
-      return (status === 'queued' || status === 'transcribing') ? 10000 : false;
+      const d = query.state.data;
+      // Poll while transcription is in progress, or while a high-quality pass is still on its way
+      return d?.status === 'queued' || d?.status === 'transcribing' || d?.pass2Pending ? 10000 : false;
     },
+  });
+
+  // Redo transcript: say plainly when the high-quality pass has landed
+  const prev = useRef<TranscriptionStatusResponse | undefined>(undefined);
+  useEffect(() => {
+    if (highQualityLanded(prev.current, data)) toast.success(`${filename}: high-quality transcript has landed`);
+    prev.current = data;
+  }, [data, filename]);
+
+  const redoMutation = useMutation({
+    mutationFn: async (videoPath: string) => {
+      const res = await fetch(`${API_URL}/api/transcriptions/queue`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoPath, force: true }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to redo transcript');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.info(`${filename}: redoing transcript — fast pass first, then the high-quality pass (a few minutes)`);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transcriptionStatus(filename) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transcriptions });
+    },
+    onError: (err: Error) => toast.error(err.message),
   });
 
   // Enhancement A: Mutation to manually queue transcription
@@ -199,10 +227,34 @@ function TranscriptionBadge({
       );
     case 'complete': {
       const badge = transcriptBadge(data.health); // B584: suspect shows as a warning
+      const quality = transcriptQuality(data);
       return (
-        <button onClick={() => onViewTranscript(filename)} className={badge.className} title={badge.title}>
-          {badge.label}
-        </button>
+        <span className="inline-flex items-center gap-0.5">
+          <button onClick={() => onViewTranscript(filename)} className={badge.className} title={`${badge.title} · ${quality}`}>
+            {badge.label}
+          </button>
+          {data.pass2Pending ? (
+            <span
+              className="text-xs text-amber-700 px-1 py-0.5 bg-amber-50 rounded font-medium animate-pulse"
+              title="High-quality pass still running (pass 2 on the M2) — this updates when it lands"
+            >
+              HQ…
+            </span>
+          ) : (
+            <button
+              onClick={() => {
+                if (window.confirm(`Redo the transcript for ${filename}?\n\nFliTools transcribes it again (fast pass, then the high-quality pass). The current transcript is kept in engines/ and -trash.`))
+                  redoMutation.mutate(filePath);
+              }}
+              disabled={redoMutation.isPending}
+              className="text-xs text-warm-muted hover:text-warm-secondary px-1 py-0.5 hover:bg-surface-hover rounded transition-colors cursor-pointer disabled:opacity-50"
+              title={`Redo transcript (now: ${quality})`}
+              aria-label={`Redo transcript for ${filename}`}
+            >
+              ↻
+            </button>
+          )}
+        </span>
       );
     }
     case 'error':

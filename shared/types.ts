@@ -615,6 +615,11 @@ export interface TranscriptHealth {
   suspect: boolean;
   reasons: string[];
   retried?: boolean;
+  // FliTools 86ba84b: words that go back in time (the same audio carries two sets of words).
+  // Also a "text repeated: transcriber duplicated 40–50s …" reason, so suspect is already true.
+  wordsBackInTime?: Array<{ start: number; end: number; words: number }>;
+  // FliTools 86ba84b: a chunk-overlap duplicate FliTools already dropped. Not a fault; shown so it stays visible.
+  overlapRepaired?: Array<{ start: number; end: number; words: number; text: string }>;
 }
 
 // FR-30: API response for transcription status
@@ -630,6 +635,12 @@ export interface TranscriptionStatusResponse {
   status: TranscriptionStatus;
   transcriptPath?: string; // Path to .txt file if complete
   health?: TranscriptHealth; // B584: from the FliTools .json; absent for old whisper output
+  // Redo transcript: which pass is on disk (1 = fast Whisper, 2 = high-quality verbatim) and whether
+  // a high-quality pass is still on its way (asked for after the transcript on disk was made).
+  pass?: 1 | 2;
+  engine?: string;
+  createdAt?: string;
+  pass2Pending?: boolean;
 }
 
 // FR-30: Transcript content response

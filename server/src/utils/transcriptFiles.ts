@@ -13,6 +13,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/paths.js';
+import type { TranscriptHealth } from '../../../shared/types.js';
 
 /** True when `transcriptPath` exists and is not older than `videoPath`. Missing video → existence only. */
 export function isTranscriptFresh(transcriptPath: string, videoPath: string): boolean {
@@ -93,12 +94,37 @@ export async function trashTranscriptsFor(recordingPath: string): Promise<string
 /**
  * FliTools' health verdict for a transcript (B584): the .json is any flitools.transcript/<n>
  * version with a `health` block. null for FliHub's old whisper output or an unreadable file.
+ * Carries the time-order check (wordsBackInTime) and the chunk-overlap repair (overlapRepaired) when present.
  */
-export function readTranscriptHealth(jsonPath: string): { suspect: boolean; reasons: string[] } | null {
+export function readTranscriptHealth(jsonPath: string): TranscriptHealth | null {
+  return readTranscriptInfo(jsonPath)?.health ?? null;
+}
+
+/** The health verdict plus which pass is on disk (1 = fast Whisper, 2 = high-quality verbatim), for the redo control. */
+export function readTranscriptInfo(
+  jsonPath: string
+): { health: TranscriptHealth | null; pass?: 1 | 2; engine?: string; createdAt?: string } | null {
   try {
-    const doc = fs.readJsonSync(jsonPath) as { schema?: string; health?: { suspect?: boolean; reasons?: string[] } };
-    if (typeof doc?.schema !== 'string' || !doc.schema.startsWith('flitools.transcript/') || !doc.health) return null;
-    return { suspect: doc.health.suspect === true, reasons: doc.health.reasons ?? [] };
+    const doc = fs.readJsonSync(jsonPath) as {
+      schema?: string;
+      pass?: number;
+      verbatim?: boolean;
+      createdAt?: string;
+      engine?: { name?: string };
+      health?: TranscriptHealth;
+    };
+    if (typeof doc?.schema !== 'string' || !doc.schema.startsWith('flitools.transcript/')) return null;
+    const h = doc.health;
+    const health: TranscriptHealth | null = h
+      ? {
+          suspect: h.suspect === true,
+          reasons: h.reasons ?? [],
+          ...(h.wordsBackInTime?.length ? { wordsBackInTime: h.wordsBackInTime } : {}),
+          ...(h.overlapRepaired?.length ? { overlapRepaired: h.overlapRepaired } : {}),
+        }
+      : null;
+    const pass = doc.pass === 2 || doc.verbatim === true ? 2 : 1;
+    return { health, pass, ...(doc.engine?.name ? { engine: doc.engine.name } : {}), ...(doc.createdAt ? { createdAt: doc.createdAt } : {}) };
   } catch {
     return null;
   }
