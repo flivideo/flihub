@@ -80,3 +80,18 @@ export function useBatchUndoRename() {
     },
   });
 }
+
+// Close the gaps in one chapter's sequence numbers (03-2, 03-3 → 03-1, 03-2). Undo: useBatchUndoRename.
+export function useRenumberChapter() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { chapter: string }) =>
+      fetchApi<{ success: boolean; renamedCount: number; error?: string }>('/api/manage/renumber-chapter', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });
+    },
+  });
+}

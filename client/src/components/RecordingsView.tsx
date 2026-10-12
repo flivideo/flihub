@@ -29,7 +29,7 @@ import { PreviewPanel } from './shared/PreviewPanel';
 import type { PreviewChange } from './shared/PreviewPanel';
 import { SplitMarker } from './shared/SplitMarker';
 import { UndoToast } from './shared/UndoToast';
-import { useBulkRename, useSplitChapter, useBatchUndoRename } from '../hooks/useEditingApi';
+import { useBulkRename, useSplitChapter, useBatchUndoRename, useRenumberChapter } from '../hooks/useEditingApi';
 import type { RecordingFile, TranscriptionStatusResponse } from '../../../shared/types';
 import { extractTagsFromName, buildRecordingFilename, formatChapter, parseRecordingFilename } from '../../../shared/naming';
 import {
@@ -327,6 +327,7 @@ function ChapterHeader({
   onParkAll,
   onUnparkAll,
   onTranscribeAll,
+  onRenumber,
   moveToSafePending,
   restorePending,
   parkPending,
@@ -354,6 +355,7 @@ function ChapterHeader({
   onParkAll: () => void;
   onUnparkAll: () => void;
   onTranscribeAll: () => void;
+  onRenumber?: () => void; // shown only when the chapter's numbers are not already 1..N
   moveToSafePending: boolean;
   restorePending: boolean;
   parkPending: boolean;
@@ -483,6 +485,15 @@ function ChapterHeader({
               <span className="w-4 text-center text-xs">🎙</span>
               Transcribe all
             </button>
+            {onRenumber && (
+              <button
+                onClick={() => { onRenumber(); setMenuOpen(false); }}
+                className="w-full text-left px-4 py-2 text-sm text-warm-secondary hover:bg-surface-hover flex items-center gap-2"
+              >
+                <span className="w-4 text-center text-xs">#</span>
+                Renumber 1…N
+              </button>
+            )}
               <div className="border-t border-warm my-1" />
                 <button
                   onClick={async () => {
@@ -590,6 +601,7 @@ export function RecordingsView() {
 
   // B047: Mutations for batch operations
   const bulkRenameMutation = useBulkRename();
+  const renumberChapter = useRenumberChapter();
   const splitChapterMutation = useSplitChapter();
   const undoMutation = useBatchUndoRename();
 
@@ -1451,6 +1463,24 @@ export function RecordingsView() {
                 onParkAll={() => handleParkChapter(chapter)}
                 onUnparkAll={() => handleUnparkChapter(parkedFilesInChapter.map((f) => f.filename))}
                 onTranscribeAll={() => handleTranscribeChapter(chapter)}
+                onRenumber={
+                  group.files
+                    .map((f) => parseInt(f.sequence, 10))
+                    .sort((a, b) => a - b)
+                    .some((n, i) => n !== i + 1)
+                    ? () =>
+                        renumberChapter.mutate(
+                          { chapter },
+                          {
+                            onSuccess: (r) =>
+                              r.success
+                                ? toast.success(`Renumbered ${r.renamedCount} file${r.renamedCount === 1 ? '' : 's'}`)
+                                : toast.error(r.error || 'Renumber failed'),
+                            onError: (err) => toast.error(err.message),
+                          }
+                        )
+                    : undefined
+                }
                 moveToSafePending={moveToSafe.isPending}
                 restorePending={restoreFromSafe.isPending}
                 parkPending={parkRecording.isPending}

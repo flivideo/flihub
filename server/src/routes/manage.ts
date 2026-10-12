@@ -738,6 +738,67 @@ export function createManageRoutes(
   });
 
   /**
+   * POST /api/manage/renumber-chapter
+   * Close the gaps in one chapter's sequence numbers: 03-2, 03-3 → 03-1, 03-2. Names and tags are
+   * kept; order is the current sequence order. Undoable with /undo-rename. (David, D08, 2026-10-12:
+   * "I was hoping there would be a screen control to resort or reorder".)
+   *
+   * Body: { chapter: string }
+   */
+  router.post('/renumber-chapter', async (req, res) => {
+    try {
+      const { chapter } = req.body;
+      if (typeof chapter !== 'string' || !/^\d{1,2}$/.test(chapter)) {
+        return res.status(400).json({ success: false, error: 'chapter must be 1-2 digits' });
+      }
+      const config = getConfig();
+      const paths = getProjectPaths(expandPath(config.projectDirectory));
+      const activeJob = getActiveJob ? getActiveJob() : null;
+      const queue = getQueue ? getQueue() : [];
+      const chNum = parseInt(chapter, 10);
+
+      const all = (await fs.readdir(paths.recordings)).filter((f) => /\.(mov|mp4)$/i.test(f));
+      const files = all
+        .map((filename) => ({ filename, parsed: parseRecordingFilename(filename) }))
+        .filter(({ parsed }) => parsed && parsed.sequence !== null && parseInt(parsed.chapter, 10) === chNum)
+        .map(({ filename, parsed }) => {
+          const base = filename.replace(/\.(mov|mp4)$/i, '');
+          const { tags } = extractTagsFromName(base.split('-').slice(2).join('-'));
+          return { filename, chapter: parsed!.chapter, sequence: parseInt(parsed!.sequence as string, 10), name: parsed!.name, tags };
+        })
+        .sort((a, b) => a.sequence - b.sequence || a.filename.localeCompare(b.filename));
+
+      const plan = files
+        .map((f, i) => ({ f, newFilename: buildRecordingFilename(f.chapter, String(i + 1), f.name, f.tags) }))
+        .filter(({ f, newFilename }) => newFilename !== f.filename);
+      if (plan.length === 0) {
+        return res.json({ success: true, renamedCount: 0, files: [] });
+      }
+      const leaving = new Set(plan.map(({ f }) => f.filename));
+      const clash = plan.find(({ newFilename }) => all.includes(newFilename) && !leaving.has(newFilename));
+      if (clash) {
+        return res.json({ success: false, error: `${clash.newFilename} already exists` });
+      }
+
+      // Ascending order: each target number is at or below its source, so a file is never renamed
+      // onto one that has not moved yet.
+      const renamed: Array<{ old: string; new: string }> = [];
+      const errors: Array<{ file: string; error: string }> = [];
+      for (const { f, newFilename } of plan) {
+        const result = await renameRecording(f.filename, newFilename, paths, activeJob, queue);
+        if (result.success) renamed.push({ old: f.filename, new: newFilename });
+        else errors.push({ file: f.filename, error: result.error || 'Rename failed' });
+      }
+      lastBatchMapping = renamed.map((r) => ({ oldFilename: r.old, newFilename: r.new }));
+      io.emit('recordings:changed');
+      return res.json({ success: errors.length === 0, renamedCount: renamed.length, files: renamed, errors });
+    } catch (err) {
+      console.error('[renumber-chapter] failed:', err);
+      return res.status(500).json({ success: false, error: err instanceof Error ? err.message : 'Renumber failed' });
+    }
+  });
+
+  /**
    * POST /api/manage/undo-rename
    * B047: Undo the last bulk rename operation
    *
