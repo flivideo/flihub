@@ -29,6 +29,7 @@ import { PreviewPanel } from './shared/PreviewPanel';
 import type { PreviewChange } from './shared/PreviewPanel';
 import { SplitMarker } from './shared/SplitMarker';
 import { UndoToast } from './shared/UndoToast';
+import { useConfig } from '../hooks/useConfigApi';
 import { useBulkRename, useSplitChapter, useBatchUndoRename, useRenumberChapter } from '../hooks/useEditingApi';
 import type { RecordingFile, TranscriptionStatusResponse } from '../../../shared/types';
 import { extractTagsFromName, buildRecordingFilename, formatChapter, parseRecordingFilename } from '../../../shared/naming';
@@ -602,6 +603,7 @@ export function RecordingsView() {
   // B047: Mutations for batch operations
   const bulkRenameMutation = useBulkRename();
   const renumberChapter = useRenumberChapter();
+  const { data: flihubConfig } = useConfig();
   const splitChapterMutation = useSplitChapter();
   const undoMutation = useBatchUndoRename();
 
@@ -916,6 +918,39 @@ export function RecordingsView() {
         },
         {
           onSuccess: () => toast.success(`Removed tag ${tag}`),
+          onError: (err) => toast.error(err.message),
+        }
+      );
+    },
+    [data?.recordings, renameMutation]
+  );
+
+  // + tag on a recorded take (2026-10-12): the take's own suggested tags first (outro → RECAP,
+  // ENDCARD), then the configured tags, then any tag already used in this project.
+  const tagOptionsFor = useCallback(
+    (rec: { name: string }) => {
+      const suggested = flihubConfig?.commonNames?.find((cn) => cn.name === rec.name)?.suggestTags ?? [];
+      const used = (data?.recordings ?? []).flatMap((r) => r.tags);
+      return [...new Set([...suggested, ...(flihubConfig?.availableTags ?? []), 'HOOK', ...used].map((t) => t.toUpperCase()))];
+    },
+    [flihubConfig, data?.recordings]
+  );
+
+  const handleTagAdd = useCallback(
+    (filename: string, tag: string) => {
+      const recording = data?.recordings.find((r) => r.filename === filename);
+      if (!recording || recording.tags.includes(tag)) return;
+      const newTags = [...recording.tags, tag];
+      renameMutation.mutate(
+        {
+          originalPath: recording.path,
+          chapter: recording.chapter,
+          sequence: recording.sequence,
+          name: recording.name,
+          tags: newTags,
+        },
+        {
+          onSuccess: () => toast.success(`Added tag ${tag}`),
           onError: (err) => toast.error(err.message),
         }
       );
@@ -1518,6 +1553,8 @@ export function RecordingsView() {
                     onToggleSelect={toggleSelect}
                     onInlineRename={handleInlineRename}
                     onTagRemove={handleTagRemove}
+                    onTagAdd={handleTagAdd}
+                    tagOptions={tagOptionsFor(file)}
                     onPlay={(rec) => {
                       // B069: Track index for prev/next navigation
                       const idx = filteredRecordings.findIndex((r) => r.filename === rec.filename);

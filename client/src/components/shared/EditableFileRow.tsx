@@ -22,6 +22,9 @@ export interface EditableFileRowProps {
   onToggleSelect: (filename: string) => void;
   onInlineRename: (filename: string, field: 'chapter' | 'name', newValue: string) => void;
   onTagRemove: (filename: string, tag: string) => void;
+  /** Add a tag after recording (2026-10-12, David: "visually edit tags"). Options: suggested first. */
+  onTagAdd?: (filename: string, tag: string) => void;
+  tagOptions?: string[];
   onPlay: (recording: RecordingFile) => void;
   onSplitHere: (filename: string) => void;
   onPark: (filename: string) => void;
@@ -45,6 +48,8 @@ export function EditableFileRow({
   onToggleSelect,
   onInlineRename,
   onTagRemove,
+  onTagAdd,
+  tagOptions = [],
   onPlay,
   onSplitHere,
   onPark,
@@ -62,6 +67,8 @@ export function EditableFileRow({
   const [editingField, setEditingField] = useState<'chapter' | 'name' | null>(null);
   const [editValue, setEditValue] = useState('');
   const [editError, setEditError] = useState<string | null>(null);
+  const [tagMenuOpen, setTagMenuOpen] = useState(false);
+  const [customTag, setCustomTag] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isDisabled = !!disabled;
@@ -282,6 +289,58 @@ export function EditableFileRow({
                   )}
                 </span>
               ))}
+            </span>
+          )}
+
+          {/* + tag: pick a suggested tag or type one (2026-10-12) */}
+          {onTagAdd && !isDisabled && (
+            <span className="relative ml-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTagMenuOpen((o) => !o);
+                }}
+                className="text-xs px-1.5 rounded-full border border-dashed border-warm text-warm-muted hover:text-warm-secondary hover:border-warm-secondary"
+                title="Add a tag"
+              >
+                + tag
+              </button>
+              {tagMenuOpen && (
+                <span
+                  className="absolute left-0 top-full mt-1 z-20 flex flex-wrap items-center gap-1 p-2 w-64 bg-surface border border-warm rounded shadow-lg"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {tagOptions
+                    .filter((t) => !recording.tags.includes(t))
+                    .map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => {
+                          onTagAdd(recording.filename, t);
+                          setTagMenuOpen(false);
+                        }}
+                        className={`${tagPillClass(t)} hover:opacity-80`}
+                      >
+                        + {t}
+                      </button>
+                    ))}
+                  <input
+                    value={customTag}
+                    onChange={(e) => setCustomTag(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && /[A-Z]/.test(customTag)) {
+                        onTagAdd(recording.filename, customTag);
+                        setCustomTag('');
+                        setTagMenuOpen(false);
+                      } else if (e.key === 'Escape') {
+                        setTagMenuOpen(false);
+                      }
+                    }}
+                    placeholder="NEW TAG ↵"
+                    className="text-xs w-24 px-1 py-0.5 border border-warm rounded bg-surface font-mono"
+                  />
+                </span>
+              )}
             </span>
           )}
 
