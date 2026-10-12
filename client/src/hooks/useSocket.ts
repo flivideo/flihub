@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { QUERY_KEYS } from '../constants/queryKeys';
 import { API_URL } from '../config';
+import { insertIncoming } from '../utils/incomingOrder';
 import type { FileInfo, ServerToClientEvents, ClientToServerEvents } from '../../../shared/types';
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
@@ -52,7 +53,7 @@ export function useSocket() {
           return prev;
         }
         toast.info(`New file: ${file.filename}`);
-        return [...prev, file];
+        return insertIncoming(prev, file);
       });
     });
 
