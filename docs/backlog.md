@@ -26,6 +26,7 @@ folders) still awaits David's word.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-174 | [Accept a Take from the Player (Keep / Discard the Rest)](prd/fr-174-accept-from-the-player.md) | 2026-10-25 | Captured — banked, not dispatched (autoplay-on-Incoming question open) |
 | FR-173 | [Trash You Can See Into and Restore From](prd/fr-173-trash-browse-and-restore.md)     | 2026-10-11 | Pending — write-up only (observed live in D07: no open-folder, no trash view, no restore to Incoming) |
 | FR-172 | [Read the Suite Word Store for the Whisper Prompt](prd/fr-172-suite-word-store.md)     | 2026-09-24 | Superseded by B584 (2026-09-27): FliTools transcribes and reads the word store itself |
 | FR-171 | [Archive Destroys -trash (data-safety)](prd/fr-171-archive-preserves-trash.md)         | 2026-09-06 | Pending (from D02 freeze investigation; needs David's pick of fix) |
