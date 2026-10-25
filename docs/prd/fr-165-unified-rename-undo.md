@@ -29,3 +29,20 @@ make the UI say WHICH renames are still undoable. The current state silently mix
 
 - Rename verb table: flivideo plugin skill `skills/flihub/SKILL.md` (corrected 2026-09-03).
 - Related honesty defect: FR-166 (bulk-rename response lies about transcription).
+
+## Recurrence — 2026-10-25 (D12): Undo doesn't bring back what the rename discarded
+
+David renamed a take to `04-7-ai-slop-team.mov` and answered **"Yes, discard"** to "Discard remaining files?". Two
+other takes (`10.54.15`, `10.54.30`), which he meant to keep, went to `-trash/` in that same action. He then pressed
+**Undo** on the 04-7 card: the rename was reversed and the take went back to Incoming, **but the two discarded takes
+stayed in trash.** An agent had to move them back by hand. This was the second hand-rescue on D12 that morning.
+
+**What's wanted:**
+1. **Rename + discard is one action, so Undo reverses all of it**: un-rename the kept take *and* return the files that
+   discard sent to trash, back to Incoming under their original names.
+2. **Restore is scoped to that ingestion, not the whole video.** D12's `-trash/` held 30+ takes from the morning, and
+   only the 2–3 from the last ingestion should come back. So the discard has to record *which files it trashed*
+   (a batch id or list) at the moment it happens, because trash alone can't tell batches apart.
+
+Ties to FR-173 (trash restore, including the "return recent discards" idea) and FR-174 (Rename Keep / Rename Discard):
+offering **Rename Keep** would have avoided this case entirely. Status: **banked, not authorised to build.**

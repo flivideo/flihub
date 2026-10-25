@@ -36,7 +36,7 @@ folders) still awaits David's word.
 | FR-168 | [`ships` Field: per-project / per-chapter](prd/fr-168-ships-field.md)                   | 2026-09-04 | Pending — design RULED by David 2026-09-04                      |
 | FR-167 | [Chapter Extraction Anchors Wrong Take](prd/fr-167-chapter-extraction-last-take.md)     | 2026-09-04 | Pending (FR-34 fragility; needs David's read on options)        |
 | FR-166 | [Bulk-Rename Honest Response](prd/fr-166-bulk-rename-honest-response.md)                | 2026-09-04 | Pending (defect, observed live)                                 |
-| FR-165 | [One Undo Story for Renames](prd/fr-165-unified-rename-undo.md)                         | 2026-09-04 | Pending (design gap, observed live)                             |
+| FR-165 | [One Undo Story for Renames](prd/fr-165-unified-rename-undo.md)                         | 2026-09-04 | Pending (design gap, observed live; recurred D12 2026-10-25: Undo leaves the discarded takes in trash) |
 | FR-164 | [Swap-Chapters Strands FR-157 Titles](prd/fr-164-swap-chapters-title-remap.md)          | 2026-09-04 | Pending (latent defect)                                         |
 | FR-163 | [Auto-filled Project Codes on New Project](prd/fr-163-auto-filled-project-codes.md) | 2026-09-03 | ✓ Implemented (a01 + 50-char threshold ruled 2026-09-04)            |
 | FR-161 | [B-roll Lane](prd/fr-161-b-roll-lane.md)                                                | 2026-09-03 | ✓ Implemented                                                   |
