@@ -36,3 +36,27 @@ export async function discardFiles(
 
   return { successCount, failedCount };
 }
+
+/**
+ * FR-174: Rename · Discard — trash every OTHER incoming file, never the one just renamed.
+ */
+export function discardOtherIncoming(
+  incomingPaths: string[],
+  renamedPath: string,
+  trashMutation: UseMutationResult<TrashResult, Error, string>,
+  onFileRemoved: (path: string) => void
+): Promise<DiscardResult> {
+  return discardFiles(
+    incomingPaths.filter((p) => p !== renamedPath),
+    trashMutation,
+    onFileRemoved
+  );
+}
+
+/** FR-174: "Renamed to: 05-6-x.mov; moved 2 other files to trash" — the toast names the trash count. */
+export function describeRenameDiscard(summary: string, result: DiscardResult): string {
+  const { successCount, failedCount } = result;
+  const moved = `moved ${successCount} other file${successCount === 1 ? '' : 's'} to trash`;
+  const failed = failedCount > 0 ? ` (${failedCount} could not be trashed)` : '';
+  return `${summary}; ${moved}${failed}`;
+}

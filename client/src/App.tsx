@@ -16,7 +16,7 @@ import {
 } from './hooks/useApi';
 import { useBestTake } from './hooks/useBestTake';
 import { nextSequenceOnDisk } from '../../shared/naming';
-import { discardFiles } from './utils/fileActions';
+import { describeRenameDiscard, discardFiles, discardOtherIncoming } from './utils/fileActions';
 import { collapsePath } from './utils/formatting';
 import { FileCard } from './components/FileCard';
 import { SendSeveralBar } from './components/SendSeveralBar';
@@ -128,8 +128,8 @@ function App() {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+  // CT-0107 R6 only: after "send several", confirm before discarding the rest (FR-174: single renames never ask)
   const [showDiscardModal, setShowDiscardModal] = useState(false);
-  const [renamedFilePath, setRenamedFilePath] = useState<string | null>(null);
   // CT-0107 R6: inbox takes picked to send in as consecutive segments, in pick order
   const [picked, setPicked] = useState<string[]>([]);
   // FR-43: Project switcher dropdown state
@@ -279,33 +279,36 @@ function App() {
   ]);
 
   // FR-2: Increment sequence after successful rename
-  // FR-16: Show discard modal if other files remain
+  // FR-174: the card's button already chose keep or discard — no modal after a single rename.
+  //   Rename · Keep → the other incoming files stay. Rename · Discard → the others go to trash.
   // FR-54: Custom tag now persists after rename (user must clear manually)
   const handleRenamed = useCallback(
-    (filePath: string) => {
+    async (filePath: string, result?: { discardOthers: boolean; summary: string }) => {
       removeFile(filePath);
       void syncSequenceFromDisk(); // the renamed take is on disk now → highest + 1
 
-      // FR-16: Check if other files remain (files state hasn't updated yet, so subtract 1)
-      const remainingCount = files.length - 1;
-      if (remainingCount > 0) {
-        setRenamedFilePath(filePath);
-        setShowDiscardModal(true);
-      }
+      if (!result?.discardOthers) return;
+      const discarded = await discardOtherIncoming(
+        files.map((f) => f.path),
+        filePath,
+        trashMutation,
+        removeFile
+      );
+      const message = describeRenameDiscard(result.summary, discarded);
+      if (discarded.failedCount > 0) toast.warning(message);
+      else toast.success(message);
     },
-    [removeFile, files.length, syncSequenceFromDisk]
+    [removeFile, files, syncSequenceFromDisk, trashMutation]
   );
 
-  // FR-16: Discard remaining files after rename (excludes just-renamed file)
+  // CT-0107 R6: "Discard the rest" after send-several (the sent takes are already off the list)
   const handleDiscardRemaining = useCallback(async () => {
     setShowDiscardModal(false);
-    const remainingFiles = files.filter((f) => f.path !== renamedFilePath);
-    const filePaths = remainingFiles.map((f) => f.path);
+    const filePaths = files.map((f) => f.path);
 
     const result = await discardFiles(filePaths, trashMutation, removeFile);
     toast.info(`Moved ${result.successCount} file(s) to trash`);
-    setRenamedFilePath(null);
-  }, [files, renamedFilePath, trashMutation, removeFile]);
+  }, [files, trashMutation, removeFile]);
 
   // CT-0107 R6: picked takes landed as segments → off the list; then offer to discard the rest (confirm first)
   const handleSentSeveral = useCallback(
@@ -314,7 +317,6 @@ function App() {
       setPicked([]);
       void syncSequenceFromDisk();
       if (files.length - paths.length > 0) {
-        setRenamedFilePath(null);
         setShowDiscardModal(true);
       }
     },
@@ -331,7 +333,6 @@ function App() {
 
   const handleCancelDiscard = useCallback(() => {
     setShowDiscardModal(false);
-    setRenamedFilePath(null);
   }, []);
 
   // FR-43: Close dropdown when clicking outside
@@ -460,16 +461,13 @@ function App() {
   // FR-8: Best take detection (extracted to hook)
   const { bestTakePath, goodTakePath } = useBestTake(files);
 
-  // FR-16: Calculate remaining files for modal (exclude the one just renamed)
-  const remainingFilesCount = renamedFilePath
-    ? files.filter((f) => f.path !== renamedFilePath).length
-    : files.length;
+  const remainingFilesCount = files.length;
 
   return (
     <div className="min-h-screen bg-page flex flex-col">
       <Toaster position="top-right" richColors />
 
-      {/* FR-16: Discard remaining files modal */}
+      {/* CT-0107 R6 / FR-174: after send-several — keep or discard the rest */}
       {showDiscardModal && (
         <DiscardModal
           remainingCount={remainingFilesCount}
@@ -836,7 +834,8 @@ function App() {
                       key={file.path}
                       file={file}
                       namingState={namingState}
-                      onRenamed={() => handleRenamed(file.path)}
+                      onRenamed={(result) => void handleRenamed(file.path, result)}
+                      otherIncomingCount={files.length - 1}
                       onDiscarded={() => removeFile(file.path)}
                       pickOrder={pickedLive.includes(file.path) ? pickedLive.indexOf(file.path) + 1 : null}
                       onTogglePick={() =>

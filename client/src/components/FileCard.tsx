@@ -13,7 +13,14 @@ import { describeSoundHoles } from './shared/SoundHoles';
 interface FileCardProps {
   file: FileInfo;
   namingState: NamingState;
-  onRenamed: () => void;
+  /**
+   * FR-174: called after the take landed. `discardOthers` says which button was pressed —
+   * Rename · Keep (false) or Rename · Discard (true); `summary` is the success line
+   * ("Renamed to: …") — on Discard the parent shows it with the trash count, so the card stays quiet.
+   */
+  onRenamed: (result?: { discardOthers: boolean; summary: string }) => void;
+  /** FR-174: how many OTHER incoming files there are. 0 → one plain Rename button (nothing to discard). */
+  otherIncomingCount?: number;
   onDiscarded: () => void;
   takeRank?: 'best' | 'good' | null; // FR-8: Best take (green), good take (yellow), or neither
   /** CT-0107 R6: this take's place in the "send several" pick order (1-based), or null when not picked. */
@@ -25,6 +32,7 @@ export function FileCard({
   file,
   namingState,
   onRenamed,
+  otherIncomingCount = 0,
   onDiscarded,
   takeRank,
   pickOrder = null,
@@ -58,7 +66,13 @@ export function FileCard({
     return () => clearInterval(interval);
   }, []);
 
-  const handleRename = async () => {
+  // FR-174: the keep/discard choice is made on the button, never in a follow-up modal.
+  const handleRename = async (discardOthers: boolean) => {
+    const landed = (summary: string) => {
+      if (!discardOthers) toast.success(summary);
+      onRenamed({ discardOthers, summary });
+    };
+
     if (!chapter || !name) {
       toast.error('Chapter and name are required');
       return;
@@ -100,9 +114,8 @@ export function FileCard({
             }
       );
       if (result.success) {
-        toast.success(`Done: ${result.op?.summary ?? 'segment change landed'}`);
         setLanding('next');
-        onRenamed();
+        landed(`Done: ${result.op?.summary ?? 'segment change landed'}`);
       } else {
         // A refusal changes nothing; say which and why (FliHub: a refusal never looks like success).
         toast.error(
@@ -123,8 +136,7 @@ export function FileCard({
     try {
       const result = await renameMutation.mutateAsync(request);
       if (result.success) {
-        toast.success(`Renamed to: ${result.newPath.split('/').pop()}`);
-        onRenamed();
+        landed(`Renamed to: ${result.newPath.split('/').pop()}`);
       } else {
         toast.error(result.error || 'Rename failed');
       }
@@ -176,6 +188,10 @@ export function FileCard({
   };
 
   const isLoading = renameMutation.isPending || trashMutation.isPending || segmentOp.isPending;
+  const renameVerb =
+    landsAs.mode === 'replace' ? 'Replace' : landsAs.mode === 'insert' ? 'Insert' : 'Rename';
+  const renaming = renameMutation.isPending || segmentOp.isPending;
+  const canDiscardOthers = otherIncomingCount > 0;
 
   // FR-8: Dynamic styling based on take rank (best = green, good = yellow)
   const cardClasses =
@@ -313,18 +329,26 @@ export function FileCard({
           >
             B-roll
           </button>
+          {/* FR-174: Discard is secondary (red text, no fill) so habit lands on Keep */}
+          {canDiscardOthers && (
+            <button
+              type="button"
+              onClick={() => void handleRename(true)}
+              disabled={isLoading || !chapter || !name}
+              title={`${renameVerb} this take, then move the other ${otherIncomingCount} incoming file${otherIncomingCount === 1 ? '' : 's'} to trash`}
+              className="px-3 py-1.5 text-sm text-red-600 border border-red-200 rounded hover:text-red-800 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {renaming ? 'Renaming...' : `${renameVerb} · Discard`}
+            </button>
+          )}
           <button
-            onClick={handleRename}
+            type="button"
+            onClick={() => void handleRename(false)}
             disabled={isLoading || !chapter || !name}
+            title={canDiscardOthers ? `${renameVerb} this take; the other incoming files stay` : undefined}
             className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {renameMutation.isPending || segmentOp.isPending
-              ? 'Renaming...'
-              : landsAs.mode === 'replace'
-                ? 'Replace'
-                : landsAs.mode === 'insert'
-                  ? 'Insert'
-                  : 'Rename'}
+            {renaming ? 'Renaming...' : canDiscardOthers ? `${renameVerb} · Keep` : renameVerb}
           </button>
         </div>
       </div>
