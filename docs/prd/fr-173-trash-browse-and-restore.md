@@ -61,3 +61,10 @@ not a hunt through 27 files. Same rules as single restore: original Ecamm names,
 overwrite a same-name file.
 
 Status unchanged: **banked, not authorised to build.**
+
+**Ordering requirement (David, 2026-10-25):** restored takes must come back **in the order they were recorded**, not
+the order they were trashed or restored. Today Incoming already sorts by file name, i.e. the Ecamm recording time
+(`client/src/utils/incomingOrder.ts`, fixed 2026-10-12), and a plain `mv` keeps the file's modified time. Any restore
+feature must keep both: the original Ecamm name and the original modified time (no copy that resets it). The trash
+view itself should also list takes by recording time, with trashed-at shown as secondary info. Today an agent reading
+`-trash/` by move time reported the takes in batch order, which didn't match what David remembered seeing.
