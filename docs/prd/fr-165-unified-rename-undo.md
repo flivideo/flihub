@@ -46,3 +46,7 @@ stayed in trash.** An agent had to move them back by hand. This was the second h
 
 Ties to FR-173 (trash restore, including the "return recent discards" idea) and FR-174 (Rename Keep / Rename Discard):
 offering **Rename Keep** would have avoided this case entirely. Status: **banked, not authorised to build.**
+
+**And again, 11:23 the same morning.** After renaming `05-5-ai-slop-rig-design`, "Yes, discard" sent `11.22.12` and
+`11.22.30` to trash, and one of them was wanted. That's the **third agent hand-rescue on D12 in two hours.** The
+discard-after-rename dialog is a trap during fast recording.
