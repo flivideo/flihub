@@ -45,3 +45,19 @@ Trash protected the footage, but FliHub gave him no way to get it back.
 - Trash visibility rule (David, 2026-09-23, in `TrashIndicator.tsx`): trash must always be visible and emptiable. This adds: **and recoverable from the app**.
 
 **Spec artifact (2026-10-11):** https://claude.ai/artifact/9KXTro86zAhzes7hs9hkZm, source `/Users/davidcruwys/dev/ad/flivideo/flihub/docs/prd/fr-173-trash-spec.html`. Candidate D09 job 4.
+
+## Recurrence — 2026-10-25 (D12, Incoming)
+
+**Second time, same gap.** Recording D12 (`v-appydave/d12-openrig-agent-teams`), David discarded several takes by
+accident; one of them he wanted. Header showed `Trash 27 · 148 MB`; Incoming was empty. He couldn't see what was in
+trash or bring the one back. Screenshot: `docs/prd/assets/fr-173/incoming-trash-27.png`.
+
+He remembered a trash view existing and found it was on the **FliStudio** side (its trash Review), not in FliHub. That
+helps him look but still doesn't put a take back into FliHub's Incoming.
+
+**New idea, added by David:** **bring back what was just trashed.** A one-click "return the recent discards to
+Incoming", for the case where a burst of takes went to trash by mistake. It undoes the last discard batch, so it's
+not a hunt through 27 files. Same rules as single restore: original Ecamm names, back to the watch folder, never
+overwrite a same-name file.
+
+Status unchanged: **banked, not authorised to build.**
