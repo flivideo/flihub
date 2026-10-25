@@ -26,6 +26,7 @@ folders) still awaits David's word.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-176 | [Recordings Collapses Older Chapters, So the Working Chapter Is in View](prd/fr-176-recordings-collapse-old-chapters.md) | 2026-10-25 | IDEA, banked (seen on D12: chapter 05 below the fold) |
 | FR-175 | [“Bad from here” Marks: Telling FliCut What Was Decided at Review](prd/fr-175-bad-from-here-marks.md) | 2026-10-25 | IDEA, banked; cross-app with FliCut FC-48 (where the mark lives is undecided) |
 | FR-174 | [Accept a Take from the Player (Keep / Discard the Rest)](prd/fr-174-accept-from-the-player.md) | 2026-10-25 | Captured — banked, not dispatched (autoplay-on-Incoming question open) |
 | FR-173 | [Trash You Can See Into and Restore From](prd/fr-173-trash-browse-and-restore.md)     | 2026-10-11 | Pending — write-up only (observed live in D07; recurred D12 2026-10-25; + "return recent discards to Incoming" idea) |
