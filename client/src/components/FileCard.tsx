@@ -329,14 +329,14 @@ export function FileCard({
           >
             B-roll
           </button>
-          {/* FR-174: Discard is secondary (red text, no fill) so habit lands on Keep */}
+          {/* FR-174: Rename · Discard is amber, not red: it is an accept, unlike plain Discard */}
           {canDiscardOthers && (
             <button
               type="button"
               onClick={() => void handleRename(true)}
               disabled={isLoading || !chapter || !name}
               title={`${renameVerb} this take, then move the other ${otherIncomingCount} incoming file${otherIncomingCount === 1 ? '' : 's'} to trash`}
-              className="px-3 py-1.5 text-sm text-red-600 border border-red-200 rounded hover:text-red-800 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 text-sm text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {renaming ? 'Renaming...' : `${renameVerb} · Discard`}
             </button>
