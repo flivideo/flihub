@@ -329,26 +329,30 @@ export function FileCard({
           >
             B-roll
           </button>
-          {/* FR-174: Rename · Discard is amber, not red: it is an accept, unlike plain Discard */}
+          {/* FR-174: Rename · Discard is the usual move (last take is the keeper), so it is the blue primary on the right; Rename · Keep is amber beside it */}
           {canDiscardOthers && (
             <button
               type="button"
-              onClick={() => void handleRename(true)}
+              onClick={() => void handleRename(false)}
               disabled={isLoading || !chapter || !name}
-              title={`${renameVerb} this take, then move the other ${otherIncomingCount} incoming file${otherIncomingCount === 1 ? '' : 's'} to trash`}
+              title={`${renameVerb} this take; the other incoming files stay`}
               className="px-3 py-1.5 text-sm text-amber-800 bg-amber-100 border border-amber-300 rounded hover:bg-amber-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {renaming ? 'Renaming...' : `${renameVerb} · Discard`}
+              {renaming ? 'Renaming...' : `${renameVerb} · Keep`}
             </button>
           )}
           <button
             type="button"
-            onClick={() => void handleRename(false)}
+            onClick={() => void handleRename(canDiscardOthers)}
             disabled={isLoading || !chapter || !name}
-            title={canDiscardOthers ? `${renameVerb} this take; the other incoming files stay` : undefined}
+            title={
+              canDiscardOthers
+                ? `${renameVerb} this take, then move the other ${otherIncomingCount} incoming file${otherIncomingCount === 1 ? '' : 's'} to trash`
+                : undefined
+            }
             className="px-4 py-1.5 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {renaming ? 'Renaming...' : canDiscardOthers ? `${renameVerb} · Keep` : renameVerb}
+            {renaming ? 'Renaming...' : canDiscardOthers ? `${renameVerb} · Discard` : renameVerb}
           </button>
         </div>
       </div>
