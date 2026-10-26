@@ -274,10 +274,10 @@ export function FileCard({
       </div>
 
       {/* Preview and actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-warm-secondary">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2 text-sm text-warm-secondary">
           <label
-            className="flex items-center gap-1"
+            className="flex shrink-0 items-center gap-1 whitespace-nowrap"
             title="Where this take lands in the chapter (CT-0107)"
           >
             Lands as
@@ -295,7 +295,7 @@ export function FileCard({
               ))}
             </select>
           </label>
-          <span data-testid="filecard-landing" className="font-mono text-blue-600">
+          <span data-testid="filecard-landing" className="min-w-0 truncate font-mono text-blue-600">
             {describeLanding(
               landsAs,
               chapter,
@@ -304,7 +304,7 @@ export function FileCard({
           </span>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex shrink-0 gap-2 whitespace-nowrap">
           {/* FR-106: Preview button */}
           <button
             onClick={() => setShowPreview(true)}
