@@ -6,7 +6,14 @@ import type { Config } from '../../../shared/types.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { findAllSrts, loadBrandConfig, buildFliHubChapters, firstWords, BUNDLED_BRAND_CONFIG } from '../utils/poemWuiUtils.js';
 import { env } from '../config/env.js';
-import { managedBrandConfigFile, readManagedPublish, writeManagedPublish } from '../utils/managedBrandConfig.js';
+import {
+  BrandWriteRefusedError,
+  ChangedElsewhereError,
+  managedBrandConfigFile,
+  managedPublishVersion,
+  readManagedPublish,
+  writeManagedPublish,
+} from '../utils/managedBrandConfig.js';
 
 export { firstWords };
 
@@ -259,8 +266,12 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       const config = getConfig();
       if (!config.brandConfigPath) {
         const managed = await managedBrandConfigFile().catch(() => null);
+        // The version is taken BEFORE the read: if the file moves in between, the POST is refused, never lost.
+        const version = managed ? await managedPublishVersion(managed) : null;
         const publish = managed ? await readManagedPublish(managed) : null;
-        if (managed && publish) return res.json({ success: true, data: publish, path: managed, managed: true });
+        if (managed && publish) {
+          return res.json({ success: true, data: publish, path: managed, managed: true, version });
+        }
       }
       const candidates = config.brandConfigPath
         ? [config.brandConfigPath, BUNDLED_BRAND_CONFIG]
@@ -285,10 +296,31 @@ export function createPoemWuiRoutes(getConfig: () => Config) {
       const config = getConfig();
       if (!config.brandConfigPath) {
         // The managed home wins: edits land in the brand's fli.brand.json `publish` block, other fields kept.
+        // Optimistic concurrency (W8): the client sends back the `version` it loaded (header `x-brand-config-version`);
+        // a file changed since — FliStudio applied a publish change — is refused 409, never overwritten.
         const managed = await managedBrandConfigFile().catch(() => null);
         if (managed && (await readManagedPublish(managed))) {
-          await writeManagedPublish(managed, req.body);
-          return res.json({ success: true, path: managed, managed: true });
+          const expected = req.get('x-brand-config-version');
+          if (!expected) {
+            return res.status(428).json({
+              success: false,
+              code: 'version-required',
+              error: 'Send back the brand config version you loaded (x-brand-config-version); reload and save again.',
+            });
+          }
+          try {
+            const version = await writeManagedPublish(managed, req.body, expected);
+            return res.json({ success: true, path: managed, managed: true, version });
+          } catch (err) {
+            if (err instanceof ChangedElsewhereError) {
+              return res.status(409).json({ success: false, code: err.code, error: 'Changed in another app — reload' });
+            }
+            if (err instanceof BrandWriteRefusedError) {
+              const status = err.reason === 'busy' ? 503 : err.reason === 'invalid-input' ? 400 : 500;
+              return res.status(status).json({ success: false, code: err.reason, error: err.message });
+            }
+            throw err;
+          }
         }
       }
       const targetPath = config.brandConfigPath || BUNDLED_BRAND_CONFIG;

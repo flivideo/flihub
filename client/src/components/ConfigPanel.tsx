@@ -9,7 +9,7 @@ import {
   useWatchers,
   useEnvironment,
 } from '../hooks/useApi';
-import { useBrandConfig, useUpdateBrandConfig } from '../hooks/useConfigApi';
+import { BrandConfigSaveError, useBrandConfig, useUpdateBrandConfig } from '../hooks/useConfigApi';
 import type { BrandConfigAffiliate } from '../hooks/useConfigApi';
 import { collapsePath } from '../utils/formatting';
 import { OpenFolderButton, LoadingSpinner, PageContainer } from './shared';
@@ -267,8 +267,10 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
   const [envCollapsed, setEnvCollapsed] = useState(false);
 
   // Brand config
-  const { data: brandConfigResult } = useBrandConfig();
+  const { data: brandConfigResult, refetch: refetchBrandConfig } = useBrandConfig();
   const updateBrandConfig = useUpdateBrandConfig();
+  // W8: FliStudio changed fli.brand.json after this panel loaded it; the save was refused, nothing was written.
+  const [brandChangedElsewhere, setBrandChangedElsewhere] = useState(false);
   const [brandName, setBrandName] = useState('');
   const [brandRealName, setBrandRealName] = useState('');
   const [brandProfession, setBrandProfession] = useState('');
@@ -1191,6 +1193,18 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
           </div>
 
           {/* Save */}
+          {brandChangedElsewhere && (
+            <div role="alert" className="border border-amber-300 bg-amber-50 rounded px-3 py-2 text-sm text-amber-800 flex items-center justify-between gap-3">
+              <span>Changed in another app — reload. Your edits were not saved.</span>
+              <button
+                onClick={async () => {
+                  await refetchBrandConfig();
+                  setBrandChangedElsewhere(false);
+                }}
+                className="px-3 py-1 text-sm bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors"
+              >Reload</button>
+            </div>
+          )}
           <div className="border-t border-warm pt-3 flex justify-end">
             <button
               onClick={async () => {
@@ -1202,8 +1216,18 @@ export function ConfigPanel({ focusSection, onFocusSectionHandled }: ConfigPanel
                   affiliates,
                   descriptionTemplate: { legalDisclosure, endNote },
                 };
-                await updateBrandConfig.mutateAsync(payload);
-                toast.success('Brand config saved');
+                try {
+                  await updateBrandConfig.mutateAsync({ data: payload, version: brandConfigResult?.version });
+                  setBrandChangedElsewhere(false);
+                  toast.success('Brand config saved');
+                } catch (err) {
+                  if (err instanceof BrandConfigSaveError && err.code === 'changed-elsewhere') {
+                    setBrandChangedElsewhere(true);
+                    toast.error('Changed in another app — reload');
+                  } else {
+                    toast.error(err instanceof Error ? err.message : 'Brand config not saved');
+                  }
+                }
               }}
               disabled={updateBrandConfig.isPending}
               className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-surface-muted disabled:cursor-not-allowed transition-colors"

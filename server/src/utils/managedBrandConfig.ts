@@ -7,7 +7,13 @@
 import path from 'path';
 import os from 'os';
 import fs from 'fs-extra';
-import { readBrands, readMachineSettings, resolveBrandRoot } from '@flivideo/core';
+import {
+  brandSettingsVersion,
+  readBrands,
+  readMachineSettings,
+  resolveBrandRoot,
+  updateBrandSettings,
+} from '@flivideo/core';
 
 /** brand-config.json was always AppyDave's (it is not keyed by brand). */
 export const BRAND_CONFIG_BRAND = 'appydave';
@@ -36,8 +42,57 @@ export async function readManagedPublish(file: string): Promise<Record<string, u
   return publish && typeof publish === 'object' ? (publish as Record<string, unknown>) : null;
 }
 
-/** Replace the `publish` block, keeping every other field of fli.brand.json (read-modify-write). */
-export async function writeManagedPublish(file: string, publish: unknown): Promise<void> {
-  const current = JSON.parse(await fs.readFile(file, 'utf-8')) as Record<string, unknown>;
-  await fs.writeFile(file, `${JSON.stringify({ ...current, publish }, null, 2)}\n`, 'utf-8');
+/** The file's version (fli-core `brandSettingsVersion`: sha256 of its bytes), or `null` when absent. */
+export function managedPublishVersion(file: string): Promise<string | null> {
+  return brandSettingsVersion(file);
+}
+
+/**
+ * The file changed since the caller loaded `expected` (W8, 2026-10-29: a Save from a stale Config panel wiped
+ * FliStudio's publish change). Nothing was written; the person reloads and saves again.
+ */
+export class ChangedElsewhereError extends Error {
+  readonly code = 'changed-elsewhere';
+  constructor(
+    readonly file: string,
+    readonly expected: string,
+    readonly current: string | null
+  ) {
+    super(`${file} changed in another app since it was loaded; reload and save again.`);
+  }
+}
+
+/** fli-core refused the write (`busy`, `unusable-file`, `invalid-input`, `io-error`). Nothing was written. */
+export class BrandWriteRefusedError extends Error {
+  constructor(
+    readonly reason: string,
+    message: string
+  ) {
+    super(message);
+  }
+}
+
+/**
+ * Replace the `publish` block, keeping every other field of fli.brand.json. Goes through fli-core's
+ * `updateBrandSettings`: under `fli.brand.json.lock` (shared with FliStudio) the file is re-read and the block replaced
+ * in what is on disk NOW, then written atomically. With `expectedVersion` (the version the caller loaded), a file that
+ * changed since is refused with `ChangedElsewhereError` and left untouched. Answers the new version.
+ */
+export async function writeManagedPublish(
+  file: string,
+  publish: unknown,
+  expectedVersion?: string
+): Promise<string> {
+  const result = await updateBrandSettings(path.dirname(file), async (current) => {
+    if (current === null) {
+      throw Object.assign(new Error(`ENOENT: no such file, ${file}`), { code: 'ENOENT' });
+    }
+    if (expectedVersion !== undefined) {
+      const now = await brandSettingsVersion(file);
+      if (now !== expectedVersion) throw new ChangedElsewhereError(file, expectedVersion, now);
+    }
+    return { ...current, publish: publish as typeof current.publish };
+  });
+  if (result.kind === 'refused') throw new BrandWriteRefusedError(result.reason, result.message);
+  return result.version;
 }
