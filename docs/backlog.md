@@ -26,6 +26,7 @@ folders) still awaits David's word.
 
 | ID     | Requirement                                                                                   | Added      | Status                                                          |
 | ------ | --------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
+| FR-177 | [B-roll button registers the take with B-Roll Pilot (`broll.register`), replacing the move to `b-roll/`](prd/fr-177-broll-button-registers-with-broll-pilot.md) | 2026-11-02 | Built on branch `broll-register`, awaiting orch merge |
 | FR-176 | [Recordings Collapses Older Chapters, So the Working Chapter Is in View](prd/fr-176-recordings-collapse-old-chapters.md) | 2026-10-25 | IDEA, banked (seen on D12: chapter 05 below the fold) |
 | FR-175 | [“Bad from here” Marks: Telling FliCut What Was Decided at Review](prd/fr-175-bad-from-here-marks.md) | 2026-10-25 | IDEA, banked; cross-app with FliCut FC-48 (where the mark lives is undecided) |
 | FR-174 | [Accept a Take from the Player (Keep / Discard the Rest)](prd/fr-174-accept-from-the-player.md) | 2026-10-25 | Part built 2026-10-25: Rename · Keep / Rename · Discard on cards + safe confirm (player buttons + autoplay question still open) |

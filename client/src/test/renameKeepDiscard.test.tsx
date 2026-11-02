@@ -10,6 +10,9 @@ vi.mock('../hooks/useApi', () => ({
   useRename: () => ({ mutateAsync: rename, isPending: false }),
   useTrashFile: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
+vi.mock('../hooks/useBrollApi', () => ({
+  useRegisterBroll: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
 vi.mock('../hooks/useSegmentsApi', () => ({
   useSegmentOp: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));

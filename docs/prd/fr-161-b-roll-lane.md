@@ -1,6 +1,6 @@
 # FR-161: B-roll lane — promote target that is not `recordings/`
 
-**Status:** ✓ Implemented 2026-09-04 (David approved the sibling design). §5 stopgap superseded by the built lane.
+**Status:** ✓ Implemented 2026-09-04; the B-roll *button* superseded by FR-177 (2026-11-02) (David approved the sibling design). §5 stopgap superseded by the built lane.
 **Direction from David (verbatim, via orch):** record b-roll via Ecamm → lands in ingestion →
 "I don't have a place to put it other than recordings… happy to have a brand new page…
 promoted to that location… they're not part of the regular recording flow."

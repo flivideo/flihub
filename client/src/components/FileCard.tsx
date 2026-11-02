@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useRecordings, useRename, useTrashFile } from '../hooks/useApi';
 import { useSegmentOp } from '../hooks/useSegmentsApi';
+import { useRegisterBroll } from '../hooks/useBrollApi';
 import type { FileInfo, RenameRequest } from '../../../shared/types';
 import type { NamingState } from '../App';
 import { formatFileSize, formatDuration, formatRelativeTime } from '../utils/formatting';
@@ -43,6 +44,9 @@ export function FileCard({
   const renameMutation = useRename();
   const trashMutation = useTrashFile();
   const segmentOp = useSegmentOp();
+  const brollMutation = useRegisterBroll();
+  const [brollOpen, setBrollOpen] = useState(false);
+  const [brollTags, setBrollTags] = useState('');
 
   // CT-0107 R1: "Lands as" — next (today's behaviour), replace NN-S or insert before NN-S. The server numbers.
   const { data: recordingsData } = useRecordings();
@@ -145,30 +149,30 @@ export function FileCard({
     }
   };
 
-  // FR-161: promote to b-roll — name only, no chapter; transcription does not fire
+  // FR-177: register with B-Roll Pilot (FliStudio) — the take is copied there, not filed in b-roll/.
+  // Tags are typed here; a refusal leaves the take in Incoming and says why.
   const handleBroll = async () => {
-    const name = namingState.name.trim();
-    if (!name) {
-      toast.error('Enter a name first (no chapter needed for b-roll)');
-      return;
-    }
+    const tagList = brollTags
+      .split(/[,\s]+/)
+      .map((t) => t.trim())
+      .filter(Boolean);
     try {
-      const result = await renameMutation.mutateAsync({
-        originalPath: file.path,
-        chapter: '',
-        sequence: null,
-        name,
-        tags: [],
-        destination: 'b-roll',
-      } as RenameRequest);
-      if (result.success) {
-        toast.success(`Moved to b-roll: ${result.newPath.split('/').pop()}`);
-        onRenamed();
-      } else {
-        toast.error(result.error || 'B-roll move failed');
-      }
+      const result = await brollMutation.mutateAsync({
+        path: file.path,
+        name: name.trim() || undefined,
+        tags: tagList,
+      });
+      toast.success(
+        result.created
+          ? `Added to B-roll: ${(result.assetFile ?? file.filename).split('/').pop()}`
+          : 'Already in B-roll — tags merged'
+      );
+      result.warnings.forEach((w) => toast.warning(w));
+      setBrollOpen(false);
+      setBrollTags('');
+      onRenamed();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'B-roll move failed');
+      toast.error(error instanceof Error ? error.message : 'B-roll register failed');
     }
   };
 
@@ -187,7 +191,11 @@ export function FileCard({
     }
   };
 
-  const isLoading = renameMutation.isPending || trashMutation.isPending || segmentOp.isPending;
+  const isLoading =
+    renameMutation.isPending ||
+    trashMutation.isPending ||
+    segmentOp.isPending ||
+    brollMutation.isPending;
   const renameVerb =
     landsAs.mode === 'replace' ? 'Replace' : landsAs.mode === 'insert' ? 'Insert' : 'Rename';
   const renaming = renameMutation.isPending || segmentOp.isPending;
@@ -322,9 +330,9 @@ export function FileCard({
             {trashMutation.isPending ? 'Trashing...' : 'Discard'}
           </button>
           <button
-            onClick={handleBroll}
-            disabled={isLoading || !name}
-            title="Move to b-roll/ — chapter-less; no transcription (FR-161)"
+            onClick={() => setBrollOpen((o) => !o)}
+            disabled={isLoading}
+            title="Add to B-roll (B-Roll Pilot in FliStudio) — a copy is registered there; no chapter, no transcription here (FR-177)"
             className="px-3 py-1.5 text-sm text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             B-roll
@@ -356,6 +364,44 @@ export function FileCard({
           </button>
         </div>
       </div>
+
+      {/* FR-177: tags typed at the B-roll button, then Add — registers with B-Roll Pilot */}
+      {brollOpen && (
+        <div
+          data-testid="filecard-broll-row"
+          className="mt-2 flex items-center gap-2 rounded border border-purple-200 bg-purple-50 px-3 py-2 text-sm"
+        >
+          <span className="shrink-0 text-purple-800">B-roll tags</span>
+          <input
+            data-testid="filecard-broll-tags"
+            value={brollTags}
+            onChange={(e) => setBrollTags(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void handleBroll();
+              if (e.key === 'Escape') setBrollOpen(false);
+            }}
+            placeholder="e.g. overlay-pilot, chin-bug (optional)"
+            autoFocus
+            className="min-w-0 flex-1 rounded border border-warm bg-surface px-2 py-1"
+          />
+          <button
+            type="button"
+            data-testid="filecard-broll-add"
+            onClick={() => void handleBroll()}
+            disabled={isLoading}
+            className="shrink-0 rounded bg-purple-600 px-3 py-1 text-white hover:bg-purple-700 disabled:opacity-50"
+          >
+            {brollMutation.isPending ? 'Adding...' : 'Add to B-roll'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setBrollOpen(false)}
+            className="shrink-0 text-warm-secondary hover:text-warm-primary"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
 
       {/* FR-106: Video preview modal */}
       {showPreview && <IncomingVideoModal file={file} onClose={() => setShowPreview(false)} />}

@@ -32,6 +32,7 @@ import { createHoldRoutes } from './routes/hold.js'; // B064: archive-offload ho
 import { createStorageRoutes } from './routes/storage.js'; // storage-panel WU1: per-project Hold + Archive verbs
 import { createMicCheckRoutes } from './routes/miccheck.js'; // MicCheck: live monitoring session API
 import { createBrandsRouter } from './routes/brands.js'; // Brand dropdown: list + switch
+import { createBrollRegisterRouter } from './routes/brollRegister.js'; // FR-177: B-roll button → broll.register
 import { createContextRouter } from './routes/context.js'; // W3 open contract: door 3
 import { createContextController } from './utils/openContext.js'; // W3 open contract: doors 2 + 3
 import { migrateSafeFolder, needsMigration } from './utils/safeMigration.js';
@@ -368,6 +369,7 @@ app.use('/api/miccheck', micCheckRoutes);
 
 // Brand switching — reads ~/.config/appydave/brands.json + on-disk v-* roots
 app.use('/api/brands', createBrandsRouter(() => currentConfig, updateConfig, io));
+app.use('/api/broll-register', createBrollRegisterRouter(pendingFiles, () => currentConfig)); // FR-177
 
 // W3 open contract — launch args (door 2) and POST /api/context (door 3) share one applyContext
 const contextController = createContextController({
