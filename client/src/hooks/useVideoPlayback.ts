@@ -5,11 +5,18 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { FORWARD_SPEEDS, jkl, type JklKey } from '@flivideo/core/contracts';
 
-// Canonical speed presets and storage
-export const SPEED_PRESETS = [1, 1.5, 2, 2.5, 3, 4];
+// Canonical speed ladder (fli-core's, shared by every Fli player) and storage.
+// The default stays 2x: it is FliHub's viewing habit (per-app config, not part of the control).
+export const SPEED_PRESETS: readonly number[] = FORWARD_SPEEDS;
 export const DEFAULT_SPEED = 2;
 export const SPEED_STORAGE_KEY = 'flihub:watch:playbackSpeed';
+
+/** J / K / L as fli-core rules them (`jkl()`): the new rate, and whether the key means "be playing". */
+export function jklPlayback(playing: boolean, rate: number, key: JklKey): { playing: boolean; rate: number } {
+  return jkl({ playing, rate }, key);
+}
 
 export interface UseVideoPlaybackOptions {
   /** Called when Escape is pressed (e.g., close a modal) */
@@ -46,6 +53,8 @@ export function useVideoPlayback(options: UseVideoPlaybackOptions = {}): UseVide
   const onEscapeRef = useRef(onEscape);
   onEscapeRef.current = onEscape;
   const handlePlayPauseRef = useRef(() => {});
+  const speedRef = useRef(playbackSpeed);
+  const playingRef = useRef(isPlaying);
 
   const handleSpeedChange = useCallback((speed: number) => {
     setPlaybackSpeed(speed);
@@ -54,6 +63,8 @@ export function useVideoPlayback(options: UseVideoPlaybackOptions = {}): UseVide
       videoRef.current.playbackRate = speed;
     }
   }, []);
+
+  const handleSpeedChangeRef = useRef(handleSpeedChange);
 
   const handlePlayPause = useCallback(() => {
     if (!videoRef.current) return;
@@ -65,7 +76,14 @@ export function useVideoPlayback(options: UseVideoPlaybackOptions = {}): UseVide
   }, []);
   handlePlayPauseRef.current = handlePlayPause;
 
-  // Keyboard controls: Space to pause/resume, Escape to close
+  // Keep the key handler's view of speed / playing fresh without re-registering the listener
+  useEffect(() => {
+    speedRef.current = playbackSpeed;
+    playingRef.current = isPlaying;
+    handleSpeedChangeRef.current = handleSpeedChange;
+  });
+
+  // Keyboard controls: Space to pause/resume, Escape to close, J / K / L for speed (fli-core jkl())
   useEffect(() => {
     if (!keyboardControls) return;
 
@@ -77,6 +95,14 @@ export function useVideoPlayback(options: UseVideoPlaybackOptions = {}): UseVide
       if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
         handlePlayPauseRef.current();
+      } else if (
+        !e.metaKey && !e.ctrlKey && !e.altKey &&
+        (e.key === 'j' || e.key === 'k' || e.key === 'l' || e.key === 'J' || e.key === 'K' || e.key === 'L')
+      ) {
+        const next = jklPlayback(playingRef.current, speedRef.current, e.key.toUpperCase() as JklKey);
+        handleSpeedChangeRef.current(next.rate);
+        const v = videoRef.current;
+        if (v && next.playing && v.paused) void v.play();
       } else if (e.key === 'Escape' && onEscapeRef.current) {
         onEscapeRef.current();
       }

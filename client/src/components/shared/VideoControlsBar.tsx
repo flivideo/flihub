@@ -7,7 +7,6 @@
  * extra row (modal: Dictionary). Absent props render nothing.
  */
 
-import { SPEED_PRESETS } from '../../hooks/useVideoPlayback';
 import { SpeedControl } from './SpeedControl';
 import { PlayPauseButton } from './PlayPauseButton';
 import { SizeToggle } from './SizeToggle';
@@ -133,7 +132,7 @@ export function VideoControlsBar({
 
         {/* Right: speed + size + toggles */}
         <div className="flex items-center gap-6 flex-wrap">
-          <SpeedControl presets={SPEED_PRESETS} value={playbackSpeed} onChange={onSpeedChange} />
+          <SpeedControl value={playbackSpeed} onChange={onSpeedChange} />
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-warm-muted font-medium">Size:</span>

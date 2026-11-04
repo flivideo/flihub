@@ -71,3 +71,17 @@ button:not(:disabled) {
 .animate-glow-pulse-red {
   animation: glow-pulse-red 0.5s ease-in-out;
 }
+
+/* Speed STEP 3: FliHub's skin for fli-core's shared speed control (Warm Linen, blue-600 active rung). */
+.fli-speed {
+  --fli-speed-size: 0.75rem;
+  --fli-speed-bg: var(--color-surface-muted);
+  --fli-speed-fg: var(--color-warm-secondary);
+  --fli-speed-hover-bg: var(--color-surface-hover);
+  --fli-speed-border: transparent;
+  --fli-speed-radius: 0.25rem;
+  --fli-speed-active-bg: #2563eb; /* blue-600 */
+  --fli-speed-active-fg: #fff;
+  --fli-speed-disabled-fg: var(--color-text-warm-faint);
+  --fli-speed-disabled-border: transparent;
+}

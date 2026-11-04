@@ -1,31 +1,21 @@
-// B068: Extracted shared speed preset button group
-// Used by VideoPlayerModal and WatchPage
+// B068: shared speed control for VideoPlayerModal and WatchPage (both render it through VideoControlsBar).
+// Speed STEP 3: the control itself is fli-core's shared <SpeedControl> (3 visible, chevrons step like J / L).
+// This file is only FliHub's skin: the label, the Warm Linen variables (index.css `.fli-speed`) and the testid.
+
+import { SpeedControl as FliSpeedControl } from '@flivideo/core/ui';
+import '@flivideo/core/ui/speed.css';
 
 export interface SpeedControlProps {
-  presets: number[];
   value: number;
   onChange: (speed: number) => void;
+  disabled?: boolean;
 }
 
-export function SpeedControl({ presets, value, onChange }: SpeedControlProps) {
+export function SpeedControl({ value, onChange, disabled }: SpeedControlProps) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-warm-muted font-medium">Speed:</span>
-      <div className="flex gap-1">
-        {presets.map((preset) => (
-          <button
-            key={preset}
-            onClick={() => onChange(preset)}
-            className={`px-2 py-1 text-xs rounded transition-colors ${
-              value === preset
-                ? 'bg-blue-600 text-white font-medium'
-                : 'bg-surface-muted text-warm-secondary hover:bg-surface-hover'
-            }`}
-          >
-            {preset}x
-          </button>
-        ))}
-      </div>
+      <FliSpeedControl value={value} onChange={onChange} disabled={disabled} data-testid="playback-speed" />
     </div>
   );
 }
