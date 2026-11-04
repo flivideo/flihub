@@ -6,12 +6,17 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { FORWARD_SPEEDS, jkl, type JklKey } from '@flivideo/core/contracts';
+import { rememberedSpeed, speedKey } from '@flivideo/core/ui';
 
 // Canonical speed ladder (fli-core's, shared by every Fli player) and storage.
 // The default stays 2x: it is FliHub's viewing habit (per-app config, not part of the control).
 export const SPEED_PRESETS: readonly number[] = FORWARD_SPEEDS;
 export const DEFAULT_SPEED = 2;
-export const SPEED_STORAGE_KEY = 'flihub:watch:playbackSpeed';
+export const SPEED_STORAGE_KEY = speedKey('flihub');
+/** The pre-v0.33 key; read once, moved to `SPEED_STORAGE_KEY`, removed. */
+export const LEGACY_SPEED_KEY = 'flihub:watch:playbackSpeed';
+/** fli-core's remembered speed: `fli:flihub:speed`, 2x by default, migrating the old key once. */
+export const speedMemory = rememberedSpeed('flihub', DEFAULT_SPEED, { migrateFrom: [LEGACY_SPEED_KEY] });
 
 /** J / K / L as fli-core rules them (`jkl()`): the new rate, and whether the key means "be playing". */
 export function jklPlayback(playing: boolean, rate: number, key: JklKey): { playing: boolean; rate: number } {
@@ -44,10 +49,7 @@ export function useVideoPlayback(options: UseVideoPlaybackOptions = {}): UseVide
   const { onEscape, keyboardControls = true } = options;
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState<number>(() => {
-    const saved = localStorage.getItem(SPEED_STORAGE_KEY);
-    return saved ? (parseFloat(saved) || DEFAULT_SPEED) : DEFAULT_SPEED;
-  });
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(() => speedMemory.get());
 
   // Stable refs to avoid re-registering listener
   const onEscapeRef = useRef(onEscape);
@@ -58,7 +60,7 @@ export function useVideoPlayback(options: UseVideoPlaybackOptions = {}): UseVide
 
   const handleSpeedChange = useCallback((speed: number) => {
     setPlaybackSpeed(speed);
-    localStorage.setItem(SPEED_STORAGE_KEY, speed.toString());
+    speedMemory.set(speed);
     if (videoRef.current) {
       videoRef.current.playbackRate = speed;
     }
