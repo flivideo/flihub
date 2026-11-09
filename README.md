@@ -8,13 +8,14 @@ named, transcribed recordings in the right video project.**
 Stop recording and the take appears in **Incoming**. If it doesn't match the project's declared
 aspect, for example a portrait feed boxed inside a landscape canvas, FliHub says so loudly, so you
 can re-record straight away. Pick a chapter and a name, and FliHub moves the take into the project's
-recordings folder as `07-3-epic1-story4.mov` and queues a local MLX Whisper transcript. The other
+recordings folder as `07-3-epic1-story4.mov` and queues a transcript through FliTools, the suite's
+one transcriber. The other
 tabs (Recordings, Watch, Transcripts, Assets, Thumbs, Projects, Manage) work on those promoted files.
 The header always shows the project's trash (count and size), and you can empty it at any time.
 
 FliHub is the capture end of the FliVideo suite. It reads brands and projects through
 [`@flivideo/core`](https://github.com/flivideo/fli-core), and FliStudio can open it on a project.
-The edit happens downstream, in FliCut.
+The edit happens downstream, in FliCut and FliEdit.
 
 ## Run
 
@@ -26,7 +27,7 @@ open http://localhost:5100
 ```
 
 **Needs:** macOS · Node ≥ 20 · npm · [Overmind](https://github.com/DarthSim/overmind) (tmux) · ffmpeg
-and ffprobe · `mlx_whisper` for transcription · SSH access to GitHub, because the lockfile fetches
+and ffprobe · the FliTools service on 127.0.0.1:7161 for transcription · SSH access to GitHub, because the lockfile fetches
 `@flivideo/core` over git+ssh · **Ports:** UI :5100 · API :5101
 
 > [!WARNING]
@@ -79,12 +80,13 @@ says nothing about a change. The one-shot server run is in AGENT-NOTES.
 
 Part of the FliVideo suite, mapped at [flivideo/flivideo](https://github.com/flivideo/flivideo#readme). Shared contract:
 [`@flivideo/core`](https://github.com/flivideo/fli-core). Siblings: FliStudio · FliCut · FliCast ·
-Teletubby.
+Teletubby · FliEdit.
 
 ## Status
 
-**Active, mid-rebuild (B475).** True at `95bfe6e` (2026-09-23). The rebuild is happening in place, as
-a series of cuts and contract adoptions: relay and git sync have been removed, and transcription is
-moving to a shared FliTools service. Start with [docs/rebuild-2026/README.md](docs/rebuild-2026/README.md).
+**Active, in daily use.** True at `c2b57e3` (2026-11-09). The B475 rebuild has run in place, as a series
+of cuts and contract adoptions: relay and git sync are gone, and transcription moved to FliTools (B584).
+Recent work is features and fixes from real recording days. The rebuild's plan and audit:
+[docs/rebuild-2026/README.md](docs/rebuild-2026/README.md).
 
 Public repo `flivideo/flihub` · [MIT](LICENSE) · David Cruwys
