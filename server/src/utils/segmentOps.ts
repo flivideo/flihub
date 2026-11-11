@@ -18,7 +18,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { randomBytes } from 'crypto';
-import { getProjectPaths, type ProjectPaths } from '../../../shared/paths.js';
+import { allSetPaths, getProjectPaths, type ProjectPaths } from '../../../shared/paths.js';
 import {
   NAMING_RULES,
   recordingExtension,
@@ -107,6 +107,8 @@ export interface JournalEntry {
   /** Written before the first move and cleared once the state is updated: a crash in between still leaves the moves. */
   pending?: boolean;
   undoneAt?: string;
+  /** Recording sets: the set this change ran in (null/absent without sets). Undo replays it there. */
+  set?: string | null;
 }
 
 interface Journal {
@@ -232,11 +234,13 @@ function referencedBy(
 
 // Recording sets: one journal per set, beside that set's state file (project root without sets, as before), so undo
 // never replays one set's moves into another.
-const journalPath = (project: string) => path.join(path.dirname(getProjectPaths(project).stateFile), JOURNAL_FILE);
+// `set` as in getProjectPaths: undefined = the active set, null = no set.
+const journalPath = (project: string, set?: string | null) =>
+  path.join(path.dirname(getProjectPaths(project, undefined, set).stateFile), JOURNAL_FILE);
 
-export async function readJournal(project: string): Promise<Journal> {
+export async function readJournal(project: string, set?: string | null): Promise<Journal> {
   try {
-    const j = JSON.parse(await fs.readFile(journalPath(project), 'utf8')) as Journal;
+    const j = JSON.parse(await fs.readFile(journalPath(project, set), 'utf8')) as Journal;
     if (j.version === 1 && Array.isArray(j.entries)) return j;
   } catch {
     // Missing or unreadable: no history.
@@ -244,8 +248,8 @@ export async function readJournal(project: string): Promise<Journal> {
   return { version: 1, entries: [] };
 }
 
-async function writeJournal(project: string, journal: Journal): Promise<void> {
-  const file = journalPath(project);
+async function writeJournal(project: string, journal: Journal, set?: string | null): Promise<void> {
+  const file = journalPath(project, set);
   const tmp = `${file}.${randomBytes(4).toString('hex')}.tmp`;
   await fs.writeFile(tmp, `${JSON.stringify(journal, null, 2)}\n`);
   await fs.rename(tmp, file);
@@ -830,14 +834,15 @@ async function apply(
     promoted: plan.promote,
     createdDirs,
     pending: true,
+    ...(paths.set ? { set: paths.set } : {}), // recording sets: undo replays it here
   };
   // The journal holds the moves BEFORE the first one, so even a crash mid-way leaves a record to undo from.
-  const journal = await readJournal(projectDir);
+  const journal = await readJournal(projectDir, paths.set);
   journal.entries.push(entry);
-  await writeJournal(projectDir, journal);
+  await writeJournal(projectDir, journal, paths.set);
   const forget = async () => {
     journal.entries = journal.entries.filter((e) => e.id !== id);
-    await writeJournal(projectDir, journal);
+    await writeJournal(projectDir, journal, paths.set);
   };
 
   try {
@@ -853,10 +858,10 @@ async function apply(
     // Only touch the state file when it holds an entry this change renames or drops: a project without one
     // (or whose entries are elsewhere) keeps its state file exactly as it was, or keeps having none.
     const dropped = new Set(plan.trash.map((t) => t.filename));
-    const state = await readProjectState(projectDir);
+    const state = await readProjectState(projectDir, paths.set);
     if (touchesState(state, renamed, dropped)) {
       const remapped = remapState(state, renamed, dropped);
-      await writeProjectState(projectDir, remapped.state);
+      await writeProjectState(projectDir, remapped.state, paths.set);
       entry.removed = remapped.removed;
     }
   } catch (error) {
@@ -867,7 +872,7 @@ async function apply(
   }
   delete entry.pending;
   // The op has landed; the entry is already on disk (pending, with every step), so undo still works if this fails.
-  await writeJournal(projectDir, journal).catch((e) =>
+  await writeJournal(projectDir, journal, paths.set).catch((e) =>
     console.error(`[segment-op] ${id} landed but its journal entry is still marked pending:`, e)
   );
   return entry;
@@ -887,9 +892,18 @@ export function undoSegmentOp(
 }
 
 async function undo(projectDir: string, deps: SegmentOpDeps, id?: string): Promise<JournalEntry> {
-  const paths = getProjectPaths(projectDir);
-  const journal = await readJournal(projectDir);
-  const entry = [...journal.entries].reverse().find((e) => !e.undoneAt);
+  // Recording sets: "the latest change" is the newest not-undone entry across every set's journal, and it is
+  // replayed in the set it ran in, whatever set is active now (like batch undo). Without sets: one journal, as before.
+  let found: { set: string | null; journal: Journal; entry: JournalEntry } | null = null;
+  for (const p of allSetPaths(projectDir)) {
+    const j = await readJournal(projectDir, p.set);
+    const e = [...j.entries].reverse().find((x) => !x.undoneAt);
+    if (e && (!found || e.at > found.entry.at)) found = { set: p.set, journal: j, entry: e };
+  }
+  const set = found?.set ?? null;
+  const journal = found?.journal ?? { version: 1 as const, entries: [] };
+  const entry = found?.entry;
+  const paths = getProjectPaths(projectDir, undefined, set);
   if (!entry)
     throw new SegmentOpRefused([
       { kind: 'nothing-to-undo', detail: 'There is no segment change to undo.' },
@@ -956,7 +970,7 @@ async function undo(projectDir: string, deps: SegmentOpDeps, id?: string): Promi
   await runSteps([...extra, ...reverse]);
 
   const back = new Map(entry.renamed.map((r) => [r.to, r.from]));
-  const current = await readProjectState(projectDir);
+  const current = await readProjectState(projectDir, set);
   if (entry.removed.length > 0 || touchesState(current, back, new Set())) {
     const state = current;
     const restored = remapState(state, back, new Set()).state;
@@ -965,7 +979,7 @@ async function undo(projectDir: string, deps: SegmentOpDeps, id?: string): Promi
     for (const r of [...entry.removed].sort((a, b) => a.index - b.index)) {
       rows.splice(Math.min(r.index, rows.length), 0, [r.filename, r.entry]);
     }
-    await writeProjectState(projectDir, { ...restored, recordings: Object.fromEntries(rows) });
+    await writeProjectState(projectDir, { ...restored, recordings: Object.fromEntries(rows) }, set);
   }
 
   for (const dir of [...entry.createdDirs].reverse()) {
@@ -973,7 +987,7 @@ async function undo(projectDir: string, deps: SegmentOpDeps, id?: string): Promi
   }
 
   entry.undoneAt = (deps.now?.() ?? new Date()).toISOString();
-  await writeJournal(projectDir, journal);
+  await writeJournal(projectDir, journal, set);
   return entry;
 }
 

@@ -15,6 +15,7 @@ import { createManageRoutes } from '../routes/manage.js';
 import { createProjectRoutes } from '../routes/projects.js';
 import { createSegmentRoutes } from '../routes/segments.js';
 import { createSetRoutes, NOT_A_SET_PROJECT } from '../routes/sets.js';
+import { createStateRoutes } from '../routes/state.js';
 import { createVideoRoutes } from '../routes/video.js';
 import { getProjectStatsRaw } from '../utils/projectStats.js';
 import { readProjectState, setRecordingParked, writeProjectState } from '../utils/projectState.js';
@@ -102,6 +103,7 @@ function app(restarted: string[] = []) {
   a.use('/api/manage', createManageRoutes(() => config, io, undefined, () => null, () => []));
   a.use('/api/segments', createSegmentRoutes(() => config, undefined, () => undefined, () => null, () => []));
   a.use('/api/projects', createProjectRoutes(() => config, (c) => Object.assign(config, c)));
+  a.use('/api', createStateRoutes(() => config, io));
   a.use('/api', createRoutes(new Map<string, FileInfo>(), config, (c) => Object.assign(config, c)));
   return a;
 }
@@ -137,6 +139,15 @@ describe('a legacy project is unchanged by sets', () => {
       orphanedTranscripts: [],
     });
     expect((await readProjectState(legacy)).recordings['01-2-setup.mov']?.parked).toBe(true);
+  });
+
+  it('title, ships and dictionary stay in the one project file, beside the recording keys', async () => {
+    const a = app();
+    await request(a).put('/api/projects/p01/title').send({ title: 'Legacy Video' }).expect(200);
+    await request(a).patch('/api/projects/p01/state/dictionary').send({ words: ['word'] }).expect(200);
+    const onDisk = JSON.parse(fs.readFileSync(path.join(legacy, '.flihub-state.json'), 'utf8'));
+    expect(onDisk).toMatchObject({ title: 'Legacy Video', glingDictionary: ['word'] });
+    expect(onDisk.recordings['01-2-setup.mov']).toEqual({ parked: true });
   });
 
   it('GET /api/sets says no sets; New set and switching are refused with the FliStudio line, and nothing is written', async () => {
@@ -306,6 +317,107 @@ describe('a two-set project', () => {
       res.on('data', (c: Buffer) => (d += c.toString()));
       res.on('end', () => cb(null, d));
     });
+
+  const journalOf = (set: string) => {
+    const f = path.join(sets, 'hub', 'sets', set, '.flihub-segment-journal.json');
+    return fs.existsSync(f) ? (JSON.parse(fs.readFileSync(f, 'utf8')).entries as { set?: string; undoneAt?: string }[]) : [];
+  };
+
+  it('segment undo replays in the set the change ran in, even after a switch', async () => {
+    const a = app();
+    write(path.join(inbox, 'aside.mov'), 'NEW', 0);
+    await request(a)
+      .post('/api/segments/op')
+      .send({ mode: 'insert', chapter: '01', before: 1, source: path.join(inbox, 'aside.mov'), name: 'aside' })
+      .expect(200);
+    expect(ls(setRec('demo'))).toEqual(['01-1-aside.mov', '01-2-intro.mov', '01-3-setup.mov']);
+    expect(journalOf('demo')[0]?.set).toBe('demo');
+
+    await request(a).post('/api/sets/active').send({ set: 'story' }).expect(200);
+    await request(a).post('/api/segments/undo').send({}).expect(200);
+
+    expect(ls(setRec('demo'))).toEqual(['01-1-intro.mov', '01-2-setup.mov']); // demo put back
+    expect(ls(setRec('story'))).toEqual(['01-1-intro.mp4', '02-1-hook.mov']); // story untouched
+    expect(fs.existsSync(path.join(inbox, 'aside.mov'))).toBe(true); // the promoted take went back to the inbox
+    expect(journalOf('demo')[0]?.undoneAt).toBeTypeOf('string');
+    expect(journalOf('story')).toEqual([]);
+  });
+
+  it('segment undo takes the newest change across sets first, each in its own set', async () => {
+    const a = app();
+    const t0 = Date.now();
+    write(path.join(inbox, 'd.mov'), 'D', 0);
+    await request(a)
+      .post('/api/segments/op')
+      .send({ mode: 'insert', chapter: '01', before: 1, source: path.join(inbox, 'd.mov'), name: 'dee' })
+      .expect(200);
+    while (Date.now() === t0) {
+      /* make the second change's timestamp strictly later */
+    }
+    await request(a).post('/api/sets/active').send({ set: 'story' }).expect(200);
+    write(path.join(inbox, 's.mov'), 'S', 0);
+    await request(a)
+      .post('/api/segments/op')
+      .send({ mode: 'insert', chapter: '02', before: 1, source: path.join(inbox, 's.mov'), name: 'ess' })
+      .expect(200);
+    await request(a).post('/api/sets/active').send({ set: 'demo' }).expect(200);
+
+    await request(a).post('/api/segments/undo').send({}).expect(200); // story's (newer), though demo is active
+    expect(ls(setRec('story'))).toEqual(['01-1-intro.mp4', '02-1-hook.mov']);
+    expect(ls(setRec('demo'))).toEqual(['01-1-dee.mov', '01-2-intro.mov', '01-3-setup.mov']);
+
+    await request(a).post('/api/segments/undo').send({}).expect(200); // then demo's
+    expect(ls(setRec('demo'))).toEqual(['01-1-intro.mov', '01-2-setup.mov']);
+
+    const none = await request(a).post('/api/segments/undo').send({});
+    expect(none.status).toBeGreaterThanOrEqual(400);
+    expect(JSON.stringify(none.body)).toContain('nothing-to-undo');
+  });
+
+  it('title, ships and dictionary are ONE project-level copy; set files hold only recording and chapter keys', async () => {
+    const a = app();
+    await request(a).put('/api/projects/p02/title').send({ title: 'The Video' }).expect(200);
+    await request(a).put('/api/projects/p02/ships').send({ ships: 'per-chapter' }).expect(200);
+    await request(a).patch('/api/projects/p02/state/dictionary').send({ words: ['FliHub'] }).expect(200);
+    await request(a).put('/api/projects/p02/chapters/01/title').send({ title: 'Demo opening' }).expect(200);
+    await request(a).post('/api/recordings/park').send({ chapter: '01' }).expect(200);
+
+    const read = (f: string) => JSON.parse(fs.readFileSync(f, 'utf8'));
+    const root = read(path.join(sets, '.flihub-state.json'));
+    expect(root).toMatchObject({ title: 'The Video', ships: 'per-chapter', glingDictionary: ['FliHub'] });
+    expect(root.recordings).toEqual({});
+    expect(root.chapters).toBeUndefined();
+
+    const demo = read(getProjectPaths(sets, undefined, 'demo').stateFile);
+    expect(Object.keys(demo).sort()).toEqual(['chapters', 'recordings', 'version']);
+    expect(demo.chapters['01'].title).toBe('Demo opening');
+    expect(Object.keys(demo.recordings).sort()).toEqual(['01-1-intro.mov', '01-2-setup.mov']);
+
+    // story sees the same project fields, and none of demo's chapter or recording keys
+    writeActiveSetSync(sets, 'story');
+    const story = await readProjectState(sets);
+    expect(story).toMatchObject({ title: 'The Video', ships: 'per-chapter', glingDictionary: ['FliHub'] });
+    expect(story.chapters).toBeUndefined();
+    expect(story.recordings).toEqual({});
+
+    // changing the title from story changes the one shared copy
+    await request(a).put('/api/projects/p02/title').send({ title: 'Renamed' }).expect(200);
+    expect(read(path.join(sets, '.flihub-state.json')).title).toBe('Renamed');
+    writeActiveSetSync(sets, 'demo');
+    expect((await readProjectState(sets)).title).toBe('Renamed');
+    expect(read(getProjectPaths(sets, undefined, 'demo').stateFile).title).toBeUndefined();
+  });
+
+  it('a take action in a set does not rewrite the project-level file', async () => {
+    await request(app()).put('/api/projects/p02/title').send({ title: 'Keep' }).expect(200);
+    const rootFile = path.join(sets, '.flihub-state.json');
+    const before = fs.statSync(rootFile).mtimeMs;
+    const t = new Date(Date.now() - 60_000);
+    fs.utimesSync(rootFile, t, t);
+    await request(app()).post('/api/recordings/park').send({ chapter: '01' }).expect(200);
+    expect(fs.statSync(rootFile).mtimeMs).toBe(t.getTime());
+    expect(before).toBeGreaterThan(0);
+  });
 
   it('video URLs serve the active set, or the set named by ?set=, and 404 an unknown set', async () => {
     const a = app();

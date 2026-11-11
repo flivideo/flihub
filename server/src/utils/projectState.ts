@@ -25,19 +25,8 @@ export function createEmptyState(): ProjectState {
   };
 }
 
-/**
- * Read project state from disk
- * Returns empty state if file doesn't exist or is corrupt
- */
-export async function readProjectState(
-  projectDir: string,
-  /** Recording sets: whose state. `undefined` = the active set; `null` = no set. Same as getProjectPaths. */
-  set?: string | null
-): Promise<ProjectState> {
-  const expandedDir = expandPath(projectDir);
-  const paths = getProjectPaths(expandedDir, undefined, set);
-  const stateFilePath = paths.stateFile;
-
+/** Read one state file. Missing, corrupt or wrong-version → empty state. Never throws. */
+async function readStateFile(stateFilePath: string): Promise<ProjectState> {
   try {
     const exists = await fs.pathExists(stateFilePath);
     if (!exists) {
@@ -73,22 +62,9 @@ export async function readProjectState(
   }
 }
 
-/**
- * Write project state to disk
- * Creates parent directories if needed
- */
-export async function writeProjectState(
-  projectDir: string,
-  state: ProjectState,
-  /** Recording sets: whose state. `undefined` = the active set; `null` = no set. Same as getProjectPaths. */
-  set?: string | null
-): Promise<void> {
-  const expandedDir = expandPath(projectDir);
-  const paths = getProjectPaths(expandedDir, undefined, set);
-  const stateFilePath = paths.stateFile;
-
-  // Ensure version is set, preserve all fields
-  const stateToWrite: ProjectState = {
+/** The allowlisted, on-disk form of a state. */
+function toDiskState(state: ProjectState): ProjectState {
+  return {
     version: 1,
     recordings: state.recordings || {},
     // FR-118: Preserve project dictionary if present
@@ -107,13 +83,92 @@ export async function writeProjectState(
     // default stay distinguishable on disk (see resolveShips / shipsDeclared).
     // ⚠️ This object is an ALLOWLIST: a field not listed here is dropped with NO error.
     // That bit FR-157. If you add a field to ProjectState, add it here and add a
-    // round-trip test (see test/projectStateShips.test.ts).
+    // round-trip test (see test/projectStateShips.test.ts). In a set project, also decide
+    // which side it lives on (ProjectLevelField below).
     ...(state.ships === 'per-chapter' ? { ships: state.ships } : {}),
   };
+}
 
+async function writeStateFile(stateFilePath: string, state: ProjectState): Promise<void> {
   const tmpPath = stateFilePath + '.tmp';
-  await fs.writeFile(tmpPath, JSON.stringify(stateToWrite, null, 2), 'utf-8');
+  await fs.writeFile(tmpPath, JSON.stringify(toDiskState(state), null, 2), 'utf-8');
   await fs.rename(tmpPath, stateFilePath);
+}
+
+/**
+ * Recording sets: in a set project these fields are the PROJECT's, one shared copy in the
+ * project-root `.flihub-state.json`; each set's own file holds only its recording and chapter keys
+ * (and the deprecated FR-126 editManifest, which is keyed by take). Without sets nothing changes.
+ */
+type ProjectLevelField = 'title' | 'ships' | 'glingDictionary';
+
+function projectLevelOf(state: ProjectState): Pick<ProjectState, ProjectLevelField> {
+  const d = toDiskState(state);
+  return {
+    ...(d.title ? { title: d.title } : {}),
+    ...(d.ships ? { ships: d.ships } : {}),
+    ...(d.glingDictionary ? { glingDictionary: d.glingDictionary } : {}),
+  };
+}
+
+/**
+ * Read project state from disk
+ * Returns empty state if file doesn't exist or is corrupt
+ */
+export async function readProjectState(
+  projectDir: string,
+  /** Recording sets: whose state. `undefined` = the active set; `null` = no set. Same as getProjectPaths. */
+  set?: string | null
+): Promise<ProjectState> {
+  const expandedDir = expandPath(projectDir);
+  const paths = getProjectPaths(expandedDir, undefined, set);
+  if (paths.set === null) return readStateFile(paths.stateFile);
+
+  // A set project: the set's recordings + chapters, with the project's shared fields on top.
+  const own = await readStateFile(paths.stateFile);
+  const shared = await readStateFile(getProjectPaths(expandedDir, undefined, null).stateFile);
+  const { title: _t, ships: _s, glingDictionary: _g, ...setOnly } = own;
+  void _t;
+  void _s;
+  void _g;
+  return { ...setOnly, ...projectLevelOf(shared) };
+}
+
+/**
+ * Write project state to disk
+ * Creates parent directories if needed
+ */
+export async function writeProjectState(
+  projectDir: string,
+  state: ProjectState,
+  /** Recording sets: whose state. `undefined` = the active set; `null` = no set. Same as getProjectPaths. */
+  set?: string | null
+): Promise<void> {
+  const expandedDir = expandPath(projectDir);
+  const paths = getProjectPaths(expandedDir, undefined, set);
+  if (paths.set === null) {
+    await writeStateFile(paths.stateFile, state);
+    return;
+  }
+
+  // A set project: the set file gets everything but the project-level fields…
+  const { title: _t, ships: _s, glingDictionary: _g, ...setOnly } = state;
+  void _t;
+  void _s;
+  void _g;
+  await writeStateFile(paths.stateFile, { ...setOnly, version: 1 });
+
+  // …and the shared project file is written only when those fields actually changed, so a take
+  // action in one set never rewrites (or creates) the project file.
+  const sharedFile = getProjectPaths(expandedDir, undefined, null).stateFile;
+  const shared = await readStateFile(sharedFile);
+  const next = projectLevelOf(state);
+  if (JSON.stringify(projectLevelOf(shared)) === JSON.stringify(next)) return;
+  const { title: _t2, ships: _s2, glingDictionary: _g2, ...sharedRest } = shared;
+  void _t2;
+  void _s2;
+  void _g2;
+  await writeStateFile(sharedFile, { ...sharedRest, ...next, version: 1 });
 }
 
 /**
