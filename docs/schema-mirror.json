@@ -1,6 +1,6 @@
 {
   "census": {
-    "declared": 446,
+    "declared": 451,
     "files": {
       "client/src/App.tsx": {
         "declared": 3,
@@ -197,6 +197,13 @@
         "mirrored": 1,
         "not_read": 0,
         "not_schema_bearing": 0
+      },
+      "client/src/components/RecordingSets.tsx": {
+        "declared": 0,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 0,
+        "not_schema_bearing": 1
       },
       "client/src/components/RecordingVideoModal.tsx": {
         "declared": 1,
@@ -590,6 +597,13 @@
         "not_read": 0,
         "not_schema_bearing": 0
       },
+      "client/src/hooks/useSetsApi.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 1,
+        "not_schema_bearing": 0
+      },
       "client/src/hooks/useShiftHover.ts": {
         "declared": 6,
         "gaps": 0,
@@ -757,6 +771,13 @@
         "mirrored": 1,
         "not_read": 0,
         "not_schema_bearing": 0
+      },
+      "server/src/routes/sets.ts": {
+        "declared": 0,
+        "gaps": 0,
+        "mirrored": 0,
+        "not_read": 0,
+        "not_schema_bearing": 1
       },
       "server/src/routes/thumbs.ts": {
         "declared": 3,
@@ -1043,32 +1064,32 @@
         "gaps": 0,
         "mirrored": 1,
         "not_read": 0,
-        "not_schema_bearing": 0
+        "not_schema_bearing": 1
       },
       "shared/types.ts": {
-        "declared": 133,
+        "declared": 137,
         "gaps": 0,
-        "mirrored": 129,
+        "mirrored": 133,
         "not_read": 4,
         "not_schema_bearing": 0
       }
     },
     "gaps": 2,
-    "mirrored": 391,
-    "not_read": 53,
-    "not_schema_bearing": 34,
+    "mirrored": 395,
+    "not_read": 54,
+    "not_schema_bearing": 37,
     "not_schema_bearing_by_family": {
       "function": 1,
       "function type": 4,
-      "literal constant": 29
+      "literal constant": 32
     }
   },
   "closed_sets": [
     {
       "anchor": {
-        "end_line": 67,
+        "end_line": 68,
         "file": "client/src/App.tsx",
-        "line": 53
+        "line": 54
       },
       "authority": "literal union type alias `ViewTab` - a single declaring symbol",
       "grade": "declared",
@@ -1077,98 +1098,98 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 54
+            "line": 55
           },
           "value": "incoming"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 55
+            "line": 56
           },
           "value": "recordings"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 56
+            "line": 57
           },
           "value": "watch"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 57
+            "line": 58
           },
           "value": "transcriptions"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 58
+            "line": 59
           },
           "value": "inbox"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 59
+            "line": 60
           },
           "value": "assets"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 60
+            "line": 61
           },
           "value": "thumbs"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 61
+            "line": 62
           },
           "value": "export"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 62
+            "line": 63
           },
           "value": "b-roll"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 63
+            "line": 64
           },
           "value": "projects"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 64
+            "line": 65
           },
           "value": "config"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 65
+            "line": 66
           },
           "value": "mockups"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 66
+            "line": 67
           },
           "value": "miccheck"
         },
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 67
+            "line": 68
           },
           "value": "api-explorer"
         }
@@ -1901,7 +1922,7 @@
     {
       "anchor": {
         "file": "client/src/components/WatchPage.tsx",
-        "line": 55
+        "line": 56
       },
       "authority": "literal union type alias `VideoSize` - a single declaring symbol",
       "grade": "declared",
@@ -1910,14 +1931,14 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 55
+            "line": 56
           },
           "value": "N"
         },
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 55
+            "line": 56
           },
           "value": "L"
         }
@@ -2801,24 +2822,24 @@
     {
       "anchor": {
         "file": "server/src/routes/transcriptions.ts",
-        "line": 771
+        "line": 772
       },
       "authority": "inline membership test `[...].includes(scope)` - no declaring symbol",
-      "finding": "REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:771. Name it once (z.enum / literal union) so it has one authority.",
+      "finding": "REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:772. Name it once (z.enum / literal union) so it has one authority.",
       "grade": "derived",
       "id": "server/src/routes/transcriptions.scope (membership)",
       "members": [
         {
           "anchor": {
             "file": "server/src/routes/transcriptions.ts",
-            "line": 771
+            "line": 772
           },
           "value": "project"
         },
         {
           "anchor": {
             "file": "server/src/routes/transcriptions.ts",
-            "line": 771
+            "line": 772
           },
           "value": "chapter"
         }
@@ -2827,24 +2848,24 @@
     {
       "anchor": {
         "file": "server/src/routes/video.ts",
-        "line": 81
+        "line": 98
       },
       "authority": "if/else-if chain on `folder` - its type is not a literal union, no enum, no z.enum",
-      "finding": "REFACTOR: `folder` is a closed set enforced only by control flow at server/src/routes/video.ts:81. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
+      "finding": "REFACTOR: `folder` is a closed set enforced only by control flow at server/src/routes/video.ts:98. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
       "grade": "derived",
       "id": "server/src/routes/video.folder (branching)",
       "members": [
         {
           "anchor": {
             "file": "server/src/routes/video.ts",
-            "line": 81
+            "line": 98
           },
           "value": "-chapters"
         },
         {
           "anchor": {
             "file": "server/src/routes/video.ts",
-            "line": 83
+            "line": 100
           },
           "value": "recordings"
         }
@@ -2853,24 +2874,24 @@
     {
       "anchor": {
         "file": "server/src/routes/video.ts",
-        "line": 161
+        "line": 178
       },
       "authority": "inline membership test `[...].includes(ext)` - no declaring symbol",
-      "finding": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:161. Name it once (z.enum / literal union) so it has one authority.",
+      "finding": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:178. Name it once (z.enum / literal union) so it has one authority.",
       "grade": "derived",
       "id": "server/src/routes/video.ext (membership)",
       "members": [
         {
           "anchor": {
             "file": "server/src/routes/video.ts",
-            "line": 161
+            "line": 178
           },
           "value": ".mov"
         },
         {
           "anchor": {
             "file": "server/src/routes/video.ts",
-            "line": 161
+            "line": 178
           },
           "value": ".mp4"
         }
@@ -2879,24 +2900,24 @@
     {
       "anchor": {
         "file": "server/src/routes/video.ts",
-        "line": 242
+        "line": 264
       },
       "authority": "inline membership test `[...].includes(ext)` - no declaring symbol",
-      "finding": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:242. Name it once (z.enum / literal union) so it has one authority.",
+      "finding": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:264. Name it once (z.enum / literal union) so it has one authority.",
       "grade": "derived",
       "id": "server/src/routes/video.ext (membership) #2",
       "members": [
         {
           "anchor": {
             "file": "server/src/routes/video.ts",
-            "line": 242
+            "line": 264
           },
           "value": ".mov"
         },
         {
           "anchor": {
             "file": "server/src/routes/video.ts",
-            "line": 242
+            "line": 264
           },
           "value": ".mp4"
         }
@@ -3781,45 +3802,45 @@
     {
       "anchor": {
         "file": "server/src/utils/segmentOps.ts",
-        "line": 450
+        "line": 452
       },
       "authority": "inline membership test `[...].includes(op.mode)` - no declaring symbol",
-      "finding": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:450. Name it once (z.enum / literal union) so it has one authority.",
+      "finding": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:452. Name it once (z.enum / literal union) so it has one authority.",
       "grade": "derived",
       "id": "server/src/utils/segmentOps.op.mode (membership)",
       "members": [
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 450
+            "line": 452
           },
           "value": "replace"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 450
+            "line": 452
           },
           "value": "insert"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 450
+            "line": 452
           },
           "value": "reorder"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 450
+            "line": 452
           },
           "value": "delete"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 450
+            "line": 452
           },
           "value": "send"
         }
@@ -4672,7 +4693,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 594
+        "line": 595
       },
       "authority": "literal union type alias `TranscriptionStatus` - a single declaring symbol",
       "grade": "declared",
@@ -4681,35 +4702,35 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 594
+            "line": 595
           },
           "value": "none"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 594
+            "line": 595
           },
           "value": "queued"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 594
+            "line": 595
           },
           "value": "transcribing"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 594
+            "line": 595
           },
           "value": "complete"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 594
+            "line": 595
           },
           "value": "error"
         }
@@ -4718,7 +4739,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 641
+        "line": 642
       },
       "authority": "literal union type of `pass` - a single declaring symbol",
       "grade": "declared",
@@ -4727,14 +4748,14 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 641
+            "line": 642
           },
           "value": 1
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 641
+            "line": 642
           },
           "value": 2
         }
@@ -4743,7 +4764,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 663
+        "line": 664
       },
       "authority": "literal union type alias `FinalMediaLocation` - a single declaring symbol",
       "grade": "declared",
@@ -4752,21 +4773,21 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 663
+            "line": 664
           },
           "value": "final"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 663
+            "line": 664
           },
           "value": "s3-staging"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 663
+            "line": 664
           },
           "value": "root"
         }
@@ -4775,7 +4796,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 694
+        "line": 695
       },
       "authority": "literal union type alias `ChapterMatchStatus` - a single declaring symbol",
       "grade": "declared",
@@ -4784,21 +4805,21 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 694
+            "line": 695
           },
           "value": "matched"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 694
+            "line": 695
           },
           "value": "low_confidence"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 694
+            "line": 695
           },
           "value": "not_found"
         }
@@ -4807,7 +4828,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 702
+        "line": 703
       },
       "authority": "literal union type of `matchMethod` - a single declaring symbol",
       "grade": "declared",
@@ -4816,21 +4837,21 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 702
+            "line": 703
           },
           "value": "phrase"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 702
+            "line": 703
           },
           "value": "partial"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 702
+            "line": 703
           },
           "value": "keyword"
         }
@@ -4839,7 +4860,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 756
+        "line": 757
       },
       "authority": "literal union type of `action` - a single declaring symbol",
       "grade": "declared",
@@ -4848,28 +4869,28 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 756
+            "line": 757
           },
           "value": "use_current"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 756
+            "line": 757
           },
           "value": "use_alternative"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 756
+            "line": 757
           },
           "value": "manual_timestamp"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 756
+            "line": 757
           },
           "value": "skip"
         }
@@ -4878,7 +4899,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 769
+        "line": 770
       },
       "authority": "literal union type of `action` - a single declaring symbol",
       "grade": "declared",
@@ -4887,14 +4908,14 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 769
+            "line": 770
           },
           "value": "override"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 769
+            "line": 770
           },
           "value": "skip"
         }
@@ -4903,7 +4924,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 780
+        "line": 781
       },
       "authority": "literal union type of `action` - a single declaring symbol",
       "grade": "declared",
@@ -4912,14 +4933,14 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 780
+            "line": 781
           },
           "value": "override"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 780
+            "line": 781
           },
           "value": "skip"
         }
@@ -4928,7 +4949,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 795
+        "line": 796
       },
       "authority": "literal union type of `resolution` - a single declaring symbol",
       "grade": "declared",
@@ -4937,14 +4958,14 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 795
+            "line": 796
           },
           "value": "720p"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 795
+            "line": 796
           },
           "value": "1080p"
         }
@@ -4953,7 +4974,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 818
+        "line": 819
       },
       "authority": "literal union type of `status` - a single declaring symbol",
       "grade": "declared",
@@ -4962,28 +4983,28 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 818
+            "line": 819
           },
           "value": "pending"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 818
+            "line": 819
           },
           "value": "generating"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 818
+            "line": 819
           },
           "value": "complete"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 818
+            "line": 819
           },
           "value": "error"
         }
@@ -4992,7 +5013,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 981
+        "line": 982
       },
       "authority": "literal union type of `scope` - a single declaring symbol",
       "grade": "declared",
@@ -5001,14 +5022,14 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 981
+            "line": 982
           },
           "value": "project"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 981
+            "line": 982
           },
           "value": "chapter"
         }
@@ -5017,7 +5038,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 1037
+        "line": 1038
       },
       "authority": "literal union type of `platform` - a single declaring symbol",
       "grade": "declared",
@@ -5026,21 +5047,21 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1037
+            "line": 1038
           },
           "value": "win32"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1037
+            "line": 1038
           },
           "value": "linux"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1037
+            "line": 1038
           },
           "value": "darwin"
         }
@@ -5049,7 +5070,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 1039
+        "line": 1040
       },
       "authority": "literal union type of `pathFormat` - a single declaring symbol",
       "grade": "declared",
@@ -5058,14 +5079,14 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1039
+            "line": 1040
           },
           "value": "windows"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1039
+            "line": 1040
           },
           "value": "linux"
         }
@@ -5074,7 +5095,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 1087
+        "line": 1088
       },
       "authority": "literal union type alias `ProjectShips` - a single declaring symbol",
       "doc": "FR-168: RENDER GRAIN \u2014 does this project ship ONE video, or one video per chapter?",
@@ -5084,14 +5105,14 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1087
+            "line": 1088
           },
           "value": "per-project"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1087
+            "line": 1088
           },
           "value": "per-chapter"
         }
@@ -5099,9 +5120,9 @@
     },
     {
       "anchor": {
-        "end_line": 1156,
+        "end_line": 1157,
         "file": "shared/types.ts",
-        "line": 1138
+        "line": 1139
       },
       "authority": "literal union type alias `FolderKey` - a single declaring symbol",
       "grade": "declared",
@@ -5110,126 +5131,126 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1139
+            "line": 1140
           },
           "value": "ecamm"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1140
+            "line": 1141
           },
           "value": "downloads"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1141
+            "line": 1142
           },
           "value": "recordings"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1142
+            "line": 1143
           },
           "value": "safe"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1143
+            "line": 1144
           },
           "value": "trash"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1144
+            "line": 1145
           },
           "value": "images"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1145
+            "line": 1146
           },
           "value": "thumbs"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1146
+            "line": 1147
           },
           "value": "transcripts"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1147
+            "line": 1148
           },
           "value": "project"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1148
+            "line": 1149
           },
           "value": "final"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1149
+            "line": 1150
           },
           "value": "s3Staging"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1150
+            "line": 1151
           },
           "value": "s3Prep"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1151
+            "line": 1152
           },
           "value": "s3Post"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1152
+            "line": 1153
           },
           "value": "inbox"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1153
+            "line": 1154
           },
           "value": "chapters"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1154
+            "line": 1155
           },
           "value": "edit-1st"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1155
+            "line": 1156
           },
           "value": "edit-2nd"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1156
+            "line": 1157
           },
           "value": "edit-final"
         }
@@ -5238,7 +5259,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 1159
+        "line": 1160
       },
       "authority": "literal union type alias `EditFolderKey` - a single declaring symbol",
       "grade": "declared",
@@ -5247,21 +5268,21 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1159
+            "line": 1160
           },
           "value": "edit-1st"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1159
+            "line": 1160
           },
           "value": "edit-2nd"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1159
+            "line": 1160
           },
           "value": "edit-final"
         }
@@ -5270,7 +5291,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 1164
+        "line": 1165
       },
       "authority": "literal union type of `status` - a single declaring symbol",
       "grade": "declared",
@@ -5279,21 +5300,21 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1164
+            "line": 1165
           },
           "value": "present"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1164
+            "line": 1165
           },
           "value": "missing"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1164
+            "line": 1165
           },
           "value": "changed"
         }
@@ -5302,7 +5323,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 1170
+        "line": 1171
       },
       "authority": "literal union type alias `ManifestStatus` - a single declaring symbol",
       "grade": "declared",
@@ -5311,35 +5332,35 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1170
+            "line": 1171
           },
           "value": "present"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1170
+            "line": 1171
           },
           "value": "cleaned"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1170
+            "line": 1171
           },
           "value": "changed"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1170
+            "line": 1171
           },
           "value": "missing"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1170
+            "line": 1171
           },
           "value": "no-manifest"
         }
@@ -5348,7 +5369,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 1246
+        "line": 1247
       },
       "authority": "literal union type alias `MicCheckMode` - a single declaring symbol",
       "doc": "One rolling sample, posted ~1 Hz. The worklet emits ~23 Hz; posting at that rate",
@@ -5358,14 +5379,14 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1246
+            "line": 1247
           },
           "value": "room"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1246
+            "line": 1247
           },
           "value": "speaking"
         }
@@ -5373,9 +5394,9 @@
     },
     {
       "anchor": {
-        "end_line": 1281,
+        "end_line": 1282,
         "file": "shared/types.ts",
-        "line": 1276
+        "line": 1277
       },
       "authority": "literal union type alias `MicCheckEventKind` - a single declaring symbol",
       "grade": "declared",
@@ -5384,35 +5405,35 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1277
+            "line": 1278
           },
           "value": "level-step"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1278
+            "line": 1279
           },
           "value": "clip"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1279
+            "line": 1280
           },
           "value": "near-clip-run"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1280
+            "line": 1281
           },
           "value": "level-instability"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1281
+            "line": 1282
           },
           "value": "room-contaminated"
         }
@@ -5421,7 +5442,7 @@
     {
       "anchor": {
         "file": "shared/types.ts",
-        "line": 1307
+        "line": 1308
       },
       "authority": "literal union type alias `MicCheckProbeVerdict` - a single declaring symbol",
       "grade": "declared",
@@ -5430,23 +5451,94 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1307
+            "line": 1308
           },
           "value": "clean"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1307
+            "line": 1308
           },
           "value": "suspicious"
         },
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1307
+            "line": 1308
           },
           "value": "inconclusive"
+        }
+      ]
+    },
+    {
+      "anchor": {
+        "file": "shared/types.ts",
+        "line": 1403
+      },
+      "authority": "literal union type alias `RecordingSetRole` - a single declaring symbol",
+      "grade": "declared",
+      "id": "shared/types.RecordingSetRole",
+      "members": [
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1403
+          },
+          "value": "video"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1403
+          },
+          "value": "part"
+        }
+      ]
+    },
+    {
+      "anchor": {
+        "file": "shared/types.ts",
+        "line": 1439
+      },
+      "authority": "literal union type of `reason` - a single declaring symbol",
+      "grade": "declared",
+      "id": "shared/types.RecordingSetChangeResponse.reason",
+      "members": [
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1439
+          },
+          "value": "no-project"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1439
+          },
+          "value": "not-a-set-project"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1439
+          },
+          "value": "bad-id"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1439
+          },
+          "value": "set-exists"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1439
+          },
+          "value": "no-such-set"
         }
       ]
     }
@@ -5547,37 +5639,37 @@
     {
       "anchor": {
         "file": "server/src/routes/transcriptions.ts",
-        "line": 771
+        "line": 772
       },
       "kind": "refactor_required",
-      "message": "REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:771. Name it once (z.enum / literal union) so it has one authority.",
+      "message": "REFACTOR: the set for `scope` is inlined at server/src/routes/transcriptions.ts:772. Name it once (z.enum / literal union) so it has one authority.",
       "target": "server/src/routes/transcriptions.scope (membership)"
     },
     {
       "anchor": {
         "file": "server/src/routes/video.ts",
-        "line": 81
+        "line": 98
       },
       "kind": "refactor_required",
-      "message": "REFACTOR: `folder` is a closed set enforced only by control flow at server/src/routes/video.ts:81. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
+      "message": "REFACTOR: `folder` is a closed set enforced only by control flow at server/src/routes/video.ts:98. Declare it once (a z.enum or a literal union type) and type the subject with it; until then this section is DERIVED and will drift silently.",
       "target": "server/src/routes/video.folder (branching)"
     },
     {
       "anchor": {
         "file": "server/src/routes/video.ts",
-        "line": 161
+        "line": 178
       },
       "kind": "refactor_required",
-      "message": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:161. Name it once (z.enum / literal union) so it has one authority.",
+      "message": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:178. Name it once (z.enum / literal union) so it has one authority.",
       "target": "server/src/routes/video.ext (membership)"
     },
     {
       "anchor": {
         "file": "server/src/routes/video.ts",
-        "line": 242
+        "line": 264
       },
       "kind": "refactor_required",
-      "message": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:242. Name it once (z.enum / literal union) so it has one authority.",
+      "message": "REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:264. Name it once (z.enum / literal union) so it has one authority.",
       "target": "server/src/routes/video.ext (membership) #2"
     },
     {
@@ -5601,14 +5693,14 @@
     {
       "anchor": {
         "file": "server/src/utils/segmentOps.ts",
-        "line": 450
+        "line": 452
       },
       "kind": "refactor_required",
-      "message": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:450. Name it once (z.enum / literal union) so it has one authority.",
+      "message": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:452. Name it once (z.enum / literal union) so it has one authority.",
       "target": "server/src/utils/segmentOps.op.mode (membership)"
     }
   ],
-  "generated": "2026-11-11T12:41:18+00:00",
+  "generated": "2026-11-11T13:22:16+00:00",
   "ignored_derived": [
     {
       "anchor": {
@@ -5702,9 +5794,9 @@
   "structures": [
     {
       "anchor": {
-        "end_line": 104,
+        "end_line": 105,
         "file": "client/src/App.tsx",
-        "line": 98
+        "line": 99
       },
       "bases": [],
       "doc": null,
@@ -5713,7 +5805,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 99
+            "line": 100
           },
           "default": null,
           "name": "chapter",
@@ -5722,7 +5814,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 100
+            "line": 101
           },
           "default": null,
           "name": "sequence",
@@ -5731,7 +5823,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 101
+            "line": 102
           },
           "default": null,
           "name": "name",
@@ -5740,7 +5832,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 102
+            "line": 103
           },
           "default": null,
           "name": "tags",
@@ -5749,7 +5841,7 @@
         {
           "anchor": {
             "file": "client/src/App.tsx",
-            "line": 103
+            "line": 104
           },
           "default": null,
           "name": "customTag",
@@ -7617,9 +7709,9 @@
     },
     {
       "anchor": {
-        "end_line": 18,
+        "end_line": 19,
         "file": "client/src/components/RecentlyNamedStrip.tsx",
-        "line": 13
+        "line": 14
       },
       "bases": [],
       "doc": null,
@@ -7628,7 +7720,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecentlyNamedStrip.tsx",
-            "line": 14
+            "line": 15
           },
           "default": null,
           "name": "renames",
@@ -7637,7 +7729,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecentlyNamedStrip.tsx",
-            "line": 15
+            "line": 16
           },
           "default": null,
           "name": "projectCode",
@@ -7646,7 +7738,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecentlyNamedStrip.tsx",
-            "line": 16
+            "line": 17
           },
           "default": null,
           "name": "onUndo",
@@ -7655,7 +7747,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecentlyNamedStrip.tsx",
-            "line": 17
+            "line": 18
           },
           "default": null,
           "name": "undoPending",
@@ -7668,9 +7760,9 @@
     },
     {
       "anchor": {
-        "end_line": 27,
+        "end_line": 28,
         "file": "client/src/components/RecordingVideoModal.tsx",
-        "line": 16
+        "line": 17
       },
       "bases": [],
       "doc": null,
@@ -7679,7 +7771,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecordingVideoModal.tsx",
-            "line": 17
+            "line": 18
           },
           "default": null,
           "name": "filename",
@@ -7688,7 +7780,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecordingVideoModal.tsx",
-            "line": 18
+            "line": 19
           },
           "default": null,
           "name": "duration",
@@ -7697,7 +7789,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecordingVideoModal.tsx",
-            "line": 19
+            "line": 20
           },
           "default": null,
           "name": "size",
@@ -7706,7 +7798,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecordingVideoModal.tsx",
-            "line": 20
+            "line": 21
           },
           "default": null,
           "name": "onClose",
@@ -7715,7 +7807,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecordingVideoModal.tsx",
-            "line": 22
+            "line": 23
           },
           "default": null,
           "doc": "B069: Navigate to previous recording",
@@ -7725,7 +7817,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecordingVideoModal.tsx",
-            "line": 24
+            "line": 25
           },
           "default": null,
           "doc": "B069: Navigate to next recording",
@@ -7735,7 +7827,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecordingVideoModal.tsx",
-            "line": 26
+            "line": 27
           },
           "default": null,
           "doc": "B069: Current position in the list",
@@ -7750,7 +7842,7 @@
     {
       "anchor": {
         "file": "client/src/components/RecordingVideoModal.tsx",
-        "line": 26
+        "line": 27
       },
       "bases": [],
       "doc": null,
@@ -7758,7 +7850,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecordingVideoModal.tsx",
-            "line": 26
+            "line": 27
           },
           "default": null,
           "name": "current",
@@ -7767,7 +7859,7 @@
         {
           "anchor": {
             "file": "client/src/components/RecordingVideoModal.tsx",
-            "line": 26
+            "line": 27
           },
           "default": null,
           "name": "total",
@@ -8314,9 +8406,9 @@
     },
     {
       "anchor": {
-        "end_line": 87,
+        "end_line": 88,
         "file": "client/src/components/WatchPage.tsx",
-        "line": 81
+        "line": 82
       },
       "bases": [],
       "doc": null,
@@ -8325,7 +8417,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 82
+            "line": 83
           },
           "default": null,
           "name": "chapterKey",
@@ -8334,7 +8426,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 83
+            "line": 84
           },
           "default": null,
           "name": "title",
@@ -8343,7 +8435,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 84
+            "line": 85
           },
           "default": null,
           "name": "files",
@@ -8352,7 +8444,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 85
+            "line": 86
           },
           "default": null,
           "name": "totalDuration",
@@ -8361,7 +8453,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 86
+            "line": 87
           },
           "default": null,
           "name": "startTime",
@@ -8374,9 +8466,9 @@
     },
     {
       "anchor": {
-        "end_line": 164,
+        "end_line": 166,
         "file": "client/src/components/WatchPage.tsx",
-        "line": 156
+        "line": 158
       },
       "bases": [],
       "doc": null,
@@ -8385,7 +8477,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 157
+            "line": 159
           },
           "default": null,
           "name": "url",
@@ -8394,7 +8486,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 158
+            "line": 160
           },
           "default": null,
           "name": "title",
@@ -8403,7 +8495,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 159
+            "line": 161
           },
           "default": null,
           "name": "isChapter",
@@ -8412,7 +8504,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 160
+            "line": 162
           },
           "default": null,
           "name": "chapterKey",
@@ -8421,7 +8513,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 161
+            "line": 163
           },
           "default": null,
           "name": "chapterLabel",
@@ -8430,7 +8522,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 162
+            "line": 164
           },
           "default": null,
           "name": "segmentName",
@@ -8439,7 +8531,7 @@
         {
           "anchor": {
             "file": "client/src/components/WatchPage.tsx",
-            "line": 163
+            "line": 165
           },
           "default": null,
           "name": "chapterFiles",
@@ -18652,9 +18744,9 @@
     },
     {
       "anchor": {
-        "end_line": 163,
+        "end_line": 169,
         "file": "server/src/utils/scanning.ts",
-        "line": 157
+        "line": 163
       },
       "bases": [],
       "doc": "FR-80/FR-82: Project content indicators with counts",
@@ -18663,7 +18755,7 @@
         {
           "anchor": {
             "file": "server/src/utils/scanning.ts",
-            "line": 158
+            "line": 164
           },
           "default": null,
           "name": "hasInbox",
@@ -18672,7 +18764,7 @@
         {
           "anchor": {
             "file": "server/src/utils/scanning.ts",
-            "line": 159
+            "line": 165
           },
           "default": null,
           "name": "hasAssets",
@@ -18681,7 +18773,7 @@
         {
           "anchor": {
             "file": "server/src/utils/scanning.ts",
-            "line": 160
+            "line": 166
           },
           "default": null,
           "name": "hasChapters",
@@ -18690,7 +18782,7 @@
         {
           "anchor": {
             "file": "server/src/utils/scanning.ts",
-            "line": 161
+            "line": 167
           },
           "default": null,
           "name": "inboxCount",
@@ -18699,7 +18791,7 @@
         {
           "anchor": {
             "file": "server/src/utils/scanning.ts",
-            "line": 162
+            "line": 168
           },
           "default": null,
           "name": "chapterVideoCount",
@@ -19393,9 +19485,9 @@
     },
     {
       "anchor": {
-        "end_line": 262,
+        "end_line": 264,
         "file": "server/src/utils/segmentOps.ts",
-        "line": 254
+        "line": 256
       },
       "bases": [],
       "doc": null,
@@ -19404,7 +19496,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 255
+            "line": 257
           },
           "default": null,
           "name": "summary",
@@ -19413,7 +19505,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 257
+            "line": 259
           },
           "default": null,
           "doc": "Takes whose files go to the trash.",
@@ -19423,7 +19515,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 259
+            "line": 261
           },
           "default": null,
           "doc": "Takes that change segment number.",
@@ -19433,7 +19525,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 261
+            "line": 263
           },
           "default": null,
           "doc": "The inbox takes promoted into the chapter, in order.",
@@ -19447,9 +19539,9 @@
     },
     {
       "anchor": {
-        "end_line": 659,
+        "end_line": 661,
         "file": "server/src/utils/segmentOps.ts",
-        "line": 652
+        "line": 654
       },
       "bases": [],
       "doc": "Everything an operation will do, planned and guarded, before a single file moves.",
@@ -19458,7 +19550,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 653
+            "line": 655
           },
           "default": null,
           "name": "paths",
@@ -19467,7 +19559,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 654
+            "line": 656
           },
           "default": null,
           "name": "plan",
@@ -19476,7 +19568,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 655
+            "line": 657
           },
           "default": null,
           "name": "id",
@@ -19485,7 +19577,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 656
+            "line": 658
           },
           "default": null,
           "name": "trashSteps",
@@ -19494,7 +19586,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 657
+            "line": 659
           },
           "default": null,
           "name": "moving",
@@ -19503,7 +19595,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 658
+            "line": 660
           },
           "default": null,
           "name": "promoteSteps",
@@ -19516,9 +19608,9 @@
     },
     {
       "anchor": {
-        "end_line": 772,
+        "end_line": 774,
         "file": "server/src/utils/segmentOps.ts",
-        "line": 764
+        "line": 766
       },
       "bases": [],
       "doc": "What an operation would do, for a confirmation that shows exactly that.",
@@ -19527,7 +19619,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 765
+            "line": 767
           },
           "default": null,
           "name": "summary",
@@ -19536,7 +19628,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 767
+            "line": 769
           },
           "default": null,
           "doc": "Files that would go to `-trash/`, relative to the project.",
@@ -19546,7 +19638,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 769
+            "line": 771
           },
           "default": null,
           "doc": "Recording renames (old filename \u2192 new filename), in chapter order.",
@@ -19556,7 +19648,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 771
+            "line": 773
           },
           "default": null,
           "doc": "Recordings that would land from the inbox.",
@@ -19645,9 +19737,9 @@
     },
     {
       "anchor": {
-        "end_line": 225,
+        "end_line": 287,
         "file": "server/src/utils/storageTree.ts",
-        "line": 221
+        "line": 283
       },
       "bases": [],
       "doc": null,
@@ -19656,7 +19748,7 @@
         {
           "anchor": {
             "file": "server/src/utils/storageTree.ts",
-            "line": 222
+            "line": 284
           },
           "default": null,
           "name": "projectsRoot",
@@ -19665,7 +19757,7 @@
         {
           "anchor": {
             "file": "server/src/utils/storageTree.ts",
-            "line": 223
+            "line": 285
           },
           "default": null,
           "name": "holdingRoot",
@@ -19674,7 +19766,7 @@
         {
           "anchor": {
             "file": "server/src/utils/storageTree.ts",
-            "line": 224
+            "line": 286
           },
           "default": null,
           "name": "publishedRoot",
@@ -20347,9 +20439,9 @@
     },
     {
       "anchor": {
-        "end_line": 59,
+        "end_line": 140,
         "file": "shared/paths.ts",
-        "line": 38
+        "line": 116
       },
       "bases": [],
       "doc": null,
@@ -20358,7 +20450,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 39
+            "line": 117
           },
           "default": null,
           "name": "project",
@@ -20367,7 +20459,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 40
+            "line": 118
           },
           "default": null,
           "name": "layout",
@@ -20376,7 +20468,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 41
+            "line": 119
           },
           "default": null,
           "name": "recordings",
@@ -20385,7 +20477,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 42
+            "line": 120
           },
           "default": null,
           "name": "broll",
@@ -20394,7 +20486,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 43
+            "line": 121
           },
           "default": null,
           "name": "safe",
@@ -20403,7 +20495,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 44
+            "line": 122
           },
           "default": null,
           "name": "chapters",
@@ -20412,7 +20504,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 45
+            "line": 123
           },
           "default": null,
           "name": "trash",
@@ -20421,7 +20513,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 46
+            "line": 124
           },
           "default": null,
           "name": "assets",
@@ -20430,7 +20522,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 47
+            "line": 125
           },
           "default": null,
           "name": "images",
@@ -20439,7 +20531,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 48
+            "line": 126
           },
           "default": null,
           "name": "thumbs",
@@ -20448,7 +20540,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 49
+            "line": 127
           },
           "default": null,
           "name": "transcripts",
@@ -20457,7 +20549,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 50
+            "line": 128
           },
           "default": null,
           "name": "final",
@@ -20466,7 +20558,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 51
+            "line": 129
           },
           "default": null,
           "name": "s3Staging",
@@ -20475,7 +20567,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 53
+            "line": 131
           },
           "default": null,
           "name": "inbox",
@@ -20484,7 +20576,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 54
+            "line": 132
           },
           "default": null,
           "name": "inboxRaw",
@@ -20493,7 +20585,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 55
+            "line": 133
           },
           "default": null,
           "name": "inboxDataset",
@@ -20502,7 +20594,7 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 56
+            "line": 134
           },
           "default": null,
           "name": "inboxPresentation",
@@ -20511,11 +20603,30 @@
         {
           "anchor": {
             "file": "shared/paths.ts",
-            "line": 58
+            "line": 136
           },
           "default": null,
           "name": "stateFile",
           "type": "string"
+        },
+        {
+          "anchor": {
+            "file": "shared/paths.ts",
+            "line": 137
+          },
+          "default": null,
+          "name": "chapterOverrides",
+          "type": "string"
+        },
+        {
+          "anchor": {
+            "file": "shared/paths.ts",
+            "line": 139
+          },
+          "default": null,
+          "doc": "Recording sets: the set these recordings/transcripts/state paths are for; null without sets.",
+          "name": "set",
+          "type": "string | null"
         }
       ],
       "grade": "declared",
@@ -23582,7 +23693,7 @@
     },
     {
       "anchor": {
-        "end_line": 577,
+        "end_line": 578,
         "file": "shared/types.ts",
         "line": 543
       },
@@ -23719,7 +23830,16 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 560
+            "line": 559
+          },
+          "default": null,
+          "name": "sets:changed",
+          "type": "() => void"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 561
           },
           "default": null,
           "name": "miccheck:started",
@@ -23728,7 +23848,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 561
+            "line": 562
           },
           "default": null,
           "name": "miccheck:tick",
@@ -23737,7 +23857,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 562
+            "line": 563
           },
           "default": null,
           "name": "miccheck:finished",
@@ -23746,7 +23866,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 564
+            "line": 565
           },
           "default": null,
           "name": "transcription:queued",
@@ -23755,7 +23875,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 565
+            "line": 566
           },
           "default": null,
           "name": "transcription:started",
@@ -23764,7 +23884,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 566
+            "line": 567
           },
           "default": null,
           "name": "transcription:progress",
@@ -23773,7 +23893,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 567
+            "line": 568
           },
           "default": null,
           "name": "transcription:complete",
@@ -23782,7 +23902,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 573
+            "line": 574
           },
           "default": null,
           "name": "transcription:error",
@@ -23791,7 +23911,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 576
+            "line": 577
           },
           "default": null,
           "name": "context:changed",
@@ -23804,9 +23924,9 @@
     },
     {
       "anchor": {
-        "end_line": 591,
+        "end_line": 592,
         "file": "shared/types.ts",
-        "line": 589
+        "line": 590
       },
       "bases": [],
       "doc": null,
@@ -23818,9 +23938,9 @@
     },
     {
       "anchor": {
-        "end_line": 611,
+        "end_line": 612,
         "file": "shared/types.ts",
-        "line": 597
+        "line": 598
       },
       "bases": [],
       "doc": null,
@@ -23829,7 +23949,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 598
+            "line": 599
           },
           "default": null,
           "name": "jobId",
@@ -23838,7 +23958,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 599
+            "line": 600
           },
           "default": null,
           "name": "videoPath",
@@ -23847,7 +23967,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 600
+            "line": 601
           },
           "default": null,
           "name": "videoFilename",
@@ -23856,7 +23976,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 601
+            "line": 602
           },
           "default": null,
           "name": "status",
@@ -23865,7 +23985,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 602
+            "line": 603
           },
           "default": null,
           "name": "duration",
@@ -23874,7 +23994,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 603
+            "line": 604
           },
           "default": null,
           "name": "size",
@@ -23883,7 +24003,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 604
+            "line": 605
           },
           "default": null,
           "name": "queuedAt",
@@ -23892,7 +24012,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 605
+            "line": 606
           },
           "default": null,
           "name": "startedAt",
@@ -23901,7 +24021,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 606
+            "line": 607
           },
           "default": null,
           "name": "completedAt",
@@ -23910,7 +24030,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 607
+            "line": 608
           },
           "default": null,
           "name": "error",
@@ -23919,7 +24039,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 608
+            "line": 609
           },
           "default": null,
           "name": "streamedText",
@@ -23928,7 +24048,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 609
+            "line": 610
           },
           "default": null,
           "name": "force",
@@ -23937,7 +24057,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 610
+            "line": 611
           },
           "default": null,
           "name": "health",
@@ -23950,9 +24070,9 @@
     },
     {
       "anchor": {
-        "end_line": 624,
+        "end_line": 625,
         "file": "shared/types.ts",
-        "line": 615
+        "line": 616
       },
       "bases": [],
       "doc": null,
@@ -23961,7 +24081,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 616
+            "line": 617
           },
           "default": null,
           "name": "suspect",
@@ -23970,7 +24090,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 617
+            "line": 618
           },
           "default": null,
           "name": "reasons",
@@ -23979,7 +24099,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 618
+            "line": 619
           },
           "default": null,
           "name": "retried",
@@ -23988,7 +24108,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 621
+            "line": 622
           },
           "default": null,
           "name": "wordsBackInTime",
@@ -23997,7 +24117,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 623
+            "line": 624
           },
           "default": null,
           "name": "overlapRepaired",
@@ -24010,9 +24130,9 @@
     },
     {
       "anchor": {
-        "end_line": 631,
+        "end_line": 632,
         "file": "shared/types.ts",
-        "line": 627
+        "line": 628
       },
       "bases": [],
       "doc": null,
@@ -24021,7 +24141,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 628
+            "line": 629
           },
           "default": null,
           "name": "active",
@@ -24030,7 +24150,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 629
+            "line": 630
           },
           "default": null,
           "name": "queue",
@@ -24039,7 +24159,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 630
+            "line": 631
           },
           "default": null,
           "name": "recent",
@@ -24052,9 +24172,9 @@
     },
     {
       "anchor": {
-        "end_line": 645,
+        "end_line": 646,
         "file": "shared/types.ts",
-        "line": 634
+        "line": 635
       },
       "bases": [],
       "doc": null,
@@ -24063,7 +24183,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 635
+            "line": 636
           },
           "default": null,
           "name": "filename",
@@ -24072,7 +24192,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 636
+            "line": 637
           },
           "default": null,
           "name": "status",
@@ -24081,7 +24201,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 637
+            "line": 638
           },
           "default": null,
           "name": "transcriptPath",
@@ -24090,7 +24210,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 638
+            "line": 639
           },
           "default": null,
           "name": "health",
@@ -24099,7 +24219,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 641
+            "line": 642
           },
           "default": null,
           "name": "pass",
@@ -24108,7 +24228,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 642
+            "line": 643
           },
           "default": null,
           "name": "engine",
@@ -24117,7 +24237,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 643
+            "line": 644
           },
           "default": null,
           "name": "createdAt",
@@ -24126,7 +24246,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 644
+            "line": 645
           },
           "default": null,
           "name": "pass2Pending",
@@ -24139,9 +24259,9 @@
     },
     {
       "anchor": {
-        "end_line": 651,
+        "end_line": 652,
         "file": "shared/types.ts",
-        "line": 648
+        "line": 649
       },
       "bases": [],
       "doc": null,
@@ -24150,7 +24270,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 649
+            "line": 650
           },
           "default": null,
           "name": "filename",
@@ -24159,7 +24279,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 650
+            "line": 651
           },
           "default": null,
           "name": "content",
@@ -24172,9 +24292,9 @@
     },
     {
       "anchor": {
-        "end_line": 660,
+        "end_line": 661,
         "file": "shared/types.ts",
-        "line": 654
+        "line": 655
       },
       "bases": [],
       "doc": null,
@@ -24183,7 +24303,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 655
+            "line": 656
           },
           "default": null,
           "name": "success",
@@ -24192,7 +24312,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 656
+            "line": 657
           },
           "default": null,
           "name": "filename",
@@ -24201,7 +24321,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 657
+            "line": 658
           },
           "default": null,
           "name": "content",
@@ -24210,7 +24330,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 658
+            "line": 659
           },
           "default": null,
           "name": "mimeType",
@@ -24219,7 +24339,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 659
+            "line": 660
           },
           "default": null,
           "name": "error",
@@ -24232,9 +24352,9 @@
     },
     {
       "anchor": {
-        "end_line": 671,
+        "end_line": 672,
         "file": "shared/types.ts",
-        "line": 665
+        "line": 666
       },
       "bases": [],
       "doc": null,
@@ -24243,7 +24363,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 666
+            "line": 667
           },
           "default": null,
           "name": "path",
@@ -24252,7 +24372,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 667
+            "line": 668
           },
           "default": null,
           "name": "filename",
@@ -24261,7 +24381,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 668
+            "line": 669
           },
           "default": null,
           "name": "size",
@@ -24270,7 +24390,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 669
+            "line": 670
           },
           "default": null,
           "name": "version",
@@ -24279,7 +24399,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 670
+            "line": 671
           },
           "default": null,
           "name": "location",
@@ -24292,9 +24412,9 @@
     },
     {
       "anchor": {
-        "end_line": 678,
+        "end_line": 679,
         "file": "shared/types.ts",
-        "line": 673
+        "line": 674
       },
       "bases": [],
       "doc": null,
@@ -24303,7 +24423,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 674
+            "line": 675
           },
           "default": null,
           "name": "path",
@@ -24312,7 +24432,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 675
+            "line": 676
           },
           "default": null,
           "name": "filename",
@@ -24321,7 +24441,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 676
+            "line": 677
           },
           "default": null,
           "name": "size",
@@ -24330,7 +24450,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 677
+            "line": 678
           },
           "default": null,
           "name": "location",
@@ -24343,9 +24463,9 @@
     },
     {
       "anchor": {
-        "end_line": 684,
+        "end_line": 685,
         "file": "shared/types.ts",
-        "line": 680
+        "line": 681
       },
       "bases": [],
       "doc": null,
@@ -24354,7 +24474,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 681
+            "line": 682
           },
           "default": null,
           "name": "filename",
@@ -24363,7 +24483,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 682
+            "line": 683
           },
           "default": null,
           "name": "size",
@@ -24372,7 +24492,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 683
+            "line": 684
           },
           "default": null,
           "name": "hasSrt",
@@ -24385,9 +24505,9 @@
     },
     {
       "anchor": {
-        "end_line": 691,
+        "end_line": 692,
         "file": "shared/types.ts",
-        "line": 686
+        "line": 687
       },
       "bases": [],
       "doc": null,
@@ -24396,7 +24516,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 687
+            "line": 688
           },
           "default": null,
           "name": "success",
@@ -24405,7 +24525,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 688
+            "line": 689
           },
           "default": null,
           "name": "video",
@@ -24414,7 +24534,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 689
+            "line": 690
           },
           "default": null,
           "name": "srt",
@@ -24423,7 +24543,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 690
+            "line": 691
           },
           "default": null,
           "name": "additionalSegments",
@@ -24436,9 +24556,9 @@
     },
     {
       "anchor": {
-        "end_line": 703,
+        "end_line": 704,
         "file": "shared/types.ts",
-        "line": 697
+        "line": 698
       },
       "bases": [],
       "doc": null,
@@ -24447,7 +24567,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 698
+            "line": 699
           },
           "default": null,
           "name": "timestamp",
@@ -24456,7 +24576,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 699
+            "line": 700
           },
           "default": null,
           "name": "timestampSeconds",
@@ -24465,7 +24585,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 700
+            "line": 701
           },
           "default": null,
           "name": "confidence",
@@ -24474,7 +24594,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 701
+            "line": 702
           },
           "default": null,
           "name": "matchedText",
@@ -24483,7 +24603,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 702
+            "line": 703
           },
           "default": null,
           "name": "matchMethod",
@@ -24496,9 +24616,9 @@
     },
     {
       "anchor": {
-        "end_line": 718,
+        "end_line": 719,
         "file": "shared/types.ts",
-        "line": 705
+        "line": 706
       },
       "bases": [],
       "doc": null,
@@ -24507,7 +24627,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 706
+            "line": 707
           },
           "default": null,
           "name": "chapter",
@@ -24516,7 +24636,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 707
+            "line": 708
           },
           "default": null,
           "name": "name",
@@ -24525,7 +24645,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 708
+            "line": 709
           },
           "default": null,
           "name": "displayName",
@@ -24534,7 +24654,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 709
+            "line": 710
           },
           "default": null,
           "name": "timestamp",
@@ -24543,7 +24663,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 710
+            "line": 711
           },
           "default": null,
           "name": "timestampSeconds",
@@ -24552,7 +24672,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 711
+            "line": 712
           },
           "default": null,
           "name": "confidence",
@@ -24561,7 +24681,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 712
+            "line": 713
           },
           "default": null,
           "name": "status",
@@ -24570,7 +24690,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 714
+            "line": 715
           },
           "default": null,
           "name": "matchedText",
@@ -24579,7 +24699,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 715
+            "line": 716
           },
           "default": null,
           "name": "transcriptSnippet",
@@ -24588,7 +24708,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 716
+            "line": 717
           },
           "default": null,
           "name": "alternatives",
@@ -24597,7 +24717,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 717
+            "line": 718
           },
           "default": null,
           "name": "matchReason",
@@ -24610,9 +24730,9 @@
     },
     {
       "anchor": {
-        "end_line": 731,
+        "end_line": 732,
         "file": "shared/types.ts",
-        "line": 720
+        "line": 721
       },
       "bases": [],
       "doc": null,
@@ -24621,7 +24741,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 721
+            "line": 722
           },
           "default": null,
           "name": "success",
@@ -24630,7 +24750,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 722
+            "line": 723
           },
           "default": null,
           "name": "chapters",
@@ -24639,7 +24759,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 723
+            "line": 724
           },
           "default": null,
           "name": "formatted",
@@ -24648,7 +24768,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 724
+            "line": 725
           },
           "default": null,
           "name": "error",
@@ -24657,7 +24777,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 725
+            "line": 726
           },
           "default": null,
           "name": "stats",
@@ -24670,9 +24790,9 @@
     },
     {
       "anchor": {
-        "end_line": 730,
+        "end_line": 731,
         "file": "shared/types.ts",
-        "line": 725
+        "line": 726
       },
       "bases": [],
       "doc": null,
@@ -24680,7 +24800,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 726
+            "line": 727
           },
           "default": null,
           "name": "elapsedMs",
@@ -24689,7 +24809,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 727
+            "line": 728
           },
           "default": null,
           "name": "srtSegments",
@@ -24698,7 +24818,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 728
+            "line": 729
           },
           "default": null,
           "name": "chaptersFound",
@@ -24707,7 +24827,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 729
+            "line": 730
           },
           "default": null,
           "name": "chaptersTotal",
@@ -24720,9 +24840,9 @@
     },
     {
       "anchor": {
-        "end_line": 748,
+        "end_line": 749,
         "file": "shared/types.ts",
-        "line": 736
+        "line": 737
       },
       "bases": [],
       "doc": null,
@@ -24731,7 +24851,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 737
+            "line": 738
           },
           "default": null,
           "name": "chapter",
@@ -24740,7 +24860,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 738
+            "line": 739
           },
           "default": null,
           "name": "name",
@@ -24749,7 +24869,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 739
+            "line": 740
           },
           "default": null,
           "name": "transcriptSnippet",
@@ -24758,7 +24878,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 740
+            "line": 741
           },
           "default": null,
           "name": "currentMatch",
@@ -24767,7 +24887,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 746
+            "line": 747
           },
           "default": null,
           "name": "alternatives",
@@ -24776,7 +24896,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 747
+            "line": 748
           },
           "default": null,
           "name": "userHint",
@@ -24789,9 +24909,9 @@
     },
     {
       "anchor": {
-        "end_line": 745,
+        "end_line": 746,
         "file": "shared/types.ts",
-        "line": 740
+        "line": 741
       },
       "bases": [],
       "doc": null,
@@ -24799,7 +24919,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 742
+            "line": 743
           },
           "default": null,
           "name": "timestamp",
@@ -24808,7 +24928,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 743
+            "line": 744
           },
           "default": null,
           "name": "confidence",
@@ -24817,7 +24937,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 744
+            "line": 745
           },
           "default": null,
           "name": "matchedText",
@@ -24830,9 +24950,9 @@
     },
     {
       "anchor": {
-        "end_line": 763,
+        "end_line": 764,
         "file": "shared/types.ts",
-        "line": 751
+        "line": 752
       },
       "bases": [],
       "doc": null,
@@ -24841,7 +24961,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 752
+            "line": 753
           },
           "default": null,
           "name": "success",
@@ -24850,7 +24970,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 753
+            "line": 754
           },
           "default": null,
           "name": "chapter",
@@ -24859,7 +24979,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 754
+            "line": 755
           },
           "default": null,
           "name": "name",
@@ -24868,7 +24988,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 755
+            "line": 756
           },
           "default": null,
           "name": "recommendation",
@@ -24877,7 +24997,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 762
+            "line": 763
           },
           "default": null,
           "name": "error",
@@ -24890,9 +25010,9 @@
     },
     {
       "anchor": {
-        "end_line": 761,
+        "end_line": 762,
         "file": "shared/types.ts",
-        "line": 755
+        "line": 756
       },
       "bases": [],
       "doc": null,
@@ -24900,7 +25020,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 756
+            "line": 757
           },
           "default": null,
           "name": "action",
@@ -24909,7 +25029,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 757
+            "line": 758
           },
           "default": null,
           "name": "timestamp",
@@ -24918,7 +25038,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 758
+            "line": 759
           },
           "default": null,
           "name": "timestampSeconds",
@@ -24927,7 +25047,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 759
+            "line": 760
           },
           "default": null,
           "name": "confidence",
@@ -24936,7 +25056,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 760
+            "line": 761
           },
           "default": null,
           "name": "reasoning",
@@ -24949,9 +25069,9 @@
     },
     {
       "anchor": {
-        "end_line": 774,
+        "end_line": 775,
         "file": "shared/types.ts",
-        "line": 766
+        "line": 767
       },
       "bases": [],
       "doc": null,
@@ -24960,7 +25080,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 767
+            "line": 768
           },
           "default": null,
           "name": "chapter",
@@ -24969,7 +25089,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 768
+            "line": 769
           },
           "default": null,
           "name": "name",
@@ -24978,7 +25098,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 769
+            "line": 770
           },
           "default": null,
           "name": "action",
@@ -24987,7 +25107,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 770
+            "line": 771
           },
           "default": null,
           "name": "timestamp",
@@ -24996,7 +25116,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 771
+            "line": 772
           },
           "default": null,
           "name": "timestampSeconds",
@@ -25005,7 +25125,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 772
+            "line": 773
           },
           "default": null,
           "name": "reason",
@@ -25014,7 +25134,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 773
+            "line": 774
           },
           "default": null,
           "name": "createdAt",
@@ -25027,9 +25147,9 @@
     },
     {
       "anchor": {
-        "end_line": 783,
+        "end_line": 784,
         "file": "shared/types.ts",
-        "line": 777
+        "line": 778
       },
       "bases": [],
       "doc": null,
@@ -25038,7 +25158,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 778
+            "line": 779
           },
           "default": null,
           "name": "chapter",
@@ -25047,7 +25167,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 779
+            "line": 780
           },
           "default": null,
           "name": "name",
@@ -25056,7 +25176,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 780
+            "line": 781
           },
           "default": null,
           "name": "action",
@@ -25065,7 +25185,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 781
+            "line": 782
           },
           "default": null,
           "name": "timestamp",
@@ -25074,7 +25194,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 782
+            "line": 783
           },
           "default": null,
           "name": "reason",
@@ -25087,9 +25207,9 @@
     },
     {
       "anchor": {
-        "end_line": 790,
+        "end_line": 791,
         "file": "shared/types.ts",
-        "line": 786
+        "line": 787
       },
       "bases": [],
       "doc": null,
@@ -25098,7 +25218,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 787
+            "line": 788
           },
           "default": null,
           "name": "success",
@@ -25107,7 +25227,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 788
+            "line": 789
           },
           "default": null,
           "name": "override",
@@ -25116,7 +25236,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 789
+            "line": 790
           },
           "default": null,
           "name": "error",
@@ -25129,9 +25249,9 @@
     },
     {
       "anchor": {
-        "end_line": 798,
+        "end_line": 799,
         "file": "shared/types.ts",
-        "line": 793
+        "line": 794
       },
       "bases": [],
       "doc": null,
@@ -25140,7 +25260,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 794
+            "line": 795
           },
           "default": null,
           "name": "slideDuration",
@@ -25149,7 +25269,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 795
+            "line": 796
           },
           "default": null,
           "name": "resolution",
@@ -25158,7 +25278,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 796
+            "line": 797
           },
           "default": null,
           "name": "autoGenerate",
@@ -25167,7 +25287,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 797
+            "line": 798
           },
           "default": null,
           "name": "includeTitleSlides",
@@ -25180,9 +25300,9 @@
     },
     {
       "anchor": {
-        "end_line": 805,
+        "end_line": 806,
         "file": "shared/types.ts",
-        "line": 801
+        "line": 802
       },
       "bases": [],
       "doc": null,
@@ -25191,7 +25311,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 802
+            "line": 803
           },
           "default": null,
           "name": "chapter",
@@ -25200,7 +25320,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 803
+            "line": 804
           },
           "default": null,
           "name": "slideDuration",
@@ -25209,7 +25329,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 804
+            "line": 805
           },
           "default": null,
           "name": "resolution",
@@ -25222,9 +25342,9 @@
     },
     {
       "anchor": {
-        "end_line": 813,
+        "end_line": 814,
         "file": "shared/types.ts",
-        "line": 808
+        "line": 809
       },
       "bases": [],
       "doc": null,
@@ -25233,7 +25353,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 809
+            "line": 810
           },
           "default": null,
           "name": "success",
@@ -25242,7 +25362,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 810
+            "line": 811
           },
           "default": null,
           "name": "generated",
@@ -25251,7 +25371,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 811
+            "line": 812
           },
           "default": null,
           "name": "errors",
@@ -25260,7 +25380,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 812
+            "line": 813
           },
           "default": null,
           "name": "error",
@@ -25273,9 +25393,9 @@
     },
     {
       "anchor": {
-        "end_line": 821,
+        "end_line": 822,
         "file": "shared/types.ts",
-        "line": 816
+        "line": 817
       },
       "bases": [],
       "doc": null,
@@ -25284,7 +25404,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 817
+            "line": 818
           },
           "default": null,
           "name": "chapter",
@@ -25293,7 +25413,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 818
+            "line": 819
           },
           "default": null,
           "name": "status",
@@ -25302,7 +25422,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 819
+            "line": 820
           },
           "default": null,
           "name": "outputFile",
@@ -25311,7 +25431,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 820
+            "line": 821
           },
           "default": null,
           "name": "error",
@@ -25324,9 +25444,9 @@
     },
     {
       "anchor": {
-        "end_line": 849,
+        "end_line": 850,
         "file": "shared/types.ts",
-        "line": 828
+        "line": 829
       },
       "bases": [],
       "doc": null,
@@ -25335,7 +25455,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 829
+            "line": 830
           },
           "default": null,
           "name": "code",
@@ -25344,7 +25464,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 830
+            "line": 831
           },
           "default": null,
           "name": "brand",
@@ -25353,7 +25473,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 831
+            "line": 832
           },
           "default": null,
           "name": "path",
@@ -25362,7 +25482,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 832
+            "line": 833
           },
           "default": null,
           "name": "stage",
@@ -25371,7 +25491,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 833
+            "line": 834
           },
           "default": null,
           "name": "priority",
@@ -25380,7 +25500,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 834
+            "line": 835
           },
           "default": null,
           "name": "stats",
@@ -25389,7 +25509,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 841
+            "line": 842
           },
           "default": null,
           "name": "lastModified",
@@ -25398,7 +25518,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 843
+            "line": 844
           },
           "default": null,
           "name": "hasInbox",
@@ -25407,7 +25527,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 844
+            "line": 845
           },
           "default": null,
           "name": "hasAssets",
@@ -25416,7 +25536,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 845
+            "line": 846
           },
           "default": null,
           "name": "hasChapters",
@@ -25425,7 +25545,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 847
+            "line": 848
           },
           "default": null,
           "name": "ships",
@@ -25434,7 +25554,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 848
+            "line": 849
           },
           "default": null,
           "name": "shipsDeclared",
@@ -25447,9 +25567,9 @@
     },
     {
       "anchor": {
-        "end_line": 840,
+        "end_line": 841,
         "file": "shared/types.ts",
-        "line": 834
+        "line": 835
       },
       "bases": [],
       "doc": null,
@@ -25457,7 +25577,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 835
+            "line": 836
           },
           "default": null,
           "name": "recordings",
@@ -25466,7 +25586,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 836
+            "line": 837
           },
           "default": null,
           "name": "chapters",
@@ -25475,7 +25595,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 837
+            "line": 838
           },
           "default": null,
           "name": "transcriptPercent",
@@ -25484,7 +25604,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 838
+            "line": 839
           },
           "default": null,
           "name": "images",
@@ -25493,7 +25613,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 839
+            "line": 840
           },
           "default": null,
           "name": "thumbs",
@@ -25506,9 +25626,9 @@
     },
     {
       "anchor": {
-        "end_line": 879,
+        "end_line": 880,
         "file": "shared/types.ts",
-        "line": 852
+        "line": 853
       },
       "bases": [],
       "doc": null,
@@ -25517,7 +25637,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 853
+            "line": 854
           },
           "default": null,
           "name": "code",
@@ -25526,7 +25646,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 854
+            "line": 855
           },
           "default": null,
           "name": "path",
@@ -25535,7 +25655,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 855
+            "line": 856
           },
           "default": null,
           "name": "title",
@@ -25544,7 +25664,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 856
+            "line": 857
           },
           "default": null,
           "name": "ships",
@@ -25553,7 +25673,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 857
+            "line": 858
           },
           "default": null,
           "name": "shipsDeclared",
@@ -25562,7 +25682,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 858
+            "line": 859
           },
           "default": null,
           "name": "stage",
@@ -25571,7 +25691,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 859
+            "line": 860
           },
           "default": null,
           "name": "priority",
@@ -25580,7 +25700,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 861
+            "line": 862
           },
           "default": null,
           "name": "stats",
@@ -25589,7 +25709,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 873
+            "line": 874
           },
           "default": null,
           "name": "finalMedia",
@@ -25598,7 +25718,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 877
+            "line": 878
           },
           "default": null,
           "name": "createdAt",
@@ -25607,7 +25727,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 878
+            "line": 879
           },
           "default": null,
           "name": "lastModified",
@@ -25620,9 +25740,9 @@
     },
     {
       "anchor": {
-        "end_line": 872,
+        "end_line": 873,
         "file": "shared/types.ts",
-        "line": 861
+        "line": 862
       },
       "bases": [],
       "doc": null,
@@ -25630,7 +25750,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 862
+            "line": 863
           },
           "default": null,
           "name": "recordings",
@@ -25639,7 +25759,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 863
+            "line": 864
           },
           "default": null,
           "name": "chapters",
@@ -25648,7 +25768,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 864
+            "line": 865
           },
           "default": null,
           "name": "transcripts",
@@ -25657,7 +25777,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 869
+            "line": 870
           },
           "default": null,
           "name": "images",
@@ -25666,7 +25786,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 870
+            "line": 871
           },
           "default": null,
           "name": "thumbs",
@@ -25675,7 +25795,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 871
+            "line": 872
           },
           "default": null,
           "name": "totalDuration",
@@ -25688,9 +25808,9 @@
     },
     {
       "anchor": {
-        "end_line": 868,
+        "end_line": 869,
         "file": "shared/types.ts",
-        "line": 864
+        "line": 865
       },
       "bases": [],
       "doc": null,
@@ -25698,7 +25818,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 865
+            "line": 866
           },
           "default": null,
           "name": "matched",
@@ -25707,7 +25827,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 866
+            "line": 867
           },
           "default": null,
           "name": "missing",
@@ -25716,7 +25836,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 867
+            "line": 868
           },
           "default": null,
           "name": "orphaned",
@@ -25729,9 +25849,9 @@
     },
     {
       "anchor": {
-        "end_line": 895,
+        "end_line": 896,
         "file": "shared/types.ts",
-        "line": 882
+        "line": 883
       },
       "bases": [],
       "doc": null,
@@ -25740,7 +25860,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 883
+            "line": 884
           },
           "default": null,
           "name": "filename",
@@ -25749,7 +25869,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 884
+            "line": 885
           },
           "default": null,
           "name": "chapter",
@@ -25758,7 +25878,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 885
+            "line": 886
           },
           "default": null,
           "name": "sequence",
@@ -25767,7 +25887,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 886
+            "line": 887
           },
           "default": null,
           "name": "name",
@@ -25776,7 +25896,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 887
+            "line": 888
           },
           "default": null,
           "name": "tags",
@@ -25785,7 +25905,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 888
+            "line": 889
           },
           "default": null,
           "name": "folder",
@@ -25794,7 +25914,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 889
+            "line": 890
           },
           "default": null,
           "name": "isSafe",
@@ -25803,7 +25923,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 890
+            "line": 891
           },
           "default": null,
           "name": "isParked",
@@ -25812,7 +25932,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 891
+            "line": 892
           },
           "default": null,
           "name": "annotation",
@@ -25821,7 +25941,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 892
+            "line": 893
           },
           "default": null,
           "name": "size",
@@ -25830,7 +25950,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 893
+            "line": 894
           },
           "default": null,
           "name": "duration",
@@ -25839,7 +25959,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 894
+            "line": 895
           },
           "default": null,
           "name": "hasTranscript",
@@ -25852,9 +25972,9 @@
     },
     {
       "anchor": {
-        "end_line": 906,
+        "end_line": 907,
         "file": "shared/types.ts",
-        "line": 898
+        "line": 899
       },
       "bases": [],
       "doc": null,
@@ -25863,7 +25983,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 899
+            "line": 900
           },
           "default": null,
           "name": "filename",
@@ -25872,7 +25992,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 900
+            "line": 901
           },
           "default": null,
           "name": "chapter",
@@ -25881,7 +26001,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 901
+            "line": 902
           },
           "default": null,
           "name": "sequence",
@@ -25890,7 +26010,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 902
+            "line": 903
           },
           "default": null,
           "name": "name",
@@ -25899,7 +26019,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 903
+            "line": 904
           },
           "default": null,
           "name": "size",
@@ -25908,7 +26028,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 904
+            "line": 905
           },
           "default": null,
           "name": "preview",
@@ -25917,7 +26037,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 905
+            "line": 906
           },
           "default": null,
           "name": "content",
@@ -25930,9 +26050,9 @@
     },
     {
       "anchor": {
-        "end_line": 918,
+        "end_line": 919,
         "file": "shared/types.ts",
-        "line": 909
+        "line": 910
       },
       "bases": [],
       "doc": null,
@@ -25941,7 +26061,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 910
+            "line": 911
           },
           "default": null,
           "name": "chapter",
@@ -25950,7 +26070,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 911
+            "line": 912
           },
           "default": null,
           "name": "name",
@@ -25959,7 +26079,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 912
+            "line": 913
           },
           "default": null,
           "name": "displayName",
@@ -25968,7 +26088,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 913
+            "line": 914
           },
           "default": null,
           "name": "title",
@@ -25977,7 +26097,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 914
+            "line": 915
           },
           "default": null,
           "name": "timestamp",
@@ -25986,7 +26106,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 915
+            "line": 916
           },
           "default": null,
           "name": "timestampSeconds",
@@ -25995,7 +26115,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 916
+            "line": 917
           },
           "default": null,
           "name": "recordingCount",
@@ -26004,7 +26124,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 917
+            "line": 918
           },
           "default": null,
           "name": "hasTranscript",
@@ -26017,9 +26137,9 @@
     },
     {
       "anchor": {
-        "end_line": 929,
+        "end_line": 930,
         "file": "shared/types.ts",
-        "line": 921
+        "line": 922
       },
       "bases": [],
       "doc": null,
@@ -26028,7 +26148,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 922
+            "line": 923
           },
           "default": null,
           "name": "filename",
@@ -26037,7 +26157,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 923
+            "line": 924
           },
           "default": null,
           "name": "chapter",
@@ -26046,7 +26166,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 924
+            "line": 925
           },
           "default": null,
           "name": "sequence",
@@ -26055,7 +26175,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 925
+            "line": 926
           },
           "default": null,
           "name": "imageOrder",
@@ -26064,7 +26184,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 926
+            "line": 927
           },
           "default": null,
           "name": "variant",
@@ -26073,7 +26193,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 927
+            "line": 928
           },
           "default": null,
           "name": "label",
@@ -26082,7 +26202,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 928
+            "line": 929
           },
           "default": null,
           "name": "size",
@@ -26095,9 +26215,9 @@
     },
     {
       "anchor": {
-        "end_line": 942,
+        "end_line": 943,
         "file": "shared/types.ts",
-        "line": 936
+        "line": 937
       },
       "bases": [],
       "doc": null,
@@ -26106,7 +26226,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 937
+            "line": 938
           },
           "default": null,
           "name": "success",
@@ -26115,7 +26235,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 938
+            "line": 939
           },
           "default": null,
           "name": "moved",
@@ -26124,7 +26244,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 939
+            "line": 940
           },
           "default": null,
           "name": "count",
@@ -26133,7 +26253,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 940
+            "line": 941
           },
           "default": null,
           "name": "errors",
@@ -26142,7 +26262,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 941
+            "line": 942
           },
           "default": null,
           "name": "error",
@@ -26155,9 +26275,9 @@
     },
     {
       "anchor": {
-        "end_line": 951,
+        "end_line": 952,
         "file": "shared/types.ts",
-        "line": 945
+        "line": 946
       },
       "bases": [],
       "doc": null,
@@ -26166,7 +26286,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 946
+            "line": 947
           },
           "default": null,
           "name": "success",
@@ -26175,7 +26295,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 947
+            "line": 948
           },
           "default": null,
           "name": "restored",
@@ -26184,7 +26304,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 948
+            "line": 949
           },
           "default": null,
           "name": "count",
@@ -26193,7 +26313,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 949
+            "line": 950
           },
           "default": null,
           "name": "errors",
@@ -26202,7 +26322,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 950
+            "line": 951
           },
           "default": null,
           "name": "error",
@@ -26215,9 +26335,9 @@
     },
     {
       "anchor": {
-        "end_line": 960,
+        "end_line": 961,
         "file": "shared/types.ts",
-        "line": 954
+        "line": 955
       },
       "bases": [],
       "doc": null,
@@ -26226,7 +26346,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 955
+            "line": 956
           },
           "default": null,
           "name": "success",
@@ -26235,7 +26355,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 956
+            "line": 957
           },
           "default": null,
           "name": "parked",
@@ -26244,7 +26364,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 957
+            "line": 958
           },
           "default": null,
           "name": "count",
@@ -26253,7 +26373,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 958
+            "line": 959
           },
           "default": null,
           "name": "errors",
@@ -26262,7 +26382,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 959
+            "line": 960
           },
           "default": null,
           "name": "error",
@@ -26275,9 +26395,9 @@
     },
     {
       "anchor": {
-        "end_line": 969,
+        "end_line": 970,
         "file": "shared/types.ts",
-        "line": 963
+        "line": 964
       },
       "bases": [],
       "doc": null,
@@ -26286,7 +26406,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 964
+            "line": 965
           },
           "default": null,
           "name": "success",
@@ -26295,7 +26415,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 965
+            "line": 966
           },
           "default": null,
           "name": "unparked",
@@ -26304,7 +26424,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 966
+            "line": 967
           },
           "default": null,
           "name": "count",
@@ -26313,7 +26433,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 967
+            "line": 968
           },
           "default": null,
           "name": "errors",
@@ -26322,7 +26442,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 968
+            "line": 969
           },
           "default": null,
           "name": "error",
@@ -26335,9 +26455,9 @@
     },
     {
       "anchor": {
-        "end_line": 976,
+        "end_line": 977,
         "file": "shared/types.ts",
-        "line": 972
+        "line": 973
       },
       "bases": [],
       "doc": null,
@@ -26346,7 +26466,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 973
+            "line": 974
           },
           "default": null,
           "name": "success",
@@ -26355,7 +26475,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 974
+            "line": 975
           },
           "default": null,
           "name": "renamedFiles",
@@ -26364,7 +26484,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 975
+            "line": 976
           },
           "default": null,
           "name": "error",
@@ -26377,9 +26497,9 @@
     },
     {
       "anchor": {
-        "end_line": 988,
+        "end_line": 989,
         "file": "shared/types.ts",
-        "line": 979
+        "line": 980
       },
       "bases": [],
       "doc": null,
@@ -26388,7 +26508,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 980
+            "line": 981
           },
           "default": null,
           "name": "success",
@@ -26397,7 +26517,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 981
+            "line": 982
           },
           "default": null,
           "name": "scope",
@@ -26406,7 +26526,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 982
+            "line": 983
           },
           "default": null,
           "name": "chapter",
@@ -26415,7 +26535,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 983
+            "line": 984
           },
           "default": null,
           "name": "queued",
@@ -26424,7 +26544,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 984
+            "line": 985
           },
           "default": null,
           "name": "skipped",
@@ -26433,7 +26553,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 985
+            "line": 986
           },
           "default": null,
           "name": "queuedCount",
@@ -26442,7 +26562,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 986
+            "line": 987
           },
           "default": null,
           "name": "skippedCount",
@@ -26451,7 +26571,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 987
+            "line": 988
           },
           "default": null,
           "name": "error",
@@ -26464,9 +26584,9 @@
     },
     {
       "anchor": {
-        "end_line": 997,
+        "end_line": 998,
         "file": "shared/types.ts",
-        "line": 991
+        "line": 992
       },
       "bases": [],
       "doc": null,
@@ -26475,7 +26595,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 992
+            "line": 993
           },
           "default": null,
           "name": "id",
@@ -26484,7 +26604,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 993
+            "line": 994
           },
           "default": null,
           "name": "originalName",
@@ -26493,7 +26613,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 994
+            "line": 995
           },
           "default": null,
           "name": "newName",
@@ -26502,7 +26622,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 995
+            "line": 996
           },
           "default": null,
           "name": "timestamp",
@@ -26511,7 +26631,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 996
+            "line": 997
           },
           "default": null,
           "name": "age",
@@ -26524,9 +26644,9 @@
     },
     {
       "anchor": {
-        "end_line": 1004,
+        "end_line": 1005,
         "file": "shared/types.ts",
-        "line": 1000
+        "line": 1001
       },
       "bases": [],
       "doc": null,
@@ -26535,7 +26655,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1001
+            "line": 1002
           },
           "default": null,
           "name": "filename",
@@ -26544,7 +26664,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1002
+            "line": 1003
           },
           "default": null,
           "name": "size",
@@ -26553,7 +26673,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1003
+            "line": 1004
           },
           "default": null,
           "name": "modifiedAt",
@@ -26566,9 +26686,9 @@
     },
     {
       "anchor": {
-        "end_line": 1012,
+        "end_line": 1013,
         "file": "shared/types.ts",
-        "line": 1007
+        "line": 1008
       },
       "bases": [],
       "doc": null,
@@ -26577,7 +26697,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1008
+            "line": 1009
           },
           "default": null,
           "name": "name",
@@ -26586,7 +26706,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1009
+            "line": 1010
           },
           "default": null,
           "name": "path",
@@ -26595,7 +26715,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1010
+            "line": 1011
           },
           "default": null,
           "name": "fileCount",
@@ -26604,7 +26724,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1011
+            "line": 1012
           },
           "default": null,
           "name": "files",
@@ -26617,9 +26737,9 @@
     },
     {
       "anchor": {
-        "end_line": 1021,
+        "end_line": 1022,
         "file": "shared/types.ts",
-        "line": 1015
+        "line": 1016
       },
       "bases": [],
       "doc": null,
@@ -26628,7 +26748,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1016
+            "line": 1017
           },
           "default": null,
           "name": "success",
@@ -26637,7 +26757,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1017
+            "line": 1018
           },
           "default": null,
           "name": "inbox",
@@ -26650,9 +26770,9 @@
     },
     {
       "anchor": {
-        "end_line": 1020,
+        "end_line": 1021,
         "file": "shared/types.ts",
-        "line": 1017
+        "line": 1018
       },
       "bases": [],
       "doc": null,
@@ -26660,7 +26780,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1018
+            "line": 1019
           },
           "default": null,
           "name": "totalFiles",
@@ -26669,7 +26789,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1019
+            "line": 1020
           },
           "default": null,
           "name": "subfolders",
@@ -26682,9 +26802,9 @@
     },
     {
       "anchor": {
-        "end_line": 1033,
+        "end_line": 1034,
         "file": "shared/types.ts",
-        "line": 1024
+        "line": 1025
       },
       "bases": [],
       "doc": null,
@@ -26693,7 +26813,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1025
+            "line": 1026
           },
           "default": null,
           "name": "isGenerating",
@@ -26702,7 +26822,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1026
+            "line": 1027
           },
           "default": null,
           "name": "chapters",
@@ -26711,7 +26831,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1032
+            "line": 1033
           },
           "default": null,
           "name": "existing",
@@ -26724,9 +26844,9 @@
     },
     {
       "anchor": {
-        "end_line": 1046,
+        "end_line": 1047,
         "file": "shared/types.ts",
-        "line": 1036
+        "line": 1037
       },
       "bases": [],
       "doc": null,
@@ -26735,7 +26855,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1037
+            "line": 1038
           },
           "default": null,
           "name": "platform",
@@ -26744,7 +26864,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1038
+            "line": 1039
           },
           "default": null,
           "name": "isWSL",
@@ -26753,7 +26873,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1039
+            "line": 1040
           },
           "default": null,
           "name": "pathFormat",
@@ -26762,7 +26882,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1040
+            "line": 1041
           },
           "default": null,
           "name": "guidance",
@@ -26771,7 +26891,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1045
+            "line": 1046
           },
           "default": null,
           "name": "machineRole",
@@ -26784,9 +26904,9 @@
     },
     {
       "anchor": {
-        "end_line": 1044,
+        "end_line": 1045,
         "file": "shared/types.ts",
-        "line": 1040
+        "line": 1041
       },
       "bases": [],
       "doc": null,
@@ -26794,7 +26914,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1041
+            "line": 1042
           },
           "default": null,
           "name": "nativeFiles",
@@ -26803,7 +26923,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1042
+            "line": 1043
           },
           "default": null,
           "name": "windowsFiles",
@@ -26812,7 +26932,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1043
+            "line": 1044
           },
           "default": null,
           "name": "wslFiles",
@@ -26825,9 +26945,9 @@
     },
     {
       "anchor": {
-        "end_line": 1061,
+        "end_line": 1062,
         "file": "shared/types.ts",
-        "line": 1053
+        "line": 1054
       },
       "bases": [],
       "doc": null,
@@ -26836,7 +26956,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1054
+            "line": 1055
           },
           "default": null,
           "name": "safe",
@@ -26845,7 +26965,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1055
+            "line": 1056
           },
           "default": null,
           "name": "parked",
@@ -26854,7 +26974,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1056
+            "line": 1057
           },
           "default": null,
           "name": "annotation",
@@ -26863,7 +26983,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1057
+            "line": 1058
           },
           "default": null,
           "name": "stage",
@@ -26872,7 +26992,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1058
+            "line": 1059
           },
           "default": null,
           "name": "aspectWarning",
@@ -26881,7 +27001,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1059
+            "line": 1060
           },
           "default": null,
           "name": "soundHoles",
@@ -26890,7 +27010,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1060
+            "line": 1061
           },
           "default": null,
           "name": "placeholder",
@@ -26903,9 +27023,9 @@
     },
     {
       "anchor": {
-        "end_line": 1066,
+        "end_line": 1067,
         "file": "shared/types.ts",
-        "line": 1064
+        "line": 1065
       },
       "bases": [],
       "doc": null,
@@ -26914,7 +27034,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1065
+            "line": 1066
           },
           "default": null,
           "name": "title",
@@ -26927,9 +27047,9 @@
     },
     {
       "anchor": {
-        "end_line": 1098,
+        "end_line": 1099,
         "file": "shared/types.ts",
-        "line": 1090
+        "line": 1091
       },
       "bases": [],
       "doc": null,
@@ -26938,7 +27058,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1091
+            "line": 1092
           },
           "default": null,
           "name": "version",
@@ -26947,7 +27067,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1092
+            "line": 1093
           },
           "default": null,
           "name": "recordings",
@@ -26956,7 +27076,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1093
+            "line": 1094
           },
           "default": null,
           "name": "title",
@@ -26965,7 +27085,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1094
+            "line": 1095
           },
           "default": null,
           "name": "chapters",
@@ -26974,7 +27094,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1095
+            "line": 1096
           },
           "default": null,
           "name": "ships",
@@ -26983,7 +27103,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1096
+            "line": 1097
           },
           "default": null,
           "name": "glingDictionary",
@@ -26992,7 +27112,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1097
+            "line": 1098
           },
           "default": null,
           "name": "editManifest",
@@ -27005,9 +27125,9 @@
     },
     {
       "anchor": {
-        "end_line": 1105,
+        "end_line": 1106,
         "file": "shared/types.ts",
-        "line": 1101
+        "line": 1102
       },
       "bases": [],
       "doc": null,
@@ -27016,7 +27136,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1102
+            "line": 1103
           },
           "default": null,
           "name": "success",
@@ -27025,7 +27145,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1103
+            "line": 1104
           },
           "default": null,
           "name": "state",
@@ -27034,7 +27154,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1104
+            "line": 1105
           },
           "default": null,
           "name": "error",
@@ -27047,9 +27167,9 @@
     },
     {
       "anchor": {
-        "end_line": 1110,
+        "end_line": 1111,
         "file": "shared/types.ts",
-        "line": 1108
+        "line": 1109
       },
       "bases": [],
       "doc": null,
@@ -27058,7 +27178,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1109
+            "line": 1110
           },
           "default": null,
           "name": "recordings",
@@ -27071,9 +27191,9 @@
     },
     {
       "anchor": {
-        "end_line": 1122,
+        "end_line": 1123,
         "file": "shared/types.ts",
-        "line": 1117
+        "line": 1118
       },
       "bases": [],
       "doc": null,
@@ -27082,7 +27202,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1118
+            "line": 1119
           },
           "default": null,
           "name": "filename",
@@ -27091,7 +27211,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1119
+            "line": 1120
           },
           "default": null,
           "name": "sourceHash",
@@ -27100,7 +27220,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1120
+            "line": 1121
           },
           "default": null,
           "name": "copiedAt",
@@ -27109,7 +27229,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1121
+            "line": 1122
           },
           "default": null,
           "name": "sourceSize",
@@ -27122,9 +27242,9 @@
     },
     {
       "anchor": {
-        "end_line": 1128,
+        "end_line": 1129,
         "file": "shared/types.ts",
-        "line": 1125
+        "line": 1126
       },
       "bases": [],
       "doc": null,
@@ -27133,7 +27253,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1126
+            "line": 1127
           },
           "default": null,
           "name": "lastCopied",
@@ -27142,7 +27262,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1127
+            "line": 1128
           },
           "default": null,
           "name": "files",
@@ -27155,9 +27275,9 @@
     },
     {
       "anchor": {
-        "end_line": 1135,
+        "end_line": 1136,
         "file": "shared/types.ts",
-        "line": 1131
+        "line": 1132
       },
       "bases": [],
       "doc": null,
@@ -27166,7 +27286,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1132
+            "line": 1133
           },
           "default": null,
           "name": "edit-1st",
@@ -27175,7 +27295,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1133
+            "line": 1134
           },
           "default": null,
           "name": "edit-2nd",
@@ -27184,7 +27304,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1134
+            "line": 1135
           },
           "default": null,
           "name": "edit-final",
@@ -27197,9 +27317,9 @@
     },
     {
       "anchor": {
-        "end_line": 1167,
+        "end_line": 1168,
         "file": "shared/types.ts",
-        "line": 1162
+        "line": 1163
       },
       "bases": [],
       "doc": null,
@@ -27208,7 +27328,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1163
+            "line": 1164
           },
           "default": null,
           "name": "filename",
@@ -27217,7 +27337,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1164
+            "line": 1165
           },
           "default": null,
           "name": "status",
@@ -27226,7 +27346,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1165
+            "line": 1166
           },
           "default": null,
           "name": "sourceSize",
@@ -27235,7 +27355,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1166
+            "line": 1167
           },
           "default": null,
           "name": "currentHash",
@@ -27248,9 +27368,9 @@
     },
     {
       "anchor": {
-        "end_line": 1180,
+        "end_line": 1181,
         "file": "shared/types.ts",
-        "line": 1172
+        "line": 1173
       },
       "bases": [],
       "doc": null,
@@ -27259,7 +27379,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1173
+            "line": 1174
           },
           "default": null,
           "name": "status",
@@ -27268,7 +27388,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1174
+            "line": 1175
           },
           "default": null,
           "name": "manifestedFiles",
@@ -27277,7 +27397,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1175
+            "line": 1176
           },
           "default": null,
           "name": "presentFiles",
@@ -27286,7 +27406,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1176
+            "line": 1177
           },
           "default": null,
           "name": "missingFiles",
@@ -27295,7 +27415,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1177
+            "line": 1178
           },
           "default": null,
           "name": "changedFiles",
@@ -27304,7 +27424,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1178
+            "line": 1179
           },
           "default": null,
           "name": "totalSize",
@@ -27313,7 +27433,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1179
+            "line": 1180
           },
           "default": null,
           "name": "fileDetails",
@@ -27326,9 +27446,9 @@
     },
     {
       "anchor": {
-        "end_line": 1188,
+        "end_line": 1189,
         "file": "shared/types.ts",
-        "line": 1183
+        "line": 1184
       },
       "bases": [],
       "doc": null,
@@ -27337,7 +27457,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1184
+            "line": 1185
           },
           "default": null,
           "name": "success",
@@ -27346,7 +27466,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1185
+            "line": 1186
           },
           "default": null,
           "name": "folder",
@@ -27355,7 +27475,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1186
+            "line": 1187
           },
           "default": null,
           "name": "detail",
@@ -27364,7 +27484,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1187
+            "line": 1188
           },
           "default": null,
           "name": "error",
@@ -27377,9 +27497,9 @@
     },
     {
       "anchor": {
-        "end_line": 1199,
+        "end_line": 1200,
         "file": "shared/types.ts",
-        "line": 1191
+        "line": 1192
       },
       "bases": [],
       "doc": null,
@@ -27388,7 +27508,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1192
+            "line": 1193
           },
           "default": null,
           "name": "success",
@@ -27397,7 +27517,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1193
+            "line": 1194
           },
           "default": null,
           "name": "folder",
@@ -27406,7 +27526,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1194
+            "line": 1195
           },
           "default": null,
           "name": "deleted",
@@ -27415,7 +27535,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1195
+            "line": 1196
           },
           "default": null,
           "name": "deletedCount",
@@ -27424,7 +27544,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1196
+            "line": 1197
           },
           "default": null,
           "name": "spaceSaved",
@@ -27433,7 +27553,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1197
+            "line": 1198
           },
           "default": null,
           "name": "preserved",
@@ -27442,7 +27562,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1198
+            "line": 1199
           },
           "default": null,
           "name": "error",
@@ -27455,9 +27575,9 @@
     },
     {
       "anchor": {
-        "end_line": 1209,
+        "end_line": 1210,
         "file": "shared/types.ts",
-        "line": 1202
+        "line": 1203
       },
       "bases": [],
       "doc": null,
@@ -27466,7 +27586,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1203
+            "line": 1204
           },
           "default": null,
           "name": "success",
@@ -27475,7 +27595,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1204
+            "line": 1205
           },
           "default": null,
           "name": "folder",
@@ -27484,7 +27604,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1205
+            "line": 1206
           },
           "default": null,
           "name": "restored",
@@ -27493,7 +27613,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1206
+            "line": 1207
           },
           "default": null,
           "name": "restoredCount",
@@ -27502,7 +27622,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1207
+            "line": 1208
           },
           "default": null,
           "name": "warnings",
@@ -27511,7 +27631,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1208
+            "line": 1209
           },
           "default": null,
           "name": "error",
@@ -27524,9 +27644,9 @@
     },
     {
       "anchor": {
-        "end_line": 1215,
+        "end_line": 1216,
         "file": "shared/types.ts",
-        "line": 1212
+        "line": 1213
       },
       "bases": [],
       "doc": null,
@@ -27535,7 +27655,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1213
+            "line": 1214
           },
           "default": null,
           "name": "chapter",
@@ -27544,7 +27664,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1214
+            "line": 1215
           },
           "default": null,
           "name": "splitAtSequence",
@@ -27557,9 +27677,9 @@
     },
     {
       "anchor": {
-        "end_line": 1225,
+        "end_line": 1226,
         "file": "shared/types.ts",
-        "line": 1217
+        "line": 1218
       },
       "bases": [],
       "doc": null,
@@ -27568,7 +27688,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1218
+            "line": 1219
           },
           "default": null,
           "name": "success",
@@ -27577,7 +27697,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1219
+            "line": 1220
           },
           "default": null,
           "name": "sourceChapter",
@@ -27586,7 +27706,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1220
+            "line": 1221
           },
           "default": null,
           "name": "newChapter",
@@ -27595,7 +27715,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1221
+            "line": 1222
           },
           "default": null,
           "name": "filesMoved",
@@ -27604,7 +27724,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1222
+            "line": 1223
           },
           "default": null,
           "name": "cascadedChapters",
@@ -27613,7 +27733,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1223
+            "line": 1224
           },
           "default": null,
           "name": "undoMapping",
@@ -27622,7 +27742,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1224
+            "line": 1225
           },
           "default": null,
           "name": "error",
@@ -27635,9 +27755,9 @@
     },
     {
       "anchor": {
-        "end_line": 1232,
+        "end_line": 1233,
         "file": "shared/types.ts",
-        "line": 1228
+        "line": 1229
       },
       "bases": [],
       "doc": null,
@@ -27646,7 +27766,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1229
+            "line": 1230
           },
           "default": null,
           "name": "success",
@@ -27655,7 +27775,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1230
+            "line": 1231
           },
           "default": null,
           "name": "filesReverted",
@@ -27664,7 +27784,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1231
+            "line": 1232
           },
           "default": null,
           "name": "error",
@@ -27677,9 +27797,9 @@
     },
     {
       "anchor": {
-        "end_line": 1274,
+        "end_line": 1275,
         "file": "shared/types.ts",
-        "line": 1248
+        "line": 1249
       },
       "bases": [],
       "doc": null,
@@ -27688,7 +27808,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1250
+            "line": 1251
           },
           "default": null,
           "doc": "Milliseconds since session start.",
@@ -27698,7 +27818,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1255
+            "line": 1256
           },
           "default": null,
           "doc": "DECLARED \u2014 which screen the operator pressed. Authoritative, never inferred.",
@@ -27708,7 +27828,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1256
+            "line": 1257
           },
           "default": null,
           "name": "shortTermLufs",
@@ -27717,7 +27837,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1257
+            "line": 1258
           },
           "default": null,
           "name": "samplePeakDbfs",
@@ -27726,7 +27846,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1258
+            "line": 1259
           },
           "default": null,
           "name": "clipCount",
@@ -27735,7 +27855,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1259
+            "line": 1260
           },
           "default": null,
           "name": "nearClipCount",
@@ -27744,7 +27864,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1261
+            "line": 1262
           },
           "default": null,
           "doc": "False until a full 3 s short-term window has been observed.",
@@ -27754,7 +27874,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1273
+            "line": 1274
           },
           "default": null,
           "doc": "MEASURED \u2014 does THIS tick contain speech (level vs the floor)?",
@@ -27768,9 +27888,9 @@
     },
     {
       "anchor": {
-        "end_line": 1297,
+        "end_line": 1298,
         "file": "shared/types.ts",
-        "line": 1291
+        "line": 1292
       },
       "bases": [],
       "doc": "A timestamped observation. Persisted because it CANNOT be re-derived later: a level",
@@ -27779,7 +27899,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1292
+            "line": 1293
           },
           "default": null,
           "name": "t",
@@ -27788,7 +27908,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1293
+            "line": 1294
           },
           "default": null,
           "name": "kind",
@@ -27797,7 +27917,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1295
+            "line": 1296
           },
           "default": null,
           "doc": "Phrased as an observation, never an attributed cause.",
@@ -27807,7 +27927,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1296
+            "line": 1297
           },
           "default": null,
           "name": "deltaDb",
@@ -27820,9 +27940,9 @@
     },
     {
       "anchor": {
-        "end_line": 1305,
+        "end_line": 1306,
         "file": "shared/types.ts",
-        "line": 1300
+        "line": 1301
       },
       "bases": [],
       "doc": "The four-way constraint report: what we asked for vs what we actually got.",
@@ -27831,7 +27951,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1301
+            "line": 1302
           },
           "default": null,
           "name": "asked",
@@ -27840,7 +27960,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1302
+            "line": 1303
           },
           "default": null,
           "name": "got",
@@ -27849,7 +27969,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1303
+            "line": 1304
           },
           "default": null,
           "name": "capable",
@@ -27858,7 +27978,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1304
+            "line": 1305
           },
           "default": null,
           "name": "supported",
@@ -27871,9 +27991,9 @@
     },
     {
       "anchor": {
-        "end_line": 1315,
+        "end_line": 1316,
         "file": "shared/types.ts",
-        "line": 1309
+        "line": 1310
       },
       "bases": [],
       "doc": null,
@@ -27882,7 +28002,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1310
+            "line": 1311
           },
           "default": null,
           "name": "verdict",
@@ -27891,7 +28011,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1311
+            "line": 1312
           },
           "default": null,
           "name": "findings",
@@ -27900,7 +28020,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1312
+            "line": 1313
           },
           "default": null,
           "name": "capturedLevelDbfs",
@@ -27909,7 +28029,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1313
+            "line": 1314
           },
           "default": null,
           "name": "levelDriftDb",
@@ -27918,7 +28038,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1314
+            "line": 1315
           },
           "default": null,
           "name": "deepestNotchDb",
@@ -27931,9 +28051,9 @@
     },
     {
       "anchor": {
-        "end_line": 1325,
+        "end_line": 1326,
         "file": "shared/types.ts",
-        "line": 1322
+        "line": 1323
       },
       "bases": [],
       "doc": "Every metric NOT measured, and why. This is the grey-never-becomes-green rule",
@@ -27942,7 +28062,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1323
+            "line": 1324
           },
           "default": null,
           "name": "metric",
@@ -27951,7 +28071,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1324
+            "line": 1325
           },
           "default": null,
           "name": "reason",
@@ -27964,9 +28084,9 @@
     },
     {
       "anchor": {
-        "end_line": 1332,
+        "end_line": 1333,
         "file": "shared/types.ts",
-        "line": 1327
+        "line": 1328
       },
       "bases": [],
       "doc": null,
@@ -27975,7 +28095,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1328
+            "line": 1329
           },
           "default": null,
           "name": "label",
@@ -27984,7 +28104,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1329
+            "line": 1330
           },
           "default": null,
           "name": "sampleRate",
@@ -27993,7 +28113,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1330
+            "line": 1331
           },
           "default": null,
           "name": "channelCount",
@@ -28002,7 +28122,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1331
+            "line": 1332
           },
           "default": null,
           "name": "sampleSize",
@@ -28015,9 +28135,9 @@
     },
     {
       "anchor": {
-        "end_line": 1346,
+        "end_line": 1347,
         "file": "shared/types.ts",
-        "line": 1334
+        "line": 1335
       },
       "bases": [],
       "doc": null,
@@ -28026,7 +28146,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1335
+            "line": 1336
           },
           "default": null,
           "name": "durationMs",
@@ -28035,7 +28155,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1336
+            "line": 1337
           },
           "default": null,
           "name": "tickCount",
@@ -28044,7 +28164,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1338
+            "line": 1339
           },
           "default": null,
           "doc": "Ticks where the window was full AND speech was present \u2014 the only gradeable ones.",
@@ -28054,7 +28174,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1340
+            "line": 1341
           },
           "default": null,
           "doc": "Null when no tick was ever measurable. Never silently 0.",
@@ -28064,7 +28184,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1342
+            "line": 1343
           },
           "default": null,
           "doc": "Widest observed spread in LUFS. Large => the level drifted rather than held.",
@@ -28074,7 +28194,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1343
+            "line": 1344
           },
           "default": null,
           "name": "sessionPeakDbfs",
@@ -28083,7 +28203,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1344
+            "line": 1345
           },
           "default": null,
           "name": "clipCount",
@@ -28092,7 +28212,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1345
+            "line": 1346
           },
           "default": null,
           "name": "nearClipCount",
@@ -28105,9 +28225,9 @@
     },
     {
       "anchor": {
-        "end_line": 1364,
+        "end_line": 1365,
         "file": "shared/types.ts",
-        "line": 1348
+        "line": 1349
       },
       "bases": [],
       "doc": null,
@@ -28116,7 +28236,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1349
+            "line": 1350
           },
           "default": null,
           "name": "sessionId",
@@ -28125,7 +28245,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1350
+            "line": 1351
           },
           "default": null,
           "name": "startedAt",
@@ -28134,7 +28254,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1351
+            "line": 1352
           },
           "default": null,
           "name": "finishedAt",
@@ -28143,7 +28263,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1353
+            "line": 1354
           },
           "default": null,
           "doc": "Active project at session start, if any. Lets a report attach to a take later.",
@@ -28153,7 +28273,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1354
+            "line": 1355
           },
           "default": null,
           "name": "workletVersion",
@@ -28162,7 +28282,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1355
+            "line": 1356
           },
           "default": null,
           "name": "device",
@@ -28171,7 +28291,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1356
+            "line": 1357
           },
           "default": null,
           "name": "constraints",
@@ -28180,7 +28300,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1357
+            "line": 1358
           },
           "default": null,
           "name": "probe",
@@ -28189,7 +28309,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1358
+            "line": 1359
           },
           "default": null,
           "name": "summary",
@@ -28198,7 +28318,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1359
+            "line": 1360
           },
           "default": null,
           "name": "series",
@@ -28207,7 +28327,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1360
+            "line": 1361
           },
           "default": null,
           "name": "events",
@@ -28216,7 +28336,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1362
+            "line": 1363
           },
           "default": null,
           "doc": "Noise floor captured during ROOM mode, in LUFS. Null when never captured.",
@@ -28226,7 +28346,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1363
+            "line": 1364
           },
           "default": null,
           "name": "not_measured",
@@ -28239,9 +28359,9 @@
     },
     {
       "anchor": {
-        "end_line": 1375,
+        "end_line": 1376,
         "file": "shared/types.ts",
-        "line": 1367
+        "line": 1368
       },
       "bases": [],
       "doc": "Listing entry \u2014 the summary fields, without the series.",
@@ -28250,7 +28370,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1368
+            "line": 1369
           },
           "default": null,
           "name": "sessionId",
@@ -28259,7 +28379,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1369
+            "line": 1370
           },
           "default": null,
           "name": "startedAt",
@@ -28268,7 +28388,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1370
+            "line": 1371
           },
           "default": null,
           "name": "finishedAt",
@@ -28277,7 +28397,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1371
+            "line": 1372
           },
           "default": null,
           "name": "projectCode",
@@ -28286,7 +28406,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1372
+            "line": 1373
           },
           "default": null,
           "name": "deviceLabel",
@@ -28295,7 +28415,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1373
+            "line": 1374
           },
           "default": null,
           "name": "summary",
@@ -28304,7 +28424,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1374
+            "line": 1375
           },
           "default": null,
           "name": "probeVerdict",
@@ -28317,9 +28437,9 @@
     },
     {
       "anchor": {
-        "end_line": 1396,
+        "end_line": 1397,
         "file": "shared/types.ts",
-        "line": 1388
+        "line": 1389
       },
       "bases": [],
       "doc": "GET /api/query/miccheck/live",
@@ -28328,7 +28448,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1389
+            "line": 1390
           },
           "default": null,
           "name": "success",
@@ -28337,7 +28457,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1390
+            "line": 1391
           },
           "default": null,
           "name": "active",
@@ -28346,7 +28466,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1391
+            "line": 1392
           },
           "default": null,
           "name": "measurable",
@@ -28355,7 +28475,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1393
+            "line": 1394
           },
           "default": null,
           "doc": "Always populated when active=false or measurable=false.",
@@ -28365,7 +28485,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1394
+            "line": 1395
           },
           "default": null,
           "name": "session",
@@ -28374,7 +28494,7 @@
         {
           "anchor": {
             "file": "shared/types.ts",
-            "line": 1395
+            "line": 1396
           },
           "default": null,
           "name": "latest",
@@ -28384,10 +28504,224 @@
       "grade": "declared",
       "id": "shared/types.MicCheckLiveResponse",
       "kind": "interface"
+    },
+    {
+      "anchor": {
+        "end_line": 1420,
+        "file": "shared/types.ts",
+        "line": 1406
+      },
+      "bases": [],
+      "doc": "One row of the \"All sets\" overview.",
+      "exported": true,
+      "fields": [
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1407
+          },
+          "default": null,
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1408
+          },
+          "default": null,
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1409
+          },
+          "default": null,
+          "name": "role",
+          "type": "RecordingSetRole \u2192 shared/types.RecordingSetRole"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1411
+          },
+          "default": null,
+          "doc": "False when the folder is on disk but hub/sets.json does not name it.",
+          "name": "listed",
+          "type": "boolean"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1413
+          },
+          "default": null,
+          "doc": "Takes in the set's recordings/ (.mov + .mp4).",
+          "name": "takes",
+          "type": "number"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1415
+          },
+          "default": null,
+          "doc": "Distinct chapters (they restart at 01 in every set).",
+          "name": "chapters",
+          "type": "number"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1417
+          },
+          "default": null,
+          "doc": "Sum of take durations, seconds; takes whose length can't be read add nothing.",
+          "name": "durationSec",
+          "type": "number"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1419
+          },
+          "default": null,
+          "doc": "Takes with a .txt transcript.",
+          "name": "transcribed",
+          "type": "number"
+        }
+      ],
+      "grade": "declared",
+      "id": "shared/types.RecordingSetSummary",
+      "kind": "interface"
+    },
+    {
+      "anchor": {
+        "end_line": 1431,
+        "file": "shared/types.ts",
+        "line": 1423
+      },
+      "bases": [],
+      "doc": "GET /api/sets",
+      "exported": true,
+      "fields": [
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1424
+          },
+          "default": null,
+          "name": "success",
+          "type": "boolean"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1426
+          },
+          "default": null,
+          "doc": "False for a project without hub/sets/: it is one implicit set and no strip is shown.",
+          "name": "hasSets",
+          "type": "boolean"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1428
+          },
+          "default": null,
+          "doc": "The set new takes are named into; null without sets.",
+          "name": "active",
+          "type": "string | null"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1429
+          },
+          "default": null,
+          "name": "sets",
+          "type": "RecordingSetSummary[] \u2192 shared/types.RecordingSetSummary"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1430
+          },
+          "default": null,
+          "name": "error",
+          "type": "?: string"
+        }
+      ],
+      "grade": "declared",
+      "id": "shared/types.RecordingSetsResponse",
+      "kind": "interface"
+    },
+    {
+      "anchor": {
+        "end_line": 1440,
+        "file": "shared/types.ts",
+        "line": 1434
+      },
+      "bases": [],
+      "doc": "POST /api/sets and POST /api/sets/active. `reason` says why nothing changed.",
+      "exported": true,
+      "fields": [
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1435
+          },
+          "default": null,
+          "name": "success",
+          "type": "boolean"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1436
+          },
+          "default": null,
+          "name": "active",
+          "type": "?: string | null"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1437
+          },
+          "default": null,
+          "name": "sets",
+          "type": "?: RecordingSetSummary[] \u2192 shared/types.RecordingSetSummary"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1438
+          },
+          "default": null,
+          "name": "error",
+          "type": "?: string"
+        },
+        {
+          "anchor": {
+            "file": "shared/types.ts",
+            "line": 1439
+          },
+          "default": null,
+          "name": "reason",
+          "type": "?: 'no-project' | 'not-a-set-project' | 'bad-id' | 'set-exists' | 'no-such-set'"
+        }
+      ],
+      "grade": "declared",
+      "id": "shared/types.RecordingSetChangeResponse",
+      "kind": "interface"
     }
   ],
   "target": {
-    "commit": "8f8043d777812b4d8383a55c0801da52b4ae19e8",
+    "commit": "ec0a3ba82d9c7aad4a86c527b8e88f4d11da1204",
     "root": "..",
     "stack": "typescript"
   },
@@ -28404,7 +28738,7 @@
       "census": true,
       "family": "union of named or mixed types",
       "looked_at": [
-        "client/src/App.tsx:87"
+        "client/src/App.tsx:88"
       ],
       "reason": "declared but not read: union of named or mixed types. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
       "subject": "`client/src/App.ConfigFocusSection` - declared but not read"
@@ -28489,6 +28823,15 @@
       ],
       "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
       "subject": "`client/src/hooks/useOpenContextApi.OPEN_CONTEXT_KEY` - declared but not read"
+    },
+    {
+      "census": true,
+      "family": "array constant",
+      "looked_at": [
+        "client/src/hooks/useSetsApi.ts:12"
+      ],
+      "reason": "declared but not read: array constant. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
+      "subject": "`client/src/hooks/useSetsApi.SETS_QUERY_KEY` - declared but not read"
     },
     {
       "census": true,
@@ -28764,7 +29107,7 @@
       "census": true,
       "family": "class",
       "looked_at": [
-        "server/src/utils/segmentOps.ts:516"
+        "server/src/utils/segmentOps.ts:518"
       ],
       "reason": "declared but not read: class. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
       "subject": "`server/src/utils/segmentOps.SegmentOpFailed` - declared but not read"
