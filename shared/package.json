@@ -13,7 +13,7 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
-    "@flivideo/core": "file:../../../fli-core-worktrees/recording-sets",
+    "@flivideo/core": "github:flivideo/fli-core#v0.38.0",
     "zod": "^4.6.5"
   }
 }
