@@ -12,13 +12,14 @@ import path from 'path';
 import type { TranscriptSyncStatus } from '../../../shared/types.js';
 import { readDirSafe, statSafe } from './filesystem.js';
 import { getProjectPaths } from '../../../shared/paths.js';
+import { isRecordingFile, stripRecordingExtension } from '../../../shared/naming.js';
 
 /**
- * Count .mov files in a directory
+ * Count recordings (.mov and .mp4) in a directory
  */
-export async function countMovFiles(dir: string): Promise<number> {
+export async function countRecordingFiles(dir: string): Promise<number> {
   const files = await readDirSafe(dir);
-  return files.filter((f) => f.endsWith('.mov')).length;
+  return files.filter((f) => isRecordingFile(f)).length;
 }
 
 /**
@@ -54,9 +55,9 @@ export async function getTranscriptSyncStatus(
   recordingsDir: string,
   transcriptsDir: string
 ): Promise<TranscriptSyncStatus> {
-  // Get all .mov files (base names without extension)
+  // Get all recordings, .mov and .mp4 (base names without extension)
   const files = await readDirSafe(recordingsDir);
-  const recordingFiles = files.filter((f) => f.endsWith('.mov')).map((f) => f.replace('.mov', ''));
+  const recordingFiles = files.filter((f) => isRecordingFile(f)).map((f) => stripRecordingExtension(f));
 
   // FR-94: .txt is the primary format - only .txt counts as "transcribed"
   const transcriptDirFiles = await readDirSafe(transcriptsDir);
@@ -123,11 +124,11 @@ export async function getProjectTimestamps(projectPath: string): Promise<Project
 }
 
 /**
- * List .mov files in a directory
+ * List recordings (.mov and .mp4) in a directory
  */
-export async function listMovFiles(dir: string): Promise<string[]> {
+export async function listRecordingFiles(dir: string): Promise<string[]> {
   const files = await readDirSafe(dir);
-  return files.filter((f) => f.endsWith('.mov'));
+  return files.filter((f) => isRecordingFile(f));
 }
 
 /**
@@ -180,10 +181,9 @@ export async function getProjectIndicators(projectPath: string): Promise<Project
   const promptFiles = await readDirSafe(promptsDir);
   const hasAssets = imageFiles.length > 0 || promptFiles.length > 0;
 
-  // Check chapters - count .mov files in -chapters directory
+  // Check chapters - count chapter videos (.mov/.mp4) in -chapters directory
   const chapterFiles = await readDirSafe(chaptersDir);
-  const chapterMovFiles = chapterFiles.filter((f) => f.endsWith('.mov'));
-  const chapterVideoCount = chapterMovFiles.length;
+  const chapterVideoCount = chapterFiles.filter((f) => isRecordingFile(f)).length;
   const hasChapters = chapterVideoCount > 0;
 
   return { hasInbox, hasAssets, hasChapters, inboxCount, chapterVideoCount };

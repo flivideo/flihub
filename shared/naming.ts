@@ -10,6 +10,38 @@
  */
 
 // ============================================
+// RECORDING EXTENSIONS - Single source of truth
+// ============================================
+
+/**
+ * A recording take is a `.mov` (Ecamm) or an `.mp4` (post-processing tools). Both are first-class:
+ * list, count, number and rename them the same way. The container is never changed — every builder
+ * carries the SOURCE file's extension rather than assuming `.mov`.
+ */
+export const RECORDING_EXTENSIONS = ['.mov', '.mp4'] as const;
+
+/** Used when there is no source file to take an extension from (e.g. a preview before a file exists). */
+export const DEFAULT_RECORDING_EXTENSION = '.mov';
+
+const RECORDING_EXT_RE = /\.(mov|mp4)$/i;
+
+/** True for `x.mov` / `x.mp4` (any case). Hidden files (`.x.mov`) are the caller's business. */
+export function isRecordingFile(filename: string): boolean {
+  return RECORDING_EXT_RE.test(filename);
+}
+
+/** The file's own recording extension, as written (`.mp4`, `.MOV`); the default when it has none. */
+export function recordingExtension(filename: string | null | undefined): string {
+  const m = filename?.match(RECORDING_EXT_RE);
+  return m ? m[0] : DEFAULT_RECORDING_EXTENSION;
+}
+
+/** `01-1-intro.mp4` → `01-1-intro`. Leaves non-recording names untouched. */
+export function stripRecordingExtension(filename: string): string {
+  return filename.replace(RECORDING_EXT_RE, '');
+}
+
+// ============================================
 // NAMING RULES - Single source of truth
 // ============================================
 
@@ -208,8 +240,8 @@ export function extractTagsFromName(name: string): { name: string; tags: string[
 
 /**
  * Parse a recording filename into its components
- * Format: {chapter}-{sequence}-{name}-{tags}.mov or {chapter}-{name}.mov
- * Examples: 10-5-intro.mov, 10-10-john-product-manager-CTA.mov, 1-1-demo.mov (lenient)
+ * Format: {chapter}-{sequence}-{name}-{tags}.{mov|mp4} or {chapter}-{name}.{mov|mp4}
+ * Examples: 10-5-intro.mov, 10-10-product-manager-CTA.mp4, 1-1-demo.mov (lenient)
  *
  * @param filename - The filename to parse
  * @param options - Parse options (lenient: true accepts 1-digit chapters)
@@ -218,8 +250,8 @@ export function parseRecordingFilename(
   filename: string,
   options: ParseOptions = { lenient: true }
 ): ParsedRecording | null {
-  // Remove extension
-  const base = filename.replace(/\.mov$/i, '');
+  // Remove extension (.mov or .mp4 — the same take either way)
+  const base = stripRecordingExtension(filename);
   const parts = base.split('-');
 
   if (parts.length < 2) return null;
@@ -335,13 +367,16 @@ export function sanitizeName(name: string): string {
 }
 
 /**
- * Build a recording filename from components
+ * Build a recording filename from components.
+ * `ext` is the source file's extension — pass `recordingExtension(sourceFilename)` when renaming,
+ * so an `.mp4` stays an `.mp4`. Defaults to `.mov` only when there is no source file.
  */
 export function buildRecordingFilename(
   chapter: string,
   sequence: string | null,
   name: string,
-  tags: string[] = []
+  tags: string[] = [],
+  ext: string = DEFAULT_RECORDING_EXTENSION
 ): string {
   const parts = [chapter];
   if (sequence) {
@@ -349,7 +384,7 @@ export function buildRecordingFilename(
   }
   parts.push(sanitizeName(name));
   parts.push(...tags);
-  return parts.join('-') + '.mov';
+  return parts.join('-') + recordingExtension(ext);
 }
 
 /**

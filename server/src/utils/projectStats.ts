@@ -8,7 +8,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import {
-  countMovFiles,
+  countRecordingFiles,
   countUniqueChapters,
   countFiles,
   getProjectTimestamps,
@@ -117,7 +117,7 @@ export async function getProjectStatsRaw(
   const thumbsDir = path.join(projectPath, 'assets', 'thumbs');
 
   // FR-111: Only count recordings/ (safe status tracked in state file, not folder)
-  const totalFiles = await countMovFiles(recordingsDir);
+  const totalFiles = await countRecordingFiles(recordingsDir);
 
   // Transcript sync status (FR-111: Only recordings/)
   const transcriptSync = await getTranscriptSyncStatus(recordingsDir, transcriptsDir);

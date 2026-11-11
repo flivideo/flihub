@@ -9,7 +9,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { getVideoDuration } from './videoDuration.js';
-import { extractTagsFromName } from '../../../shared/naming.js';
+import { extractTagsFromName, isRecordingFile } from '../../../shared/naming.js';
 
 export interface SegmentInfo {
   filename: string;
@@ -37,7 +37,7 @@ export async function getSegmentDuration(filePath: string): Promise<number> {
 
 /**
  * Parse recording filename to extract segment info
- * Format: {chapter}-{sequence}-{name}[-{tags}].mov
+ * Format: {chapter}-{sequence}-{name}[-{tags}].{mov|mp4}
  */
 export function parseRecordingFilename(filename: string): {
   chapter: string;
@@ -45,8 +45,8 @@ export function parseRecordingFilename(filename: string): {
   name: string;
   tags: string[];
 } | null {
-  // Match pattern: 01-1-intro.mov or 01-2-demo-CTA-SKOOL.mov
-  const match = filename.match(/^(\d{2})-(\d+)-(.+)\.mov$/);
+  // Match pattern: 01-1-intro.mov or 01-2-demo-CTA-SKOOL.mp4
+  const match = filename.match(/^(\d{2})-(\d+)-(.+)\.(?:mov|mp4)$/i);
   if (!match) return null;
 
   const [, chapter, sequence, rest] = match;
@@ -75,9 +75,9 @@ export async function groupRecordingsByChapter(
   }
 
   const files = await fs.readdir(recordingsDir);
-  const movFiles = files.filter((f) => f.endsWith('.mov') && !f.startsWith('.'));
+  const recordingFiles = files.filter((f) => isRecordingFile(f) && !f.startsWith('.'));
 
-  for (const filename of movFiles) {
+  for (const filename of recordingFiles) {
     const parsed = parseRecordingFilename(filename);
     if (!parsed) continue;
 

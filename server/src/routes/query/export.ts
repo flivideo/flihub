@@ -18,6 +18,8 @@ import {
   parseImageFilename,
   compareImageAssets,
   extractTagsFromName,
+  isRecordingFile,
+  stripRecordingExtension,
 } from '../../../../shared/naming.js';
 import { readDirSafe, statSafe, readFileSafe } from '../../utils/filesystem.js';
 import { formatExportReport } from '../../utils/reporters.js';
@@ -112,7 +114,7 @@ export function createExportRoutes(getConfig: () => Config): Router {
 
         const files = await readDirSafe(paths.recordings);
         for (const filename of files) {
-          if (!filename.endsWith('.mov')) continue;
+          if (!isRecordingFile(filename)) continue;
           const parsed = parseRecordingFilename(filename);
           if (!parsed) continue;
 
@@ -120,7 +122,7 @@ export function createExportRoutes(getConfig: () => Config): Router {
           const stat = await statSafe(filePath);
           if (!stat) continue; // File deleted between readdir and stat
 
-          const baseName = filename.replace('.mov', '');
+          const baseName = stripRecordingExtension(filename);
 
           // NFR-65: Use extractTagsFromName utility
           const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');

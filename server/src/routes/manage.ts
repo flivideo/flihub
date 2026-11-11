@@ -7,6 +7,8 @@ import { getProjectPaths } from '../../../shared/paths.js';
 import {
   parseRecordingFilename,
   buildRecordingFilename,
+  recordingExtension,
+  isRecordingFile,
   extractTagsFromName,
   formatChapter,
 } from '../../../shared/naming.js';
@@ -169,7 +171,8 @@ export function createManageRoutes(
             newChapter,
             newSequence,
             finalLabel,
-            tags || []
+            tags || [],
+            recordingExtension(oldFilename)
           );
 
           console.log(`[FR-138] Renaming: ${oldFilename} → ${newFilename}`);
@@ -266,7 +269,7 @@ export function createManageRoutes(
         recordings = files;
       } else {
         const allFiles = await fs.readdir(recordingsDir);
-        recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
+        recordings = allFiles.filter((f) => isRecordingFile(f));
       }
 
       let queued = 0;
@@ -486,7 +489,7 @@ export function createManageRoutes(
 
       // Get all files in this chapter
       const allFiles = await fs.readdir(recordingsDir);
-      const recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
+      const recordings = allFiles.filter((f) => isRecordingFile(f));
 
       const chapterFiles = recordings.filter((f) => {
         const parsed = parseRecordingFilename(f);
@@ -513,8 +516,7 @@ export function createManageRoutes(
 
         // Build new filename with updated chapter
         const newFilename =
-          buildRecordingFilename(newChapter, parsed.sequence, parsed.name) +
-          path.extname(oldFilename);
+          buildRecordingFilename(newChapter, parsed.sequence, parsed.name, [], recordingExtension(oldFilename));
 
         console.log(`[FR-140]   ${oldFilename} → ${newFilename}`);
 
@@ -618,7 +620,7 @@ export function createManageRoutes(
 
       // Get all recording files
       const allFiles = await fs.readdir(recordingsDir);
-      const recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
+      const recordings = allFiles.filter((f) => isRecordingFile(f));
 
       // Guard: chapter 99 is used as staging area — reject if it already has files
       const ch99Files = recordings.filter((f) => f.startsWith('99-'));
@@ -646,8 +648,7 @@ export function createManageRoutes(
         if (!parsed) continue;
 
         const newFilename =
-          buildRecordingFilename(tempChapter, parsed.sequence, parsed.name) +
-          path.extname(oldFilename);
+          buildRecordingFilename(tempChapter, parsed.sequence, parsed.name, [], recordingExtension(oldFilename));
 
         const result = await renameRecording(
           oldFilename,
@@ -672,8 +673,7 @@ export function createManageRoutes(
         if (!parsed) continue;
 
         const newFilename =
-          buildRecordingFilename(chapter1, parsed.sequence, parsed.name) +
-          path.extname(oldFilename);
+          buildRecordingFilename(chapter1, parsed.sequence, parsed.name, [], recordingExtension(oldFilename));
 
         const result = await renameRecording(
           oldFilename,
@@ -692,7 +692,7 @@ export function createManageRoutes(
       // Re-read directory to get updated filenames
       const updatedFiles = await fs.readdir(recordingsDir);
       const updatedRecordings = updatedFiles.filter(
-        (f) => f.endsWith('.mov') || f.endsWith('.mp4')
+        (f) => isRecordingFile(f)
       );
 
       const tempFiles = updatedRecordings.filter((f) => {
@@ -705,8 +705,7 @@ export function createManageRoutes(
         if (!parsed) continue;
 
         const newFilename =
-          buildRecordingFilename(chapter2, parsed.sequence, parsed.name) +
-          path.extname(oldFilename);
+          buildRecordingFilename(chapter2, parsed.sequence, parsed.name, [], recordingExtension(oldFilename));
 
         const result = await renameRecording(
           oldFilename,
@@ -757,7 +756,7 @@ export function createManageRoutes(
       const queue = getQueue ? getQueue() : [];
       const chNum = parseInt(chapter, 10);
 
-      const all = (await fs.readdir(paths.recordings)).filter((f) => /\.(mov|mp4)$/i.test(f));
+      const all = (await fs.readdir(paths.recordings)).filter((f) => isRecordingFile(f));
       const files = all
         .map((filename) => ({ filename, parsed: parseRecordingFilename(filename) }))
         .filter(({ parsed }) => parsed && parsed.sequence !== null && parseInt(parsed.chapter, 10) === chNum)
@@ -769,7 +768,7 @@ export function createManageRoutes(
         .sort((a, b) => a.sequence - b.sequence || a.filename.localeCompare(b.filename));
 
       const plan = files
-        .map((f, i) => ({ f, newFilename: buildRecordingFilename(f.chapter, String(i + 1), f.name, f.tags) }))
+        .map((f, i) => ({ f, newFilename: buildRecordingFilename(f.chapter, String(i + 1), f.name, f.tags, recordingExtension(f.filename)) }))
         .filter(({ f, newFilename }) => newFilename !== f.filename);
       if (plan.length === 0) {
         return res.json({ success: true, renamedCount: 0, files: [] });
@@ -920,7 +919,7 @@ export function createManageRoutes(
 
       // Read all recording files
       const allFiles = await fs.readdir(recordingsDir);
-      const recordings = allFiles.filter((f) => f.endsWith('.mov') || f.endsWith('.mp4'));
+      const recordings = allFiles.filter((f) => isRecordingFile(f));
 
       // Parse all filenames and group by chapter
       const chapterMap = new Map<
@@ -1005,7 +1004,7 @@ export function createManageRoutes(
 
         for (const file of files) {
           const newFilename =
-            buildRecordingFilename(newChapterStr, String(file.sequence), file.name, file.tags);
+            buildRecordingFilename(newChapterStr, String(file.sequence), file.name, file.tags, recordingExtension(file.filename));
 
           console.log(`[B047]   Cascade: ${file.filename} → ${newFilename}`);
 
@@ -1034,7 +1033,7 @@ export function createManageRoutes(
         const file = moveFiles[i];
         const newSeq = String(i + 1);
         const newFilename =
-          buildRecordingFilename(targetChapterStr, newSeq, file.name, file.tags);
+          buildRecordingFilename(targetChapterStr, newSeq, file.name, file.tags, recordingExtension(file.filename));
 
         console.log(`[B047]   Move: ${file.filename} → ${newFilename}`);
 

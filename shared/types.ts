@@ -370,6 +370,7 @@ export interface TranscriptSyncResponse {
   missingTranscripts: string[]; // Recordings without transcript
   orphanedTranscripts: string[]; // Transcripts without recording
   recordingsDir?: string; // Absolute recordings folder for this project's layout (hub/recordings or recordings)
+  recordingFilenames?: Record<string, string>; // Base name → real filename (.mov or .mp4)
 }
 
 export interface ProjectStats {

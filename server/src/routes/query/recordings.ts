@@ -10,7 +10,7 @@ import path from 'path';
 import { queryString } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
-import { parseRecordingFilename, extractTagsFromName } from '../../../../shared/naming.js';
+import { parseRecordingFilename, extractTagsFromName, isRecordingFile, stripRecordingExtension } from '../../../../shared/naming.js';
 import { readDirSafe, statSafe } from '../../utils/filesystem.js';
 import { formatRecordingsReport } from '../../utils/reporters.js';
 import { getVideoDuration } from '../../utils/videoDuration.js';
@@ -69,7 +69,7 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
       // FR-111: Scan only recordings/ (no more -safe folder)
       const realFiles = await readDirSafe(paths.recordings);
       for (const filename of realFiles) {
-        if (!filename.endsWith('.mov')) continue;
+        if (!isRecordingFile(filename)) continue;
 
         const parsed = parseRecordingFilename(filename);
         if (!parsed) continue;
@@ -78,7 +78,7 @@ export function createRecordingsRoutes(getConfig: () => Config): Router {
         const stat = await statSafe(filePath);
         if (!stat) continue;
 
-        const baseName = filename.replace('.mov', '');
+        const baseName = stripRecordingExtension(filename);
         const { name: cleanName, tags } = extractTagsFromName(parsed.name || '');
 
         const annotationValue = getRecordingAnnotation(state, filename);

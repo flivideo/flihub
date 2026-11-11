@@ -14,6 +14,7 @@ import type { Config, ChapterRecordingConfig } from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { expandPath } from '../utils/pathUtils.js';
 import { groupRecordingsByChapter } from '../utils/chapterRecording.js';
+import { isRecordingFile } from '../../../shared/naming.js';
 
 export const CHAPTER_PREVIEWS_GONE =
   'Chapter previews are deprecated (FliStudio roadmap §1.2e); existing recordings/-chapters/ folders are left in place.';
@@ -64,7 +65,7 @@ export function createChapterRoutes(getConfig: () => Config) {
     const existing: string[] = [];
     if (await fs.pathExists(paths.chapters)) {
       const files = await fs.readdir(paths.chapters);
-      existing.push(...files.filter((f) => f.endsWith('.mov')));
+      existing.push(...files.filter((f) => isRecordingFile(f)));
     }
 
     // Get available chapters from recordings

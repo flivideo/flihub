@@ -32,7 +32,13 @@ import { UndoToast } from './shared/UndoToast';
 import { useConfig } from '../hooks/useConfigApi';
 import { useBulkRename, useSplitChapter, useBatchUndoRename, useRenumberChapter } from '../hooks/useEditingApi';
 import type { RecordingFile, TranscriptionStatusResponse } from '../../../shared/types';
-import { extractTagsFromName, buildRecordingFilename, formatChapter, parseRecordingFilename } from '../../../shared/naming';
+import {
+  extractTagsFromName,
+  buildRecordingFilename,
+  formatChapter,
+  parseRecordingFilename,
+  recordingExtension,
+} from '../../../shared/naming';
 import {
   formatFileSize,
   formatDuration,
@@ -923,7 +929,13 @@ export function RecordingsView() {
       const newName = typed.name;
       const newTags = [...recording.tags, ...typed.tags.filter((t) => !recording.tags.includes(t))];
 
-      const newFilename = buildRecordingFilename(newChapter, recording.sequence, newName, newTags);
+      const newFilename = buildRecordingFilename(
+        newChapter,
+        recording.sequence,
+        newName,
+        newTags,
+        recordingExtension(recording.filename)
+      );
 
       if (newFilename === recording.filename) return; // no change
 
@@ -955,7 +967,8 @@ export function RecordingsView() {
         recording.chapter,
         recording.sequence,
         recording.name,
-        newTags.length > 0 ? newTags : []
+        newTags.length > 0 ? newTags : [],
+        recordingExtension(recording.filename)
       );
 
       if (newFilename === recording.filename) return;
@@ -1020,7 +1033,8 @@ export function RecordingsView() {
           file.chapter,
           file.sequence,
           newName,
-          file.tags.length > 0 ? file.tags : []
+          file.tags.length > 0 ? file.tags : [],
+          recordingExtension(file.filename)
         );
         if (newFilename !== file.filename) {
           changes.set(file.filename, { oldFilename: file.filename, newFilename });
@@ -1045,7 +1059,8 @@ export function RecordingsView() {
           chapter,
           file.sequence,
           file.name,
-          file.tags.length > 0 ? file.tags : []
+          file.tags.length > 0 ? file.tags : [],
+          recordingExtension(file.filename)
         );
         if (newFilename !== file.filename) {
           changes.set(file.filename, { oldFilename: file.filename, newFilename });
@@ -1072,7 +1087,8 @@ export function RecordingsView() {
           file.chapter,
           file.sequence,
           file.name,
-          newTags
+          newTags,
+          recordingExtension(file.filename)
         );
         if (newFilename !== file.filename) {
           changes.set(file.filename, { oldFilename: file.filename, newFilename });
@@ -1099,7 +1115,8 @@ export function RecordingsView() {
           file.chapter,
           file.sequence,
           file.name,
-          newTags.length > 0 ? newTags : []
+          newTags.length > 0 ? newTags : [],
+          recordingExtension(file.filename)
         );
         if (newFilename !== file.filename) {
           changes.set(file.filename, { oldFilename: file.filename, newFilename });

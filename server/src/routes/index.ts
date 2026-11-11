@@ -47,6 +47,9 @@ import {
   parseRecordingFilename,
   extractTagsFromName,
   buildRecordingFilename,
+  isRecordingFile,
+  recordingExtension,
+  stripRecordingExtension,
   calculateSuggestedNaming as calculateSuggested,
   parseChapterNum,
   parseSequenceNum,
@@ -152,11 +155,11 @@ export function createRoutes(
         return;
       }
 
-      // Read all .mov files in recordings directory
+      // Read all recordings (.mov and .mp4) in recordings directory
       const files = await fs.readdir(paths.recordings);
-      const movFiles = files.filter((f) => f.endsWith('.mov')).sort();
-      const suggestion = calculateSuggested(movFiles);
-      const response = { ...suggestion, existingFiles: movFiles } as SuggestedNaming;
+      const recordingFiles = files.filter((f) => isRecordingFile(f)).sort();
+      const suggestion = calculateSuggested(recordingFiles);
+      const response = { ...suggestion, existingFiles: recordingFiles } as SuggestedNaming;
       res.json(response);
     } catch (error) {
       console.error('Error calculating suggested naming:', error);
@@ -270,10 +273,12 @@ export function createRoutes(
 
       // Build new filename
       // NFR-6: Using projectDirectory with getProjectPaths()
-      // FR-161: b-roll = {kebab-name}[-TAGS].mov, no chapter prefix, lands in b-roll/
+      // FR-161: b-roll = {kebab-name}[-TAGS].{ext}, no chapter prefix, lands in b-roll/
+      // The source file's container is kept: an .mp4 is named .mp4, never relabelled .mov.
+      const ext = recordingExtension(originalPath);
       const newFilename = isBroll
-        ? [name, ...(tags || [])].join('-') + '.mov'
-        : buildRecordingFilename(chapter!, sequence, name, tags || []);
+        ? [name, ...(tags || [])].join('-') + ext
+        : buildRecordingFilename(chapter!, sequence, name, tags || [], ext);
       const paths = getProjectPaths(expandPath(config.projectDirectory));
       const targetDir = isBroll ? paths.broll : paths.recordings;
       const newPath = path.join(targetDir, newFilename);
@@ -285,6 +290,25 @@ export function createRoutes(
           oldPath: originalPath,
           newPath,
           error: `Target file already exists: ${newFilename}`,
+        } as RenameResponse);
+        return;
+      }
+
+      // The same take name in the other container (02-1-demo.mov beside 02-1-demo.mp4) would share
+      // one transcript set — refuse it the same way as an exact clash.
+      const newBase = stripRecordingExtension(newFilename);
+      const sibling = (await fs.readdir(targetDir).catch(() => [] as string[])).find(
+        (f) =>
+          isRecordingFile(f) &&
+          stripRecordingExtension(f) === newBase &&
+          path.resolve(targetDir, f) !== path.resolve(originalPath)
+      );
+      if (sibling) {
+        res.status(409).json({
+          success: false,
+          oldPath: originalPath,
+          newPath,
+          error: `Target take already exists as ${sibling}`,
         } as RenameResponse);
         return;
       }
@@ -619,7 +643,7 @@ export function createRoutes(
       if (await fs.pathExists(paths.recordings)) {
         const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
         // Skip -safe directory if it still exists (migration not complete)
-        const fileEntries = entries.filter((e) => e.isFile() && e.name.endsWith('.mov'));
+        const fileEntries = entries.filter((e) => e.isFile() && isRecordingFile(e.name));
 
         // FR-57: parallel processing
         const results = await Promise.all(
@@ -630,7 +654,7 @@ export function createRoutes(
 
             const stats = await fs.stat(filePath);
 
-            const baseName = entry.name.replace('.mov', '');
+            const baseName = stripRecordingExtension(entry.name);
 
             // FR-36: Get video duration
             const duration = await getVideoDuration(filePath);
@@ -873,7 +897,7 @@ export function createRoutes(
         // Mark all files in the chapter
         const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
         filesToMark = entries
-          .filter((e) => e.isFile() && e.name.endsWith('.mov'))
+          .filter((e) => e.isFile() && isRecordingFile(e.name))
           .map((e) => e.name)
           .filter((name) => {
             const parsed = parseRecordingFilename(name);
@@ -1039,7 +1063,7 @@ export function createRoutes(
         // Mark all files in the chapter
         const entries = await fs.readdir(paths.recordings, { withFileTypes: true });
         filesToMark = entries
-          .filter((e) => e.isFile() && e.name.endsWith('.mov'))
+          .filter((e) => e.isFile() && isRecordingFile(e.name))
           .map((e) => e.name)
           .filter((name) => {
             const parsed = parseRecordingFilename(name);
@@ -1281,16 +1305,16 @@ export function createRoutes(
         }
       }
 
-      // Find all .mov files matching this chapter-label pattern
+      // Find all recordings (.mov/.mp4) matching this chapter-label pattern
       const recordingsToRename: { oldFilename: string; newFilename: string }[] = [];
 
-      // Helper to find recordings (only .mov files, not transcripts)
+      // Helper to find recordings (.mov/.mp4, not transcripts)
       const findRecordings = async (dirPath: string) => {
         if (!(await fs.pathExists(dirPath))) return;
 
         const entries = await fs.readdir(dirPath);
         for (const filename of entries) {
-          if (!filename.endsWith('.mov') && !filename.endsWith('.mp4')) continue;
+          if (!isRecordingFile(filename)) continue;
 
           // Parse the filename
           const parsed = parseRecordingFilename(filename);
@@ -1317,7 +1341,8 @@ export function createRoutes(
             parsed.chapter,
             parsed.sequence,
             newLabel,
-            fileTags
+            fileTags,
+            recordingExtension(filename)
           );
 
           recordingsToRename.push({ oldFilename: filename, newFilename });

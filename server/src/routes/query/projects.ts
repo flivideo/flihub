@@ -17,7 +17,7 @@ import { getProjectStatsRaw } from '../../utils/projectStats.js';
 import { parseRecordingFilename } from '../../../../shared/naming.js';
 import { readFileSafe } from '../../utils/filesystem.js';
 import {
-  countMovFiles,
+  countRecordingFiles,
   countUniqueChapters,
   countFiles,
   getProjectTimestamps,
@@ -137,7 +137,7 @@ export function createProjectsRoutes(getConfig: () => Config): Router {
         const paths = getProjectPaths(projectPath);
 
         // FR-111: Only count recordings/ (safe status is per-file in state)
-        const totalFiles = await countMovFiles(paths.recordings);
+        const totalFiles = await countRecordingFiles(paths.recordings);
         const chapterCount = await countUniqueChapters(paths.recordings);
 
         // Transcript sync (FR-111: Only recordings/)

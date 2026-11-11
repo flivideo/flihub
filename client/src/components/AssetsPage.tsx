@@ -20,7 +20,7 @@ import { useShiftHover } from '../hooks/useShiftHover';
 import { useAssetsSocket } from '../hooks/useSocket';
 import { formatFileSize, collapsePath, formatTime, toKebabCase } from '../utils/formatting';
 import { OpenFolderButton } from './shared';
-import { validateLabel, buildImageFilename } from '../../../shared/naming';
+import { validateLabel, buildImageFilename, stripRecordingExtension } from '../../../shared/naming';
 import { ImagePreviewOverlay } from './ImagePreviewOverlay';
 import { API_URL } from '../config';
 import type { ImageInfo, PromptAsset, ImageAsset } from '../../../shared/types';
@@ -805,7 +805,7 @@ export function AssetsPage() {
                     }`}
                     title={rec.filename}
                   >
-                    {rec.filename.replace('.mov', '')}
+                    {stripRecordingExtension(rec.filename)}
                   </div>
                 );
               })}
@@ -1246,11 +1246,12 @@ export function AssetsPage() {
 
                       {/* Video link - find matching recording filename */}
                       <span className="w-48 flex-shrink-0 font-mono text-warm-secondary text-xs truncate">
-                        {recordingsData?.recordings
-                          ?.find(
-                            (rec) => rec.chapter === pair.chapter && rec.sequence === pair.sequence
-                          )
-                          ?.filename.replace('.mov', '') || `${pair.chapter}-${pair.sequence}`}
+                        {(() => {
+                          const rec = recordingsData?.recordings?.find(
+                            (r) => r.chapter === pair.chapter && r.sequence === pair.sequence
+                          );
+                          return rec ? stripRecordingExtension(rec.filename) : `${pair.chapter}-${pair.sequence}`;
+                        })()}
                       </span>
 
                       {/* Filename with extension and variant badge */}

@@ -19,7 +19,12 @@ import fs from 'fs-extra';
 import path from 'path';
 import { randomBytes } from 'crypto';
 import { getProjectPaths, type ProjectPaths } from '../../../shared/paths.js';
-import { NAMING_RULES, sanitizeName } from '../../../shared/naming.js';
+import {
+  NAMING_RULES,
+  recordingExtension,
+  sanitizeName,
+  stripRecordingExtension,
+} from '../../../shared/naming.js';
 import type { ProjectState, RecordingState, TranscriptionJob } from '../../../shared/types.js';
 import { readProjectState, setRecordingPlaceholder, writeProjectState } from './projectState.js';
 import { checkTranscriptionQueue } from './renameRecording.js';
@@ -283,8 +288,9 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
   };
   const tags = (list: string[] | undefined) =>
     (list ?? []).filter(Boolean).map((t) => t.toUpperCase());
-  const promoted = (segment: number, name: string, tagList: string[]) =>
-    `${op.chapter}-${segment}-${[name, ...tagList].join('-')}.mov`;
+  // A promoted take keeps its SOURCE container: an .mp4 sent in lands as .mp4, never relabelled .mov.
+  const promoted = (segment: number, name: string, tagList: string[], source: string) =>
+    `${op.chapter}-${segment}-${[name, ...tagList].join('-')}${recordingExtension(source)}`;
   const after = (n: number) => takes.filter((t) => t.segment > n);
   const atOrAfter = (n: number) => takes.filter((t) => t.segment >= n);
   const unique = (list: Take[]) => {
@@ -300,8 +306,8 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
         return { blockers: [{ kind: 'invalid', detail: NAMING_RULES.name.errorMessage }] };
       }
       const filename = name
-        ? promoted(op.segment, name, tags(op.tags))
-        : `${op.chapter}-${op.segment}-${old.rest.replace(/\.(mov|mp4)$/i, '.mov')}`;
+        ? promoted(op.segment, name, tags(op.tags), op.source)
+        : `${op.chapter}-${op.segment}-${stripRecordingExtension(old.rest)}${recordingExtension(op.source)}`;
       return {
         plan: {
           summary: `replaced ${old.filename} with ${filename}`,
@@ -318,7 +324,7 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
       one(op.before);
       const shifted = atOrAfter(op.before);
       unique(shifted);
-      const filename = promoted(op.before, name, tags(op.tags));
+      const filename = promoted(op.before, name, tags(op.tags), op.source);
       return {
         plan: {
           summary: `inserted ${filename}; ${shifted.length} later segment(s) moved up one`,
@@ -371,7 +377,7 @@ function planOf(op: SegmentOpInput, takes: Take[]): { plan?: Plan; blockers: Blo
       const next = takes.length ? Math.max(...takes.map((t) => t.segment)) + 1 : 1;
       const promote = op.sources.map((source, i) => ({
         source,
-        filename: promoted(next + i, name, tags(op.tags)),
+        filename: promoted(next + i, name, tags(op.tags), source),
       }));
       return {
         plan: {

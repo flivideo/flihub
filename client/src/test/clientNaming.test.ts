@@ -112,4 +112,13 @@ describe('buildPreviewFilename', () => {
       expect(buildPreviewFilename('05', null, 'workflow', ['SKOOL'])).toBe('05-workflow-SKOOL.mov');
     });
   });
+  describe('source container (.mp4 takes)', () => {
+    it('previews an .mp4 source as .mp4, never .mov or .mp4.mov', () => {
+      expect(buildPreviewFilename('02', '1', 'demo', ['CTA'], undefined, 'processed take.mp4')).toBe('02-1-demo-CTA.mp4');
+    });
+    it('previews a .mov source as .mov, and no source as .mov', () => {
+      expect(buildPreviewFilename('02', '1', 'demo', [], undefined, 'Recording 1.mov')).toBe('02-1-demo.mov');
+      expect(buildPreviewFilename('02', '1', 'demo', [])).toBe('02-1-demo.mov');
+    });
+  });
 });

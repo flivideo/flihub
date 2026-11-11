@@ -18,12 +18,16 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
 
   const [processingFiles, setProcessingFiles] = useState<Set<string>>(new Set());
 
+  // The take's real filename (.mov or .mp4) as the server saw it; `.mov` only for an older server
+  const fileOf = (base: string) => data?.recordingFilenames?.[base] ?? `${base}.mov`;
+
   // Queue a single recording for transcription
   const handleTranscribe = async (filename: string) => {
     // Build the full path to the recording. The server reports the recordings folder for this
     // project's layout (hub/recordings on a hub project). Try it first, then its -safe/.
     const recordingsDir = data?.recordingsDir ?? `${projectPath}/recordings`;
-    const videoPath = `${recordingsDir}/${filename}.mov`;
+    const videoFilename = fileOf(filename);
+    const videoPath = `${recordingsDir}/${videoFilename}`;
 
     setProcessingFiles((prev) => new Set(prev).add(filename));
     try {
@@ -34,7 +38,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
     } catch (_error) {
       // Try the safe folder
       try {
-        const safePath = `${recordingsDir}/-safe/${filename}.mov`;
+        const safePath = `${recordingsDir}/-safe/${videoFilename}`;
         await queueTranscription.mutateAsync(safePath);
         toast.success(`Queued: ${filename}`);
         refetch();
@@ -139,7 +143,7 @@ export function TranscriptSyncModal({ projectCode, projectPath, onClose }: Props
                         className="flex items-center justify-between py-1 px-2 hover:bg-surface-hover rounded"
                       >
                         <span className="text-sm font-mono text-warm-secondary truncate flex-1 mr-2">
-                          {filename}.mov
+                          {fileOf(filename)}
                         </span>
                         <button
                           onClick={() => handleTranscribe(filename)}

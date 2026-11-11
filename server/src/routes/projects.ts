@@ -18,6 +18,7 @@ import { verifyChapterWithLLM } from '../utils/llmVerification.js';
 import { getProjectStatsRaw } from '../utils/projectStats.js';
 import { getProjectPaths } from '../../../shared/paths.js';
 import { readDirSafe } from '../utils/filesystem.js';
+import { isRecordingFile, stripRecordingExtension } from '../../../shared/naming.js';
 import { calculateProjectDiskSize } from '../utils/diskUtils.js';
 import { TRASH_FOLDER } from '@flivideo/core';
 import type {
@@ -255,9 +256,12 @@ export function createProjectRoutes(
 
     // FR-111: Only scan recordings/ (no more -safe folder)
     const files = await readDirSafe(recordingsDir);
-    const recordingFiles = files
-      .filter((f) => f.endsWith('.mov'))
-      .map((f) => f.replace('.mov', ''));
+    const recordingNames = files.filter((f) => isRecordingFile(f));
+    const recordingFiles = recordingNames.map((f) => stripRecordingExtension(f));
+    // Base name → real filename, so the client never rebuilds `<base>.mov` for an .mp4 take
+    const recordingFilenames = Object.fromEntries(
+      recordingNames.map((f) => [stripRecordingExtension(f), f])
+    );
 
     // Get all .txt files (base names, exclude *-chapter.txt)
     const transcriptDirFiles = await readDirSafe(transcriptsDir);
@@ -278,6 +282,7 @@ export function createProjectRoutes(
       missingTranscripts,
       orphanedTranscripts,
       recordingsDir,
+      recordingFilenames,
     };
 
     res.json(response);

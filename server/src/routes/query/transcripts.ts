@@ -12,7 +12,7 @@ import fs from 'fs-extra';
 import { queryString, expandPath } from '../../utils/pathUtils.js';
 import { resolveProjectCode } from '../../utils/projectResolver.js';
 import { getProjectPaths } from '../../../../shared/paths.js';
-import { parseRecordingFilename } from '../../../../shared/naming.js';
+import { parseRecordingFilename, stripRecordingExtension } from '../../../../shared/naming.js';
 import { readFileSafe } from '../../utils/filesystem.js';
 import { formatTranscriptsReport } from '../../utils/reporters.js';
 import type { Config, QueryTranscript } from '../../../../shared/types.js';
@@ -146,7 +146,7 @@ export function createTranscriptsRoutes(getConfig: () => Config): Router {
       // Try with .txt extension
       let filename = recording;
       if (!filename.endsWith('.txt')) {
-        filename = filename.replace(/\.mov$/, '') + '.txt';
+        filename = stripRecordingExtension(filename) + '.txt';
       }
 
       const filePath = path.join(paths.transcripts, filename);

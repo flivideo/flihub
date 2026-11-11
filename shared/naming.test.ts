@@ -10,6 +10,9 @@ import {
   findNextSequence,
   calculateSuggestedNaming,
   nextSequenceOnDisk,
+  isRecordingFile,
+  recordingExtension,
+  stripRecordingExtension,
 } from './naming';
 
 describe('naming utilities', () => {
@@ -52,17 +55,12 @@ describe('naming utilities', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle .mp4 extension by returning null (only .mov is stripped)', () => {
-      // The implementation only strips .mov — .mp4 filenames are not parsed as valid
-      const result = parseRecordingFilename('05-3-intro.mp4');
-
-      // '05-3-intro.mp4' — base becomes '05-3-intro.mp4' (no .mov stripping), then
-      // parts are ['05','3','intro.mp4'], name includes extension.
-      // The function still parses chapter + sequence and leaves 'intro.mp4' as the name.
-      expect(result).not.toBeNull();
-      expect(result?.chapter).toBe('05');
-      expect(result?.sequence).toBe('3');
-      expect(result?.name).toBe('intro.mp4');
+    it('strips .mp4 the same as .mov: x.mov and x.mp4 parse to the same name', () => {
+      const mov = parseRecordingFilename('05-3-intro-CTA.mov');
+      const mp4 = parseRecordingFilename('05-3-intro-CTA.mp4');
+      expect(mp4).toEqual({ chapter: '05', sequence: '3', name: 'intro' });
+      expect(mp4).toEqual(mov);
+      expect(parseRecordingFilename('05-3-intro.MP4')?.name).toBe('intro');
     });
   });
 
@@ -83,6 +81,32 @@ describe('naming utilities', () => {
       const result = buildRecordingFilename('01', '2', 'demo', ['CTA', 'SKOOL', 'ENDCARD']);
 
       expect(result).toBe('01-2-demo-CTA-SKOOL-ENDCARD.mov');
+    });
+
+    it('carries the source extension: an .mp4 stays .mp4, never .mov or .mp4.mov', () => {
+      expect(buildRecordingFilename('02', '1', 'demo', [], '.mp4')).toBe('02-1-demo.mp4');
+      expect(buildRecordingFilename('02', '1', 'demo', [], recordingExtension('09-4-old.mp4'))).toBe('02-1-demo.mp4');
+      expect(buildRecordingFilename('02', '1', 'demo', [], recordingExtension('09-4-old.mov'))).toBe('02-1-demo.mov');
+    });
+  });
+
+  describe('recording extension helpers', () => {
+    it('isRecordingFile accepts .mov and .mp4 in any case, nothing else', () => {
+      for (const f of ['01-1-intro.mov', '02-1-demo.mp4', 'A.MOV', 'b.Mp4']) expect(isRecordingFile(f)).toBe(true);
+      for (const f of ['01-1-intro.txt', '01-1-intro.srt', 'x.mov.txt', 'x.mkv', 'mov']) expect(isRecordingFile(f)).toBe(false);
+    });
+
+    it('recordingExtension returns the file own extension, .mov when there is none', () => {
+      expect(recordingExtension('02-1-demo.mp4')).toBe('.mp4');
+      expect(recordingExtension('01-1-intro.mov')).toBe('.mov');
+      expect(recordingExtension('01-1-intro.txt')).toBe('.mov');
+      expect(recordingExtension(undefined)).toBe('.mov');
+    });
+
+    it('stripRecordingExtension removes one recording extension only', () => {
+      expect(stripRecordingExtension('02-1-demo.mp4')).toBe('02-1-demo');
+      expect(stripRecordingExtension('01-1-intro.mov')).toBe('01-1-intro');
+      expect(stripRecordingExtension('01-1-intro.txt')).toBe('01-1-intro.txt');
     });
   });
 

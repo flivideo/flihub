@@ -11,6 +11,7 @@ import type {
   Config,
 } from '../../../shared/types.js';
 import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/paths.js';
+import { isRecordingFile, stripRecordingExtension, RECORDING_EXTENSIONS } from '../../../shared/naming.js';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { appendTelemetryEntry } from '../utils/telemetry.js';
@@ -103,7 +104,7 @@ export function createTranscriptionRoutes(
     const retarget = (job: TranscriptionJob) => {
       if (takeKey(job.videoPath) !== takeKey(r.from)) return;
       job.videoPath = r.to;
-      job.videoFilename = `${getBaseName(r.to)}.mov`;
+      job.videoFilename = path.basename(r.to);
       console.log(`[follow] ${job.status} job ${job.jobId} now follows ${path.basename(r.to)}`);
     };
     queue.forEach(retarget);
@@ -136,9 +137,12 @@ export function createTranscriptionRoutes(
     const paths = getProjectPaths(expandPath(getConfig().projectDirectory));
     const baseName = path.basename(videoFilename, path.extname(videoFilename));
     const txtPath = path.join(paths.transcripts, `${baseName}.txt`);
-    return isTranscriptFresh(txtPath, path.join(paths.recordings, `${baseName}.mov`))
-      ? txtPath
-      : null;
+    // The take may be .mov or .mp4: check freshness against whichever is on disk
+    const recording =
+      RECORDING_EXTENSIONS.map((ext) => path.join(paths.recordings, `${baseName}${ext}`)).find((p) =>
+        fs.existsSync(p)
+      ) ?? path.join(paths.recordings, videoFilename);
+    return isTranscriptFresh(txtPath, recording) ? txtPath : null;
   }
 
   // FR-92: Check if transcript file exists (for skip logic)
@@ -259,7 +263,7 @@ export function createTranscriptionRoutes(
         if (current !== path.resolve(videoPath)) {
           await relocateTranscripts(videoPath, current, sha);
           job.videoPath = current;
-          job.videoFilename = `${getBaseName(current)}.mov`;
+          job.videoFilename = path.basename(current);
           // Another take may hold the old name now: let it get its own transcript back (cache hit)
           if (await fs.pathExists(videoPath)) {
             void queueTranscription(videoPath).catch(() => undefined);
@@ -421,8 +425,9 @@ export function createTranscriptionRoutes(
     // FR-94: Normalize to base name for consistent comparison
     // This prevents duplicates when same recording is queued as .mov and .mp4
     const baseName = getBaseName(rawFilename);
-    // Use normalized filename with .mov extension for display consistency
-    const videoFilename = `${baseName}.mov`;
+    // The take's own filename (.mov or .mp4). Dedup below is by base name, so the same take queued
+    // under either container is still one job.
+    const videoFilename = rawFilename;
 
     // FR-92: Skip if transcript already exists (only check .txt, not .srt)
     // BUGFIX: Pass videoPath to check in correct project folder
@@ -469,7 +474,7 @@ export function createTranscriptionRoutes(
     const job: TranscriptionJob = {
       jobId: generateJobId(),
       videoPath,
-      videoFilename, // FR-94: Now normalized to .mov extension
+      videoFilename, // the take's real filename; compare by getBaseName()
       status: 'queued',
       duration,
       size,
@@ -788,9 +793,9 @@ export function createTranscriptionRoutes(
         if (fs.existsSync(dir)) {
           const files = await fs.readdir(dir);
           for (const file of files) {
-            if (!file.endsWith('.mov')) continue;
+            if (!isRecordingFile(file)) continue;
 
-            const baseName = file.replace('.mov', '');
+            const baseName = stripRecordingExtension(file);
 
             // Filter by chapter if scope is 'chapter'
             if (scope === 'chapter') {
@@ -854,8 +859,8 @@ export function createTranscriptionRoutes(
         if (fs.existsSync(dir)) {
           const files = await fs.readdir(dir);
           for (const file of files) {
-            if (!file.endsWith('.mov')) continue;
-            const baseName = file.replace('.mov', '');
+            if (!isRecordingFile(file)) continue;
+            const baseName = stripRecordingExtension(file);
             videoMap.set(baseName, { path: path.join(dir, file) });
           }
         }
@@ -863,9 +868,9 @@ export function createTranscriptionRoutes(
 
       // Count files without transcripts
       let pendingCount = 0;
-      for (const [baseName, videoInfo] of videoMap) {
+      for (const videoInfo of videoMap.values()) {
         // BUGFIX: Pass video path to check in correct project folder
-        if (!hasTranscriptFile(`${baseName}.mov`, videoInfo.path)) {
+        if (!hasTranscriptFile(path.basename(videoInfo.path), videoInfo.path)) {
           pendingCount++;
         }
       }

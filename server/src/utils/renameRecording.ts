@@ -85,8 +85,8 @@ export async function renameDerivableFiles(
   newFilename: string,
   paths: ProjectPaths
 ): Promise<void> {
-  const oldBase = oldFilename.replace(/\.(mov|mp4)$/, '');
-  const newBase = newFilename.replace(/\.(mov|mp4)$/, '');
+  const oldBase = oldFilename.replace(/\.(mov|mp4)$/i, '');
+  const newBase = newFilename.replace(/\.(mov|mp4)$/i, '');
 
   console.log(`[B047] Renaming derivative files: ${oldBase} → ${newBase}`);
 
@@ -130,7 +130,7 @@ export async function deleteDerivableFiles(
   paths: ProjectPaths
 ): Promise<void> {
   console.log(`[FR-130] Deleting derivable files for: ${oldFilename}`);
-  const baseName = oldFilename.replace(/\.(mov|mp4)$/, '');
+  const baseName = oldFilename.replace(/\.(mov|mp4)$/i, '');
 
   // Delete transcript files (Whisper creates .txt, .srt, .json, .vtt, .tsv)
   const transcriptPaths = [

@@ -1,14 +1,17 @@
-import { parseRecordingFilename } from '../../../shared/naming';
+import { parseRecordingFilename, recordingExtension } from '../../../shared/naming';
 
 /**
- * Build a preview filename from naming components
+ * Build a preview filename from naming components.
+ * `sourceFilename` is the file being named: its container (.mov/.mp4) is kept. Without one
+ * (the global naming bar) the preview shows `.mov`.
  */
 export function buildPreviewFilename(
   chapter: string,
   sequence: string | null,
   name: string,
   tags: string[],
-  customTag?: string
+  customTag?: string,
+  sourceFilename?: string
 ): string {
   if (!chapter || !name) return '...';
   const parts = [chapter];
@@ -22,7 +25,7 @@ export function buildPreviewFilename(
   parts.push(...tags);
   // FR-21: Include custom tag if provided
   if (customTag) parts.push(customTag);
-  return parts.join('-') + '.mov';
+  return parts.join('-') + recordingExtension(sourceFilename);
 }
 
 /**

@@ -10,6 +10,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { getProjectPaths } from '../../../shared/paths.js';
+import { isRecordingFile } from '../../../shared/naming.js';
 import { expandPath } from './pathUtils.js';
 import { readProjectState, writeProjectState, setRecordingSafe } from './projectState.js';
 
@@ -32,7 +33,7 @@ export async function needsMigration(projectDir: string): Promise<boolean> {
   }
 
   const entries = await fs.readdir(paths.safe);
-  const movFiles = entries.filter((f) => f.endsWith('.mov'));
+  const movFiles = entries.filter((f) => isRecordingFile(f));
   return movFiles.length > 0;
 }
 
@@ -41,7 +42,7 @@ export async function needsMigration(projectDir: string): Promise<boolean> {
  *
  * What it does:
  * 1. Check if recordings/-safe/ exists
- * 2. If exists, read all .mov files
+ * 2. If exists, read all recordings (.mov and .mp4)
  * 3. Move each file back to recordings/
  * 4. Update state file to mark each as safe: true
  * 6. Delete empty -safe folders
@@ -65,9 +66,9 @@ export async function migrateSafeFolder(projectDir: string): Promise<MigrationRe
   // Read current state (or create empty)
   let state = await readProjectState(projectDir);
 
-  // Get list of .mov files in -safe folder
+  // Get list of recordings (.mov/.mp4) in -safe folder
   const safeEntries = await fs.readdir(paths.safe);
-  const movFiles = safeEntries.filter((f) => f.endsWith('.mov'));
+  const movFiles = safeEntries.filter((f) => isRecordingFile(f));
 
   if (movFiles.length === 0) {
     console.log('[FR-111] -safe folder is empty, cleaning up');
@@ -173,7 +174,7 @@ export async function getMigrationStatus(projectDir: string): Promise<{
   let safeFileCount = 0;
   if (await fs.pathExists(paths.safe)) {
     const entries = await fs.readdir(paths.safe);
-    safeFileCount = entries.filter((f) => f.endsWith('.mov')).length;
+    safeFileCount = entries.filter((f) => isRecordingFile(f)).length;
   }
 
   const state = await readProjectState(projectDir);

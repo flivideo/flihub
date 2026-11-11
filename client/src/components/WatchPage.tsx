@@ -37,7 +37,7 @@ import {
 } from '../hooks/useApi';
 import { useRecordingsSocket } from '../hooks/useSocket';
 import { useDelayedHoverValue } from '../hooks/useDelayedHover';
-import { extractTagsFromName } from '../../../shared/naming';
+import { extractTagsFromName, stripRecordingExtension } from '../../../shared/naming';
 import { formatDuration, formatChapterTitle } from '../utils/formatting';
 import { LoadingSpinner, ErrorMessage } from './shared';
 import { TranscriptSyncPanel } from './TranscriptSyncPanel';
@@ -163,6 +163,17 @@ interface VideoMeta {
   chapterFiles?: RecordingFile[]; // For chapter videos, all segments in the chapter
 }
 
+/**
+ * The real filename (.mov or .mp4) of the take a segment name points at. `segmentName` is the base
+ * name, so rebuilding `<segment>.mov` would mislabel an .mp4 take; `.mov` only when it isn't listed.
+ */
+function fileForSegment(recordings: RecordingFile[] | undefined, segmentName: string | undefined): string {
+  return (
+    recordings?.find((r) => stripRecordingExtension(r.filename) === segmentName)?.filename ??
+    `${segmentName}.mov`
+  );
+}
+
 export function WatchPage() {
   const { data: config } = useConfig();
   const { data, isLoading, error } = useRecordings();
@@ -278,7 +289,7 @@ export function WatchPage() {
   const currentIndex = useMemo(() => {
     if (!currentVideo?.segmentName || sortedRecordings.length === 0) return -1;
     return sortedRecordings.findIndex(
-      (r) => r.filename.replace(/\.mov$/i, '') === currentVideo.segmentName
+      (r) => stripRecordingExtension(r.filename) === currentVideo.segmentName
     );
   }, [currentVideo?.segmentName, sortedRecordings]);
 
@@ -289,7 +300,7 @@ export function WatchPage() {
     setCurrentVideo({
       url: getVideoUrl(projectCode, prev.filename),
       title: prev.filename,
-      segmentName: prev.filename.replace(/\.mov$/i, ''),
+      segmentName: stripRecordingExtension(prev.filename),
     });
   }, [currentIndex, sortedRecordings, projectCode]);
 
@@ -299,7 +310,7 @@ export function WatchPage() {
     setCurrentVideo({
       url: getVideoUrl(projectCode, next.filename),
       title: next.filename,
-      segmentName: next.filename.replace(/\.mov$/i, ''),
+      segmentName: stripRecordingExtension(next.filename),
     });
   }, [currentIndex, sortedRecordings, projectCode]);
 
@@ -326,7 +337,7 @@ export function WatchPage() {
     if (mostRecentRecording && projectCode && !hasAutoSelected.current && !currentVideo) {
       hasAutoSelected.current = true;
       const url = getVideoUrl(projectCode, mostRecentRecording.filename);
-      const segmentName = mostRecentRecording.filename.replace(/\.mov$/, '');
+      const segmentName = stripRecordingExtension(mostRecentRecording.filename);
       setCurrentVideo({
         url,
         title: mostRecentRecording.filename,
@@ -404,7 +415,7 @@ export function WatchPage() {
 
     // Play next segment
     const nextSegment = allSegments[currentIndex + 1];
-    const segmentName = nextSegment.filename.replace(/\.mov$/, '');
+    const segmentName = stripRecordingExtension(nextSegment.filename);
     setCurrentVideo({
       url: getVideoUrl(projectCode, nextSegment.filename),
       title: nextSegment.filename,
@@ -423,7 +434,7 @@ export function WatchPage() {
   const playRecording = useCallback(
     (file: RecordingFile) => {
       if (!projectCode) return;
-      const segmentName = file.filename.replace(/\.mov$/, '');
+      const segmentName = stripRecordingExtension(file.filename);
       setCurrentVideo({
         url: getVideoUrl(projectCode, file.filename),
         title: file.filename,
@@ -461,7 +472,7 @@ export function WatchPage() {
   const handleParkToggle = useCallback(async () => {
     if (!currentVideo?.segmentName || !projectCode) return;
 
-    const filename = currentVideo.segmentName + '.mov';
+    const filename = fileForSegment(data?.recordings, currentVideo.segmentName);
     const currentRecording = sortedRecordings.find((r) => r.filename === filename);
 
     if (currentRecording?.isParked) {
@@ -478,13 +489,13 @@ export function WatchPage() {
       setAnnotationText(annotation);
       toast.success('Recording parked');
     }
-  }, [currentVideo, projectCode, sortedRecordings, parkRecording, unparkRecording]);
+  }, [currentVideo, projectCode, sortedRecordings, data?.recordings, parkRecording, unparkRecording]);
 
   // FR-123: Save annotation
   const handleSaveAnnotation = useCallback(async () => {
     if (!currentVideo?.segmentName || !projectCode) return;
 
-    const filename = currentVideo.segmentName + '.mov';
+    const filename = fileForSegment(data?.recordings, currentVideo.segmentName);
     const currentRecording = sortedRecordings.find((r) => r.filename === filename);
 
     const payload = {
@@ -517,12 +528,12 @@ export function WatchPage() {
       console.error('[SAVE] Error:', error);
       toast.error('Failed to save annotation');
     }
-  }, [currentVideo, projectCode, annotationText, sortedRecordings]);
+  }, [currentVideo, projectCode, annotationText, sortedRecordings, data?.recordings]);
 
   // FR-123: Initialize annotation when current video changes
   useEffect(() => {
     if (currentVideo?.segmentName) {
-      const filename = currentVideo.segmentName + '.mov';
+      const filename = fileForSegment(data?.recordings, currentVideo.segmentName);
       const recording = sortedRecordings.find((r) => r.filename === filename);
       console.log('[LOAD] Annotation for:', filename);
       console.log('[LOAD] Recording object:', recording);
@@ -534,7 +545,7 @@ export function WatchPage() {
       setAnnotationText(recording?.annotation || '');
       setEditingAnnotation(false);
     }
-  }, [currentVideo?.segmentName, sortedRecordings]);
+  }, [currentVideo?.segmentName, sortedRecordings, data?.recordings]);
 
   // Calculate total duration
   const totalDuration = useMemo(() => {
@@ -628,7 +639,7 @@ export function WatchPage() {
         {(() => {
           const isRegularVideo = currentVideo && !currentVideo.isChapter;
           const currentIsParked = isRegularVideo
-            ? sortedRecordings.find((r) => r.filename === currentVideo.segmentName + '.mov')?.isParked ?? false
+            ? sortedRecordings.find((r) => r.filename === fileForSegment(data?.recordings, currentVideo.segmentName))?.isParked ?? false
             : false;
 
           const infoSlot = currentVideo ? (
@@ -682,7 +693,7 @@ export function WatchPage() {
         {currentVideo &&
           !currentVideo.isChapter &&
           (() => {
-            const filename = currentVideo.segmentName + '.mov';
+            const filename = fileForSegment(data?.recordings, currentVideo.segmentName);
             const currentRecording = sortedRecordings.find((r) => r.filename === filename);
             const isParked = currentRecording?.isParked;
 

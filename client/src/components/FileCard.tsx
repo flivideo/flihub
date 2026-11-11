@@ -307,7 +307,7 @@ export function FileCard({
             {describeLanding(
               landsAs,
               chapter,
-              buildPreviewFilename(chapter, sequence, name, tags, customTag)
+              buildPreviewFilename(chapter, sequence, name, tags, customTag, file.filename)
             )}
           </span>
         </div>
