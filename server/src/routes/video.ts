@@ -15,6 +15,17 @@ import fs from 'fs-extra';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import type { Config } from '../../../shared/types.js';
 import { getProjectPaths } from '../../../shared/paths.js';
+import { listSetsSync } from '@flivideo/core';
+
+/**
+ * `?set=<id>`: the set to serve from. Absent → undefined (the active set). Present but not a set of this
+ * project → false, and the caller answers 404 rather than quietly serving the active set's take.
+ */
+function setParam(req: Request, projectDir: string): string | undefined | false {
+  const raw = req.query.set;
+  if (typeof raw !== 'string' || raw === '') return undefined;
+  return listSetsSync(projectDir).some((s) => s.id === raw) ? raw : false;
+}
 
 // MIME types for video and subtitle files
 const MEDIA_MIME_TYPES: Record<string, string> = {
@@ -76,7 +87,13 @@ export function createVideoRoutes(getConfig: () => Config): Router {
       // Note: -chapters is inside recordings/ folder
       // Recordings follow the project layout (hub/recordings or recordings).
       const projectBase = path.join(baseDir, projectCode);
-      const recordingsBase = getProjectPaths(projectBase).recordings;
+      // Recording sets: `?set=<id>` names the set; without it, the project's active set.
+      const set = setParam(req, projectBase);
+      if (set === false) {
+        res.status(404).json({ success: false, error: `No such set: ${String(req.query.set)}` });
+        return;
+      }
+      const recordingsBase = getProjectPaths(projectBase, undefined, set).recordings;
       let folderDir: string;
       if (folder === '-chapters') {
         folderDir = path.join(recordingsBase, '-chapters');
@@ -166,7 +183,12 @@ export function createVideoRoutes(getConfig: () => Config): Router {
     try {
       const config = getConfig();
       const projectDir = expandPath(config.projectDirectory);
-      const recordingsDir = getProjectPaths(projectDir).recordings;
+      const set = setParam(req, projectDir);
+      if (set === false) {
+        res.status(404).json({ success: false, error: `No such set: ${String(req.query.set)}` });
+        return;
+      }
+      const recordingsDir = getProjectPaths(projectDir, undefined, set).recordings;
       const videoPath = path.join(recordingsDir, filename);
 
       // Verify file exists

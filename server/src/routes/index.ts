@@ -13,7 +13,7 @@ import type {
   SoundHoleCheck,
 } from '../../../shared/types.js';
 import { expandPath, queryString } from '../utils/pathUtils.js';
-import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/paths.js';
+import { getProjectPaths, pathsForRecording } from '../../../shared/paths.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
 import { checkTakeAspect, enqueueAspectCheck } from '../utils/aspectCheck.js';
 import { checkTakeSoundHoles, enqueueSoundCheck } from '../utils/soundHoles.js';
@@ -102,10 +102,13 @@ export function createRoutes(
   const router = Router();
 
   // Sound holes (D01 editing pass, item 5): store a take's check on its recording. Never fails a caller.
-  const recordSoundHoles = async (projectDir: string, filename: string, check: SoundHoleCheck) => {
+  // Recording sets: `takePath` names the take's own set, so a check that finishes after a set switch
+  // still lands on the right take (two sets can both hold 01-1-intro).
+  const recordSoundHoles = async (projectDir: string, filename: string, check: SoundHoleCheck, takePath?: string) => {
     try {
-      const state = await readProjectState(projectDir);
-      await writeProjectState(projectDir, setSoundHoleCheck(state, filename, check));
+      const set = takePath ? (pathsForRecording(takePath)?.set ?? undefined) : undefined;
+      const state = await readProjectState(projectDir, set);
+      await writeProjectState(projectDir, setSoundHoleCheck(state, filename, check), set);
     } catch (err) {
       console.error(`[sound-holes] could not record check for ${filename}:`, err);
     }
@@ -122,7 +125,7 @@ export function createRoutes(
       enqueueSoundCheck(async () => {
         if (!(await fs.pathExists(rec.path))) return; // renamed or trashed while queued
         const check = await checkSound(rec.path);
-        await recordSoundHoles(projectDir, rec.filename, check);
+        await recordSoundHoles(projectDir, rec.filename, check, rec.path);
       })
         .catch((err) => console.error(`[sound-holes] backfill failed for ${rec.filename}:`, err))
         .finally(() => {
@@ -353,15 +356,16 @@ export function createRoutes(
       const recordWarning = async (check: AspectCheck) => {
         if (check.status !== 'mismatch') return;
         try {
-          const state = await readProjectState(projectDir);
-          await writeProjectState(projectDir, setAspectWarning(state, newFilename, check));
+          const set = pathsForRecording(newPath)?.set ?? undefined; // recording sets: the take's own set
+          const state = await readProjectState(projectDir, set);
+          await writeProjectState(projectDir, setAspectWarning(state, newFilename, check), set);
           io?.emit('recordings:changed');
         } catch (err) {
           console.error(`[aspect] could not record warning for ${newFilename}:`, err);
         }
       };
       // Sound holes: carry the ingest result onto the recording. Not finished yet → the listing backfills it.
-      if (!isBroll && landedSound) await recordSoundHoles(projectDir, newFilename, landedSound);
+      if (!isBroll && landedSound) await recordSoundHoles(projectDir, newFilename, landedSound, newPath);
 
       let aspect: RenameResponse['aspect'];
       if (!isBroll) {
@@ -818,9 +822,8 @@ export function createRoutes(
       // A take renamed in place goes back the same way: transcripts, state and any transcription
       // in flight follow it (2026-10-12). Nothing is trashed — it is the same take.
       if (rename.takeRename) {
-        const paths = getProjectPaths(
-          projectDirFromRecordingPath(rename.newPath) ?? expandPath(config.projectDirectory)
-        );
+        const paths =
+          pathsForRecording(rename.newPath) ?? getProjectPaths(expandPath(config.projectDirectory));
         const back = await renameRecording(rename.newName, rename.originalName, paths, null, []);
         if (!back.success) {
           res.status(500).json({ success: false, error: back.error || 'Failed to undo rename' });

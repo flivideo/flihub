@@ -11,7 +11,7 @@
 import path from 'path';
 import type { TranscriptSyncStatus } from '../../../shared/types.js';
 import { readDirSafe, statSafe } from './filesystem.js';
-import { getProjectPaths } from '../../../shared/paths.js';
+import { allSetPaths, getProjectPaths } from '../../../shared/paths.js';
 import { isRecordingFile, stripRecordingExtension } from '../../../shared/naming.js';
 
 /**
@@ -104,8 +104,14 @@ export async function getProjectTimestamps(projectPath: string): Promise<Project
   // Find most recent file across all subdirs
   // FR-111: Removed recordings/-safe (no more -safe folder)
   let latestTime = 0;
-  const projectPaths = getProjectPaths(projectPath);
-  const dirs = [projectPaths.recordings, projectPaths.transcripts, projectPaths.images, projectPaths.thumbs];
+  // Recording sets: every set's recordings and transcripts (one entry without sets, as before).
+  const sets = allSetPaths(projectPath);
+  const projectPaths = sets[0] ?? getProjectPaths(projectPath);
+  const dirs = [
+    ...sets.flatMap((p) => [p.recordings, p.transcripts]),
+    projectPaths.images,
+    projectPaths.thumbs,
+  ];
 
   for (const dir of dirs) {
     const files = await readDirSafe(dir);

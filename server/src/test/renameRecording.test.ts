@@ -327,6 +327,8 @@ describe('renameRecording', () => {
       inboxDataset: '/fake/project/inbox/dataset',
       inboxPresentation: '/fake/project/inbox/presentation',
       stateFile: '/fake/project/.flihub-state.json',
+      chapterOverrides: '/fake/project/.chapter-overrides.json',
+      set: null,
     };
   }
 
@@ -510,6 +512,8 @@ describe('renameDerivableFiles', () => {
       inboxDataset: '/fake/project/inbox/dataset',
       inboxPresentation: '/fake/project/inbox/presentation',
       stateFile: '/fake/project/.flihub-state.json',
+      chapterOverrides: '/fake/project/.chapter-overrides.json',
+      set: null,
     };
   }
 
@@ -616,6 +620,8 @@ describe('deleteChapterVideo', () => {
       inboxDataset: '/fake/project/inbox/dataset',
       inboxPresentation: '/fake/project/inbox/presentation',
       stateFile: '/fake/project/.flihub-state.json',
+      chapterOverrides: '/fake/project/.chapter-overrides.json',
+      set: null,
     };
   }
 

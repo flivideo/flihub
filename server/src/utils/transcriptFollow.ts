@@ -16,7 +16,7 @@
  */
 import fs from 'fs-extra';
 import path from 'path';
-import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/paths.js';
+import { pathsForRecording } from '../../../shared/paths.js';
 import { ENGINE_COPIES_DIR, engineCopiesFor } from './transcriptFiles.js';
 
 export interface TakeRename {
@@ -77,9 +77,10 @@ export function setTakeRenames(list: TakeRename[]): void {
 }
 
 export function transcriptsDirOf(videoPath: string): string {
-  const projectDir = projectDirFromRecordingPath(videoPath);
-  return projectDir
-    ? getProjectPaths(projectDir).transcripts
+  // Recording sets: the take's own set, not the active one.
+  const paths = pathsForRecording(videoPath);
+  return paths
+    ? paths.transcripts
     : path.join(path.dirname(path.dirname(videoPath)), 'transcripts');
 }
 

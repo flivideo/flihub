@@ -156,6 +156,14 @@ export class WatcherManager {
   }
 
   /**
+   * Recording sets: the active set changed, so its recordings/ and transcripts/ are the folders to watch.
+   */
+  restartSetWatchers(projectDir: string): void {
+    this.startRecordingsWatcher(projectDir);
+    this.startTranscriptsWatcher(projectDir);
+  }
+
+  /**
    * Start projects watcher (parent directory of current project)
    */
   startProjectsWatcher(projectDir: string): void {

@@ -12,7 +12,7 @@
  */
 import fs from 'fs-extra';
 import path from 'path';
-import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/paths.js';
+import { pathsForRecording } from '../../../shared/paths.js';
 import type { TranscriptHealth } from '../../../shared/types.js';
 
 /** True when `transcriptPath` exists and is not older than `videoPath`. Missing video → existence only. */
@@ -65,9 +65,9 @@ async function freeTarget(dir: string, name: string): Promise<string> {
  * -trash. Returns the trash paths.
  */
 export async function trashTranscriptsFor(recordingPath: string): Promise<string[]> {
-  const projectDir = projectDirFromRecordingPath(recordingPath);
-  if (!projectDir) return [];
-  const paths = getProjectPaths(projectDir);
+  // Recording sets: the take's own set, not the active one.
+  const paths = pathsForRecording(recordingPath);
+  if (!paths) return [];
   if (!(await fs.pathExists(paths.transcripts))) return [];
 
   const base = path.basename(recordingPath, path.extname(recordingPath));

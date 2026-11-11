@@ -29,9 +29,13 @@ export function createEmptyState(): ProjectState {
  * Read project state from disk
  * Returns empty state if file doesn't exist or is corrupt
  */
-export async function readProjectState(projectDir: string): Promise<ProjectState> {
+export async function readProjectState(
+  projectDir: string,
+  /** Recording sets: whose state. `undefined` = the active set; `null` = no set. Same as getProjectPaths. */
+  set?: string | null
+): Promise<ProjectState> {
   const expandedDir = expandPath(projectDir);
-  const paths = getProjectPaths(expandedDir);
+  const paths = getProjectPaths(expandedDir, undefined, set);
   const stateFilePath = paths.stateFile;
 
   try {
@@ -73,9 +77,14 @@ export async function readProjectState(projectDir: string): Promise<ProjectState
  * Write project state to disk
  * Creates parent directories if needed
  */
-export async function writeProjectState(projectDir: string, state: ProjectState): Promise<void> {
+export async function writeProjectState(
+  projectDir: string,
+  state: ProjectState,
+  /** Recording sets: whose state. `undefined` = the active set; `null` = no set. Same as getProjectPaths. */
+  set?: string | null
+): Promise<void> {
   const expandedDir = expandPath(projectDir);
-  const paths = getProjectPaths(expandedDir);
+  const paths = getProjectPaths(expandedDir, undefined, set);
   const stateFilePath = paths.stateFile;
 
   // Ensure version is set, preserve all fields

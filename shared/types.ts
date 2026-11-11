@@ -556,6 +556,7 @@ export interface ServerToClientEvents {
   'projects:changed': () => void; // Project folder changed
   'inbox:changed': () => void; // FR-59: Inbox file added/removed
   'transcripts:changed': () => void; // NFR-85: Transcript added/removed/changed
+  'sets:changed': () => void; // Recording sets: active set switched or a set added
   // MicCheck: live monitoring session events
   'miccheck:started': (data: { sessionId: string }) => void;
   'miccheck:tick': (data: { sessionId: string; tick: MicCheckTick }) => void;
@@ -1393,4 +1394,47 @@ export interface MicCheckLiveResponse {
   reason: string | null;
   session: MicCheckSession | null;
   latest: MicCheckTick | null;
+}
+
+// ============================================================================
+// Recording sets (fli-core v0.38.0): hub/sets/<set>/{recordings,transcripts}
+// ============================================================================
+
+export type RecordingSetRole = 'video' | 'part';
+
+/** One row of the "All sets" overview. */
+export interface RecordingSetSummary {
+  id: string;
+  title: string;
+  role: RecordingSetRole;
+  /** False when the folder is on disk but hub/sets.json does not name it. */
+  listed: boolean;
+  /** Takes in the set's recordings/ (.mov + .mp4). */
+  takes: number;
+  /** Distinct chapters (they restart at 01 in every set). */
+  chapters: number;
+  /** Sum of take durations, seconds; takes whose length can't be read add nothing. */
+  durationSec: number;
+  /** Takes with a .txt transcript. */
+  transcribed: number;
+}
+
+/** GET /api/sets */
+export interface RecordingSetsResponse {
+  success: boolean;
+  /** False for a project without hub/sets/: it is one implicit set and no strip is shown. */
+  hasSets: boolean;
+  /** The set new takes are named into; null without sets. */
+  active: string | null;
+  sets: RecordingSetSummary[];
+  error?: string;
+}
+
+/** POST /api/sets and POST /api/sets/active. `reason` says why nothing changed. */
+export interface RecordingSetChangeResponse {
+  success: boolean;
+  active?: string | null;
+  sets?: RecordingSetSummary[];
+  error?: string;
+  reason?: 'no-project' | 'not-a-set-project' | 'bad-id' | 'set-exists' | 'no-such-set';
 }

@@ -27,8 +27,33 @@ export const HEAVY_SUBFOLDERS = ['recordings', 'hub/recordings', 'recording-shad
 // on hold/offload instead of being stranded. No code creates or reads shadows any more.
 export type HeavySubfolder = typeof HEAVY_SUBFOLDERS[number];
 
+/** Recording sets: each set's takes, `hub/sets/<set>/recordings`, are heavy too (its transcripts stay light). */
+const SET_RECORDINGS = /^hub\/sets\/[a-z0-9]+(?:-[a-z0-9]+)*\/recordings$/;
+
 export function isHeavySubfolder(name: string): boolean {
-  return (HEAVY_SUBFOLDERS as readonly string[]).includes(name);
+  return (HEAVY_SUBFOLDERS as readonly string[]).includes(name) || SET_RECORDINGS.test(name);
+}
+
+/**
+ * The heavy subfolders to move for a project: HEAVY_SUBFOLDERS plus `hub/sets/<set>/recordings` for every set
+ * found in ANY of `dirs` (the local folder and the holding copy), so a hold, restore or archive carries every
+ * set's takes and never only the old single folder. Relative paths; never throws.
+ */
+export async function heavySubfoldersFor(...dirs: string[]): Promise<string[]> {
+  const out: string[] = [...HEAVY_SUBFOLDERS];
+  for (const dir of dirs) {
+    let sets: import('fs').Dirent[] = [];
+    try {
+      sets = await fs.readdir(path.join(dir, 'hub', 'sets'), { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const s of sets) {
+      const rel = `hub/sets/${s.name}/recordings`;
+      if (s.isDirectory() && SET_RECORDINGS.test(rel) && !out.includes(rel)) out.push(rel);
+    }
+  }
+  return out;
 }
 
 /** Top-level folders that CONTAIN a nested heavy subfolder (e.g. 'hub'); the tree splits them. */
@@ -55,7 +80,7 @@ async function dirExists(p: string): Promise<boolean> {
  * from `active`.
  */
 async function heavySubfoldersAbsent(localDir: string): Promise<boolean> {
-  for (const sub of HEAVY_SUBFOLDERS) {
+  for (const sub of await heavySubfoldersFor(localDir)) {
     const p = path.join(localDir, sub);
     if (await dirExists(p)) {
       const stats = await getDirStats(p);
@@ -166,6 +191,38 @@ async function listImmediateChildren(
   return out;
 }
 
+/** `hub/sets.json`-level files and every `hub/sets/<set>/<child>`, each classified on its own relative path. */
+async function setNodes(dir: string, location: StorageLocation): Promise<StorageTreeNode[]> {
+  const out: StorageTreeNode[] = [];
+  let sets: import('fs').Dirent[] = [];
+  try {
+    sets = await fs.readdir(path.join(dir, 'hub', 'sets'), { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const s of sets) {
+    if (s.name === '.DS_Store' || s.name.startsWith('._')) continue;
+    if (!s.isDirectory()) {
+      const node = await buildTopLevelNode(dir, `hub/sets/${s.name}`, location, 'light');
+      if (node) out.push(node);
+      continue;
+    }
+    let inner: import('fs').Dirent[] = [];
+    try {
+      inner = await fs.readdir(path.join(dir, 'hub', 'sets', s.name), { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const c of inner) {
+      if (c.name === '.DS_Store' || c.name.startsWith('._')) continue;
+      const rel = `hub/sets/${s.name}/${c.name}`;
+      const node = await buildTopLevelNode(dir, rel, location, isHeavySubfolder(rel) ? 'heavy' : 'light');
+      if (node) out.push(node);
+    }
+  }
+  return out;
+}
+
 /**
  * Build the top-level tree for a folder (local, holding, or published).
  * Each direct child becomes one TreeNode; HEAVY_SUBFOLDERS get `classification: 'heavy'`.
@@ -195,6 +252,11 @@ async function buildLocationTree(
       for (const c of children) {
         if (c.name === '.DS_Store' || c.name.startsWith('._')) continue;
         const rel = `${e.name}/${c.name}`;
+        if (rel === 'hub/sets' && c.isDirectory()) {
+          // Recording sets: one node per `hub/sets/<set>/<child>`, so each set's recordings count as heavy.
+          out.push(...(await setNodes(dir, location)));
+          continue;
+        }
         const node = await buildTopLevelNode(dir, rel, location, isHeavySubfolder(rel) ? 'heavy' : 'light');
         if (node) out.push(node);
       }

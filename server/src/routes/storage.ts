@@ -34,7 +34,7 @@ import {
   verifyDirsMatch,
 } from '../utils/holdUtils.js';
 import {
-  HEAVY_SUBFOLDERS,
+  heavySubfoldersFor,
   getStorageTree,
 } from '../utils/storageTree.js';
 import {
@@ -230,7 +230,7 @@ export function createStorageRoutes(
       const verifiedSubfolders: string[] = [];
       const rsyncedSubfolders: string[] = []; // for caller cleanup hint on failure
 
-      for (const sub of HEAVY_SUBFOLDERS) {
+      for (const sub of await heavySubfoldersFor(localDir, holdingDir)) {
         const src = path.join(localDir, sub);
         const dest = path.join(holdingDir, sub);
         try {
@@ -341,7 +341,7 @@ export function createStorageRoutes(
       await fs.mkdir(localDir, { recursive: true });
 
       const excludeArgs = holdExcludeArgs();
-      for (const sub of HEAVY_SUBFOLDERS) {
+      for (const sub of await heavySubfoldersFor(localDir, holdingDir)) {
         const src = path.join(holdingDir, sub);
         const dest = path.join(localDir, sub);
         try {
@@ -658,7 +658,7 @@ export function createStorageRoutes(
 
       // Step 1: restore HOLDING heavy subfolders → local (rsync + verify).
       const restoredSubfolders: string[] = [];
-      for (const sub of HEAVY_SUBFOLDERS) {
+      for (const sub of await heavySubfoldersFor(localDir, holdingDir)) {
         const src = path.join(holdingDir, sub);
         const dest = path.join(localDir, sub);
         try {

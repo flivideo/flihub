@@ -23,7 +23,7 @@ import type {
   ProjectStage,
   TranscriptSyncStatus,
 } from '../../../shared/types.js';
-import { getProjectPaths } from '../../../shared/paths.js';
+import { allSetPaths } from '../../../shared/paths.js';
 
 /**
  * FR-80: Migrate legacy stage values to new stage model
@@ -110,22 +110,28 @@ export async function getProjectStatsRaw(
   config: Config,
   options: GetProjectStatsOptions = {}
 ): Promise<ProjectStatsRaw> {
-  const projectPaths = getProjectPaths(projectPath);
-  const recordingsDir = projectPaths.recordings;
-  const transcriptsDir = projectPaths.transcripts;
+  // Recording sets: a project's counts cover every set. Without sets this is one entry, as before.
+  const setPathsList = allSetPaths(projectPath);
   const imagesDir = path.join(projectPath, 'assets', 'images');
   const thumbsDir = path.join(projectPath, 'assets', 'thumbs');
 
   // FR-111: Only count recordings/ (safe status tracked in state file, not folder)
-  const totalFiles = await countRecordingFiles(recordingsDir);
-
-  // Transcript sync status (FR-111: Only recordings/)
-  const transcriptSync = await getTranscriptSyncStatus(recordingsDir, transcriptsDir);
+  let totalFiles = 0;
+  let chapterCount = 0;
+  const transcriptSync: TranscriptSyncStatus = { matched: 0, missingTranscripts: [], orphanedTranscripts: [] };
+  for (const p of setPathsList) {
+    totalFiles += await countRecordingFiles(p.recordings);
+    // Transcript sync status (FR-111: Only recordings/). In a set, names carry `<set>/` so they stay unique.
+    const sync = await getTranscriptSyncStatus(p.recordings, p.transcripts);
+    const tag = (n: string) => (p.set ? `${p.set}/${n}` : n);
+    transcriptSync.matched += sync.matched;
+    transcriptSync.missingTranscripts.push(...sync.missingTranscripts.map(tag));
+    transcriptSync.orphanedTranscripts.push(...sync.orphanedTranscripts.map(tag));
+    // Chapter count (FR-111: Only recordings/): chapters restart at 01 in each set, so they add up.
+    chapterCount += await countUniqueChapters(p.recordings);
+  }
   const transcriptPercent =
     totalFiles > 0 ? Math.round((transcriptSync.matched / totalFiles) * 100) : 0;
-
-  // Chapter count (FR-111: Only recordings/)
-  const chapterCount = await countUniqueChapters(recordingsDir);
 
   // Asset counts
   const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];

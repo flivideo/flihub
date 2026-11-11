@@ -391,7 +391,7 @@ export function createProjectRoutes(
     const code = queryString(req.params.code);
     const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
-    const overridesPath = path.join(projectPath, '.chapter-overrides.json');
+    const overridesPath = getProjectPaths(projectPath).chapterOverrides; // per set in a set project
 
     try {
       if (await fs.pathExists(overridesPath)) {
@@ -429,7 +429,7 @@ export function createProjectRoutes(
 
     const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
-    const overridesPath = path.join(projectPath, '.chapter-overrides.json');
+    const overridesPath = getProjectPaths(projectPath).chapterOverrides; // per set in a set project
 
     try {
       // Load existing overrides
@@ -493,7 +493,7 @@ export function createProjectRoutes(
 
     const projectsDir = expandPath(getConfig().projectsRootDirectory!);
     const projectPath = path.join(projectsDir, code);
-    const overridesPath = path.join(projectPath, '.chapter-overrides.json');
+    const overridesPath = getProjectPaths(projectPath).chapterOverrides; // per set in a set project
 
     try {
       if (!(await fs.pathExists(overridesPath))) {

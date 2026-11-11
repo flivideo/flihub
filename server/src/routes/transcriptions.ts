@@ -10,7 +10,7 @@ import type {
   TranscriptionStatus,
   Config,
 } from '../../../shared/types.js';
-import { getProjectPaths, projectDirFromRecordingPath } from '../../../shared/paths.js';
+import { getProjectPaths, pathsForRecording, projectDirFromRecordingPath } from '../../../shared/paths.js';
 import { isRecordingFile, stripRecordingExtension, RECORDING_EXTENSIONS } from '../../../shared/naming.js';
 import { expandPath, queryString } from '../utils/pathUtils.js';
 import { getVideoDuration } from '../utils/videoDuration.js';
@@ -122,9 +122,10 @@ export function createTranscriptionRoutes(
   // Derive transcripts directory from video path (cross-project safe)
   // This ensures we check/save in the correct project folder, not the active one
   function getTranscriptsDirFromVideoPath(videoPath: string): string {
-    const projectDir = projectDirFromRecordingPath(videoPath);
-    if (projectDir) {
-      return getProjectPaths(projectDir).transcripts;
+    // Recording sets: the take's own set, so a job that ends after a set switch lands beside it.
+    const paths = pathsForRecording(videoPath);
+    if (paths) {
+      return paths.transcripts;
     }
     // Fallback to current config if path structure unexpected
     return getTranscriptsDir();

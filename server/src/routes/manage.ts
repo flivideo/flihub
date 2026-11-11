@@ -44,6 +44,7 @@ export function createManageRoutes(
 
   // B047: Last batch undo mapping — single array, replaced on every bulk operation
   let lastBatchMapping: Array<{ oldFilename: string; newFilename: string }> = [];
+  let lastBatchSet: string | null = null; // recording sets: the set lastBatchMapping was made in
 
   /**
    * GET /api/manage/recordings-folder-path
@@ -210,6 +211,7 @@ export function createManageRoutes(
       // B047: Store undo mapping after successful renames
       if (renamed.length > 0) {
         lastBatchMapping = renamed.map((r) => ({ oldFilename: r.old, newFilename: r.new }));
+      lastBatchSet = paths.set; // recording sets: undo acts in this set, whatever is active then
       }
 
       res.json({
@@ -789,6 +791,7 @@ export function createManageRoutes(
         else errors.push({ file: f.filename, error: result.error || 'Rename failed' });
       }
       lastBatchMapping = renamed.map((r) => ({ oldFilename: r.old, newFilename: r.new }));
+      lastBatchSet = paths.set; // recording sets: undo acts in this set, whatever is active then
       io.emit('recordings:changed');
       return res.json({ success: errors.length === 0, renamedCount: renamed.length, files: renamed, errors });
     } catch (err) {
@@ -814,7 +817,8 @@ export function createManageRoutes(
     }
 
     const config = getConfig();
-    const paths = getProjectPaths(expandPath(config.projectDirectory));
+    // Recording sets: the set the batch ran in, not whichever set is active now.
+    const paths = getProjectPaths(expandPath(config.projectDirectory), undefined, lastBatchSet ?? undefined);
     const activeJob = getActiveJob ? getActiveJob() : null;
     const queue = getQueue ? getQueue() : [];
     const errors: string[] = [];
@@ -1053,6 +1057,7 @@ export function createManageRoutes(
 
       // Store undo mapping so POST /api/manage/undo-rename can use it
       lastBatchMapping = undoMapping;
+      lastBatchSet = paths.set;
 
       // Emit Socket.io event
       io.emit('recordings:changed');

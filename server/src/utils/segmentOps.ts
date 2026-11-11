@@ -230,7 +230,9 @@ function referencedBy(
 
 // ── Journal ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-const journalPath = (project: string) => path.join(project, JOURNAL_FILE);
+// Recording sets: one journal per set, beside that set's state file (project root without sets, as before), so undo
+// never replays one set's moves into another.
+const journalPath = (project: string) => path.join(path.dirname(getProjectPaths(project).stateFile), JOURNAL_FILE);
 
 export async function readJournal(project: string): Promise<Journal> {
   try {

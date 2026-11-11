@@ -16,23 +16,101 @@ import path from 'path';
  * 2026-09-23): `hub/recordings/` → hub; any top-level `recordings/`, `recording-transcripts/` or
  * `transcripts/` → legacy; anything else (new/empty/missing) → hub. FliHub keeps no copy of the rule.
  */
-import { HUB_FOLDER, LAYOUT_DIRS, projectLayoutSync, type ProjectLayout } from '@flivideo/core';
+import fs from 'fs';
+import {
+  HUB_FOLDER,
+  LAYOUT_DIRS,
+  hasSetsSync,
+  listSetsSync,
+  projectLayoutSync,
+  recordingLocation,
+  setPaths,
+  transcriptLocation,
+  SET_ID,
+  type ProjectLayout,
+} from '@flivideo/core';
 
 export { HUB_FOLDER, LAYOUT_DIRS };
 export type { ProjectLayout };
 
 /**
- * The project folder a recording lives in, from the recording's path. Handles both layouts and
- * the `-safe/` / `-chapters/` subfolders. Returns null when the path is not inside a recordings
- * folder, so a caller never guesses (the old `indexOf('recordings')` returned `<project>/hub`).
+ * The project folder a recording lives in, from the recording's path. Handles every layout
+ * (legacy, hub, hub/sets/<set>) and the `-safe/` / `-chapters/` subfolders. Returns null when the
+ * path is not inside a recordings folder, so a caller never guesses (the old
+ * `indexOf('recordings')` returned `<project>/hub`). The rule is fli-core's `recordingLocation`.
  */
 export function projectDirFromRecordingPath(videoPath: string): string | null {
-  let dir = path.dirname(videoPath);
-  if (path.basename(dir).startsWith('-')) dir = path.dirname(dir); // -safe, -chapters
-  if (path.basename(dir) !== 'recordings') return null;
-  const parent = path.dirname(dir);
-  const projectDir = path.basename(parent) === HUB_FOLDER ? path.dirname(parent) : parent;
-  return projectDir;
+  return recordingLocation(videoPath)?.projectDir ?? null;
+}
+
+/**
+ * Recording sets (fli-core v0.38.0). A project with `hub/sets/` keeps its takes per set; FliHub
+ * works on one set at a time, the ACTIVE set, remembered per project in `hub/.flihub-active-set.json`.
+ * A project without sets has no active set (null) and every path is what it was before sets.
+ */
+export const ACTIVE_SET_FILE = '.flihub-active-set.json';
+
+export function activeSetFilePath(projectDir: string): string {
+  return path.join(projectDir, HUB_FOLDER, ACTIVE_SET_FILE);
+}
+
+/**
+ * The set FliHub is working in for this project: the remembered one if it is still a set, else the
+ * first set in order. Null for a project without sets (or with an empty `hub/sets/`). Never throws.
+ */
+export function activeSetSync(projectDir: string): string | null {
+  if (!hasSetsSync(projectDir)) return null;
+  const ids = listSetsSync(projectDir)
+    .map((s) => s.id)
+    .filter((id): id is string => id !== null);
+  if (ids.length === 0) return null;
+  try {
+    const raw = JSON.parse(fs.readFileSync(activeSetFilePath(projectDir), 'utf-8')) as { set?: unknown };
+    if (typeof raw.set === 'string' && ids.includes(raw.set)) return raw.set;
+  } catch {
+    // missing or unreadable: fall through to the first set
+  }
+  return ids[0] ?? null;
+}
+
+/** Remember the active set. Throws when the project has no such set. */
+export function writeActiveSetSync(projectDir: string, setId: string): void {
+  const ids = listSetsSync(projectDir).map((s) => s.id);
+  if (!SET_ID.test(setId) || !ids.includes(setId)) throw new Error(`no such set: ${setId}`);
+  const file = activeSetFilePath(projectDir);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify({ set: setId }, null, 2) + '\n', 'utf-8');
+}
+
+/**
+ * One ProjectPaths per set, in set order. A project without sets → exactly `[getProjectPaths(dir)]`,
+ * so a caller that sums over this list gives the same numbers as before sets. For project-level
+ * views (project list counts, last-modified) that must see every set, not just the active one.
+ */
+export function allSetPaths(projectDirectory: string): ProjectPaths[] {
+  if (!hasSetsSync(projectDirectory)) return [getProjectPaths(projectDirectory, undefined, null)];
+  const ids = listSetsSync(projectDirectory)
+    .map((s) => s.id)
+    .filter((id): id is string => id !== null);
+  return ids.map((id) => getProjectPaths(projectDirectory, 'hub', id));
+}
+
+/**
+ * Paths for the set a recording is IN (not the active set): a take's transcripts, state and
+ * trash steps follow the take, so a job that finishes after a set switch still lands beside it.
+ * Null when the path is not inside a recordings folder.
+ */
+export function pathsForRecording(recordingPath: string): ProjectPaths | null {
+  const loc = recordingLocation(recordingPath);
+  if (!loc) return null;
+  return getProjectPaths(loc.projectDir, undefined, loc.set);
+}
+
+/** The same for a transcript file. */
+export function pathsForTranscript(transcriptPath: string): ProjectPaths | null {
+  const loc = transcriptLocation(transcriptPath);
+  if (!loc) return null;
+  return getProjectPaths(loc.projectDir, undefined, loc.set);
 }
 
 export interface ProjectPaths {
@@ -55,19 +133,28 @@ export interface ProjectPaths {
   inboxDataset: string; // inbox/dataset/
   inboxPresentation: string; // inbox/presentation/
   // FR-111: Per-project state file
-  stateFile: string; // .flihub-state.json
+  stateFile: string; // .flihub-state.json (in a set project: hub/sets/<set>/.flihub-state.json)
+  chapterOverrides: string; // .chapter-overrides.json (in a set project: hub/sets/<set>/.chapter-overrides.json)
+  /** Recording sets: the set these recordings/transcripts/state paths are for; null without sets. */
+  set: string | null;
 }
 
 /**
  * Get all project-related paths from the project directory
  * @param projectDirectory - The project root directory (expanded, no ~)
+ * @param set - Recording sets: which set's recordings/transcripts/state. `undefined` (the
+ *   default) = the project's active set; `null` = no set. In a project without sets both mean the
+ *   pre-sets paths, unchanged. Every other path (assets, trash, inbox, final…) is project-level.
  */
 export function getProjectPaths(
   projectDirectory: string,
-  layout: ProjectLayout = projectLayoutSync(projectDirectory)
+  layout: ProjectLayout = projectLayoutSync(projectDirectory),
+  set: string | null | undefined = undefined
 ): ProjectPaths {
+  const setId = set === undefined ? activeSetSync(projectDirectory) : set;
   const dirs = LAYOUT_DIRS[layout];
-  const recordings = path.join(projectDirectory, dirs.recordings);
+  const inSet = setId === null ? null : setPaths(projectDirectory, setId);
+  const recordings = inSet ? inSet.recordings : path.join(projectDirectory, dirs.recordings);
   return {
     project: projectDirectory,
     layout,
@@ -79,7 +166,7 @@ export function getProjectPaths(
     assets: path.join(projectDirectory, 'assets'),
     images: path.join(projectDirectory, 'assets', 'images'),
     thumbs: path.join(projectDirectory, 'assets', 'thumbs'),
-    transcripts: path.join(projectDirectory, dirs.transcripts),
+    transcripts: inSet ? inSet.transcripts : path.join(projectDirectory, dirs.transcripts),
     final: path.join(projectDirectory, 'final'),
     s3Staging: path.join(projectDirectory, 's3-staging'),
     // FR-59: Inbox folders
@@ -88,7 +175,9 @@ export function getProjectPaths(
     inboxDataset: path.join(projectDirectory, 'inbox', 'dataset'),
     inboxPresentation: path.join(projectDirectory, 'inbox', 'presentation'),
     // FR-111: Per-project state file
-    stateFile: path.join(projectDirectory, '.flihub-state.json'),
+    stateFile: path.join(inSet ? inSet.dir : projectDirectory, '.flihub-state.json'),
+    chapterOverrides: path.join(inSet ? inSet.dir : projectDirectory, '.chapter-overrides.json'),
+    set: setId,
   };
 }
 

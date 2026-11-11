@@ -245,7 +245,7 @@ export async function renameCoreFiles(
   await fs.rename(oldPath, newPath);
 
   // Read state for migration
-  const state = await readProjectState(paths.project);
+  const state = await readProjectState(paths.project, paths.set); // recording sets: the set paths is for
 
   // Migrate state key (preserve parked, annotation, safe, stage)
   let updatedState = migrateRecordingKey(state, oldFilename, newFilename);
@@ -254,7 +254,7 @@ export async function renameCoreFiles(
   updatedState = updateManifestFilename(updatedState, oldFilename, newFilename);
 
   // Write updated state
-  await writeProjectState(paths.project, updatedState);
+  await writeProjectState(paths.project, updatedState, paths.set);
 }
 
 /**

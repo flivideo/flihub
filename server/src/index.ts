@@ -34,6 +34,7 @@ import { createMicCheckRoutes } from './routes/miccheck.js'; // MicCheck: live m
 import { createBrandsRouter } from './routes/brands.js'; // Brand dropdown: list + switch
 import { createBrollRegisterRouter } from './routes/brollRegister.js'; // FR-177: B-roll button → broll.register
 import { createContextRouter } from './routes/context.js'; // W3 open contract: door 3
+import { createSetRoutes } from './routes/sets.js'; // Recording sets: strip, All sets, active set, New set
 import { createContextController } from './utils/openContext.js'; // W3 open contract: doors 2 + 3
 import { migrateSafeFolder, needsMigration } from './utils/safeMigration.js';
 import { loadConfig, saveConfig } from './config/configManager.js';
@@ -368,6 +369,7 @@ const micCheckRoutes = createMicCheckRoutes(() => currentConfig, io);
 app.use('/api/miccheck', micCheckRoutes);
 
 // Brand switching — reads ~/.config/appydave/brands.json + on-disk v-* roots
+app.use('/api/sets', createSetRoutes(() => currentConfig, io, (dir) => watcherManager.restartSetWatchers(dir)));
 app.use('/api/brands', createBrandsRouter(() => currentConfig, updateConfig, io));
 app.use('/api/broll-register', createBrollRegisterRouter(pendingFiles, () => currentConfig)); // FR-177
 
