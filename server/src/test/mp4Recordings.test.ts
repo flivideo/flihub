@@ -203,7 +203,8 @@ describe('transcription queue sees .mp4 takes', () => {
     const res = await request(transcriptionApp(fakeFlitools().client))
       .get('/api/transcriptions/status/01-5-recap.mp4')
       .expect(200);
-    expect(res.body.status).not.toBe('complete');
+    expect(res.body.status).toBe('none');
+    expect(res.body.transcriptPath ?? null).toBeNull();
   });
 });
 
