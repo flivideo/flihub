@@ -234,7 +234,7 @@ export function NewSetDisabled() {
   if (!data || data.hasSets || !data.success) return null;
   return (
     <span className="inline-flex items-center gap-1.5" title={NOT_A_SET_PROJECT}>
-      <button disabled className="text-xs rounded-full px-3 py-1 border border-dashed border-warm text-warm-faint cursor-not-allowed">
+      <button disabled className="text-xs rounded-full px-3 py-1 border border-dashed border-warm text-warm-muted opacity-50 cursor-not-allowed">
         + New set
       </button>
       <span className="text-xs text-warm-muted">{NOT_A_SET_PROJECT}</span>
