@@ -7,7 +7,7 @@ import type { RecordingSetSummary } from '../../../shared/types';
 import { useCreateSet, useRecordingSets, useSetActiveSet } from '../hooks/useSetsApi';
 import { formatDuration } from '../utils/formatting';
 
-/** Shown on a project without sets wherever New set would be (David: no migration in FliHub). */
+/** Shown on a project without sets wherever New set would be: FliHub does not migrate projects. */
 export const NOT_A_SET_PROJECT = 'Moving this project into sets comes from FliStudio';
 
 function dotColour(s: RecordingSetSummary): string {
