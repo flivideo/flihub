@@ -3,13 +3,13 @@
 > Generated from the code, not written about it. Do not hand-edit — every line below is anchored to a `file:line` and is re-derived on every run. `verify_mirror.py` fails when this page no longer matches its JSON. To record a gap the extractor cannot find, use `docs/schema-mirror.known-gaps.json`.
 
 - **stack** `typescript` · **extractor** `extract_typescript.py`
-- **commit** `ec0a3ba82d9c` · **generated** 2026-11-11T13:22:16+00:00
+- **commit** `d50e844051b9` · **generated** 2026-11-11T13:33:01+00:00
 - **scope** include `*.ts`, `*.tsx` · exclude `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`, `*.stories.tsx`, `*.config.ts`, `*/test/*`, `*/tests/*`, `*/__tests__/*`, `*/e2e/*`, `*/__mocks__/*`, `*/fixtures/*`, `*.d.ts`, `*/dist/*`, `*/build/*`, `*/out/*`
 - **zod bound** in 2 file(s) by a direct import, 0 through a re-export, 0 by call shape only
 
 | shapes | declared sets | derived sets | gaps | declared but not read | findings |
 |---|---|---|---|---|---|
-| 394 | 105 | 17 | 2 | 54 | 17 |
+| 394 | 106 | 17 | 2 | 54 | 17 |
 
 > **Read the gaps, the census and the never-read list before trusting the shape.** Derived sets have no declaring symbol and will drift silently. Gaps are things this mirror could not reach — they are not absences in the code.
 
@@ -133,6 +133,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/utils/micCheckStore.ts` — `StartSessionInput` :57 · `FinishSessionInput` :264
 - `server/src/utils/nextProjectCode.ts` — `SeriesCode` :21 · `NextCodeResult` :71
 - `server/src/utils/openContext.ts` — `ContextDeps` :46 · `ApplyResult` :57 · `Resolution` :64
+- `server/src/utils/projectState.ts` — `ProjectLevelField` (set) :103
 - `server/src/utils/projectStats.ts` — `ProjectStatsRaw` :51 · `GetProjectStatsOptions` :99
 - `server/src/utils/recordingArtifacts.ts` — `ArtifactKind` (set) :15 · `RecordingArtifact` :17
 - `server/src/utils/reporters.ts` — `ProjectSummary` :26 · `ProjectDetail` :43 · `Recording` :71 · `Transcript` :83 · `Chapter` :93 · `Image` :103 · `ExportData` :406
@@ -141,7 +142,7 @@ Top-level entries by file, with the line each is declared on. Search the page fo
 - `server/src/utils/safeDelete.ts` — `SafeDeleteRule` :8 · `SafeDeleteResult` :17
 - `server/src/utils/safeMigration.ts` — `MigrationResult` :17
 - `server/src/utils/scanning.ts` — `ProjectTimestamps` :87 · `ProjectIndicators` :163
-- `server/src/utils/segmentOps.ts` — `SegmentOpInput` :39 · `BlockerKind` (set) :61 · `Blocker` :71 · `Step` :87 · `JournalEntry` :92 · `Journal` :112 · `SegmentOpDeps` :117 · `Take` :125 · `Plan` :256 · `Prepared` :654 · `SegmentOpPreview` :766
+- `server/src/utils/segmentOps.ts` — `SegmentOpInput` :39 · `BlockerKind` (set) :61 · `Blocker` :71 · `Step` :87 · `JournalEntry` :92 · `Journal` :114 · `SegmentOpDeps` :119 · `Take` :127 · `Plan` :260 · `Prepared` :658 · `SegmentOpPreview` :770
 - `server/src/utils/soundHoles.ts` — `SoundHoleDeps` :153
 - `server/src/utils/storageActivityLog.ts` — `ReadStorageActivityOpts` :40
 - `server/src/utils/storageTree.ts` — `HEAVY_SUBFOLDERS` (set) :23 · `GetStorageTreeOpts` :283
@@ -172,7 +173,7 @@ These constructs are outside what this extractor reads **on every run, in every 
 
 ## Coverage census
 
-**451** top-level declarations counted = **395** mirrored + **2** listed as gaps + **54** declared but not read.
+**452** top-level declarations counted = **396** mirrored + **2** listed as gaps + **54** declared but not read.
 
 Counted: every top-level interface, enum, class and type alias (exported or not) and every exported constant, in the files in scope.
 Not counted, as not schema-bearing: 1 function, 4 function types, 32 literal constants.
@@ -796,6 +797,18 @@ FR-41: Time format styles
 | `404` | `server/src/utils/openContext.ts:66` |
 | `409` | `server/src/utils/openContext.ts:66` |
 | `503` | `server/src/utils/openContext.ts:66` |
+
+### `server/src/utils/projectState.ProjectLevelField` — `server/src/utils/projectState.ts:103`
+
+Recording sets: in a set project these fields are the PROJECT's, one shared copy in the
+
+*literal union type alias `ProjectLevelField` - a single declaring symbol*
+
+| value | declared at |
+|---|---|
+| `title` | `server/src/utils/projectState.ts:103` |
+| `ships` | `server/src/utils/projectState.ts:103` |
+| `glingDictionary` | `server/src/utils/projectState.ts:103` |
 
 ### `server/src/utils/recordingArtifacts.ArtifactKind` — `server/src/utils/recordingArtifacts.ts:15`
 
@@ -1558,19 +1571,19 @@ Each set below was read out of the real authority — control flow, membership t
 
 > **REFACTOR (minor): `LOOPBACK_HOSTS` at server/src/utils/loopback.ts:13 names the set but does not type it. A z.enum or `as const` + `typeof LOOPBACK_HOSTS[number]` would make a wrong value a static error rather than a runtime miss.**
 
-### `server/src/utils/segmentOps.op.mode (membership)` — `server/src/utils/segmentOps.ts:452`
+### `server/src/utils/segmentOps.op.mode (membership)` — `server/src/utils/segmentOps.ts:456`
 
 *inline membership test `[...].includes(op.mode)` - no declaring symbol*
 
 | value | read from |
 |---|---|
-| `replace` | `server/src/utils/segmentOps.ts:452` |
-| `insert` | `server/src/utils/segmentOps.ts:452` |
-| `reorder` | `server/src/utils/segmentOps.ts:452` |
-| `delete` | `server/src/utils/segmentOps.ts:452` |
-| `send` | `server/src/utils/segmentOps.ts:452` |
+| `replace` | `server/src/utils/segmentOps.ts:456` |
+| `insert` | `server/src/utils/segmentOps.ts:456` |
+| `reorder` | `server/src/utils/segmentOps.ts:456` |
+| `delete` | `server/src/utils/segmentOps.ts:456` |
+| `send` | `server/src/utils/segmentOps.ts:456` |
 
-> **REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:452. Name it once (z.enum / literal union) so it has one authority.**
+> **REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:456. Name it once (z.enum / literal union) so it has one authority.**
 
 > 4 comparison(s) against vocabularies this app does not own (DOM key names, HTTP headers, library internals) were **not** treated as closed sets and carry no refactor advice: `client/src/components/shared/BatchToolbar.e.key (branching)` (the subject is a property declared by TypeScript's lib or a package), `client/src/components/shared/EditableFileRow.e.key (branching)` (the subject is a property declared by TypeScript's lib or a package), `server/src/routes/projects.parts.length (branching)` (the subject is a property declared by TypeScript's lib or a package), `server/src/utils/llmVerification.parts.length (branching)` (the subject is a property declared by TypeScript's lib or a package).
 
@@ -3934,7 +3947,7 @@ One file move, absolute paths, in the order it ran.
 | `from` | `string` | — | `server/src/utils/segmentOps.ts:88` |
 | `to` | `string` | — | `server/src/utils/segmentOps.ts:89` |
 
-### `server/src/utils/segmentOps.JournalEntry` — interface — `server/src/utils/segmentOps.ts:92-110`
+### `server/src/utils/segmentOps.JournalEntry` — interface — `server/src/utils/segmentOps.ts:92-112`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
@@ -3949,64 +3962,65 @@ One file move, absolute paths, in the order it ran.
 | `createdDirs` | `string[]` | — | `server/src/utils/segmentOps.ts:106` | Folders this op created; undo removes them again when empty. |
 | `pending` | `?: boolean` | — | `server/src/utils/segmentOps.ts:108` | Written before the first move and cleared once the state is updated: a crash in between still leaves the moves. |
 | `undoneAt` | `?: string` | — | `server/src/utils/segmentOps.ts:109` |  |
+| `set` | `?: string \| null` | — | `server/src/utils/segmentOps.ts:111` | Recording sets: the set this change ran in (null/absent without sets). Undo replays it there. |
 
-### `server/src/utils/segmentOps.Journal` — interface — `server/src/utils/segmentOps.ts:112-115`
+### `server/src/utils/segmentOps.Journal` — interface — `server/src/utils/segmentOps.ts:114-117`
 
 | field | type | default | at |
 |---|---|---|---|
-| `version` | `1` | — | `server/src/utils/segmentOps.ts:113` |
-| `entries` | `JournalEntry[] → server/src/utils/segmentOps.JournalEntry` | — | `server/src/utils/segmentOps.ts:114` |
+| `version` | `1` | — | `server/src/utils/segmentOps.ts:115` |
+| `entries` | `JournalEntry[] → server/src/utils/segmentOps.JournalEntry` | — | `server/src/utils/segmentOps.ts:116` |
 
-### `server/src/utils/segmentOps.SegmentOpDeps` — interface — `server/src/utils/segmentOps.ts:117-123`
-
-| field | type | default | at | note |
-|---|---|---|---|---|
-| `activeJob` | `TranscriptionJob \| null → shared/types.TranscriptionJob` | — | `server/src/utils/segmentOps.ts:118` |  |
-| `queue` | `TranscriptionJob[] → shared/types.TranscriptionJob` | — | `server/src/utils/segmentOps.ts:119` |  |
-| `inboxDir` | `?: string` | — | `server/src/utils/segmentOps.ts:121` | Where takes are sent in from (the watch folder); a source outside it is refused. |
-| `now` | `?: () => Date` | — | `server/src/utils/segmentOps.ts:122` |  |
-
-### `server/src/utils/segmentOps.Take` — interface — `server/src/utils/segmentOps.ts:125-131`
+### `server/src/utils/segmentOps.SegmentOpDeps` — interface — `server/src/utils/segmentOps.ts:119-125`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `filename` | `string` | — | `server/src/utils/segmentOps.ts:126` |  |
-| `chapter` | `string` | — | `server/src/utils/segmentOps.ts:127` |  |
-| `segment` | `number` | — | `server/src/utils/segmentOps.ts:128` |  |
-| `rest` | `string` | — | `server/src/utils/segmentOps.ts:130` | Everything after `NN-S-`, extension included: `intro-CTA.mov`. |
+| `activeJob` | `TranscriptionJob \| null → shared/types.TranscriptionJob` | — | `server/src/utils/segmentOps.ts:120` |  |
+| `queue` | `TranscriptionJob[] → shared/types.TranscriptionJob` | — | `server/src/utils/segmentOps.ts:121` |  |
+| `inboxDir` | `?: string` | — | `server/src/utils/segmentOps.ts:123` | Where takes are sent in from (the watch folder); a source outside it is refused. |
+| `now` | `?: () => Date` | — | `server/src/utils/segmentOps.ts:124` |  |
 
-### `server/src/utils/segmentOps.Plan` — interface — `server/src/utils/segmentOps.ts:256-264`
+### `server/src/utils/segmentOps.Take` — interface — `server/src/utils/segmentOps.ts:127-133`
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `summary` | `string` | — | `server/src/utils/segmentOps.ts:257` |  |
-| `trash` | `Take[] → server/src/utils/segmentOps.Take` | — | `server/src/utils/segmentOps.ts:259` | Takes whose files go to the trash. |
-| `moves` | `Array<{ take: Take; segment: number }> → server/src/utils/segmentOps.Take` | — | `server/src/utils/segmentOps.ts:261` | Takes that change segment number. |
-| `promote` | `Array<{ source: string; filename: string }>` | — | `server/src/utils/segmentOps.ts:263` | The inbox takes promoted into the chapter, in order. |
+| `filename` | `string` | — | `server/src/utils/segmentOps.ts:128` |  |
+| `chapter` | `string` | — | `server/src/utils/segmentOps.ts:129` |  |
+| `segment` | `number` | — | `server/src/utils/segmentOps.ts:130` |  |
+| `rest` | `string` | — | `server/src/utils/segmentOps.ts:132` | Everything after `NN-S-`, extension included: `intro-CTA.mov`. |
 
-### `server/src/utils/segmentOps.Prepared` — interface — `server/src/utils/segmentOps.ts:654-661`
+### `server/src/utils/segmentOps.Plan` — interface — `server/src/utils/segmentOps.ts:260-268`
+
+| field | type | default | at | note |
+|---|---|---|---|---|
+| `summary` | `string` | — | `server/src/utils/segmentOps.ts:261` |  |
+| `trash` | `Take[] → server/src/utils/segmentOps.Take` | — | `server/src/utils/segmentOps.ts:263` | Takes whose files go to the trash. |
+| `moves` | `Array<{ take: Take; segment: number }> → server/src/utils/segmentOps.Take` | — | `server/src/utils/segmentOps.ts:265` | Takes that change segment number. |
+| `promote` | `Array<{ source: string; filename: string }>` | — | `server/src/utils/segmentOps.ts:267` | The inbox takes promoted into the chapter, in order. |
+
+### `server/src/utils/segmentOps.Prepared` — interface — `server/src/utils/segmentOps.ts:658-665`
 
 Everything an operation will do, planned and guarded, before a single file moves.
 
 | field | type | default | at |
 |---|---|---|---|
-| `paths` | `ProjectPaths → shared/paths.ProjectPaths` | — | `server/src/utils/segmentOps.ts:655` |
-| `plan` | `Plan → server/src/utils/segmentOps.Plan` | — | `server/src/utils/segmentOps.ts:656` |
-| `id` | `string` | — | `server/src/utils/segmentOps.ts:657` |
-| `trashSteps` | `Step[] → server/src/utils/segmentOps.Step` | — | `server/src/utils/segmentOps.ts:658` |
-| `moving` | `Array<{ from: string; to: string; tmp: string }>` | — | `server/src/utils/segmentOps.ts:659` |
-| `promoteSteps` | `Step[] → server/src/utils/segmentOps.Step` | — | `server/src/utils/segmentOps.ts:660` |
+| `paths` | `ProjectPaths → shared/paths.ProjectPaths` | — | `server/src/utils/segmentOps.ts:659` |
+| `plan` | `Plan → server/src/utils/segmentOps.Plan` | — | `server/src/utils/segmentOps.ts:660` |
+| `id` | `string` | — | `server/src/utils/segmentOps.ts:661` |
+| `trashSteps` | `Step[] → server/src/utils/segmentOps.Step` | — | `server/src/utils/segmentOps.ts:662` |
+| `moving` | `Array<{ from: string; to: string; tmp: string }>` | — | `server/src/utils/segmentOps.ts:663` |
+| `promoteSteps` | `Step[] → server/src/utils/segmentOps.Step` | — | `server/src/utils/segmentOps.ts:664` |
 
-### `server/src/utils/segmentOps.SegmentOpPreview` — interface — `server/src/utils/segmentOps.ts:766-774`
+### `server/src/utils/segmentOps.SegmentOpPreview` — interface — `server/src/utils/segmentOps.ts:770-778`
 
 What an operation would do, for a confirmation that shows exactly that.
 
 | field | type | default | at | note |
 |---|---|---|---|---|
-| `summary` | `string` | — | `server/src/utils/segmentOps.ts:767` |  |
-| `trashed` | `string[]` | — | `server/src/utils/segmentOps.ts:769` | Files that would go to `-trash/`, relative to the project. |
-| `renamed` | `Array<{ from: string; to: string }>` | — | `server/src/utils/segmentOps.ts:771` | Recording renames (old filename → new filename), in chapter order. |
-| `promoted` | `string[]` | — | `server/src/utils/segmentOps.ts:773` | Recordings that would land from the inbox. |
+| `summary` | `string` | — | `server/src/utils/segmentOps.ts:771` |  |
+| `trashed` | `string[]` | — | `server/src/utils/segmentOps.ts:773` | Files that would go to `-trash/`, relative to the project. |
+| `renamed` | `Array<{ from: string; to: string }>` | — | `server/src/utils/segmentOps.ts:775` | Recording renames (old filename → new filename), in chapter order. |
+| `promoted` | `string[]` | — | `server/src/utils/segmentOps.ts:777` | Recordings that would land from the inbox. |
 
 ### `server/src/utils/soundHoles.SoundHoleDeps` — interface — `server/src/utils/soundHoles.ts:153-156`
 
@@ -5510,7 +5524,7 @@ The census found these top-level declarations and the extractor did not mirror t
 | object constant | 12 | `client/src/components/shared/ShipsSelector.SHIPS_LABEL` `client/src/components/shared/ShipsSelector.tsx:17`<br>`client/src/constants/queryKeys.QUERY_KEYS` `client/src/constants/queryKeys.ts:5`<br>`client/src/constants/stages.STAGE_DISPLAY` `client/src/constants/stages.ts:4`<br>`server/src/config/configManager.DEFAULT_DISK_THRESHOLDS` `server/src/config/configManager.ts:7`<br>`server/src/config/env.env` `server/src/config/env.ts:25`<br>`server/src/config/logger.log` `server/src/config/logger.ts:20`<br>`server/src/utils/formatters.STATUS` `server/src/utils/formatters.ts:151`<br>`shared/constants.FILE_SIZE` `shared/constants.ts:6`<br>`shared/constants.WATCHER` `shared/constants.ts:14`<br>`shared/naming.NAMING_RULES` `shared/naming.ts:48`<br>`shared/naming.PATTERNS` `shared/naming.ts:87`<br>`shared/types.STAGE_LABELS` `shared/types.ts:346` |
 | array constant | 11 | `client/src/constants/stages.STAGE_ORDER` `client/src/constants/stages.ts:73`<br>`client/src/hooks/useBrollApi.BROLL_QUERY_KEY` `client/src/hooks/useBrollApi.ts:12`<br>`client/src/hooks/useOpenContextApi.OPEN_CONTEXT_KEY` `client/src/hooks/useOpenContextApi.ts:8`<br>`client/src/hooks/useSetsApi.SETS_QUERY_KEY` `client/src/hooks/useSetsApi.ts:12`<br>`client/src/utils/micGrading.SHORT_TERM_GREEN` `client/src/utils/micGrading.ts:38`<br>`server/src/utils/holdUtils.HOLD_EXCLUDES` `server/src/utils/holdUtils.ts:10`<br>`shared/apiRegistry.API_ENDPOINTS` `shared/apiRegistry.ts:38`<br>`shared/contextSchemas.REFUSAL_CODES` `shared/contextSchemas.ts:36`<br>`shared/naming.RECORDING_EXTENSIONS` `shared/naming.ts:21`<br>`shared/types.DEFAULT_PROJECT_STAGES` `shared/types.ts:333`<br>`shared/types.DEFAULT_TAGS` `shared/types.ts:294` |
 | const built by a call (helper or non-zod call) | 11 | `client/src/config.API_URL` `client/src/config.ts:14`<br>`client/src/hooks/useStorageApi.useArchiveProject` `client/src/hooks/useStorageApi.ts:79`<br>`client/src/hooks/useStorageApi.useHeldArchiveProject` `client/src/hooks/useStorageApi.ts:83`<br>`client/src/hooks/useStorageApi.useHoldProject` `client/src/hooks/useStorageApi.ts:77`<br>`client/src/hooks/useStorageApi.useRestoreHeld` `client/src/hooks/useStorageApi.ts:78`<br>`client/src/hooks/useStorageApi.useUnarchiveProject` `client/src/hooks/useStorageApi.ts:80`<br>`client/src/hooks/useVideoPlayback.SPEED_STORAGE_KEY` `client/src/hooks/useVideoPlayback.ts:15`<br>`client/src/hooks/useVideoPlayback.speedMemory` `client/src/hooks/useVideoPlayback.ts:19`<br>`server/src/config/logger.logger` `server/src/config/logger.ts:5`<br>`server/src/utils/brollRegister.DEFAULT_CONTROL_JSON` `server/src/utils/brollRegister.ts:51`<br>`server/src/utils/poemWuiUtils.BUNDLED_BRAND_CONFIG` `server/src/utils/poemWuiUtils.ts:11` |
-| class | 9 | `client/src/hooks/useConfigApi.BrandConfigSaveError` `client/src/hooks/useConfigApi.ts:92`<br>`client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15`<br>`server/src/utils/flitoolsClient.FlitoolsError` `server/src/utils/flitoolsClient.ts:44`<br>`server/src/utils/managedBrandConfig.BrandWriteRefusedError` `server/src/utils/managedBrandConfig.ts:66`<br>`server/src/utils/managedBrandConfig.ChangedElsewhereError` `server/src/utils/managedBrandConfig.ts:54`<br>`server/src/utils/segmentOps.SegmentOpFailed` `server/src/utils/segmentOps.ts:518`<br>`server/src/utils/segmentOps.SegmentOpRefused` `server/src/utils/segmentOps.ts:79` |
+| class | 9 | `client/src/hooks/useConfigApi.BrandConfigSaveError` `client/src/hooks/useConfigApi.ts:92`<br>`client/src/utils/micTrajectory.TrajectoryTracker` `client/src/utils/micTrajectory.ts:69`<br>`server/src/WatcherManager.WatcherManager` `server/src/WatcherManager.ts:29`<br>`server/src/middleware/errorHandler.AppError` `server/src/middleware/errorHandler.ts:15`<br>`server/src/utils/flitoolsClient.FlitoolsError` `server/src/utils/flitoolsClient.ts:44`<br>`server/src/utils/managedBrandConfig.BrandWriteRefusedError` `server/src/utils/managedBrandConfig.ts:66`<br>`server/src/utils/managedBrandConfig.ChangedElsewhereError` `server/src/utils/managedBrandConfig.ts:54`<br>`server/src/utils/segmentOps.SegmentOpFailed` `server/src/utils/segmentOps.ts:522`<br>`server/src/utils/segmentOps.SegmentOpRefused` `server/src/utils/segmentOps.ts:79` |
 | union of named or mixed types | 4 | `client/src/App.ConfigFocusSection` `client/src/App.tsx:88`<br>`client/src/hooks/useShiftHover.LegacyImageData` `client/src/hooks/useShiftHover.ts:25`<br>`server/src/utils/openContext.LaunchResult` `server/src/utils/openContext.ts:62`<br>`shared/types.ProjectStageOverride` `shared/types.ts:329` |
 | utility-type alias (`Pick` / `Omit` / `Record` / generic instance) | 3 | `client/src/components/MicCheckSnapshot.Analyser` `client/src/components/MicCheckSnapshot.tsx:34`<br>`server/src/routes/miccheck.IO` `server/src/routes/miccheck.ts:32`<br>`server/src/utils/openContext.ContextController` `server/src/utils/openContext.ts:281` |
 | alias of another value (`X = Y`) | 1 | `client/src/hooks/useVideoPlayback.SPEED_PRESETS` `client/src/hooks/useVideoPlayback.ts:13` |
@@ -5538,7 +5552,7 @@ These are refactors of the **application**, not of this mirror. Each one convert
 14. `server/src/routes/video.ts:264` — REFACTOR: the set for `ext` is inlined at server/src/routes/video.ts:264. Name it once (z.enum / literal union) so it has one authority.
 15. `server/src/utils/chapterExtraction.ts:208` — REFACTOR: the set for `word.toLowerCase()` is inlined at server/src/utils/chapterExtraction.ts:208. Name it once (z.enum / literal union) so it has one authority.
 16. `server/src/utils/loopback.ts:13` — REFACTOR (minor): `LOOPBACK_HOSTS` at server/src/utils/loopback.ts:13 names the set but does not type it. A z.enum or `as const` + `typeof LOOPBACK_HOSTS[number]` would make a wrong value a static error rather than a runtime miss.
-17. `server/src/utils/segmentOps.ts:452` — REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:452. Name it once (z.enum / literal union) so it has one authority.
+17. `server/src/utils/segmentOps.ts:456` — REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:456. Name it once (z.enum / literal union) so it has one authority.
 
 ---
 

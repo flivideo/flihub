@@ -1,6 +1,6 @@
 {
   "census": {
-    "declared": 451,
+    "declared": 452,
     "files": {
       "client/src/App.tsx": {
         "declared": 3,
@@ -926,6 +926,13 @@
         "not_read": 1,
         "not_schema_bearing": 0
       },
+      "server/src/utils/projectState.ts": {
+        "declared": 1,
+        "gaps": 0,
+        "mirrored": 1,
+        "not_read": 0,
+        "not_schema_bearing": 0
+      },
       "server/src/utils/projectStats.ts": {
         "declared": 2,
         "gaps": 0,
@@ -1075,7 +1082,7 @@
       }
     },
     "gaps": 2,
-    "mirrored": 395,
+    "mirrored": 396,
     "not_read": 54,
     "not_schema_bearing": 37,
     "not_schema_bearing_by_family": {
@@ -3611,6 +3618,39 @@
     },
     {
       "anchor": {
+        "file": "server/src/utils/projectState.ts",
+        "line": 103
+      },
+      "authority": "literal union type alias `ProjectLevelField` - a single declaring symbol",
+      "doc": "Recording sets: in a set project these fields are the PROJECT's, one shared copy in the",
+      "grade": "declared",
+      "id": "server/src/utils/projectState.ProjectLevelField",
+      "members": [
+        {
+          "anchor": {
+            "file": "server/src/utils/projectState.ts",
+            "line": 103
+          },
+          "value": "title"
+        },
+        {
+          "anchor": {
+            "file": "server/src/utils/projectState.ts",
+            "line": 103
+          },
+          "value": "ships"
+        },
+        {
+          "anchor": {
+            "file": "server/src/utils/projectState.ts",
+            "line": 103
+          },
+          "value": "glingDictionary"
+        }
+      ]
+    },
+    {
+      "anchor": {
         "file": "server/src/utils/recordingArtifacts.ts",
         "line": 15
       },
@@ -3802,45 +3842,45 @@
     {
       "anchor": {
         "file": "server/src/utils/segmentOps.ts",
-        "line": 452
+        "line": 456
       },
       "authority": "inline membership test `[...].includes(op.mode)` - no declaring symbol",
-      "finding": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:452. Name it once (z.enum / literal union) so it has one authority.",
+      "finding": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:456. Name it once (z.enum / literal union) so it has one authority.",
       "grade": "derived",
       "id": "server/src/utils/segmentOps.op.mode (membership)",
       "members": [
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 452
+            "line": 456
           },
           "value": "replace"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 452
+            "line": 456
           },
           "value": "insert"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 452
+            "line": 456
           },
           "value": "reorder"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 452
+            "line": 456
           },
           "value": "delete"
         },
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 452
+            "line": 456
           },
           "value": "send"
         }
@@ -5693,14 +5733,14 @@
     {
       "anchor": {
         "file": "server/src/utils/segmentOps.ts",
-        "line": 452
+        "line": 456
       },
       "kind": "refactor_required",
-      "message": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:452. Name it once (z.enum / literal union) so it has one authority.",
+      "message": "REFACTOR: the set for `op.mode` is inlined at server/src/utils/segmentOps.ts:456. Name it once (z.enum / literal union) so it has one authority.",
       "target": "server/src/utils/segmentOps.op.mode (membership)"
     }
   ],
-  "generated": "2026-11-11T13:22:16+00:00",
+  "generated": "2026-11-11T13:33:01+00:00",
   "ignored_derived": [
     {
       "anchor": {
@@ -19228,7 +19268,7 @@
     },
     {
       "anchor": {
-        "end_line": 110,
+        "end_line": 112,
         "file": "server/src/utils/segmentOps.ts",
         "line": 92
       },
@@ -19340,6 +19380,16 @@
           "default": null,
           "name": "undoneAt",
           "type": "?: string"
+        },
+        {
+          "anchor": {
+            "file": "server/src/utils/segmentOps.ts",
+            "line": 111
+          },
+          "default": null,
+          "doc": "Recording sets: the set this change ran in (null/absent without sets). Undo replays it there.",
+          "name": "set",
+          "type": "?: string | null"
         }
       ],
       "grade": "declared",
@@ -19348,9 +19398,9 @@
     },
     {
       "anchor": {
-        "end_line": 115,
+        "end_line": 117,
         "file": "server/src/utils/segmentOps.ts",
-        "line": 112
+        "line": 114
       },
       "bases": [],
       "doc": null,
@@ -19359,7 +19409,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 113
+            "line": 115
           },
           "default": null,
           "name": "version",
@@ -19368,7 +19418,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 114
+            "line": 116
           },
           "default": null,
           "name": "entries",
@@ -19381,9 +19431,9 @@
     },
     {
       "anchor": {
-        "end_line": 123,
+        "end_line": 125,
         "file": "server/src/utils/segmentOps.ts",
-        "line": 117
+        "line": 119
       },
       "bases": [],
       "doc": null,
@@ -19392,7 +19442,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 118
+            "line": 120
           },
           "default": null,
           "name": "activeJob",
@@ -19401,7 +19451,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 119
+            "line": 121
           },
           "default": null,
           "name": "queue",
@@ -19410,7 +19460,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 121
+            "line": 123
           },
           "default": null,
           "doc": "Where takes are sent in from (the watch folder); a source outside it is refused.",
@@ -19420,7 +19470,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 122
+            "line": 124
           },
           "default": null,
           "name": "now",
@@ -19433,9 +19483,9 @@
     },
     {
       "anchor": {
-        "end_line": 131,
+        "end_line": 133,
         "file": "server/src/utils/segmentOps.ts",
-        "line": 125
+        "line": 127
       },
       "bases": [],
       "doc": null,
@@ -19444,7 +19494,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 126
+            "line": 128
           },
           "default": null,
           "name": "filename",
@@ -19453,7 +19503,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 127
+            "line": 129
           },
           "default": null,
           "name": "chapter",
@@ -19462,7 +19512,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 128
+            "line": 130
           },
           "default": null,
           "name": "segment",
@@ -19471,7 +19521,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 130
+            "line": 132
           },
           "default": null,
           "doc": "Everything after `NN-S-`, extension included: `intro-CTA.mov`.",
@@ -19485,9 +19535,9 @@
     },
     {
       "anchor": {
-        "end_line": 264,
+        "end_line": 268,
         "file": "server/src/utils/segmentOps.ts",
-        "line": 256
+        "line": 260
       },
       "bases": [],
       "doc": null,
@@ -19496,7 +19546,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 257
+            "line": 261
           },
           "default": null,
           "name": "summary",
@@ -19505,7 +19555,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 259
+            "line": 263
           },
           "default": null,
           "doc": "Takes whose files go to the trash.",
@@ -19515,7 +19565,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 261
+            "line": 265
           },
           "default": null,
           "doc": "Takes that change segment number.",
@@ -19525,7 +19575,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 263
+            "line": 267
           },
           "default": null,
           "doc": "The inbox takes promoted into the chapter, in order.",
@@ -19539,9 +19589,9 @@
     },
     {
       "anchor": {
-        "end_line": 661,
+        "end_line": 665,
         "file": "server/src/utils/segmentOps.ts",
-        "line": 654
+        "line": 658
       },
       "bases": [],
       "doc": "Everything an operation will do, planned and guarded, before a single file moves.",
@@ -19550,7 +19600,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 655
+            "line": 659
           },
           "default": null,
           "name": "paths",
@@ -19559,7 +19609,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 656
+            "line": 660
           },
           "default": null,
           "name": "plan",
@@ -19568,7 +19618,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 657
+            "line": 661
           },
           "default": null,
           "name": "id",
@@ -19577,7 +19627,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 658
+            "line": 662
           },
           "default": null,
           "name": "trashSteps",
@@ -19586,7 +19636,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 659
+            "line": 663
           },
           "default": null,
           "name": "moving",
@@ -19595,7 +19645,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 660
+            "line": 664
           },
           "default": null,
           "name": "promoteSteps",
@@ -19608,9 +19658,9 @@
     },
     {
       "anchor": {
-        "end_line": 774,
+        "end_line": 778,
         "file": "server/src/utils/segmentOps.ts",
-        "line": 766
+        "line": 770
       },
       "bases": [],
       "doc": "What an operation would do, for a confirmation that shows exactly that.",
@@ -19619,7 +19669,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 767
+            "line": 771
           },
           "default": null,
           "name": "summary",
@@ -19628,7 +19678,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 769
+            "line": 773
           },
           "default": null,
           "doc": "Files that would go to `-trash/`, relative to the project.",
@@ -19638,7 +19688,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 771
+            "line": 775
           },
           "default": null,
           "doc": "Recording renames (old filename \u2192 new filename), in chapter order.",
@@ -19648,7 +19698,7 @@
         {
           "anchor": {
             "file": "server/src/utils/segmentOps.ts",
-            "line": 773
+            "line": 777
           },
           "default": null,
           "doc": "Recordings that would land from the inbox.",
@@ -28721,7 +28771,7 @@
     }
   ],
   "target": {
-    "commit": "ec0a3ba82d9c7aad4a86c527b8e88f4d11da1204",
+    "commit": "d50e844051b9067310e0a7699f9c35710ef4d859",
     "root": "..",
     "stack": "typescript"
   },
@@ -29107,7 +29157,7 @@
       "census": true,
       "family": "class",
       "looked_at": [
-        "server/src/utils/segmentOps.ts:518"
+        "server/src/utils/segmentOps.ts:522"
       ],
       "reason": "declared but not read: class. The extractor saw the declaration and did not mirror it; nothing else about it appears on this page.",
       "subject": "`server/src/utils/segmentOps.SegmentOpFailed` - declared but not read"
