@@ -5,6 +5,7 @@
  */
 
 import { API_URL } from '../config';
+import { setQuery, useActiveSet } from '../hooks/useSetsApi';
 import {
   useConfig,
   useProjectDictionary,
@@ -37,7 +38,8 @@ export function RecordingVideoModal({
 }: RecordingVideoModalProps) {
   const { data: config } = useConfig();
   const projectCode = config?.activeProject ?? null; // B070: null when no active project
-  const videoUrl = `${API_URL}/api/video/recordings/${encodeURIComponent(filename)}`;
+  const activeSet = useActiveSet(); // recording sets: the URL names the set
+  const videoUrl = `${API_URL}/api/video/recordings/${encodeURIComponent(filename)}${setQuery(activeSet)}`;
 
   // B070: Dictionary data
   const globalWords = config?.glingDictionary ?? [];

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Toaster, toast } from 'sonner';
 import { useSocket, useRecordingsSocket, useDeveloperSocket } from './hooks/useSocket';
+import { ActiveSetLine, AllSetsOverview, IncomingSetLine, NewSetDisabled, SetStrip } from './components/RecordingSets';
 import {
   useConfig,
   useSuggestedNaming,
@@ -113,6 +114,10 @@ const DEFAULT_NAMING_STATE: NamingState = {
 
 function App() {
   const [activeTab, setActiveTab] = useState<ViewTab>(getTabFromHash);
+  // Recording sets: the strip shows on the four tabs that list takes; "All sets" is a view, not a set.
+  const [showAllSets, setShowAllSets] = useState(false);
+  const setTab = activeTab === 'incoming' || activeTab === 'recordings' || activeTab === 'watch' || activeTab === 'transcriptions';
+  const allSetsView = setTab && showAllSets;
 
   // Sync tab changes to URL hash
   const changeTab = useCallback((tab: ViewTab) => {
@@ -779,10 +784,15 @@ function App() {
         <ContextRefusedBanner refused={refused} onDismiss={() => setDismissedRefusal(refused.reason)} />
       )}
 
+      {setTab && <SetStrip showAll={showAllSets} onShowAll={setShowAllSets} />}
+
       <main className={activeTab === 'projects' ? 'flex-1 flex flex-col overflow-hidden' : 'max-w-4xl mx-auto px-4 py-6'}>
+        {allSetsView && <AllSetsOverview onOpen={() => setShowAllSets(false)} />}
+
         {/* Incoming Tab */}
-        {activeTab === 'incoming' && (
+        {activeTab === 'incoming' && !allSetsView && (
           <>
+            <IncomingSetLine />
             {/* Naming Controls - shared state with New Chapter button */}
             <NamingControls
               namingState={namingState}
@@ -878,8 +888,9 @@ function App() {
         )}
 
         {/* Recordings Tab */}
-        {activeTab === 'recordings' && (
+        {activeTab === 'recordings' && !allSetsView && (
           <section>
+            <ActiveSetLine />
             <div className="flex items-center gap-2 mb-4">
               <h2 className="text-lg font-medium text-warm-secondary">Project Recordings</h2>
               {/* FR-157: project YouTube title — edit in place */}
@@ -910,21 +921,24 @@ function App() {
               )}
               <OpenFolderButton folder="recordings" label="Recordings" />
               <OpenFolderButton folder="safe" label="Safe" />
+              <NewSetDisabled />
             </div>
             <RecordingsView />
           </section>
         )}
 
         {/* FR-70: Watch Tab - Video playback */}
-        {activeTab === 'watch' && (
+        {activeTab === 'watch' && !allSetsView && (
           <section>
+            <ActiveSetLine />
             <WatchPage />
           </section>
         )}
 
         {/* Transcriptions Tab */}
-        {activeTab === 'transcriptions' && (
+        {activeTab === 'transcriptions' && !allSetsView && (
           <section>
+            <ActiveSetLine />
             <TranscriptionsPage />
           </section>
         )}

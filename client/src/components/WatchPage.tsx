@@ -28,6 +28,7 @@
  */
 
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
+import { setQuery, useActiveSet } from '../hooks/useSetsApi';
 import {
   useRecordings,
   useConfig,
@@ -147,9 +148,10 @@ function groupByChapterWithTiming(
 function getVideoUrl(
   projectCode: string,
   filename: string,
-  folder: 'recordings' | '-chapters' = 'recordings'
+  folder: 'recordings' | '-chapters' = 'recordings',
+  set: string | null = null // recording sets: two sets can both hold 01-1-intro, so the URL names the set
 ): string {
-  return `${API_URL}/api/video/${projectCode}/${folder}/${filename}`;
+  return `${API_URL}/api/video/${projectCode}/${folder}/${filename}${setQuery(set)}`;
 }
 
 // FR-71: Video metadata for transcript loading
@@ -175,6 +177,7 @@ function fileForSegment(recordings: RecordingFile[] | undefined, segmentName: st
 }
 
 export function WatchPage() {
+  const activeSet = useActiveSet();
   const { data: config } = useConfig();
   const { data, isLoading, error } = useRecordings();
   const [currentVideo, setCurrentVideo] = useState<VideoMeta | null>(null);
@@ -298,21 +301,21 @@ export function WatchPage() {
     if (currentIndex <= 0 || !projectCode) return;
     const prev = sortedRecordings[currentIndex - 1];
     setCurrentVideo({
-      url: getVideoUrl(projectCode, prev.filename),
+      url: getVideoUrl(projectCode, prev.filename, 'recordings', activeSet),
       title: prev.filename,
       segmentName: stripRecordingExtension(prev.filename),
     });
-  }, [currentIndex, sortedRecordings, projectCode]);
+  }, [currentIndex, sortedRecordings, projectCode, activeSet]);
 
   const handleNext = useCallback(() => {
     if (currentIndex >= sortedRecordings.length - 1 || !projectCode) return;
     const next = sortedRecordings[currentIndex + 1];
     setCurrentVideo({
-      url: getVideoUrl(projectCode, next.filename),
+      url: getVideoUrl(projectCode, next.filename, 'recordings', activeSet),
       title: next.filename,
       segmentName: stripRecordingExtension(next.filename),
     });
-  }, [currentIndex, sortedRecordings, projectCode]);
+  }, [currentIndex, sortedRecordings, projectCode, activeSet]);
 
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex >= 0 && currentIndex < sortedRecordings.length - 1;
@@ -336,7 +339,7 @@ export function WatchPage() {
   useEffect(() => {
     if (mostRecentRecording && projectCode && !hasAutoSelected.current && !currentVideo) {
       hasAutoSelected.current = true;
-      const url = getVideoUrl(projectCode, mostRecentRecording.filename);
+      const url = getVideoUrl(projectCode, mostRecentRecording.filename, 'recordings', activeSet);
       const segmentName = stripRecordingExtension(mostRecentRecording.filename);
       setCurrentVideo({
         url,
@@ -344,7 +347,7 @@ export function WatchPage() {
         segmentName,
       });
     }
-  }, [mostRecentRecording, projectCode, currentVideo]);
+  }, [mostRecentRecording, projectCode, currentVideo, activeSet]);
 
   // FR-71: Persist size preference
   const handleSizeChange = useCallback((size: VideoSize) => {
@@ -417,7 +420,7 @@ export function WatchPage() {
     const nextSegment = allSegments[currentIndex + 1];
     const segmentName = stripRecordingExtension(nextSegment.filename);
     setCurrentVideo({
-      url: getVideoUrl(projectCode, nextSegment.filename),
+      url: getVideoUrl(projectCode, nextSegment.filename, 'recordings', activeSet),
       title: nextSegment.filename,
       segmentName,
     });
@@ -428,7 +431,7 @@ export function WatchPage() {
         videoRef.current.play();
       }
     }, 100);
-  }, [currentVideo, projectCode, allSegments]);
+  }, [currentVideo, projectCode, allSegments, activeSet]);
 
   // Play a specific recording (segment)
   const playRecording = useCallback(
@@ -436,12 +439,12 @@ export function WatchPage() {
       if (!projectCode) return;
       const segmentName = stripRecordingExtension(file.filename);
       setCurrentVideo({
-        url: getVideoUrl(projectCode, file.filename),
+        url: getVideoUrl(projectCode, file.filename, 'recordings', activeSet),
         title: file.filename,
         segmentName,
       });
     },
-    [projectCode]
+    [projectCode, activeSet]
   );
 
   // Play chapter recording (combined video from -chapters folder)
@@ -451,7 +454,7 @@ export function WatchPage() {
       // Chapter recordings are named like: 01-intro.mov
       const chapterLabel = chapter.title || 'chapter';
       const chapterFilename = `${chapter.chapterKey}-${chapterLabel}.mov`;
-      const url = getVideoUrl(projectCode, chapterFilename, '-chapters');
+      const url = getVideoUrl(projectCode, chapterFilename, '-chapters', activeSet);
       setCurrentVideo({
         url,
         title: `Chapter ${chapter.chapterKey}: ${formatChapterTitle(chapter.title)}`,
@@ -461,7 +464,7 @@ export function WatchPage() {
         chapterFiles: chapter.files,
       });
     },
-    [projectCode]
+    [projectCode, activeSet]
   );
 
   const handleVideoError = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {

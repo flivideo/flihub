@@ -182,10 +182,19 @@ export function useRecordingsSocket() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recordings });
     };
 
+    // Recording sets: the active set changed (here or in another tab) or a set was added. Every
+    // take list is now another set's, so refetch everything.
+    const handleSetsChanged = () => {
+      console.log('Socket: sets:changed - invalidating all queries');
+      queryClient.invalidateQueries();
+    };
+
     socket.on('recordings:changed', handleRecordingsChanged);
+    socket.on('sets:changed', handleSetsChanged);
 
     return () => {
       socket.off('recordings:changed', handleRecordingsChanged);
+      socket.off('sets:changed', handleSetsChanged);
     };
   }, [queryClient]);
 }

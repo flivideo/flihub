@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { setQuery, useActiveSet } from '../hooks/useSetsApi';
 import { API_URL } from '../config';
 import { VideoPlayerModal } from './shared/VideoPlayerModal';
 import { parseRecordingFilename } from '../../../shared/naming';
@@ -34,6 +35,7 @@ function parseDisplayInfo(newName: string) {
 
 export function RecentlyNamedStrip({ renames, projectCode, onUndo, undoPending }: RecentlyNamedStripProps) {
   const [previewFile, setPreviewFile] = useState<RecentRename | null>(null);
+  const activeSet = useActiveSet(); // recording sets: the URL names the set
 
   if (renames.length === 0) return null;
 
@@ -85,7 +87,7 @@ export function RecentlyNamedStrip({ renames, projectCode, onUndo, undoPending }
       {previewFile && (
         <VideoPlayerModal
           title={previewFile.newName}
-          videoUrl={`${API_URL}/api/video/recordings/${encodeURIComponent(previewFile.newName)}`}
+          videoUrl={`${API_URL}/api/video/recordings/${encodeURIComponent(previewFile.newName)}${setQuery(activeSet)}`}
           onClose={() => setPreviewFile(null)}
           projectCode={projectCode}
           recordingName={previewFile.newName}
