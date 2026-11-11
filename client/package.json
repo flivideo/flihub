@@ -15,7 +15,7 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@flivideo/core": "github:flivideo/fli-core#v0.33.0",
+    "@flivideo/core": "file:../../../fli-core-worktrees/recording-sets",
     "@monaco-editor/react": "^4.7.0",
     "@tanstack/react-query": "^5.87.1",
     "react": "^19.1.0",
