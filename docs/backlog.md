@@ -12,6 +12,10 @@ Requirements index for FliHub.
 
 **Priority Order:** FR-140 (HIGH - validated by data) → 8 manual fixes (15 min) → FR-134/133/135 (OPTIONAL future enhancements)
 
+**Dead config (2026-11-17):** `config.fileExtensions` (default `['.mov']`) is read by nothing. The
+watcher has watched `_incoming/*.{mov,mp4}` since 26 Aug, so the field misleads anyone who reads it (it led
+to a wrong "mp4 isn't watched" answer). Remove the field, or make the watcher use it. Small; captured only.
+
 **Ruled, not yet actioned (2026-09-04):** David ruled the project-folder convention as
 `recordings/` · `recording-transcripts/` · `b-roll/` · `first-edit/` · `audio/` ·
 `second-edit/` · `final/`. The dead `edit-1st`/`edit-2nd` strings (FliHub never reads or
