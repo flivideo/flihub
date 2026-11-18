@@ -7,6 +7,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { env } from './config/env.js';
+import { createDoorRouter } from './door/router.js';
+import { gitSha } from './door/describe.js';
 import { log } from './config/logger.js';
 import { createWatcher } from './watcher.js';
 import { checkTakeAspect, enqueueAspectCheck } from './utils/aspectCheck.js';
@@ -387,6 +389,17 @@ const contextController = createContextController({
   launchStampPath: LAUNCH_STAMP_FILE,
 });
 app.use('/api/context', createContextRouter(contextController));
+// C4-07/08: the shared door, slice 1 — describe/1 and status, read-only (shows FliHub on FliStudio's map and in `fli apps`)
+app.use(
+  '/api',
+  createDoorRouter({
+    identity: { gitSha: gitSha(), startedAt: new Date().toISOString(), port: PORT },
+    context: async () => {
+      const state = await contextController.getState();
+      return state.context ? { brand: state.context.brand, project: state.context.project } : null;
+    },
+  })
+);
 
 // NFR-6: Global error handler (must be after routes)
 app.use(errorHandler);
