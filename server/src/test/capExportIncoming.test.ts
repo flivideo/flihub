@@ -1,7 +1,8 @@
-// A Cap export lands in the watch folder (Angela's: ~/dev/video-projects/_incoming) exactly like an Ecamm take
-// (Cap build, decision (a), 2026-11-18). FliStudio's `cap.export` writes `.<name>.mp4.part`, then renames it to
-// `<project>-cap-<time>.mp4`. The watcher must ignore the working file and every `.cap` package, and report the
-// finished MP4 once, whole. Every file here is a fake in a temp folder, never David's or Angela's real inbox.
+// A Cap export lands in FliHub's configured watch folder (`watchDirectory`: the M4's `~/ecamm`, Angela's
+// `~/dev/video-projects/_incoming`) exactly like an Ecamm take (Cap build, decision (a), 2026-11-18). FliStudio reads
+// that folder from FliHub, has Cap's `cap-cli` write `<watch>/.cap-working/<project>-cap-<time>.mp4` (cap-cli forces an
+// `.mp4` ending), then hard-links it into the watch folder and removes the working folder. The watcher must ignore the
+// working file and every `.cap` package, and report the finished MP4 once, whole. Every file here is a fake in a temp folder, never David's or Angela's real inbox.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import fs from 'fs';
 import os from 'os';
@@ -21,13 +22,15 @@ const ready = (w: NonNullable<typeof watcher>) =>
   new Promise<void>((r) => w.on('ready', () => r()));
 
 beforeEach(() => {
-  inbox = fs.mkdtempSync(path.join(os.tmpdir(), 'cap-incoming-'));
+  // Named like the M4's watch folder: nothing in FliHub's watcher may depend on the folder being `_incoming`.
+  inbox = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'cap-incoming-')), 'ecamm');
+  fs.mkdirSync(inbox);
   seen = [];
   watcher = null;
 });
 afterEach(async () => {
   await watcher?.close();
-  fs.rmSync(inbox, { recursive: true, force: true });
+  fs.rmSync(path.dirname(inbox), { recursive: true, force: true });
 });
 
 describe('Cap export in the FliHub watch folder', () => {
@@ -36,7 +39,9 @@ describe('Cap export in the FliHub watch folder', () => {
     await ready(watcher);
 
     // What cap.export does: a working file FliHub does not watch, a rename when whole.
-    const part = path.join(inbox, '.a01-xmen-cap-2026-11-18-140509.mp4.part');
+    const work = path.join(inbox, '.cap-working');
+    fs.mkdirSync(work);
+    const part = path.join(work, 'a01-xmen-cap-2026-11-18-140509.mp4');
     fs.writeFileSync(part, Buffer.alloc(4096, 1));
     // A raw Cap package dropped here by hand is a folder of tracks, never a take.
     fs.mkdirSync(path.join(inbox, 'Display 2026-11-18.cap', 'content'), { recursive: true });
@@ -45,7 +50,8 @@ describe('Cap export in the FliHub watch folder', () => {
     expect(seen).toEqual([]);
 
     const final = path.join(inbox, 'a01-xmen-cap-2026-11-18-140509.mp4');
-    fs.renameSync(part, final);
+    fs.linkSync(part, final);
+    fs.rmSync(work, { recursive: true, force: true });
     await until(() => seen.length > 0);
     await new Promise((r) => setTimeout(r, 400));
 
