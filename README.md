@@ -51,7 +51,7 @@ curl -X POST localhost:5101/api/context -H 'content-type: application/json' \
 ```
 
 The shared rules and refusal codes live in fli-core's mirror
-([`~/dev/ad/flivideo/fli-core/docs/schema-mirror.md`](https://github.com/flivideo/fli-core/blob/main/docs/schema-mirror.md));
+([fli-core's `docs/schema-mirror.md`](https://github.com/flivideo/fli-core/blob/main/docs/schema-mirror.md));
 FliHub's copy is `ContextRefusalSchema` in [docs/schema-mirror.md](docs/schema-mirror.md). How FliHub
 differs:
 
@@ -60,6 +60,13 @@ differs:
 - It never sends `video-not-found`. The video is carried along, not checked against `videos/`.
 - **A refused launch keeps the previous project open**, so check `refused` before trusting
   `context`. This is on purpose: clearing it would wipe a saved pick because of a typo.
+
+## Ask it what it can do
+
+**FliHub has no describe door yet.** Unlike FliStudio, FliCut, FliCast, FliEdit, Teletubby and FliTools, it does not
+answer `/describe` or draw a `/map`, and it has no JSON-RPC door of its own. What it does expose is its HTTP API on
+:5101 (for example `GET /api/context`, above); the routes live in `server/src/` and the data shapes in
+[docs/schema-mirror.md](docs/schema-mirror.md). Until it describes itself, treat those as the only reference.
 
 ## Docs
 
@@ -84,7 +91,7 @@ Teletubby · FliEdit.
 
 ## Status
 
-**Active, in daily use.** True at `c2b57e3` (2026-11-09). The B475 rebuild has run in place, as a series
+**Active, in daily use.** True at `06d35d7` (2026-11-18). The B475 rebuild has run in place, as a series
 of cuts and contract adoptions: relay and git sync are gone, and transcription moved to FliTools (B584).
 Recent work is features and fixes from real recording days. The rebuild's plan and audit:
 [docs/rebuild-2026/README.md](docs/rebuild-2026/README.md).
