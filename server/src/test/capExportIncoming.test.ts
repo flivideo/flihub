@@ -17,7 +17,8 @@ const until = async (ok: () => boolean, ms = 12_000) => {
   const end = Date.now() + ms;
   while (!ok() && Date.now() < end) await new Promise((r) => setTimeout(r, 100));
 };
-const ready = (w: NonNullable<typeof watcher>) => new Promise<void>((r) => w.on('ready', () => r()));
+const ready = (w: NonNullable<typeof watcher>) =>
+  new Promise<void>((r) => w.on('ready', () => r()));
 
 beforeEach(() => {
   inbox = fs.mkdtempSync(path.join(os.tmpdir(), 'cap-incoming-'));
