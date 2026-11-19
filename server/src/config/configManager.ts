@@ -14,6 +14,17 @@ export const DEFAULT_DISK_THRESHOLDS: DiskThresholds = {
   }
 };
 
+// Recording containers FliHub accepts: Ecamm writes .mov, Cap's automation export writes .mp4 (cap-autoexport, 19 Nov).
+export const DEFAULT_FILE_EXTENSIONS = ['.mov', '.mp4'];
+
+// Convert on read: a saved list that lacks .mp4 (older configs hold ['.mov'] only) gains it. Nothing is written here;
+// the value only reaches disk through FliHub's own saveConfig path. Other entries and their order are kept.
+export function withMp4(list: unknown): string[] {
+  const kept = Array.isArray(list) ? list.filter((e): e is string => typeof e === 'string') : [];
+  if (kept.length === 0) return [...DEFAULT_FILE_EXTENSIONS];
+  return kept.some((e) => e.toLowerCase() === '.mp4') ? kept : [...kept, '.mp4'];
+}
+
 // Default configuration values
 // NFR-6: Includes migration from targetDirectory to projectDirectory
 // FR-89 Part 5: Stores projectsRootDirectory + activeProject (derives projectDirectory)
@@ -23,7 +34,7 @@ export function getDefaultConfig(): Config {
     projectDirectory: '/tmp/project/', // Derived from root + active
     projectsRootDirectory: '~/dev/video-projects/v-appydave',
     activeProject: '',
-    fileExtensions: ['.mov'],
+    fileExtensions: [...DEFAULT_FILE_EXTENSIONS],
     availableTags: ['CTA', 'SKOOL'], // NFR-2: Global tags (always visible)
     commonNames: [
       // NFR-3: Default common names with rules
@@ -100,7 +111,7 @@ export function loadConfig(configPath: string): Config {
         saved.diskThresholds = DEFAULT_DISK_THRESHOLDS;
       }
 
-      return { ...defaults, ...saved };
+      return { ...defaults, ...saved, fileExtensions: withMp4(saved.fileExtensions) };
     }
   } catch (error) {
     console.warn('Failed to load config file, using defaults:', error);

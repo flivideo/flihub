@@ -37,7 +37,7 @@ describe('getDefaultConfig', () => {
     const defaults = getDefaultConfig();
     expect(defaults).toMatchObject({
       projectDirectory: '/tmp/project/',
-      fileExtensions: ['.mov'],
+      fileExtensions: ['.mov', '.mp4'],
       availableTags: ['CTA', 'SKOOL'],
     });
     expect(Array.isArray(defaults.commonNames)).toBe(true);
@@ -54,7 +54,7 @@ describe('loadConfig — missing file', () => {
 
     const config = loadConfig(TEST_CONFIG_PATH);
 
-    expect(config.fileExtensions).toEqual(['.mov']);
+    expect(config.fileExtensions).toEqual(['.mov', '.mp4']);
     expect(config.availableTags).toEqual(['CTA', 'SKOOL']);
     // Ensure fs.readJsonSync was never called
     expect(fs.readJsonSync).not.toHaveBeenCalled();
@@ -68,7 +68,7 @@ describe('loadConfig — missing file', () => {
 
     const config = loadConfig(TEST_CONFIG_PATH);
 
-    expect(config.fileExtensions).toEqual(['.mov']);
+    expect(config.fileExtensions).toEqual(['.mov', '.mp4']);
     expect(config.availableTags).toEqual(['CTA', 'SKOOL']);
   });
 });
@@ -251,5 +251,30 @@ describe('saveConfig', () => {
     const config = getDefaultConfig();
     // Should not throw
     expect(() => saveConfig(TEST_CONFIG_PATH, config)).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// cap-autoexport: .mp4 is accepted next to .mov for every config (converted on read, never written here)
+// ---------------------------------------------------------------------------
+describe('loadConfig — fileExtensions gain .mp4', () => {
+  const read = (saved: Record<string, unknown>) => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readJsonSync).mockReturnValue(saved);
+    vi.mocked(fs.writeJsonSync).mockClear();
+    return loadConfig(TEST_CONFIG_PATH);
+  };
+
+  it("an older config with ['.mov'] only reads as ['.mov', '.mp4'] and nothing is written", () => {
+    const config = read({ watchDirectory: '~/x', projectsRootDirectory: '~/p', fileExtensions: ['.mov'] });
+    expect(config.fileExtensions).toEqual(['.mov', '.mp4']);
+    expect(fs.writeJsonSync).not.toHaveBeenCalled();
+  });
+  it('a config without the key gets the default pair', () => {
+    expect(read({ watchDirectory: '~/x', projectsRootDirectory: '~/p' }).fileExtensions).toEqual(['.mov', '.mp4']);
+  });
+  it('keeps other entries, and a list that already has .mp4 is unchanged', () => {
+    expect(read({ fileExtensions: ['.mov', '.mkv'] }).fileExtensions).toEqual(['.mov', '.mkv', '.mp4']);
+    expect(read({ fileExtensions: ['.MP4', '.mov'] }).fileExtensions).toEqual(['.MP4', '.mov']);
   });
 });
