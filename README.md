@@ -36,7 +36,7 @@ open http://localhost:5100                           # or run `overmind start -D
 
 **Needs:** macOS · Node ≥ 20 · npm · [Overmind](https://github.com/DarthSim/overmind) (tmux) · ffmpeg
 and ffprobe · the **FliTools** service on 127.0.0.1:7161, which must be running for transcripts (nothing else
-transcribes; there is no `mlx_whisper` step on this machine) · SSH access to GitHub, because the lockfile fetches
+transcribes; FliHub runs no Whisper of its own) · SSH access to GitHub, because the lockfile fetches
 `@flivideo/core` over git+ssh · **Ports:** UI :5100 · API :5101
 
 > [!WARNING]
@@ -100,7 +100,7 @@ Teletubby · FliEdit.
 
 ## Status
 
-**Active, in daily use.** Checked against the code at `9ed6aab` (2026-11-24). The B475 rebuild has run in place, as a series
+**Active, in daily use.** Checked on 2026-11-24 against the code at `9ed6aab` (2026-11-19). The B475 rebuild has run in place, as a series
 of cuts and contract adoptions: relay and git sync are gone, and transcription moved to FliTools (B584).
 Recent work is features and fixes from real recording days. The rebuild's plan and audit:
 [docs/rebuild-2026/README.md](docs/rebuild-2026/README.md).

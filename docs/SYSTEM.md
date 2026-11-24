@@ -305,7 +305,7 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
   routers define about 150. Trust the [schema mirror](schema-mirror.md) and the routers, not these views.
 
 - **Capabilities are leaving FliHub, not arriving.** In the last two days relay, git sync and
-  shadows went. Transcription is next (FliTools). Layout rules, video naming and trash zones moved
+  shadows went. Transcription went to FliTools (B584). Layout rules, video naming and trash zones moved
   into fli-core. A change that makes FliHub own _more_ should be questioned against the North Star
   scope rule: "everything else is a tab".
 
