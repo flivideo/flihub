@@ -155,18 +155,17 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
    The server `ensureDir`s the layout's recordings folder, moves the file there (or to `b-roll/` for
    a chapter-less take, FR-161, which is deprecated), and records the rename in an in-memory undo list.
 4. Recordings (not b-roll) are queued for transcription. A single in-process worker
-   (`server/src/routes/transcriptions.ts`) spawns `mlx_whisper`
-   (default `~/.pyenv/shims/mlx_whisper`, model `whisper-large-v3-turbo`), with the global Gling
-   dictionary as `--initial-prompt`.
-   - The output is `.txt`, `.srt` and `.json` in the layout's transcripts folder. The folder is
-     derived from the video's own path, not from the active project.
-   - The `.json` is segment-level. `--word-timestamps` is never passed; FR-169 is pending.
+   (`server/src/routes/transcriptions.ts`) submits each file to the **FliTools** service
+   (`127.0.0.1:7161`, B584, 2026-09-27) and waits for the job; FliHub no longer spawns `mlx_whisper`.
+   The language comes from the project's `fli.studio.json`.
+   - FliTools writes the transcript files; the folder is derived from the video's own path, not from
+     the active project. When it saves a good transcript it moves any old Whisper output to
+     `<project>/-trash/<date>-pre-flitools/`.
    - Progress streams over the socket as `transcription:*` events.
 5. From Recordings or Watch, David reads the transcript against the video. The transcript-synced
    player is the surface David praises, and North Star calls it the crown jewel.
    - He can send a transcript onward, for example to the POEM WUI intake (`server/src/routes/poem-wui.ts`).
-   - Transcription is being pulled out into a shared FliTools service (B584). FliHub has not yet
-     been switched over to it.
+   - Transcription now runs in the shared FliTools service (B584, merged); FliHub is only a client.
 
 ### Point FliHub at a brand and project (the open contract)
 
@@ -234,9 +233,9 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
   - Flags or guards that are "permanently false" were rejected. A dead guard still reads as a
     possible refusal, and it keeps dead config alive.
 
-- **MLX Whisper stays local, over Groq** (FR-150 was deferred). It is free and fast on Apple
-  Silicon. This is now being superseded by a shared FliTools transcription service (B584), not by
-  a second engine inside FliHub.
+- **One transcriber for the suite.** FliHub once spawned local MLX Whisper (FR-150, Groq, was
+  deferred). B584 (2026-09-27) replaced that with the shared FliTools service, which chooses the
+  engine; FliHub keeps no second engine.
 
 ## Non-obvious Constraints
 
@@ -250,7 +249,8 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
   - `updateConfig` (`index.ts`);
   - `saveConfig` (`configManager.ts`).
 
-  `whisperBinary`, `whisperModel`, `whisperLanguage` and `diskThresholds` are read but never saved.
+  `diskThresholds` is read but never saved. (`whisperBinary`, `whisperModel` and `whisperLanguage`
+  survive only as unused fields in `shared/types.ts`; transcription ignores them now.)
   `writeProjectState()` is the same kind of allowlist for `.flihub-state.json`.
 
 - **Two routers claim one path.** `hold.ts` and `storage.ts` are both mounted on `/api/projects` and
@@ -306,7 +306,7 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
 
 - **Capabilities are leaving FliHub, not arriving.** In the last two days relay, git sync and
   shadows went. Transcription is next (FliTools). Layout rules, video naming and trash zones moved
-  into fli-core. A change that makes FliHub own *more* should be questioned against the North Star
+  into fli-core. A change that makes FliHub own _more_ should be questioned against the North Star
   scope rule: "everything else is a tab".
 
 ## Scope Limits
@@ -337,9 +337,8 @@ series of cuts and contract adoptions, rather than as a green-field rewrite.
   - All known sites were routed through `getProjectPaths` on 2026-09-22.
   - A new one fails silently, because no error is raised.
 
-- **Whisper settings silently revert.** A custom `whisperModel` or `whisperBinary` in
-  `server/config.json` works until the next config save from the UI, then the defaults return. The
-  cause is the `saveConfig` allowlist.
+- **Whisper settings do nothing.** A `whisperModel` or `whisperBinary` in `server/config.json` is
+  ignored: transcription is FliTools' job (B584), and the engine is chosen there.
 
 - **A new state field vanishes.** A field added to `ProjectState` round-trips once, then disappears
   after an unrelated state write. The cause is the `writeProjectState()` allowlist.
